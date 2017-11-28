@@ -51,27 +51,38 @@ namespace d360.web.Controllers
 
             joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
 
+            var parentIntersectType = Company.Filter<IntersectType>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
+
+            var parentSqlColumn = @"null as ParentID, null as Parent, null as ParentUrl,";
+            var parentSqlJoin = @"";
+
+            if (parentIntersectType != null)
+            {
+                parentSqlColumn = @"P.ParentID, P.DisplayValue as Parent, P.ParentUrl, ";
+                parentSqlJoin = @" outer apply (
+				    select	I.SubjectID as ParentID,
+                            ID.DisplayValue,
+                            dbo.GenerateObjectUrl('Artifact', IAT.ObjectID, I.SubjectID) as ParentUrl
+				    from	[PredicateIntersect] I
+                            inner join Asset IA on I.Object = 'Artifact' and I.ObjectID = A.ID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
+                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID
+                            left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
+				    ) P";
+            }
+
+
             #region Sql
 
             var sql = $@"
 select	A.ID,
-        P.ID as ParentID, 
-        P.DisplayValue as Parent,
+        {parentSqlColumn}
         {columns}
 		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
+        {parentSqlJoin} 
         {joins} 
-        left join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = 'Artifact' and PI.SubjectID = @p and PI.ObjectID = A.ID and PI.PredicateType = 3 
-        left join Artifact P on P.ID = PI.SubjectID 
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = {Company.CurrentResourceID}
-							and C.ObjectID is null 
-					) RP on RP.AssetID = O.ID 
+		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID  
 where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
 
             #endregion
@@ -171,27 +182,37 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
                 }                
             }
 
+            var parentIntersectType = Company.Filter<IntersectType>(i => i.Object == "ArtifactType" && i.ObjectID == artifactTypeId && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
+
+            var parentSqlColumn = @"null as ParentID, null as Parent, null as ParentUrl,";
+            var parentSqlJoin = @"";
+
+            if (parentIntersectType != null)
+            {
+                parentSqlColumn = @"P.ParentID, P.DisplayValue as Parent, P.ParentUrl, ";
+                parentSqlJoin = @" outer apply (
+				    select	I.SubjectID as ParentID,
+                            ID.DisplayValue,
+                            dbo.GenerateObjectUrl('Artifact', IAT.ObjectID, I.SubjectID) as ParentUrl
+				    from	[PredicateIntersect] I
+                            inner join Asset IA on I.Object = 'Artifact' and I.ObjectID = A.ID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
+                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID
+                            left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
+				    ) P";
+            }
+
             #region Sql
 
             var sql = $@"
 select	A.ID,
-        P.ID as ParentID,
-        P.DisplayValue as Parent,
+        {parentSqlColumn}
         {columns}
 		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
+        {parentSqlJoin}
         {joins} 
-        left join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = 'Artifact' and PI.SubjectID = @p and PI.ObjectID = A.ID and PI.PredicateType = 3 
-        left join Artifact P on P.ID = PI.SubjectID 
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = {Company.CurrentResourceID}
-							and C.ObjectID is null 
-					) RP on RP.AssetID = O.ID 
+		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
 where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
 
             #endregion
@@ -427,6 +448,7 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
 
         private void SetColumnStylesFromField(ICollection<ArtifactTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
         {
+            if (styles == null) return;
             if (!styles.Any()) return;
 
             //check if the styles collection has an entry for this row
@@ -638,14 +660,7 @@ from	Artifact A
         {1} 
         inner join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = 'Artifact' and PI.SubjectID = @p and PI.ObjectID = A.ID and PI.PredicateType = 3 
         inner join Artifact P on P.ID = PI.SubjectID 
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = " + Company.CurrentResourceID + @" 
-							and C.ObjectID is null 
-					) RP on RP.AssetID = O.ID 
+		left join AssetWithoutReadPermission RP on RP.ResourceID = " + Company.CurrentResourceID + @" and RP.AssetID = O.ID 
 where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
             var model = processDynamicResults(
                 sql, Request,
@@ -702,15 +717,8 @@ select	A.ID,
 from	Artifact A 
         {djToken} 
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
-        {parentSqlJoin}
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = {Company.CurrentResourceID}
-							and C.ObjectID is null 
-					) RP on RP.AssetID = O.ID 
+        {parentSqlJoin} 
+        left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
 where    A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
                 var model = processDynamicResults(
                     sql, Request, 

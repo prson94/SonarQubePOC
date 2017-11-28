@@ -2869,7 +2869,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Additional source notes for the reference list..
+        ///   Looks up a localized string similar to Defines information regarding the source or originator of this reference list..
         /// </summary>
         public static string SourceNotes_Description {
             get {

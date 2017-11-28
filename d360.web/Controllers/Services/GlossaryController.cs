@@ -182,14 +182,7 @@ select	A.ID,
 from	Artifact A 
         {joins}
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = {Company.CurrentResourceID}
-							and C.ObjectID is null 
-					) RP on RP.AssetID = A.ID 
+		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID 
 where   A.ArtifactTypeID = @id and RP.AssetID is null 
 for json path";
 
@@ -372,14 +365,7 @@ select	A.ID,
 from	Artifact A 
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         {joins}
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = {Company.CurrentResourceID}
-							and C.ObjectID is null 
-					) RP on RP.AssetID = O.ID 
+		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
 where   A.ID = @id and RP.AssetID is null
 for json path";
 
@@ -414,12 +400,6 @@ from    FieldWithRelation F
                 "application/json");
             return response;
         }
-
-        //[Route("artifacts/{id:int}/responsibilities"), HttpGet]
-        //public IQueryable<dynamic> GetResponsibilitiesForArtifactType(int id)
-        //{
-        //    return GetResponsibilities(SystemObjects.ArtifactType, id);
-        //}
 
         JArray GetAttributesProperty(List<AttributeDetail> attributes, List<FieldWithRelation> attributeFields, int? parentAttributeID)
         {
@@ -470,14 +450,7 @@ from	Artifact A
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         left join Artifact P on P.ID = A.ParentID 
         {joins}
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = {Company.CurrentResourceID}
-							and C.ObjectID is null 
-					) RP on RP.AssetID = O.ID 
+		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
 where   A.ArtifactTypeID = @id and RP.AssetID is null";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
@@ -626,12 +599,6 @@ where   A.ArtifactTypeID = @id and RP.AssetID is null";
             }
         }
 
-        //[Route("artifacts/{typeID:int}/{id:int}/responsibilities"), HttpGet]
-        //public IQueryable<dynamic> GetResponsibilitiesForArtifact(int typeID, int id)
-        //{
-        //    return GetResponsibilities(SystemObjects.Artifact, id);
-        //}
-
         #endregion
 
         #region Models
@@ -667,26 +634,13 @@ from	Taxonomy A
         {joins} 
         inner join Asset O on O.Object = 'Taxonomy' and O.ObjectID = A.ID 
         left join Taxonomy P on P.ID = A.ParentID 
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = {Company.CurrentResourceID}
-							and C.ObjectID is null 
-					) RP on RP.AssetID = O.ID 
+		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
 where A.TaxonomyTypeID = @id and RP.AssetID is null";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
             return Company.Query<dynamic>(sql, new { id = id }).AsQueryable();
         }
-
-        //[Route("models/{id:int}/responsibilities"), HttpGet]
-        //public IQueryable<dynamic> GetResponsibilitiesForTaxonomyType(int id)
-        //{
-        //    return GetResponsibilities(SystemObjects.TaxonomyType, id);
-        //}
 
         /// <summary>
         /// Add a model.
@@ -816,12 +770,6 @@ where A.TaxonomyTypeID = @id and RP.AssetID is null";
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
             }
         }
-
-        //[Route("models/{typeID:int}/{id:int}/responsibilities"), HttpGet]
-        //public IQueryable<dynamic> GetResponsibilitiesForTaxonomy(int typeID, int id)
-        //{
-        //    return GetResponsibilities(SystemObjects.Taxonomy, id);
-        //}
 
         #endregion
     }

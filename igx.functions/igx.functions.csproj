@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>    
+    <PackageReference Include="Dapper" Version="1.50.2" />    
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.5.0" />    
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling" Version="6.0.1304" />    
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data" Version="6.0.1304.1" />    
+    <PackageReference Include="EntityFramework" Version="6.2.0" />    
+    <PackageReference Include="JUST" Version="5.1.0" />    
+    <PackageReference Include="Mandrill.net" Version="4.1.0" />    
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.4.0" />    
+    <PackageReference Include="Microsoft.Azure.WebJobs.ServiceBus" Version="2.1.0-beta4" />    
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.6" />    
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />    
+    <PackageReference Include="SpreadsheetLight" Version="3.4.9" />    
+    <PackageReference Include="WindowsAzure.ServiceBus" Version="4.1.6" />    
+    <PackageReference Include="WindowsAzure.Storage" Version="8.6.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\d360.core\d360.core.csproj" />
+    <ProjectReference Include="..\d360.extensions\d360.extensions.csproj" />
+    <ProjectReference Include="..\d360.model\d360.model.csproj" />
+    <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj" />
+    <ProjectReference Include="..\d360.utils\d360.utils.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data.Entity.Design">
+      <HintPath>..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.1\System.Data.Entity.Design.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+</Project>

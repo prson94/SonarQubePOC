@@ -15,6 +15,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { StringConstants } from '../../static/string-constants';
+import { SiteUrlHelpers } from "../../static/site-url-helpers";
 
 declare var CompanySettings;
 
@@ -112,12 +113,14 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));
                 }
                 this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-                                
+
                 this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.DisplayValue, this.artifact.AssetID);
                 this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true, true);
                 if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-sitemap'], `/sidebar/children${this.objectContextUrl()}`));
-                                
-                this.loadItemSurvey(id);                
+
+                this.loadItemSurvey(id);
+            }).catch(err => {
+                this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
             });
     }
 

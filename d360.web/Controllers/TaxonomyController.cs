@@ -46,14 +46,7 @@ $@"select	T.ID,
                                 inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Taxonomy' and I.ObjectID = T.ID
 							    inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					    ) P
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = {Company.CurrentResourceID}
-							and C.ObjectID is null 
-					) RP on RP.AssetID = A.ID 
+		    left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID 
 where T.TaxonomyTypeID = @id AND T.Visible = 1 and RP.AssetID is null
 order by T.[Level]", new { id = id });
 
@@ -94,14 +87,8 @@ from	Taxonomy A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Taxonomy' and I.ObjectID = A.ID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-		left join	(
-					select	distinct 
-							R.AssetID
-					from	ResponsibilityDetails R
-							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
-					where	R.ResourceID = {Company.CurrentResourceID}
-							and C.ObjectID is null 
-					) RP on RP.AssetID = OA.ID 
+		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = OA.ID 
+where   RP.AssetID is null 
 order by A.[Level], A.DisplayValue";
 
             //NEW LOGIC BELOW. USE EVENTUALLY.

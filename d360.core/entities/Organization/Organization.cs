@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Organization : BaseIntObject, IIntObject
+    public class Organization : BaseIntObject, IIntObject, IFieldsObject
     {
         [DataMember]
         public string Name { get; set; }
@@ -41,6 +41,16 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("OrganizationID")]
         public virtual ICollection<OrganizationResource> OrganizationResources { get; set; }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel
+            {
+                Object = SystemObjects.Organization,
+                Type = SystemObjects.OrganizationType,
+                TypeID = OrganizationTypeID
+            };
+        }
     }
 
     [DataContract(Namespace = NAMESPACE)]

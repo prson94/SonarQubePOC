@@ -1171,7 +1171,7 @@
     <value>Type</value>
   </data>
   <data name="SourceNotes_Description" xml:space="preserve">
-    <value>Additional source notes for the reference list.</value>
+    <value>Defines information regarding the source or originator of this reference list.</value>
   </data>
   <data name="SourceNotes_Name" xml:space="preserve">
     <value>Source Notes</value>

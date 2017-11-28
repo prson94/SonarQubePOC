@@ -18,7 +18,7 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <span *ngIf="!isLoading && !showEditor && !showDelete">
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedOrganization"  (onRowDblclick)="selectedOrganization=$event.data;showEditor=true;organizationUpdated.emit(selectedOrganization);">
+            <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedOrganization" (onRowSelect)="selectedOrganization=$event.data;" (onRowDblclick)="selectedOrganization=$event.data;showEditor=true;organizationUpdated.emit(selectedOrganization);">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>
                 <p-column field="AdministratorEmail" header="Administrator Email"></p-column>
@@ -48,7 +48,7 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
                 </p-column>
             </p-dataTable>
         </span>
-        <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selectedOrganization?.ID" [objectType]="'Organization'" [title]="'Organization'" [selection]="selectedOrganization" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+        <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organizationType?.ID" [objectType]="'Organization'" [title]="'Organization'" [selection]="selectedOrganization" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
         <d3s-delete-form *ngIf="showDelete"
             [callback]="theDeleteCallback"
             [itemId]="selectedOrganization?.ID"
@@ -87,7 +87,6 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
 
     getOrganizations() {
         this.isLoading = true;
-        console.log(this.organizationType);
         this.organizationService.getOrganizationsByType(this.organizationType.ID)
             .then(result => {
                 this.organizations = result;

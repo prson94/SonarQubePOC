@@ -987,68 +987,24 @@ where   h.ID <> @t order by h.[Level] desc;
         #region Artifacts
 
         [Route("artifact/{id:int}")]
-        public ArtifactModelRequest GetArtifact(int id)
+        public HttpResponseMessage GetArtifact(int id)
         {
-            var a = Company.GetById<Artifact>(id, i => i.ArtifactType);
+            var json = Company.GetPageInformation(SystemObjects.Artifact, id);
 
-            if (a == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            if (json == null)
+                return Request.CreateResponse(HttpStatusCode.NotFound, json);
 
-            var asset = Company.Filter<Asset>(i => i.Object == "Artifact" && i.ObjectID == id).SingleOrDefault();
+            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
-            var model = new ArtifactModelRequest();
-
-            //Static fields
-            model.Add("ID", a.ID);
-            model.Add("AssetID", asset.ID);
-            model.Add("DisplayValue", a.DisplayValue);
-            //model.Add("Name", a.Name);
-            //model.Add("Description", a.Description);
-            model.Add("TypeName", a.ArtifactType.Name);
-
-            //check if this object has dashboards             
-            bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "Artifact" && x.ObjectID == a.ArtifactTypeID && x.ReportType == "powerbi").Any();
-            model.Add("HasDashboards", hasDashboards);
-
-            var certificationWorkflowEnabled = Company.WorkflowEventRegistrations.Where(x => x.Object == "ArtifactType" && x.ObjectID == a.ArtifactTypeID && x.Type.PublishedVersionID != null && x.Type.State == State.Active).Any();            
-            model.Add("HasWorkflow", certificationWorkflowEnabled);
-
-            //chick if this object has any child objects
-            bool hasChildren = Company.Filter<Artifact>(x => x.ParentID == a.ID).Any();
-            model.Add("HasChildArtifacts", hasChildren);
-
-            try
+            foreach (var br in json["Breadcrumbs"].Children())
             {
-                var row = Company.Query<dynamic>(QueryConstants.ArtifactSettingsItem, new { id = a.ArtifactTypeID }).Single();
-
-                model.Add("AllowAttributes", (bool)row.AllowAttributes);
-
-                //get synonyms based on relations and allocations
-                var synonymTypes = Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = a.ArtifactTypeID, ot = new DbString { Value = "ArtifactType", IsFixedLength = true, Length = 50, IsAnsi = true } });
-
-                model.Add("NymTypes", synonymTypes);   //allow synonyms on all artifacts as custom synonyms are allowed everywhere.
-                model.Add("AllowPredicateHierarchies", (bool)row.AllowPredicateHierarchies);
+                if (br["IsType"].ToObject<bool>())
+                    br["Name"] = pluralize.Pluralize(br["Name"].Value<string>());
             }
-            catch (Exception ex)
-            { }
 
-            var breadcrumbItems = Company.Query<dynamic>((QueryConstants.ArtifactNgBreadcrumbItem), new { id = id }).ToList();
-            var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-
-            var breadcrumbs = new List<BreadcrumbItem>() {
-                new BreadcrumbItem { Name = "Glossary" }
-            };
-            breadcrumbItems.ForEach(b =>
-            {
-                breadcrumbs.Add(new BreadcrumbItem { Name = pluralize.Pluralize((string)b.TypeName), Url = (string)b.TypeUrl });
-                breadcrumbs.Add(new BreadcrumbItem { Name = HttpUtility.HtmlDecode((string)b.Name), Url = (string)b.Url });
-            });
             pluralize = null;
 
-            breadcrumbs.Last().Active = true;
-
-            model.Add("Breadcrumbs", breadcrumbs);
-
-            return model;
+            return Request.CreateResponse(HttpStatusCode.OK, json);
         }
 
         [Route("artifacts/{typeID:int}")]
@@ -3196,11 +3152,28 @@ end",
                         currentObjTable = "[" + currentObj + "]";
                     }
 
-                    var addDeletedCheck = currentObj.Equals("FusionAttribute", StringComparison.CurrentCultureIgnoreCase);
+                    var addDeletedCheck = currentObj.Equals("FusionAttribute", StringComparison.CurrentCultureIgnoreCase) || 
+                                            currentObj.Equals("FusionQueryAttribute", StringComparison.CurrentCultureIgnoreCase);
                     var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
                     var objColumn = "";
                     var objIDColumn = "";
                     var joinType = "inner"; //the SQL join.
+
+                    var permissionJoin = $@"
+ inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID 
+left join AssetWithoutReadPermission RP{i} on RP{i}.ResourceID = {Company.CurrentResourceID} and RP{i}.AssetID = O{i}.ID ";
+                    var permissionsWhere = $" and RP{i}.AssetID is null ";
+                    switch (currentObj.ToLower())
+                    {
+                        case "artifact":
+                        case "policy":
+                        case "taxonomy":
+                            break;
+                        default:
+                            permissionJoin = "";
+                            permissionsWhere = "";
+                            break;
+                    }
 
                     switch (join.RelationType)
                     {
@@ -3210,19 +3183,24 @@ end",
                             if (i == 0)
                             {
                                 join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.JoinStatement += permissionJoin;
                                 join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                                join.WhereStatement += permissionsWhere;
                                 objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                             }
                             else
                             {
                                 join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.JoinStatement += permissionJoin;
+                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+
                                 objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                             }
                             if (addDeletedCheck)
                             {
-                                join.JoinStatement += $" and A{i}.Deleted = 0";
+                                join.JoinStatement += $" and (A{i}.Deleted = 0 OR A{i}.Deleted is null)";
                             }
                             break;
                         #endregion
@@ -3230,6 +3208,7 @@ end",
                             #region
                             join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null)";
                             join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
+                            join.JoinStatement += permissionJoin;
                             objColumn = $"'{join.Object.Replace("Type", "")}'";
                             objIDColumn = $"I{i}.ObjectID";
                             if (i == 0)
@@ -3240,6 +3219,7 @@ end",
                             {
                                 join.JoinStatement += $" and A{i}.Deleted = 0";
                             }
+                            join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
                             break;
                         #endregion
                         case ComplexLookupRelationType.ChildItem:
@@ -3248,7 +3228,6 @@ end",
                             {
                                 case "ArtifactType":
                                     join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
-
                                     if (i == 0)
                                     {
                                         join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ParentID = {id}";
@@ -3256,13 +3235,16 @@ end",
                                     break;
                                 case "FusionAttributeType":
                                     join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.Deleted = 0";
-
                                     if (i == 0)
                                     {
                                         join.WhereStatement = $"A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.ParentID = {id} and A{i}.Deleted = 0";
                                     }
                                     break;
                             }
+
+                            join.JoinStatement += permissionJoin;
+                            join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+
                             objColumn = $"'{currentObj}'";
                             objIDColumn = $"A{i}.ID";
                             break;
@@ -3286,6 +3268,10 @@ end",
                                     }
                                     break;
                             }
+
+                            join.JoinStatement += permissionJoin;
+                            join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+
                             objColumn = $"'{currentObj}'";
                             objIDColumn = $"A{i}.ID";
                             break;
@@ -4049,17 +4035,18 @@ from	    PolicyType FAT
             var columns = "";
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
 
-            var querySql = string.Format(@"
+            var querySql = $@"
 select	top 100 percent 
         A.ID, 
         OA.ID as AssetID, 
         P.SubjectID as ParentID,
         TD.DisplayValue,
-        {0}
+        {columns}
         A.[Level]
 from	[Policy] A 
         inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id and A.[Visible] = 1 
-        {1} 
+        left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = OA.ID 
+        {joins} 
         left join dbo.GetAssetDisplayValue() TD on TD.ID = OA.ID
         outer apply (
 					select	I.SubjectID
@@ -4067,7 +4054,8 @@ from	[Policy] A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-order by A.[Level], TD.DisplayValue", columns, joins);
+where   RP.AssetID is null 
+order by A.[Level], TD.DisplayValue";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 

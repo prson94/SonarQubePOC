@@ -816,7 +816,7 @@ select  A.ID
         {columns} 
 from	FusionQueryAttribute A {joins}
 where   A.FusionQueryAttributeTypeID = @t 
-        and A.Deleted = 0";
+        and (A.Deleted = 0 or A.Deleted is null)";
 
             sql = $@"select * from ({sql}) A";
             sql = applyFilteringSuffixBind(sql, Request, dbArgs);

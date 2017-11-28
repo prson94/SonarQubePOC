@@ -12,6 +12,7 @@ using d360.extensions;
 using Dapper;
 using gudusoft.gsqlparser;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -379,6 +380,16 @@ namespace d360.model
         public void Enqueue(string queueName, List<QueueObject> items)
         {
             QueueSource.CreateMessages(queueName, items);
+        }
+
+        public JObject GetPageInformation(SystemObjects o, int oid)
+        {
+            var jsonRows = Database.Connection.Query<string>("exec GetPageInformation @o, @oid, @rid", new { o = o.ToString(), oid, rid = CurrentResourceID });
+            if (jsonRows.Count() == 0)
+                return null;
+
+            var json = string.Concat(jsonRows);
+            return JObject.Parse(json);
         }
 
         public List<AllocationPossibility> GetTypes()

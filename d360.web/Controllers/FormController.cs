@@ -417,7 +417,7 @@ namespace d360.web.Controllers
                 case "MAP":
                     return Map_AddFields();                
                 case "ORGANIZATION":
-                    return Organization_AddFields();
+                    return Organization_AddFields(objectID.GetValueOrDefault());
                 case "ORGANIZATIONDOMAIN":
                     return OrganizationDomain_AddFields(objectID.Value);
                 case "ORGANIZATIONINVITATION":
@@ -737,8 +737,21 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
 
-            var type = Company.GetById<ArtifactType>(at, i => i.Parent);
-          
+            var type = Company.GetById<ArtifactType>(at);
+
+            var intersectType = Company.Filter<IntersectTypeDetail>(i =>
+                i.Object == "ArtifactType" &&
+                i.ObjectID == type.ID &&
+                i.PredicateType.Value == PredicateType.InterTypeHierarchy
+            ).SingleOrDefault();
+
+            if (intersectType != null)
+            {
+                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {intersectType.SubjectID}").OrderBy(i => i.Text).ToList();
+                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : ""), Items = parents });
+            }
+
             list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
             list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 1);
@@ -1320,6 +1333,7 @@ namespace d360.web.Controllers
                 switch (ot)
                 {
                     case SystemObjects.ArtifactType:
+                        #region
                         var a = new ArtifactType
                         {
                             Name = model.AssetType.Name,
@@ -1331,8 +1345,10 @@ namespace d360.web.Controllers
                         Company.Add(a);
                         parentType = SystemObjects.ArtifactType;
                         model.AssetType.ObjectID = a.ID;
+                        #endregion
                         break;
                     case SystemObjects.FusionAttributeType:
+                        #region
                         if (!model.TopLevelTypeID.HasValue)
                         {
                             throw new GenericException(HttpStatusCode.BadRequest, "Missing Fusion Type", "No valid fusion type provided. Please check your request and try again.");
@@ -1346,8 +1362,23 @@ namespace d360.web.Controllers
                         Company.Add(f);
                         parentType = SystemObjects.FusionAttributeType;
                         model.AssetType.ObjectID = f.ID;
+                        #endregion
+                        break;
+                    case SystemObjects.OrganizationType:
+                        #region
+                        var org = new OrganizationType
+                        {
+                            Name = model.AssetType.Name,
+                            Description = model.AssetType.Description,
+                            DisplayFormat = model.AssetType.DisplayFormat
+                        };
+                        Company.Add(org);
+                        parentType = SystemObjects.OrganizationType;
+                        model.AssetType.ObjectID = org.ID;
+                        #endregion
                         break;
                     case SystemObjects.PolicyType:
+                        #region
                         var p = new PolicyType
                         {
                             Name = model.AssetType.Name,
@@ -1358,8 +1389,10 @@ namespace d360.web.Controllers
                         Company.Add(p);
                         parentType = SystemObjects.PolicyType;
                         model.AssetType.ObjectID = p.ID;
+                        #endregion
                         break;
                     case SystemObjects.TaxonomyType:
+                        #region
                         var t = new TaxonomyType
                         {
                             Name = model.AssetType.Name,
@@ -1381,22 +1414,26 @@ namespace d360.web.Controllers
                         
                         parentType = SystemObjects.TaxonomyType;
                         model.AssetType.ObjectID = t.ID;
+                        #endregion
                         break;
                 }
 
                 if (model.ParentID.HasValue || model.SelectedPredicateID.HasValue)
                 {
-                    var intersectType = new IntersectType
+                    if (model.ParentID.Value > 0)
                     {
-                        Subject = parentType.ToString(),
-                        SubjectID = model.ParentID.HasValue ? model.ParentID.Value : model.AssetType.ObjectID,
-                        SubjectCardinality = Cardinality.One,
-                        Object = model.AssetType.Object,
-                        ObjectID = model.AssetType.ObjectID,
-                        ObjectCardinality = Cardinality.Many,
-                        PredicateID = model.SelectedPredicateID
-                    };
-                    Company.Add(intersectType);
+                        var intersectType = new IntersectType
+                        {
+                            Subject = parentType.ToString(),
+                            SubjectID = model.ParentID.HasValue ? model.ParentID.Value : model.AssetType.ObjectID,
+                            SubjectCardinality = Cardinality.One,
+                            Object = model.AssetType.Object,
+                            ObjectID = model.AssetType.ObjectID,
+                            ObjectCardinality = Cardinality.Many,
+                            PredicateID = model.SelectedPredicateID
+                        };
+                        Company.Add(intersectType);
+                    }
                 }
 
                 upsertObjectStyle(model.AssetType.Object, model.AssetType.ObjectID, model.IconForeColor, model.IconBackColor, model.AssetType.Name);
@@ -1410,7 +1447,7 @@ namespace d360.web.Controllers
 
                 if (model.AssetType.ObjectID > 0)
                 {
-                    if (model.AssetType.Class != AssetTypeClass.FusionAttribute)
+                    if (model.AssetType.Class != AssetTypeClass.FusionAttribute && model.AssetType.Class != AssetTypeClass.Organization)
                     {
                         Company.Add(new FieldType
                         {
@@ -1487,6 +1524,20 @@ namespace d360.web.Controllers
                         Company.Update(f);
 
                         parentType = SystemObjects.FusionAttributeType;
+                        break;
+                    case SystemObjects.OrganizationType:
+                        var org = Company.GetById<OrganizationType>(model.AssetType.ObjectID);
+                        if (org == null) throw new NotFoundException("organization type");
+
+                        if (!Company.HasPermission(ot, model.AssetType.ObjectID, Claim.Update))
+                            throw new UnauthorizedException(FormInfo.Permisions_Error_Edit, FormInfo.Permisions_Error_Edit);
+
+                        org.Name = model.AssetType.Name;
+                        org.Description = model.AssetType.Description;
+                        org.DisplayFormat = model.AssetType.DisplayFormat;
+                        Company.Update(org);
+
+                        parentType = SystemObjects.OrganizationType;
                         break;
                     case SystemObjects.PolicyType:
                         var p = Company.GetById<PolicyType>(model.AssetType.ObjectID);
@@ -9542,15 +9593,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         #region Field Generation
 
         [Route("Organization_AddFields"), NonNullableParameters]
-        public JsonResult Organization_AddFields()
+        public JsonResult Organization_AddFields(int ot)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
 
+            list.Add(new EditableField { FieldName = "OrganizationTypeID", FieldType = DataType.Hidden.ToString(), Value = ot.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AdministratorEmail", Name = "Administrator Email", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "AdministratorEmail", Name = "Administrator Email", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.OrganizationType, ot).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9567,8 +9621,19 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "AdministratorEmail", Name = "Administrator Email", FieldType = DataType.Text.ToString(), Value = a.AdministratorEmail, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "AdministratorEmail", Name = "Administrator Email", FieldType = DataType.Text.ToString(), Value = a.AdministratorEmail, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            list = (
+                loadDynamicFields(
+                    SystemObjects.Organization.ToString(),
+                    id,
+                    list,
+                    Company.GetFieldTypesByObject(SystemObjects.OrganizationType, a.OrganizationTypeID).ToList(),
+                    Company.GetFieldRelationsByObject(SystemObjects.Organization, id).ToList(),
+                    2
+                )
+            );
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9596,10 +9661,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
+                if (!form.HasKeys()) throw new NoFormDataException("organization");
+
+                int typeID = parseIntField(form, "OrganizationTypeID");
+                var type = Company.GetById<OrganizationType>(typeID);
+
+                if (type == null) throw new NotFoundException("organization type");
+
                 var a = new Organization
                 {
                     Name = parseTextField(form, "Name"),
-                    AdministratorEmail = parseTextField(form, "AdministratorEmail")
+                    AdministratorEmail = parseTextField(form, "AdministratorEmail"),
+                    OrganizationTypeID = typeID
                 };
 
                 var emailRegex = @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
@@ -9609,8 +9682,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!regex.IsMatch(a.AdministratorEmail))
                     return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
 
-
-                Company.Add(a);
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.OrganizationType, typeID).ToList();
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Organization, a.ID, fieldTypes, form, Server);
+                Company.SaveOrUpdate<Organization>(a, fields);
 
                 dynamic custom = new
                 {
@@ -9653,7 +9727,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!regex.IsMatch(existing.AdministratorEmail))
                     return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
 
-                Company.Update(existing);
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.OrganizationType, existing.OrganizationTypeID).ToList();
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Organization, existing.ID, fieldTypes, form, Server, false);
+                Company.SaveOrUpdate<Organization>(existing, fields);
 
                 dynamic custom = new
                 {

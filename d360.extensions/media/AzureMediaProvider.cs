@@ -18,16 +18,16 @@ namespace d360.extensions.storage
 
         public AzureMediaProvider()
         {
-            var credentials = getCredentials();
-            context = new CloudMediaContext(credentials);
+            //var credentials = getCredentials();
+            //context = new CloudMediaContext(credentials);
         }
 
-        private MediaServicesCredentials getCredentials()
-        {
-            var acctName = constants.AZURE_MEDIA_SERVICES_ACCOUNT_NAME;
-            var keyValue = constants.AZURE_MEDIA_SERVICES_KEY;
-            return new MediaServicesCredentials(acctName, keyValue);
-        }
+        //private MediaServicesCredentials getCredentials()
+        //{
+        //    var acctName = constants.AZURE_MEDIA_SERVICES_ACCOUNT_NAME;
+        //    var keyValue = constants.AZURE_MEDIA_SERVICES_KEY;
+        //    return new MediaServicesCredentials(acctName, keyValue);
+        //}
 
 
         public void UploadAsset(string path)
