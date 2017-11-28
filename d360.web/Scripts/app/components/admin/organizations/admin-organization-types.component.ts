@@ -26,9 +26,9 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 </div>
                             </ng-template>
                         </p-column>
-                        <p-column  [style]="{width:'40px'}" *ngIf="OrganizationCount == 0">
+                        <p-column  [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">                                
+                                <div class="RowTools" *ngIf="item.OrganizationCount == 0">                                
                                     <a style="cursor:pointer;" (click)="type=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                             </ng-template>
@@ -103,12 +103,10 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
         if (this.type == null && this.organizationTypes.length > 0)
             this.type = this.organizationTypes[0];
     }
-   
-    actionComplete(event) {
+      
+    actionComplete(event) {           
         this.showEditor = false;
-        this.isLoading = true;
-    }
-    
+        this.isLoading = false;
+        if (event.action == 'add') this.getOrganizationTypes();
+    }    
 }
-
-

@@ -33,19 +33,14 @@ namespace d360.web.Controllers.Services
                 return null;
 
             return Company.Query<OrganizationTypeDetail>(@"
-select		T.ID,
-			T.Name,
-			T.Description,
-			A.ID as AssetTypeID,
-			count(1) as OrganizationCount
-from		OrganizationType T
-			inner join AssetType A on A.Object = 'OrganizationType' and A.ObjectID = T.ID
-			left join Organization O on O.OrganizationTypeID = T.ID
-group by	T.ID,
-			T.Name,
-			T.Description,
-			A.ID 
-order by    T.Name");
+                select		T.ID,
+			                T.Name,
+			                T.Description,
+			                A.ID as AssetTypeID,
+			                (select count(1) from organization where organizationtypeid = t.id) as OrganizationCount
+                from		OrganizationType T
+			                inner join AssetType A on A.Object = 'OrganizationType' and A.ObjectID = T.ID			
+                order by    T.Name");
         }
 
         /// <summary>
