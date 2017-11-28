@@ -73,5 +73,8 @@ namespace d360.core.entities
 
         [DataMember]
         public string AcceptedByName { get; set; }
+
+        [DataMember]
+        public int OrganizationTypeID { get; set; }
     }
 }

@@ -15,7 +15,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                    <p-dataTable #dt [globalFilter]="gb" [value]="organizationTypes" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowSelect)="type=$event.data;" (onRowDblclick)="type=$event.data;showEditor=true;typeUpdated.emit(type);" [(selection)]="type" >                                                                        
+                    <p-dataTable #dt [globalFilter]="gb" [value]="organizationTypes" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowSelect)="type=$event.data;" (onRowDblclick)="type=$event.data;showEditor=true;typeChange.emit(type);" (selectionChange)="type=$event;typeChange.emit(type)" [selection]="type">
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="OrganizationCount" header="Organization Count" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'150px'}"></p-column>
@@ -47,16 +47,15 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 })
 
 export class AdminOrganizationTypesComponent extends BaseComponent implements OnInit {
-
-    @Output() typeUpdated = new EventEmitter();
-    
     error: any;
     
     showEditor: boolean = false;
     showDelete: boolean = false;
     isLoading: boolean = false;
 
-    type: OrganizationType = null;
+    @Input() type: OrganizationType = null;
+    @Output() typeChange = new EventEmitter();
+
     organizationTypes: OrganizationType[] = [];
 
     theDeleteCallback: Function;
@@ -79,7 +78,7 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
             .then(result => {
                 this.organizationTypes = result;
                 this.type = (this.organizationTypes.length > 0 ? this.organizationTypes[0] : null);   
-                this.typeUpdated.emit(this.type);
+                this.typeChange.emit(this.type);
                 this.isLoading = false;
             })
             .catch(error => this.error = error);

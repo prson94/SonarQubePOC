@@ -18,7 +18,7 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <span *ngIf="!isLoading && !showEditor && !showDelete">
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedOrganization" (onRowSelect)="selectedOrganization=$event.data;" (onRowDblclick)="selectedOrganization=$event.data;showEditor=true;organizationUpdated.emit(selectedOrganization);">
+            <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="organization" (selectionChange)="organization=$event;organizationChange.emit(organization);" (onRowSelect)="organization=$event.data;" (onRowDblclick)="organization=$event.data;showEditor=true;organizationChange.emit(organization);">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>
                 <p-column field="AdministratorEmail" header="Administrator Email"></p-column>
@@ -35,25 +35,25 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
                 <p-column [style]="{width:'40px'}">
                     <ng-template let-item="rowData"  pTemplate type="body">
                         <div class="RowTools">
-                            <a style="cursor:pointer;" (click)="selectedOrganization=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                            <a style="cursor:pointer;" (click)="organization=item;showEditor=true"><i class="fa fa-pencil"></i></a>
                         </div>
                     </ng-template>
                 </p-column>
                 <p-column  [style]="{width:'40px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
-                            <a style="cursor:pointer;" (click)="selectedOrganization=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                            <a style="cursor:pointer;" (click)="organization=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </ng-template>
                 </p-column>
             </p-dataTable>
         </span>
-        <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organizationType?.ID" [objectType]="'Organization'" [title]="'Organization'" [selection]="selectedOrganization" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+        <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organizationType?.ID" [objectType]="'Organization'" [title]="'Organization'" [selection]="organization" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
         <d3s-delete-form *ngIf="showDelete"
             [callback]="theDeleteCallback"
-            [itemId]="selectedOrganization?.ID"
+            [itemId]="organization?.ID"
             [method]="'callback'"
-            [prompt]="'Are you sure you want to delete the organization [' + [selectedOrganization?.Name] + ']?'"                                         
+            [prompt]="'Are you sure you want to delete the organization [' + [organization?.Name] + ']?'"                                         
             (onCancel)="showDelete=false;"
         ></d3s-delete-form>
     </div>
@@ -62,9 +62,8 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
 
 export class AdminOrganizationListComponent extends BaseComponent implements OnChanges {
     @Input() organizationType: OrganizationType = null;
-    @Output() organizationUpdated = new EventEmitter();
-
-    selectedOrganization: Organization;
+    @Input() organization: Organization;
+    @Output() organizationChange = new EventEmitter();
 
     organizations: Organization[] = [];
     showEditor: boolean = false;
@@ -81,19 +80,20 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
         this.theDeleteCallback = this.deleteOrganization.bind(this);
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.organizationType != null) this.getOrganizations();
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {            
+        if (this.organizationType != null && changes['organizationType']) this.getOrganizations();
     }
 
     getOrganizations() {
         this.isLoading = true;
+        this.organizations = [];
         this.organizationService.getOrganizationsByType(this.organizationType.ID)
             .then(result => {
                 this.organizations = result;
                 this.isLoading = false;
-                if (this.organizations.length > 0) this.selectedOrganization = this.organizations[0];
+                if (this.organizations.length > 0) this.organization = this.organizations[0];
 
-                this.organizationUpdated.emit(this.selectedOrganization);
+                this.organizationChange.emit(this.organization);
             });
     }
         
@@ -103,7 +103,7 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 if (result.type != 'error') {
-                    this.selectedOrganization = this.organizations.length > 0 ? this.organizations[0] : null;
+                    this.organization = this.organizations.length > 0 ? this.organizations[0] : null;
                     this.organizations = this.organizations.filter(x => x.ID != id);
                 }
             });
@@ -122,14 +122,14 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
 
     closeEditor() {
         this.showEditor = false;
-        if (this.selectedOrganization == null) {
-            this.selectedOrganization = this.organizations.length > 0 ? this.organizations[0] : null;
+        if (this.organization == null) {
+            this.organization = this.organizations.length > 0 ? this.organizations[0] : null;
         }
     }
 
     add() {
         this.showEditor = true;
-        this.selectedOrganization = null;
+        this.organization = null;
     }
     
     private openResource(event) {

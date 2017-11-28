@@ -53,7 +53,7 @@ namespace d360.web.Controllers.Services
             if (!Company.CurrentResourceIsAdmin)
                 return null;
 
-            return Company.Table<OrganizationDetail>();
+            return Company.OrganizationDetails.Where(x=>x.OrganizationTypeID==id);
         }
 
         /// <summary>

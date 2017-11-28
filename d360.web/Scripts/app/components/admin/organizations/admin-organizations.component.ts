@@ -17,24 +17,24 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
     template: `
 <div class="col l4 m6 s12">          
     <div class="tile tile-detail">
-        <d3s-admin-organization-types (typeUpdated)="changeType($event)"></d3s-admin-organization-types>
+        <d3s-admin-organization-types [(type)]="selectedType"></d3s-admin-organization-types>
     </div>
     <div class="tile tile-detail"> 
         <d3s-admin-contracts></d3s-admin-contracts>
     </div>
 </div>
-<div class="col l8 m6 s12">
-    <div class="row">
-        <div class="col s12" *ngIf="selectedType">
-            <d3s-admin-organization-list-component [organizationType]="selectedType" (organizationUpdated)="changeOrganization($event)"></d3s-admin-organization-list-component>
-        </div>
-    </div>
-    <div class="row" *ngIf="selected">
+<div class="col l8 m6 s12">    
+    <div class="row" *ngIf="selectedType">
         <div class="col s12">
             <div class="tile tile-detail">  
                 <d3s-field-definition-tile [objectType]="'OrganizationType'" [objectID]="selectedType.ID"></d3s-field-definition-tile>
             </div>
         </div>
+        <div class="col s12">
+            <d3s-admin-organization-list-component [organizationType]="selectedType" [(organization)]="selected"></d3s-admin-organization-list-component>
+        </div>
+    </div>
+    <div class="row" *ngIf="selected">        
         <div class="col s12">
             <div class="tile tile-detail">  
                 <d3s-admin-organization-contracts [organization]="selected"></d3s-admin-organization-contracts>
@@ -77,13 +77,5 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
 
     ngOnDestroy() {
         this.clearSidebar();
-    }
-
-    changeType(type) {
-        this.selectedType = type;
-    }
-
-    changeOrganization(org) {
-        this.selected = org;
     }
 }
