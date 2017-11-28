@@ -1,7 +1,6 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 import { BaseComponent } from '../shared/base.component';
-import * as _ from 'lodash';
 import { AssetTypeService } from "../../services/asset-type.services";
 import { AssetTypeClass, AssetTypeEditorModel } from "../../models/asset.model";
 
@@ -11,43 +10,36 @@ import { AssetTypeClass, AssetTypeEditorModel } from "../../models/asset.model";
     providers: [AssetTypeService],
 })
 
-export class AdminAssetTypeEditorForm implements OnInit, OnChanges {
+export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges {
     @Input() title: string = "Add Asset Type";
     @Input() id: number;
     @Input() parentID: number;
     @Input() topTypeID: number; //For things like fusion type ID
     @Input() assetTypeClass: string;
-
+    @Input() showParentPredicates: boolean = true;
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
     theAssetTypeClass: AssetTypeClass;
-    action: string = "Edit";
-    error: any;
-    model: AssetTypeEditorModel;
-    private isLoading = false;
+    action: string = "Edit";    
+    model: AssetTypeEditorModel;    
     private isSaving = false;
 
     constructor(private assetTypeService: AssetTypeService) {
-
-    }
-
-    ngOnInit() {        
-
-    }
+        super();
+    }    
 
     ngOnChanges(changes: SimpleChanges): void {
         for (let p in changes) {
             if (p == 'id' || p == 'parentID' || p == 'topTypeID') {
-                this.load();
-                //this.initialItem = _.cloneDeep(this.model);
+                this.load();                
             }
         }
     }
 
-    private load(): void {
+    private load(): void {        
         this.isLoading = true;
 
         switch (this.assetTypeClass) {

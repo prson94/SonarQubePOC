@@ -35,7 +35,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         </p-column>
                     </p-dataTable>
                 </span>                
-                <d3s-asset-type-editor-form *ngIf="showEditor" [assetTypeClass]="'O'" [id]="type?.AssetTypeID" [title]="'Edit Organization Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor-form>                
+                <d3s-asset-type-editor-form *ngIf="showEditor" [showParentPredicates]="false" [assetTypeClass]="'O'" [id]="type?.AssetTypeID" [title]="(type?'Edit':'Add') + ' Organization Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor-form>                
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="type?.AssetTypeID"
@@ -106,6 +106,6 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
     actionComplete(event) {           
         this.showEditor = false;
         this.isLoading = false;
-        if (event.action == 'add') this.getOrganizationTypes();
+        this.getOrganizationTypes();
     }    
 }
