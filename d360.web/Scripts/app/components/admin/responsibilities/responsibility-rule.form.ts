@@ -125,7 +125,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnChanges {
                                         .then(d => {
                                             this.whenFieldTypes = d.FieldTypes;
 
-                                            this.model.StructuredDefinition.When.forEach(wft => this.loadWhenValuesForFieldType(wft));
+                                            if (this.model.StructuredDefinition.When)
+                                            {
+                                                this.model.StructuredDefinition.When.forEach(wft => this.loadWhenValuesForFieldType(wft));
+                                            }
 
                                             this.whenIntersectTypes = d.IntersectTypes;
                                             this.whenFieldTypes.unshift({ label: 'Choose...', value: null, type: null, isLookup: false, values: [] });

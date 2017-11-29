@@ -299,7 +299,7 @@ namespace d360.model
             {
                 var c = Filter<Company>(i => i.ID == CurrentCompanyID, i => i.DatabaseServer).Single();
                 cs = string.Format(
-                    "server={0};Database=D3S_{1};User ID={2};Password={3}",
+                    "server={0};Database=D3S_{1};User ID={2};Password={3};MultipleActiveResultSets=True;",
                     c.DatabaseServer.Server,
                     c.ID,
                     c.DatabaseServer.Username,
