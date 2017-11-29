@@ -46,7 +46,7 @@ import * as _ from 'lodash';
     providers: [ResponsibilityTypeService, ObjectDetailService],
 })
 
-export class ResponsibilityRuleForm extends BaseComponent implements OnChanges {
+export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     @Input() ruleId: number;
     @Input() id: number;
 
@@ -84,15 +84,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnChanges {
         super();        
     }
     
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
-            if (p == 'id') {
-                this.load();                
-            }
-            else if (p == 'ruleId' && this.model != null) {
-                this.load();
-            }
-        }        
+    ngOnInit() {
+        this.load();
     }
 
     //#region load functions
@@ -105,11 +98,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnChanges {
                 .then(d => {
                     this.objectTypes = d;
                     this.objectTypes.unshift({ label: 'Choose...', value: null });
-                })
-                .then(() => {
+                });              
                     let r: ResponsibilityTypeRelationRule;
                     this.responsibilityTypeService.getResponsibilityTypeRelationRule(this.id)
-                        .then(data => {
+                        .then(data => {                            
                             this.model = data;
                             this.model.ObjectString = this.model.Object + '|' + this.model.ObjectID;
                             r = data;
@@ -140,8 +132,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnChanges {
                                             this.isLoading = false;
                                         });
                                 });
-                        });
-                });
+                        });             
         } else {
             this.actionName = 'Add';
             this.isLoading = true;
@@ -194,8 +185,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnChanges {
     }
 
     private loadWhenValuesForFieldType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
-        let selectedFieldType = this.whenFieldTypes.find(f => f.value == item.FieldTypeID.toString());
-        item.Value = "";
+        let selectedFieldType = this.whenFieldTypes.find(f => f.value == item.FieldTypeID.toString());        
         if (selectedFieldType) {
             item.FieldTypeName = selectedFieldType.label;
             if (selectedFieldType.isLookup) {
