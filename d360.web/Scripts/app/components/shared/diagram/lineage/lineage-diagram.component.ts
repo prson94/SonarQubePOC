@@ -319,19 +319,29 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.readonly)
             this.menuItems.push({
                 icon: 'fa-pencil',
-                items: null
+                items: null,
+                title: 'Edit Lineage'
             });
         if (!this.readonly)
             this.menuItems.push({
                 icon: 'fa-floppy-o',
-                items: null
+                items: null,
+                title: 'Save Lineage'
             });
+
 
         this.menuItems.push({
             icon: 'fa-info-circle',
-            items: null
+            items: null,
+            title: 'Show/Hide Info'
         });
 
+        if (!this.readonly)
+            this.menuItems.push({
+                icon: 'fa-remove',
+                items: null,
+                title: 'Cancel Changes'
+            });
 
     }
 
@@ -679,6 +689,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.save();
             this.toggleReadOnly(true);
             this.toggleTabs(this.selectedData);
+        } else if (e.icon == 'fa-remove') {
+            this.toggleReadOnly(true);
+            this.populateDiagram();
+            this.loadMenuItems();
         }
     }
 
@@ -699,12 +713,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.loadMenuItems();
 
-    }
-
-    private closeEditor() {
-        this.headerText = 'Lineage';
-        this.diagramMode = DiagramMode.Diagram;
-        this.loadMenuItems();
     }
 
     private ungroupSelection() {
@@ -935,8 +943,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.g(go.Shape, {
                 stroke: "gray", strokeWidth: 2
             },
-                new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
-                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
+                new go.Binding("stroke", "valid", function (h) { return h ? "gray" : "#f00" })),
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {

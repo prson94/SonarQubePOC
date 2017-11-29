@@ -1,7 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
+import { HttpModule, XHRBackend } from '@angular/http';
+import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
@@ -49,6 +50,7 @@ import { SharedFormMessageModule } from '../form-message.part'
     imports: [CommonModule,
         FormsModule,
         HttpModule,
+        RouterModule,
         //d3s
         CoreModule,
         SharedDeleteFormModule,
