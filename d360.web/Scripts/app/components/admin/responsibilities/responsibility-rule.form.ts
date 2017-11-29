@@ -189,6 +189,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnChanges {
     private addWhen(): void {
         let whenItem: ResponsibilityTypeRelationRuleDefinitionWhenItem = new ResponsibilityTypeRelationRuleDefinitionWhenItem();
         whenItem.CheckType = "F";
+        if (!this.model.StructuredDefinition.When) this.model.StructuredDefinition.When = [];
         this.model.StructuredDefinition.When.push(whenItem);
     }
 
