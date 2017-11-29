@@ -1526,7 +1526,6 @@
     <TypeScriptCompile Include="Scripts\app\models\search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\dynamic-type-builder.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />

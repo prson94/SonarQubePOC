@@ -3,7 +3,6 @@ import { BrowserModule, Title  } from '@angular/platform-browser';
 import { AppComponent }   from './app.component';
 import { AppRoutingModule }        from './app.routes';
 import { HttpModule, XHRBackend  }     from '@angular/http';
-import { COMPILER_PROVIDERS } from '@angular/compiler';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import {
@@ -23,7 +22,6 @@ import { HeaderActionsService } from './services/header-actions.service';
 import { RightSidebarService } from './services/right-sidebar.service';
 import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
-import { DynamicTypeBuilder }     from './services/dynamic-type-builder';
 
 import { AuthenticationConnectionBackend } from './authentication-connection-backend';
 
@@ -50,9 +48,7 @@ import { AuthenticationConnectionBackend } from './authentication-connection-bac
     providers: [
         AdminUserGuard,
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
-        AuthenticationService,
-        COMPILER_PROVIDERS,
-        DynamicTypeBuilder,
+        AuthenticationService,        
         Title,
         HeaderActionsService,
         HeaderBreadcrumbService,
