@@ -52,8 +52,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     ngOnInit() {
         this.loadMenu();
 
-        if (CompanySettings.ShowFavorites != 'false')
-            this.loadFavorites();
+        this.loadFavorites();
 
         this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
             this.loadMenu();
@@ -69,7 +68,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.subFavorites.unsubscribe();
     }
 
-    loadFavorites(){        
+    loadFavorites() {     
+        if (CompanySettings.ShowFavorites == 'false') return;
         this.favoritesService.getFavorites().then(favorites => {            
             favorites = _.sortBy(favorites, 'SortOrder'); // sort the favorites
             this.favorites = new SiteMenu();
