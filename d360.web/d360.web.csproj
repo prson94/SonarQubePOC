@@ -1280,6 +1280,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\relationships\relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\relationships\relationships.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\relationships\relationships.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\permissions\permissions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\permissions\permissions.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\permissions\permissions.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\impact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\lineage.component.ts" />

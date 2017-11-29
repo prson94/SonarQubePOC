@@ -31,6 +31,7 @@ export class SiteUrlHelpers {
     static SITE_URL_CHILDREN_ROOT = 'sidebar/children';
     static SITE_URL_WORKFLOW_MONITOR_ROOT = 'sidebar/workflowmonitor';
     static SITE_URL_FIELDS_ROOT = 'sidebar/fields';
+    static SITE_URL_RESPONSIBILITIES_ROOT = 'sidebar/responsibilities';
     static SITE_URL_SHOPPING_CART_ROOT = 'cart';
     
 

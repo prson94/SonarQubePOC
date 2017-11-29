@@ -10,6 +10,7 @@ import { ReferenceItemType } from '../../models/reference.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ReferenceService } from '../../services/reference.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { AuthenticationService } from '../../services/authentication.service';
 
 @Component({
     selector: 'd3s-reference-list',   
@@ -53,7 +54,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         private permissionsService: PermissionsService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected referenceService: ReferenceService
+        protected referenceService: ReferenceService,
+        protected authenticationService: AuthenticationService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -113,6 +115,19 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         });
         
         this.rightSidebarService.showItem(fields);
+
+        if (this.authenticationService.isAdmin) {
+            let permissions = new RightSidebarItem()
+            permissions.hasDynamicUrl = true;
+            permissions.icons = ['fa-ban'];
+            permissions.tag = 'responsibilities'
+            permissions.title = 'Responsibilities'
+            permissions.url = '/sidebar/responsibilities'
+            permissions.dynamicUrlCallback = (() => {
+                return `/sidebar/responsibilities/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+            });
+            this.rightSidebarService.showItem(permissions);
+        }
     }
 
     ngOnInit() {
