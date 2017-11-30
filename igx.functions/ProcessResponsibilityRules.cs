@@ -46,10 +46,14 @@ namespace igx.functions
 
                         if (items.Count > 0)
                         {
+                            CoreFunction.AITrackEvent(functionName, $"Item count is greater than 0", null, c.CompanyID);
+
                             var errorList = string.Empty;
                             items.ForEach(i => {
                                 try
                                 {
+                                    CoreFunction.AITrackEvent(functionName, $"Deserializing item definition from raw [{i.Definition}]", null, c.CompanyID);
+
                                     i.SetDefinitionFromRaw();
 
                                     CoreFunction.AITrackEvent(functionName, $"Parsed raw definition", null, c.CompanyID);
@@ -76,6 +80,8 @@ namespace igx.functions
                                     errorList += $"Company [{c.CompanyID}] for Object [{i.Object} {i.ObjectID}]: [{ex.GetFullExceptionData()}]; ";
                                 }
                             });
+
+                            CoreFunction.AITrackEvent(functionName, $"After foreach item", null, c.CompanyID);
 
                             if (!string.IsNullOrEmpty(errorList))
                             {
@@ -228,6 +234,10 @@ set nocount off", commandTimeout: 3600, transaction: trans);
 
                                 #endregion
                             }
+                        }
+                        else
+                        {
+                            CoreFunction.AITrackEvent(functionName, $"Item count is 0", null, c.CompanyID);
                         }
                     }
                     catch (Exception ex)
