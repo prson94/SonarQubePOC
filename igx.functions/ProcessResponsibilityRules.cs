@@ -16,7 +16,7 @@ namespace igx.functions
     public static class ProcessResponsibilityRules
     {
         const string functionName = "ProcessResponsibilityRules";
-        const string timerSettings = "0 */5 * * * *";
+        const string timerSettings = "0 */3 * * * *";
         //const string timerSettings = "*/5 * * * * *";
 
         [FunctionName(functionName)]
@@ -31,6 +31,8 @@ namespace igx.functions
 
                 companies.ForEach(c =>
                 {
+                    CoreFunction.AITrackEvent(functionName, "Begin Processing Company", null, c.CompanyID);
+
                     try
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
@@ -40,6 +42,8 @@ namespace igx.functions
                         var items = company.Query<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule").ToList();
                         var results = new List<EndResult>();
 
+                        CoreFunction.AITrackEvent(functionName, $"Got {items.Count} rules", null, c.CompanyID);
+
                         if (items.Count > 0)
                         {
                             var errorList = string.Empty;
@@ -48,8 +52,12 @@ namespace igx.functions
                                 {
                                     i.SetDefinitionFromRaw();
 
+                                    CoreFunction.AITrackEvent(functionName, $"Parsed raw definition", null, c.CompanyID);
+
                                     var oResults = company.GetWhenResults(i);
+                                    CoreFunction.AITrackEvent(functionName, $"Parsed when results", null, c.CompanyID);
                                     var sResults = company.GetThenResults(i);
+                                    CoreFunction.AITrackEvent(functionName, $"Parsed then results", null, c.CompanyID);
 
                                     results.AddRange(
                                               from o in oResults
@@ -65,156 +73,170 @@ namespace igx.functions
                                 }
                                 catch (Exception ex)
                                 {
-                                    //errorList += $"Company [{c.CompanyID}] for Object [{i.Object} {i.ObjectID}]: [{ex.GetFullExceptionData()}]; ";
+                                    errorList += $"Company [{c.CompanyID}] for Object [{i.Object} {i.ObjectID}]: [{ex.GetFullExceptionData()}]; ";
                                 }
                             });
+
+                            if (!string.IsNullOrEmpty(errorList))
+                            {
+                                CoreFunction.AITrackException(functionName, new ApplicationException($"The following errors occurred: {errorList}"), c.CompanyID);
+                                //log.Error(errorList);
+                            }
 
                             if (results.Count > 0)
                             {
                                 #region Save results to temp table via bulk insert
 
-                                using (var trans = company.BeginTransaction())
+                                try
                                 {
-                                    company.Execute(@"
-    set nocount on 
-    create table #ResponsibilityTypeRelationItem (
-	    RuleID int not null, 
-	    ResponsibilityTypeID int not null, 
-	    AssetID bigint not null, 
-        [SecurityAsset] char(1) not null, 
-	    [SecurityAssetID] int not null
-    )
-    set nocount off", commandTimeout: 3600, transaction: trans);
+                                    //log.Info($"Got {results.Count} results for Company {c.CompanyID}. Saving them now.");
 
-                                    #region Bulk insert the rows above.
-
-                                    using (var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans))
+                                    using (var trans = company.BeginTransaction())
                                     {
-                                        bulkCopy.BatchSize = results.Count;
-                                        bulkCopy.DestinationTableName = "#ResponsibilityTypeRelationItem";
-                                        bulkCopy.BulkCopyTimeout = 3600;
+                                        company.Execute(@"
+set nocount on 
+create table #ResponsibilityTypeRelationItem (
+	RuleID int not null, 
+	ResponsibilityTypeID int not null, 
+	AssetID bigint not null, 
+    [SecurityAsset] char(1) not null, 
+	[SecurityAssetID] int not null
+)
+set nocount off", commandTimeout: 3600, transaction: trans);
 
-                                        var table = new System.Data.DataTable();
+                                        #region Bulk insert the rows above.
 
-                                        #region Create column mappings
+                                        using (var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans))
+                                        {
+                                            bulkCopy.BatchSize = results.Count;
+                                            bulkCopy.DestinationTableName = "#ResponsibilityTypeRelationItem";
+                                            bulkCopy.BulkCopyTimeout = 3600;
 
-                                        var columnName = "RuleID";
-                                        table.Columns.Add(columnName, typeof(int));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+                                            var table = new System.Data.DataTable();
 
-                                        columnName = "ResponsibilityTypeID";
-                                        table.Columns.Add(columnName, typeof(int));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+                                            #region Create column mappings
 
-                                        columnName = "AssetID";
-                                        table.Columns.Add(columnName, typeof(long));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+                                            var columnName = "RuleID";
+                                            table.Columns.Add(columnName, typeof(int));
+                                            bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                                        columnName = "SecurityAsset";
-                                        table.Columns.Add(columnName, typeof(string));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+                                            columnName = "ResponsibilityTypeID";
+                                            table.Columns.Add(columnName, typeof(int));
+                                            bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                                        columnName = "SecurityAssetID";
-                                        table.Columns.Add(columnName, typeof(int));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+                                            columnName = "AssetID";
+                                            table.Columns.Add(columnName, typeof(long));
+                                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                            columnName = "SecurityAsset";
+                                            table.Columns.Add(columnName, typeof(string));
+                                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                            columnName = "SecurityAssetID";
+                                            table.Columns.Add(columnName, typeof(int));
+                                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                            #endregion
+
+                                            foreach (var item in results)
+                                            {
+                                                var row = table.NewRow();
+
+                                                row["RuleID"] = item.RuleID;
+                                                row["ResponsibilityTypeID"] = item.ResponsibilityTypeID;
+                                                row["AssetID"] = item.AssetID;
+                                                row["SecurityAsset"] = item.SecurityAsset;
+                                                row["SecurityAssetID"] = item.SecurityAssetID;
+
+                                                table.Rows.Add(row);
+                                            }
+
+                                            bulkCopy.WriteToServer(table);
+                                        }
 
                                         #endregion
 
-                                        foreach (var item in results)
-                                        {
-                                            var row = table.NewRow();
+                                        #region  Merge the raw data you compiled above into the item table. These are rule results.
 
-                                            row["RuleID"] = item.RuleID;
-                                            row["ResponsibilityTypeID"] = item.ResponsibilityTypeID;
-                                            row["AssetID"] = item.AssetID;
-                                            row["SecurityAsset"] = item.SecurityAsset;
-                                            row["SecurityAssetID"] = item.SecurityAssetID;
+                                        company.Execute(@"
+    merge   ResponsibilityTypeRelationItem as T 
+    using   ( 
+            select  *
+            from    #ResponsibilityTypeRelationItem
+            ) as S 
+            on  (
+                T.RuleID = S.RuleID 
+                and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
+                and T.[AssetID] = S.[AssetID] 
+                and T.[SecurityAsset] = S.[SecurityAsset] 
+                and T.[SecurityAssetID] = S.[SecurityAssetID] 
+                )
+    when    not matched by source and T.RuleID > 0 then 
+            delete
+    when    not matched by target then 
+            insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID) 
+            values (S.RuleID, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID);", 
+                    commandTimeout: 3600, transaction: trans);
 
-                                            table.Rows.Add(row);
-                                        }
+                                        #endregion
 
-                                        bulkCopy.WriteToServer(table);
+                                        #region Merge the overrides into the item table. These are override items.
+
+                                        company.Execute(@"
+    merge   ResponsibilityTypeRelationItem as T 
+    using   ( 
+            select  *
+            from    ResponsibilityTypeRelationOverrideItem
+            ) as S 
+            on  (
+                T.RuleID = 0
+                and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
+                and T.[AssetID] = S.[AssetID] 
+                and T.[SecurityAsset] = S.[SecurityAsset] 
+                and T.[SecurityAssetID] = S.[SecurityAssetID] 
+                )
+    when    not matched by source and T.RuleID = 0 then 
+            delete
+    when    not matched by target then 
+            insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID, OverrideItemID) 
+            values (0, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID, S.ID);",
+                    commandTimeout: 3600, transaction: trans);
+
+                                        #endregion
+
+                                        #region Mark the overriden items generated from rules with overrides we laoded above.
+
+                                        company.Execute(@"
+    update	T
+    set		T.Overriden = 1
+    from	ResponsibilityTypeRelationItem T
+		    inner join ResponsibilityTypeRelationItem S on S.RuleID = 0 and T.RuleID > 0 and S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and T.Overriden = 0;",
+                    commandTimeout: 3600, transaction: trans);
+
+                                        #endregion
+
+                                        trans.Commit();
                                     }
 
-                                    #endregion
-
-                                    #region  Merge the raw data you compiled above into the item table. These are rule results.
-
-                                    company.Execute(@"
-merge   ResponsibilityTypeRelationItem as T 
-using   ( 
-        select  *
-        from    #ResponsibilityTypeRelationItem
-        ) as S 
-        on  (
-            T.RuleID = S.RuleID 
-            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
-            and T.[AssetID] = S.[AssetID] 
-            and T.[SecurityAsset] = S.[SecurityAsset] 
-            and T.[SecurityAssetID] = S.[SecurityAssetID] 
-            )
-when    not matched by source and T.RuleID > 0 then 
-        delete
-when    not matched by target then 
-        insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID) 
-        values (S.RuleID, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID);", 
-                commandTimeout: 3600, transaction: trans);
-
-                                    #endregion
-
-                                    #region Merge the overrides into the item table. These are override items.
-
-                                    company.Execute(@"
-merge   ResponsibilityTypeRelationItem as T 
-using   ( 
-        select  *
-        from    ResponsibilityTypeRelationOverrideItem
-        ) as S 
-        on  (
-            T.RuleID = 0
-            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
-            and T.[AssetID] = S.[AssetID] 
-            and T.[SecurityAsset] = S.[SecurityAsset] 
-            and T.[SecurityAssetID] = S.[SecurityAssetID] 
-            )
-when    not matched by source and T.RuleID = 0 then 
-        delete
-when    not matched by target then 
-        insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID, OverrideItemID) 
-        values (0, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID, S.ID);",
-                commandTimeout: 3600, transaction: trans);
-
-                                    #endregion
-
-                                    #region Mark the overriden items generated from rules with overrides we laoded above.
-
-                                    company.Execute(@"
-update	T
-set		T.Overriden = 1
-from	ResponsibilityTypeRelationItem T
-		inner join ResponsibilityTypeRelationItem S on S.RuleID = 0 and T.RuleID > 0 and S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and T.Overriden = 0;",
-                commandTimeout: 3600, transaction: trans);
-
-                                    #endregion
-
-                                    trans.Commit();
+                                    //log.Info($"Completed saving {results.Count} results for Company {c.CompanyID}.");
+                                }
+                                catch (Exception ex)
+                                {
+                                    CoreFunction.AITrackException(functionName, ex);
+                                    //log.Error("Error occurred parsing results", ex);
                                 }
 
                                 #endregion
                             }
                         }
-
-                        //if (!string.IsNullOrEmpty(errorList))
-                        //{
-                        //    CoreFunction.AITrackException(functionName, new ApplicationException($"The following TextPath update errors occurred: {errorList}"), c.CompanyID);
-                        //    log.Error(errorList);
-                        //}
                     }
                     catch (Exception ex)
                     {
                         CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        log.Error($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                        //log.Error($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
                     }
+
+                    CoreFunction.AITrackEvent(functionName, "End Processing Company", null, c.CompanyID);
                 });
 
                 CoreFunction.AITrackJobCompletedNoErrors(functionName);
@@ -222,7 +244,7 @@ from	ResponsibilityTypeRelationItem T
             catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex);
-                log.Error($"General Exception: {ex.GetFullExceptionData()}");
+                //log.Error($"General Exception: {ex.GetFullExceptionData()}");
             }
 
             CoreFunction.AIFlush();

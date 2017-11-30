@@ -47,7 +47,7 @@ from	Asset A
                 });
             }
 
-            return cnn.Query<ObjectResult>(whenSql);
+            return cnn.Query<ObjectResult>(whenSql, commandTimeout: 7200);
 
             #endregion
         }
@@ -130,7 +130,7 @@ from	reporting.Global_Resource O ";
 
             thenSql += whenSuffix;
 
-            return cnn.Query<SecurityResult>(thenSql);
+            return cnn.Query<SecurityResult>(thenSql, commandTimeout: 7200);
         }
     }
 }

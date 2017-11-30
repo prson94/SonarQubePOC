@@ -609,6 +609,60 @@ from	Taxonomy O
 
                         #endregion
 
+                        #region Reference
+
+                        objectName = $"{SCHEMA}.[Reference_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select		T.Name as ReferenceItemType,
+			I.ReferenceItemTypeID,
+			I.ID as ReferenceItemID,
+			I.Code,
+			I.DisplayValue,
+			I.CreatedBy,
+			I.CreatedOn,
+			I.UpdatedBy,
+			I.UpdatedOn
+from		ReferenceItem I
+			inner join ReferenceItemType T on T.ID = I.ReferenceItemTypeID and I.Visible = 1
+order by	T.Name";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region Reference_Fields
+
+                        objectName = $"{SCHEMA}.[Reference_Fields]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select		I.ReferenceItemTypeID,
+			I.ID as ReferenceItemID,
+			T.Name as FieldTypeName,
+			T.FriendlyName as FieldTypeFriendlyName,
+			F.FormattedValue
+from		Field F
+			inner join FieldType T on T.ID = F.FieldTypeID
+			inner join ReferenceItem I on F.ObjectType = 'ReferenceItem' and I.ID = F.ObjectID and I.Visible = 1
+order by	I.ReferenceItemTypeID,
+			I.ID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
                         #region All Responsibility Allocations
 
                         objectName = $"{SCHEMA}.[ResponsibilityTypeMap]";
@@ -817,68 +871,6 @@ from	[Rule] R
                         viewSql += $@" VIEW {objectName} AS {selectSql}";
 
                         executeSqlWithTry(companyConnection, viewSql);
-
-                        //                        objectName = $"{SCHEMA}.[Rules_Results]";
-                        //                        viewNames.Add(objectName);
-
-                        //                        selectSql = @"
-                        //select	RI.RuleID,
-                        //	R.Name as RuleName,
-                        //	R.RuleDimensionID,
-                        //	D.Name as RuleDimensionName,
-                        //    R.Status as RuleStatus,
-                        //	R.Threshold,
-                        //    RI.ID as RuleImplementationID,
-                        //    RI.Name as RuleImplementationName,
-                        //    RR.EffectiveDate,
-                        //	RR.CreatedOn,
-                        //    RR.RunDate,
-                        //	RR.RowsPassed,
-                        //	RR.RowsFailed,
-                        //	RR.PassFraction,
-                        //	RR.FailFraction,
-                        //	RR.Passed,
-                        //	Q.C as QualifierCount
-                        //from	RuleResult RR
-                        //	inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
-                        //    inner join [Rule] R on R.ID = RI.RuleID
-                        //    left join RuleDimension D on D.ID = R.RuleDimensionID
-                        //	--left join FusionAttribute FA on Fa.ID = RR.FusionAttributeID
-                        //	cross apply (
-                        //				select	count(1) as C
-                        //				from	RuleResultQualifier 
-                        //				where	RuleResultID = RR.ID
-                        //				) Q";
-                        //                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                        //                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        //                        viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                        //                        executeSqlWithTry(companyConnection, viewSql);
-
-                        //                        objectName = $"{SCHEMA}.[Rules_ResultQualifiers]";
-                        //                        viewNames.Add(objectName);
-
-                        //                        selectSql = @"
-                        //select	rr.ID as RuleResultID
-                        //		, rr.RunDate
-                        //		, rr.EffectiveDate
-                        //		, rr.RowsPassed
-                        //		, rr.RowsFailed
-                        //		, rr.PassFraction
-                        //		, rr.FailFraction
-                        //		, rr.Passed
-                        //		, qt.Name as QualifierName
-                        //		, q.Value as QualifierValue
-                        //from	RuleResult rr
-                        //		inner Join RuleResultQualifier q on q.RuleResultID = rr.ID
-                        //		inner join RuleResultQualifierType qt on qt.ID = q.RuleResultQualifierTypeID";
-                        //                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                        //                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        //                        viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                        //                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 

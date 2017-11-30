@@ -3472,7 +3472,16 @@ left join AssetWithoutReadPermission RP{i} on RP{i}.ResourceID = {Company.Curren
                     sqlOrderBy = $" order by {sqlOrderBy}";
                 }
 
-                var sqlQuery = $"select R.Code{sqlColumns} from ReferenceItem R{sqlJoins} where R.ReferenceItemTypeID = {id}{sqlOrderBy}";
+                var sqlQuery = $@"
+select  R.Code
+        {sqlColumns} 
+from    ReferenceItem R 
+        inner join Asset O on O.Object = 'ReferenceItem' and O.ObjectID = R.ID 
+        {sqlJoins} 
+        left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
+where   R.ReferenceItemTypeID = {id} 
+        and RP.AssetID is null 
+{sqlOrderBy}";
 
                 results = Company.Query<dynamic>(sqlQuery).Distinct();
             }
@@ -7259,14 +7268,14 @@ from	    TaxonomyType FAT
         [HttpGet, Route("referenceItems/{typeID:int}/items.json")]
         public async Task<HttpResponseMessage> GetReferenceItems(int typeID)
         {
-            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}");
+            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
         [HttpGet, Route("referenceItems/{typeID:int}/items.xls")]
         public async Task<HttpResponseMessage> GetReferenceItemsExcel(int typeID)
         {
-            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}");
+            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
 
 
             var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.SortOrder);
