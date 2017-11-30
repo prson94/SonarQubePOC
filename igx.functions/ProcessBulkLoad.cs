@@ -33,6 +33,10 @@ namespace igx.functions
 
             try
             {
+                CoreFunction.AITrackJobStart(functionName);
+
+                CoreFunction.AITrackEvent(functionName, "Begin Processing Company", null, loadInfo.CompanyID);
+
                 #region Create EF connection
 
                 var sec = new UriSecurityContextProvider()
@@ -214,26 +218,32 @@ namespace igx.functions
                 switch (load.Action)
                 {
                     case "O":
+                        CoreFunction.AITrackEvent(functionName, $"Starting bulk responsibilities job with load ID {load.ID} ", null, loadInfo.CompanyID);
                         log.Info($"Starting bulk responsibilities job with load ID {load.ID} for Company ID {loadInfo.CompanyID}");
                         await BulkLoadOwnership(company, load.ID, log);
                         break;                        
                     case "P":   // Promotions
+                        CoreFunction.AITrackEvent(functionName, $"Starting bulk promotions job with load ID {load.ID} ", null, loadInfo.CompanyID);
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
                         break;
-                    case "R":   // Relations                                
+                    case "R":   // Relations    
+                        CoreFunction.AITrackEvent(functionName, $"Starting bulk relate job with load ID {load.ID} ", null, loadInfo.CompanyID);
                         log.Info($"Starting bulk relate job with load ID {load.ID} for Company ID {loadInfo.CompanyID}");
                         await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Relate);
                         break;
                     case "U":   // Unrelate
+                        CoreFunction.AITrackEvent(functionName, $"Starting bulk unrelate job with load ID {load.ID} ", null, loadInfo.CompanyID);
                         log.Info($"Starting bulk unrelate job with load ID {load.ID} for Company ID {loadInfo.CompanyID}");
                         await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Unrelate);
                         break;
                     case "B":
                     case "BL":  // Business Lineage
+                        CoreFunction.AITrackEvent(functionName, $"Starting bulk business lineage job with load ID {load.ID} ", null, loadInfo.CompanyID);
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.BusinessLineage {load.ID}", loadInfo.CompanyID, 2400);
                         break;
                     case "T":
                     case "TL":  // Technical Lineage
+                        CoreFunction.AITrackEvent(functionName, $"Starting bulk tech lineage job with load ID {load.ID} ", null, loadInfo.CompanyID);
                         #region 
 
                         #region
@@ -497,12 +507,16 @@ namespace igx.functions
 
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
+
+                CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
             catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex, loadInfo.CompanyID);
                 log.Error($"Company [{loadInfo.CompanyID}], Load ID [{loadInfo.LoadID}]: [{ex.GetFullExceptionData()}]");
             }
+
+            CoreFunction.AIFlush();
         }
 
         private static async Task BulkLoadOwnership(CompanyContext company, int loadId, TraceWriter log)
