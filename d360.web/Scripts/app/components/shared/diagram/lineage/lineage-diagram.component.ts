@@ -50,6 +50,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private newLink: go.Link = null;
     private overlayEditLinkKey = null;
     private selection = null;
+    private errors = [];
 
     private source: string;
     private sourceId: number;
@@ -160,6 +161,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.diagram.allowDrop = true;
 
+        console.log('initializeDiagram', this.diagram);
+
         return this.populateDiagram();
     }
 
@@ -171,7 +174,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         return this.lineageService.getLineageDiagram(this.objectType, this.objectID)
             .then(data => {
-                console.log(data);
+                //console.log(data);
                 this.parseData(data);
             })
             .then(() => {
@@ -236,7 +239,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
         }
 
-        console.log('parseData', modelList);
+        //console.log('parseData', modelList);
 
         for (var i = 0; i < modelList.length; i++) {
             this.diagram.model.addNodeData(modelList[i]);
@@ -263,9 +266,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private toggleTabs(data: NodeModelV2 | LinkModelV2) {
-        console.log(this.tab, data);
-
-
+        //console.log(this.tab, data);
         if (data) {
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
             this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
@@ -380,7 +381,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             .then(r => {
                 this.selectedObjects = null;
                 this.objects = r;
-                console.log('loadObjects', this.objects);
+                //console.log('loadObjects', this.objects);
             });
     }
 
@@ -389,7 +390,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             return;
 
         this.diagram.startTransaction('Add Objects');
-        console.log('add', this.selectedObjects, this.objects);
+        //console.log('add', this.selectedObjects, this.objects);
         this.selectedObjects.forEach(s => {
             let m = new NodeModelV2();
             m.assetId = s.assetId;
@@ -425,7 +426,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             model.OriginalLinks.push(ln);
         });
 
-        (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach(l => {
+        this.diagramModelAsGraph().linkDataArray.forEach(l => {
             let la = <any>l;
             let ln = new LinkModelV2();
             ln.intersectId = la.intersectId;
@@ -490,7 +491,26 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             valid = false;
 
         this.diagram.model.setDataProperty(l, 'valid', valid);
+        //console.log('validateLink', valid, l);
         return valid;
+    }
+
+    private valid(): boolean {
+        this.errors = [];
+        let invalidNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).valid == false);
+        let invalidLinks = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).valid == false);
+
+        if (invalidNodes.length > 0) {
+            this.errors.push('There are one or more invalid nodes on the diagram');
+        }
+
+        if (invalidLinks.length > 0) {
+            this.errors.push('There are one or more invalid links on the diagram');
+        }
+
+        if (invalidLinks.length > 0 || invalidNodes.length > 0)
+            return false;
+        return true;
     }
 
     private setSourceValues(data: any) {
@@ -521,6 +541,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private canLink(fromNode: any, fromPort: any, toNode: any, toPort: any) {
 
+        //console.log('canLink', fromNode, toNode);
         //can't link to self
         if (fromNode.data.key == toNode.data.key)
             return false;
@@ -543,6 +564,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     //#region events
 
     private changeIntersectType(e: any) {
+        
         this.selectedData.intersectTypeId = +e;
         let link = (<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).from == this.selectedData.from && (<any>l).to == this.selectedData.to);
         let intersectType = this.intersectTypes.find(i => i.intersectTypeId == +e);
@@ -554,6 +576,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
             this.validateLink(<LinkModelV2>link);
         }
+        //console.log('changeIntersectType', this.selectedData.intersectTypeId, e, link);
     }
 
     private changeNode(e: NodeModelV2) {
@@ -639,6 +662,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private LinkDrawn(e: any) {
+        //console.log('LinkDrawn', e);
         let data = e.subject.data;
 
         let fromNode = this.diagram.model.findNodeDataForKey(data.from);
@@ -668,7 +692,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.diagram.model.setDataProperty(link, 'predicate', null);
         }
 
-        this.validateLink(e.subject.data);
+        this.validateLink(<LinkModelV2>link);
 
         this.diagram.commitTransaction('Link Drawn');
         //console.log('LinkDrawn', e.subject.data, intersects, (<go.GraphLinksModel>this.diagram.model).linkDataArray);
@@ -684,11 +708,17 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.loadIntersectTypes()
                 .then(() => this.loadObjectTypes());
         } else if (e.icon == 'fa-floppy-o') {
-            //save
-            if (!this.isLoading)
-                this.save();
-            this.toggleReadOnly(true);
-            this.toggleTabs(this.selectedData);
+            if (!this.isLoading) {
+                if (!this.valid()) {
+                    this.messagesService.showError('', this.errors.join('\n'));
+                    return;
+                } else {
+                    this.save();
+                    this.toggleReadOnly(true);
+                    this.toggleTabs(this.selectedData);
+                }
+            }
+            
         } else if (e.icon == 'fa-remove') {
             this.toggleReadOnly(true);
             this.populateDiagram();
@@ -944,7 +974,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 stroke: "gray", strokeWidth: 2
             },
                 new go.Binding("stroke", "valid", function (h) { return h ? "gray" : "#f00" })),
-            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
+            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
+                new go.Binding("stroke", "valid", function (h) { return h ? "gray" : "#f00" }),
+                new go.Binding("fill", "valid", function (h) { return h ? "gray" : "#f00" })), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
                     visible: false,
