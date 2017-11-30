@@ -2,6 +2,7 @@
     ID: number;
     Name: string;
     Description: string;
+    HasDashboards: boolean;
 }
 
 export class RuleDimension {

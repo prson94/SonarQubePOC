@@ -4291,12 +4291,14 @@ from    (
         public HttpResponseMessage GetRuleType(int id)
         {
             var row = Company.GetById<RuleType>(id);
+
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
                     { "ID", row.ID },
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString()) }
                 }
             );
         }

@@ -13,6 +13,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDimension, Rule, RuleType, RuleClassification, RuleStatus } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 import * as _ from 'lodash';
 
 @Component({
@@ -92,9 +93,11 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         private gridDefinitionService: GridDefinitionService, 
         private headerActionsService: HeaderActionsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService
+        protected permissionsService: PermissionsService,
+        rightSidebarService: RightSidebarService
     ) {
         super();
+        this.rightSidebarService = rightSidebarService;
 
         this.theDeleteCallback = this.deleteRule.bind(this);
     }
@@ -114,11 +117,14 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 .then(result => {
                     this.isLoading = false;
                     this.ruleType = result;
+                    this.setObjectInfo('RuleType', this.ruleType.ID);
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules', undefined)); //`${SiteUrlHelpers.SITE_URL_RULE_ROOT}`
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules', undefined));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleTypeId}`));
 
                     this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
+
+                    this.setCommonRightSideBar(false, false, this.ruleType.HasDashboards);
 
                     this.loadRules();
 
