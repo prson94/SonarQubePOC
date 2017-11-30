@@ -10,16 +10,14 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 
-declare var CompanySettings;
-
 @Component({
     selector: 'd3s-artifact-list',
-    template: `                 
+    template: `
                 <div class="row">
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                         <div class="tile tile-detail" *ngIf="!isLoading">
-                            <d3s-artifact-grid [artifactType]="artifactType"></d3s-artifact-grid>                                                                       
+                            <d3s-artifact-grid [artifactType]="artifactType"></d3s-artifact-grid>                                                             
                         </div>
                     </div>
                 </div>
@@ -29,16 +27,16 @@ declare var CompanySettings;
 
 export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifactType: ArtifactType;
-    private sub: any;        
+    private sub: any;
     
     constructor(private route: ActivatedRoute,
         private router: Router,
-        private artifactTypeService: ArtifactTypeService,                
+        private artifactTypeService: ArtifactTypeService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private titleService: Title,        
+        private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         rightSidebarService: RightSidebarService) {
-        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService );      
+        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService );
     }
 
     ngOnInit() {        
@@ -50,14 +48,13 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
             this.artifactTypeService.getArtifactTypeDetails(artifactTypeId)
                 .then(artifactType => {
                     this.artifactType = artifactType;
+                    this.setObjectInfo('ArtifactType', this.artifactType.ID);                   
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, this.areaLink));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.artifactType.Name, this.router.url));
                     this.clearSidebar();
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);
                     this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
-                    this.setObjectInfo('ArtifactType', this.artifactType.ID);
-                    //if (CompanySettings.ShowMetricsSidebar != 'false') this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics', ['fa-bar-chart-o'], `/artifact/type/metrics/${this.artifactType.ID}`));
 
                     if (this.artifactType.HasV2Workflows) this.rightSidebarService.showItem(new RightSidebarItem('Workflow Monitor', 'workflowmonitor', ['fa-television'], `/sidebar/workflowmonitor${this.objectContextUrl()}`));
 
