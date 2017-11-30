@@ -23,9 +23,8 @@ import { StringConstants } from '../../static/string-constants';
                     {{titlePostfix}}
                     <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="!artifactType.HasCustomExportTemplates" [hasCustomExport]="artifactType.HasCustomExportTemplates" (addClick)="add()" (customExportClick)="customExport()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
                     <div (click)="toggleArtifactDetail()" *ngIf="showArtifactDetails && artifactType && artifactType.Description" [innerHtml]="artifactType.Description" style="text-transform:none;font-size:12px;font-weight:normal;margin-left:20px"></div>
-                </header>    
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>                
-                <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                    
+                </header>                    
+                <div class="row" *ngIf="!showDelete && !showEditor">                    
                     <div #rightMenu [ngClass]="{'artifact-context-menu':isMenuOpen,'artifact-context-menu-closed':!isMenuOpen}">
                         <a [href]="itemUrl" target="_blank">Open in new window</a>
                     </div>
@@ -33,8 +32,7 @@ import { StringConstants } from '../../static/string-constants';
                         <input type="text" *ngIf="topLevelFilters.length ==0" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                         <d3s-artifact-top-level-filter *ngIf="topLevelFilters.length > 0" [(filters)]="stateService.artifactTypeFilters.filters" [fields]="topLevelFilters" (filterChanged)="filterGridData()"></d3s-artifact-top-level-filter>
                     </div>
-                    <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>
-                    <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
+                    <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>                    
                     <d3s-artifact-custom-export *ngIf="showCustomExport" (closeClick)="showCustomExport=false" 
                             [artifactType]="artifactType" 
                             [sortOrder]="stateService.artifactTypeFilters.sortOrder" 
@@ -46,7 +44,7 @@ import { StringConstants } from '../../static/string-constants';
                             [owner]="stateService.artifactTypeFilters.owners"
                     ></d3s-artifact-custom-export>
                     <div class="col s12" [hidden]="showCustomExport">                
-                       <p-dataTable (onSort)="changeSort($event)" #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
+                       <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" (onSort)="changeSort($event)" #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{width:column.columnWidth ? column.columnWidth + 'px' : ''}">                                                                
                                 <ng-template let-item="rowData" pTemplate type="body">
@@ -100,8 +98,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
-    showCustomExport: boolean = false;
-    isGridFilterLoading: boolean = false;
+    showCustomExport: boolean = false;    
     isMenuOpen: boolean = false;
     showArtifactDetails: boolean = false;
 
@@ -143,7 +140,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     get showGridSimpleFilter(): boolean {
         return this.stateService.artifactTypeFilters.showSimpleFilter;
     }
-
+    
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['artifactType'] && this.artifactType != null) {
             this.load();
@@ -162,7 +159,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     public filterGridData() {
-        this.isGridFilterLoading = true;
+        this.isLoading = true;
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         this.getData();
     }
@@ -184,8 +181,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.showMessageForResult(this.messagesService, result);
                 this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed
                 this.showDelete = false;
-                this.lazySortField = this.stateService.artifactTypeFilters.sortField;
-                this.getData();
+                this.lazySortField = this.stateService.artifactTypeFilters.sortField;                
             });
     }
 
@@ -196,19 +192,21 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;
+                this.getData();
             });
     }
     changeSort(event) {
         this.lazySortField = event.field;
     }
     getData() {
+        this.isLoading = true;
         this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners)
             .then(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
-                this.simpleSearchID = 0;
-                this.isGridFilterLoading = false;
+                this.simpleSearchID = 0;                
+                this.isLoading = false;
             });
     }
 
@@ -289,7 +287,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     private doSimpleSearch(dt: DataTable) {
-        if (this.isGridFilterLoading) {
+        if (this.isLoading) {
             if (this.simpleSearchID > 0) {
                 window.clearTimeout(this.simpleSearchID);
                 this.simpleSearchID = 0;
@@ -297,9 +295,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds); //check back in a few search is ongoing
             return;
         }
-        this.isGridFilterLoading = true;
-        if (dt) dt.reset();
-        //this.getData();  
+        this.isLoading = true;
+        if (dt) dt.reset();        
     }
 
     protected certificateColor(item) {
