@@ -206,7 +206,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         if (i < this.folderItems.length-1) {
             this.selection = item;
             this.index = i;
-            this.nextFolderSortOrder = this.folderItems[i - 1].SortOrder;
             this.nextFolderID = this.folderItems[i + 1].ID;
             this.isLoading = true;
             this.siteMenuService.moveSiteNavFolderDown(this.selection.ID, this.nextFolderID)
