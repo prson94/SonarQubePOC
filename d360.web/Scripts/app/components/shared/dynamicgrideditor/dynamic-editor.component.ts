@@ -86,8 +86,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
-        if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue != changes['objectID'].currentValue)) { // object has changed            
-            this.load();
+        if (changes['objectID']) {
+            if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue != changes['objectID'].currentValue)) { // object has changed            
+                this.load();
+            }
         }
     }
 

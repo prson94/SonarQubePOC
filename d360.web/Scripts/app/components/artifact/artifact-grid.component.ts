@@ -181,7 +181,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.showMessageForResult(this.messagesService, result);
                 this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed
                 this.showDelete = false;
-                this.lazySortField = this.stateService.artifactTypeFilters.sortField;                
+                this.lazySortField = this.stateService.artifactTypeFilters.sortField;
+                this.getData();
             });
     }
 
