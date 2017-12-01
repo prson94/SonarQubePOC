@@ -18,7 +18,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                     <div class="col s12">
                         <div class="tile tile-detail">   
                             <header>Audit History for {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>                                                                                           
-                            <p-dataTable #dt scrollable="true" scrollWidth="100%" lazy="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
+                            <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" #dt scrollable="true" scrollWidth="100%" lazy="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
                                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                 <p-column field="ResourceName" header="User" sortable="true" [style]="{'width':'150px'}" filter="true"></p-column>                                                                                    
                                 <p-column field="Date" header="Date" sortable="true" [style]="{'width':'200px'}" filter="true">
@@ -43,8 +43,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                                 <p-column field="ActionObjectName" header="Item" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>
                                 <p-column field="ActionDescription" header="Audit Description" sortable="true" [style]="{'width':'250px'}" filter="true"></p-column>                                                                                        
                                 <p-column field="Version" header="Revision" sortable="true"  [style]="{'width':'100px'}" filter="true"></p-column>
-                            </p-dataTable>       
-                            <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                  
+                            </p-dataTable>                                                                      
                         </div>
                     </div>
                 </div>
@@ -119,8 +118,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             gridFilter.value = filter.value;
             this.filters.push(gridFilter);
         }
-
-
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
