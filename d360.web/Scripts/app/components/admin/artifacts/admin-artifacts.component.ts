@@ -24,8 +24,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     selectedRow: TreeNode;
-    //assetTypeClass: AssetTypeClass = AssetTypeClass.Glossary;
-
+    
     isAdding = false;
     isEditing = false;
     isDeleting = false;
@@ -47,7 +46,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.load();
         this.setObjectInfo('ArtifactType', -1);
         this.setCommonRightSideBar(true);
-        if (this.ownershipSidebar) {
+        if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
                 return `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`
