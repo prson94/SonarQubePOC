@@ -16390,9 +16390,8 @@ from    [IntersectType] RT
 
             list.Add(new EditableField { FieldName = "TaxonomyTypeID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
             list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = $"form/Taxonomy_SimilarItems?typeID={t}&id={p}&query=" });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, t).ToList(), 3);
+            
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, t).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -16514,12 +16513,27 @@ order by TextPath
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var model = new Taxonomy { TaxonomyTypeID = typeID };
+                model.Level = 0;
+
+                if(!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")
+                {
+                    if (int.TryParse(form["ParentID"], out int parentId))
+                    {
+                        //get the parent so we can load its level
+                        var parent = Company.Taxonomies.Where(x => x.ID == parentId).FirstOrDefault();
+
+                        if(parent != null)
+                        {
+                            model.Level = parent.Level++;
+                        }
+                    }
+                }
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Taxonomy>(model, fields);
 
-                if (!string.IsNullOrEmpty(form["ParentID"]))
-                {
+                if (!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")
+                {                    
                     var intersectType = Company.Filter<IntersectTypeDetail>(i =>
                         i.Object == "TaxonomyType" &&
                         i.ObjectID == type.ID &&

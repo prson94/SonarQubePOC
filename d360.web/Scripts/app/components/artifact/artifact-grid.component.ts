@@ -44,7 +44,8 @@ import { StringConstants } from '../../static/string-constants';
                             [owner]="stateService.artifactTypeFilters.owners"
                     ></d3s-artifact-custom-export>
                     <div class="col s12" [hidden]="showCustomExport">                
-                       <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" (onSort)="changeSort($event)" #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
+                       <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" [sortOrder]="stateService.artifactTypeFilters.sortOrder" 
+                            [sortField]="stateService.artifactTypeFilters.sortField" #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{width:column.columnWidth ? column.columnWidth + 'px' : ''}">                                                                
                                 <ng-template let-item="rowData" pTemplate type="body">
@@ -106,8 +107,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     searchValue: string = "";
 
-    searchDelayMilliSeconds: number = 500;
-    lazySortField: string = "";
+    searchDelayMilliSeconds: number = 500;    
     error: any;
     items: any[];
     columns: GridColumn[] = [];
@@ -180,8 +180,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed
-                this.showDelete = false;
-                this.lazySortField = this.stateService.artifactTypeFilters.sortField;
+                this.showDelete = false;                
                 this.getData();
             });
     }
@@ -195,10 +194,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.topLevelFilters = result.TopLevelFilterColumns;
                 this.getData();
             });
-    }
-    changeSort(event) {
-        this.lazySortField = event.field;
-    }
+    }    
     getData() {
         this.isLoading = true;
         this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners)
@@ -267,10 +263,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value        
         this.stateService.artifactTypeFilters.sortOrder = event.sortOrder;
-        this.stateService.artifactTypeFilters.sortField = event.sortField == undefined ? "" : event.sortField;
-        if (this.lazySortField != "" && event.sortField == undefined) {
-            this.stateService.artifactTypeFilters.sortField = this.lazySortField;
-        }
+        this.stateService.artifactTypeFilters.sortField = event.sortField == undefined ? "" : event.sortField;        
         this.rowsPerPage = event.rows;
         this.stateService.artifactTypeFilters.currentPageNumber = event.first / event.rows;
         this.getData();
