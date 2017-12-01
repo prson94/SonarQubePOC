@@ -13,11 +13,10 @@ import { ReferenceItemType } from '../../models/reference.model';
                 <div class="tile tile-detail">
                     <header *ngIf="!showEditor">Reference Lists
                         <d3s-tile-actions [hasAdd]="!showDelete && hasRootCreatePermissions()" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
-                    </header>
-                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <span *ngIf="!isLoading && !showEditor && !showDelete">
+                    </header>                    
+                    <span *ngIf="!showEditor && !showDelete">
                         <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                        <p-dataTable sortField="Name" [sortOrder]="1" #dt [globalFilter]="gb" [value]="referenceTypes" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                                                
+                        <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" sortField="Name" [sortOrder]="1" #dt [globalFilter]="gb" [value]="referenceTypes" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                                                
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="Name" header="Name" [sortable]="true"></p-column>                                
                             <p-column [style]="{width:'28px'}" *ngIf="hasRootUpdatePermissions()">
