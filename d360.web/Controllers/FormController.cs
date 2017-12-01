@@ -982,6 +982,39 @@ namespace d360.web.Controllers
                             Company.Update(intersect);
                         }
                     }
+                    else
+                    {
+                        var intersectType = Company.Filter<IntersectTypeDetail>(i =>
+                        i.Object == "ArtifactType" &&
+                        i.ObjectID == model.ArtifactType.ID &&
+                        i.PredicateType.Value == PredicateType.InterTypeHierarchy
+                    ).SingleOrDefault();
+
+                        if (intersectType != null)
+                        {
+                            var newIntersect = new Intersect
+                            {
+                                Subject = SystemObjects.Artifact.ToString(),
+                                SubjectID = parentID,
+                                Object = SystemObjects.Artifact.ToString(),
+                                ObjectID = model.ID,
+                                IntersectTypeID = intersectType.ID
+                            };
+
+                            var parentExists = Company.Any<Asset>(i =>
+                                i.ObjectID == newIntersect.SubjectID &&
+                                i.AssetType.Object == "ArtifactType" &&
+                                i.AssetType.ObjectID == intersectType.SubjectID
+                                );
+
+                            if (!parentExists)
+                            {
+                                return jsonException($"Parent {intersectType.SubjectName} with ID {newIntersect.SubjectID} could not be found.", HttpStatusCode.NotFound);
+                            }
+
+                            Company.Add(newIntersect);
+                        }
+                    }
                 }
                 
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList();
@@ -16637,11 +16670,20 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
+                var parentID = parseIntField(form, "ParentID");
+
+                if(parentID > 0)
+                {
+                    var parent = Company.Taxonomies.Where(x => x.ID == parentID).FirstOrDefault();
+
+                    if (parent != null) model.Level = parent.Level++;
+                }
+
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.TaxonomyTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Taxonomy>(model, fields);
 
                 var sType = SystemObjects.Taxonomy.ToString();
-                var parentID = parseIntField(form, "ParentID");
+                
 
                 if (parentID > 0)
                 {
