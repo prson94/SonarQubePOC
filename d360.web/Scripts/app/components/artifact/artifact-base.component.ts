@@ -12,9 +12,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 export class ArtifactBaseComponent extends BaseComponent {            
     public area: string = "Glossary";
     public areaLink: string = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
-
-    protected isLoading = false;
-
+        
     //sidebar
     sidebarSubscription: Subscription;
     

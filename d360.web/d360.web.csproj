@@ -1415,7 +1415,6 @@
     <TypeScriptCompile Include="Scripts\app\components\search\search.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\follower-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\impact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\loading.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages-bar.component.ts" />

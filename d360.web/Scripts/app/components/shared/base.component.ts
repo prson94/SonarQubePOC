@@ -14,7 +14,7 @@ import { JsonResult } from '../../models/jsonresult.model';
 declare var CompanySettings;
 
 export class BaseComponent {    
-    protected isLoading = false;
+    public isLoading = false;
 
     //current object info
     assetID: number;
