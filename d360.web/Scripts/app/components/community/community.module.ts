@@ -24,6 +24,15 @@ import {
     GrowlModule
 } from 'primeng/primeng';
 
+import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
+
+export function highchartsFactory() {
+    const highcharts = require('highcharts');
+
+    ChartModule.forRoot(require('highcharts'));
+    return highcharts;
+}
+
 @NgModule({
     imports: [CommonModule,
         FormsModule,
@@ -32,7 +41,7 @@ import {
 
         CommunityRoutingModule,
 
-        //highcharts
+        //highcharts        
         ChartModule,
 
         //prime
@@ -52,6 +61,10 @@ import {
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HighchartsStatic,
+            useFactory: highchartsFactory
+        },
     ]
 })
 export class CommunityModule { }

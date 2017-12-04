@@ -2,9 +2,9 @@
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
-import { Highcharts } from 'angular2-highcharts';
 
-
+declare var require: any;
+const Highcharts = require('highcharts/highstock.src');
 require('highcharts/highcharts-more')(Highcharts);
 require('highcharts/modules/solid-gauge')(Highcharts);
 

@@ -5,9 +5,12 @@ import { StateService } from '../../services/state.service';
 import { BaseComponent} from '../shared/base.component';
 import { ArtifactTypeStatusCount, ArtifactTypeUsedVsUnusedResponsibility } from '../../models/artifact-type.model';
 import { ArtifactType } from '../../models/artifact-type.model';
-import { Highcharts } from 'angular2-highcharts';
+//import { Highcharts } from 'angular2-highcharts';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
-import { ArtifactGridComponent} from './artifact-grid.component';
+import { ArtifactGridComponent } from './artifact-grid.component';
+
+declare var require: any;
+const Highcharts = require('highcharts/highstock.src');
 
 @Component({
     selector: 'd3s-artifact-type-metrics',    

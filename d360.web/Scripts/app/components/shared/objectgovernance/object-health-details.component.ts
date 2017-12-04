@@ -2,8 +2,9 @@
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
-import { Highcharts } from 'angular2-highcharts';
 import { TreeNode } from 'primeng/primeng';
+declare var require: any;
+const Highcharts = require('highcharts/highstock.src');
 
 @Component({
     selector: 'd3s-object-health-details',    

@@ -2,11 +2,10 @@
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/fusion.service';
 import { FusionSummaryStats } from '../../models/fusion.model';
-import { Highcharts } from 'angular2-highcharts';
 
+declare var require: any;
+const Highcharts = require('highcharts/highstock.src');
 
-require('highcharts/highcharts-more')(Highcharts);
-require('highcharts/modules/solid-gauge')(Highcharts);
 
 @Component({
     selector: 'd3s-fusion-statistics',    

@@ -62,6 +62,18 @@ import {
 } from 'primeng/primeng';
 
 import { CodemirrorModule } from 'ng2-codemirror';
+import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
+
+
+export function highchartsFactory() {
+    const highcharts = require('highcharts');
+    const highChartsMore = require('highcharts/highcharts-more');
+    const solidGauge = require('highcharts/modules/solid-gauge');
+    ChartModule.forRoot(require('highcharts'),
+        require('highcharts/highcharts-more'),
+        require('highcharts/modules/solid-gauge'));
+    return highcharts;
+}
 
 
 @NgModule({
@@ -90,7 +102,7 @@ import { CodemirrorModule } from 'ng2-codemirror';
         //editor
         CodemirrorModule,
 
-        //highcharts
+        //highcharts        
         ChartModule,
 
         //d3s        
@@ -132,6 +144,10 @@ import { CodemirrorModule } from 'ng2-codemirror';
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HighchartsStatic,
+            useFactory: highchartsFactory
+        },
     ]
 })
 export class FusionModule { }

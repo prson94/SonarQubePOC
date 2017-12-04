@@ -30,6 +30,13 @@ import { ArtifactTopLevelListComponent } from './artifact-top-level-list.compone
 import { ArtifactTypeMetricsComponent } from './artifact-type-metrics.component';
 import { ArtifactTopLevelFilterComponent } from './artifact-top-level-filter.component';
 import { ArtifactCustomExportComponent } from './artifact-custom-export.component';
+import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
+
+export function highchartsFactory() {
+    const hc = require('highcharts');
+
+    return hc;
+}
 
 import {    
     InputTextModule,    
@@ -62,7 +69,7 @@ import {
         TooltipModule,             
         SharedModule,
 
-        //highcharts
+        //highcharts        
         ChartModule,
 
         //d3s
@@ -91,6 +98,10 @@ import {
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HighchartsStatic,
+            useFactory: highchartsFactory
+        },
     ]
 })
 export class ArtifactModule { }

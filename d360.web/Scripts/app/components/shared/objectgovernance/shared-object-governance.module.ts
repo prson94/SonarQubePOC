@@ -26,6 +26,14 @@ import { ObjectGovernanceComponent } from './object-governance.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectHealthComponent } from './object-health.component';
 import { ObjectIssuesComponent } from './object-issues.component';
+import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
+
+export function highchartsFactory() {
+    const highcharts = require('highcharts');
+    
+    ChartModule.forRoot(require('highcharts'));
+    return highcharts;
+}
 
 @NgModule({
     imports: [CommonModule,
@@ -43,7 +51,7 @@ import { ObjectIssuesComponent } from './object-issues.component';
         SharedModule,  
         TreeTableModule,
 
-        //charts
+        //charts        
         ChartModule,
     ],
     declarations: [
@@ -62,6 +70,10 @@ import { ObjectIssuesComponent } from './object-issues.component';
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HighchartsStatic,
+            useFactory: highchartsFactory
+        },
     ]
 })
 export class SharedObjectGovernanceModule { }

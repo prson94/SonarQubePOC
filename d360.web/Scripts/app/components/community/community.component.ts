@@ -4,8 +4,10 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Highcharts } from 'angular2-highcharts';
 import { ResponsibilityTypeCount, ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
+
+declare var require: any;
+const Highcharts = require('highcharts/highstock.src');
 
 @Component({
     selector: 'd3s-community-component',
