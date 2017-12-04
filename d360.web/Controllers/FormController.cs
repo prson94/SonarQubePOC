@@ -3565,8 +3565,7 @@ namespace d360.web.Controllers
                     throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
 
-                if (!string.IsNullOrEmpty(model.FieldType.Object) && (model.FieldType.Object).Equals("ResourceType")
-                    && !string.IsNullOrEmpty(model.FieldType.Name) && (model.FieldType.Name).ToUpper().Equals("ID"))
+                if (!string.IsNullOrEmpty(model.FieldType.Name) && (model.FieldType.Name).ToUpper().Equals("ID"))
                 {
                     throw new ConflictException("Error Occurred!", "You can not add field with API Name [ID].");
                 }
