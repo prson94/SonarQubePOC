@@ -2346,7 +2346,7 @@ from    [Intersect] I
         {
             var sql = @"select 
                     a.ID as assetId,
-                    d.DisplayValue as [name],
+                    coalesce(FA.TextPath, d.DisplayValue) as [name],
                     t.[Name] as typeName,
 					coalesce(s.IconBackColor, '#000') as backColor,
 					coalesce(s.IconForeColor, '#fff') as foreColor,
@@ -2357,6 +2357,7 @@ from    [Intersect] I
                     asset a
                 inner join assettype t on t.id = a.assettypeid
 				left join objectstyle s on s.objecttype = t.[object] and s.objectid = t.objectid
+                left join FusionAttribute FA on FA.ID = A.ObjectID and A.[Object] = 'FusionAttribute'
                 cross apply dbo.GetAssetDisplayValueById(a.ID) d
                 where  
                     t.id = @id";

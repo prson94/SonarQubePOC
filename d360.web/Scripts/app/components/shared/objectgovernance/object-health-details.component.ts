@@ -3,6 +3,7 @@ import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
 import { Highcharts } from 'angular2-highcharts';
+import { TreeNode } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-object-health-details',    
@@ -16,15 +17,15 @@ import { Highcharts } from 'angular2-highcharts';
                     <div class="row">
                         <div class="col s12">
                             <header>Point Breakdown</header>
-                            <p-dataTable  scrollable="true" scrollWidth="100%" [value]="pointBreakdown" selectionMode="single">                                
+                            <p-treeTable  scrollable="true" scrollWidth="100%" [value]="pointBreakdownTree" selectionMode="single">                                
                                 <p-column field="Name" header="Analytic" [style]="{'width':'250px'}"></p-column>                                
                                 <p-column header="Value" [style]="{'width':'250px'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
-                                        <i *ngIf="item.Value" class="fa fa-check enabled" title="Passed"></i>
-                                        <i *ngIf="!item.Value" class="fa fa-times disabled" title="Failed"></i>
+                                        <i *ngIf="item.data.Value" class="fa fa-check enabled" title="Passed"></i>
+                                        <i *ngIf="!item.data.Value" class="fa fa-times disabled" title="Failed"></i>
                                     </ng-template>
                                 </p-column>
-                            </p-dataTable>  
+                            </p-treeTable>  
                         </div>
                     </div>
                     <div class="row">&nbsp;</div>
@@ -50,6 +51,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     scorePie: Object;
     
     private pointBreakdown: PointBreakdown[] = [];
+    private pointBreakdownTree: TreeNode[] = [];
 
     constructor(protected scoreService: ScoreService) {
         super();
@@ -141,6 +143,13 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.scoreService.getPointBreakdown(this.objectID, this.objectType)
             .then(res => {
                 this.pointBreakdown = res;
+                this.pointBreakdownTree = [];
+                this.pointBreakdown.forEach(p => {
+                    this.pointBreakdownTree.push({
+                        data: p,
+                        leaf: true
+                    });
+                });
                 this.isLoading = false;
             });
     }

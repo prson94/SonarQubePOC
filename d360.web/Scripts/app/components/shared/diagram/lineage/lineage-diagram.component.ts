@@ -63,6 +63,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private selectedAssetTypeId;
     private objects = [];
     private selectedObjects;
+    private objectsLoading = false;
 
     private diagramMode: DiagramMode = DiagramMode.Diagram;
     DiagramMode = DiagramMode;
@@ -377,10 +378,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             return;
         }
 
+        this.objectsLoading = true;
         return this.lineageService.getLineageObjects(+this.selectedAssetTypeId)
             .then(r => {
                 this.selectedObjects = null;
                 this.objects = r;
+                this.objectsLoading = false;
                 //console.log('loadObjects', this.objects);
             });
     }
@@ -490,6 +493,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if ((l.intersectId <= 0 || l.intersectId == null) && (l.intersectTypeId <= 0 || l.intersectTypeId == null))
             valid = false;
 
+        this.diagram.model.setDataProperty(l, 'valid', !valid);
         this.diagram.model.setDataProperty(l, 'valid', valid);
         //console.log('validateLink', valid, l);
         return valid;
@@ -570,6 +574,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         let intersectType = this.intersectTypes.find(i => i.intersectTypeId == +e);
         if (link != null) {
             //console.log('changeIntersectType', intersectType, link, e);
+            this.diagram.model.setDataProperty(link, 'intersectTypeId', 0);
             this.diagram.model.setDataProperty(link, 'intersectTypeId', +e);
             if (intersectType != null) {
                 this.diagram.model.setDataProperty(link, 'predicate', intersectType.predicateName);
@@ -681,16 +686,20 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.validateNode(fromNode);
         this.validateNode(toNode);
 
-        let intersects = this.intersectTypes.filter(i => (fromNode.assetTypeId == i.subjectAssetTypeId && toNode.assetTypeId == i.objectAssetTypeId) || (fromNode.assetTypeId == i.objectAssetTypeId && toNode.assetTypeId == i.subjectAssetTypeId));
+        if ((<any>link).intersectTypeId < 1) {
+            let intersects = this.intersectTypes.filter(i => (fromNode.assetTypeId == i.subjectAssetTypeId && toNode.assetTypeId == i.objectAssetTypeId) || (fromNode.assetTypeId == i.objectAssetTypeId && toNode.assetTypeId == i.subjectAssetTypeId));
 
-        if (intersects.length == 1) {
-            this.diagram.model.setDataProperty(link, 'intersectTypeId', intersects[0].intersectTypeId);
-            this.diagram.model.setDataProperty(link, 'predicate', intersects[0].predicateName);
+            if (intersects.length == 1) {
+                this.diagram.model.setDataProperty(link, 'intersectTypeId', intersects[0].intersectTypeId);
+                this.diagram.model.setDataProperty(link, 'predicate', intersects[0].predicateName);
+            }
+            else {
+                this.diagram.model.setDataProperty(link, 'intersectTypeId', 0);
+                this.diagram.model.setDataProperty(link, 'predicate', null);
+            }
         }
-        else {
-            this.diagram.model.setDataProperty(link, 'intersectTypeId', 0);
-            this.diagram.model.setDataProperty(link, 'predicate', null);
-        }
+
+       
 
         this.validateLink(<LinkModelV2>link);
 

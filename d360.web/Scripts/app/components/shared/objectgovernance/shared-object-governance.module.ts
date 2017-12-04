@@ -8,7 +8,8 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 import {
     ButtonModule,
     DataTableModule,    
-    SharedModule,    
+    SharedModule,   
+    TreeTableModule,
 } from 'primeng/primeng';
 
 import { ChartModule } from 'angular2-highcharts';
@@ -40,6 +41,7 @@ import { ObjectIssuesComponent } from './object-issues.component';
         ButtonModule,
         DataTableModule,        
         SharedModule,  
+        TreeTableModule,
 
         //charts
         ChartModule,
