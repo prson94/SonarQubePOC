@@ -1,4 +1,4 @@
-﻿import { NgModule, LOCALE_ID }       from '@angular/core';
+﻿import { NgModule }       from '@angular/core';
 import { BrowserModule, Title  } from '@angular/platform-browser';
 import { AppComponent }   from './app.component';
 import { AppRoutingModule }        from './app.routes';
@@ -55,11 +55,7 @@ import { AuthenticationConnectionBackend } from './authentication-connection-bac
         MessagesService,        
         RightSidebarService,
         WebAnalyticsService,
-        StateService,
-        {
-            provide: LOCALE_ID,
-            useFactory: () => { navigator.language }
-        }
+        StateService      
     ],    
 })
 export class AppModule { }

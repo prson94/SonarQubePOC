@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { JsonResult } from '../models/jsonresult.model';
@@ -29,10 +29,12 @@ export class LevelsService extends BaseService {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
+        let options = new RequestOptions({ headers: headers });
+
         let url = `form/${objectType}/${objectId}/levels/${levelId}`;
 
         return this.http
-            .delete(url, headers)
+            .delete(url, options)
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));

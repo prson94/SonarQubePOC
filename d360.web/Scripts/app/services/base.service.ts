@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 
@@ -21,8 +21,10 @@ export class BaseService {
 
         let url = `form/dynamicedit/delete/${type}/${id}`;
 
+        let options = new RequestOptions({ headers: headers });
+
         return http
-            .delete(url, headers)
+            .delete(url, options)
             .toPromise()
             .catch(err => this.handleError(err));
     }
@@ -33,8 +35,10 @@ export class BaseService {
 
         let url = `form/dynamicedit/delete/${type}/${id}`;
 
+        let options = new RequestOptions({ headers: headers });
+
         return http
-            .delete(url, headers)
+            .delete(url, options)
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));

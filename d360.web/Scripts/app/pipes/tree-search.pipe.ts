@@ -53,21 +53,21 @@ export class TreeSearchPipe implements PipeTransform {
     private findSelectedTreeNode(tree: TreeNode[], search: string, field?:string): TreeNode {
         let nodes: TreeNode[] = [];
 
-        if (!tree) return false;
+        if (!tree) return null;
         // add root nodes
         for (let rNode of tree) {
             nodes.push(rNode);
         }
 
         //do a breadth first search for the given treenode
-        if (!nodes || nodes.length == 0) return false;
+        if (!nodes || nodes.length == 0) return null;
 
         let node = nodes[0];
 
         while (node) {
             var nameField = field ? node.data[field] : node.label;
 
-            if (nameField && nameField.toLowerCase().indexOf(search) != -1) return true;
+            if (nameField && nameField.toLowerCase().indexOf(search) != -1) return null;
 
             //push children
             if (node.children) {
@@ -79,7 +79,7 @@ export class TreeSearchPipe implements PipeTransform {
             //remove this node
             nodes.splice(0, 1);
 
-            if (!nodes || nodes.length == 0) return false;
+            if (!nodes || nodes.length == 0) return null;
             node = nodes[0];
         }
     }

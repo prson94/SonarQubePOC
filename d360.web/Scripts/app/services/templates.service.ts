@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, RequestOptions } from '@angular/http';
 import { Template } from '../models/template.model';
 import {BaseService} from './base.service';
 import { MessagesService } from './messages.service';
@@ -29,8 +29,11 @@ export class TemplatesService extends BaseService {
         
         let url = `form/dynamicedit/delete/template/${id}`;
 
+        let options = new RequestOptions({ headers: headers });
+
+
         return this.http
-            .delete(url, headers)
+            .delete(url, options)
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err) );

@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { SiteMenu, SiteMenuItem, SiteMenuModel, SiteNav, SiteNavPermission } from '../models/site-menu.model';
@@ -125,7 +125,9 @@ export class SiteMenuService extends BaseService {
 
 
     removeSiteNavPermission(permission: SiteNavPermission) {
-        return this.http.delete('navigation/permissions/remove', permission)
+        let options = new RequestOptions({ body: permission });
+
+        return this.http.delete('navigation/permissions/remove', options)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

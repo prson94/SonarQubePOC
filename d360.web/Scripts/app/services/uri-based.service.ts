@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { ObjectStyle } from '../models/object-style.model';
@@ -21,9 +21,11 @@ export class UriBasedService extends BaseService {
     deleteItem(uri: string, id: number) {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
+
+        let options = new RequestOptions({ headers: headers });
                 
         return this.http
-            .delete(`${uri}${id}`, headers)
+            .delete(`${uri}${id}`, options)
             .toPromise()
             .catch(err => this.handleError(err));
     }
@@ -32,8 +34,10 @@ export class UriBasedService extends BaseService {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
+        let options = new RequestOptions({ headers: headers });
+
         return this.http
-            .delete(`${uri}${id}`, headers)
+            .delete(`${uri}${id}`, options)
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));

@@ -123,7 +123,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
         }
     }
 
-    private setMenuItemCommands(items: MenuItem[]) {
+    private setMenuItemCommands(items) {
         items.forEach(i => {
             i.command = (e) => this.menuClick.emit(e.item);
             if (i.items && i.items.length > 0) {

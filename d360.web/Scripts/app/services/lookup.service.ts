@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { Lookup, LookupItem } from '../models/lookup.model';
@@ -23,8 +23,10 @@ export class LookupService extends BaseService {
 
         let url = `form/dynamicedit/delete/LookupType/${lookupId}`;
 
+        let options = new RequestOptions({ headers: headers });
+
         return this.http
-            .delete(url, headers)            
+            .delete(url, options)            
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));

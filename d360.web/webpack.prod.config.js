@@ -19,11 +19,11 @@ var webpackConfig = {
     plugins: [
       //new webpack.optimize.OccurrenceOrderPlugin(true),
       //new webpack.optimize.UglifyJsPlugin({compress: { warnings: false }}),
-      // Workaround needed for angular 2 angular/angular#11580
+        // Workaround for https://github.com/angular/angular/issues/11580
         new webpack.ContextReplacementPlugin(
-          // The (\\|\/) piece accounts for path separators in *nix and Windows
-          /angular(\\|\/)core(\\|\/)@angular/,
-           path.join(__dirname, '/scripts/app/') // location of your src
+            // The (\\|\/) piece accounts for path separators in *nix and Windows
+            /angular(\\|\/)core(\\|\/)(@angular|esm5)/,
+            path.resolve(__dirname, '../src')
         ),
         new webpack.optimize.UglifyJsPlugin({
             beautify: false,

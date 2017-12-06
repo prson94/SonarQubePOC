@@ -51,6 +51,12 @@
     ]
   },
   {
+    "outputFileName": "content/primeng/v5.0.2/theme.min.css",
+    "inputFiles": [
+      "Content/primeng/v5.0.2/theme.css"
+    ]
+  },
+  {
     "outputFileName": "content/quill/quill.snow.min.css",
     "inputFiles": [
       "Content/quill/quill.snow.css"

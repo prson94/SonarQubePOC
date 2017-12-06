@@ -1,5 +1,5 @@
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { enableProdMode } from '@angular/core';
+import { enableProdMode, LOCALE_ID } from '@angular/core';
 import { AppModule }              from './app.module';
 
 declare var __BUILD_DATE: string;
@@ -13,4 +13,4 @@ else {
 
 console.log("Data3Sixty Client: " + __BUILD_DATE);
 
-platformBrowserDynamic().bootstrapModule(AppModule, { preserveWhitespaces: false });
+platformBrowserDynamic().bootstrapModule(AppModule, { preserveWhitespaces: false, providers: [{ provide: LOCALE_ID, useValue: navigator.language }] });
