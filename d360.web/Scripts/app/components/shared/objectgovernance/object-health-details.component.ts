@@ -146,12 +146,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
                 this.pointBreakdown = res;
                 this.pointBreakdownTree = [];
-               // let i = 100;
-                let tree = (node: any) => {
-                    //i--;
-                    //if (i < 1)
-                    //    return;
 
+                let tree = (node: any) => {
                     let childGroups = this.pointBreakdown.filter(p => p.ParentID == node.data.GroupID && p.ID == null && p.ParentID != null); //any relevant groups
                     let childScores = this.pointBreakdown.filter(p => p.GroupID == node.data.GroupID && p.ID != null);
 
@@ -159,7 +155,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     node.leaf = true;
                     node.children = null;
 
-                    console.log('childGroups', childGroups);
+                    //console.log('childGroups', childGroups);
                     if (childScores != null && childScores.length > 0) {
 
                         node.leaf = false;
@@ -202,13 +198,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
                 });
 
-                console.log(this.pointBreakdownTree);
-                //this.pointBreakdown.forEach(p => {
-                //    this.pointBreakdownTree.push({
-                //        data: p,
-                //        leaf: true
-                //    });
-                //});
+                //console.log(this.pointBreakdownTree);
                 this.isLoading = false;
             });
     }

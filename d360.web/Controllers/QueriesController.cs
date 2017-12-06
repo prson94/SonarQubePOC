@@ -217,7 +217,8 @@ union all
 	inner join metrics.Item i on i.ID = m.ItemID
 	inner join metrics.[Group] g on g.ID = m.GroupID
 	where 
-		s.[Object] = @type and s.ObjectID = @id";
+		s.[Object] = @type and s.ObjectID = @id
+        and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate";
 
             var results = Company.Query<dynamic>(query, new { type = type.ToString(), id });
 
