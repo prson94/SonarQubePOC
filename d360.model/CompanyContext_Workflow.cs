@@ -124,27 +124,16 @@ namespace d360.model
 
             SaveChanges();
 
-            //add new event
-            var events = new List<EventInfo>
+            //copy fields for original issue
+            var fields = Fields.Where(x => x.ObjectID == orgIssue.ID && x.ObjectType == "Issue");
+
+            foreach (var field in fields)
             {
-                new EventInfo
-                {
-                    CompanyID = CurrentCompanyID,
-                    DomainPrefix = CurrentCompanyDomain,
-                    ResourceID = CurrentResourceID,
-                    Action = ChangeType.Add,
-                    Object = new EventObjectInfo
-                    {
-                        Object = SystemObjects.Issue,
-                        ObjectID = issue.ID,
-                        ObjectType = SystemObjects.IssueType,
-                        ObjectTypeID = orgIssue.IssueTypeID
-                    }
-                }
-            };
+                Fields.Add(new Field { Value = field.Value, ObjectType = "Issue", ObjectID = issue.ID, FieldTypeID = field.FieldTypeID });
+            }
 
-            QueueSource.CreateTopicMessages(events);
-
+            SaveChanges();
+            
             return true;
             
         }
