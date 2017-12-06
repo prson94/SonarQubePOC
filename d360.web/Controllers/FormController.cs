@@ -8189,6 +8189,7 @@ namespace d360.web.Controllers
                         Object = SystemObjects.IssueType.ToString(),
                         IsListable = true,
                         IsRequired = true,
+                        IsEditable = true,
                         FriendlyName = "Description",
                         Name = "ProblemDesc",                        
                         SortOrder = 1,
