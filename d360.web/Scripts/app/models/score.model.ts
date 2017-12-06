@@ -2,6 +2,8 @@
     Name: string;
     ID: number;
     Value: boolean;
+    GroupID: number;
+    ParentID: number;
 }
 
 export class ScorePoint {

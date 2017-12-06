@@ -295,8 +295,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 }
             }
 
-            if (!this.readonly || this.showInfoTab)
-                this.isWindowVisible = true;
+            //if (!this.readonly || this.showInfoTab)
+            //    this.isWindowVisible = true;
 
         } else {
             if (!this.readonly) {
@@ -304,7 +304,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.showNodeTabs = false;
                 this.showLinkTabs = false;
                 this.showInfoTab = false;
-                this.isWindowVisible = true;
+                //this.isWindowVisible = true;
             } else {
                 this.showNodeTabs = false;
                 this.showLinkTabs = false;
@@ -686,7 +686,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.validateNode(fromNode);
         this.validateNode(toNode);
 
-        if ((<any>link).intersectTypeId < 1) {
+        if ((<any>link).intersectTypeId == null || (<any>link).intersectTypeId < 1) {
             let intersects = this.intersectTypes.filter(i => (fromNode.assetTypeId == i.subjectAssetTypeId && toNode.assetTypeId == i.objectAssetTypeId) || (fromNode.assetTypeId == i.objectAssetTypeId && toNode.assetTypeId == i.subjectAssetTypeId));
 
             if (intersects.length == 1) {
@@ -714,8 +714,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         } else if (e.icon == 'fa-pencil') {
             this.toggleReadOnly(false);
             this.toggleTabs(this.selectedData);
-            this.loadIntersectTypes()
-                .then(() => this.loadObjectTypes());
+            this.isWindowVisible = true;
         } else if (e.icon == 'fa-floppy-o') {
             if (!this.isLoading) {
                 if (!this.valid()) {
@@ -751,6 +750,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.toolManager.linkingTool.isEnabled = !this.readonly;
 
         this.loadMenuItems();
+
+        if (this.readonly == false)
+            this.loadIntersectTypes()
+                .then(() => this.loadObjectTypes());
 
     }
 

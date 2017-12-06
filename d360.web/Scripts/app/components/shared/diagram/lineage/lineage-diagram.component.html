@@ -1,5 +1,5 @@
 ﻿<div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 43px; z-index: 900">
-    <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''" [overflowScroll]="'visible'">
+    <d3s-overlay-window width="500" maxHeight="700" padding="0" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''" [overflowScroll]="'visible'">
         <div *ngIf="!showNodeTabs && !showLinkTabs && readonly" style="padding:10px;">Nothing selected</div>
         <ul class="tab-menu" *ngIf="showNodeTabs || !readonly">
             <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'" *ngIf="showInfoTab">
