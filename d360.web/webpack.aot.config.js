@@ -18,7 +18,7 @@ var webpackConfig = {
     },
     
     plugins: [
-        new ngtools.AotPlugin({
+        new ngtools.AngularCompilerPlugin ({
             tsConfigPath: './scripts/app/tsconfig.aot.json',
             typeChecking: false
         }),
