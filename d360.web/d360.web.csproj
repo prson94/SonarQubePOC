@@ -564,7 +564,9 @@
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
-    <Content Include="Content\styles\materialize.min.css" />
+    <Content Include="Content\styles\materialize.min.css">
+      <DependentUpon>materialize.css</DependentUpon>
+    </Content>
     <Content Include="Content\styles\Root.css">
       <DependentUpon>Root.less</DependentUpon>
     </Content>
@@ -1178,6 +1180,15 @@
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\itemfollow\itemfollow.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\itemfollow\itemfollow.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\itemfollow\itemfollow.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\membergroup\membergroup.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\membergroup\membergroup.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\membergroup\membergroup.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\ownership\ownership.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\ownership\ownership.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\ownership\ownership.routes.ts" />

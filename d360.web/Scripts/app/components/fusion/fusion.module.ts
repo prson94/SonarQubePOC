@@ -20,6 +20,7 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-field-definition.module';
 
+
 import { FusionRoutingModule } from './fusion.routes';
 
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';

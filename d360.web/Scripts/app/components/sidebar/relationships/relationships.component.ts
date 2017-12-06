@@ -16,7 +16,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                 </div>
         `,
     providers: [PermissionsService, ObjectDetailService]
-})
+})  
 
 export class RelationshipsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;

@@ -34,6 +34,9 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_FIELDS_ROOT, loadChildren: './components/sidebar/fields/fields.module#FieldsModule?chunkName=fieldsChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_RESPONSIBILITIES_ROOT, loadChildren: './components/sidebar/permissions/permissions.module#PermissionsModule?chunkName=permissionsSidebarChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_SHOPPING_CART_ROOT, loadChildren: './components/shoppingcart/shopping-cart.module#ShoppingCartModule?chunkName=shoppingCartChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_ITEM_FOLLOW_ROOT, loadChildren: './components/sidebar/itemfollow/itemfollow.module#ItemFollowModule?chunkName=itemfollowChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_ITEM_OWN_ROOT, loadChildren: './components/sidebar/itemown/itemown.module#ItemOwnModule?chunkName=itemownChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_MEMBER_GROUP_ROOT, loadChildren: './components/sidebar/membergroup/membergroup.module#MemberGroupModule?chunkName=membergroupChunk' }, 
 ];
 
 @NgModule({

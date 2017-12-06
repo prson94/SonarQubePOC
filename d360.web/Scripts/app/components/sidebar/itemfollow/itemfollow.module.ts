@@ -12,10 +12,11 @@ import {
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
-import { FieldsRoutingModule } from './fields.routes';
 
-import { FieldDefinitionComponent } from './field-definition.component';
-import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
+import { ItemFollowRoutingModule } from './itemfollow.routes';
+
+import { ItemFollowComponent } from './itemfollow.component';
+import { ResourceModule } from '../../resource/resource.module';
 
 
 @NgModule({
@@ -25,7 +26,7 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
         RouterModule,
 
         //routing 
-        FieldsRoutingModule,
+        ItemFollowRoutingModule,
 
         //prime
         ButtonModule,
@@ -33,14 +34,14 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
         //d3s        
         CoreModule,
         TilesModule,
-        SharedFieldDefinitionModule,
-        
+        ResourceModule
+
     ],
     declarations: [
-        FieldDefinitionComponent,
+        ItemFollowComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
-export class FieldsModule { }
+export class ItemFollowModule { }

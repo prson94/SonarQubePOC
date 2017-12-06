@@ -12,9 +12,10 @@ import {
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
-import { FieldsRoutingModule } from './fields.routes';
 
-import { FieldDefinitionComponent } from './field-definition.component';
+import { MemberGroupRoutingModule } from './membergroup.routes';
+
+import { MemberGroupComponent } from './membergroup.component';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 
 
@@ -25,7 +26,7 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
         RouterModule,
 
         //routing 
-        FieldsRoutingModule,
+        MemberGroupRoutingModule,
 
         //prime
         ButtonModule,
@@ -34,13 +35,13 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
         CoreModule,
         TilesModule,
         SharedFieldDefinitionModule,
-        
+
     ],
     declarations: [
-        FieldDefinitionComponent,
+        MemberGroupComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
-export class FieldsModule { }
+export class MemberGroupModule { }

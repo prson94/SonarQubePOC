@@ -36,6 +36,9 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private showResourcesLink: boolean = ((CompanySettings.ShowResources) && (CompanySettings.ShowResources.toUpperCase() == 'TRUE'));
     PageMode = PageMode;
     private allowChangePassword = !SingleSignOn;
+    itemsOwn: RightSidebarItem;
+    itemsFollow: RightSidebarItem;
+    memberGroups: RightSidebarItem;
 
     constructor(
         protected router: Router,
@@ -76,6 +79,13 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
                     this.clearSidebar();
                     this.setCommonRightSideBar(false, false, false, false, false, true, false);
+                    this.itemsOwn = new RightSidebarItem('Items Own', 'itemOwn', ['fa-tasks'], `/sidebar/itemown/${resourceId}`);
+                    this.rightSidebarService.showItem(this.itemsOwn);
+                    this.memberGroups = new RightSidebarItem('Member Groups', 'memberGroup', ['fa-user-circle'], `/sidebar/membergroup/${resourceId}`);
+                    this.rightSidebarService.showItem(this.memberGroups);
+                    this.itemsFollow = new RightSidebarItem('Items Follow', 'itemFollow', ['fa-user-plus'], `/sidebar/itemfollow/${resourceId}`);
+                    this.rightSidebarService.showItem(this.itemsFollow);
+
                 });
 
             this.pageMode = PageMode.Default;

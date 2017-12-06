@@ -322,14 +322,14 @@ namespace d360.web.Controllers
                         var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == resource.ID).SingleOrDefault();
                         if (companyResource == null)
                         {
-                            if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
-                            {
+                          //  if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
+                            //{
                                 Community.Add<CompanyResource>(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
-                            }
-                            else
-                            {
-                                resource = null;
-                            }
+                            //}
+                            //else
+                            //{
+                             //   resource = null;
+                           // }
                         }
 
                         // Check b/c the company may not allow for new users to be added automatically.  If user was not already 

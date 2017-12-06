@@ -61,7 +61,7 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
-
+        //ResourceFollowingTile,
         ResourceRoutingModule,
 
         //prime
@@ -86,6 +86,9 @@ import {
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
         SharedObjectGovernanceModule,
+    ],
+    exports: [
+        ResourceFollowingTile
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

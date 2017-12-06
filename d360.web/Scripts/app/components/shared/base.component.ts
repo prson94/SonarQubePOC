@@ -32,6 +32,7 @@ export class BaseComponent {
     impactSidebar: RightSidebarItem;
     relationsSidebar: RightSidebarItem;
     monitorSidebar: RightSidebarItem;
+    userprofileSitebar: RightSidebarItem;
     //tabs
 
     lineageShowUsageOnly: boolean = false;
@@ -131,6 +132,9 @@ export class BaseComponent {
                 this.monitorSidebar = new RightSidebarItem('Workflow Monitor', 'monitor', ['fa-television'], `/sidebar/workflowmonitor${this.objectContextUrl()}`);
                 this.rightSidebarService.showItem(this.monitorSidebar);
             }
+
+            
+
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
                 item => {

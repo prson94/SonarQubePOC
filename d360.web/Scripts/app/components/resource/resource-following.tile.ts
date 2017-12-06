@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { ResourcesService } from '../../services/resources.service';
 import { Resource, CountObject } from '../../models/resource.model';
+import { BaseComponent } from '../shared/base.component';
 
 declare var CurrentResourceID;
 
@@ -32,7 +33,7 @@ declare var CurrentResourceID;
     providers: [ResourcesService]
 })
 
-export class ResourceFollowingTile implements OnChanges {
+export class ResourceFollowingTile extends BaseComponent implements OnChanges {
     @Input() resourceId: any = 0;
     @Input() resource: Resource = null;
     private items: CountObject[] = new Array<CountObject>();
@@ -42,7 +43,9 @@ export class ResourceFollowingTile implements OnChanges {
     isLoading = false;
     isMe = false;
 
-    constructor(private resourcesService: ResourcesService) { }
+    constructor(private resourcesService: ResourcesService) {
+        super();
+    }
     
     ngOnChanges() {
         this.load();
