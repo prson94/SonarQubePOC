@@ -15,9 +15,9 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                     <div class="col s11">
                         <div class="row" *ngIf="!showEdit">
                             <div class="col s12 toolbox">                                
-                                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() ,'fa-question-circle purple-text': isChallenge(), 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span> <span class="user">                                    
+                                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() ,'fa-question-circle purple-text': isChallenge(), 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span>&nbsp;<span class="user">                                    
                                     <d3s-preview-tooltip objectType="Resource" [objectId]="comment.CreatingResourceID">{{comment.ResourceName}}</d3s-preview-tooltip>
-                                </span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span> 
+                                </span>&nbsp;<span class="postDate">{{comment.DateCreated | date:'medium'}}</span> 
                                 <div *ngIf="showTools" class="comment-tools">
                                     <a *ngIf="canReply()" class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
                                     <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
@@ -54,7 +54,7 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                 <div class="row reply" *ngFor="let response of comment?.Comments">
                     <div class="col s2 right-align"><img class="user" height="35" [src]="'/resources/image/' + response.CreatingResourceID + '?size=35'" width="35"></div>
                     <div class="col s10">
-                        <div><span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID">{{response.ResourceName}}</d3s-preview-tooltip></span> <span class="postDate">{{response.DateCreated | date:'medium'}}</span>                        
+                        <div><span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.DateCreated | date:'medium'}}</span>                        
                         <div [innerHtml]="response.Body"></div>                            
                     </div>                                
                 </div>                 
