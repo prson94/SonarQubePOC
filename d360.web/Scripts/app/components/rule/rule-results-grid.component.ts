@@ -14,7 +14,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                 <header>
                     <span *ngIf="showTitle; else noTitle">Results</span>
                     <ng-template #noTitle>&nbsp;</ng-template>
-                    <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();" [hasRefresh]="true" (refreshClick)="getData();"></d3s-tile-actions>
+                    <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" [hasRefresh]="true" (refreshClick)="getData();"></d3s-tile-actions>
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading">
@@ -57,7 +57,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     @Input() showTitle: boolean = true;
     
     simpleTextFilter: string;
-    showSimpleFilter: boolean = true;
+    showSimpleFilter: boolean = false;
     
     private rowsPerPage: number = 10;
     private results: RuleResultPagedResults;
