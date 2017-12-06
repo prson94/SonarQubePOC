@@ -1,6 +1,6 @@
 ﻿<div class="row" *ngIf="!isLoading" [ngSwitch]="pageMode">
     <div *ngSwitchDefault>
-        <div class="col s12 m12 l7">
+        <div class="col s12 m6 l6">
             <div class="tile tile-detail">
                 <div class="row">
                     <header>
@@ -9,21 +9,7 @@
                     <div class="col l3 m3 s12">
                         <img [src]="'/resources/image/' + resourceId + '?size=200'" style="margin-top:5px;width:100%" />
                     </div>                    
-                    <div class="col l2 m2 s12">
-                        <d3s-object-followers [followerCount]="statistics?.FollowerCount" (click)="pageMode = PageMode.Followers"></d3s-object-followers>
-                    </div>
-                    <div class="col l2 m2 s12">
-                        <d3s-object-board [commentCount]="statistics?.CommentCount" [lastCommentDate]="CommentLast" (click)="pageMode = PageMode.Board"></d3s-object-board>
-                    </div>
-                    <div class="col l5 m5 s12">
-                        <d3s-object-health [objectType]="'Resource'" [objectID]="resourceId" [score]="statistics?.Score" (click)="pageMode = PageMode.Governance"></d3s-object-health>
-                    </div>
-                </div>
-
-
-
-                <div class="row">
-                    <div class="col s12">
+                    <div class="col l9 m9 s12">
                         <div style="padding-bottom:0">
                             <object-detail [objectType]="'Resource'" [objectID]="resourceId"></object-detail>
                         </div>
@@ -31,12 +17,11 @@
                 </div>
             </div>
         </div>
-        <div class="col s12 m12 l5">
+        <div class="col s12 m6 l6">
             <div>
                 <d3s-assignments *ngIf="!isMe" [resourceId]="resourceId" (showItemDetail)="showAssignment($event)"></d3s-assignments>
                 <d3s-assignments *ngIf="isMe" (showItemDetail)="showAssignment($event)"></d3s-assignments>
             </div>
-            <d3s-resource-groups [resourceId]="resourceId"></d3s-resource-groups>
         </div>
     </div>
     <div *ngSwitchCase="PageMode.EditingInfo">
@@ -70,27 +55,6 @@
         </div>
     </div>
 </div>
-<div *ngIf="!isLoading" [ngSwitch]="pageMode" class="row">
-    <div *ngSwitchDefault class="col s12">
-        <div class="tile tile-detail">
-            <d3s-resource-responsibility-tile [resource]="resource"></d3s-resource-responsibility-tile>
-        </div>
-        <div class="tile tile-detail">
-            <d3s-resource-following-tile [resource]="resource"></d3s-resource-following-tile>
-        </div>
-    </div>
-    <div *ngSwitchCase="PageMode.Board" class="col s12">
-        <div class="tile tile-detail">
-            <div style="text-align:right;cursor:pointer;font-size:1.6rem;" (click)="pageMode = PageMode.Default"><i class="fa fa-remove"></i></div>
-            <d3s-social-board [hasNewInput]="false" [hasCloseButton]="'true'" [objectType]="'Resource'" [objectID]="resourceId" [objectName]="'Current User'" (countsChanged)="updateStatistics()" (close)="pageMode = pageMode.Default"></d3s-social-board>
-        </div>
-    </div>    
-    <div *ngSwitchCase="PageMode.Governance" class="col s12">
-        <div class="tile tile-detail">
-            <div style="text-align:right;cursor:pointer;font-size:1.6rem;" (click)="pageMode = PageMode.Default"><i class="fa fa-remove"></i></div>
-            <d3s-object-health-details [objectID]="resourceId" [objectType]="'Resource'" [objectName]="resource?.FirstName + ' ' + resource?.LastName"></d3s-object-health-details>
-        </div>
-    </div>    
-</div>
+
 
 

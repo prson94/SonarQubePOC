@@ -16,7 +16,7 @@ import { TilesModule } from '../../shared/tiles/tiles.module';
 import { ItemOwnRoutingModule } from './itemown.routes';
 
 import { ItemOwnComponent } from './itemown.component';
-import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
+import { D3SSharedModule } from '../../shared/shared.module';
 
 
 @NgModule({
@@ -34,11 +34,12 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
         //d3s        
         CoreModule,
         TilesModule,
-        SharedFieldDefinitionModule,
+        D3SSharedModule
+        
 
     ],
     declarations: [
-        ItemOwnComponent,
+        ItemOwnComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

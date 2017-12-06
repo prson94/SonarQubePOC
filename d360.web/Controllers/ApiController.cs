@@ -5747,15 +5747,20 @@ where    A.RuleID = @id", new { id });
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 2,
+                            columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Name", Value = resource.FormatDisplayName() }
+                                new ReadOnlyField { Name = "Name", Value = resource.FormatDisplayName() },
                             },
-                            SecondColumnFields = new List<ReadOnlyField>
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = resource.GetName(i => i.Email), FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
-                            }
+                            },
                         });
 
                         var lastSeen = getUserLastSeenText(resource.DateLastLoggedIn);

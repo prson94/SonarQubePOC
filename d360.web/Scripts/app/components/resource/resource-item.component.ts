@@ -89,7 +89,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                 });
 
             this.pageMode = PageMode.Default;
-            this.updateStatistics();
+            //this.updateStatistics();
         });
     }
 

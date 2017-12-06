@@ -16,7 +16,7 @@ import { TilesModule } from '../../shared/tiles/tiles.module';
 import { MemberGroupRoutingModule } from './membergroup.routes';
 
 import { MemberGroupComponent } from './membergroup.component';
-import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
+import { ResourceModule } from '../../resource/resource.module';
 
 
 @NgModule({
@@ -34,7 +34,7 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
         //d3s        
         CoreModule,
         TilesModule,
-        SharedFieldDefinitionModule,
+        ResourceModule
 
     ],
     declarations: [

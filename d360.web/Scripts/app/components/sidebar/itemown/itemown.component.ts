@@ -10,7 +10,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">  
-                        <d3s-field-definition-tile [resourceID]="resourceID" ></d3s-field-definition-tile>
+                        <d3s-resource-responsibility-tile [resourceId]="resourceId" ></d3s-resource-responsibility-tile>
                     </div>
                 </div>
             </div>
@@ -20,7 +20,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 
 export class ItemOwnComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    resourceID: number;
+    resourceId: number;
    
 
     constructor(
@@ -31,7 +31,7 @@ export class ItemOwnComponent extends BaseComponent implements OnInit, OnDestroy
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.resourceID = +params['resourceID']; // (+) converts string 'id' to a number
+            this.resourceId = +params['resourceID']; // (+) converts string 'id' to a number
             });        
     }
 

@@ -19,6 +19,8 @@ import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
 
+
+
 import { ResourceApiComponent } from './resource-api.component';
 import { ResourceComponent } from './resource.component';
 import { ResourceGroupsComponent} from './resource-groups.component';
@@ -50,7 +52,7 @@ import {
         ResourceListComponent,
         ResourceGroupsComponent,    
         ResourceFollowingGridTile,
-        ResourceFollowingTile,  
+        ResourceFollowingTile,
         ResourcePasswordComponent,       
         ResourceKeyComponent,
         ResourceChangePwdComponent,
@@ -88,7 +90,8 @@ import {
         SharedObjectGovernanceModule,
     ],
     exports: [
-        ResourceFollowingTile
+        ResourceFollowingTile,
+        ResourceGroupsComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
