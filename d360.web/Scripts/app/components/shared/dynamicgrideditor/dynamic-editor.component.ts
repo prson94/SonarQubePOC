@@ -59,7 +59,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() hasCloseButton = false;
     @Input() newActionName: string = "New";
     @Input() hasHeader = true;
-    
+    @Input() newAsType: boolean;
+
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -70,7 +71,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     fields: EditorField[] = [];
    
     categories: EditorCategory[] = [];
-
     editedItem: any;
 
     hasIconFields = false;
@@ -94,8 +94,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     private load() {
-        if (this.selection != undefined)
-            this.editedItem = _.cloneDeep(this.selection);
+        if (this.selection != undefined) {
+            if (this.newAsType) {
+                this.editedItem = _.cloneDeep(this.selection);
+                this.action = this.newActionName;
+            } else {
+                this.editedItem = _.cloneDeep(this.selection);
+            }
+        }        
         else {
             this.action = this.newActionName;
             this.editedItem = new Object();
@@ -110,7 +116,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             .then(result => {
                 this.isLoading = false;
                 this.categories = [];
-                
+
                 result = _.orderBy(result, [field => field.Category ? field.Category.toLowerCase():''], ['asc']);
                 this.fields = result;                
                 let previousCategory = null;
@@ -119,6 +125,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 let firstRow = true;
 
                 this.fields.forEach(f => {
+                    if (this.newAsType == true && f.FieldName == "Name") {
+                        f.Value = "";
+                    }
                     currentCategory = f.Category;
                     if (firstRow) {
                         previousCategory = f.Category;
@@ -248,7 +257,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
     
     onSubmit() {
-        let action = (this.selection == null ? "new" : "edit");
+        let action = ((this.selection == null || this.newAsType == true) ? "new" : "edit");
         let values: any = {};
 
         //takes the form and convert any array values to , separated string values

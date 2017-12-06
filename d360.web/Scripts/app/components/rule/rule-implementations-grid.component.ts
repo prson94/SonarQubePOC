@@ -26,7 +26,14 @@ import { MessagesService } from '../../services/messages.service';
                             <ng-template pTemplate type="body" let-item="rowData">
                                 <a (click)="showRuleImplementation(item);">{{item.Name}}</a>
                             </ng-template>
-                        </p-column>                        
+                        </p-column>
+                        <p-column [style]="{width:'40px'}">
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="newAs($event, item)"><i class="fa fa-plus"  title="New As"></i></a>
+                                </div>
+                            </ng-template>
+                        </p-column>
                         <p-column [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
@@ -51,7 +58,7 @@ import { MessagesService } from '../../services/messages.service';
                         </p-column>                                                
                     </p-dataTable>
                 </div>  
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'RuleImplementation'" [title]="'Rule Implementation'" [selection]="selected" (saveClick)="saveImplementation($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [newAsType]="newAsType" [objectType]="'RuleImplementation'" [title]="'Rule Implementation'" [selection]="selected" (saveClick)="saveImplementation($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
@@ -83,7 +90,7 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
     filters: GridFilterExpression[] = [];
     relationships: GridRelationshipFilterExpression;
     attributes: GridAttributeFilterExpression;
-
+    newAsType: boolean;
     searchValue: string = "";
     simpleSearchID: number = 0;
     searchDelayMilliSeconds: number = 300;
@@ -104,7 +111,7 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
     ngOnInit() {
        
     }
-    
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['ruleId'] && this.ruleId) {
             this.filters = [];
@@ -186,13 +193,21 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
         this.selected = null;
         this.showEditor = true;
     }
-
+    private newAs(event, item) {
+        this.newAsType = true;
+        this.showEditor = true;
+    }
     private saveImplementation(event) {
+        if (this.newAsType) {
+            event.action = "new";
+            event.item.ID = undefined;
+        }
         event.item.RuleID = this.ruleId;
         this.ruleService.saveRuleImplementation(event.item)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.getData();
+                this.newAsType = false;
                 this.showEditor = false;
             });
     }
