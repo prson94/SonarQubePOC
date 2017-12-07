@@ -3,13 +3,12 @@ import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { ModelsService } from '../../../services/models.service';
 import { SearchResult } from '../../../models/search-result.model';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/components/common/api';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
-    providers: [TypeaheadSearchService, ModelsService],    
+    providers: [TypeaheadSearchService],    
     host: {
         '(document:click)': 'onClick($event)',
         '(window:resize)': 'setMaxHeight()'
@@ -56,8 +55,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit {
     public treeItems: TreeNode[] = [];
     public maxOverlayHeight: string = '800px'
 
-
-    constructor(private renderer:Renderer, private modelsService: ModelsService, private elementRef: ElementRef, private router: Router,
+    constructor(private renderer:Renderer, private elementRef: ElementRef, private router: Router,
                 private typeaheadSearchService: TypeaheadSearchService) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

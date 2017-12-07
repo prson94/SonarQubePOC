@@ -7,7 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import {
     GrowlModule,    
-} from 'primeng/primeng';
+} from 'primeng/components/growl/growl';
 
 import { RightsidebarModule } from './components/shared/rightsidebar/right-sidebar.module';
 import { SiteMenuModule } from './components/shared/menu/site-menu.module';

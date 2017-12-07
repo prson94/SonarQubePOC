@@ -1,5 +1,5 @@
 ﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/components/common/api';
 
 @Pipe({ name: 'dropdownItemToSelectItemPipe' })
 export class DropdownItemToSelectItemPipe implements PipeTransform {

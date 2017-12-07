@@ -57,9 +57,9 @@
     ]
   },
   {
-    "outputFileName": "content/quill/quill.snow.min.css",
+    "outputFileName": "content/quill/v1.3.4/quill.snow.min.css",
     "inputFiles": [
-      "Content/quill/quill.snow.css"
+      "Content/quill/v1.3.4/quill.snow.css"
     ]
   },
   {

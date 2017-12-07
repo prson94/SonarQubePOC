@@ -1,7 +1,7 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule, PreloadingStrategy, Route } from '@angular/router';
+import { Routes, RouterModule, Route } from '@angular/router';
 import { SiteUrlHelpers } from './static/site-url-helpers';
-import { SelectivePreloadingStrategy } from './selective-preloading-strategy';
+
 
 const routes: Routes = [    
     { path: '', redirectTo: SiteUrlHelpers.getDefaultRoute(), pathMatch: 'full' },
@@ -39,10 +39,8 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_MEMBER_GROUP_ROOT, loadChildren: './components/sidebar/membergroup/membergroup.module#MemberGroupModule?chunkName=membergroupChunk' }, 
 ];
 
-@NgModule({
-    providers: [SelectivePreloadingStrategy],
-    imports: [RouterModule.forRoot(routes,
-        { preloadingStrategy: SelectivePreloadingStrategy })],
+@NgModule({    
+    imports: [RouterModule.forRoot(routes)],
     exports: [RouterModule],
 })
 export class AppRoutingModule { }

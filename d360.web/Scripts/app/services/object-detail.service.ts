@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/components/common/api';
 import { FormHelper } from '../models/form.model';
 import { JsonResult } from '../models/jsonresult.model';
 import {

@@ -542,8 +542,9 @@
     <Content Include="Content\primeng\v5.0.2\primeng.min.css" />
     <Content Include="Content\primeng\v5.0.2\theme.css" />
     <Content Include="Content\primeng\v5.0.2\theme.min.css" />
-    <Content Include="Content\quill\quill.snow.css" />
-    <Content Include="Content\quill\quill.snow.min.css" />
+    <Content Include="Content\quill\v1.3.4\quill.min.js" />
+    <Content Include="Content\quill\v1.3.4\quill.snow.css" />
+    <Content Include="Content\quill\v1.3.4\quill.snow.min.css" />
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
@@ -693,7 +694,6 @@
     <Content Include="Scripts\legacy.min.js">
       <DependentUpon>legacy.js</DependentUpon>
     </Content>
-    <Content Include="Scripts\quill.min.js" />
     <Content Include="Scripts\worker-json.js" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
@@ -853,6 +853,7 @@
     <Content Include="Content\primeng\v5.0.2\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\v5.0.2\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v5.0.2\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Content\quill\v1.3.4\quill.min.js.map" />
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>
@@ -946,7 +947,6 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\version.json" />
-    <Content Include="Scripts\quill.min.js.map" />
     <None Include="Properties\PublishProfiles\UI - UAT - AU - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - UAT - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - UAT - UK - London.pubxml" />
@@ -1331,7 +1331,6 @@
     <TypeScriptCompile Include="Scripts\app\models\shortcuts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\tooltip-info.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\array-to-selectitem.pipe.ts" />
-    <TypeScriptCompile Include="Scripts\app\selective-preloading-strategy.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />

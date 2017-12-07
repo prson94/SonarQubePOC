@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/components/common/api';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';

@@ -1,4 +1,4 @@
-﻿import { SelectItem } from 'primeng/primeng'; 
+﻿import { SelectItem } from 'primeng/components/common/api'; 
 
 export interface IResponsibilityTypeService {
     getResponsibilityTypes(): Promise<ResponsibilityType[]>;

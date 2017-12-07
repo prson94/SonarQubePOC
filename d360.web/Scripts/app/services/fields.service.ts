@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups, LookupItem } from '../models/fields.model';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/components/common/api';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { JsonResult } from '../models/jsonresult.model';

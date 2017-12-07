@@ -41,7 +41,7 @@ import {
     RuleStepPromotionHistoryModel,
     FusionExecutionResultPaged,
 } from '../models/fusion.model';
-import { TreeNode, SelectItem } from 'primeng/primeng';
+import { TreeNode, SelectItem } from 'primeng/components/common/api';
 import { GridColumn } from '../models/grid-definition.model';
 import { SortOrder } from '../models/enums.model';
 

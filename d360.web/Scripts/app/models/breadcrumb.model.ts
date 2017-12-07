@@ -1,4 +1,4 @@
-﻿import { TreeNode } from 'primeng/primeng';
+﻿import { TreeNode } from 'primeng/components/common/api';
 
 export class Breadcrumb {
     text: string = "-";

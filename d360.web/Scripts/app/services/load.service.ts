@@ -4,7 +4,7 @@ import { LoadDetail, LoadFilePostModel, LoadColumn, LoadColumnValue } from '../m
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { GridColumn } from '../models/grid-definition.model';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/components/common/api';
 import { JsonResult } from '../models/jsonresult.model';
 
 

@@ -1,5 +1,5 @@
 ﻿import { EventEmitter } from '@angular/core';
-import { TreeNode, MenuItem } from 'primeng/primeng';
+import { TreeNode, MenuItem } from 'primeng/components/common/api';
 import { ToolbarItem } from './object-detail.model';
 
 export class BaseEditorModel {
