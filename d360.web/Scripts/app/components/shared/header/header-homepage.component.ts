@@ -28,11 +28,11 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
     @Input() currentObjectId: number;
 
     private subBreadcrumb: any;
-    private isLoading = false;
+    public isLoading = false;
 
 
     private name: string;
-    private visible: boolean = true;
+    public visible: boolean = true;
 
     constructor(private router: Router,
         private favoritesService: FavoritesService,

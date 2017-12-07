@@ -35,20 +35,20 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     private overlayEditLinkKey = null;
     private selection = null;
     private model: ImpactDiagramModel;
-    private selectedObject: string;
-    private selectedObjectID: number;
+    public selectedObject: string;
+    public selectedObjectID: number;
 
     private zoomLevel: number = 50;
     private tab: string = 'info';
-    private headerText: string = 'Info';
-    private isWindowVisible = false;
-    private isFilterVisible = false;
+    public headerText: string = 'Info';
+    public isWindowVisible = false;
+    public isFilterVisible = false;
     private allSelected = true;
     private noneSelected = false;
-    private canApplyFilter = false;
-    private menuItems: MenuItem[] = [];
+    public canApplyFilter = false;
+    public menuItems: MenuItem[] = [];
 
-    private filters: ImpactFilter[] = [];
+    public filters: ImpactFilter[] = [];
     FilterType = FilterType;
 
     constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService) {
@@ -421,7 +421,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
     }
 
-    private menuAction(e: MenuItem) {
+    public menuAction(e: MenuItem) {
         if (e.icon == 'fa-refresh') {
             this.refreshDiagram();
         } else if (e.icon == 'fa-info-circle') {
@@ -441,14 +441,14 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         }
     }
 
-    private selectAll() {
+    public selectAll() {
         this.canApplyFilter = true;
         this.filters.forEach(f => {
             f.selected = true;
         });
     }
 
-    private selectNone() {
+    public selectNone() {
         this.canApplyFilter = true;
         this.filters.forEach(f => {
             f.selected = false;
@@ -464,7 +464,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
             this.noneSelected = true;
     }
 
-    private filterView() {
+    public filterView() {
         this.canApplyFilter = false;
         this.diagram.startTransaction("filterView");
 

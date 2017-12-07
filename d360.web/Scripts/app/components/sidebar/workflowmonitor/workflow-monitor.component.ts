@@ -95,13 +95,13 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
 
 export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
     
-    private workflows: WorkflowListItem[] = [];
-    private selected: WorkflowListItem = null;
+    public workflows: WorkflowListItem[] = [];
+    public selected: WorkflowListItem = null;
 
-    private details: any[] = [];
-    private selectedItem: any = null;
+    public details: any[] = [];
+    public selectedItem: any = null;
 
-    private itemdetails: any[] = [];
+    public itemdetails: any[] = [];
     private sub: any;
 
     constructor(
@@ -138,7 +138,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private loadWorkflowItems(selected: WorkflowListItem) {
+    public loadWorkflowItems(selected: WorkflowListItem) {
         this.itemdetails = [];
         this.workflowService.getWorkflowItems(selected.VersionID)
             .then(res => {
@@ -151,7 +151,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private loadItemsDetails(selectedItem: any) {
+    public loadItemsDetails(selectedItem: any) {
 
         this.workflowService.getWorkflowItemDetails(this.selected.ID, selectedItem.ItemID)
             .then(res => {

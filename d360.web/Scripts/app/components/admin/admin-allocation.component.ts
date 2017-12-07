@@ -20,7 +20,7 @@ export class AdminAllocationComponent extends BaseComponent {
     @Input() objectID: number;
     @Input() objectType: string;
 
-    private rows = [0];
+    public rows = [0];
 
-    private allocations: any[] = [{ Name: 'Grammatic Type Allocation' }];
+    public allocations: any[] = [{ Name: 'Grammatic Type Allocation' }];
 }

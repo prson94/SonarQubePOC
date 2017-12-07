@@ -50,11 +50,11 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit {
     
     private results: SearchResult[];
     private result: SearchResult;
-    private showSearch: boolean;
+    public showSearch: boolean;
     private hasTree: boolean;
-    private searchValue: string;
-    private treeItems: TreeNode[] = [];
-    private maxOverlayHeight: string = '800px'
+    public searchValue: string;
+    public treeItems: TreeNode[] = [];
+    public maxOverlayHeight: string = '800px'
 
 
     constructor(private renderer:Renderer, private modelsService: ModelsService, private elementRef: ElementRef, private router: Router,

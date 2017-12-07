@@ -24,7 +24,7 @@ export class SimilarItemsComponent implements OnChanges {
     @Input() uri: string = '';
     @Input() query: string = '';
 
-    private items = [];
+    public items = [];
 
     constructor(private uriBasedService: UriBasedService) { }
 

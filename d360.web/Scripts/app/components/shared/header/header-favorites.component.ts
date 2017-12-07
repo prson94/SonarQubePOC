@@ -31,7 +31,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     private isLoading = false;
 
     private name: string;
-    private visible: boolean = true;
+    public visible: boolean = true;
 
     constructor(private router: Router,
         private favoritesService: FavoritesService,

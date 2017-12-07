@@ -34,7 +34,7 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
 
     @Output() onCancel = new EventEmitter();
 
-    private artifactType: ArtifactType;
+    public artifactType: ArtifactType;
     
     private count: number = 0;
     private signoff: boolean = false;

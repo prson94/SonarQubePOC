@@ -25,8 +25,8 @@ export class LookupTooltipComponent  {
     @HostBinding('style.background') @Input() foreColor: string;
 
     private hideHandle: number = 0;
-    private active: boolean = false;
-    private data: LookupTooltipInfo = null;
+    public active: boolean = false;
+    public data: LookupTooltipInfo = null;
     
 
     @Output() click = new EventEmitter();    

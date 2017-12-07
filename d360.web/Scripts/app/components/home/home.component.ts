@@ -21,18 +21,18 @@ declare var CompanySettings;
 })
 
 export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
-    private showActivityDetails: boolean = false;
-    private showBoardDetails: boolean = false;
-    private showAssignmentDetails: boolean = false;
+    public showActivityDetails: boolean = false;
+    public showBoardDetails: boolean = false;
+    public showAssignmentDetails: boolean = false;
 
-    private showActivityTile: boolean = true;
-    private showBoardTile: boolean = true;
-    private showAssignmentTile: boolean = true;
-    private showTitle: boolean = false;
+    public showActivityTile: boolean = true;
+    public showBoardTile: boolean = true;
+    public showAssignmentTile: boolean = true;
+    public showTitle: boolean = false;
     private titleSize: string = '38pt';
     private titleColor: string = '#fff';
     private title: string = 'D3S';
-    private backgroundImage: string = '';
+    public backgroundImage: string = '';
 
     private activityDaysToLookBack: number = 7;
     private boardDaysToLookBack: number = 7;
@@ -44,10 +44,10 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
     private selectedWorkflowType: WorkflowType;
 
-    private numTiles: number = 3;
+    public numTiles: number = 3;
     private colSize = 4;
-    private hasResults = false;
-    private dashboard: Dashboard = null;
+    public hasResults = false;
+    public dashboard: Dashboard = null;
 
     constructor(protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,        

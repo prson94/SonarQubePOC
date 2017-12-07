@@ -30,8 +30,8 @@ export class PreviewTooltipComponent  {
     @HostBinding('style.background') @Input() foreColor: string;
 
     private hideHandle: number = 0;
-    private active: boolean = false;
-    private data: TooltipInfo = null;
+    public active: boolean = false;
+    public data: TooltipInfo = null;
     
 
     @Output() click = new EventEmitter();    

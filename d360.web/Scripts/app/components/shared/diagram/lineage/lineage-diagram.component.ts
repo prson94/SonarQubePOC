@@ -65,7 +65,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private selectedObjects;
     private objectsLoading = false;
 
-    private diagramMode: DiagramMode = DiagramMode.Diagram;
+    public diagramMode: DiagramMode = DiagramMode.Diagram;
     DiagramMode = DiagramMode;
 
     //control properties
@@ -74,7 +74,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private showLinkTabs = false;
     private showEditTab = false;
     private showInfoTab = false;
-    private menuItems: MenuItem[] = [];
+    public menuItems: MenuItem[] = [];
     private editorMenuItems: MenuItem[] = [];
     private tab: string = 'info';
     private headerText = '';
@@ -717,16 +717,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
         }
 
-       
-
         this.validateLink(<LinkModelV2>link);
 
         this.diagram.commitTransaction('Link Drawn');
-        //console.log('LinkDrawn', e.subject.data, intersects, (<go.GraphLinksModel>this.diagram.model).linkDataArray);
-
     }
 
-    private menuClick(e: MenuItem) {
+    public menuClick(e: MenuItem) {
         if (e.icon == 'fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
         } else if (e.icon == 'fa-pencil') {

@@ -11,6 +11,7 @@ export class TooltipInfo {
     TypeName: string;
     Url: string;    
     FieldValues: TooltipFieldValue[];    
+    Description: string;
 }
 
 export class LookupTooltipInfo {

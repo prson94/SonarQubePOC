@@ -30,9 +30,9 @@ declare var CompanySettings;
 
 export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestroy {
         
-    private isAdmin: boolean = false;
-    private siteMenu: SiteMenu[] = [];
-    private favorites: SiteMenu;
+    public isAdmin: boolean = false;
+    public siteMenu: SiteMenu[] = [];
+    public favorites: SiteMenu;
     
     private adminMenu: SiteMenu;  
     private subSiteNav: any;

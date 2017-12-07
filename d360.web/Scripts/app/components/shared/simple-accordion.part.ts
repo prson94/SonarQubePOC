@@ -32,6 +32,7 @@ export class SimpleAccordion {
     @Output() activeChange = new EventEmitter();
 
     state = 'default';
+    public hover: boolean = false;
         
     toggleActive() {
         this.active = !this.active;

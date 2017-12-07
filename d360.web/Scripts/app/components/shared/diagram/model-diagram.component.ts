@@ -60,15 +60,14 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
 
     private items: HierarchyDiagramModel[] = [];
-    private selectedNode: any = null;
+    public selectedNode: any = null;
 
-    private menuItems: MenuItem[] = [];
-    private zoomLevel: number = 50;
-    private isWindowVisible = false;
-    private headerText = 'Info';
-    private tab = 'info';
-
-
+    public menuItems: MenuItem[] = [];
+    public zoomLevel: number = 50;
+    public isWindowVisible = false;
+    public headerText = 'Info';
+    public tab = 'info';
+    
     constructor(private myElement: ElementRef, private diagramService: DiagramService) {
         super();
     }
@@ -171,7 +170,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     }
     
 
-    private menuAction(e: MenuItem) {
+    public menuAction(e: MenuItem) {
         if (e.icon == 'fa-refresh menu-icon') {
             this.populateDiagram();
         } else if (e.icon == 'fa-info-circle menu-icon') {

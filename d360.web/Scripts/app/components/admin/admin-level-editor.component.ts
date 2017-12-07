@@ -11,7 +11,7 @@ import * as _ from 'lodash';
                 <header>{{action}} Level</header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <form (ngSubmit)="onSubmit()" #levelForm="ngForm">
-                    <div class="row" *ngIf="!isLoading && (level || levels.length > 0)">
+                    <div class="row" *ngIf="!isLoading && ((level != null) || levels.length > 0)">
                         <div class="col l6 s12">
                             <div class="FieldName">Name</div>
                             <div><input required type="text" name="name" pInputText [(ngModel)]="editedLevel.Name" style="width: 100%;" #name="ngModel" maxlength="250" /></div>

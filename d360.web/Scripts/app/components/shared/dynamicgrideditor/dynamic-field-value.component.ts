@@ -35,7 +35,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     @Input() item: any;
     @Input() isComplex: boolean = false;
 
-    private fieldType: string;
+    public fieldType: string;
     private fieldValue: any;
 
     constructor(private router: Router) {

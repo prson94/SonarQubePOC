@@ -33,12 +33,12 @@ declare var ResourceEmail;
 })
 
 export class HeaderProfileComponent {    
-    private active: boolean = false;
+    public active: boolean = false;
     private hideHandle: number = 0;
-    private resourceId: number = CurrentResourceID;
-    private singleSignOn: boolean = SingleSignOn;
-    private userName: string = ResourceName;
-    private userEmail: string = ResourceEmail;
+    public resourceId: number = CurrentResourceID;
+    public singleSignOn: boolean = SingleSignOn;
+    public userName: string = ResourceName;
+    public userEmail: string = ResourceEmail;
 
     constructor(
         private router: Router,        
@@ -46,7 +46,7 @@ export class HeaderProfileComponent {
     ) { }
     
 
-    private resourceUrl() {
+    public resourceUrl() {
         return SiteUrlHelpers.getObjectUrl('Resource', this.resourceId);
     }
 

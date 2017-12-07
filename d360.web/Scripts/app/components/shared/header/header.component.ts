@@ -15,7 +15,7 @@ import { BaseComponent } from '../../shared/base.component';
 })
 
 export class HeaderComponent extends BaseComponent {   
-    private controlWidth: number = 0;
+    public controlWidth: number = 0;
 
     constructor(private router: Router, private route: ActivatedRoute) {
         super();

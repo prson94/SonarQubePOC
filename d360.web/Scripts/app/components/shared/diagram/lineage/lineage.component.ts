@@ -53,7 +53,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     private target: string;
     private targetId: string;
 
-    private diagramMode: DiagramMode = DiagramMode.Diagram;
+    public diagramMode: DiagramMode = DiagramMode.Diagram;
     DiagramMode = DiagramMode;
 
     //control properties

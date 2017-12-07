@@ -51,7 +51,7 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
     private initialLinks: go.Link[] = [];
     private initialNodes: go.Node[] = [];
 
-    private menuItems: MenuItem[] = [];
+    public menuItems: MenuItem[] = [];
 
     constructor(private diagramService: DiagramService, protected messagesService: MessagesService) {
         super();
@@ -116,7 +116,7 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         });
     }
 
-    private menuClick(e: MenuItem) {
+    public menuClick(e: MenuItem) {
         if (e.icon == 'fa-search-plus') {
             this.myDiagram.scale += .1;
             if (this.myDiagram.scale > 2.5)

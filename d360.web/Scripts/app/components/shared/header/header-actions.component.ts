@@ -31,10 +31,10 @@ declare var CompanySettings;
 
 export class HeaderActionsComponent {
     @Output() controlWidthChange = new EventEmitter();    
-    private isAdminUrl = false;
+    public isAdminUrl = false;
     private uri = "";
-    private hasRaiseIssueButton: boolean = true;
-    private showShoppingCart: boolean = false;
+    public hasRaiseIssueButton: boolean = true;
+    public showShoppingCart: boolean = false;
 
     private routerSub;
     private subObjectChange: any;
@@ -47,7 +47,7 @@ export class HeaderActionsComponent {
     private controlWidth = 0;
 
     constructor(
-        private headerActionsService: HeaderActionsService,
+        public headerActionsService: HeaderActionsService,
         private breadcrumbService: HeaderBreadcrumbService,
         private favoritesService: FavoritesService,
         private router: Router) { }

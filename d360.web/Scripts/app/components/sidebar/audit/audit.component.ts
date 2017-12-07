@@ -101,7 +101,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             });
     }
 
-    private loadAuditsLazy(event: LazyLoadEvent) {
+    public loadAuditsLazy(event: LazyLoadEvent) {
         //event.first = First row offset
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
@@ -125,7 +125,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         this.getData();
     }
 
-    private export() {
+    public export() {
         this.auditService.exportToExcel(this.objectID, this.objectType, this.objectName, this.filters);
     }
 }

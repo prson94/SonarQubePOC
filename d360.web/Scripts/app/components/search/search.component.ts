@@ -21,18 +21,18 @@ declare var CompanySettings;
 })
 
 export class SearchComponent extends BaseComponent implements OnInit {
-    private searchResults: SearchResultsObject;
-    private categories: SearchCategories[] = [];
-    private selectedCategory: SearchCategories;
-    private searchText: string;
-    private isExactMatch: boolean = true;
-    private searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
-    private advancedFilters: AdvancedSearchFilter[] = [];
+    public searchResults: SearchResultsObject;
+    public categories: SearchCategories[] = [];
+    public selectedCategory: SearchCategories;
+    public searchText: string;
+    public isExactMatch: boolean = true;
+    public searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
+    public advancedFilters: AdvancedSearchFilter[] = [];
 
-    private resultsPerPage: number = 10;
-    private pageNumber: number = 0;
-    private sub: any;
-    private showAdvanced: boolean = false;
+    public resultsPerPage: number = 10;
+    public pageNumber: number = 0;
+    public sub: any;
+    public showAdvanced: boolean = false;
 
     constructor(private route: ActivatedRoute, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
         super();
@@ -57,7 +57,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         });
     }
 
-    private doSearch(filterCategory?: SearchCategories) {
+    public doSearch(filterCategory?: SearchCategories) {
         this.isLoading = true;
         this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, (this.showAdvanced? undefined: this.searchTypes), filterCategory, this.isExactMatch, this.showAdvanced ? this.advancedFilters : undefined)
             .then(res => {
@@ -67,12 +67,12 @@ export class SearchComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private filterByCategory(category) {
+    public filterByCategory(category) {
         this.selectedCategory = category;
         this.doSearch(this.selectedCategory);
     }
 
-    private paginate(event) {
+    public paginate(event) {
         if (!event.size == undefined) {
             console.log("ERROR : MISSING ITEMS PER PAGE.");
 

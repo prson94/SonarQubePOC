@@ -22,7 +22,7 @@ export class RaiseIssueButtonComponent extends BaseComponent {
         super();
     }
 
-    private raiseIssue() {
+    public raiseIssue() {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`);
     }    
 }

@@ -31,10 +31,10 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 })
 
 export class HeaderTypeaheadSearchComponent {
-    private result: SearchResult;
-    private searchText: string;
-    private results: SearchResult[];
-    private active: boolean = false;
+    public result: SearchResult;
+    public searchText: string;
+    public results: SearchResult[];
+    public active: boolean = false;
     private hideHandle: number = 0;
 
     constructor(

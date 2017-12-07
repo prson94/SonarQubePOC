@@ -22,8 +22,8 @@ export class DeleteForm  {
     @Output() onDeleteFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-    private message: FormMessage = new FormMessage();
-    private isLoading = false;
+    public message: FormMessage = new FormMessage();
+    public isLoading = false;
 
     http: Http;
 
@@ -31,7 +31,7 @@ export class DeleteForm  {
         this.http = http;
     }
 
-    private delete(): void {
+    public delete(): void {
         if (this.isLoading)
             return;
         var headers = new Headers();
@@ -113,7 +113,7 @@ export class DeleteForm  {
 
     }
 
-    private cancel(): void {
+    public cancel(): void {
         this.onCancel.emit(null);
     }
 }
