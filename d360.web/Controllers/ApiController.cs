@@ -7324,12 +7324,10 @@ from	    TaxonomyType FAT
                     var fieldKey = $"Field{field.ID}";
 
                     if (rowDict.ContainsKey(fieldKey))
-                    {
-                        if (rowDict[fieldKey] != null)
-                            document.SetCellValue(rowIndex, ++dataColIndex, rowDict[fieldKey].ToString());
+                    {                        
+                        document.SetCellValue(rowIndex, ++dataColIndex, (rowDict[fieldKey]?? "").ToString());
                     }
                 }
-
             }
 
             #endregion
@@ -7341,7 +7339,7 @@ from	    TaxonomyType FAT
             HttpResponseMessage result = null;
             // serve the file to the client      
             result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
