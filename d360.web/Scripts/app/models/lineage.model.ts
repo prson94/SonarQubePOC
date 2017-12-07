@@ -81,6 +81,7 @@ export class LinkModelV2 {
     intersectTypeId: number;
     state: number;
     predicate: string;
+    predicates: any[] = [];
 
     valid: boolean = true;
     errors = [];

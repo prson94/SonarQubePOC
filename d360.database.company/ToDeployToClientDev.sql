@@ -1,7 +1,8 @@
 ﻿-- lineage.GetByObject -----------------------------
-CREATE procedure [lineage].[GetByObject]
-	@Object varchar(50),
-	@ObjectID int
+ALTER procedure [lineage].[GetByObject]
+--declare
+	@Object varchar(50),-- = 'Artifact',
+	@ObjectID int-- = 1101
 as
 begin
 	--Hold the raw lineage records.
@@ -51,9 +52,12 @@ begin
 				cross apply lineage.GetTrailForObject(P.Subject, P.SubjectID, 0) Src
 		where	Src.IntersectID not in (select IntersectID from @tbl)
 
+
 	-- Return the full results to the caller.
-	select	I.IntersectID,
+	select	distinct
+			I.IntersectID,
 			I.IntersectGroupID,
+			T.IntersectTypeID,
 			SA.ID as SubjectAssetID,
 			I.Subject,
 			I.SubjectID,
@@ -80,6 +84,7 @@ begin
 
 			I.PredicateName as [Predicate]
 	from	@tbl I
+			inner join [Intersect] T on T.ID = I.IntersectID
 			inner join AssetDetail SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
 			inner join AssetDetail OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
 end

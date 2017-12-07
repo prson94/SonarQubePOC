@@ -201,7 +201,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
                 var d = data.nodes[i];
                 var model = new NodeModelV2();
-                model.key = d.key;
+
+                if (d.key != null) //if the key is not passed let gojs assign it and invalidate the placeholder node
+                    model.key = d.key;
+                else
+                    model.valid = false;
+
                 model.assetId = d.assetId;
                 model.assetTypeId = d.assetTypeId;
                 model.object = d.object;
@@ -228,6 +233,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 link.to = d.to;
                 link.state = d.state;
                 link.predicate = d.predicate;
+                link.intersectTypeId = d.intersectTypeId;
 
                 if (link.state == 0)
                     link.category = 'adding';
@@ -898,7 +904,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     new go.Binding("fill", "backColor"),
                     new go.Binding("stroke", "valid", (v, m) => {
                         let data = m.panel.panel.data;
-                        if (data == null) return 'transparent';
+                        if (this.readonly || data == null) return 'transparent';
                         if (data.valid == false) return '#f00';
                         return data.foreColor;
                     })
@@ -997,10 +1003,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.g(go.Shape, {
                 stroke: "gray", strokeWidth: 2
             },
-                new go.Binding("stroke", "valid", function (h) { return h ? "gray" : "#f00" })),
+                new go.Binding("stroke", "valid", function (h) { return h || this.readonly ? "gray" : "#f00" })),
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
-                new go.Binding("stroke", "valid", function (h) { return h ? "gray" : "#f00" }),
-                new go.Binding("fill", "valid", function (h) { return h ? "gray" : "#f00" })), // the arrowhead
+                new go.Binding("stroke", "valid", function (h) { return h || this.readonly ? "gray" : "#f00" }),
+                new go.Binding("fill", "valid", function (h) { return h || this.readonly ? "gray" : "#f00" })), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
                     visible: false,

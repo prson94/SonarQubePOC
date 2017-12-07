@@ -186,6 +186,7 @@ namespace d360.web.Controllers.Services
         {
             public int IntersectID { get; set; }
             public int? IntersectGroupID { get; set; }
+            public int IntersectTypeID { get; set; }
 
             public long SubjectAssetID { get; set; }
             public string Subject { get; set; }
@@ -364,7 +365,31 @@ namespace d360.web.Controllers.Services
                 }
             });
 
-            links = list.Select(i => new Link { from = $"{i.SubjectPrefix}.{i.SubjectAssetID}", to = $"{i.ObjectPrefix}.{i.ObjectAssetID}", intersectId = i.IntersectID, state = (int)i.State, predicate = i.Predicate }).ToList();
+            links = list.Select(i => new Link { from = $"{i.SubjectPrefix}.{i.SubjectAssetID}", to = $"{i.ObjectPrefix}.{i.ObjectAssetID}", intersectId = i.IntersectID, state = (int)i.State, predicate = i.Predicate, intersectTypeId = i.IntersectTypeID }).ToList();
+
+            //add the focal node as a placeholder if no lineage is present
+            if (nodes.Count < 1)
+            {
+                var objectDetail = Company.GetObjectDetail(@object.ToString(), id);
+                var assetDetail = Company.GetAssetDetail(objectDetail.AssetID.GetValueOrDefault());
+
+                if (assetDetail != null && objectDetail != null)
+                    nodes.Add(new Node()
+                    {
+                        key = null,
+                        assetId = objectDetail.AssetID.GetValueOrDefault(),
+                        name = objectDetail.Name,
+                        objectTypeName = objectDetail.TypeName,
+                        @object = @object.ToString(),
+                        objectId = id,
+                        objectType = objectDetail.Type,
+                        objectTypeId = objectDetail.TypeID,
+                        backColor = objectDetail.IconBackColor,
+                        foreColor = objectDetail.IconForeColor,
+                        assetTypeId = assetDetail.AssetTypeID,
+                    });
+
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
