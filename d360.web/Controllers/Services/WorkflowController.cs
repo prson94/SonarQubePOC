@@ -347,7 +347,7 @@ order by wi.StartedOn desc";
         }
 
         [HttpPost, Route("SubmitWorkflowForm/{itemId:int}/{itemStepId:int}")]
-        public HttpResponseMessage SubmitWorkflowForm(int itemId, int itemStepId, List<WorkflowFormModelField> model)
+        public async Task<HttpResponseMessage> SubmitWorkflowForm(int itemId, int itemStepId, List<WorkflowFormModelField> model)
         {
             try
             {
@@ -507,7 +507,7 @@ order by wi.StartedOn desc";
 
                 if (isCompleted)
                 {
-                    Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null? obj.TypeID:-1), ObjectType = type });
+                    await Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null? obj.TypeID:-1), ObjectType = type });
                 }
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
