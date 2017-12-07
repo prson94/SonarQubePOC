@@ -9,7 +9,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
-                    <div class="tile tile-detail">  
+                    <div class="tile">  
                         <d3s-resource-groups [resourceId]="resourceId" ></d3s-resource-groups>
                     </div>
                 </div>
