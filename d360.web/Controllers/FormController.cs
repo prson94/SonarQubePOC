@@ -8118,7 +8118,7 @@ namespace d360.web.Controllers
                 comment.OwnerObjectType = SystemObjects.Resource.ToString();
                 comment.OwnerObjectID = Company.CurrentResourceID;
                 comment.CommentTypeID = CommentType.Issue;
-                comment.Body = $"New {issueType.Name} Raised, criticality is {criticality.ToString()}.";
+                comment.Body = desc ?? $"New {issueType.Name} Raised, criticality is {criticality.ToString()}.";
                 
 
                 //add relation to current artifact
