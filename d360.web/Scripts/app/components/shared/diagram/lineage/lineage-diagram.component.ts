@@ -147,6 +147,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.diagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
+        this.diagram.addDiagramListener('BackgroundSingleClicked', e => this.BackgroundSingleClicked(e));
 
         this.diagram.toolManager.linkingTool.linkValidation = (a, b, c, d) => this.canLink(a, b, c, d);
 
@@ -295,8 +296,14 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 }
             }
 
-            //if (!this.readonly || this.showInfoTab)
-            //    this.isWindowVisible = true;
+            if (this.showNodeTabs) {
+                if (this.isWindowVisible == false)
+                    this.tab = 'info';
+                this.isWindowVisible = true;
+            } else if ((this.showLinkTabs && this.readonly) || this.tab == '') {
+                this.tab = 'info';
+                this.isWindowVisible = true;
+            }
 
         } else {
             if (!this.readonly) {
@@ -304,7 +311,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.showNodeTabs = false;
                 this.showLinkTabs = false;
                 this.showInfoTab = false;
-                //this.isWindowVisible = true;
+                this.isWindowVisible = false;
             } else {
                 this.showNodeTabs = false;
                 this.showLinkTabs = false;
@@ -656,6 +663,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
         }
         return;
+    }
+
+    private BackgroundSingleClicked(e: any) {
+        this.selectedData = null;
+        this.refreshControls(null);
     }
 
     private SelectionDeleted(e: any) {

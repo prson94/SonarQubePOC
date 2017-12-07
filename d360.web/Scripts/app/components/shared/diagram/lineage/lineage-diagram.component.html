@@ -1,7 +1,7 @@
 ﻿<div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 43px; z-index: 900">
     <d3s-overlay-window width="500" maxHeight="700" padding="0" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''" [overflowScroll]="'visible'">
         <div *ngIf="!showNodeTabs && !showLinkTabs && readonly" style="padding:10px;">Nothing selected</div>
-        <ul class="tab-menu" *ngIf="showNodeTabs || !readonly">
+        <ul class="tab-menu" *ngIf="showNodeTabs || showLinkTabs || !readonly">
             <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'" *ngIf="showInfoTab">
                 <i class="fa fa-info-circle fa-2x"></i>
             </li>
@@ -13,6 +13,16 @@
             <ng-container *ngSwitchCase="'info'" >
                 <div *ngIf="showNodeTabs">
                     <d3s-lineage-info [node]="selectedData" [diagram]="diagram" (selectionChange)="ChangedSelection()"></d3s-lineage-info>
+                </div>
+                <div *ngIf="showLinkTabs && readonly">
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="FieldName">Predicate</div>
+                            <div>
+                                {{selectedData.predicate || '[unknown]'}}
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length == 1">
                     <div class="row">
