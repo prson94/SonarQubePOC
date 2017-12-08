@@ -177,10 +177,13 @@ export class RulesService extends BaseService {
     }
 
 
-    saveRuleImplementation(implementation: RuleImplementation): Promise<JsonResult> {
-        if (implementation.ID == undefined || !implementation.ID) {
-            return this.postDynamic(this.http, 'ruleimplementation', implementation);
+    saveRuleImplementation(implementation: RuleImplementation, action: string): Promise<JsonResult> {
+        if (action && action == "Copy"){
+            return this.copyDynamic(this.http, 'ruleimplementation', implementation);
         }
+        else if (implementation.ID == undefined || !implementation.ID) {
+            return this.postDynamic(this.http, 'ruleimplementation', implementation);
+        } else 
         return this.putDynamic(this.http, 'ruleimplementation', implementation);
     }
     

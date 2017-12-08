@@ -725,7 +725,7 @@ namespace d360.web.Controllers
         public JsonResult DynamicCopy(string objectType, string json)
         {
             JObject jsonObject = JObject.Parse(json);
-            FormCollection form = new FormCollection();
+             FormCollection form = new FormCollection();
 
             foreach (var item in jsonObject)
             {
@@ -741,7 +741,7 @@ namespace d360.web.Controllers
         }
 
 
-        [HttpPost, Route("dynamiceditor/copy/{o}/{oid:int}")]
+        [HttpGet, Route("dynamiceditor/copy/{o}/{oid:int}")]
         public JsonResult DynamicEditorCopyFields(string o, int oid)
         {
             switch ((o ?? "").ToUpper())
@@ -14819,9 +14819,9 @@ order by DN.DisplayValue");
             try
             {
                 int implementationID = parseIntField(form, "ID");
-                string implementationName = parseTextField(form, "implementationName");
+                string implementationName = parseTextField(form, "Name");
 
-                RuleImplementation ExistingImplementation = Company.GetById<RuleImplementation>(implementationID, i => i.Rule.ID);
+                RuleImplementation ExistingImplementation = Company.GetById<RuleImplementation>(implementationID, i => i.Rule.RuleType);
 
                 RuleImplementation Model = new RuleImplementation
                 {
@@ -14850,7 +14850,7 @@ order by DN.DisplayValue");
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(Model.Name + " successfully created.", Model.ID.ToString(), "copy", HttpStatusCode.Created, custom);
+                return jsonSuccess(ExistingImplementation.Name + " successfully copied.", Model.ID.ToString(), "copy", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
