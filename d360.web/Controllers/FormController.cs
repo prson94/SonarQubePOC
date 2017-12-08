@@ -721,6 +721,37 @@ namespace d360.web.Controllers
             throw new Exception("Invalid / unsupported create type");
         }
 
+        [HttpPost, Route("dynamicedit/copy/{objectType}"), ValidateInput(false)]
+        public JsonResult DynamicCopy(string objectType, string json)
+        {
+            JObject jsonObject = JObject.Parse(json);
+            FormCollection form = new FormCollection();
+
+            foreach (var item in jsonObject)
+            {
+                form.Add(item.Key, item.Value.ToString());
+            }
+
+            switch ((objectType ?? "").ToUpper())
+            {
+                case "RULEIMPLEMENTATION":
+                    return CopyRuleImplementation(form);
+            }
+            throw new Exception("Invalid / unsupported copy type");
+        }
+
+
+        [HttpPost, Route("dynamiceditor/copy/{o}/{oid:int}")]
+        public JsonResult DynamicEditorCopyFields(string o, int oid)
+        {
+            switch ((o ?? "").ToUpper())
+            {
+                case "RULEIMPLEMENTATION":
+                    return RuleImplementation_CopyFields(oid);
+            }
+            throw new Exception("Invalid or non implemented editor type");
+        }
+
         #endregion
 
         #region Artifact
@@ -14625,6 +14656,16 @@ order by DN.DisplayValue");
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonResult RuleImplementation_CopyFields(int implementationID)
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldType = DataType.Hidden.ToString(), FieldName = "ID", Value = implementationID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = FieldInfo.RuleImplementation_Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = "form/Rule_SimilarItems?query=" });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
 
         #region Form Get/Post
@@ -14761,6 +14802,55 @@ order by DN.DisplayValue");
                 };
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public JsonResult CopyRuleImplementation(FormCollection form)
+        {
+            try
+            {
+                int implementationID = parseIntField(form, "ID");
+                string implementationName = parseTextField(form, "implementationName");
+
+                RuleImplementation ExistingImplementation = Company.GetById<RuleImplementation>(implementationID, i => i.Rule.ID);
+
+                RuleImplementation Model = new RuleImplementation
+                {
+                    RuleID = ExistingImplementation.RuleID,
+                    Name = !string.IsNullOrEmpty(implementationName) ? implementationName : ExistingImplementation.Name,
+                    SourceID = ExistingImplementation.SourceID,
+                    SourceUri = ExistingImplementation.SourceUri
+                };
+                Company.Add(Model);
+
+                IEnumerable<RuleResultQualifierType> QualifierTypeList = Company.Query<RuleResultQualifierType>(@"select R.*, D.Name as ResolutionObjectName from RuleResultQualifierType R
+                left join AssetType D on D.[Object] = R.ResolutionObject and D.ObjectID = R.ResolutionObjectID
+                where R.RuleImplementationID = @implementationID
+                order by R.[Order]", new { implementationID });
+                foreach (RuleResultQualifierType qualifierType in QualifierTypeList)
+                {
+                    qualifierType.RuleImplementationID = Model.ID;
+                    Company.RuleResultQualifierTypes.Add(qualifierType);
+                }
+                Company.SaveChanges();
+
+                dynamic custom = new
+                {
+                    Name = Model.Name,
+                    action = "copy",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess(Model.Name + " successfully created.", Model.ID.ToString(), "copy", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
