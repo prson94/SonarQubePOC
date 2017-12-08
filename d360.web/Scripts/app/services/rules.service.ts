@@ -178,8 +178,8 @@ export class RulesService extends BaseService {
 
 
     saveRuleImplementation(implementation: RuleImplementation, action: string): Promise<JsonResult> {
-        if (action && action == "Copy"){
-            return this.copyDynamic(this.http, 'ruleimplementation', implementation);
+        if (action && action == "Copy") {
+            return this.postDynamic(this.http, 'ruleimplementation', implementation, undefined,true);
         }
         else if (implementation.ID == undefined || !implementation.ID) {
             return this.postDynamic(this.http, 'ruleimplementation', implementation);

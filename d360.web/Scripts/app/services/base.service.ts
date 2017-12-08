@@ -44,32 +44,7 @@ export class BaseService {
             .catch(err => this.handleError(err));
     }
    
-    protected copyDynamic(http: Http, type: string, item: any, file?: File): Promise<JsonResult> {
-
-        if (file != undefined) {
-            let form = new FormData();
-
-            form.append('json', JSON.stringify(item));
-            form.append('file', file);
-
-            return http
-                .post(`form/dynamicedit/copy/${type}`, form)
-                .toPromise()
-                .then(res => <JsonResult>res.json())
-                .catch(err => this.handleError(err));
-        }
-
-        let headers = new Headers({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
-        });
-
-        return http
-            .post(`form/dynamicedit/copy/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
-    }
-    protected postDynamic(http: Http, type: string, item: any, file?: File): Promise<JsonResult> {
+    protected postDynamic(http: Http, type: string, item: any, file?: File, isCopy?: boolean): Promise<JsonResult> {
         
         if (file != undefined) {
             let form = new FormData();
@@ -77,8 +52,10 @@ export class BaseService {
             form.append('json', JSON.stringify(item));
             form.append('file', file);
 
+            let method = ( isCopy !== undefined ) ? 'create': 'copy';
+
             return http
-                .post(`form/dynamicedit/create/${type}`, form)
+                .post(`form/dynamicedit/${method}/${type}`, form)
                 .toPromise()
                 .then(res => <JsonResult>res.json())
                 .catch(err => this.handleError(err));
