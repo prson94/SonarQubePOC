@@ -247,6 +247,34 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
         }
 
+        //combine links with same source/target and different predicates
+        for (let i = 0; i < linkList.length; i++) {
+            let l = linkList[i];
+            let others = linkList.filter(k => k.to == l.to && k.from == l.from && k.intersectTypeId != l.intersectTypeId);
+            //console.log('dedupe', l, others);
+            if (others.length > 0) {
+                l.predicates.push({
+                    intersectTypeId: l.intersectTypeId,
+                    intersectId: l.intersectId,
+                    name: l.predicate
+                });
+
+                for (let j = 0; j < others.length; j++) {
+                    let k = others[j];
+
+                    l.predicates.push({
+                        intersectTypeId: k.intersectTypeId,
+                        intersectId: k.intersectId,
+                        name: k.predicate
+                    });
+
+                    let ix = linkList.findIndex(m => m.from == k.from && m.to == k.to && m.intersectTypeId == k.intersectTypeId);
+                    if (ix > -1)
+                        linkList.splice(ix, 1);
+                }
+            }
+        }
+
         //console.log('parseData', modelList);
 
         for (var i = 0; i < modelList.length; i++) {
@@ -344,7 +372,17 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 title: 'Save Lineage'
             });
 
+        this.menuItems.push({
+            icon: 'fa-search-plus',
+            items: null,
+            title: 'Zoom in'
+        });
+        this.menuItems.push({
+            icon: 'fa-search-minus',
+            items: null,
+            title: 'Zoom out'
 
+        });
         this.menuItems.push({
             icon: 'fa-info-circle',
             items: null,
@@ -439,7 +477,23 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             ln.intersectTypeId = la.intersectTypeId;
             ln.from = la.from;
             ln.to = la.to;
-            model.OriginalLinks.push(ln);
+            ln.predicates = la.predicates;
+
+            //split back into multiple links
+            if (ln.predicates.length > 1) {
+                ln.predicates.forEach(p => {
+                    let lns = new LinkModelV2();
+                    lns.from = ln.from;
+                    lns.to = ln.to;
+                    lns.intersectId = p.intersectId;
+                    lns.intersectTypeId = p.intersectTypeId;
+                    lns.predicate = p.name;
+                    model.OriginalLinks.push(lns);
+                });
+            } else {
+                model.OriginalLinks.push(ln);
+            }
+
         });
 
         this.diagramModelAsGraph().linkDataArray.forEach(l => {
@@ -449,7 +503,22 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             ln.intersectTypeId = la.intersectTypeId;
             ln.from = la.from;
             ln.to = la.to;
-            model.Links.push(ln);
+
+            //split back into multiple links
+            if (ln.predicates.length > 1) {
+                ln.predicates.forEach(p => {
+                    let lns = new LinkModelV2();
+                    lns.from = ln.from;
+                    lns.to = ln.to;
+                    lns.intersectId = p.intersectId;
+                    lns.intersectTypeId = p.intersectTypeId;
+                    lns.predicate = p.name;
+                    model.Links.push(lns);
+                });
+                
+            } else {
+                model.Links.push(ln);
+            }
         });
 
         this.diagram.model.nodeDataArray.forEach(n => {
@@ -633,8 +702,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private zoomDiagram(v: number) {
+        if (v < .1 || v > 2.5)
+            return;
         this.diagram.scale = v;
-        //console.log('zoomDiagram', v, this.myDiagram);
+        //console.log('zoomDiagram', v, this.diagram);
     }
 
     private ChangedSelection(e: any) {
@@ -745,6 +816,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.toggleReadOnly(true);
             this.populateDiagram();
             this.loadMenuItems();
+        } else if (e.icon == 'fa-search-plus') {
+            this.zoomDiagram(this.diagram.scale + .1);
+        } else if (e.icon == 'fa-search-minus') {
+            this.zoomDiagram(this.diagram.scale - .1);
         }
     }
 
@@ -842,7 +917,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             layout: this.g(go.LayeredDigraphLayout, {
                 //angle: 0,
                 layerSpacing: 12,
-                columnSpacing: 12
+                columnSpacing: 30
                 //rowSpacing: 10
             }),
             "undoManager.isEnabled": true
@@ -1007,8 +1082,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.g(go.Shape, {
                     visible: false,
                     fill: this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
-                    stroke: '#999',
-                    strokeDashArray: [3, 2]
+                    stroke: null,
+                    //strokeDashArray: [3, 2]
                 },
                     //only visible if there's a label
                     new go.Binding("visible", "text", function (a) { return (a ? true : false) })
@@ -1017,7 +1092,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
                 },
                     // the label
-                    new go.Binding("text", "text").makeTwoWay()
+                    new go.Binding("text", "text")
                 )
             )
         );
@@ -1046,8 +1121,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.g(go.Shape, {
                     visible: false,
                     fill: this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
-                    stroke: '#999',
-                    strokeDashArray: [3, 2]
+                    stroke: null,
+                    //strokeDashArray: [3, 2]
                 },
                     //only visible if there's a label
                     new go.Binding("visible", "text", function (a) { return (a ? true : false) })
@@ -1056,7 +1131,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4,
                 },
                     // the label
-                    new go.Binding("text", "text").makeTwoWay()
+                    new go.Binding("text", "text")
                 )
             )
         );
@@ -1085,8 +1160,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.g(go.Shape, {
                     visible: false,
                     fill: this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
-                    stroke: '#999',
-                    strokeDashArray: [3, 2]
+                    stroke: null,
+                    //strokeDashArray: [3, 2]
                 },
                     //only visible if there's a label
                     new go.Binding("visible", "text", function (a) { return (a ? true : false) })

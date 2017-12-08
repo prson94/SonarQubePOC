@@ -81,13 +81,48 @@ export class LinkModelV2 {
     intersectTypeId: number;
     state: number;
     predicate: string;
-    predicates: any[] = [];
+    predicates: PredicateInfo[] = [];
+    //predicateNames: string[] = [];
+
+    //get predicate()
+
+    get text() {
+        return this.getText(22);
+    }
+
+    get fullText() {
+        return this.getText();
+    }
+
+    private getText(len: number = Infinity) {
+        let name = "";
+        if (this.predicates == null || this.predicates.length < 2)
+            name = this.predicate;
+        else {
+            this.predicates.forEach(p => {
+                name += p.name + ', ';
+            });
+            //remove trailing ,
+            name = name.substr(0, name.length - 2);
+        }
+
+        if (name.length > len)
+            name = name.substr(0, len) + '...';
+
+        return name;
+    }
 
     valid: boolean = true;
     errors = [];
 
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
+}
+
+export class PredicateInfo {
+    intersectTypeId: number;
+    name: string;
+    intersectId: number;
 }
 
 
