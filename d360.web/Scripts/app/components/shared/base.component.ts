@@ -80,24 +80,20 @@ export class BaseComponent {
 
     hasCreatePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimCreate);}
     hasDeletePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimDelete);}
-    hasUpdatePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimUpdate);}
-    hasReadPermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimRead);}
+    hasUpdatePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimUpdate);}    
 
     hasRootCreatePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimCreate);}
     hasRootDeletePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimDelete);}
     hasRootUpdatePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimUpdate);}
-    hasRootReadPermissions() { return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimRead); }
-
+    
     hasRelationshipCreatePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimCreate);}
     hasRelationshipDeletePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimDelete);}
-    hasRelationshipUpdatePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimUpdate);}
-    hasRelationshipReadPermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimRead);}
+    hasRelationshipUpdatePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimUpdate);}    
 
     hasAttributeCreatePermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimCreate); }
     hasAttributeDeletePermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimDelete); }
     hasAttributeUpdatePermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimUpdate); }
-    hasAttributeReadPermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimRead); }
-
+  
 
     /*end permissions functionality*/
 
@@ -154,9 +150,7 @@ export class BaseComponent {
     }
         
     //This is generally overloaded to show hide in your own class.
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
-        //console.log('show/hide :');
-        //console.log(activatedItem);
+    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
     }
 
     clearSidebar(unsubscribe?: boolean) {
@@ -171,6 +165,5 @@ export class BaseComponent {
     showMessageForResult(messagesService: MessagesService, result: JsonResult) {
         if (result.type == 'error') messagesService.showError(result.title, result.message);
         else messagesService.showInfoMessage(result.title, result.message);
-    }
-    
+    }    
 }

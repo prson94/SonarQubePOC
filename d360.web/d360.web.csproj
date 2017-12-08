@@ -1612,10 +1612,8 @@
     <TypeScriptCompile Include="Scripts\app\services\tag.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\taxonomies.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-detail.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\template.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\responsibility.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\settings.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\templates.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-definition.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\form-message.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail.component.ts" />

@@ -28,6 +28,7 @@ import { ObjectHealthComponent } from './object-health.component';
 import { ObjectIssuesComponent } from './object-issues.component';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
+declare var require: any;
 export function highchartsFactory() {
     const highcharts = require('highcharts');
     

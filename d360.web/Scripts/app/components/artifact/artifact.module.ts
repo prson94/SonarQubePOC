@@ -32,6 +32,7 @@ import { ArtifactTopLevelFilterComponent } from './artifact-top-level-filter.com
 import { ArtifactCustomExportComponent } from './artifact-custom-export.component';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
+declare var require: any;
 export function highchartsFactory() {
     const hc = require('highcharts');
 

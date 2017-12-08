@@ -20,6 +20,7 @@ var webpackConfig = {
     plugins: [
         new ngtools.AngularCompilerPlugin ({
             tsConfigPath: './scripts/app/tsconfig.aot.json',
+            entryModule: 'app/app.module#AppModule',
             typeChecking: false
         }),
       //new webpack.optimize.OccurrenceOrderPlugin(true),
@@ -43,7 +44,13 @@ var webpackConfig = {
           { test: /\.ts$/, loaders: ['awesome-typescript-loader?configFileName=scripts/app/tsconfig.aot.json', 'angular2-template-loader', 'angular2-router-loader'] },
           { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
           { test: /\.html$/, loader: 'raw-loader' }
-        ]
+        ],
+        rules: [
+      {
+        test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+        loader: '@ngtools/webpack'
+      }
+    ]
     }
 
 };

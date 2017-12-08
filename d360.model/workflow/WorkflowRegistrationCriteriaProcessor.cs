@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using System.Data.Entity;
 
 namespace d360.model.workflow
 {
@@ -108,7 +109,7 @@ namespace d360.model.workflow
                 else if(item.VersionStepId > 0)
                 {
                     //load the results of the form version step
-                    var formStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).FirstOrDefault();
+                    var formStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).Include(x=>x.Step).FirstOrDefault();
                     
                     if(formStep == null)
                     {
@@ -129,7 +130,7 @@ namespace d360.model.workflow
 
                     var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
 
-                    if (string.IsNullOrEmpty(formStep.Step.Settings))
+                    if ( (formStep.Step == null) || string.IsNullOrEmpty(formStep.Step.Settings))
                     {
                         Console.WriteLine("DEBUG - FORM SETTINGS ARE MISSING");
 
