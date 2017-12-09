@@ -11,6 +11,7 @@ using System.Web.Http;
 using d360.core.exceptions;
 using d360.core.enums;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace d360.web.Controllers.Services
 {
@@ -288,55 +289,11 @@ namespace d360.web.Controllers.Services
         /// <param name="typeID">The ID of the reference list.</param>
         /// <returns>A list of items.</returns>
         [Route("{typeID:int}/items"), HttpGet]
-        public HttpResponseMessage GetItemsByList(int typeID)
+        public async Task<HttpResponseMessage> GetItemsByList(int typeID)
         {
-            var joins = "";
-            var columns = "";
-
-            var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList();
-            var fieldTypeIDs = fields.Select(i => i.ID).ToList();
-
-            foreach (var f in fields)
-            {
-                var name = f.Name.Replace("'", "''").Replace("--", "");
-                columns += $"T{f.ID}.FormattedValue as [{name}], ";
-                if (f.Type == "Lookup")
-                {
-                    columns += $"T{f.ID}.LookupUrl as [{name}Uri], ";
-                }
-                joins += $" left join Field T{f.ID} on T{f.ID}.ObjectType = 'Lookup' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
-            }
-
-            fields = null;
-
-            var querySql = $@"
-select	A.ID,
-        A.Code,
-        {columns}
-		dbo.GenerateObjectUrl('Lookup', A.ReferenceItemTypeID, A.ID) as Url
-from	ReferenceItem A 
-        {joins}
-where   A.ReferenceItemTypeID = @id 
-for json path";
-
-            var jsonResults = Company.Query<string>(querySql, new { id = typeID }).ToList();
-
-            var json = string.Join("", jsonResults);
-            var arr = (string.IsNullOrEmpty(json)) ? new JArray() : JArray.Parse(json);
-
-            var response = this.Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StringContent(
-                arr.ToString(Newtonsoft.Json.Formatting.None),
-                Encoding.UTF8,
-                "application/json");
-            return response;
+            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}, 1");
+            return Request.CreateResponse(HttpStatusCode.OK, models);
         }
-
-        //[Route("{typeID:int}/responsibilities"), HttpGet]
-        //public IQueryable<dynamic> GetResponsibilitiesForReferenceItemType(int typeID)
-        //{
-        //    return GetResponsibilities(SystemObjects.ReferenceItemType, typeID);
-        //}
 
         /// <summary>
         /// Gets an OData-queryable list of lists.

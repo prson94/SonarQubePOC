@@ -13483,7 +13483,10 @@ order by DN.DisplayValue");
 
                 Company.Update(existing);
 
-                return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
+                //var cnn = new System.Data.SqlClient.SqlConnection(Company.Database.Connection.ConnectionString);
+                Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(existing, false);
+
+                return jsonSuccess("Item successfully updated and processed.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -13504,7 +13507,9 @@ order by DN.DisplayValue");
                 model.SetRawFromDefinition();
                 Company.Add(model);
 
-                return jsonSuccess("Item successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
+                Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(model, false);
+
+                return jsonSuccess("Item successfully created and processed.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {

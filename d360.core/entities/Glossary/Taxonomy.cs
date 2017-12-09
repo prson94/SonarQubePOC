@@ -29,7 +29,7 @@ namespace d360.core.entities
         public int TaxonomyTypeID { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Level_Name", Description = "Level_Description")]
-        public int Level { get; set; }
+        public int? Level { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }

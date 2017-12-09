@@ -9,6 +9,7 @@ using Dapper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -19,14 +20,29 @@ using System.Text;
 
 namespace d360.test.jobs
 {
+    public class TestJson
+    {
+        [JsonProperty("$SomeProperty")]
+        public int SomeProperty { get; set; }
+    }
+
+
     [TestClass]
     public class RunJobsTest: BaseTest
     {
         [TestMethod]
+        public void TestJsonMetaPropertyParsing()
+        {
+            var json = "{ $SomeProperty: 123 }";
+            var obj = JsonConvert.DeserializeObject<TestJson>(json, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
+            Assert.IsTrue(obj.SomeProperty == 123);
+        }
+
+        [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 91; //10
-            var fusionTypeID = 21;//13;
+            var companyID = 106; //10
+            var fusionTypeID = 1;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -117,9 +133,21 @@ END",
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("citizens.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Citizens - 2017", File = bytes };
+            var bytes = File.ReadAllBytes("mitimco2.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "MIT - 2017-18 2", File = bytes };
             community.Add<DomainCertificate>(dc);
+        }
+
+        [TestMethod]
+        public void SaveExportTemplate()
+        {
+            //var companyID = 74; //10
+            var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider()) { CurrentCompanyID = 74, CurrentResourceID = 0, CurrentResourceIsAdmin = true };
+            var company = new CompanyContext(community, new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider() { CompanyID = 74, ResourceID = 0, CompanyPrefix = "lmtom", IsAdministrator = true }, true);//getCompanyConnection(companyID);
+
+            var bytes = File.ReadAllBytes("Export.xlsx");
+            var export = new ArtifactTypeExportTemplate { Name = "Data Guidance", TemplateFile = bytes, ArtifactTypeID = 10, ExportViewType = core.enums.ExportView.Grouped, IncludeUrl = false, IncludeParent = false, UpdatedBy = 0, UpdatedOn = DateTime.UtcNow, IncludeFields = "0"  };
+            company.Add(export);
         }
 
         [TestMethod]

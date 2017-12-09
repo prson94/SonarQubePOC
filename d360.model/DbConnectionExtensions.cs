@@ -2,10 +2,12 @@
 using Dapper;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Data.SqlClient;
+using System.Linq;
 
 namespace d360.model
 {
-    public static class DbConnectionExtensionscs
+    public static class DbConnectionExtensions
     {
         public static IEnumerable<ObjectResult> GetWhenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule)
         {
@@ -131,6 +133,209 @@ from	reporting.Global_Resource O ";
             thenSql += whenSuffix;
 
             return cnn.Query<SecurityResult>(thenSql, commandTimeout: 7200);
+        }
+
+        public static IEnumerable<EndResult> GetProcessedResponsibilityRuleResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule)
+        {
+            if (rule.StructuredDefinition == null)
+            {
+                rule.SetDefinitionFromRaw();
+            }
+
+            var oResults = cnn.GetWhenResults(rule);
+            var sResults = cnn.GetThenResults(rule);
+
+            return 
+                from o in oResults
+                join s in sResults on 1 equals 1
+                select new EndResult
+                {
+                    RuleID = rule.ID,
+                    ResponsibilityTypeID = rule.ResponsibilityTypeID,
+                    AssetID = o.AssetID,
+                    SecurityAsset = s.SecurityAsset,
+                    SecurityAssetID = s.SecurityAssetID
+                };
+        }
+
+        /// <summary>
+        /// Process and save results for a single rule.
+        /// </summary>
+        /// <param name="cnn"></param>
+        /// <param name="rule"></param>
+        public static void ProcessAndSaveResponsibilityRuleResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, bool useTransaction = true)
+        {
+            var results = cnn.GetProcessedResponsibilityRuleResults(rule).ToList();
+            ((SqlConnection)cnn).SaveResponsibilityRuleResults(results, useTransaction, rule.ID);
+        }
+
+        /// <summary>
+        /// Save results to temp table via bulk insert
+        /// </summary>
+        /// <param name="cnn"></param>
+        /// <param name="results"></param>
+        /// <returns></returns>
+        public static void SaveResponsibilityRuleResults(this SqlConnection cnn, List<EndResult> results, bool useTransaction = true, int? ruleID = null)
+        {
+            if (cnn.State != System.Data.ConnectionState.Open)
+                cnn.Open();
+
+            SqlTransaction trans = null;
+            if (useTransaction)
+                trans = cnn.BeginTransaction();
+
+            //using (var trans = cnn.BeginTransaction())
+            //{
+                cnn.Execute(@"
+set nocount on 
+create table #ResponsibilityTypeRelationItem (
+RuleID int not null, 
+ResponsibilityTypeID int not null, 
+AssetID bigint not null, 
+[SecurityAsset] char(1) not null, 
+[SecurityAssetID] int not null
+)
+set nocount off", commandTimeout: 3600, transaction: trans);
+
+                #region Bulk insert the rows above.
+
+                using (var bulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans))
+                {
+                    bulkCopy.BatchSize = results.Count;
+                    bulkCopy.DestinationTableName = "#ResponsibilityTypeRelationItem";
+                    bulkCopy.BulkCopyTimeout = 3600;
+
+                    var table = new System.Data.DataTable();
+
+                    #region Create column mappings
+
+                    var columnName = "RuleID";
+                    table.Columns.Add(columnName, typeof(int));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    columnName = "ResponsibilityTypeID";
+                    table.Columns.Add(columnName, typeof(int));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    columnName = "AssetID";
+                    table.Columns.Add(columnName, typeof(long));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    columnName = "SecurityAsset";
+                    table.Columns.Add(columnName, typeof(string));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    columnName = "SecurityAssetID";
+                    table.Columns.Add(columnName, typeof(int));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    #endregion
+
+                    foreach (var item in results)
+                    {
+                        var row = table.NewRow();
+
+                        row["RuleID"] = item.RuleID;
+                        row["ResponsibilityTypeID"] = item.ResponsibilityTypeID;
+                        row["AssetID"] = item.AssetID;
+                        row["SecurityAsset"] = item.SecurityAsset;
+                        row["SecurityAssetID"] = item.SecurityAssetID;
+
+                        table.Rows.Add(row);
+                    }
+
+                    bulkCopy.WriteToServer(table);
+                }
+
+                #endregion
+
+                #region  Merge the raw data you compiled above into the item table. These are rule results.
+
+                if (ruleID.HasValue)
+                {
+                    cnn.Execute(@"
+merge   ResponsibilityTypeRelationItem as T 
+using   ( 
+        select  *
+        from    #ResponsibilityTypeRelationItem
+        ) as S 
+        on  (
+            T.RuleID = S.RuleID 
+            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
+            and T.[AssetID] = S.[AssetID] 
+            and T.[SecurityAsset] = S.[SecurityAsset] 
+            and T.[SecurityAssetID] = S.[SecurityAssetID] 
+            )
+when    not matched by source and T.RuleID > 0 and T.RuleID = @r then 
+        delete
+when    not matched by target then 
+        insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID) 
+        values (S.RuleID, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID);", new { r = ruleID.Value },
+commandTimeout: 3600, transaction: trans);
+                }
+                else
+                {
+                    cnn.Execute(@"
+merge   ResponsibilityTypeRelationItem as T 
+using   ( 
+        select  *
+        from    #ResponsibilityTypeRelationItem
+        ) as S 
+        on  (
+            T.RuleID = S.RuleID 
+            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
+            and T.[AssetID] = S.[AssetID] 
+            and T.[SecurityAsset] = S.[SecurityAsset] 
+            and T.[SecurityAssetID] = S.[SecurityAssetID] 
+            )
+when    not matched by source and T.RuleID > 0 then 
+        delete
+when    not matched by target then 
+        insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID) 
+        values (S.RuleID, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID);",
+    commandTimeout: 3600, transaction: trans);
+                }
+
+                #endregion
+
+                #region Merge the overrides into the item table. These are override items.
+
+                cnn.Execute(@"
+merge   ResponsibilityTypeRelationItem as T 
+using   ( 
+        select  *
+        from    ResponsibilityTypeRelationOverrideItem
+        ) as S 
+        on  (
+            T.RuleID = 0
+            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
+            and T.[AssetID] = S.[AssetID] 
+            and T.[SecurityAsset] = S.[SecurityAsset] 
+            and T.[SecurityAssetID] = S.[SecurityAssetID] 
+            )
+when    not matched by source and T.RuleID = 0 then 
+        delete
+when    not matched by target then 
+        insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID, OverrideItemID) 
+        values (0, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID, S.ID);",
+commandTimeout: 3600, transaction: trans);
+
+                #endregion
+
+                #region Mark the overriden items generated from rules with overrides we laoded above.
+
+                cnn.Execute(@"
+update	T
+set		T.Overriden = 1
+from	ResponsibilityTypeRelationItem T
+		inner join ResponsibilityTypeRelationItem S on S.RuleID = 0 and T.RuleID > 0 and S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and T.Overriden = 0;",
+commandTimeout: 3600, transaction: trans);
+
+            #endregion
+
+            if (useTransaction)
+                trans.Commit();
+            //}
         }
     }
 }

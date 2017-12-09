@@ -43,37 +43,31 @@ namespace igx.functions
                         var results = new List<EndResult>();
 
                         CoreFunction.AITrackEvent(functionName, $"Got {items.Count} rules", null, c.CompanyID);
+                        CoreFunction.AIFlush();
 
                         if (items.Count > 0)
                         {
                             CoreFunction.AITrackEvent(functionName, $"Item count is greater than 0", null, c.CompanyID);
+                            CoreFunction.AIFlush();
 
                             var errorList = string.Empty;
                             items.ForEach(i => {
                                 try
                                 {
                                     CoreFunction.AITrackEvent(functionName, $"Deserializing item definition from raw [{i.Definition}]", null, c.CompanyID);
+                                    CoreFunction.AIFlush();
 
                                     i.SetDefinitionFromRaw();
 
                                     CoreFunction.AITrackEvent(functionName, $"Parsed raw definition", null, c.CompanyID);
-
-                                    var oResults = company.GetWhenResults(i);
-                                    CoreFunction.AITrackEvent(functionName, $"Parsed when results", null, c.CompanyID);
-                                    var sResults = company.GetThenResults(i);
-                                    CoreFunction.AITrackEvent(functionName, $"Parsed then results", null, c.CompanyID);
-
+                                    CoreFunction.AIFlush();
+                                    
                                     results.AddRange(
-                                              from o in oResults
-                                              join s in sResults on 1 equals 1
-                                              select new EndResult
-                                              {
-                                                  RuleID = i.ID,
-                                                  ResponsibilityTypeID = i.ResponsibilityTypeID,
-                                                  AssetID = o.AssetID,
-                                                  SecurityAsset = s.SecurityAsset,
-                                                  SecurityAssetID = s.SecurityAssetID
-                                              });
+                                        company.GetEndResults(i)
+                                    );
+                                    CoreFunction.AITrackEvent(functionName, $"Parsed end results", null, c.CompanyID);
+                                    CoreFunction.AIFlush();
+
                                 }
                                 catch (Exception ex)
                                 {
@@ -82,11 +76,13 @@ namespace igx.functions
                             });
 
                             CoreFunction.AITrackEvent(functionName, $"After foreach item", null, c.CompanyID);
+                            CoreFunction.AIFlush();
 
                             if (!string.IsNullOrEmpty(errorList))
                             {
                                 CoreFunction.AITrackException(functionName, new ApplicationException($"The following errors occurred: {errorList}"), c.CompanyID);
                                 //log.Error(errorList);
+                                CoreFunction.AIFlush();
                             }
 
                             if (results.Count > 0)
@@ -230,6 +226,7 @@ set nocount off", commandTimeout: 3600, transaction: trans);
                                 {
                                     CoreFunction.AITrackException(functionName, ex);
                                     //log.Error("Error occurred parsing results", ex);
+                                    CoreFunction.AIFlush();
                                 }
 
                                 #endregion
@@ -238,15 +235,18 @@ set nocount off", commandTimeout: 3600, transaction: trans);
                         else
                         {
                             CoreFunction.AITrackEvent(functionName, $"Item count is 0", null, c.CompanyID);
+                            CoreFunction.AIFlush();
                         }
                     }
                     catch (Exception ex)
                     {
                         CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                         //log.Error($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                        CoreFunction.AIFlush();
                     }
 
                     CoreFunction.AITrackEvent(functionName, "End Processing Company", null, c.CompanyID);
+                    CoreFunction.AIFlush();
                 });
 
                 CoreFunction.AITrackJobCompletedNoErrors(functionName);

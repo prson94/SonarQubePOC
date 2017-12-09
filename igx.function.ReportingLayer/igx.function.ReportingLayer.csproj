@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="igx.function.ReportingLayer.csproj.vspscc" />
+  </ItemGroup>
+  <ItemGroup>    
+    <PackageReference Include="Dapper" Version="1.50.2" />    
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data" Version="6.0.1304.1" />    
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\igx.function\igx.function.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data.Entity.Design" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+</Project>

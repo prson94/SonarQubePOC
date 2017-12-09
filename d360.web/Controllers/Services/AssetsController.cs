@@ -85,7 +85,8 @@ namespace d360.web.Controllers.Services
                 assetTable.Columns.Add("Message", typeof(string));
                 assetTable.Columns.Add("Success", typeof(bool));
                 assetTable.Columns.Add("ParentID", typeof(int));
-                assetTable.Columns.Add("ArtifactID", typeof(int));
+                assetTable.Columns.Add("Object", typeof(string));
+                assetTable.Columns.Add("ObjectID", typeof(int));
                 assetTable.Columns.Add("IsNew", typeof(bool));
 
                 assetFieldTable.Columns.Add("ItemNumber", typeof(int));
@@ -118,7 +119,7 @@ namespace d360.web.Controllers.Services
                         if (model.ContainsKey("ParentID"))
                         {
                             int pID;
-                            if (int.TryParse(model["ParentID"], out pID))
+                            if (int.TryParse(model["ParentID"].ToString(), out pID))
                             {
                                 if (!unvalidatedParents.Contains(pID))
                                 {
@@ -128,7 +129,7 @@ namespace d360.web.Controllers.Services
                         }
                         if (model.ContainsKey("ParentSourceID"))
                         {
-                            unvalidatedParentSourceIDs.Add(model["ParentSourceID"].Trim());
+                            unvalidatedParentSourceIDs.Add(model["ParentSourceID"].ToString().Trim());
                         }
                     }
 
@@ -151,7 +152,7 @@ namespace d360.web.Controllers.Services
                             i.AssetType.Object == parentIntersectType.Subject &&
                             i.AssetType.ObjectID == parentIntersectType.SubjectID &&
                             unvalidatedParentSourceIDs.Contains(i.SourceID)
-                        ).Select(i => new { k = i.ObjectID, v = i.ID.ToString() }).ToList();
+                        ).Select(i => new { k = i.ObjectID, v = i.SourceID }).ToList();
 
                         pList.ForEach(i =>
                         {
@@ -176,17 +177,17 @@ namespace d360.web.Controllers.Services
                     {
                         if (model.ContainsKey("ParentID"))
                         {
-                            if (!validatedParents.ContainsKey(int.Parse(model["ParentID"])))
+                            if (!validatedParents.ContainsKey(int.Parse(model["ParentID"].ToString())))
                             {
-                                result.Message += $"Value ({model["ParentID"]}) in ParentID property does not correspond to a known {parentArtifactTypeName}.; ";
+                                result.Message += $"Value ({model["ParentID"].ToString()}) in ParentID property does not correspond to a known {parentArtifactTypeName}.; ";
                                 result.Success = false;
                             }
                         }
                         else if (model.ContainsKey("ParentSourceID"))
                         {
-                            if (validatedParents.ContainsValue(model["ParentSourceID"].Trim()))
+                            if (validatedParents.ContainsValue(model["ParentSourceID"].ToString().Trim()))
                             {
-                                model["ParentID"] = validatedParents.First(vP => vP.Value == model["ParentSourceID"].Trim()).Key.ToString();
+                                model["ParentID"] = validatedParents.First(vP => vP.Value == model["ParentSourceID"].ToString().Trim()).Key.ToString();
                             }
                             else
                             {
@@ -196,14 +197,17 @@ namespace d360.web.Controllers.Services
                         }
                         else
                         {
-                            result.Message += "Neither ParentID nor ParentSourceID properties are present for asset;";
-                            result.Success = false;
+                            if (ot == SystemObjects.ArtifactType || ot == SystemObjects.FusionAttributeType)
+                            {
+                                result.Message += "Neither ParentID nor ParentSourceID properties are present for asset;";
+                                result.Success = false;
+                            }
                         }
                     }
 
                     if (model.ContainsKey("SourceID"))
                     {
-                        result.SourceID = model["SourceID"];
+                        result.SourceID = model["SourceID"].ToString();
                     }
 
                     if (result.Success)
@@ -214,7 +218,7 @@ namespace d360.web.Controllers.Services
                         row["SourceID"] = result.SourceID;
                         if (model.ContainsKey("ParentID"))
                         {
-                            row["ParentID"] = int.Parse(model["ParentID"]);
+                            row["ParentID"] = int.Parse(model["ParentID"].ToString());
                         }
 
                         assetTable.Rows.Add(row);
@@ -223,13 +227,13 @@ namespace d360.web.Controllers.Services
                         {
                             if (k != "ParentID" && k != "ParentSourceID" && k != "SourceID")
                             {
-                                if (!string.IsNullOrEmpty(model[k]))
+                                if (!string.IsNullOrEmpty(model[k].ToString()))
                                 {
                                     var fieldRow = assetFieldTable.NewRow();
 
                                     fieldRow["ItemNumber"] = result.ItemNumber;
                                     fieldRow["FieldName"] = k.Trim();
-                                    fieldRow["FieldValue"] = model[k].Trim();
+                                    fieldRow["FieldValue"] = model[k].ToString().Trim();
 
                                     assetFieldTable.Rows.Add(fieldRow);
                                 }
@@ -260,7 +264,8 @@ create table #AssetTable (
     Message nvarchar(2500) null,
     Success bit null,
     ParentID int null,
-    ArtifactID int null,
+    Object varchar(50) null,
+    ObjectID int null,
     IsNew bit null
 )", transaction: trans);
 
@@ -278,7 +283,8 @@ create table #AssetTable (
                     assetBulkCopy.ColumnMappings.Add("Message", "Message");
                     assetBulkCopy.ColumnMappings.Add("Success", "Success");
                     assetBulkCopy.ColumnMappings.Add("ParentID", "ParentID");
-                    assetBulkCopy.ColumnMappings.Add("ArtifactID", "ArtifactID");
+                    assetBulkCopy.ColumnMappings.Add("Object", "Object");
+                    assetBulkCopy.ColumnMappings.Add("ObjectID", "ObjectID");
                     assetBulkCopy.ColumnMappings.Add("IsNew", "IsNew");
 
                     assetBulkCopy.WriteToServer(assetTable);
@@ -313,11 +319,15 @@ create table #AssetFieldTable (
 
                     #endregion
 
-                    #region Merge into Artifact table
+                    Company.Database.Connection.Execute($@"create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));", transaction: trans);
 
-                    Company.Database.Connection.Execute($@"
-create table #ArtifactMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
+                    var o = ot.ToString().Replace("Type", "");
 
+                    switch (ot)
+                    {
+                        case SystemObjects.ArtifactType:
+                            #region
+                            Company.Database.Connection.Execute($@"
 merge into  Artifact T
 using       (
             select  *
@@ -336,14 +346,99 @@ when matched then
 when not matched by target then
     insert  (ArtifactTypeID, SourceID, CreatedOn, UpdatedBy, UpdatedOn, Visible)
     values  (@id, S.SourceID, getutcdate(), @r, getutcdate(), 1)
-output inserted.ID, S.ItemNumber, $action into #ArtifactMergeTableResult;
+output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
+", new { id = otid, @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
+                            break;
+                            #endregion
+                        case SystemObjects.PolicyType:
+                            #region
+                            Company.Database.Connection.Execute($@"
+merge into  [Policy] T
+using       (
+            select  *
+            from    #AssetTable
+            ) S
+on          (
+                T.PolicyTypeID = @id and 
+                S.SourceID is not null and 
+                S.SourceID <> '' and 
+                S.SourceID = T.SourceID
+            )
+when matched then
+    update set
+            T.UpdatedBy = @r,
+            T.UpdatedOn = getutcdate()
+when not matched by target then
+    insert  (PolicyTypeID, SourceID, UpdatedBy, UpdatedOn, Visible)
+    values  (@id, S.SourceID, @r, getutcdate(), 1)
+output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
+", new { id = otid, @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
+                            break;
+                            #endregion
+                        case SystemObjects.RuleType:
+                            #region
+                            Company.Database.Connection.Execute($@"
+merge into  [Rule] T
+using       (
+            select  *
+            from    #AssetTable
+            ) S
+on          (
+                T.RuleTypeID = @id and 
+                S.SourceID is not null and 
+                S.SourceID <> '' and 
+                S.SourceID = T.SourceID
+            )
+when matched then
+    update set
+            T.UpdatedBy = @r,
+            T.UpdatedOn = getutcdate()
+when not matched by target then
+    insert  (RuleTypeID, SourceID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Visible)
+    values  (@id, S.SourceID, @r, getutcdate(), @r, getutcdate(), 1)
+output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
+", new { id = otid, @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
+                            break;
+                            #endregion
+                        case SystemObjects.TaxonomyType:
+                            #region
+                            Company.Database.Connection.Execute($@"
+merge into  Taxonomy T
+using       (
+            select  *
+            from    #AssetTable
+            ) S
+on          (
+                T.TaxonomyTypeID = @id and 
+                S.SourceID is not null and 
+                S.SourceID <> '' and 
+                S.SourceID = T.SourceID
+            )
+when matched then
+    update set
+            T.UpdatedBy = @r,
+            T.UpdatedOn = getutcdate()
+when not matched by target then
+    insert  (TaxonomyTypeID, SourceID, UpdatedBy, UpdatedOn, Visible)
+    values  (@id, S.SourceID, @r, getutcdate(), 1)
+output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
+", new { id = otid, @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
+                            break;
+                            #endregion
+                    }
 
+                    Company.Database.Connection.Execute($@"
 update  T
-set     T.ArtifactID = S.ID,
+set     T.Object = @o,
+        T.ObjectID = S.ID,
         T.IsNew = case when S.[Action] = 'INSERT' then 1 else 0 end
 from    #AssetTable T
-        inner join #ArtifactMergeTableResult S on S.ItemNumber = T.ItemNumber;
-", new { id = otid, @r = Company.CurrentResourceID }, transaction: trans);
+        inner join #ObjectMergeTableResult S on S.ItemNumber = T.ItemNumber;
+", new { id = otid, @r = Company.CurrentResourceID, o }, transaction: trans, commandTimeout: 1200);
+
+                    #region Merge into Artifact table
+
+
 
                     #endregion
 
@@ -354,13 +449,13 @@ from    #AssetTable T
                         Company.Database.Connection.Execute($@"
 merge into  [Intersect] T
 using       (
-            select  'Artifact' as Subject, 
+            select  Object as Subject, 
                     ParentID as SubjectID, 
-                    'Artifact' as Object, 
-                    ArtifactID as ObjectID 
+                    Object as Object, 
+                    ObjectID as ObjectID 
             from    #AssetTable 
             where   ParentID is not null 
-                    and ArtifactID is not null 
+                    and ObjectID is not null 
             ) S
 on          (
                 T.IntersectTypeID = {parentIntersectType.ID} and 
@@ -372,7 +467,7 @@ on          (
 when not matched by target then
     insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
     values  ({parentIntersectType.ID}, S.Subject, S.SubjectID, S.Object, S.ObjectID, @r, @r);
-", new { @r = Company.CurrentResourceID }, transaction: trans);
+", new { @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
                     }
 
                     #endregion
@@ -383,8 +478,8 @@ when not matched by target then
 update  T
 set     T.FieldTypeID = S.ID
 from    #AssetFieldTable T
-        inner join FieldType S on S.Object = 'ArtifactType' and S.ObjectID = @id and S.Name = T.FieldName
-", new { id = otid }, transaction: trans);
+        inner join FieldType S on S.Object = @ot and S.ObjectID = @otid and S.Name = T.FieldName
+", new { otid, ot = ot.ToString() }, transaction: trans, commandTimeout: 1200);
 
                     #endregion
 
@@ -393,30 +488,232 @@ from    #AssetFieldTable T
                     Company.Database.Connection.Execute(@"
 merge into  Field T
 using       (
-            select  A.ArtifactID,
+            select  A.Object,
+                    A.ObjectID,
                     F.*
             from    #AssetFieldTable F
                     inner join #AssetTable A on A.ItemNumber = F.ItemNumber 
-                        and A.ArtifactID is not null 
+                        and A.ObjectID is not null 
                         and F.FieldTypeID is not null
-                    inner join FieldType FT on FT.ID = F.FieldTypeID and FT.[Type] not in ('Attribute', 'FilteredLookup', 'ComplexRelationLookup', 'DataTableSelect', 'OwnershipLookup', 'Relationship', 'FieldFromRelationship', 'RefListRelationship')
+                    inner join FieldType FT on FT.ID = F.FieldTypeID 
+                                and FT.[Type] not in ('Attribute', 'FilteredLookup', 'ComplexRelationLookup', 'DataTableSelect', 'OwnershipLookup', 'Relationship', 'FieldFromRelationship', 'RefListRelationship') 
+                                and FT.[Type] <> 'Lookup' 
             ) S
 on          (
                 T.FieldTypeID = S.FieldTypeID and 
-                T.ObjectType = 'Artifact' and
-                T.ObjectID = S.ArtifactID
+                T.ObjectType = S.Object and
+                T.ObjectID = S.ObjectID
             )
 when matched then
     update set
             T.Value = S.FieldValue
 when not matched by target then
     insert  (FieldTypeID, ObjectType, ObjectID, Value)
-    values  (S.FieldTypeID, 'Artifact', S.ArtifactID, S.FieldValue);
-", new { id = otid }, transaction: trans);
+    values  (S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue);
+", new { id = otid }, transaction: trans, commandTimeout: 1200);
+
+                    Company.Database.Connection.Execute(@"
+merge into  Field T
+using       (
+            select  distinct 
+                    A.Object, 
+                    A.ObjectID, 
+                    F.FieldTypeID,
+                    LV.Value
+            from    #AssetFieldTable F
+                    inner join #AssetTable A on A.ItemNumber = F.ItemNumber 
+                        and A.ObjectID is not null 
+                        and F.FieldTypeID is not null
+                    inner join FieldType FT on FT.ID = F.FieldTypeID and FT.[Type] = 'Lookup' 
+                    inner join FieldLookupValue LV on LV.LookupObjectType = FT.LookupObjectType and LV.LookupObjectID = FT.LookupObjectID and LV.Text = F.FieldValue
+            ) S
+on          (
+                T.FieldTypeID = S.FieldTypeID and 
+                T.ObjectType = S.Object and 
+                T.ObjectID = S.ObjectID 
+            )
+when matched then
+    update set
+            T.Value = S.Value
+when not matched by target then
+    insert  (FieldTypeID, ObjectType, ObjectID, Value)
+    values  (S.FieldTypeID, S.Object, S.ObjectID, S.Value);
+", new { id = otid }, transaction: trans, commandTimeout: 1200);
 
                     #endregion
 
                     retResults = Company.Database.Connection.Query<dynamic>("select * from #AssetTable", transaction: trans).ToList();
+
+                    trans.Commit();
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, retResults);
+
+                #endregion
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage);
+            }
+            finally
+            {
+                json = null;
+            }
+        }
+
+        /// <summary>
+        /// Takes a given set of relationships and bulk inserts/updates them.
+        /// </summary>
+        /// <returns>An HTTP status code and message.</returns>
+        [HttpPost, Route("relationships/bulk")]
+        public async Task<HttpResponseMessage> PostBulkAssetRelationshipsAsync()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships via bulk asset manager.");
+
+            var prefix = "Assets.PostBulkAssetRelationshipsAsync => ";
+            var errorMessage = "";
+
+            string json = "";
+
+            if (Request.Content.IsMimeMultipartContent())
+            {
+                var streamProvider = new MultipartMemoryStreamProvider();
+                await Request.Content.ReadAsMultipartAsync(streamProvider);
+
+                json = await streamProvider.Contents.Single().ReadAsStringAsync();
+            }
+            else
+            {
+                json = await Request.Content.ReadAsStringAsync();
+            }
+
+            try
+            {
+                var import = JsonConvert.DeserializeObject<BulkRelationshipImport>(json);
+
+                var relationshipTable = new System.Data.DataTable();
+
+                relationshipTable.Columns.Add("ItemNumber", typeof(int));
+                relationshipTable.Columns.Add("SubjectSourceID", typeof(string));
+                relationshipTable.Columns.Add("ObjectSourceID", typeof(string));
+                relationshipTable.Columns.Add("PredicateType", typeof(int));
+                relationshipTable.Columns.Add("Message", typeof(string));
+                relationshipTable.Columns.Add("Success", typeof(bool));
+                relationshipTable.Columns.Add("IntersectID", typeof(int));
+                relationshipTable.Columns.Add("IsNew", typeof(bool));
+
+                #region Generate data sets
+
+                for (int i = 1; i <= import.Count; i++)
+                {
+                    var model = import[i - 1];
+                    model.ItemNumber = i;
+
+                    var row = relationshipTable.NewRow();
+
+                    row["ItemNumber"] = model.ItemNumber;
+                    row["SubjectSourceID"] = model.SubjectSourceID;
+                    row["ObjectSourceID"] = model.ObjectSourceID;
+                    row["PredicateType"] = model.PredicateType;
+
+                    relationshipTable.Rows.Add(row);
+                }
+
+                #endregion
+
+                #region
+
+                List<dynamic> retResults = null;
+
+                if ((Company.Database.Connection as SqlConnection).State != System.Data.ConnectionState.Open)
+                    (Company.Database.Connection as SqlConnection).Open();
+
+                using (var trans = (Company.Database.Connection as SqlConnection).BeginTransaction())
+                {
+                    #region Asset Bulk Copy
+
+                    Company.Database.Connection.Execute(@"
+create table #RelationshipTable (
+    ItemNumber int not null,
+    SubjectSourceID nvarchar(1000) null,
+    ObjectSourceID nvarchar(1000) null,
+    PredicateType int null,
+    Message nvarchar(2500) null,
+    Success bit null,
+    IntersectID int null,
+    IsNew bit null
+)", transaction: trans);
+
+                    var assetBulkCopy = new SqlBulkCopy(
+                        (SqlConnection)Company.Database.Connection,
+                        SqlBulkCopyOptions.Default,
+                        trans);
+
+                    assetBulkCopy.BatchSize = relationshipTable.Rows.Count;
+                    assetBulkCopy.DestinationTableName = "#RelationshipTable";
+                    assetBulkCopy.BulkCopyTimeout = 3600;
+
+                    assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    assetBulkCopy.ColumnMappings.Add("SubjectSourceID", "SubjectSourceID");
+                    assetBulkCopy.ColumnMappings.Add("ObjectSourceID", "ObjectSourceID");
+                    assetBulkCopy.ColumnMappings.Add("PredicateType", "PredicateType");
+                    assetBulkCopy.ColumnMappings.Add("Message", "Message");
+                    assetBulkCopy.ColumnMappings.Add("Success", "Success");
+                    assetBulkCopy.ColumnMappings.Add("IntersectID", "IntersectID");
+                    assetBulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+
+                    assetBulkCopy.WriteToServer(relationshipTable);
+
+                    #endregion
+
+                    Company.Database.Connection.Execute($@"create table #RelationshipMergeTableResult (IntersectID int, ItemNumber int, [Action] nvarchar(10));", transaction: trans);
+
+                    Company.Database.Connection.Execute($@"
+merge into  [Intersect] T
+using       (
+            select  R.ItemNumber,
+                    IT.ID as IntersectTypeID,
+		            S.Object as Subject,
+		            S.ObjectID as SubjectID,
+		            T.Object,
+		            T.ObjectID
+            from    #RelationshipTable R
+		            inner join Asset S on S.SourceID = R.SubjectSourceID
+		            inner join AssetType ST on ST.ID = S.AssetTypeID
+
+		            inner join Asset T on T.SourceID = R.ObjectSourceID
+		            inner join AssetType TT on TT.ID = T.AssetTypeID
+
+		            inner join IntersectTypeDetail	IT on IT.Subject = ST.Object and IT.SubjectID = ST.ObjectID and 
+										            IT.Object = TT.Object and IT.ObjectID = TT.ObjectID and
+										            IT.PredicateType = R.PredicateType
+            ) S
+on          (
+                T.IntersectTypeID = S.IntersectTypeID and 
+                T.Subject = S.Subject and 
+                T.SubjectID = S.SubjectID and 
+                T.Object = S.Object and 
+                T.ObjectID = S.ObjectID
+            )
+when not matched by target then
+    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+    values  (S.IntersectTypeID, S.Subject, S.SubjectID, S.Object, S.ObjectID, @r, @r)
+output inserted.ID, S.ItemNumber, $action into #RelationshipMergeTableResult;
+
+update  T
+set     T.IntersectID = S.IntersectID,
+        T.IsNew = case when S.[Action] = 'INSERT' then 1 else 0 end
+from    #RelationshipTable T
+        inner join #RelationshipMergeTableResult S on S.ItemNumber = T.ItemNumber;
+", new { @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
+
+
+                    retResults = Company.Database.Connection.Query<dynamic>("select * from #RelationshipTable", transaction: trans).ToList();
 
                     trans.Commit();
                 }

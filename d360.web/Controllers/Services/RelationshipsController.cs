@@ -298,7 +298,7 @@ namespace d360.web.Controllers.Services
                 }
 
                 current.Processed = true;
-                foreach (var o in list.Where(i => i.SubjectAssetID == current.ObjectAssetID)) //!i.Processed && 
+                foreach (var o in list.Where(i => i.SubjectAssetID == current.ObjectAssetID && !i.Processed)) //!i.Processed && 
                 {
                     o.SubjectPrefix = current.ObjectPrefix;
                     Process(o, list, nodes, forward);
@@ -334,7 +334,7 @@ namespace d360.web.Controllers.Services
 
                 current.Processed = true;
 
-                foreach (var o in list.Where(i => i.ObjectAssetID == current.SubjectAssetID)) //!i.Processed && 
+                foreach (var o in list.Where(i => i.ObjectAssetID == current.SubjectAssetID && !i.Processed)) //!i.Processed && 
                 {
                     o.ObjectPrefix = current.SubjectPrefix;
                     Process(o, list, nodes, forward);

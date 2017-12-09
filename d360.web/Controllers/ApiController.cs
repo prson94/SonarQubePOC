@@ -6123,8 +6123,6 @@ where    A.RuleID = @id", new { id });
                             });
                         }
 
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
-
                         var asset = Company.Assets.Where(x => x.Object == "Taxonomy" && x.ObjectID == id).FirstOrDefault();
 
                         if (asset != null)

@@ -1803,6 +1803,12 @@
             <param name="otid">The Object Type ID of the asset type.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.AssetsController.PostBulkAssetRelationshipsAsync">
+            <summary>
+            Takes a given set of relationships and bulk inserts/updates them.
+            </summary>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.Services.ReferenceController">
             <summary>
             This services houses all endpoints handling reference lists and items.
