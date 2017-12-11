@@ -13,6 +13,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GridDefinition, GridColumn, GridField } from '../../models/grid-definition.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
+import { RightSidebarService } from '../../services/right-sidebar.service';
+
 declare var CompanySettings;
 
 @Component({
@@ -34,12 +36,14 @@ export class ResourceListComponent extends BaseComponent {
     private showResources: boolean = ((CompanySettings.ShowResources) && (CompanySettings.ShowResources.toUpperCase() == 'TRUE'));
 
     constructor(private route: ActivatedRoute,
-        private router: Router,    
-        protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+        private router: Router,
+        protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, rightSideBarService: RightSidebarService) {
         super();
+        this.rightSidebarService = rightSideBarService;
     }
 
     ngOnInit() {
+        this.clearSidebar();
         this.setBrowserTitle(this.titleService, 'Resources');
 
         this.headerBreadcrumbService.clearBreadcrumbs();

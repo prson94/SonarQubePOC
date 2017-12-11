@@ -4,6 +4,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { AdminBaseComponent } from '../admin-base.component';
 import { FormMode } from '../../../models/form.model';
 import { Title } from '@angular/platform-browser';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
 
 
 @Component({
@@ -12,13 +13,17 @@ import { Title } from '@angular/platform-browser';
 })
 
 export class AdminResourcesComponent extends AdminBaseComponent {    
-    constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSideBarService: RightSidebarService,) {
         super(headerBreadcrumbService, titleService);        
         this.areaName = "Resources";
+        this.rightSidebarService = rightSideBarService;
+       
         this.setCommonItems();
         this.setObjectInfo('ResourceType', 1);        
     }
-        
+    ngOnInit() {
+        this.clearSidebar();
+    }
     resourceUri(): string {
         return `/api/resources/${this.objectID}?$orderby=LastName,FirstName`;
     }
