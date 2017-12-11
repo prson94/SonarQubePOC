@@ -189,7 +189,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     deletePolicyItem(id: number) {
         this.isLoading = true;
-        this.policiesService.deletePolicyItem(id).then(res => {
+        this.policiesService.deletePolicy(id).then(res => {
             this.showMessageForResult(this.messagesService, res);
             if (res.type != 'error') {
                 this.deleteSelectedTreeNode(id);

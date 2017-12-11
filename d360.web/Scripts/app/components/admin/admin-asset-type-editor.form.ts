@@ -3,6 +3,7 @@ import { SelectItem } from 'primeng/primeng';
 import { BaseComponent } from '../shared/base.component';
 import { AssetTypeService } from "../../services/asset-type.services";
 import { AssetTypeClass, AssetTypeEditorModel } from "../../models/asset.model";
+import { MessagesService } from '../../services/messages.service';
 
 @Component({
     selector: 'd3s-asset-type-editor-form',
@@ -27,7 +28,7 @@ export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges
     model: AssetTypeEditorModel;    
     private isSaving = false;
 
-    constructor(private assetTypeService: AssetTypeService) {
+    constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesService) {
         super();
     }    
 
@@ -91,16 +92,22 @@ export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges
         if (this.model.AssetType.ID > 0)
             this.assetTypeService.putAssetType(this.model)
                 .then(data => {
-                    this.isSaving = false;
-                    this.onSuccess.emit(data);
-                    this.onComplete.emit(data);
+                    this.showMessageForResult(this.messagesService, data);
+                    if (data.type != "error") {
+                        this.isSaving = false;
+                        this.onSuccess.emit(data);
+                        this.onComplete.emit(data);
+                    }
                 });
         else
             this.assetTypeService.postAssetType(this.model)
                 .then(data => {
-                    this.isSaving = false;
-                    this.onSuccess.emit(data);
-                    this.onComplete.emit(data);
+                    this.showMessageForResult(this.messagesService, data);
+                    if (data.type != "error") {
+                        this.isSaving = false;
+                        this.onSuccess.emit(data);
+                        this.onComplete.emit(data);
+                    }
                 });
     }
 };

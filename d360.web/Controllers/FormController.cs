@@ -605,9 +605,7 @@ namespace d360.web.Controllers
                 case "RULETYPE":
                     return DeleteRuleType(form);
                 case "POLICY":
-                    return DeletePolicy(form);
-                case "POLICYTYPE":
-                    return DeletePolicyType(form);
+                    return DeletePolicy(form);                
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
                 case "RULEIMPLEMENTATION":
@@ -1482,7 +1480,7 @@ namespace d360.web.Controllers
                         break;
                 }
 
-                if (model.ParentID.HasValue || model.SelectedPredicateID.HasValue)
+                if (model.ParentID.HasValue && model.SelectedPredicateID.HasValue)
                 {
                     if (model.ParentID.Value > 0)
                     {
@@ -10634,55 +10632,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         }
 
         #endregion
-
-        #endregion
-
-        #region PolicyType
-
-        /// <param name="id">PolicyTypeID</param>
-        [Route("PolicyType_DeleteFields"), NonNullableParameters]
-        public JsonResult PolicyType_DeleteFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<PolicyType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-
-        [HttpDelete, Route("DeletePolicyType")]
-        public JsonResult DeletePolicyType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("policy type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<PolicyType>(id);
-                if (model == null) throw new NotFoundException("policy type");
-
-                if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.PolicyType, id);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
 
         #endregion
 

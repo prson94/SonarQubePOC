@@ -7,6 +7,7 @@
     MaximumDepth: number;
     IconBackColor: string;
     IconForeColor: string;
+    AssetTypeID: number;
 }
 
 export class TaxonomyLevel {

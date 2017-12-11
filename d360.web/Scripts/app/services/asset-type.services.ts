@@ -21,11 +21,7 @@ export class AssetTypeService extends BaseService {
     putAssetType(model: AssetTypeEditorModel): Promise<JsonResult> {
         return this.http.put('form/AssetType', model)
             .toPromise()
-            .then(function(response) {
-                let msg: JsonResult = response.json();
-                if (msg.type == "error") {
-                    this.messages.showError('Error', msg.message);
-                }
+            .then(response =>{
                 return <JsonResult>response.json();
             })
             .catch(err=>this.handleError(err));
@@ -34,11 +30,7 @@ export class AssetTypeService extends BaseService {
     postAssetType(model: AssetTypeEditorModel): Promise<JsonResult> {
         return this.http.post('form/AssetType', model)
             .toPromise()
-            .then(function(response) {
-                let msg: JsonResult = response.json();
-                if (msg.type == "error") {
-                    this.messages.showError('Error', msg.message);
-                }
+            .then(response => {                
                 return <JsonResult>response.json();
             })
             .catch(err=>this.handleError(err));
@@ -47,13 +39,7 @@ export class AssetTypeService extends BaseService {
     public deleteAssetType(id: number): Promise<JsonResult> {
         return this.http.delete(`form/AssetType?id=${id}`)
             .toPromise()
-            .then(function(response) {
-                let msg: JsonResult = response.json();
-                if (msg.type == "error") {
-                    this.messages.showError('Error', msg.message);
-                }
-                return <JsonResult>response.json();
-            })
+            .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
     }
 }

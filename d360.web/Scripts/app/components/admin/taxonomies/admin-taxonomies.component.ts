@@ -119,7 +119,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
                 }
                 this.isLoading = false;
             })
-            .catch(error => this.error = error); // TODO: Display error message
+            .catch(error => this.error = error);
     }
 
     
@@ -134,25 +134,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     }
 
     saveModel(event) {        
-        this.showEditor = false;
-        //if (response.type == 'error') {
-        //    this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
-        //}
-        //else {
-
-        //    if (event.action == "new") {
-        //        event.taxonomy.ID = Number(response.id);
-        //        event.taxonomy.Class = undefined;
-        //        this.taxonomies[this.taxonomies.length] = event.taxonomy;
-        //    }
-        //    else {
-        //        var index = this.taxonomies.findIndex(x => x.ID == event.taxonomy.ID);
-        //        if (index >= 0)
-        //            this.taxonomies[index] = event.taxonomy;
-        //    }
-        //    this.selectedTaxonomy = event.taxonomy;
-        //}
-        //this.showMessageForResult(this.messagesService, response);
+        this.showEditor = false;        
         this.getTaxonomies();
         this.stateService.reloadLeftNavMenu();
     }
@@ -163,7 +145,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
                 this.showMessageForResult(this.messagesService, res);
 
                 if (res.type != 'error') {                    
-                    this.taxonomies = this.taxonomies.filter(x => x.ID != id);                    
+                    this.taxonomies = this.taxonomies.filter(x => x.AssetTypeID != id);                    
                     this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
                     this.stateService.reloadLeftNavMenu();
                 }

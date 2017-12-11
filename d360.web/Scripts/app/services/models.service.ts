@@ -11,7 +11,7 @@ export class ModelsService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getModels(): Promise<Model[]> {
-        return this.http.get(`api/catalogs`)
+        return this.http.get('api/catalogs')
             .toPromise()
             .then(response => <Model[]>response.json())
             .catch(err => this.handleError(err));

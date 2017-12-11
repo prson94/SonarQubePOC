@@ -2,13 +2,13 @@
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { PoliciesService } from '../../../services/policies.service';
-import { MessagesService } from '../../../services/messages.service';
 import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { PolicyType } from '../../../models/policy.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
 import { AssetTypeService } from "../../../services/asset-type.services";
+import { MessagesService } from '../../../services/messages.service';
 
 @Component({
     selector: 'd3s-admin-policies-component',
@@ -127,7 +127,6 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
                 return `/sidebar/audit/PolicyType/${this.selected.ID}`
             });
         }
-
     }
 
     ngOnInit() {
@@ -152,10 +151,10 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
         this.assetTypeService.deleteAssetType(id)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
-                this.showDelete = false;
-                if (result.type != 'error') {
+                this.showDelete = false;                
+                if (result.type != 'error') {                    
+                    this.policyTypes = this.policyTypes.filter(x => x.AssetTypeID != id);                    
                     this.selected = this.policyTypes.length > 0 ? this.policyTypes[0] : null;
-                    this.policyTypes = this.policyTypes.filter(x => x.ID != id);
                 }
                 this.stateService.reloadLeftNavMenu();
             });

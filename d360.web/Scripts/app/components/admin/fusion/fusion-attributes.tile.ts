@@ -2,7 +2,6 @@
 import { TreeNode } from 'primeng/primeng';
 import { FusionAttributeType, FusionType } from '../../../models/fusion.model';
 import { AssetTypeEditorModel, AssetType, AssetTypeClass } from "../../../models/asset.model";
-import { AssetTypeService } from "../../../services/asset-type.services";
 import { FusionService } from '../../../services/fusion.service';
 import { ObjectStyleService } from '../../../services/object-style.service';
 import { FormMode } from '../../../models/form.model';
@@ -13,7 +12,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-fusion-attributes-tile',
     templateUrl: './fusion-attributes.tile.html',
-    providers: [AssetTypeService, FusionService]
+    providers: [FusionService]
 })
 
 export class FusionAttributesTile implements OnChanges {
@@ -29,8 +28,7 @@ export class FusionAttributesTile implements OnChanges {
 
     editorModel: AssetTypeEditorModel;
 
-    constructor(
-        private assetTypeService: AssetTypeService,
+    constructor(        
         private fusionService: FusionService,
         private objectStyleService: ObjectStyleService        
     ) {
