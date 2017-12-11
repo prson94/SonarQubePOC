@@ -682,7 +682,7 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
         public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter, string ownerUsers = "", string ownerGroups = "")
         {
             try
-            {
+            {                
                 var type = Company.GetById<ArtifactType>(id);
                 if (type == null) throw new Exception("Artifact Type Not found");
 

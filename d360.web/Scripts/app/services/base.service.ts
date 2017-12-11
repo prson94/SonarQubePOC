@@ -2,15 +2,22 @@
 import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable()
 export class BaseService {
     
     constructor(protected messages: MessagesService) {  }
 
-    handleError(error: any) {
-        console.error('An error occurred', error);
-        if (this && this.messages) this.messages.showError('Error', error.toString());
+    handleError(error: HttpErrorResponse) {        
+        if (error.error instanceof Error) {
+            // A client-side or network error occurred. Handle it accordingly.
+            console.log('An error occurred[client side]:', error.error.message);
+        } else {        
+            // server side error
+            console.log('An error occurred[server side]', error);
+            if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
+        }
         return Promise.reject(error.message || error);
     }
 

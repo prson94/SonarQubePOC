@@ -1107,7 +1107,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
         [HttpGet, Route("followinfo/{type}/{id:int}")]
         public dynamic GetFollowInfo(int id, SystemObjects type)
-        {
+        {            
             var following = Company.IsUserFollowing(type, id, null);
             var followParent = Company.GetFollowingParent(type, id, null);
             var followingParent = (followParent != null && followParent.FollowTypeID == FollowType.Parent);
