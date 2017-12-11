@@ -82,9 +82,6 @@ export class LinkModelV2 {
     state: number;
     predicate: string;
     predicates: PredicateInfo[] = [];
-    //predicateNames: string[] = [];
-
-    //get predicate()
 
     get text() {
         return this.getText(22);
@@ -96,8 +93,8 @@ export class LinkModelV2 {
 
     private getText(len: number = Infinity) {
         let name = "";
-        if (this.predicates == null || this.predicates.length < 2)
-            name = this.predicate;
+        if (this.predicates == null || this.predicates.length < 1)
+            name = this.predicate || "";
         else {
             this.predicates.forEach(p => {
                 name += p.name + ', ';
@@ -106,7 +103,7 @@ export class LinkModelV2 {
             name = name.substr(0, name.length - 2);
         }
 
-        if (name.length > len)
+        if (name != null && name.length > len)
             name = name.substr(0, len) + '...';
 
         return name;

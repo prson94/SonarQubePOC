@@ -1,18 +1,25 @@
 ﻿<div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 43px; z-index: 900">
-    <d3s-overlay-window width="500" maxHeight="700" padding="0" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''" [overflowScroll]="'visible'">
+    <d3s-overlay-window [width]="overlayWidth" [maxHeight]="overlayMaxHeight" padding="0" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''" [overflowScroll]="'visible'">
         <div *ngIf="!showNodeTabs && !showLinkTabs && readonly" style="padding:10px;">Nothing selected</div>
         <ul class="tab-menu" *ngIf="showNodeTabs || showLinkTabs || !readonly">
             <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'" *ngIf="showInfoTab">
                 <i class="fa fa-info-circle fa-2x"></i>
             </li>
             <li (click)="selectTab('add')" class="tab-item" [class.selected]="tab == 'add'" *ngIf="!readonly">
+                <i class="fa fa-plus fa-2x"></i>
+            </li>
+            <li (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'" *ngIf="!readonly && showLinkTabs">
                 <i class="fa fa-pencil fa-2x"></i>
             </li>
         </ul>
         <div *ngIf="showNodeTabs || showLinkTabs || !readonly" [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
             <ng-container *ngSwitchCase="'info'" >
-                <div *ngIf="showNodeTabs">
-                    <d3s-lineage-info [node]="selectedData" [diagram]="diagram" (selectionChange)="ChangedSelection()"></d3s-lineage-info>
+                <div *ngIf="showNodeTabs" style="overflow-y: scroll" [style.max-height]="overlayMaxHeight + 'px'">
+                    <div style="float:right;">
+                        <button pButton type="button" [label]="showDetail ? 'Hide Detail' : 'Show Detail'" [icon]="showDetail ? 'fa-compress' : 'fa-expand'" (click)="toggleDetail()"></button>
+                    </div>
+                    <object-detail *ngIf="showDetail" [objectType]="selectedData.object" [objectID]="selectedData.objectId"></object-detail>
+                    <d3s-lineage-info *ngIf="!showDetail" [node]="selectedData" [diagram]="diagram" (selectionChange)="ChangedSelection()"></d3s-lineage-info>
                 </div>
                 <div *ngIf="showLinkTabs && readonly">
                     <div class="row">
@@ -36,29 +43,6 @@
                 </div>
             </ng-container>
             <ng-container *ngSwitchCase="'add'" >
-                <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length > 1">
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="FieldName">Predicate</div>
-                            <div>
-                                <select [ngModel]="selectedData.intersectTypeId" (ngModelChange)="changeIntersectType($event)" style="width: 95%">
-                                    <option value="0"></option>
-                                    <option *ngFor="let i of filteredIntersectTypes" [value]="i.intersectTypeId">{{i.predicateName}} / {{i.predicateInverse}}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div *ngIf="showLinkTabs && readonly && selectedData.predicate != ''">
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="FieldName">Predicate</div>
-                            <div>
-                                {{selectedData.predicate || '[unknown]'}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div *ngIf="!readonly">
                     <div class="row">
                         <div class="col s12">
@@ -91,6 +75,28 @@
                         </div>
                         <div class="col s12" *ngIf="selectedAssetTypeId != null">
                             <button pButton label="Add Selected Objects" type="button" (click)="add()" [disabled]="selectedAssetTypeId == null || selectedObjects == null || selectedObjects.length < 1"></button>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-container *ngSwitchCase="'edit'">
+                <div *ngIf="showLinkTabs">
+                    <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length >= 1">
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="FieldName">Choose Predicate(s)</div>
+                                <div>
+                                    <p-listbox [options]="filteredIntersectTypes"
+                                               [ngModel]="selectedData.predicates"
+                                               (ngModelChange)="changeIntersectType($event)"
+                                               [style]="{'width' : '95%' }"
+                                               dataKey="intersectTypeId"
+                                               optionLabel="name"
+                                               checkbox="true"
+                                               multiple="true">
+                                    </p-listbox>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

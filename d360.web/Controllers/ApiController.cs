@@ -2358,7 +2358,7 @@ from    [Intersect] I
                 inner join assettype t on t.id = a.assettypeid
 				left join objectstyle s on s.objecttype = t.[object] and s.objectid = t.objectid
                 left join FusionAttribute FA on FA.ID = A.ObjectID and A.[Object] = 'FusionAttribute'
-                cross apply dbo.GetAssetDisplayValueById(a.ID) d
+                inner join dbo.GetAssetDisplayValue() d on d.ID = a.ID
                 where  
                     t.id = @id";
 

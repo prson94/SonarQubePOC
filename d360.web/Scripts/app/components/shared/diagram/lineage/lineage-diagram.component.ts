@@ -16,6 +16,7 @@ import {
     LineageEditorModelV2,
     LineageNodeModel,
     LineageLinkModel,
+    PredicateInfo,
 } from '../../../../models/lineage.model';
 
 import { MenuItem } from 'primeng/primeng';
@@ -74,13 +75,15 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private showLinkTabs = false;
     private showEditTab = false;
     private showInfoTab = false;
+    private showDetail = false;
     public menuItems: MenuItem[] = [];
     private editorMenuItems: MenuItem[] = [];
     private tab: string = 'info';
     private headerText = '';
     private diagramOffset = 291;
     private overlayOffset = 391;
-    private overlayMaxHeight = 500;
+    private overlayMaxHeight = 700;
+    private overlayWidth = 500;
 
     constructor(
         private myElement: ElementRef,
@@ -252,13 +255,18 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             let l = linkList[i];
             let others = linkList.filter(k => k.to == l.to && k.from == l.from && k.intersectTypeId != l.intersectTypeId);
             //console.log('dedupe', l, others);
-            if (others.length > 0) {
-                l.predicates.push({
-                    intersectTypeId: l.intersectTypeId,
-                    intersectId: l.intersectId,
-                    name: l.predicate
-                });
 
+            l.predicates.push({
+                intersectTypeId: l.intersectTypeId,
+                intersectId: l.intersectId,
+                name: l.predicate
+            });
+
+            l.predicate = null;
+            l.intersectTypeId = 0;
+            l.intersectId = 0;
+
+            if (others.length > 0) {
                 for (let j = 0; j < others.length; j++) {
                     let k = others[j];
 
@@ -316,14 +324,19 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 return;
             }
 
-            if (this.tab == 'add' && this.readonly) {
+            if ((this.tab == 'add' || this.tab == 'edit') && this.readonly) {
                 if (this.showInfoTab)
                     this.tab = 'info';
                 else
                     this.tab = '';
             } else if (this.tab == 'info' && !this.showInfoTab) {
-                if (!this.readonly)
-                    this.tab = 'add';
+                if (!this.readonly) {
+                    if (this.showLinkTabs)
+                        this.tab = 'edit';
+                    else
+                        this.tab = 'add';
+
+                }
                 else {
                     this.tab = '';
                     this.isWindowVisible = false;
@@ -339,6 +352,17 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.isWindowVisible = true;
             }
 
+            if (this.showNodeTabs && !this.readonly) {
+                this.tab = 'add';
+                this.isWindowVisible = true;
+            }
+
+            if (this.showLinkTabs && !this.readonly) {
+                this.tab = 'edit';
+                this.isWindowVisible = true;
+            }
+
+
         } else {
             if (!this.readonly) {
                 this.tab = 'add';
@@ -353,6 +377,19 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.isWindowVisible = false;
                 this.tab = '';
             }
+        }
+    }
+
+    private toggleDetail()
+    {
+        this.showDetail = !this.showDetail;
+
+        if (this.showDetail) {
+            this.overlayWidth = 1000;
+            this.overlayMaxHeight = 700;
+        } else {
+            this.overlayWidth = 500;
+            this.overlayMaxHeight = 700;
         }
     }
 
@@ -412,8 +449,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             return Promise.resolve();
         return this.lineageService.getLineageIntersectTypes()
             .then(r => {
-                this.intersectTypes = r;
-            })
+                this.intersectTypes = [];
+                r.forEach(i => {
+                    i.name = i.predicateName;
+                    i.intersectId = 0;
+                    this.intersectTypes.push(i);
+                });
+            });
     }
 
     private selectObjectType(e: any) {
@@ -480,7 +522,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             ln.predicates = la.predicates;
 
             //split back into multiple links
-            if (ln.predicates.length > 1) {
+            if (ln.predicates.length >= 1) {
                 ln.predicates.forEach(p => {
                     let lns = new LinkModelV2();
                     lns.from = ln.from;
@@ -503,9 +545,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             ln.intersectTypeId = la.intersectTypeId;
             ln.from = la.from;
             ln.to = la.to;
+            ln.predicates = la.predicates;
 
             //split back into multiple links
-            if (ln.predicates.length > 1) {
+            if (ln.predicates.length >= 1) {
                 ln.predicates.forEach(p => {
                     let lns = new LinkModelV2();
                     lns.from = ln.from;
@@ -535,12 +578,14 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             model.Nodes.push(nn);
         });
 
-        // this.diagram.model.nodeDataArray;
+        console.log('save', model);
         this.isLoading = true;
         this.lineageService.postLineageDiagram(model)
             .then(r => {
+                console.log('save response', r);
                 this.isLoading = false;
-                this.showMessageForResult(this.messagesService, r);
+                if (r != null && r.type != null)
+                    this.showMessageForResult(this.messagesService, r);
             });
     }
 
@@ -572,8 +617,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private validateLink(l: LinkModelV2) {
         let valid = true;
 
-        if ((l.intersectId <= 0 || l.intersectId == null) && (l.intersectTypeId <= 0 || l.intersectTypeId == null))
+        if (l.predicates.length < 1)
             valid = false;
+
+        //if ((l.intersectId <= 0 || l.intersectId == null) && (l.intersectTypeId <= 0 || l.intersectTypeId == null))
+        //    valid = false;
 
         this.diagram.model.setDataProperty(l, 'valid', !valid);
         this.diagram.model.setDataProperty(l, 'valid', valid);
@@ -619,7 +667,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 }
 
                 if (data.intersectTypeId == 0 && this.filteredIntersectTypes.length == 1) {
-                    this.changeIntersectType(this.filteredIntersectTypes[0].intersectTypeId);
+                    this.changeIntersectType(this.filteredIntersectTypes[0]);
                 }
             }
         }
@@ -651,16 +699,15 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private changeIntersectType(e: any) {
         
-        this.selectedData.intersectTypeId = +e;
+        //this.selectedData.predicates = e;
         let link = (<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).from == this.selectedData.from && (<any>l).to == this.selectedData.to);
-        let intersectType = this.intersectTypes.find(i => i.intersectTypeId == +e);
+        //let intersectType = this.intersectTypes.find(i => i.intersectTypeId == +e);
         if (link != null) {
-            //console.log('changeIntersectType', intersectType, link, e);
-            this.diagram.model.setDataProperty(link, 'intersectTypeId', 0);
-            this.diagram.model.setDataProperty(link, 'intersectTypeId', +e);
-            if (intersectType != null) {
-                this.diagram.model.setDataProperty(link, 'predicate', intersectType.predicateName);
-            }
+            console.log('changeIntersectType', link, e);
+            this.diagram.model.setDataProperty(link, 'predicates', null);
+            this.diagram.model.setDataProperty(link, 'predicates', e);
+            this.diagram.model.setDataProperty(link, 'text', null); //force getters to update
+            this.diagram.model.setDataProperty(link, 'fullText', null);
             this.validateLink(<LinkModelV2>link);
         }
         //console.log('changeIntersectType', this.selectedData.intersectTypeId, e, link);
@@ -1074,7 +1121,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.g(go.Shape, {
                 stroke: "gray", strokeWidth: 2
             },
-                new go.Binding("stroke", "valid", function (h) { return h || this.readonly ? "gray" : "#f00" })),
+                new go.Binding("stroke", "valid", function (h) { return h || this.readonly ? "gray" : "#f00" }),
+                {
+                    toolTip: this.bindTooltip("fullText")
+                }
+            ),
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
                 new go.Binding("stroke", "valid", function (h) { return h || this.readonly ? "gray" : "#f00" }),
                 new go.Binding("fill", "valid", function (h) { return h || this.readonly ? "gray" : "#f00" })), // the arrowhead
@@ -1204,6 +1255,14 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.g(go.Shape, { fill: "#333" }),
             this.g(go.TextBlock, { margin: 4, text: text, stroke: "#fff" }
         ));
+    }
+
+    private bindTooltip(prop: string): go.Adornment {
+        return this.g(go.Adornment, "Auto",
+            this.g(go.Shape, { fill: "#333" }),
+            this.g(go.TextBlock, { margin: 4, stroke: "#fff" },
+                new go.Binding("text", prop)
+            ));
     }
 
     //#endregion

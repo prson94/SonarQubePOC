@@ -43,6 +43,7 @@ import { TilesModule  } from '../tiles/tiles.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
+import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 
 
 
@@ -58,6 +59,7 @@ import { SharedFormMessageModule } from '../form-message.part'
         SharedGridPagingInfoModule,
         TilesModule,
         D3SOverlayWindowModule,
+        SharedObjectDetailsModule,
 
         //prime        
         DataTableModule,  
