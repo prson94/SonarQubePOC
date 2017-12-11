@@ -4591,16 +4591,15 @@ namespace d360.web.Controllers
 
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners});
 
-            list.AddRange(
+            list =
                 loadDynamicFields(
                     SystemObjects.Fusion.ToString(),
                     id,
-                    list, 
-                    Company.GetFieldTypesByObject(SystemObjects.FusionType, a.FusionTypeID).ToList(), 
-                    Company.GetFieldRelationsByObject(SystemObjects.Fusion, id).ToList(), 
+                    list,
+                    Company.GetFieldTypesByObject(SystemObjects.FusionType, a.FusionTypeID).ToList(),
+                    Company.GetFieldRelationsByObject(SystemObjects.Fusion, id).ToList(),
                     7
-               )
-           );
+               );           
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
