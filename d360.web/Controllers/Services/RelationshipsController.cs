@@ -16,6 +16,7 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using System.Web.Http.Description;
 using d360.core.enums;
+using System.Web.Http.Results;
 
 namespace d360.web.Controllers.Services
 {
@@ -399,12 +400,12 @@ namespace d360.web.Controllers.Services
         }
 
         [Route("save/lineage"), HttpPost]
-        public HttpResponseMessage SaveLineage(LineageDiagramModel model)
+        public JsonResult<dynamic> SaveLineage(LineageDiagramModel model)
         {
             if (model == null || model.Object == null || model.ObjectID <= 0)
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Model is missing focal object data.");
+                return Json<dynamic>(new { type = "error", title = "Error", message = "Model is missing focal object data." });
             if (model.Links == null)
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Model is missing link data.");
+                return Json<dynamic>(new { type = "error", title = "Error", message = "Model is missing link data." });
 
             try
             {
@@ -465,10 +466,9 @@ namespace d360.web.Controllers.Services
             }
             catch (Exception ex)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+                return Json<dynamic>(new { type = "error", title = "Error", message = ex.Message });
             }
-
-            return Request.CreateResponse(HttpStatusCode.OK, (int?)null);
+            return Json<dynamic>(new { type = "confirm", title = "Success", message = "Lineage saved successfully." });
         }
     }
 }
