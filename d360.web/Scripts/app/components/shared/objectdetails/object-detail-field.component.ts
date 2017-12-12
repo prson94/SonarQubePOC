@@ -17,7 +17,11 @@ import { Router } from '@angular/router';
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name == 'Email'" class="FieldDisplayContent"><a [href]="'mailto:' + field.Value">{{field.Value}}</a></div>
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'date'" class="FieldDisplayContent" [innerHtml]="field.Value | date:'shortDate'"></div>
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'text'" class="FieldDisplayContent">{{field.Value}}</div>
-                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date' && field.DataType != 'text'" class="FieldDisplayContent" [innerHtml]="field.Value"></div>
+                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'bool'" class="FieldDisplayContent">                    
+                    <i *ngIf="field.Value == 'true'" class="fa fa-check enabled" title="True"></i>
+                    <i *ngIf="field.Value == 'false'" class="fa fa-times disabled" title="False"></i>                
+                </div>
+                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date' && field.DataType != 'text' && field.DataType != 'bool'" class="FieldDisplayContent" [innerHtml]="field.Value"></div>
                 <div *ngIf="field.Type == DetailFieldType.Tooltip" class="FieldDisplayContent">                    
                     <d3s-lookup-tooltip [objectType]="field.TooltipType" [objectId]="field.TooltipID">
                         <a (click)="navigate(field.TooltipUrl)" [innerHtml]="field.Value"></a>

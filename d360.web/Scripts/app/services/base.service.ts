@@ -20,22 +20,7 @@ export class BaseService {
         }
         return Promise.reject(error.message || error);
     }
-
-
-    protected deleteDynamic(http: Http, type: string, id: number) {
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-
-        let url = `form/dynamicedit/delete/${type}/${id}`;
-
-        let options = new RequestOptions({ headers: headers });
-
-        return http
-            .delete(url, options)
-            .toPromise()
-            .catch(err => this.handleError(err));
-    }
-
+    
     protected deleteDynamicWithResult(http: Http, type: string, id: number): Promise<JsonResult> {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');

@@ -219,20 +219,6 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    requestCertification(objectId: number): Promise<JsonResult> {
-        let headers = new Headers({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
-        });
-
-        this.addRequestVerificationHeaders(headers);
-
-        return this.http
-            .post('form/RequestCertification', `ID=${objectId}`, { headers: headers })
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
-    }
-
     getSimilarArtifactNames(typeID: number, query: string): Promise<any[]> {
         return this.http.get(`form/Aritfact_SimilarItems?typeID=${typeID}&query=${query}`)
             .toPromise()

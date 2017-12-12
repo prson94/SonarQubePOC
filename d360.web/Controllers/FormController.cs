@@ -1098,51 +1098,6 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, Route("RequestCertification")]
-        public JsonResult RequestCertification(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("artifact");
-
-                int id = parseIntField(form, "ID");
-                var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-
-                if (artifact == null) throw new NotFoundException("artifact");
-
-                //check for any outstanding certification workflows for this item
-                var sql = @"select
-                                count(1)
-                            from
-                                workflow.eventregistration we
-                                inner join workflow.type wt on we.typeid = wt.id
-                                inner join workflow.version wv on wt.id = wv.typeid
-                                inner join workflow.item wi on wi.versionid = wv.id and(wi.[object] = 'Artifact' and wi.objectid = @id)
-                            where
-                                we.changetype = 8 and wi.completedOn is null";
-
-                var count = Company.Query<int>(sql, new { id = id }).FirstOrDefault();
-
-                if(count > 0)
-                {
-                    throw new ConflictException("Certification Not Allowed", "There is already a certification request in process for this item.");
-                }
-
-                Company.RequestObjectCertification(SystemObjects.Artifact, artifact.ID, SystemObjects.ArtifactType, artifact.ArtifactTypeID);
-                
-                return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
         
         #endregion
 

@@ -1381,7 +1381,6 @@
     <TypeScriptCompile Include="Scripts\app\components\group\group.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-groups.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-item-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary.component.ts" />

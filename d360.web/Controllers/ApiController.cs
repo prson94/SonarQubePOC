@@ -128,8 +128,12 @@ namespace d360.web.Controllers
                                 Value = (ft.LookupDisplayFormat == formattedValue) ? "" : formattedValue,
                                 FieldDescription = ft.DisplayDescription,
                                 FieldName = ft.Name,
-                                DataType = (ft.Type == DataType.Date.ToString() ? "date": "")
+                                DataType = ""
                             };
+                            
+                            if (ft.Type == DataType.Date.ToString()) ro.DataType = "date";
+                            else if (ft.Type == DataType.Boolean.ToString()) ro.DataType = "bool";
+                            
                             if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
                             {
                                 if(ft.AllowMultipleValues)
