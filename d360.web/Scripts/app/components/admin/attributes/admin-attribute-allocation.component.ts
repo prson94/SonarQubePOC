@@ -19,7 +19,12 @@ import * as _ from 'lodash';
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="ObjectType" header="Object Type" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                                                            
                             <p-column field="ObjectName" header="Object Name" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="AllowMultipleEntries" header="Allow Multiple Entries" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                
+                            <p-column field="AllowMultipleEntries" header="Allow Multiple Entries" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter">
+                                <ng-template let-item="rowData" pTemplate type="body">
+                                    <i *ngIf="item.AllowMultipleEntries" class="fa fa-check enabled" title="Allowed"></i>
+                                    <i *ngIf="!item.AllowMultipleEntries" class="fa fa-times disabled" title="Not Allowed"></i>
+                                </ng-template>
+                            </p-column>                
                             <p-column [style]="{width:'40px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
