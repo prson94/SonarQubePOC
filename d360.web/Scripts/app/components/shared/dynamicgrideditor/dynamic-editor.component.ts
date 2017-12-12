@@ -96,10 +96,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     private load() {
         if (this.selection != undefined) {
             this.editedItem = _.cloneDeep(this.selection);
-            this.action = this.copy ? "Copy" : this.action;
+            this.action = this.copy ? "Copy" : this.action;            
         }        
         else {
             this.editedItem = new Object();
+            this.action = this.newActionName;            
         }
         this.getDefinition();       
     }
@@ -158,8 +159,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 let category = new EditorCategory();
                 category.name = currentCategory;
                 category.rows = rows;
-                this.categories.push(category);
-                //console.log(this.categories);
+                this.categories.push(category);                
                                 
                 this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
                 this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');

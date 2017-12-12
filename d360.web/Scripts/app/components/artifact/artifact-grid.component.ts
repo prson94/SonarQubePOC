@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit } from '@angular/core';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { LazyLoadEvent, DataTable } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
@@ -76,7 +76,7 @@ import { StringConstants } from '../../static/string-constants';
                         </p-dataTable>                           
                     </div>
                 </div>                                  
-                <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="New" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <d3s-delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"
@@ -84,7 +84,8 @@ import { StringConstants } from '../../static/string-constants';
                             [prompt]="'Are you sure you want to delete ['+ (selected?.DisplayValue ? selected?.DisplayValue : 'Artifact') + ']?'"                                         
                             (onCancel)="showDelete=false;"
                 ></d3s-delete-form>  
-                `,
+                `,    
+                changeDetection: ChangeDetectionStrategy.OnPush,  
     host: {
         '(document:click)': 'clickedOutside()',
     },
@@ -132,7 +133,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         private permissionsService: PermissionsService,
         private router: Router,
         private gridDefinitionService: GridDefinitionService,
-        private artifactService: ArtifactService) {
+        private artifactService: ArtifactService,
+        private changeDetectorRef: ChangeDetectorRef) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
@@ -142,7 +144,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['artifactType'] && this.artifactType != null) {
+        if (changes['artifactType'] && this.artifactType != null) {            
             this.load();
         }
 
@@ -182,6 +184,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed
                 this.showDelete = false;                
                 this.getData();
+                this.changeDetectorRef.markForCheck();
             });
     }
 
@@ -191,11 +194,11 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
-                this.topLevelFilters = result.TopLevelFilterColumns;
-                this.getData();
+                this.topLevelFilters = result.TopLevelFilterColumns;                
+                this.changeDetectorRef.markForCheck();
             });
     }    
-    getData() {
+    getData() {        
         this.isLoading = true;
         this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners)
             .then(result => {
@@ -204,6 +207,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.simpleSearchID = 0;                
                 this.isLoading = false;
+                this.changeDetectorRef.markForCheck();
             });
     }
 
@@ -213,7 +217,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     add() {
         this.selected = null;
-        this.showEditor = true;
+        this.showEditor = true;        
     }
 
     export(listableOnly) {
@@ -249,6 +253,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 if(event.item.ID) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited
                 this.getData();
                 this.isLoading = false;
+                this.changeDetectorRef.markForCheck();
             });
     }
 
@@ -292,17 +297,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.isLoading = true;
         if (dt) dt.reset();        
     }
-
-    protected certificateColor(item) {
-        switch (item.Status) {
-            case 'Certified':
-                return 'artifact-certification-certified';
-            case 'Under Review':
-                return 'artifact-certification-underreview';
-        }
-        return 'artifact-certification';
-    }
-
+    
     protected onRightClick(event,rightMenu,artifact, grid) {
         this.isMenuOpen = true;
         var gridRect = grid.el.nativeElement.getBoundingClientRect();
