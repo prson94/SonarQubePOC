@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Data;
 using d360.extensions.queue;
 using d360.extensions.storage;
+using Microsoft.Azure.WebJobs.Host;
 
 namespace igx.function.fusion.load
 {
@@ -42,6 +43,8 @@ namespace igx.function.fusion.load
         public int BulkCopyTimeout { get; set; }
 
         public int MergeChunkSize { get; set; }
+
+        public TraceWriter Log { get; set; }
 
         #endregion
 
@@ -81,7 +84,7 @@ namespace igx.function.fusion.load
 
         #endregion
 
-        public async Task Process(string functionName, FusionProcessingData fusionData, int bulkTimeout, int readTimeout, int executeTimeout, int chunkSize)
+        public async Task Process(string functionName, FusionProcessingData fusionData, int bulkTimeout, int readTimeout, int executeTimeout, int chunkSize, TraceWriter log)
         {
             BulkFusionImport data = null;
 
@@ -95,6 +98,7 @@ namespace igx.function.fusion.load
             FusionID = fusionData.FusionID;
             LogFileName = fusionData.LogFileName;
             MergeChunkSize = chunkSize;
+            Log = log;
 
             if (CompanyID <= 0) throw new Exception("Invalid company id specified.");
 
@@ -111,8 +115,8 @@ namespace igx.function.fusion.load
                 { "SQLExecutionTimeout", ExecuteQueryTimeout.ToString() }
             };
 
-            Trace.TraceInformation("====================================================================================================");
-            Trace.TraceInformation("STARTING FUSION JOB FOR FUSION ID: {0} COMPANY ID: {1} FILE: {2}", FusionID, CompanyID, LogFileName);
+            Log.Info("====================================================================================================");
+            Log.Info($"STARTING FUSION JOB FOR FUSION ID: {FusionID} COMPANY ID: {CompanyID} FILE: {LogFileName}");
 
             IStorageProvider storageProvider = new AzureStorageProvider();
 
@@ -120,14 +124,14 @@ namespace igx.function.fusion.load
             //load json from azure
 
             Stopwatch sw = Stopwatch.StartNew();
-            Trace.TraceInformation("STARTING JSON DATA READ");
+            Log.Info("STARTING JSON DATA READ");
 
             string json = storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName, Encoding.UTF8);
             data = JsonConvert.DeserializeObject<BulkFusionImport>(json);
 
             if (data == null) throw new Exception("UNABLE TO LOAD FUSION DATA FROM AZURE STORAGE / NULL FUSION DATA OBJECT.");
 
-            Trace.TraceInformation(string.Format("COMPLETED JSON DATA READ\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("COMPLETED JSON DATA READ\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_DOWNLOAD, sw.Elapsed);
 
 
@@ -138,7 +142,7 @@ namespace igx.function.fusion.load
             if (data.Relationships == null)
                 data.Relationships = new FusionRelationshipModels();
 
-            Trace.TraceInformation($"FUSION JOB HAS {data.Models.Count} MODELS, {data.QueryItems.Count} QUERY ITEMS, {data.Relationships.Count} RELATIONS");
+            Log.Info($"FUSION JOB HAS {data.Models.Count} MODELS, {data.QueryItems.Count} QUERY ITEMS, {data.Relationships.Count} RELATIONS");
 
             metrics["MODELS"] = data.Models.Count;
             metrics["QUERYITEMS"] = data.QueryItems.Count;
@@ -166,10 +170,10 @@ namespace igx.function.fusion.load
 
                     sw.Restart();
                     ExecutionID = await LogExecution(companyConnection, data.Version);
-                    Trace.TraceInformation(string.Format("LogExecution\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+                    Log.Info(string.Format("LogExecution\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
                     CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_LOG_EXECUTION, sw.Elapsed);
 
-                    Trace.TraceInformation("Processing fusion execution ID: [{0}]", ExecutionID);
+                    Log.Info($"Processing fusion execution ID: [{ExecutionID}]");
 
                     //Process Models                
                     await ProcessModels(companyConnection, data.Models, functionName, baseEventProperties, CompanyID);
@@ -188,7 +192,7 @@ namespace igx.function.fusion.load
 
                     sw.Restart();
                     await SaveChangedValuesLog(companyConnection);
-                    Trace.TraceInformation(string.Format("SaveChangedValuesLog\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+                    Log.Info(string.Format("SaveChangedValuesLog\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
                     CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_SAVE_CHANGED_VALUES, sw.Elapsed);
 
                     //Update the executionID to say this is done
@@ -203,11 +207,11 @@ namespace igx.function.fusion.load
                 catch (AggregateException exception)
                 {
                     CoreFunction.AITrackException(functionName, exception, CompanyID);
-                    Trace.TraceError("FusionProcessor::Process encountered and error while running fusion job.");
+                    Log.Error("FusionProcessor::Process encountered and error while running fusion job.");
 
                     foreach (Exception ex in exception.InnerExceptions)
                     {
-                        Trace.TraceError("Exception details [{0}]", ex.Message);
+                        Log.Error($"Exception details [{ex.Message}]");
                         LogFusionError(companyConnection, ex);
                     }
 
@@ -217,7 +221,7 @@ namespace igx.function.fusion.load
                 {
                     CoreFunction.AITrackException(functionName, ex, CompanyID);
 
-                    Trace.TraceError("FusionProcessor::Process encountered and error while running fusion job.  Exception details [{0}]", ex.Message);
+                    Log.Error($"FusionProcessor::Process encountered and error while running fusion job.  Exception details [{ex.Message}]" );
 
                     LogFusionError(companyConnection, ex);
 
@@ -275,7 +279,7 @@ namespace igx.function.fusion.load
         {
             if (ex == null || ExecutionID <= 0)
             {
-                Trace.TraceError("UNABLE TO LOG ERROR TO [FUSION].[ERROR] TABLE EXECUTION ID IS NULL OR EXCEPTION OBJECT IS NULL");
+                Log.Error("UNABLE TO LOG ERROR TO [FUSION].[ERROR] TABLE EXECUTION ID IS NULL OR EXCEPTION OBJECT IS NULL");
 
                 return;
             }
@@ -399,7 +403,7 @@ namespace igx.function.fusion.load
         {
             if (relationships.Count == 0)
             {
-                Trace.TraceInformation("NO RELATIONS SPECIFIED AS PART OF FUSION JOB SKIPPING PROCESSRELATIONSHIPS.");
+                Log.Info("NO RELATIONS SPECIFIED AS PART OF FUSION JOB SKIPPING PROCESSRELATIONSHIPS.");
 
                 return;
             }
@@ -422,7 +426,7 @@ namespace igx.function.fusion.load
             // insert all the resolved relation into into a temp table
             await companyConnection.ExecuteAsync(@"create table #tempResolvedRel([ID] INT IDENTITY(1,1) NOT NULL PRIMARY KEY, IntersectTypeID int, SourceIntersectTypeID int, TargetIntersectTypeID int,  StartFusionAttributeID int, EndFusionAttributeID int)", commandTimeout: ExecuteQueryTimeout);
 
-            Trace.TraceInformation("WRITING {0} RESOLVED RELATIONSHIPS TO #TEMPRESOLVEDREL TEMP TABLE.", _workArea.Relationships.ResolvedRelationshipData.Count);
+            Log.Info($"WRITING {_workArea.Relationships.ResolvedRelationshipData.Count} RESOLVED RELATIONSHIPS TO #TEMPRESOLVEDREL TEMP TABLE.");
 
             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
             {
@@ -502,14 +506,14 @@ MERGE
         {
             if (_workArea.Relationships.UnresolvedRelationshipData.Count == 0)
             {
-                Trace.TraceInformation("NO UNRESOLVED RELATIONS EXITING DoUnresolvedRelationsInsert.");
+                Log.Info("NO UNRESOLVED RELATIONS EXITING DoUnresolvedRelationsInsert.");
 
                 return;
             }
 
             await companyConnection.ExecuteAsync(@"create table #tempUnresolvedRel(StartID varchar(250), EndID nvarchar(250))", commandTimeout: ExecuteQueryTimeout);
 
-            Trace.TraceInformation("INSERTING {0} UNRESOLVED RELATIONSHIPS INTO TEMPUNRESOLVEDREL TEMP TABLE.", _workArea.Relationships.UnresolvedRelationshipData.Count);
+            Log.Info($"INSERTING {_workArea.Relationships.UnresolvedRelationshipData.Count} UNRESOLVED RELATIONSHIPS INTO TEMPUNRESOLVEDREL TEMP TABLE.");
 
             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
             {
@@ -588,21 +592,21 @@ MERGE
             {
                 if (string.IsNullOrEmpty(item.StartID) || string.IsNullOrEmpty(item.EndID))
                 {
-                    Trace.TraceInformation("FOUND INVALID RELATIONSHIP CONTAINING NULL START/END VALUE FOR STARTID [" + item.StartID + "] ENDID [" + item.EndID + "].  DISREGARDING AS INVALID");
+                    Log.Info("FOUND INVALID RELATIONSHIP CONTAINING NULL START/END VALUE FOR STARTID [" + item.StartID + "] ENDID [" + item.EndID + "].  DISREGARDING AS INVALID");
 
                     continue;
                 }
 
                 if (item.StartID.Length > MAX_SOURCEID_LENGTH)
                 {
-                    Trace.TraceInformation("FOUND INVALID STARTID STARTID [" + item.StartID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
+                    Log.Info("FOUND INVALID STARTID STARTID [" + item.StartID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
 
                     continue;
                 }
 
                 if (item.EndID.Length > MAX_SOURCEID_LENGTH)
                 {
-                    Trace.TraceInformation("FOUND INVALID ENDID STARTID [" + item.EndID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
+                    Log.Info("FOUND INVALID ENDID STARTID [" + item.EndID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
 
                     continue;
                 }
@@ -636,22 +640,14 @@ MERGE
                     var intersectInfo = _workArea.Relationships.IntersectTypeMapping.FirstOrDefault(x => x.SubjectID == sourceAttributeTypeID && x.ObjectID == targetAttributeTypeID);
 
                     if (intersectInfo == null)
-                    {
-                        //Trace.TraceWarning("ENCOUNTERED INTERSECT MAPPING THAT DOESNT HAVE A RELATIONSHIP IN DB. SOURCE ATTRIBUTE TYPE ID [{0}] TARGET ATTRIBUTE TYPE ID [{1}]", sourceAttributeTypeID, targetAttributeTypeID);
+                    {                        
                         continue;
                     }
-
-                    //relData.EndIntersectTypeID = intersectInfo.TargetIntersectTypeNodeID;
-                    //relData.StartIntersectTypeID = intersectInfo.SourceIntersectTypeNodeID;
+                    
                     relData.IntersectTypeID = intersectInfo.ID;
 
                     _workArea.Relationships.ResolvedRelationshipData.Add(relData);
-                }
-                else
-                {
-                    //Trace.TraceInformation("FOUND UNRESOLVED RELATIONSHIP BETWEEN START SOURCEID:[{0}] AND END SOURCEID:[{1}]", item.StartID, item.EndID);
-                    //_workArea.Relationships.UnresolvedRelationshipData.Add(relData);
-                }
+                }                
             }
         }
 
@@ -662,7 +658,7 @@ select  ID, SubjectID, ObjectID
 from    [IntersectType]
 where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
 
-            Trace.TraceInformation("LOADED {0} INTERSECT TYPE MAPPINGS FROM IntersectType table.", _workArea.Relationships.IntersectTypeMapping.Count());
+            Log.Info($"LOADED {_workArea.Relationships.IntersectTypeMapping.Count()} INTERSECT TYPE MAPPINGS FROM IntersectType table.");
         }
 
         /// <summary>
@@ -675,7 +671,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             Stopwatch sw = Stopwatch.StartNew();
             // RUN QUERY TO GET FIELDS INFO FOR THE FIELDS IN THIS RUN
             await LoadCurrentFusionFieldInfo(companyConnection);
-            Trace.TraceInformation(string.Format("LOADCURRENTFUSIONFIELD INFO TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("LOADCURRENTFUSIONFIELD INFO TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_LOADCURRENTFUSIONFIELD, sw.Elapsed);
 
             // RUN QUERY TO GET THE EXISTING FUSIONATTRIBUTES IN THIS RUN
@@ -684,7 +680,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             //build a table that contains all the fusionattributes we need to insert
             sw.Restart();
             GenerateFusionAttributeTableValues(models);
-            Trace.TraceInformation(string.Format("GENERATEFUSIONATTRIBUTETABLEVALUES TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("GENERATEFUSIONATTRIBUTETABLEVALUES TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_GENERATE_FUSION_ATTR_VALUES, sw.Elapsed);
 
             // handle fusionattribute updates / inserts
@@ -692,53 +688,53 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             // items that 
             sw.Restart();
             await DoFusionAttributeMerge(companyConnection, functionName, properties, companyID);
-            Trace.TraceInformation(string.Format("DoFusionAttributeMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("DoFusionAttributeMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_MERGE, sw.Elapsed);
 
             // RUN QUERY TO GET FUSION ATTRIBUTE IDS
             sw.Restart();
             await LoadCurrentFusionAttributeInfo(companyConnection);
-            Trace.TraceInformation(string.Format("LoadCurrentFusionAttributeInfo TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("LoadCurrentFusionAttributeInfo TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_RELOAD, sw.Elapsed);
 
             // load all the fusionfield type ids
             sw.Restart();
             await LoadFusionAttributeToFieldTypeIDMap(companyConnection);
-            Trace.TraceInformation(string.Format("LoadFusionAttributeToFieldTypeIDMap TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("LoadFusionAttributeToFieldTypeIDMap TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_FIELDTYPE_MAP, sw.Elapsed);
 
             // handle fields
             sw.Restart();
             GenerateFusionFieldTableValues(models);
-            Trace.TraceInformation(string.Format("GenerateFusionFieldTableValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("GenerateFusionFieldTableValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_VALS, sw.Elapsed);
 
             sw.Restart();
             await DoFusionFieldMerge(companyConnection, functionName, properties, companyID);
-            Trace.TraceInformation(string.Format("DoFusionFieldMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("DoFusionFieldMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_MERGE, sw.Elapsed);
 
             // fields and attributes now updated need to update any parent ids
             sw.Restart();
             UpdateAttributesWithParentIDValues();
-            Trace.TraceInformation(string.Format("UpdateAttributesWithParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("UpdateAttributesWithParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PARENT_UPDATE, sw.Elapsed);
 
             //update the parentids by doing a merge
             sw.Restart();
             await UpdateFusionAttributeParentIDs(companyConnection);
-            Trace.TraceInformation(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PARENT_UPDATE_MERGE, sw.Elapsed);
 
             //update old values with values we             
             sw.Restart();
             DetermineChangedFields();
-            Trace.TraceInformation(string.Format("DetermineChangedFields TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("DetermineChangedFields TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_CHANGES, sw.Elapsed);
 
             sw.Restart();
             DetermineChangedFusionAttributes();
-            Trace.TraceInformation(string.Format("DetermineChangedFusionAttributes TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Log.Info(string.Format("DetermineChangedFusionAttributes TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_ATTR_CHANGES, sw.Elapsed);
         }
 
@@ -749,7 +745,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
         /// <returns></returns>
         private async Task ProcessQueryItems(SqlConnection companyConnection, List<IDictionary<string, string>> queryItems)
         {
-            Trace.TraceInformation($"Working with {queryItems.Count} FUSIONQUERYATTRIBUTES");
+            Log.Info($"Working with {queryItems.Count} FUSIONQUERYATTRIBUTES");
 
             Stopwatch sw = Stopwatch.StartNew();
 
@@ -807,7 +803,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                             await bulkCopy.WriteToServerAsync(table);
                         }
 
-                        Trace.TraceInformation($"LOAD QUERY ATTRIBUTES into TEMP table (#FusionQueryAttribute) TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+                        Log.Info($"LOAD QUERY ATTRIBUTES into TEMP table (#FusionQueryAttribute) TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
 
                         #endregion
 
@@ -865,7 +861,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                         //            S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
                         //            and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-                        Trace.TraceInformation($"MERGE query attributes TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+                        Log.Info($"MERGE query attributes TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
 
                         #endregion
 
@@ -947,7 +943,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                             await bulkCopy.WriteToServerAsync(table);
                         }
 
-                        Trace.TraceInformation($"LOAD QUERY ATTRIBUTES FIELDS into TEMP table (#FusionQueryAttributeField) TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+                        Log.Info($"LOAD QUERY ATTRIBUTES FIELDS into TEMP table (#FusionQueryAttributeField) TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
 
                         #endregion
 
@@ -987,7 +983,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                 insert (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue) 
                 values ('FusionQueryAttribute', S.FusionQueryAttributeID, S.FieldTypeID, S.Value, S.Value);", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-                        Trace.TraceInformation($"MERGE query attribute fields TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+                        Log.Info($"MERGE query attribute fields TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
 
                         #endregion
 
@@ -995,7 +991,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                     }
                     catch (Exception ex)
                     {
-                        Trace.TraceError($"ERROR IN ProcessQueryItems: {ex.GetFullExceptionData()}");
+                        Log.Error($"ERROR IN ProcessQueryItems: {ex.GetFullExceptionData()}");
                         trans.Rollback();
                     }
                 } //using
@@ -1020,7 +1016,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
         {
             if (IsFirstRun)
             {
-                Trace.TraceInformation("NOT LOGGING ANY CHANGED FUSION ATTRIBUTE INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
+                Log.Info("NOT LOGGING ANY CHANGED FUSION ATTRIBUTE INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
 
                 _workArea.Changes.AddCount += _workArea.FusionAttributeTempValues.Count();
                 
@@ -1050,7 +1046,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
         {
             if (IsFirstRun)
             {
-                Trace.TraceInformation("NOT LOGGING ANY CHANGED FIELD INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
+                Log.Info("NOT LOGGING ANY CHANGED FIELD INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
 
 
                 _workArea.Changes.AddCount += _workArea.FieldValueCollection.Count();
@@ -1154,7 +1150,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
             {
-                Trace.TraceInformation("INSERTING {0} PARENT/CHILD RELATIONSHIP MAPPINGS INTO TEMPPARENTID TEMP TABLE.", count);
+                Log.Info($"INSERTING {count} PARENT/CHILD RELATIONSHIP MAPPINGS INTO TEMPPARENTID TEMP TABLE.");
 
                 bulkCopy.BatchSize = count;
                 bulkCopy.DestinationTableName = "#tempParentID";
@@ -1185,7 +1181,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                 await bulkCopy.WriteToServerAsync(table);
             }
 
-            Trace.TraceInformation("BULK COPY TO #tempParentID COMPLETED.  UPDATING FUSIONATTRIBUTE PARENTID COLUMN WITH NEW VALUES");
+            Log.Info("BULK COPY TO #tempParentID COMPLETED.  UPDATING FUSIONATTRIBUTE PARENTID COLUMN WITH NEW VALUES");
 
             await companyConnection.ExecuteAsync(@"
                 update	T
@@ -1197,14 +1193,14 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
         private void UpdateAttributesWithParentIDValues()
         {
-            Trace.TraceInformation("UpdateAttributesWithParentIDValues - Updating fusionattributes with the parent id values from the insert process.");
+            Log.Info("UpdateAttributesWithParentIDValues - Updating fusionattributes with the parent id values from the insert process.");
             //fusionattributetempvalues doesnt have any id values need to get them from AttributeMappingCollection
             foreach (var item in _workArea.FusionAttributeTempValues)
             {
                 int id = 0;
                 if (!_workArea.FusionSourceToIDMap.TryGetValue(item.SourceID, out id))
                 {
-                    Trace.TraceInformation("Unable to resolve id of source id[" + item.SourceID + "] This should not happen as we should have inserted this already and reloaded.");
+                    Log.Info("Unable to resolve id of source id[" + item.SourceID + "] This should not happen as we should have inserted this already and reloaded.");
 
                     continue;
                 }
@@ -1218,7 +1214,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
                 if (!_workArea.FusionSourceToIDMap.TryGetValue(item.ParentSourceID, out parentId))
                 {
-                    Trace.TraceInformation("Unable to resolve parent of source id[" + item.SourceID + "], Parent[" + item.ParentSourceID + "]");
+                    Log.Info("Unable to resolve parent of source id[" + item.SourceID + "], Parent[" + item.ParentSourceID + "]");
                 }
                 else
                 {
@@ -1278,7 +1274,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
                     var size = endIndex - startIndex;
 
-                    Trace.TraceInformation("DoFusionFieldMerge - INSERTING {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", size);
+                    Log.Info($"DoFusionFieldMerge - INSERTING {size} FIELD VALUES TO #tempFusionFields TEMP TABLE.");
                     //insert to the temp table
 
                     using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
@@ -1315,9 +1311,9 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                         await bulkCopy.WriteToServerAsync(table);
                     }
 
-                    Trace.TraceInformation("DoFusionFieldMerge - INSERTED {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", size);
+                    Log.Info($"DoFusionFieldMerge - INSERTED {size} FIELD VALUES TO #tempFusionFields TEMP TABLE.");
 
-                    Trace.TraceInformation("DoFusionFieldMerge - Starting to merge #tempFusionFields with [dbo].[field]");
+                    Log.Info("DoFusionFieldMerge - Starting to merge #tempFusionFields with [dbo].[field]");
 
                     //merge temp table with fields table
                     await companyConnection.ExecuteAsync(@"
@@ -1342,7 +1338,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
                 trans.Commit();
 
-                Trace.TraceInformation("DoFusionFieldMerge - Completed merge of #tempFusionFields with [dbo].[field]");
+                Log.Info("DoFusionFieldMerge - Completed merge of #tempFusionFields with [dbo].[field]");
             }
         }
 
@@ -1352,7 +1348,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
             {
                 if (x == null)
                 {
-                    Trace.TraceInformation("INVALID MODEL IN MODELS COLLECTION");
+                    Log.Info("INVALID MODEL IN MODELS COLLECTION");
 
                     continue;
                 }
@@ -1370,7 +1366,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
                 if (string.IsNullOrEmpty(fusionTypeIDString))
                 {
-                    Trace.TraceInformation("INVALID KEY IN MODEL KEY VALUE COLLECTION");
+                    Log.Info("INVALID KEY IN MODEL KEY VALUE COLLECTION");
 
                     continue;
                 }
@@ -1385,7 +1381,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                 //if existingItem is null something is wrong
                 if (!_workArea.FusionSourceToIDMap.TryGetValue(sourceID, out id))
                 {
-                    Trace.TraceError("UNABLE TO LOAD FUSIONATTRIBUTE ID FOR CURRENT ITEM SOURCE ID [{0}] FIELD NAME [{1}] FUSION TYPE ID [{2}].", sourceID, name, fusionTypeIDString);
+                    Log.Error($"UNABLE TO LOAD FUSIONATTRIBUTE ID FOR CURRENT ITEM SOURCE ID [{sourceID}] FIELD NAME [{name}] FUSION TYPE ID [{fusionTypeIDString}].");
 
                     continue;
                 }
@@ -1397,7 +1393,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
                     if (string.IsNullOrEmpty(item.Key))
                     {
-                        Trace.TraceInformation("ERROR NULL OR EMPTY FIELD NAME FOR FUSION ATTRIBUTE SOURCE ID : {0}", sourceID);
+                        Log.Info("ERROR NULL OR EMPTY FIELD NAME FOR FUSION ATTRIBUTE SOURCE ID : {0}", sourceID);
 
                         continue;
                     }
@@ -1406,7 +1402,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
                     if (fieldInfo == null)
                     {
-                        Trace.TraceInformation("Encountered unexpected field for a fusionattributetype.  Cannot find mapping for fusion attribute type id [" + fusionTypeID + "] to a field with the name [" + item.Key + "]");
+                        Log.Info("Encountered unexpected field for a fusionattributetype.  Cannot find mapping for fusion attribute type id [" + fusionTypeID + "] to a field with the name [" + item.Key + "]");
 
                         continue;
                     }
@@ -1432,7 +1428,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
             await companyConnection.ExecuteAsync(sql, commandTimeout: ExecuteQueryTimeout);
 
-            Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE VALUES TO #tempFusionAttributes TEMP TABLE.", _workArea.FusionAttributeTempValues.Count);
+            Log.Info($"INSERTING {_workArea.FusionAttributeTempValues.Count} FUSION ATTRIBUTE VALUES TO #tempFusionAttributes TEMP TABLE.");
 
             using (var trans = companyConnection.BeginTransaction())
             {
@@ -1529,7 +1525,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
 //        private async Task DoFusionAttributeCache(SqlConnection companyConnection)
 //        {
-//            Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE IDs TO cache.Object TABLE.", _workArea.FusionAttributeTempValues.Count);
+//            Log.Info("INSERTING {0} FUSION ATTRIBUTE IDs TO cache.Object TABLE.", _workArea.FusionAttributeTempValues.Count);
 
 //            using (var trans = companyConnection.BeginTransaction())
 //            {
@@ -1614,7 +1610,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                                                         CREATE NONCLUSTERED INDEX [CIX_Temp_TempSourceID] ON #tempSourceID ( SourceID ASC );
                                                         set nocount off", commandTimeout: ExecuteQueryTimeout);
 
-                Trace.TraceInformation("INSERTING {0} FUSIONATTRIBUTE SOURCE IDS INTO #tempSourceID TEMP TABLE", _workArea.InSourceIDList.Count);
+                Log.Info($"INSERTING {_workArea.InSourceIDList.Count} FUSIONATTRIBUTE SOURCE IDS INTO #tempSourceID TEMP TABLE");
 
                 using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
                 {
@@ -1654,7 +1650,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
             }
             catch (SqlException sqE)
             {
-                Trace.TraceInformation("SQL ERROR IN LoadCurrentFusionFieldInfo ERROR MESSAGE :" + sqE.Message);
+                Log.Info("SQL ERROR IN LoadCurrentFusionFieldInfo ERROR MESSAGE :" + sqE.Message);
                 throw sqE;
             }
         }
@@ -1682,7 +1678,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
             {
                 if (IsFirstRun)
                 {
-                    Trace.TraceInformation("FOUND EXISTING DATA FOR FUSION ID {0} SO THIS IS NOT THE FIRST RUN.", FusionID);
+                    Log.Info($"FOUND EXISTING DATA FOR FUSION ID {FusionID} SO THIS IS NOT THE FIRST RUN." );
                     IsFirstRun = false;
                 }
 
@@ -1704,9 +1700,9 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                 Trace.TraceWarning("Issues exist with the following sourceIDs: {0}", errorList);
             }
 
-            if (IsFirstRun) Trace.TraceInformation("NO EXISTING DATA FOUND FOR FUSION ID {0}.  THIS IS THE FIRST RUN.", FusionID);
+            if (IsFirstRun) Log.Info($"NO EXISTING DATA FOUND FOR FUSION ID {FusionID}.  THIS IS THE FIRST RUN.");
 
-            Trace.TraceInformation("LOADED {0} EXISTING FUSION ATTRIBUTE VALUES", _workArea.ExistingFusionAttributes.Count);
+            Log.Info($"LOADED {_workArea.ExistingFusionAttributes.Count} EXISTING FUSION ATTRIBUTE VALUES" );
         }
 
         private async Task LoadCurrentFusionAttributeInfo(SqlConnection companyConnection)

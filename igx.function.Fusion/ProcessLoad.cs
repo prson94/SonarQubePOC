@@ -18,7 +18,7 @@ namespace igx.functions
         const string functionName = "Fusion_ProcessLoad";
 
         [FunctionName(functionName)]
-        public static void Run([QueueTrigger("%FusionLoadQueue%", Connection = "MainStorageAccount")]string myQueueItem, TraceWriter log)
+        public static async Task Run([QueueTrigger("%FusionLoadQueue%", Connection = "MainStorageAccount")]string myQueueItem, TraceWriter log)
         {
             var fusion = JsonConvert.DeserializeObject<FusionProcessingData>(myQueueItem);
             var fp = new FusionProcessor();
@@ -29,26 +29,24 @@ namespace igx.functions
                 var readTimeout = int.Parse(CoreFunction.GetConfigValueByKey("DBReadQueryTimeout"));
                 var executionTimeout = int.Parse(CoreFunction.GetConfigValueByKey("DBExecuteQueryTimeout"));
                 var mergeSize = int.Parse(CoreFunction.GetConfigValueByKey("MergeChunkSize"));
-
-                var t = Task.Run(async delegate
+                
+                try
                 {
-                    try
-                    {
-                        var sw = Stopwatch.StartNew();
-                        await fp.Process(functionName, fusion, bulkTimeout, readTimeout, executionTimeout, mergeSize);
-                        Trace.TraceInformation(string.Format("Fusion Processing Took\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
-                    }
-                    catch (AggregateException exception)
-                    {
-                        Trace.TraceError("FusionQueueManager encountered and error while running fusion job.");
-                        foreach (Exception ex in exception.InnerExceptions)
-                            Trace.TraceError("Exception details [{0}]", ex.Message);
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.TraceError("FusionQueueManager encountered and error while running fusion job.  Exception details [{0}]", ex.Message);
-                    }
-                });
+                    var sw = Stopwatch.StartNew();
+                    await fp.Process(functionName, fusion, bulkTimeout, readTimeout, executionTimeout, mergeSize, log);
+                    log.Info($"Fusion Processing Took\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+                }
+                catch (AggregateException exception)
+                {
+                    log.Error("FusionQueueManager encountered and error while running fusion job.");
+                    foreach (Exception ex in exception.InnerExceptions)
+                        log.Error($"Exception details [{ex.Message}]");
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"FusionQueueManager encountered and error while running fusion job.  Exception details [{ex.Message}]");
+                }
+                
             }
             catch (Exception ex)
             {
