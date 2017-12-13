@@ -1054,6 +1054,12 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-asset-type-editor.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-nym-allocations.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-group-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-item-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-group-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-item-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-map-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-scoretype-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.routes.ts" />
@@ -1327,6 +1333,7 @@
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\metrics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\organization.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\qualifier.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shopping-cart.model.ts" />
@@ -1552,6 +1559,7 @@
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />

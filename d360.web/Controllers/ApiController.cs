@@ -26,6 +26,7 @@ using SpreadsheetLight;
 using d360.extensions;
 using System.Threading.Tasks;
 using Dapper;
+using d360.core.entities.Metric;
 
 namespace d360.web.Controllers
 {
@@ -7386,6 +7387,34 @@ from	    TaxonomyType FAT
         }
         #endregion
 
+        #region Metrics
+
+        [Route("metrics/groups")]
+        public IQueryable<MetricGroup> GetMetricGroups()
+        {
+            return Company.Table<MetricGroup>();
+        }
+
+        [Route("metrics/items")]
+        public IQueryable<MetricItem> GetMetricItems()
+        {
+            return Company.Table<MetricItem>();
+        }
+
+        [Route("metrics/group/{id:int}")]
+        public MetricGroup GetMetricGroup(int id)
+        {
+            return Company.GetById<MetricGroup>(id);
+        }
+
+        [Route("metrics/item/{id:int}")]
+        public MetricItem GetMetricItem(int id)
+        {
+            return Company.MetricItems.FirstOrDefault(i => i.ID == id);
+        }
+
+
+        #endregion
 
     }
 } 

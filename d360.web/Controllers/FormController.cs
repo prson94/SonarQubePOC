@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.entities.Metric;
 using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.exceptions;
@@ -358,7 +359,9 @@ namespace d360.web.Controllers
                 case "LOOKUPTYPE":
                     return Lookup_EditFields(oid);
                 case "MAP":
-                    return Map_EditFields(oid);                
+                    return Map_EditFields(oid);
+                case "METRICITEM":
+                    return MetricItem_EditFields(oid);
                 case "ORGANIZATION":
                     return Organization_EditFields(oid);
                 case "ORGANIZATIONDOMAIN":
@@ -415,7 +418,9 @@ namespace d360.web.Controllers
                 case "LOOKUPTYPE":
                     return Lookup_AddFields(objectID.GetValueOrDefault());
                 case "MAP":
-                    return Map_AddFields();                
+                    return Map_AddFields();
+                case "METRICITEM":
+                    return MetricItem_AddFields();
                 case "ORGANIZATION":
                     return Organization_AddFields(objectID.GetValueOrDefault());
                 case "ORGANIZATIONDOMAIN":
@@ -498,7 +503,9 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return EditLookup(form);
                 case "MAP":
-                    return EditMap(form);                
+                    return EditMap(form);
+                case "METRICITEM":
+                    return PutMetricItem(form);
                 case "ORGANIZATION":
                     return PutOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -673,7 +680,9 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return AddLookup(form);
                 case "MAP":
-                    return AddMap(form);                
+                    return AddMap(form);
+                case "METRICITEM":
+                    return PostMetricItem(form);
                 case "ORGANIZATION":
                     return PostOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -9609,6 +9618,138 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         }
 
         #endregion
+
+        #region Metrics
+
+        #region Field Generation
+
+        [Route("MetricItem_AddFields")]
+        public JsonResult MetricItem_AddFields()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("MetricItem_EditFields")]
+        public JsonResult MetricItem_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            var item = Company.MetricItems.FirstOrDefault(i => i.ID == id);
+
+            if (item == null)
+                return jsonException($"Could not find metric item with id {id}", HttpStatusCode.NotFound);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = item.ID.ToString() });
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = item.Name });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = item.Description });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+
+        #endregion
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false),  Route("MetricItem")]
+        public JsonResult PostMetricItem(FormCollection form)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                MetricItem m = new MetricItem
+                {
+                    Name = parseTextField(form, "Name"),
+                    Description = parseTextField(form, "Description")
+                };
+
+
+                Company.Add(m);
+
+                return jsonSuccess($"{m.Name} metric item successfully created.", m.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("MetricItem")]
+        public JsonResult PutMetricItem(FormCollection form)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var id = parseIntField(form, "ID");
+
+                var m = Company.MetricItems.FirstOrDefault(i => i.ID == id);
+
+                if (m == null)
+                    return jsonException($"Metric Item with ID {id} not found", HttpStatusCode.NotFound);
+
+                m.Name = parseTextField(form, "Name");
+                m.Description = parseTextField(form, "Description");
+
+
+                Company.Update(m);
+
+                return jsonSuccess($"{m.Name} metric item successfully updated.", m.ID.ToString(), "edit", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricItem")]
+        public JsonResult DeleteMetricItem(int id)
+        {
+            var m = Company.MetricItems.FirstOrDefault(i => i.ID == id);
+
+            if (m == null)
+                return jsonException($"Could not find metric item with id {id}", HttpStatusCode.NotFound);
+
+            try
+            {
+                Company.Delete(m);
+                return jsonSuccess($"Metric item successfully deleted.", id.ToString(), "delete", HttpStatusCode.OK);
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch(Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+            
+        }
+        #endregion
+
 
         #region Organization
 
