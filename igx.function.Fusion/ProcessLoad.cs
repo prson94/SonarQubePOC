@@ -20,6 +20,8 @@ namespace igx.functions
         [FunctionName(functionName)]
         public static async Task Run([QueueTrigger("%FusionLoadQueue%", Connection = "MainStorageAccount")]string myQueueItem, TraceWriter log)
         {
+            CoreFunction.AITrackJobStart(functionName);
+
             var fusion = JsonConvert.DeserializeObject<FusionProcessingData>(myQueueItem);
             var fp = new FusionProcessor();
 
@@ -35,6 +37,8 @@ namespace igx.functions
                     var sw = Stopwatch.StartNew();
                     await fp.Process(functionName, fusion, bulkTimeout, readTimeout, executionTimeout, mergeSize, log);
                     log.Info($"Fusion Processing Took\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+
+                    CoreFunction.AITrackJobCompletedNoErrors(functionName);
                 }
                 catch (AggregateException exception)
                 {
@@ -53,6 +57,8 @@ namespace igx.functions
                 CoreFunction.AITrackException(functionName, ex, fusion.CompanyID);
                 log.Error($"Company [{fusion.CompanyID}], Fusion ID [{fusion.FusionID}], LogFileName [{fusion.LogFileName}]: [{ex.GetFullExceptionData()}]");
             }
+
+            CoreFunction.AIFlush();
         }
 
         static void executeWithTry(SqlConnection companyConnection, TraceWriter logger, string lineageSql, int companyID, int timeout = 1200)
