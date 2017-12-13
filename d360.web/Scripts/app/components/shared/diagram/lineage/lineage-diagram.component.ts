@@ -84,6 +84,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private overlayOffset = 391;
     private overlayMaxHeight = 700;
     private overlayWidth = 500;
+    private history = [];
 
     constructor(
         private myElement: ElementRef,
@@ -97,7 +98,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     public ngOnInit() {
         this.readonly = true;
-
+        this.history.push({
+            object: this.objectType,
+            objectId: this.objectID
+        });
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
     }
@@ -433,6 +437,50 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 title: 'Cancel Changes'
             });
 
+        if (this.history.length > 1) {
+            let hist = {
+                icon: 'fa-history',
+                items: [],
+                title: 'Navigation History'
+            };
+
+            this.history.forEach(h => {
+                hist.items.push({
+                    icon: null,
+                    title: h.object + h.objectId.toString(),
+                    items: null,
+                    command: () => {
+                        this.objectType = h.object;
+                        this.objectID = h.objectId;
+                        this.populateDiagram();
+                    }
+                });
+            });
+        }
+
+    }
+
+    private toggleReadOnly(readonly?: boolean) {
+        if (readonly != null) this.readonly = readonly;
+        //console.log('toggelReadOnly', this.readonly);
+        let dt = this.diagram.toolManager.diagram
+        dt.allowDelete = !this.readonly;
+        dt.allowClipboard = !this.readonly;
+        dt.allowCopy = !this.readonly;
+        dt.allowInsert = !this.readonly;
+        dt.allowLink = !this.readonly;
+        dt.allowRelink = !this.readonly;
+        dt.allowGroup = !this.readonly;
+        dt.allowTextEdit = !this.readonly;
+
+        this.diagram.toolManager.linkingTool.isEnabled = !this.readonly;
+
+        this.loadMenuItems();
+
+        if (this.readonly == false)
+            this.loadIntersectTypes()
+                .then(() => this.loadObjectTypes());
+
     }
 
     private loadObjectTypes(): Promise<any> {
@@ -698,14 +746,15 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     //#region events
 
     private changeIntersectType(e: any) {
-        
-        //this.selectedData.predicates = e;
+        if (e == null)
+            e = [];
+        this.selectedData.predicates = [...e];
         let link = (<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).from == this.selectedData.from && (<any>l).to == this.selectedData.to);
         //let intersectType = this.intersectTypes.find(i => i.intersectTypeId == +e);
         if (link != null) {
             console.log('changeIntersectType', link, e);
             this.diagram.model.setDataProperty(link, 'predicates', null);
-            this.diagram.model.setDataProperty(link, 'predicates', e);
+            this.diagram.model.setDataProperty(link, 'predicates', [...e]);
             this.diagram.model.setDataProperty(link, 'text', null); //force getters to update
             this.diagram.model.setDataProperty(link, 'fullText', null);
             this.validateLink(<LinkModelV2>link);
@@ -782,7 +831,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             if (obj.diagramObjectType == DiagramObjectType.Node) {
                 this.objectType = obj.object;
                 this.objectID = obj.objectId;
-
+                //this.history.push({
+                //    object: this.objectType,
+                //    objectId: this.objectID
+                //});
+                //this.loadMenuItems();
                 this.populateDiagram();
             }
         }
@@ -846,6 +899,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         } else if (e.icon == 'fa-pencil') {
             this.toggleReadOnly(false);
             this.toggleTabs(this.selectedData);
+            this.setSourceValues(this.selectedData);
             this.isWindowVisible = true;
         } else if (e.icon == 'fa-floppy-o') {
             if (!this.isLoading) {
@@ -868,29 +922,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         } else if (e.icon == 'fa-search-minus') {
             this.zoomDiagram(this.diagram.scale - .1);
         }
-    }
-
-    private toggleReadOnly(readonly?: boolean) {
-        if (readonly != null) this.readonly = readonly;
-        //console.log('toggelReadOnly', this.readonly);
-        let dt = this.diagram.toolManager.diagram
-        dt.allowDelete = !this.readonly;
-        dt.allowClipboard = !this.readonly;
-        dt.allowCopy = !this.readonly;
-        dt.allowInsert = !this.readonly;
-        dt.allowLink = !this.readonly;
-        dt.allowRelink = !this.readonly;
-        dt.allowGroup = !this.readonly;
-        dt.allowTextEdit = !this.readonly;
-
-        this.diagram.toolManager.linkingTool.isEnabled = !this.readonly;
-
-        this.loadMenuItems();
-
-        if (this.readonly == false)
-            this.loadIntersectTypes()
-                .then(() => this.loadObjectTypes());
-
     }
 
     private ungroupSelection() {
