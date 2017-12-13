@@ -1491,7 +1491,7 @@ order by wi.StartedOn desc";
                 if (result.CurrentStepID != null && result.Settings != null && result.ActivityType != null)
                 {
                     var settings = XmlToDynamic(result.Settings);
-
+                    int resId = 0;
                     switch((WorkflowActivityType)result.ActivityType)
                     {
                         case WorkflowActivityType.Form:
@@ -1499,11 +1499,17 @@ order by wi.StartedOn desc";
                             {
                                 if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
                                 {
-                                    if (settings.ResponsibilityTypeID != null)
+                                    if (settings.ResponsibilityTypeID.Count != null)
+                                        resId = (int)settings.ResponsibilityTypeID[0];
+                                    else if (settings.ResponsibilityTypeID != null)
+                                        resId = (int)settings.ResponsibiltyTypeID;
+
+                                    if (resId > 0)
                                     {
-                                        var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                        var resources = Company.Query<string>(responsibilitySql, new { id = resId });
                                         result.ResponsibleUser = "";
                                     }
+
                                 }
                                 else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
                                 {
@@ -1519,9 +1525,14 @@ order by wi.StartedOn desc";
                         case WorkflowActivityType.EmailNotification:
                             if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
                             {
-                                if (settings.ResponsibilityTypeID != null)
+                                if (settings.ResponsibilityTypeID.Count != null)
+                                    resId = (int)settings.ResponsibilityTypeID[0];
+                                else if (settings.ResponsibilityTypeID != null)
+                                    resId = (int)settings.ResponsibiltyTypeID;
+
+                                if (resId > 0)
                                 {
-                                    var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                    var resources = Company.Query<string>(responsibilitySql, new { id = resId });
                                     result.ResponsibleUser = "";
                                 }
                             }
