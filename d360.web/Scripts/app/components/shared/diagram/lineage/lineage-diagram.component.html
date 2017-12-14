@@ -14,7 +14,7 @@
         </ul>
         <div *ngIf="showNodeTabs || showLinkTabs || !readonly" [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
             <ng-container *ngSwitchCase="'info'" >
-                <div *ngIf="showNodeTabs" style="overflow-y: scroll" [style.max-height]="overlayMaxHeight + 'px'">
+                <div *ngIf="showNodeTabs" style="overflow-y: scroll" [style.max-height]="(overlayMaxHeight - 5) + 'px'">
                     <div style="float:right;">
                         <button pButton type="button" [label]="showDetail ? 'Hide Detail' : 'Show Detail'" [icon]="showDetail ? 'fa-compress' : 'fa-expand'" (click)="toggleDetail()"></button>
                     </div>

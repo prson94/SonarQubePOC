@@ -59,11 +59,11 @@ export class OverlayWindowComponent implements OnChanges {
     }
 
     onDrag(e: any) {
-        console.log(e);
+        //console.log(e);
     }
 
     onDrop(e: any) {
-        console.log(e);
+        //console.log(e);
     }
 
 }

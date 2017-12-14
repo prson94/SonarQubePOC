@@ -448,6 +448,17 @@ namespace d360.web.Controllers.Services
                                 ObjectID = to.objectId,
                             };
 
+                            var existing = Company.Intersects.Where(i => 
+                            i.Object == intersect.Object && 
+                            i.ObjectID == intersect.ObjectID && 
+                            i.Subject == intersect.Subject && 
+                            i.SubjectID == intersect.SubjectID && 
+                            i.IntersectTypeID == intersect.IntersectTypeID)
+                            .FirstOrDefault();
+
+                            if (existing != null)
+                                return;
+
                             Company.Add(intersect);
                             Company.SaveChanges();
 

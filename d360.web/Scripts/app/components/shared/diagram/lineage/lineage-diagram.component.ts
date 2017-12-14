@@ -551,6 +551,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         });
 
+        this.selectedObjects = null;
+
         this.diagram.commitTransaction('Add Objects');
     }
 
