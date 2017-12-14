@@ -44,10 +44,15 @@ namespace igx.functions
                 {
                     log.Error("FusionQueueManager encountered and error while running fusion job.");
                     foreach (Exception ex in exception.InnerExceptions)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, fusion.CompanyID);
+
                         log.Error($"Exception details [{ex.Message}]");
+                    }
                 }
                 catch (Exception ex)
                 {
+                    CoreFunction.AITrackException(functionName, ex, fusion.CompanyID);
                     log.Error($"FusionQueueManager encountered and error while running fusion job.  Exception details [{ex.Message}]");
                 }
                 
