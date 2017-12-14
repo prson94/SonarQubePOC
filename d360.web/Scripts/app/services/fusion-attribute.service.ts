@@ -23,7 +23,7 @@ export class FusionAttributeService extends BaseService {
 
             let index = 0;
             for (let filter of filters) {
-                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${filter.value}`;
+                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${encodeURIComponent(filter.value)}`;
                 index++;
             }
         }
@@ -47,7 +47,7 @@ export class FusionAttributeService extends BaseService {
 
             let index = 0;
             for (let filter of filters) {
-                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${filter.value}`;
+                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${encodeURIComponent(filter.value)}`;
                 index++;
             }
         }
@@ -76,12 +76,11 @@ export class FusionAttributeService extends BaseService {
 
             let index = 0;
             for (let filter of filters) {
-                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${filter.value}`;
+                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${encodeURIComponent(filter.value)}`;
                 index++;
             }
         }
-
-        //this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data));
+        
         return this.http.get(url, { responseType: ResponseContentType.Blob })
             .toPromise()
             .then(data => this.downloadFile(data))
