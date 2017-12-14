@@ -25,18 +25,21 @@
             <p-column field="Type" header="Type" sortable="true" [style]="{ 'width': '15%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '15%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="IsRequired" header="Required?" sortable="true" [style]="{ 'width': '12%' }">
-                <ng-template let-item="rowData" pTemplate type="body">
-                    <input type="checkbox" [(ngModel)]="item.IsRequired" disabled />
+                <ng-template let-item="rowData" pTemplate type="body">                    
+                    <span><i *ngIf="item.IsRequired" class="fa fa-check enabled" title="True"></i></span>
+                    <span><i *ngIf="!item.IsRequired" class="fa fa-times disabled" title="False"></i></span>
                 </ng-template>
             </p-column>
             <p-column field="IsListable" header="Listable?" sortable="true" [style]="{ 'width': '12%' }">
-                <ng-template let-item="rowData" pTemplate type="body">
-                    <input type="checkbox" [(ngModel)]="item.IsListable" disabled />
+                <ng-template let-item="rowData" pTemplate type="body">                    
+                    <span><i *ngIf="item.IsListable" class="fa fa-check enabled" title="True"></i></span>
+                    <span><i *ngIf="!item.IsListable" class="fa fa-times disabled" title="False"></i></span>
                 </ng-template>
             </p-column>
             <p-column field="IsPartOfKey" header="Key?" sortable="true" [style]="{ 'width': '12%' }">
                 <ng-template let-item="rowData" pTemplate type="body">
-                    <input type="checkbox" [(ngModel)]="item.IsPartOfKey" disabled />
+                    <span><i *ngIf="item.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>
+                    <span><i *ngIf="!item.IsPartOfKey" class="fa fa-times disabled" title="False"></i></span>
                 </ng-template>
             </p-column>
             <p-column field="SortOrder" header="Sort" sortable="true" [style]="{ 'width': '12%' }" [filter]="!showSimpleFilter"></p-column>
