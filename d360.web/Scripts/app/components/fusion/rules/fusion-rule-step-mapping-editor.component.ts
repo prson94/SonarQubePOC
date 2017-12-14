@@ -26,7 +26,9 @@ declare var CompanySettings;
                     <div class="col s6" *ngIf="!model.Item.IsConstantValue">
                         <div class="FieldName" style="display:block;">Source</div>
                         <select [(ngModel)]="model.sourceValue" style="width:95%" name="source" required>
-                            <option *ngFor="let i of model.SourceFields" [value]="i.Value">{{i.Text}}</option>
+                            <ng-container *ngFor="let i of model.SourceFields">
+                                <option *ngIf="i.Text != 'ID' && i.Text != 'TextPath'"  [value]="i.Value">{{i.Text}}</option>
+                            </ng-container>                                       
                         </select>
                     </div>
                     <div class="col s6">
