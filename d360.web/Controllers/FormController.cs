@@ -9659,6 +9659,118 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
+        [HttpGet, ValidateInput(false), Route("MetricGroup/{id:int}")]
+        public JsonNetResult GetMetricGroup(int id)
+        {
+            var group = Company.GetById<MetricGroup>(id);
+            List<MetricGroup> children = new List<MetricGroup>();
+            if (group != null)
+                children = Company.MetricGroups.Where(g => g.ParentID == group.ID).ToList();
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    Group = group,
+                    Children = children
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
+        [HttpPost, Route("MetricGroup"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostMetricGroup(MetricGroupFormModel model)
+        {
+            if (model == null || model.Group == null)
+                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
+
+            if (string.IsNullOrEmpty(model.Group.Name))
+                return jsonException("Group name is not valid", HttpStatusCode.BadRequest);
+
+
+            try
+            {
+                Company.Add(model.Group);
+                Company.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Metric group added successfully", model.Group.ID.ToString(), "add", HttpStatusCode.OK);
+            
+        }
+
+        [HttpPut, Route("MetricGroup"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PutMetricGroup(MetricGroupFormModel model)
+        {
+            if (model == null || model.Group == null || model.Group.ID < 1)
+                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
+
+            var group = Company.GetById<MetricGroup>(model.Group.ID);
+
+            if (group == null)
+                return jsonException($"Group with id {model.Group.ID} could not be found", HttpStatusCode.NotFound);
+
+
+            group.ParentID = model.Group.ParentID;
+            group.Name = model.Group.Name;
+            group.Description = model.Group.Description;
+
+            try
+            {
+                Company.Update(group);
+
+                if (model.Children != null && model.Children.Count > 0)
+                {
+                    model.Children.ForEach(c =>
+                    {
+                        var child = Company.GetById<MetricGroup>(c.ID);
+                        if (child != null)
+                        {
+                            child.Weight = c.Weight;
+                            Company.Update(child);
+                        }
+                    });
+                }
+
+                Company.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Group updated successfully", model.Group.ID.ToString(), "edit", HttpStatusCode.OK);
+
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricGroup")]
+        public JsonResult DeleteMetricGroup(int id)
+        {
+            if (id < 1)
+                return jsonException($"The id {id} is not valid", HttpStatusCode.BadRequest);
+
+            var group = Company.GetById<MetricGroup>(id);
+
+            if (group == null)
+                return jsonException($"The group with id {id} could not be found", HttpStatusCode.NotFound);
+
+            try
+            {
+                Company.Delete(group);
+                Company.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Group deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
+        }
+
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false),  Route("MetricItem")]
         public JsonResult PostMetricItem(FormCollection form)
         {

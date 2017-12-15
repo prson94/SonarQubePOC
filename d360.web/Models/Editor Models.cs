@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.entities.Metric;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
@@ -894,4 +895,12 @@ namespace d360.web.Models
         public bool HasError { get; set; } = false;
         public string ErrorMessage { get; set; }
     }
+
+    public class MetricGroupFormModel
+    {
+        public MetricGroup Group { get; set; }
+        public List<MetricGroup> Children { get; set; } = new List<MetricGroup>();
+
+    }
+
 }

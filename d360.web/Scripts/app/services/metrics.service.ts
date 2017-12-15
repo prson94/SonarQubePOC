@@ -3,7 +3,7 @@ import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
-import { Group, Map, Item } from '../models/metrics.model';
+import { Group, GroupForm, Map, Item } from '../models/metrics.model';
 
 
 @Injectable()
@@ -24,6 +24,35 @@ export class MetricsService extends BaseService {
             .then(response => <Group>response.json())
             .catch(err => this.handleError(err));
     }
+
+    public getGroupFormModel(id: number): Promise<GroupForm> {
+        return this.http.get(`/form/metricgroup/${id}`)
+            .toPromise()
+            .then(response => <GroupForm>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public saveGroup(model: GroupForm): Promise<JsonResult> {
+        if (model.Group.ID == null || model.Group.ID < 1) { //add
+            return this.http.post('form/metricgroup', model)
+                .toPromise()
+                .then(response => <JsonResult>response.json())
+                .catch(err => this.handleError(err));
+        } else { //edit
+            return this.http.put('form/metricgroup', model)
+                .toPromise()
+                .then(response => <JsonResult>response.json())
+                .catch(err => this.handleError(err));
+        }
+    }
+
+    public deleteGroup(id: number): Promise<JsonResult> {
+        return this.http.delete(`form/metricgroup?id=${id}`)
+            .toPromise()
+            .then(response => <JsonResult>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 
     public getItems(): Promise<Item[]> {
         return this.http.get(`/api/metrics/items`)

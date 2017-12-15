@@ -8,6 +8,11 @@
     EffectiveEndDate: string;
 }
 
+export class GroupForm {
+    Group: Group = new Group();
+    Children: Group[] = [];
+}
+
 export class Item {
     ID: number;
     Name: string;
@@ -26,5 +31,7 @@ export class Map {
     EffectiveStartDate: string;
     EffectiveEndDate: string;
 }
+
+
 
 

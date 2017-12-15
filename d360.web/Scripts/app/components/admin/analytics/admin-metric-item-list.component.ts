@@ -45,8 +45,9 @@ import { MessagesService } from '../../../services/messages.service';
                                 [objectID]="selection?.ID" 
                                 [objectType]="'MetricItem'" 
                                 [title]="'Metric Item'" 
-                                [selection]="selection" 
-                                (saveClick)="save($event)" 
+                                [createUri]="'form/dynamicedit/create/metricitem'"
+                                [selection]="null" 
+                                (saveClick)="formMode = FormMode.Default; load();" 
                                 (closeClick)="formMode = FormMode.Default">
                             </d3s-dynamic-editor>
                         </div>
@@ -56,7 +57,8 @@ import { MessagesService } from '../../../services/messages.service';
                                 [objectType]="'MetricItem'" 
                                 [title]="'Metric Item'" 
                                 [selection]="selection" 
-                                (saveClick)="save($event)" 
+                                [editUri]="'form/dynamicedit/edit/metricitem'"
+                                (saveClick)="formMode = FormMode.Default; load();" 
                                 (closeClick)="formMode = FormMode.Default">
                             </d3s-dynamic-editor>
                         </div>
@@ -66,7 +68,8 @@ import { MessagesService } from '../../../services/messages.service';
                                 [method]="'delete'"
                                 [prompt]="'Are you sure you want to delete the metric item [' + [selection?.Name] + ']?'"                                         
                                 (onCancel)="formMode = FormMode.Default"
-                                (onSave)="load(); formMode = FormMode.Default">
+                                (onDeleteSuccess)="formMode = FormMode.Default; load();"
+                                (onDeleteFail)="formMode = FormMode.Default">
                             </d3s-delete-form> 
                         </div>
                     </div>    
@@ -120,7 +123,7 @@ export class AdminMetricItemListComponent extends BaseComponent {
     save(e: any) {
         this.formMode = FormMode.Default;
         this.isLoading = true;
-        this.metricsService.saveItem(e)
+        this.metricsService.saveItem(e.item)
             .then(r => {
                 this.showMessageForResult(this.messagesService, r);
             })
