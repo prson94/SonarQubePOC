@@ -5,7 +5,20 @@
         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
         <p-dataTable #dt scrollable="true" scrollWidth="100%" [globalFilter]="gb" [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" (onRowDblclick)="openFusion($event.data);" [rows]="20" [paginator]="true">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }" [filter]="!showSimpleFilter"></p-column>
+            <ng-container *ngFor="let column of columns">  
+                <ng-container *ngIf="column.datafield=='Enabled'; then ifContent else elseContent"></ng-container>
+                <ng-template #ifContent >
+                    <p-column [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }" [filter]="!showSimpleFilter">
+                        <ng-template let-col="column" let-item="rowData" pTemplate type="body">
+                            <span><i *ngIf="item.Enabled" class="fa fa-check enabled" title="True"></i></span>
+                            <span><i *ngIf="!item.Enabled" class="fa fa-times disabled" title="False"></i></span>
+                        </ng-template>
+                    </p-column>
+                </ng-template>
+                <ng-template #elseContent>
+                    <p-column [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }" [filter]="!showSimpleFilter"></p-column>
+                </ng-template>
+            </ng-container>
             <p-column [style]="{ 'width': '30px' }">
                 <ng-template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
