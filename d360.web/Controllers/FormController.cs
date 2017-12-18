@@ -9700,8 +9700,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
             var objectTypes = Company.Query<SelectListItem>(@"select [Object] + '|' + cast(ObjectID as varchar) as [Value], [Name] as [Text] from AssetType order by [name]").ToList();
 
-
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = map.ID.ToString() });
             list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = map.GroupID.ToString() });
+
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Decimal.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null), Value = map.Weight.ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.Object + '|' + map.ObjectID.ToString() });
@@ -9726,6 +9727,10 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
 
                 int objectId = int.Parse(objectType.Split('|')[1]);
+                decimal weight = decimal.Parse(parseTextField(form, "Weight"));
+
+                if (weight < 0 || weight > 1)
+                    return jsonException("Weight cannot be less than 0 or greater than 1", HttpStatusCode.BadRequest);
 
                 MetricMap m = new MetricMap
                 {
@@ -9733,7 +9738,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     ItemID = parseIntField(form, "MetricItem"),
                     Object = objectType.Split('|')[0],
                     ObjectID = objectId,
-                    Weight = decimal.Parse(parseTextField(form, "Weight"))
+                    Weight = weight
                 };
 
 
@@ -9771,10 +9776,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (string.IsNullOrEmpty(objectType) || !objectType.Contains('|'))
                     return jsonException("Could not parse object type", HttpStatusCode.BadRequest);
 
+                decimal weight = decimal.Parse(parseTextField(form, "Weight"));
                 int objectId = int.Parse(objectType.Split('|')[1]);
 
+                if (weight < 0 || weight > 1)
+                    return jsonException("Weight cannot be less than 0 or greater than 1", HttpStatusCode.BadRequest);
+
                 m.GroupID = parseIntField(form, "GroupID");
-                m.Weight = decimal.Parse(parseTextField(form, "Weight"));
+                m.Weight = weight;
                 m.ItemID = parseIntField(form, "MetricItem");
                 m.Object = objectType.Split('|')[0];
                 m.ObjectID = objectId;
@@ -10020,7 +10029,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             
         }
         #endregion
-
 
         #region Organization
 
