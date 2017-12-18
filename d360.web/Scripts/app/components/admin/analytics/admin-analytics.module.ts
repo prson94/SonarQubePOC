@@ -24,6 +24,7 @@ import { AdminMetricItemEditorComponent } from './admin-metric-item-editor.compo
 import { AdminMetricMapEditorComponent } from './admin-metric-map-editor.component';
 import { AdminMetricGroupListComponent } from './admin-metric-group-list.component';
 import { AdminMetricItemListComponent } from './admin-metric-item-list.component';
+import { AdminMetricMapListComponent } from './admin-metric-map-list.component';
 
 
 import { AdminAnalyticsRoutingModule } from './admin-analytics.routes';
@@ -76,6 +77,7 @@ import {
         AdminMetricMapEditorComponent,
         AdminMetricGroupListComponent,
         AdminMetricItemListComponent,
+        AdminMetricMapListComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

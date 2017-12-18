@@ -7413,6 +7413,23 @@ from	    TaxonomyType FAT
             return Company.MetricItems.FirstOrDefault(i => i.ID == id);
         }
 
+        [Route("metrics/map/{id:int}")]
+        public MetricMap GetMetricMap(int id)
+        {
+            return Company.MetricMaps.FirstOrDefault(i => i.ID == id);
+        }
+
+        [Route("metrics/maps/{groupId:int}")]
+        public List<dynamic> GetMetricMaps(int groupId)
+        {
+            return Company.Query<dynamic>(@"select 
+                                    m.* ,
+                                    i.[Name] + ' [' + a.[Name] + ']' as displayName
+                                    from metrics.map m
+                                    inner join assettype a on a.[object] = m.[object] and a.objectid = m.objectid
+                                    inner join metrics.item i on i.id = m.itemid
+                                    where m.groupid = @groupId", new { groupId }).ToList();
+        }
 
         #endregion
 

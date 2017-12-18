@@ -66,6 +66,7 @@ import { FormMode } from '../../../models/form.model';
 })
 
 export class AdminMetricGroupListComponent extends BaseComponent {
+    @Output() selectionChange = new EventEmitter();
     private groups: Group[] = [];
     private groupTree: TreeNode[] = [];
     private selectedNode: TreeNode;
@@ -122,6 +123,7 @@ export class AdminMetricGroupListComponent extends BaseComponent {
     selectNode(e: any) {
         this.selectedNode = e;
         this.selection = e == null ? null : e.data;
+        this.selectionChange.emit(this.selection);
     }
 
     add() {

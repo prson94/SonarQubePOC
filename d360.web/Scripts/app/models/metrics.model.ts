@@ -30,6 +30,8 @@ export class Map {
     Weight: number;
     EffectiveStartDate: string;
     EffectiveEndDate: string;
+
+    displayName: string;
 }
 
 

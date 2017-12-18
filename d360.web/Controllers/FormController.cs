@@ -362,6 +362,8 @@ namespace d360.web.Controllers
                     return Map_EditFields(oid);
                 case "METRICITEM":
                     return MetricItem_EditFields(oid);
+                case "METRICMAP":
+                    return MetricMap_EditFields(oid);
                 case "ORGANIZATION":
                     return Organization_EditFields(oid);
                 case "ORGANIZATIONDOMAIN":
@@ -421,6 +423,8 @@ namespace d360.web.Controllers
                     return Map_AddFields();
                 case "METRICITEM":
                     return MetricItem_AddFields();
+                case "METRICMAP":
+                    return MetricMap_AddFields(parentID.GetValueOrDefault());
                 case "ORGANIZATION":
                     return Organization_AddFields(objectID.GetValueOrDefault());
                 case "ORGANIZATIONDOMAIN":
@@ -506,6 +510,8 @@ namespace d360.web.Controllers
                     return EditMap(form);
                 case "METRICITEM":
                     return PutMetricItem(form);
+                case "METRICMAP":
+                    return PutMetricMap(form);
                 case "ORGANIZATION":
                     return PutOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -683,6 +689,8 @@ namespace d360.web.Controllers
                     return AddMap(form);
                 case "METRICITEM":
                     return PostMetricItem(form);
+                case "METRICMAP":
+                    return PostMetricMap(form);
                 case "ORGANIZATION":
                     return PostOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -9656,8 +9664,159 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("MetricMap_AddFields")]
+        public JsonResult MetricMap_AddFields(int groupId)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            var objectTypes = Company.Query<SelectListItem>(@"select [Object] + '|' + cast(ObjectID as varchar) as [Value], [Name] as [Text] from AssetType order by [name]").ToList();
+
+
+            list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = groupId.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Number.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null) });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("MetricMap_EditFields")]
+        public JsonResult MetricMap_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
+            if (map == null)
+                return jsonException($"Could not find map for id {id}", HttpStatusCode.NotFound);
+
+
+            var list = new List<EditableField>();
+
+            var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            var objectTypes = Company.Query<SelectListItem>(@"select [Object] + '|' + cast(ObjectID as varchar) as [Value], [Name] as [Text] from AssetType order by [name]").ToList();
+
+
+            list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = map.GroupID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Decimal.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null), Value = map.Weight.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.Object + '|' + map.ObjectID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+
+        }
 
         #endregion
+
+        [HttpPost, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostMetricMap(FormCollection form)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var objectType = parseTextField(form, "ArtifactType");
+                if (string.IsNullOrEmpty(objectType) || !objectType.Contains('|'))
+                    return jsonException("Could not parse object type", HttpStatusCode.BadRequest);
+
+
+                int objectId = int.Parse(objectType.Split('|')[1]);
+
+                MetricMap m = new MetricMap
+                {
+                    GroupID = parseIntField(form, "GroupID"),
+                    ItemID = parseIntField(form, "MetricItem"),
+                    Object = objectType.Split('|')[0],
+                    ObjectID = objectId,
+                    Weight = decimal.Parse(parseTextField(form, "Weight"))
+                };
+
+
+                Company.Add(m);
+
+                return jsonSuccess($"Mapping item successfully created.", m.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PutMetricMap(FormCollection form)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var id = parseIntField(form, "ID");
+
+                var m = Company.MetricMaps.FirstOrDefault(i => i.ID == id);
+
+                if (m == null)
+                    return jsonException($"Mapping with ID {id} not found", HttpStatusCode.NotFound);
+
+                var objectType = parseTextField(form, "ArtifactType");
+                if (string.IsNullOrEmpty(objectType) || !objectType.Contains('|'))
+                    return jsonException("Could not parse object type", HttpStatusCode.BadRequest);
+
+                int objectId = int.Parse(objectType.Split('|')[1]);
+
+                m.GroupID = parseIntField(form, "GroupID");
+                m.Weight = decimal.Parse(parseTextField(form, "Weight"));
+                m.ItemID = parseIntField(form, "MetricItem");
+                m.Object = objectType.Split('|')[0];
+                m.ObjectID = objectId;
+
+                Company.Update(m);
+
+                return jsonSuccess($"Mappingsuccessfully updated.", m.ID.ToString(), "edit", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricMap")]
+        public JsonResult DeleteMetricMap(int id)
+        {
+            if (id < 1)
+                return jsonException($"The id {id} is not valid", HttpStatusCode.BadRequest);
+
+            var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
+
+            if (map == null)
+                return jsonException($"The mapping with id {id} could not be found", HttpStatusCode.NotFound);
+
+            try
+            {
+                Company.Delete(map);
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Mapping deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
+        }
 
         [HttpGet, ValidateInput(false), Route("MetricGroup/{id:int}")]
         public JsonNetResult GetMetricGroup(int id)

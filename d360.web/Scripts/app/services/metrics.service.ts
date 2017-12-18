@@ -75,4 +75,11 @@ export class MetricsService extends BaseService {
         return this.putDynamic(this.http, 'metricitem', item);
     }
 
+    public getMaps(groupId: number): Promise<Map[]> {
+        return this.http.get(`/api/metrics/maps/${groupId}`)
+            .toPromise()
+            .then(response => <Map[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

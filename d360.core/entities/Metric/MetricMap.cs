@@ -11,7 +11,7 @@ namespace d360.core.entities.Metric
         public int GroupID { get; set; }
 
         [DataMember]
-        public int ItemID { get; set; }
+        public long ItemID { get; set; }
 
         [DataMember]
         public string Object { get; set; }
@@ -28,10 +28,10 @@ namespace d360.core.entities.Metric
         [DataMember]
         public DateTime EffectiveEndDate { get; set; }
 
-        [IgnoreDataMember]
+        [IgnoreDataMember, NotMapped]
         public virtual MetricGroup Group { get; set; }
 
-        [IgnoreDataMember]
+        [IgnoreDataMember, NotMapped]
         public virtual MetricItem Item { get; set; }
     }
 }
