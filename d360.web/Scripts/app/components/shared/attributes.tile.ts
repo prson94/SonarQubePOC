@@ -194,6 +194,7 @@ export class AttributesTile implements OnInit {
 
         if (item.Items.length > 0) {
             i.menuItem.disabled = false;
+            var counter = 0;
             item.Items.forEach(j => {
                 let k = new MenuItemParams();
                 k.action = j.Action;
@@ -202,8 +203,11 @@ export class AttributesTile implements OnInit {
                     label: j.Title
                 };
                 k.params = j.Params;
-                i.menuItem.items = [k.menuItem];
-                //i.menuItem.items.push(k.menuItem);
+                if (i.menuItem.items == undefined) {
+                    i.menuItem.items = [];
+                }
+                i.menuItem.items[counter] = k.menuItem;
+                counter++;
                 this.menuItemParams.push(k);                
             });
         }
