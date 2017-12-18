@@ -17,7 +17,7 @@ declare var CompanySettings;
                         </div>
                         <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" type="string" [(ngModel)]="field.Value">  
                         <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>                                  
-                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl>
+                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" [(ngModel)]="field.Value">
                             <header style="padding-bottom:0px !important">                                 
                                     <span class="ql-formats">
                                         <select class="ql-header">
