@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule }    from '@angular/router';
 import { HttpModule, XHRBackend  }     from '@angular/http';
@@ -33,6 +33,7 @@ import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.co
         HttpModule,
         //d3s
         CoreModule,
+        DeprecatedI18NPipesModule,
         PipesModule,
         SharedDynamicGridEditorModule,
         SharedFusionAttributeItemDetailsModule,

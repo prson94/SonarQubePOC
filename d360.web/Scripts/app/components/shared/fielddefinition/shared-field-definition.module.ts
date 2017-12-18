@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 
@@ -29,6 +29,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
 
 @NgModule({
     imports: [CommonModule,
+        DeprecatedI18NPipesModule,
         FormsModule,
         HttpModule,
         //d3s

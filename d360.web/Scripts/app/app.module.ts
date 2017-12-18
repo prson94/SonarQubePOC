@@ -1,4 +1,5 @@
-﻿import { NgModule }       from '@angular/core';
+﻿import { NgModule, LOCALE_ID } from '@angular/core';
+import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { BrowserModule, Title  } from '@angular/platform-browser';
 import { AppComponent }   from './app.component';
 import { AppRoutingModule }        from './app.routes';
@@ -25,12 +26,20 @@ import { WebAnalyticsService } from './services/web-analytics.service';
 
 import { AuthenticationConnectionBackend } from './authentication-connection-backend';
 
+export function getLocale() {
+    console.log(navigator.language);
+    return navigator.language;
+}
+
 
 @NgModule({
     declarations: [          
         AppComponent,                          
     ],
     imports: [
+        CommonModule,
+        // import deprecated module after
+        DeprecatedI18NPipesModule,
         BrowserModule,        
         AppRoutingModule,
         HttpModule,
@@ -55,14 +64,11 @@ import { AuthenticationConnectionBackend } from './authentication-connection-bac
         MessagesService,        
         RightSidebarService,
         WebAnalyticsService,
-        StateService      
+        StateService,
+        {
+            provide: LOCALE_ID,
+            useFactory: () => { navigator.language }
+        }
     ],    
 })
 export class AppModule { }
-
-
-
-
-
-
-

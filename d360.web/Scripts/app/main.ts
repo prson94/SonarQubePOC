@@ -13,4 +13,4 @@ else {
 
 console.log("Data3Sixty Client: " + __BUILD_DATE);
 
-platformBrowserDynamic().bootstrapModule(AppModule, { preserveWhitespaces: false, providers: [{ provide: LOCALE_ID, useValue: navigator.language }] });
+platformBrowserDynamic().bootstrapModule(AppModule, { preserveWhitespaces: false });

@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -32,7 +32,8 @@ import {
 } from 'primeng/primeng';
 
 @NgModule({
-    imports: [CommonModule,        
+    imports: [CommonModule,   
+        DeprecatedI18NPipesModule,
         HttpModule,
         RouterModule,
         FormsModule,

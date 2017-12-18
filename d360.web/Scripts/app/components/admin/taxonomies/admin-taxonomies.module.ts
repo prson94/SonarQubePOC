@@ -1,10 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
-
-//import { ColorPickerModule } from 'ngx-color-picker';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
@@ -39,6 +37,7 @@ import {
 
 @NgModule({
     imports: [CommonModule,
+        DeprecatedI18NPipesModule,
         FormsModule,
         HttpModule,
 

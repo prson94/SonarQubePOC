@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { RouterModule }    from '@angular/router';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 
@@ -25,6 +25,7 @@ import { ObjectDetailFieldComponent } from './object-detail-field.component';
 
 @NgModule({
     imports: [CommonModule,
+        DeprecatedI18NPipesModule,
         RouterModule,
         HttpModule,
         //d3s

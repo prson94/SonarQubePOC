@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
@@ -75,6 +75,7 @@ import { UserListComponent } from './user-list.component';
         ]
     , imports: [
         CommonModule,
+        DeprecatedI18NPipesModule,
         FormsModule,
         HttpModule,
         RouterModule,

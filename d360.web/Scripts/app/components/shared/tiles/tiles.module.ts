@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 
 
 import { TileActionsComponent } from './tile-actions.component';
@@ -12,7 +12,7 @@ import {
 
 @NgModule({
     imports: [CommonModule,
-                
+        DeprecatedI18NPipesModule,
         //prime
         MenubarModule,
         TooltipModule,

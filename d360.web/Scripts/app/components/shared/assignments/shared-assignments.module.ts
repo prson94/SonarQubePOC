@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
@@ -17,6 +17,7 @@ import { AssignmentsComponent } from './assignments.component';
 
 @NgModule({
     imports: [CommonModule,
+        DeprecatedI18NPipesModule,
         HttpModule,
 
         //d3s
