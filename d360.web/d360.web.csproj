@@ -1056,10 +1056,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-nym-allocations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-group-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-item-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-group-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-item-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-map-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-map-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-scoretype-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />

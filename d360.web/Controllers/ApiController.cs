@@ -7424,7 +7424,8 @@ from	    TaxonomyType FAT
         {
             return Company.Query<dynamic>(@"select 
                                     m.* ,
-                                    i.[Name] + ' [' + a.[Name] + ']' as displayName
+                                    i.[Name] as itemName,
+									a.[Name] as objectName
                                     from metrics.map m
                                     inner join assettype a on a.[object] = m.[object] and a.objectid = m.objectid
                                     inner join metrics.item i on i.id = m.itemid

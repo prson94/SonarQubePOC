@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
 import { Item } from '../../../models/metrics.model';
@@ -78,7 +78,7 @@ import { MessagesService } from '../../../services/messages.service';
 providers: [MetricsService]
 })
 
-export class AdminMetricItemListComponent extends BaseComponent {
+export class AdminMetricItemListComponent extends BaseComponent implements OnInit {
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();
     @Output() addClick = new EventEmitter();
@@ -87,7 +87,6 @@ export class AdminMetricItemListComponent extends BaseComponent {
     private selection = null;
     private formMode = FormMode.Default;
     FormMode = FormMode;
-    theDeleteCallback: Function;
 
     constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
         super();
@@ -118,15 +117,5 @@ export class AdminMetricItemListComponent extends BaseComponent {
 
     delete(e: any) {
         this.formMode = FormMode.Deleting;
-    }
-
-    save(e: any) {
-        this.formMode = FormMode.Default;
-        this.isLoading = true;
-        this.metricsService.saveItem(e.item)
-            .then(r => {
-                this.showMessageForResult(this.messagesService, r);
-            })
-            .then(() => this.load());
     }
 };

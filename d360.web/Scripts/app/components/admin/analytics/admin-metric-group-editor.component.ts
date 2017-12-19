@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { Group, GroupForm } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -24,7 +24,7 @@ import { MessagesService } from '../../../services/messages.service';
                                 Description
                             </div>
                             <div>
-                                <p-editor [(ngModel)]="model.Group.Description" [style]="{'width' : '95%' }" [styleClass]="{'width' : '95%' }">
+                                <p-editor [(ngModel)]="model.Group.Description" [style]="{'width' : '100%' }" [styleClass]="{'width' : '100%' }">
                                 </p-editor>
                             </div>
                         </div>
@@ -68,7 +68,7 @@ import { MessagesService } from '../../../services/messages.service';
 providers: [MetricsService, MessagesService]
 })
 
-export class AdminMetricGroupEditorComponent extends BaseComponent {
+export class AdminMetricGroupEditorComponent extends BaseComponent implements OnInit{
     @Input() groupId: number = -1;
     @Input() parentId: number = -1;
     @Output() onCancel = new EventEmitter();

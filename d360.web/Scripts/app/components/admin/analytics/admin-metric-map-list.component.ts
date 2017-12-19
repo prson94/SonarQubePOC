@@ -9,7 +9,7 @@ import { MessagesService } from '../../../services/messages.service';
     selector: 'd3s-admin-metric-map-list',
     template: ` 
                 <header *ngIf="formMode == FormMode.Default">
-                    Mappings
+                    {{groupName == "" ? "Mappings" : "Mappings for " + groupName}}
                     <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>   
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -17,7 +17,8 @@ import { MessagesService } from '../../../services/messages.service';
                     <div [ngSwitch]="formMode">
                         <div *ngSwitchCase="FormMode.Default">                                            
                             <p-dataTable [value]="maps" selectionMode="single" [(selection)]="selection">
-                                <p-column field="displayName" header="Name" ></p-column>
+                                <p-column field="itemName" header="Item" ></p-column>
+                                <p-column field="objectName" header="Object" ></p-column>
                                 <p-column field="Weight" header="Weight" ></p-column>
                                 <p-column [style]="{width:'40px'}">
                                     <ng-template let-map="rowData" pTemplate type="body">
@@ -76,6 +77,7 @@ import { MessagesService } from '../../../services/messages.service';
 
 export class AdminMetricMapListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() groupId: number;
+    @Input() groupName: string = "";
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();
     @Output() addClick = new EventEmitter();
@@ -84,7 +86,6 @@ export class AdminMetricMapListComponent extends BaseComponent implements OnInit
     private selection = null;
     private formMode = FormMode.Default;
     FormMode = FormMode;
-    theDeleteCallback: Function;
 
     constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
         super();

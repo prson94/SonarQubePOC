@@ -31,7 +31,8 @@ export class Map {
     EffectiveStartDate: string;
     EffectiveEndDate: string;
 
-    displayName: string;
+    itemName: string;
+    objectName: string;
 }
 
 

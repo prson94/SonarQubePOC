@@ -13,15 +13,8 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
-import { AdminStatisticsComponent } from './admin-statistics.component';
-import { AdminScoreTypeMetricCheckTypeInput } from './admin-scoretypemetric-checktype-input';
-import { AdminScoreTypeMetricEditorComponent } from './admin-scoretypemetric-editor.component';
-import { AdminScoreTypeEditorComponent } from './admin-scoretype-editor.component';
-
 import { AdminAnalyticsComponent } from './admin-analytics.component';
 import { AdminMetricGroupEditorComponent } from './admin-metric-group-editor.component';
-import { AdminMetricItemEditorComponent } from './admin-metric-item-editor.component';
-import { AdminMetricMapEditorComponent } from './admin-metric-map-editor.component';
 import { AdminMetricGroupListComponent } from './admin-metric-group-list.component';
 import { AdminMetricItemListComponent } from './admin-metric-item-list.component';
 import { AdminMetricMapListComponent } from './admin-metric-map-list.component';
@@ -38,6 +31,7 @@ import {
     SharedModule,
     DataTableModule,
     TreeTableModule,
+    CalendarModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -57,6 +51,7 @@ import {
         SharedModule,
         DataTableModule,
         TreeTableModule,
+        CalendarModule,
 
         //d3s        
         CoreModule,
@@ -67,15 +62,8 @@ import {
         TilesModule,
     ],
     declarations: [
-        AdminStatisticsComponent,
-        AdminScoreTypeMetricCheckTypeInput,
-        AdminScoreTypeMetricEditorComponent,
-        AdminScoreTypeEditorComponent,
-
         AdminAnalyticsComponent,
         AdminMetricGroupEditorComponent,
-        AdminMetricItemEditorComponent,
-        AdminMetricMapEditorComponent,
         AdminMetricGroupListComponent,
         AdminMetricItemListComponent,
         AdminMetricMapListComponent,

@@ -9640,7 +9640,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = DateTime.Now.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9659,7 +9663,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = item.ID.ToString() });
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = item.Name });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = item.Description });
+
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveStartDate.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveEndDate.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = item.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9673,13 +9682,24 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
 
             var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-            var objectTypes = Company.Query<SelectListItem>(@"select [Object] + '|' + cast(ObjectID as varchar) as [Value], [Name] as [Text] from AssetType order by [name]").ToList();
+            var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
+	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
+	                    {0} + T.[Name] as [Text] 
+                    from 
+	                    AssetType T 
+                    order by 
+	                    [Name]", QueryConstants.HighLevelTypeCaseStatement)).ToList();
 
 
             list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = groupId.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Number.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Percentage.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null) });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = DateTime.Now.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items });
+            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes });
+
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9698,14 +9718,24 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
 
             var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-            var objectTypes = Company.Query<SelectListItem>(@"select [Object] + '|' + cast(ObjectID as varchar) as [Value], [Name] as [Text] from AssetType order by [name]").ToList();
+            var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
+	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
+	                    {0} + T.[Name] as [Text] 
+                    from 
+	                    AssetType T 
+                    order by 
+	                    [Name]", QueryConstants.HighLevelTypeCaseStatement)).ToList();
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = map.ID.ToString() });
             list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = map.GroupID.ToString() });
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Decimal.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null), Value = map.Weight.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.Object + '|' + map.ObjectID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Percentage.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null), Value = map.Weight.ToString() });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveStartDate.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveEndDate.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.Object + '|' + map.ObjectID.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
 
@@ -9738,7 +9768,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     ItemID = parseIntField(form, "MetricItem"),
                     Object = objectType.Split('|')[0],
                     ObjectID = objectId,
-                    Weight = weight
+                    Weight = weight,
+                    EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate")),
+                    EffectiveEndDate = DateTime.Parse(parseTextField(form, "EffectiveEndDate")),
                 };
 
 
@@ -9787,10 +9819,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 m.ItemID = parseIntField(form, "MetricItem");
                 m.Object = objectType.Split('|')[0];
                 m.ObjectID = objectId;
+                m.EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate"));
+                m.EffectiveEndDate = DateTime.Parse(parseTextField(form, "EffectiveEndDate"));
 
                 Company.Update(m);
 
-                return jsonSuccess($"Mappingsuccessfully updated.", m.ID.ToString(), "edit", HttpStatusCode.Created);
+                return jsonSuccess($"Mapping successfully updated.", m.ID.ToString(), "edit", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -9886,6 +9920,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             group.ParentID = model.Group.ParentID;
             group.Name = model.Group.Name;
             group.Description = model.Group.Description;
+            group.EffectiveStartDate = model.Group.EffectiveStartDate;
+            group.EffectiveEndDate = model.Group.EffectiveEndDate;
 
             try
             {
@@ -9950,7 +9986,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 MetricItem m = new MetricItem
                 {
                     Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description")
+                    Description = parseTextField(form, "Description"),
+                    EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate")),
+                    EffectiveEndDate = DateTime.Parse(parseTextField(form, "EffectiveEndDate")),
                 };
 
 
@@ -9986,6 +10024,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 m.Name = parseTextField(form, "Name");
                 m.Description = parseTextField(form, "Description");
+                m.EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate"));
+                m.EffectiveEndDate = DateTime.Parse(parseTextField(form, "EffectiveEndDate"));
 
 
                 Company.Update(m);

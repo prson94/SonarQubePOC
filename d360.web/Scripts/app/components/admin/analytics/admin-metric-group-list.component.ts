@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { Group } from '../../../models/metrics.model';
 import { TreeNode } from 'primeng/primeng';
@@ -65,7 +65,7 @@ import { FormMode } from '../../../models/form.model';
     providers: [MetricsService]
 })
 
-export class AdminMetricGroupListComponent extends BaseComponent {
+export class AdminMetricGroupListComponent extends BaseComponent implements OnInit {
     @Output() selectionChange = new EventEmitter();
     private groups: Group[] = [];
     private groupTree: TreeNode[] = [];
