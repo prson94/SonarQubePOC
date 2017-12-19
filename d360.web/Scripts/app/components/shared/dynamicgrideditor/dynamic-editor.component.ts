@@ -198,7 +198,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                                 
             }            
             else {
-                if (field.FieldType == "Lookup" && !field.Value && this.selection) {
+                if ((field.FieldType == "Lookup" || field.FieldType == "Relationship") && !field.Value && this.selection) {
                     let selected = field.Items.filter(x => x.Selected);                    
                     field.Value = [];
                     for (let item of selected) {                        

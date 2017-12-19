@@ -4560,8 +4560,8 @@ namespace d360.web.Controllers
                     Value = $"{i.ID}",
                     Selected = a.FusionOwners.Any(c => c.ID == i.ID)
                 }).ToList();
-
-            list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners});
+                        
+            list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners });
 
             list =
                 loadDynamicFields(

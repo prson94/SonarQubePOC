@@ -731,22 +731,29 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                                 fld.MultiSelect = ft.AllowMultipleValues;
 
+                                var items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
+                                        .OrderBy(o => o.Text)
+                                        .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                        .ToList();
+
                                 if (ft.AllowMultipleValues)
                                 {
+                                    var selected = new List<string>();
                                     // selected items need to go into multiplevalues array
                                     if (f!= null && !string.IsNullOrWhiteSpace(f.Value))
-                                        fld.MultipleValues = f.Value.Split(',').ToList();
+                                        selected = f.Value.Split(',').ToList();
                                     else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
-                                        fld.MultipleValues = ft.DefaultValue.Split(',').ToList();
-                                    else
-                                        fld.MultipleValues = new List<string>();
+                                        selected = ft.DefaultValue.Split(',').ToList();
+
+                                    foreach (var item in items)
+                                    {
+                                        if (selected.Contains(item.Value)) item.Selected = true;
+                                    }
+                                    
                                 }
 
                                 fld.Items.AddRange(
-                                    Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
-                                        .OrderBy(o => o.Text)
-                                        .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                        .ToList()
+                                    items  
                                 );
                             }
                             catch
@@ -819,6 +826,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                                     #endregion sql
 
+                                    var items = Company.Query<SelectListItem>(sql);
+
                                     if (cardinality != Cardinality.Many)
                                     {
                                         fld.MultiSelect = false;
@@ -842,15 +851,21 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                         ((isSubject && i.Subject == @object && i.SubjectID == objectID) || (!isSubject && i.Object == @object && i.ObjectID == objectID))
                                         );
 
-                                        fld.MultipleValues = new List<string>();
+                                        var selected = new List<string>();
                                         foreach (var intersect in intersects)
                                         {
-                                            fld.MultipleValues.Add(isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}");
+                                            selected.Add(isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}");
+                                        }
+
+                                        foreach (var item in items)
+                                        {
+                                            if (selected.Contains(item.Value))
+                                                item.Selected = true;
                                         }
                                     }
 
                                     fld.Items.AddRange(
-                                        Company.Query<SelectListItem>(sql)
+                                        items
                                     );
                                 }
                             }
@@ -864,10 +879,13 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                         fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
                         /* Boolean, Date, DateTime, Decimal, Integer, String */
-                        if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
-                        if (f == null && !string.IsNullOrEmpty(ft.DefaultValue))
+                        if (!ft.AllowMultipleValues)
                         {
-                            fld.Value = ft.DefaultValue;
+                            if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
+                            if (f == null && !string.IsNullOrEmpty(ft.DefaultValue))
+                            {
+                                fld.Value = ft.DefaultValue;
+                            }
                         }
                         
                         list.Add(fld);

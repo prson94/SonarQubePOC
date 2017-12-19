@@ -662,9 +662,7 @@ namespace d360.web.Models
 
         [DataMember]
         public string FieldDescription { get; set; }
-
-        [DataMember]
-        public List<string> MultipleValues { get; set; }
+        
 
         [DataMember]
         public string LookupGridUrl { get; set; }
