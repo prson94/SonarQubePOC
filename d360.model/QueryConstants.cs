@@ -1092,7 +1092,7 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 				DT.Name as ObjectTypeName,
 				DT.Object as ObjectType,
 				DT.ObjectID as ObjectTypeID,
-				utility.GetAssetDisplayValueWrapper(D.ID),
+				D.[Name],
 				coalesce(S.IconBackColor, '#000') as IconBackColor,
 				coalesce(S.IconForeColor, '#fff') as IconForeColor,
 				case 
@@ -1103,17 +1103,22 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 				I.ID,
 				1 as isLeaf
 		from	[Intersect] I
-				inner join Asset D on 
-									D.Object = case 
-												when I.Subject = @type and I.SubjectID = @id then I.Object
-												else I.Subject
-											   end 
-									and
-									D.ObjectID = case 
-												when I.Subject = @type and I.SubjectID = @id then I.ObjectID
-												else I.SubjectID
-											   end
-				inner join AssetType DT on DT.ID = D.AssetTypeID
+				left join 
+				(
+					select ID as AssetID, AssetTypeID, [Object], ObjectID, utility.GetAssetDisplayValueWrapper(ID) as [Name] from Asset
+					union all
+					select null as AssetID, ID as AssetTypeID, [Object], [ObjectID], [Name] from AssetType where [Object] = 'ReferenceItemType'
+				) D on 
+					D.[Object] = case 
+								when I.[Subject] = @type and I.SubjectID = @id then I.[Object]
+								else I.[Subject]
+								end 
+					and
+					D.ObjectID = case 
+								when I.[Subject] = @type and I.SubjectID = @id then I.ObjectID
+								else I.SubjectID
+								end
+				left join AssetType DT on DT.ID = D.AssetTypeID
 				left join ObjectStyle S on S.ObjectType = DT.Object and S.ObjectID = DT.ObjectID
 				inner join IntersectType T on T.ID = I.IntersectTypeID
 				left join [Predicate] P on P.ID = T.PredicateID
@@ -1121,7 +1126,7 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 					(I.Subject = @type and I.SubjectID = @id) OR 
 					(I.Object = @type and I.ObjectID = @id)  
 				)
-                and D.[Object] != 'Map';
+                and coalesce(D.[Object],'') != 'Map';
 	
 	insert into @links
 		select	@type + cast(@id as varchar),
