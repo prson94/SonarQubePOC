@@ -900,15 +900,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return list;
         }
 
-        protected bool isSortColumnNumber(string sortDataField, List<FieldType> fields)
+        protected string sortColumnType(string sortDataField, List<FieldType> fields)
         {
-            if (string.IsNullOrEmpty(sortDataField)) return false;
+            if (string.IsNullOrEmpty(sortDataField)) return "";
 
             var field = fields.Where(x => string.Compare($"Field{x.ID}", sortDataField, true) == 0).FirstOrDefault();
 
-            if (field == null) return false;
+            if (field == null) return "";
 
-            return field.Type == "Number";
+            return field.Type;
         }
 
         internal void processFormDynamicRelationshipFields(SystemObjects ot, int otid, SystemObjects o, int oid, ICollection<FieldType> fieldTypes, FormCollection form)
@@ -1165,6 +1165,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     var columnName = useFriendlyName ? field.FriendlyName.Replace("[", "").Replace("]", "") : $"Field{field.ID}";
                     if (field.Type == "Number")
                         sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS bigint)";
+                    if (field.Type == "Date")
+                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS date)";
                     else
                         sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
                 }
@@ -1179,7 +1181,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             else
             {
                 //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.
-                querySql = applySortSuffix(querySql, sortDataField, sortOrder, sortDefaultField, sortDefaultDirection, isNumericString: isSortColumnNumber(sortDataField, fields));         // Sorting
+                querySql = applySortSuffix(querySql, sortDataField, sortOrder, sortDefaultField, sortDefaultDirection, sortFieldType: sortColumnType(sortDataField, fields));         // Sorting
             }
 
             #endregion
@@ -1893,7 +1895,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return filters;
         }
 
-        internal string applySortSuffix(string sql, string sortDataField, string sortOrder, string sortDefaultField = "Name", string sortDefaultDirection = "asc", bool isNumericString = false)
+        internal string applySortSuffix(string sql, string sortDataField, string sortOrder, string sortDefaultField = "Name", string sortDefaultDirection = "asc", string sortFieldType = "string")
         {
             if (string.IsNullOrEmpty(sortDataField))
             {
@@ -1915,8 +1917,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 throw new Exception("Invalid sort field specified");
             }
 
-            if (isNumericString)
+            if ((sortFieldType ?? "").ToUpper() == "NUMBER")
                 sql += " ORDER BY CAST(+ [" + sortDataField + "] AS bigint)" + sortOrder;
+            else if ((sortFieldType ?? "").ToUpper() == "DATE")
+                sql += " ORDER BY CAST(+ [" + sortDataField + "] AS date)" + sortOrder;
             else
                 sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
 

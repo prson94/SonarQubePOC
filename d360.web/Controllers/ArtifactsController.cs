@@ -118,7 +118,7 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
             else
             {
                 //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.                
-                sql = applySortSuffix(sql, sortDataField, sortOrder, isNumericString: isSortColumnNumber(sortDataField, fields));
+                sql = applySortSuffix(sql, sortDataField, sortOrder, sortFieldType: sortColumnType(sortDataField, fields));
             }
 
             if (type.ParentID.HasValue)
@@ -248,7 +248,7 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
             else
             {
                 //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.                
-                sql = applySortSuffix(sql, sortDataField, sortOrder, isNumericString: isSortColumnNumber(sortDataField, oldFields));
+                sql = applySortSuffix(sql, sortDataField, sortOrder, sortFieldType: sortColumnType(sortDataField, oldFields));
             }
 
 
