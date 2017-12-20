@@ -19,7 +19,7 @@ import { BaseComponent } from '../../shared/base.component';
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                     <p-dataTable #dt [globalFilter]="gb" [sortField]="sortField" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">
+                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable ? 'custom' : false" [filter]="!showSimpleFilter"  (sortFunction)="customSort($event, column)">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
                             </ng-template>
@@ -149,4 +149,44 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
                 this.getData();                
             });
     }    
+
+    customSort(e: any, col: any) {
+        let field = e.field;
+        let direction = e.order;
+        
+        var fld = this.fields.filter(x => x.name == field);
+        var type = (fld != null && fld.length > 0) ? fld[0].type : "";
+        
+        this.items = this.items.slice().sort((a, b) => {
+            let fa = a[field];
+            let fb = b[field];
+
+            switch (type) {
+                case 'number':
+                    let na: number = +fa;
+                    let nb: number = +fb;
+
+                    if (na == null || isNaN(na))
+                        na = -Infinity;
+                    if (nb == null || isNaN(nb))
+                        nb = -Infinity;
+
+                    return ((na > nb) ? 1 : (na < nb) ? -1 : 0) * direction;
+                case 'date':
+                case 'datetime':
+                    let da: number = Date.parse(fa);
+                    let db: number = Date.parse(fb);
+
+                    if (da == null || isNaN(da))
+                        da = new Date(null).getTime();
+                    if (db == null || isNaN(db))
+                        db = new Date(null).getTime();
+
+                    return ((da > db) ? 1 : (da < db) ? -1 : 0) * direction;
+                default:
+                    return ((fa > fb) ? 1 : (fa < fb) ? -1 : 0) * direction;
+            }
+        });
+
+    }
 }

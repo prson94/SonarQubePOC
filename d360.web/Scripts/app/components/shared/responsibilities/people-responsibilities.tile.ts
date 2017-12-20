@@ -4,7 +4,8 @@ import { FormMessage } from '../../../models/form.model';
 import { ResponsibilityService } from '../../../services/responsibility.service';
 import { BaseComponent } from '../../shared/base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { Router, ActivatedRoute }       from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
@@ -32,10 +33,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         for (let p in changes) {
             if (p == 'assetID') {
                 this.assetID = changes['assetID'].currentValue;
-            }
-            //if (p == 'objectID') {
-            //    this.objectID = changes['objectID'].currentValue;
-            //}
+            }            
         }
 
         this.load();
@@ -48,12 +46,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
 
         this.isLoading = true;
         this.responsibilityService.getResponsibilityDetail(this.assetID)
-            .then(data => {                
-                //data.forEach(d => {
-                //    d. = SiteUrlHelpers.getObjectUrl(d.ObjectType, d.ObjectID, d.ObjectTypeID);
-                //    d.ResponsibleObjectUrl = SiteUrlHelpers.getObjectUrl(d.ResponsibleObjectType, d.ResponsibleObjectID);
-                //    d.PrimaryOwnerResourceUrl = SiteUrlHelpers.getObjectUrl('Resource', d.PrimaryOwnerResourceID);
-                //});
+            .then(data => {                                
                 this.responsibilities = data;
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
@@ -91,9 +84,10 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         if (e.data.AssigningItemID == e.data.ObjectID && e.data.AssigningItemType == e.data.ObjectType)
             this.isEditing = true;
     }
+
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.responsibilities = _.orderBy(this.responsibilities, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+    }
 }
-
-
-
-
-
