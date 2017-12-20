@@ -447,18 +447,23 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
         }
 
         private void SetColumnStylesFromField(ICollection<ArtifactTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
-        {
-            if (styles == null) return;
-            if (!styles.Any()) return;
-
-            //check if the styles collection has an entry for this row
-            var style = styles.Where(x => x.Row == -1 && x.Column == columnIndex && (x.BackgroundColorValueFieldTypeID > 0 || x.ColorValueFieldTypeID > 0)).FirstOrDefault();
-
-            if (style != null)
+        {            
+            if (styles != null && styles.Any())
             {
-                //we have a style based on the value in another column(s)
-                document.SetCellStyle(rowIndex, columnIndex, CreateStyle(style, row));
-            }
+
+                //check if the styles collection has an entry for this row
+                var style = styles.Where(x => x.Row == -1 && x.Column == columnIndex && (x.BackgroundColorValueFieldTypeID > 0 || x.ColorValueFieldTypeID > 0)).FirstOrDefault();
+
+                if (style != null)
+                {
+                    var st = CreateStyle(style, row);
+                    if (field.Type == "Date")
+                        st.FormatCode = "m/d/yyyy";
+                    
+                    //we have a style based on the value in another column(s)
+                    document.SetCellStyle(rowIndex, columnIndex, st);
+                }
+            }            
         }
 
         private SLDocument createExcelBaseDocument(ArtifactTypeExportTemplate template, string worksheetName)
@@ -602,6 +607,16 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
                         document.SetCellValue(rowIndex, columnIndex, intVal);
                     else
                         document.SetCellValue(rowIndex, columnIndex, value);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, columnIndex, dateVal);
+
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, columnIndex, style);
+                    }
                     break;
                 default:
                     var doc = new HtmlAgilityPack.HtmlDocument();

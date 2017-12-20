@@ -4,6 +4,7 @@ using d360.model;
 using d360.web.Models.Attributes;
 using Dapper;
 using SpreadsheetLight;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -148,7 +149,12 @@ namespace d360.web.Controllers
                 rowIndex++;
 
                 document.SetCellValue(rowIndex, 1, row.ResourceName);
-                document.SetCellValue(rowIndex, 2, row.Date.ToString());
+                document.SetCellValue(rowIndex, 2, ((DateTime)row.Date));
+
+                SLStyle style = document.CreateStyle();
+                style.FormatCode = "m/d/yyyy";
+                document.SetCellStyle(rowIndex, 2, style);
+
                 document.SetCellValue(rowIndex, 3, row.Action);
                 document.SetCellValue(rowIndex, 4, row.Field ?? "");
                 document.SetCellValue(rowIndex, 5, row.NewValue ?? "");

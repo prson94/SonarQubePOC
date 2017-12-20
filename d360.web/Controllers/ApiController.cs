@@ -7290,7 +7290,7 @@ from	    TaxonomyType FAT
 
 
             var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.SortOrder);
-
+            
             var document = new SLDocument();
             document.AddWorksheet("Items");
             document.DeleteWorksheet("Sheet1");
@@ -7327,8 +7327,19 @@ from	    TaxonomyType FAT
                     var fieldKey = $"Field{field.ID}";
 
                     if (rowDict.ContainsKey(fieldKey))
-                    {                        
-                        document.SetCellValue(rowIndex, ++dataColIndex, (rowDict[fieldKey]?? "").ToString());
+                    {
+                        if (field.Type == "Date" && DateTime.TryParse((rowDict[fieldKey] ?? "").ToString(), out DateTime dateVal))
+                        {
+                            document.SetCellValue(rowIndex, ++dataColIndex, dateVal);
+
+                            SLStyle style = document.CreateStyle();
+                            style.FormatCode = "m/d/yyyy";
+                            document.SetCellStyle(rowIndex, dataColIndex, style);
+                        }
+                        else
+                        {
+                            document.SetCellValue(rowIndex, ++dataColIndex, (rowDict[fieldKey] ?? "").ToString());
+                        }
                     }
                 }
             }
