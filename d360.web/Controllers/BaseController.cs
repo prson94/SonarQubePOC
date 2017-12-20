@@ -1277,11 +1277,12 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     if (relationFieldInfo != null)
                     {
                         var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
+                        var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
                         var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
                         var typeIDColumnName = relationFieldInfo.Object + "ID";
 
                         if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
-                        columns += (isReferenceItemType ? $"{name}_OT.Name" : $"{name}_OT.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
+                        columns += ((isReferenceItemType || isFusionAttributeType) ? $"{name}_OT.Name" : $"{name}_OT.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
 
                         joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
                         joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = A.ID" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = A.ID";
