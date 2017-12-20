@@ -168,6 +168,7 @@ namespace d360.web.Models
         public string HomePageTitleColor { get; set; }
         public string HomePageBackgroundImage { get; set; }
         public bool ClearHomePageBackgroundImage { get; set; } = false;
+        public bool UseLegacyLineage { get; set; } = true;
 
     }
 

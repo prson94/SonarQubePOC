@@ -2540,6 +2540,8 @@ namespace d360.web.Controllers
             model.HomePageTitleColor = (settings.Any(i => i.SettingID == 44) ? settings.Single(i => i.SettingID == 44).Value : "#fff");
             model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
 
+            model.UseLegacyLineage = (settings.Any(i => i.SettingID == 46) ? bool.Parse(settings.Single(i => i.SettingID == 46).Value) : true);
+
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 

@@ -337,14 +337,14 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.menuItems.push(view); 
         this.menuItems.push(settings);
         
-        this.menuItems.push(this.createMenuItem(undefined, 'fa-search-minus'));
-        this.menuItems.push(this.createMenuItem(undefined, 'fa-search-plus'));        
-        this.menuItems.push(this.createMenuItem(undefined, 'fa-refresh'));
-        this.menuItems.push(this.createMenuItem(undefined, 'fa-info-circle'));
+        this.menuItems.push(this.createMenuItem('', 'fa-search-minus'));
+        this.menuItems.push(this.createMenuItem('', 'fa-search-plus'));        
+        this.menuItems.push(this.createMenuItem('', 'fa-refresh'));
+        this.menuItems.push(this.createMenuItem('', 'fa-info-circle'));
     }
 
     private createMenuItem(label?: string, icon?: string): MenuItem {
-        let menu: MenuItem;
+        let menu: MenuItem = {};
         menu.label = label;
         menu.icon = icon;
         return menu;
