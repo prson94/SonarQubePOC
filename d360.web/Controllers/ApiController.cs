@@ -7443,6 +7443,18 @@ from	    TaxonomyType FAT
                                     where m.groupid = @groupId", new { groupId }).ToList();
         }
 
+        [Route("metrics/map/{mapId:int}/conditions")]
+        public List<dynamic> GetMetricConditions(int mapId)
+        {
+            return Company.Query<dynamic>(@"select 
+	                                    c.*,
+	                                    t.FriendlyName as fieldName
+                                    from metrics.condition c
+                                    inner join fieldtype t on t.id = c.fieldtypeid
+                                    inner join metrics.map m on m.id = c.mapid
+                                    where c.mapid = @mapId", new { mapId }).ToList();
+        }
+
         #endregion
 
     }

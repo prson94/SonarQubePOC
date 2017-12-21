@@ -16,6 +16,11 @@ namespace d360.core.entities.Metric
         [DataMember, StringLength(1)]
         public string AndOr { get; set; }
 
+        [DataMember, StringLength(10)]
+        public string Operator { get; set; }
+
+        public string Value { get; set; }
+
         [IgnoreDataMember]
         public virtual FieldType FieldType { get; set; }
 

@@ -35,6 +35,14 @@ export class Map {
     objectName: string;
 }
 
+export class Condition {
+    MapID: number;
+    FieldTypeID: number;
+    AndOr: string;
+    Operator: string;
+    Value: string;
 
-
-
+    fieldName: string;
+    operatorName: string;
+    andOrName: string;
+}

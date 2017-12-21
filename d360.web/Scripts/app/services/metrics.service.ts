@@ -3,7 +3,7 @@ import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
-import { Group, GroupForm, Map, Item } from '../models/metrics.model';
+import { Group, GroupForm, Map, Item, Condition } from '../models/metrics.model';
 
 
 @Injectable()
@@ -79,6 +79,13 @@ export class MetricsService extends BaseService {
         return this.http.get(`/api/metrics/maps/${groupId}`)
             .toPromise()
             .then(response => <Map[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public getConditions(mapId: number): Promise<Condition[]> {
+        return this.http.get(`/api/metrics/map/${mapId}/conditions`)
+            .toPromise()
+            .then(response => <Condition[]>response.json())
             .catch(err => this.handleError(err));
     }
 
