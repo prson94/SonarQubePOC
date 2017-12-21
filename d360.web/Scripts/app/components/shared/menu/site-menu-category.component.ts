@@ -14,10 +14,10 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
                         <span *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0"><i *ngIf="url" [class]="'fa ' + rootIconName" [routerLink]="url"></i><i *ngIf="!url" [class]="'fa ' + rootIconName"></i></span>
-                        <span *ngIf="!menu || !menu.NavigationItems || menu.NavigationItems.length == 0" [pTooltip]="title"><i [class]="'fa ' + rootIconName" [routerLink]="url"></i></span>
+                        <span *ngIf="!menu || !menu.NavigationItems || menu.NavigationItems.length == 0" [pTooltip]="title" tooltipZIndex="10001"><i [class]="'fa ' + rootIconName" [routerLink]="url"></i></span>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel">
                             <div>
-                                <div class="megamenu-title truncate">{{title}}<span class="megamenu-tools" *ngIf="showClearButton"><i (click)="clearClick.emit(true)" class="fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'"></i></span></div>
+                                <div class="megamenu-title truncate">{{title}}<span class="megamenu-tools" *ngIf="showClearButton"><i (click)="clearClick.emit(true)" class="fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i></span></div>
                                 <div class="row">
                                     <div [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems">
                                         <ul class="menu-group">                                        
