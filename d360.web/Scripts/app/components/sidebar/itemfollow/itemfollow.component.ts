@@ -1,7 +1,6 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
-import { ObjectDetailService } from '../../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-resource-following',
@@ -37,9 +36,5 @@ export class ItemFollowComponent extends BaseComponent implements OnInit, OnDest
 
     ngOnDestroy() {
         this.sub.unsubscribe();
-    }
-
-    load() {
-
     }
 }

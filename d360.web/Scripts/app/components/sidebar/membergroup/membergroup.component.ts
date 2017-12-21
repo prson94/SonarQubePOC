@@ -1,7 +1,6 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
-import { ObjectDetailService } from '../../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-resource-groups-definition',
@@ -21,8 +20,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 export class MemberGroupComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     resourceId: number;
-
-
+    
     constructor(
         private route: ActivatedRoute,
         private router: Router) {
@@ -37,9 +35,5 @@ export class MemberGroupComponent extends BaseComponent implements OnInit, OnDes
 
     ngOnDestroy() {
         this.sub.unsubscribe();
-    }
-
-    load() {
-
-    }
+    }    
 }

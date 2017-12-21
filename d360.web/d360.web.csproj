@@ -688,15 +688,6 @@
     <Content Include="Scripts\app\main.bundle.js" />
     <Content Include="Scripts\app\polyfills.bundle.js" />
     <Content Include="Scripts\app\vendor.bundle.js" />
-    <Content Include="Scripts\jquery-2.2.4.min.js" />
-    <Content Include="Scripts\jquery-3.2.1.min.js" />
-    <Content Include="Scripts\jquery-3.2.1.slim.min.js" />
-    <Content Include="Scripts\jquery.qtip.min.js" />
-    <Content Include="Scripts\legacy.js" />
-    <Content Include="Scripts\legacy.min.js">
-      <DependentUpon>legacy.js</DependentUpon>
-    </Content>
-    <Content Include="Scripts\worker-json.js" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
@@ -944,15 +935,12 @@
     <Content Include="Scripts\app\components\admin\settings\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
-    <Content Include="Scripts\errors.json" />
     <None Include="Content\styles\Root.less" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <Content Include="Scripts\version.json" />
     <None Include="Properties\PublishProfiles\UI - UAT - AU - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - UAT - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - UAT - UK - London.pubxml" />
-    <None Include="Scripts\_references.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

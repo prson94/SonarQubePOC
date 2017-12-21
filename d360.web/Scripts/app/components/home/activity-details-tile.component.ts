@@ -26,12 +26,12 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </p-column>                                                                                                   
                             <p-column field="CreatedOn" header="Created" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}">
                                 <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <span>{{data.CreatedOn | date: 'short'}}</span>
+                                    <span>{{data.CreatedOn | date: 'shortDate'}}</span>
                                 </ng-template>
                             </p-column>
                             <p-column field="UpdatedOn" header="Updated" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}">
                                 <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <span>{{data.UpdatedOn | date: 'short'}}</span>
+                                    <span>{{data.UpdatedOn | date: 'shortDate'}}</span>
                                 </ng-template>
                             </p-column>                            
                             <p-column [style]="{width:'40px'}">

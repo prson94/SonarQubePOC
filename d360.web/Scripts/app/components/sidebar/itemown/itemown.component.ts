@@ -1,7 +1,6 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
-import { ObjectDetailService } from '../../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-itemown-definition',
@@ -37,9 +36,5 @@ export class ItemOwnComponent extends BaseComponent implements OnInit, OnDestroy
 
     ngOnDestroy() {
         this.sub.unsubscribe();
-    }
-
-    load() {
-
     }
 }
