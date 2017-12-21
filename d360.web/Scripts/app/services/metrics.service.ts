@@ -3,7 +3,7 @@ import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
-import { Group, GroupForm, Map, Item, Condition } from '../models/metrics.model';
+import { Group, GroupForm, Map, Item, Condition, MapForm, ConditionForm } from '../models/metrics.model';
 
 
 @Injectable()
@@ -82,11 +82,46 @@ export class MetricsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    public getMapFormModel(id: number): Promise<MapForm> {
+        return this.http.get(`/form/metricmap/${id}`)
+            .toPromise()
+            .then(response => <MapForm>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public saveMap(model: Map): Promise<JsonResult> {
+        if (model.ID == null || model.ID < 1) {
+            return this.http.post('form/MetricMap', model)
+                .toPromise()
+                .then(response => response.json())
+                .catch(err => this.handleError(err));
+        } else {
+            return this.http.put('form/MetricMap', model)
+                .toPromise()
+                .then(response => response.json())
+                .catch(err => this.handleError(err));
+        }
+    }
+
     public getConditions(mapId: number): Promise<Condition[]> {
         return this.http.get(`/api/metrics/map/${mapId}/conditions`)
             .toPromise()
             .then(response => <Condition[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    public getCondition(mapId: number, fieldTypeId: number = 0): Promise<ConditionForm> {
+        return this.http.get(`/form/metriccondition/${mapId}/${fieldTypeId}`)
+            .toPromise()
+            .then(response => <ConditionForm>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public saveCondition(model: Condition): Promise<JsonResult> {
+            return this.http.post('form/MetricCondition', model)
+                .toPromise()
+                .then(response => response.json())
+                .catch(err => this.handleError(err));
     }
 
 }

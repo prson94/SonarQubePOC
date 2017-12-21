@@ -19,6 +19,8 @@ import { AdminMetricGroupListComponent } from './admin-metric-group-list.compone
 import { AdminMetricItemListComponent } from './admin-metric-item-list.component';
 import { AdminMetricMapListComponent } from './admin-metric-map-list.component';
 import { AdminMetricConditionListComponent } from './admin-metric-condition-list.component';
+import { AdminMetricMapEditorComponent } from './admin-metric-map-editor.component';
+import { AdminMetricConditionEditorComponent } from './admin-metric-condition-editor.component';
 
 
 import { AdminAnalyticsRoutingModule } from './admin-analytics.routes';
@@ -69,6 +71,8 @@ import {
         AdminMetricItemListComponent,
         AdminMetricMapListComponent,
         AdminMetricConditionListComponent,
+        AdminMetricMapEditorComponent,
+        AdminMetricConditionEditorComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

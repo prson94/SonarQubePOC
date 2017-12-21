@@ -510,8 +510,6 @@ namespace d360.web.Controllers
                     return EditMap(form);
                 case "METRICITEM":
                     return PutMetricItem(form);
-                case "METRICMAP":
-                    return PutMetricMap(form);
                 case "ORGANIZATION":
                     return PutOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -689,8 +687,6 @@ namespace d360.web.Controllers
                     return AddMap(form);
                 case "METRICITEM":
                     return PostMetricItem(form);
-                case "METRICMAP":
-                    return PostMetricMap(form);
                 case "ORGANIZATION":
                     return PostOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -9745,103 +9741,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
-        [HttpPost, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
-        public JsonResult PostMetricMap(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var objectType = parseTextField(form, "ArtifactType");
-                if (string.IsNullOrEmpty(objectType) || !objectType.Contains('|'))
-                    return jsonException("Could not parse object type", HttpStatusCode.BadRequest);
-
-
-                int objectId = int.Parse(objectType.Split('|')[1]);
-                decimal weight = decimal.Parse(parseTextField(form, "Weight"));
-
-                if (weight < 0 || weight > 1)
-                    return jsonException("Weight cannot be less than 0 or greater than 1", HttpStatusCode.BadRequest);
-
-                MetricMap m = new MetricMap
-                {
-                    GroupID = parseIntField(form, "GroupID"),
-                    ItemID = parseIntField(form, "MetricItem"),
-                    Object = objectType.Split('|')[0],
-                    ObjectID = objectId,
-                    Weight = weight,
-                    EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate")),
-                    EffectiveEndDate = DateTime.Parse(parseTextField(form, "EffectiveEndDate")),
-                };
-
-
-                Company.Add(m);
-
-                return jsonSuccess($"Mapping item successfully created.", m.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
-        public JsonResult PutMetricMap(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var id = parseIntField(form, "ID");
-
-                var m = Company.MetricMaps.FirstOrDefault(i => i.ID == id);
-
-                if (m == null)
-                    return jsonException($"Mapping with ID {id} not found", HttpStatusCode.NotFound);
-
-                var objectType = parseTextField(form, "ArtifactType");
-                if (string.IsNullOrEmpty(objectType) || !objectType.Contains('|'))
-                    return jsonException("Could not parse object type", HttpStatusCode.BadRequest);
-
-                decimal weight = decimal.Parse(parseTextField(form, "Weight"));
-                int objectId = int.Parse(objectType.Split('|')[1]);
-
-                if (weight < 0 || weight > 1)
-                    return jsonException("Weight cannot be less than 0 or greater than 1", HttpStatusCode.BadRequest);
-
-                m.GroupID = parseIntField(form, "GroupID");
-                m.Weight = weight;
-                m.ItemID = parseIntField(form, "MetricItem");
-                m.Object = objectType.Split('|')[0];
-                m.ObjectID = objectId;
-                m.EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate"));
-                m.EffectiveEndDate = DateTime.Parse(parseTextField(form, "EffectiveEndDate"));
-
-                Company.Update(m);
-
-                return jsonSuccess($"Mapping successfully updated.", m.ID.ToString(), "edit", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricMap")]
         public JsonResult DeleteMetricMap(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
             if (id < 1)
                 return jsonException($"The id {id} is not valid", HttpStatusCode.BadRequest);
 
@@ -9861,6 +9766,208 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
 
             return jsonSuccess("Mapping deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
+        }
+
+        [HttpGet, ValidateInput(false), Route("MetricMap/{id:int}")]
+        public JsonNetResult GetMetricMap(int id)
+        {
+            var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
+
+            var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
+	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
+	                    {0} + T.[Name] as [Text] 
+                    from 
+	                    AssetType T 
+                    order by 
+	                    [Name]", QueryConstants.HighLevelTypeCaseStatement)).ToList();
+
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    Map = map,
+                    Items = items,
+                    ObjectTypes = objectTypes
+                }
+            };
+        }
+
+        [HttpGet, ValidateInput(false), Route("MetricCondition/{mapId:int}/{fieldTypeId:int}")]
+        public JsonNetResult GetMetricCondition(int mapId, int fieldTypeId)
+        {
+            MetricCondition condition;
+            var fields = new List<FieldType>();
+
+            fields = Company.Query<FieldType>(@"select  f.* from fieldtype f
+                                inner join assettype t on t.id = f.assettypeid
+                                inner join metrics.map m on t.[object] = m.[object] and t.objectid = m.objectid
+                                where m.id = @mapId and f.[type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')
+                                ", new { mapId }).ToList();
+
+            if (fieldTypeId > 0)
+                condition = Company.MetricConditions.FirstOrDefault(m => m.FieldTypeID == fieldTypeId && m.MapID == mapId);
+            else
+                condition = new MetricCondition();
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    Condition = condition,
+                    Fields = fields
+                }
+            };
+        }
+
+        [HttpPost, Route("MetricCondition"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostMetricCondition(MetricCondition model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
+            if (model == null || model.MapID < 1 || model.FieldTypeID < 1)
+                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
+
+            if (string.IsNullOrEmpty(model.Value) || string.IsNullOrEmpty(model.Operator) || string.IsNullOrEmpty(model.AndOr))
+                return jsonException("Condition is missing value or operator", HttpStatusCode.BadRequest);
+
+            try
+            {
+                Company.Add(model);
+                Company.SaveChanges();
+
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Metric condition added successfully", model.MapID.ToString(), "add", HttpStatusCode.OK);
+        }
+
+        [HttpPut, Route("MetricCondition"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PutMetricCondition(MetricCondition model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
+            if (model == null || model.MapID < 1 || model.FieldTypeID < 1)
+                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
+
+            var condition = Company.MetricConditions.FirstOrDefault(m => m.MapID == model.MapID && m.FieldTypeID == model.FieldTypeID);
+
+            if (condition == null)
+                return jsonException($"Condition with mapid {model.MapID} could not be found", HttpStatusCode.NotFound);
+
+
+            condition.Operator = model.Operator;
+            condition.Value = model.Value;
+            condition.AndOr = model.AndOr;
+
+            try
+            {
+                Company.Update(condition);
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Condition updated successfully", model.MapID.ToString(), "edit", HttpStatusCode.OK);
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricCondition")]
+        public JsonResult DeleteMetricGroup(int mapId, int fieldTypeId)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
+            if (mapId < 1 || fieldTypeId < 1)
+                return jsonException($"The condition id is not valid", HttpStatusCode.BadRequest);
+
+            var condition = Company.MetricConditions.FirstOrDefault(c => c.MapID == mapId && c.FieldTypeID == fieldTypeId);
+
+            if (condition == null)
+                return jsonException($"The condition with could not be found", HttpStatusCode.NotFound);
+
+            try
+            {
+                Company.Delete(condition);
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Condition deleted successfully", mapId.ToString(), "delete", HttpStatusCode.OK);
+        }
+
+        [HttpPost, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostMetricMap(MetricMap model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
+            if (model == null || model.ID > 0)
+                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
+
+            if (model.Object == null || model.ObjectID < 1)
+                return jsonException("Model is missing object type", HttpStatusCode.BadRequest);
+
+            if (model.ItemID < 1)
+                return jsonException("Model is missing metric item", HttpStatusCode.BadRequest);
+
+            try
+            {
+                Company.Add(model);
+                Company.SaveChanges();
+
+            } catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Metric group added successfully", model.Group.ID.ToString(), "add", HttpStatusCode.OK);
+
+        }
+
+        [HttpPut, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PutMetricMap(MetricMap model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
+            if (model == null || model.ID < 1)
+                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
+
+            var map = Company.MetricMaps.FirstOrDefault(m => m.ID == model.ID);
+
+            if (map == null)
+                return jsonException($"Mapping with id {model.ID} could not be found", HttpStatusCode.NotFound);
+
+
+            map.ItemID = model.ItemID;
+            map.Object = model.Object;
+            map.ObjectID = model.ObjectID;
+            map.Weight = model.Weight;
+            map.EffectiveEndDate = model.EffectiveEndDate;
+            map.EffectiveStartDate = model.EffectiveStartDate;
+
+            try
+            {
+                Company.Update(map);
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Mapping updated successfully", model.ID.ToString(), "edit", HttpStatusCode.OK);
         }
 
         [HttpGet, ValidateInput(false), Route("MetricGroup/{id:int}")]
@@ -9886,6 +9993,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [HttpPost, Route("MetricGroup"), ValidateInput(false), ValidateHttpAntiForgeryToken]
         public JsonResult PostMetricGroup(MetricGroupFormModel model)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
             if (model == null || model.Group == null)
                 return jsonException("Model is not valid", HttpStatusCode.BadRequest);
 
@@ -9910,6 +10020,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [HttpPut, Route("MetricGroup"), ValidateInput(false), ValidateHttpAntiForgeryToken]
         public JsonResult PutMetricGroup(MetricGroupFormModel model)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
             if (model == null || model.Group == null || model.Group.ID < 1)
                 return jsonException("Model is not valid", HttpStatusCode.BadRequest);
 
@@ -9956,6 +10069,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricGroup")]
         public JsonResult DeleteMetricGroup(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
             if (id < 1)
                 return jsonException($"The id {id} is not valid", HttpStatusCode.BadRequest);
 
@@ -10048,6 +10164,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricItem")]
         public JsonResult DeleteMetricItem(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
             var m = Company.MetricItems.FirstOrDefault(i => i.ID == id);
 
             if (m == null)

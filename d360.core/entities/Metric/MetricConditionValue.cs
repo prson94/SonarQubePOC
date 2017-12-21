@@ -8,7 +8,7 @@ namespace d360.core.entities.Metric
     public class MetricConditionValue : BaseObject
     {
         [Key, Column(Order = 1)]
-        public int MapID { get; set; }
+        public long MapID { get; set; }
 
         [Key, Column(Order = 2)]
         public int FieldTypeID { get; set; }

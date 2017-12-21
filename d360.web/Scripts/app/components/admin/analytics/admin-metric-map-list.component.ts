@@ -37,27 +37,18 @@ import { MessagesService } from '../../../services/messages.service';
                             </p-dataTable>  
                         </div>
                         <div *ngSwitchCase="FormMode.Adding">
-                            <d3s-dynamic-editor 
-                                [objectID]="selection?.ID" 
-                                [objectType]="'MetricMap'" 
-                                [title]="'Metric Mapping'" 
-                                [createUri]="'form/dynamicedit/create/metricmap/'"
-                                [parentID]="groupId"
-                                [selection]="null" 
-                                (saveClick)="formMode = FormMode.Default; load();" 
-                                (closeClick)="formMode = FormMode.Default">
-                            </d3s-dynamic-editor>
+                             <d3s-admin-metric-map-editor 
+                                [mapId]="0"
+                                (onCancel)="formMode = FormMode.Default;"
+                                (onSave)="formMode = FormMode.Default; load();">
+                            </d3s-admin-metric-map-editor>
                         </div>
                         <div *ngSwitchCase="FormMode.Editing">
-                            <d3s-dynamic-editor 
-                                [objectID]="selection?.ID" 
-                                [objectType]="'MetricMap'" 
-                                [title]="'Metric Mapping'" 
-                                [selection]="selection" 
-                                [editUri]="'form/dynamicedit/edit/metricmap'"
-                                (saveClick)="formMode = FormMode.Default; load();" 
-                                (closeClick)="formMode = FormMode.Default">
-                            </d3s-dynamic-editor>
+                            <d3s-admin-metric-map-editor 
+                                [mapId]="selection?.ID"
+                                (onCancel)="formMode = FormMode.Default;"
+                                (onSave)="formMode = FormMode.Default; load();">
+                            </d3s-admin-metric-map-editor>
                         </div>
                         <div *ngSwitchCase="FormMode.Deleting">
                             <d3s-delete-form

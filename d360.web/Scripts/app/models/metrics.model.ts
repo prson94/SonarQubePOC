@@ -1,4 +1,6 @@
-﻿export class Group {
+﻿import { FieldType } from "./fields.model";
+
+export class Group {
     ID: number;
     ParentID: number;
     Name: string;
@@ -12,6 +14,18 @@ export class GroupForm {
     Group: Group = new Group();
     Children: Group[] = [];
 }
+
+export class MapForm {
+    Map: Map;
+    Items: Item[] = [];
+    ObjectTypes: any[] = [];
+}
+
+export class ConditionForm {
+    Condition: Condition;
+    Fields: FieldType[] = [];
+}
+
 
 export class Item {
     ID: number;
@@ -28,8 +42,8 @@ export class Map {
     Object: string;
     ObjectID: number;
     Weight: number;
-    EffectiveStartDate: string;
-    EffectiveEndDate: string;
+    EffectiveStartDate: string | Date;
+    EffectiveEndDate: string | Date;
 
     itemName: string;
     objectName: string;
@@ -46,3 +60,4 @@ export class Condition {
     operatorName: string;
     andOrName: string;
 }
+
