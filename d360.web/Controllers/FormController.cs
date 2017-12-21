@@ -9931,7 +9931,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Metric group added successfully", model.Group.ID.ToString(), "add", HttpStatusCode.OK);
+            return jsonSuccess("Metric group added successfully", model.ID.ToString(), "add", HttpStatusCode.OK);
 
         }
 

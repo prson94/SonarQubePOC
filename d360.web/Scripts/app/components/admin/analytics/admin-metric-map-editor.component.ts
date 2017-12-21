@@ -58,12 +58,12 @@ import { FormMode } from "../../../models/form.model";
                                 <p-calendar [(ngModel)]="model.Map.EffectiveEndDate" [showTime]="false" [dateFormat]="getLocaleDateString()"></p-calendar>
                             </div>
                         </div> 
-                        <div class="col s12">
+                        <div class="col s12" *ngIf="model.Map.ID > 0">
                             <div class="FieldName">
                                 Conditions
                             </div>
                             <div>
-                                <d3s-admin-metric-condition-list [mapId]="model?.Map?.ID" (formModeChange)="conditionFormMode = $event">
+                                <d3s-admin-metric-condition-list [mapId]="model?.Map?.ID || 0" [objectType]="model.Map.Object" [objectId]="model.Map.ObjectID" (formModeChange)="conditionFormMode = $event">
                                 </d3s-admin-metric-condition-list>
                             </div>
                         </div> 
@@ -79,6 +79,7 @@ import { FormMode } from "../../../models/form.model";
 
 export class AdminMetricMapEditorComponent extends BaseComponent implements OnInit {
     @Input() mapId: number = -1;
+    @Input() groupId: number = -1;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
@@ -114,6 +115,7 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
             this.verb = "Add";
             this.model = new MapForm();
             this.model.Map = new Map();
+            this.model.Map.GroupID = this.groupId;
             this.isLoading = true;
             this.metricsService.getMapFormModel(-1)
                 .then(r => {
@@ -133,12 +135,13 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
         if (this.model == null || this.model.Map == null) {
             valid = false;
         } else {
-          //validation goes here
             if (this.model.Map.Object == null || this.model.Map.ObjectID == null)
                 valid = false;
             if (this.model.Map.ItemID == null || this.model.Map.ItemID < 1)
                 valid = false;
             if (this.model.Map.Weight == null || this.model.Map.Weight < 0 || this.model.Map.Weight > 1)
+                valid = false;
+            if (this.model.Map.EffectiveEndDate == null || this.model.Map.EffectiveStartDate == null)
                 valid = false;
         }
 

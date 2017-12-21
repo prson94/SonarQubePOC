@@ -37,6 +37,8 @@ import { MessagesService } from '../../../services/messages.service';
                             <d3s-admin-metric-condition-editor 
                                 [mapId]="mapId" 
                                 [fieldId]="0"
+                                [objectType]="objectType"
+                                [objectId]="objectId"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
                                 (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); load()">
                             </d3s-admin-metric-condition-editor>
@@ -45,6 +47,8 @@ import { MessagesService } from '../../../services/messages.service';
                             <d3s-admin-metric-condition-editor 
                                 [mapId]="mapId" 
                                 [fieldId]="selection?.FieldTypeID"
+                                [objectType]="objectType"
+                                [objectId]="objectId"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
                                 (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); load()">
                             </d3s-admin-metric-condition-editor>
@@ -67,6 +71,8 @@ import { MessagesService } from '../../../services/messages.service';
 
 export class AdminMetricConditionListComponent extends BaseComponent implements OnInit {
     @Input() mapId: number;
+    @Input() objectType: string;
+    @Input() objectId: number;
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();
     @Output() addClick = new EventEmitter();
@@ -103,6 +109,12 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
 
     load(): Promise<any> {
         this.isLoading = true;
+        if (this.mapId == null || this.mapId < 1) {
+            this.conditions = [];
+            this.isLoading = false;
+            return;
+        }
+
         return this.metricsService.getConditions(this.mapId)
             .then(r => {
                 this.conditions = r;

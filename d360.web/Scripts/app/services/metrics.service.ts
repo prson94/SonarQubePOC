@@ -124,4 +124,18 @@ export class MetricsService extends BaseService {
                 .catch(err => this.handleError(err));
     }
 
+    public getLookupList(id: number): Promise<any[]> {
+        return this.http.get(`api/lookup/list/${id}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public getConditionFields(objectType: string, objectId: number): Promise<any[]> {
+        return this.http.get(`api/metrics/condition/fields/${objectType}/${objectId}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

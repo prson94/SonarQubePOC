@@ -39,6 +39,7 @@ import { MessagesService } from '../../../services/messages.service';
                         <div *ngSwitchCase="FormMode.Adding">
                              <d3s-admin-metric-map-editor 
                                 [mapId]="0"
+                                [groupId]="groupId"
                                 (onCancel)="formMode = FormMode.Default;"
                                 (onSave)="formMode = FormMode.Default; load();">
                             </d3s-admin-metric-map-editor>
@@ -46,6 +47,7 @@ import { MessagesService } from '../../../services/messages.service';
                         <div *ngSwitchCase="FormMode.Editing">
                             <d3s-admin-metric-map-editor 
                                 [mapId]="selection?.ID"
+                                [groupId]="groupId"
                                 (onCancel)="formMode = FormMode.Default;"
                                 (onSave)="formMode = FormMode.Default; load();">
                             </d3s-admin-metric-map-editor>

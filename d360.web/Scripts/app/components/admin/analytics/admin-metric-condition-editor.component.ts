@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import {  Condition, ConditionForm } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -16,7 +16,7 @@ import { MessagesService } from '../../../services/messages.service';
                                 Field
                             </div>
                             <div>
-                                <select [(ngModel)]="model.Condition.FieldTypeID" style="width: 95%">
+                                <select [ngModel]="model.Condition.FieldTypeID" (ngModelChange)="changeFieldType($event)" style="width: 95%">
                                     <option></option>
                                     <option *ngFor="let i of model.Fields" [value]="i.ID">{{i.FriendlyName}}</option>
                                 </select>
@@ -37,8 +37,17 @@ import { MessagesService } from '../../../services/messages.service';
                             <div class="FieldName">
                                 Value
                             </div>
-                            <div>
+                            <div *ngIf="fieldType != 'Lookup' && fieldType != 'Number' && fieldType != 'Decimal'">
                                 <input type="text" style="width: 95%" [(ngModel)]="model.Condition.Value" />
+                            </div>
+                            <div *ngIf="fieldType == 'Lookup'">
+                                <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="model.Condition.Value">
+                                    <option></option>
+                                    <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
+                                </select>
+                            </div>
+                            <div *ngIf="fieldType == 'Number' || fieldType == 'Decimal'">
+                                <input type="number" [(ngModel)]="model.Condition.Value" style="width: 95%" />
                             </div>
                         </div>   
                         <div class="col s3">
@@ -62,15 +71,18 @@ import { MessagesService } from '../../../services/messages.service';
     providers: [MetricsService, MessagesService]
 })
 
-export class AdminMetricConditionEditorComponent extends BaseComponent implements OnInit {
+export class AdminMetricConditionEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() mapId: number = -1;
     @Input() fieldId: number = -1;
+    @Input() objectType: string = "";
+    @Input() objectId: number = -1;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
     verb = "Add";
-
     model: ConditionForm;
+    lookups = [];
+    fieldType = "";
 
     private operators = [
         { value: 'eq', label: '=' },
@@ -94,6 +106,15 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         this.load();
     }
 
+    ngOnChanges() {
+        if (this.fieldId < 1 && this.objectId > 0 && this.model != null) {
+            this.metricsService.getConditionFields(this.objectType, this.objectId)
+                .then(r => {
+                    this.model.Fields = r;
+                });
+        }
+    }
+
     load() {
         if (this.fieldId > 0) {
             this.verb = "Edit"
@@ -101,6 +122,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             this.metricsService.getCondition(this.mapId, this.fieldId)
                 .then(r => {
                     this.model = r;
+                    this.changeFieldType(this.model.Condition.FieldTypeID);
                     this.isLoading = false;
                 });
         } else {
@@ -111,8 +133,13 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                     this.model = r;
                     this.model.Condition = new Condition();
                     this.model.Condition.MapID = this.mapId;
+                    //this.isLoading = false;
+                })
+                .then(() => this.metricsService.getConditionFields(this.objectType, this.objectId))
+                .then(r => {
+                    this.model.Fields = r;
                     this.isLoading = false;
-                });
+                })
 
         }
     }
@@ -147,6 +174,23 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     cancel() {
         this.onCancel.emit();
+    }
+
+    changeFieldType(e: any) {
+        this.model.Condition.FieldTypeID = +e;
+        let field = this.model.Fields.find(f => f.ID == +e);
+        if (field != null) {
+            this.fieldType = field.Type;
+
+            if (field.Type == 'Lookup') {
+                this.lookups = [];
+                this.metricsService.getLookupList(this.model.Condition.FieldTypeID)
+                    .then(r => {
+                        this.lookups = r;
+                    })
+
+            }
+        }
     }
 
 

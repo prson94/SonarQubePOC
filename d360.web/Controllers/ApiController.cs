@@ -7455,6 +7455,14 @@ from	    TaxonomyType FAT
                                     where c.mapid = @mapId", new { mapId }).ToList();
         }
 
+        [Route("metrics/condition/fields/{objectType}/{objectId:int}")]
+        public List<FieldType> GetMetricConditionFields(string objectType, int objectId)
+        {
+            return Company.Query<FieldType>(@"select  f.* from fieldtype f
+                                inner join assettype t on t.id = f.assettypeid
+                                where t.object = @objectType and t.objectId = @objectId and f.[type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')", new { objectType, objectId }).ToList();
+        }
+
         #endregion
 
     }
