@@ -43,38 +43,44 @@ nav.top, .left-side-nav {
 
 /* side menu*/
 
-.left-side-nav{
+.left-side-nav {
     left: 0;
-    top:0;
-    z-index:999;
-    height:100%;
+    top: 0;
+    z-index: 16777271;
+    height: 100%;
     position: fixed;
-    background-color:@primary-nav; 
-    width:50px;
-    margin-top:40px;
-    overflow-y:visible;
-    li{
-        padding:0;
+    background-color: @primary-nav;
+    width: 50px;
+    margin-top: 40px;
+    overflow-y: visible;
+
+    li {
+        padding: 0;
     }
-    a{
+
+    a {
         display: block;
     }
-    ul, a{
+
+    ul, a {
         height: auto;
         line-height: normal;
     }
-    .menu-category{        
-        padding:0 15px;
-        color:white;
-        font-size:1rem;
-        height:35px;
-        line-height:35px;
-        position:relative;   
+
+    .menu-category {
+        padding: 0 15px;
+        color: white;
+        font-size: 1rem;
+        height: 35px;
+        line-height: 35px;
+        position: relative;
+
         &:hover {
-            background-color: @nav-active;            
-        }     
-        i{
-            cursor:pointer;
+            background-color: @nav-active;
+        }
+
+        i {
+            cursor: pointer;
         }
     }
 }
