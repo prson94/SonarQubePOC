@@ -2851,7 +2851,19 @@ namespace d360.web.Controllers
                             ORDER BY v.SortOrder desc";
 
             var items = Company.Query<SiteNav>(sql, new { parentId = id });
-
+            var maxSortOrderVal = items.Max(p => p.SortOrder);
+            maxSortOrderVal = maxSortOrderVal == null ? 0 : maxSortOrderVal;
+            foreach (SiteNav i in items)
+            {
+                if (i.SortOrder == null)
+                {
+                    var sortOrder = ++maxSortOrderVal;
+                    SiteNav siteNav = Company.GetById<SiteNav>(i.ID);
+                    siteNav.SortOrder = sortOrder;
+                    i.SortOrder = sortOrder;
+                    Company.Update(siteNav);
+                }
+            }
             return new JsonNetResult
             {
                 Data = items,
