@@ -904,4 +904,10 @@ namespace d360.web.Models
 
     }
 
+    public class MetricMapFormModel
+    {
+        public MetricMap Map { get; set; }
+        public List<MetricCondition> Conditions { get; set; } = new List<MetricCondition>();
+    }
+
 }

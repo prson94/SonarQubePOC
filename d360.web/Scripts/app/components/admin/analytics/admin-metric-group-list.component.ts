@@ -49,6 +49,9 @@ import { FormMode } from '../../../models/form.model';
                         <d3s-admin-metric-group-editor [groupId]="selection.ID" (onCancel)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-group-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Deleting">
+                        <header>
+                            Delete Group
+                        </header>
                         <d3s-delete-form
                             [uri]="'form/MetricGroup?id=' + selection?.ID"
                             [method]="'delete'"

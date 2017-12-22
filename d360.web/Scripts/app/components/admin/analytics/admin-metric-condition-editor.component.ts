@@ -7,7 +7,6 @@ import { MessagesService } from '../../../services/messages.service';
 @Component({
     selector: 'd3s-admin-metric-condition-editor',
     template: ` 
-                <header>{{verb}} Mapping</header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading">
                     <div class="row">
@@ -16,9 +15,9 @@ import { MessagesService } from '../../../services/messages.service';
                                 Field
                             </div>
                             <div>
-                                <select [ngModel]="model.Condition.FieldTypeID" (ngModelChange)="changeFieldType($event)" style="width: 95%">
+                                <select [ngModel]="condition.FieldTypeID" (ngModelChange)="changeFieldType($event)" style="width: 95%">
                                     <option></option>
-                                    <option *ngFor="let i of model.Fields" [value]="i.ID">{{i.FriendlyName}}</option>
+                                    <option *ngFor="let i of fields" [value]="i.ID">{{i.FriendlyName}}</option>
                                 </select>
                             </div>
                         </div>
@@ -27,7 +26,7 @@ import { MessagesService } from '../../../services/messages.service';
                                 Operator
                             </div>
                             <div>
-                                <select [(ngModel)]="model.Condition.Operator" style="width: 95%">
+                                <select [(ngModel)]="condition.Operator" style="width: 95%">
                                     <option></option>
                                     <option *ngFor="let i of operators" [value]="i.value">{{i.label}}</option>
                                 </select>
@@ -38,16 +37,16 @@ import { MessagesService } from '../../../services/messages.service';
                                 Value
                             </div>
                             <div *ngIf="fieldType != 'Lookup' && fieldType != 'Number' && fieldType != 'Decimal'">
-                                <input type="text" style="width: 95%" [(ngModel)]="model.Condition.Value" />
+                                <input type="text" style="width: 95%" [(ngModel)]="condition.Value" />
                             </div>
                             <div *ngIf="fieldType == 'Lookup'">
-                                <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="model.Condition.Value">
+                                <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.Value">
                                     <option></option>
                                     <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
                                 </select>
                             </div>
                             <div *ngIf="fieldType == 'Number' || fieldType == 'Decimal'">
-                                <input type="number" [(ngModel)]="model.Condition.Value" style="width: 95%" />
+                                <input type="number" [(ngModel)]="condition.Value" style="width: 95%" />
                             </div>
                         </div>   
                         <div class="col s3">
@@ -55,23 +54,24 @@ import { MessagesService } from '../../../services/messages.service';
                                 And/Or
                             </div>
                             <div>
-                                <select [(ngModel)]="model.Condition.AndOr" style="width: 95%">
+                                <select [(ngModel)]="condition.AndOr" style="width: 95%">
                                     <option></option>
                                     <option *ngFor="let i of andOr" [value]="i.value">{{i.label}}</option>
                                 </select>
                             </div>
                         </div>  
-                        <div class="col s12" style="padding-top: 15px">
-                            <button pButton type="button" label="Add" [disabled]="!valid()" (click)="save()"></button>
-                            <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                        <div class="col s12" style="padding-top: 15px;">
+                            <button pButton type="button" label="Cancel" (click)="cancel()" style="float: right"></button>
+                            <button pButton type="button" label="Add" [disabled]="!valid()" (click)="save()" style="float: right"></button>
                         </div>
                     </div>
                 </div>
                 `,
-    providers: [MetricsService, MessagesService]
+    providers: [MetricsService]
 })
 
 export class AdminMetricConditionEditorComponent extends BaseComponent implements OnInit, OnChanges {
+    @Input() condition = null;
     @Input() mapId: number = -1;
     @Input() fieldId: number = -1;
     @Input() objectType: string = "";
@@ -81,6 +81,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     verb = "Add";
     model: ConditionForm;
+    fields = [];
     lookups = [];
     fieldType = "";
 
@@ -110,52 +111,34 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         if (this.fieldId < 1 && this.objectId > 0 && this.model != null) {
             this.metricsService.getConditionFields(this.objectType, this.objectId)
                 .then(r => {
-                    this.model.Fields = r;
+                    this.fields = r;
                 });
         }
     }
 
     load() {
-        if (this.fieldId > 0) {
-            this.verb = "Edit"
-            this.isLoading = true;
-            this.metricsService.getCondition(this.mapId, this.fieldId)
-                .then(r => {
-                    this.model = r;
-                    this.changeFieldType(this.model.Condition.FieldTypeID);
-                    this.isLoading = false;
-                });
-        } else {
-            this.verb = "Add";
-            this.isLoading = true;
-            this.metricsService.getCondition(this.mapId, this.fieldId)
-                .then(r => {
-                    this.model = r;
-                    this.model.Condition = new Condition();
-                    this.model.Condition.MapID = this.mapId;
-                    //this.isLoading = false;
-                })
-                .then(() => this.metricsService.getConditionFields(this.objectType, this.objectId))
-                .then(r => {
-                    this.model.Fields = r;
-                    this.isLoading = false;
-                })
+        this.fields = [];
+        this.metricsService.getConditionFields(this.objectType, this.objectId)
+            .then(r => {
+                this.fields = r;
+            });
+        if (this.condition != null)
+            this.changeFieldType(this.condition.FieldTypeID);
 
-        }
     }
 
     valid() {
         let valid = true;
 
-        if (this.model == null || this.model.Condition == null) {
+        if (this.condition == null) {
             valid = false;
         } else {
-            if (this.model.Condition.MapID == null || this.model.Condition.FieldTypeID == null || this.model.Condition.FieldTypeID < 1 || this.model.Condition.MapID < 1) {
+            if (this.condition.MapID == null || this.condition.FieldTypeID == null || this.condition.FieldTypeID < 1) {
                 valid = false;
             }
-            if (this.model.Condition.Value == null)
+            if (this.condition.Value == null)
                 valid = false;
-            if (this.model.Condition.Operator == null || this.model.Condition.AndOr == null)
+            if (this.condition.Operator == null || this.condition.AndOr == null)
                 valid = false;
         }
 
@@ -163,13 +146,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     save() {
-        this.isLoading = true;
-        this.metricsService.saveCondition(this.model.Condition)
-            .then(r => {
-                this.showMessageForResult(this.messagesService, r);
-                this.isLoading = false;
-                this.onSave.emit();
-            });
+        this.onSave.emit(this.condition);
     }
 
     cancel() {
@@ -177,14 +154,17 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     changeFieldType(e: any) {
-        this.model.Condition.FieldTypeID = +e;
-        let field = this.model.Fields.find(f => f.ID == +e);
+        this.condition.FieldTypeID = +e;
+        
+        let field = this.fields.find(f => f.ID == +e);
         if (field != null) {
             this.fieldType = field.Type;
+            this.condition.fieldName = field.FriendlyName;
+            //console.log('changeFieldType', this.condition, field);
 
             if (field.Type == 'Lookup') {
                 this.lookups = [];
-                this.metricsService.getLookupList(this.model.Condition.FieldTypeID)
+                this.metricsService.getLookupList(this.condition.FieldTypeID)
                     .then(r => {
                         this.lookups = r;
                     })

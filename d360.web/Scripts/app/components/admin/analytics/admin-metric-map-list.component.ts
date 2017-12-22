@@ -53,6 +53,9 @@ import { MessagesService } from '../../../services/messages.service';
                             </d3s-admin-metric-map-editor>
                         </div>
                         <div *ngSwitchCase="FormMode.Deleting">
+                            <header>
+                                Delete Mapping
+                            </header>
                             <d3s-delete-form
                                 [uri]="'form/MetricMap?id=' + selection?.ID"
                                 [method]="'delete'"

@@ -9767,9 +9767,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             if (map == null)
                 return jsonException($"The mapping with id {id} could not be found", HttpStatusCode.NotFound);
 
+            var conditions = Company.MetricConditions.Where(c => c.MapID == id);
+
             try
             {
-                Company.Delete(map);
+                Company.MetricConditions.RemoveRange(conditions);
+                Company.MetricMaps.Remove(map);
                 Company.SaveChanges();
             }
             catch (Exception ex)
@@ -9793,13 +9796,21 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 	                    AssetType T 
                     order by 
 	                    [Name]", QueryConstants.HighLevelTypeCaseStatement)).ToList();
+            var conditions = Company.Query<dynamic>(@"select 
+	                                    c.*,
+	                                    t.FriendlyName as fieldName
+                                    from metrics.condition c
+                                    inner join fieldtype t on t.id = c.fieldtypeid
+                                    inner join metrics.map m on m.id = c.mapid
+                                    where c.mapid = @id", new { id }).ToList();
 
-
+            
             return new JsonNetResult
             {
                 Data = new
                 {
                     Map = map,
+                    Conditions = conditions,
                     Items = items,
                     ObjectTypes = objectTypes
                 }
@@ -9892,7 +9903,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         }
 
         [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricCondition")]
-        public JsonResult DeleteMetricGroup(int mapId, int fieldTypeId)
+        public JsonResult DeleteMetricCondition(int mapId, int fieldTypeId)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
@@ -9919,55 +9930,84 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         }
 
         [HttpPost, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
-        public JsonResult PostMetricMap(MetricMap model)
+        public JsonResult PostMetricMap(MetricMapFormModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
 
-            if (model == null || model.ID > 0)
+            if (model == null || model.Map.ID > 0)
                 return jsonException("Model is not valid", HttpStatusCode.BadRequest);
 
-            if (model.Object == null || model.ObjectID < 1)
+            if (model.Map.Object == null || model.Map.ObjectID < 1)
                 return jsonException("Model is missing object type", HttpStatusCode.BadRequest);
 
-            if (model.ItemID < 1)
+            if (model.Map.ItemID < 1)
                 return jsonException("Model is missing metric item", HttpStatusCode.BadRequest);
 
             try
             {
-                Company.Add(model);
+                Company.Add(model.Map);
                 Company.SaveChanges();
 
-            } catch(Exception ex)
+
+                model.Conditions.ForEach(c =>
+                {
+                    c.MapID = model.Map.ID;
+                    Company.MetricConditions.Add(c);
+                });
+                Company.SaveChanges();
+
+            }
+            catch (Exception ex)
             {
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Metric group added successfully", model.ID.ToString(), "add", HttpStatusCode.OK);
+            return jsonSuccess("Metric group added successfully", model.Map.ID.ToString(), "add", HttpStatusCode.OK);
 
         }
 
         [HttpPut, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
-        public JsonResult PutMetricMap(MetricMap model)
+        public JsonResult PutMetricMap(MetricMapFormModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
 
-            if (model == null || model.ID < 1)
+            if (model == null || model.Map.ID < 1)
                 return jsonException("Model is not valid", HttpStatusCode.BadRequest);
 
-            var map = Company.MetricMaps.FirstOrDefault(m => m.ID == model.ID);
+            var map = Company.MetricMaps.FirstOrDefault(m => m.ID == model.Map.ID);
+            var conditions = Company.MetricConditions.Where(c => c.MapID == model.Map.ID).ToList();
 
             if (map == null)
-                return jsonException($"Mapping with id {model.ID} could not be found", HttpStatusCode.NotFound);
+                return jsonException($"Mapping with id {model.Map.ID} could not be found", HttpStatusCode.NotFound);
 
 
-            map.ItemID = model.ItemID;
-            map.Object = model.Object;
-            map.ObjectID = model.ObjectID;
-            map.Weight = model.Weight;
-            map.EffectiveEndDate = model.EffectiveEndDate;
-            map.EffectiveStartDate = model.EffectiveStartDate;
+            map.ItemID = model.Map.ItemID;
+            map.Object = model.Map.Object;
+            map.ObjectID = model.Map.ObjectID;
+            map.Weight = model.Map.Weight;
+            map.EffectiveEndDate = model.Map.EffectiveEndDate;
+            map.EffectiveStartDate = model.Map.EffectiveStartDate;
+
+            model.Conditions.ForEach(c =>
+            {
+                var existing = Company.MetricConditions.FirstOrDefault(i => i.MapID == c.MapID && i.FieldTypeID == c.FieldTypeID);
+                conditions.Remove(conditions.FirstOrDefault(i => i.MapID == c.MapID && i.FieldTypeID == c.FieldTypeID));
+
+                if (existing != null)
+                {
+                    existing.Operator = c.Operator;
+                    existing.Value = c.Value;
+                    existing.AndOr = c.AndOr;
+                }
+                else
+                {
+                    Company.MetricConditions.Add(c);
+                }
+            });
+
+            Company.MetricConditions.RemoveRange(conditions);
 
             try
             {
@@ -9979,7 +10019,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Mapping updated successfully", model.ID.ToString(), "edit", HttpStatusCode.OK);
+            return jsonSuccess("Mapping updated successfully", model.Map.ID.ToString(), "edit", HttpStatusCode.OK);
         }
 
         [HttpGet, ValidateInput(false), Route("MetricGroup/{id:int}")]
@@ -10094,7 +10134,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             try
             {
-                Company.Delete(group);
+                var maps = Company.MetricMaps.Where(m => m.GroupID == group.ID).ToList();
+
+                maps.ForEach(m =>
+                {
+                    var conditions = Company.MetricConditions.Where(c => c.MapID == m.ID).ToList();
+                    Company.MetricConditions.RemoveRange(conditions);
+                });
+
+                Company.SaveChanges();
+                Company.MetricMaps.RemoveRange(maps);
+                Company.SaveChanges();
+                Company.MetricGroups.Remove(group);
                 Company.SaveChanges();
             }
             catch(Exception ex)

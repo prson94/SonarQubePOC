@@ -63,6 +63,9 @@ import { MessagesService } from '../../../services/messages.service';
                             </d3s-dynamic-editor>
                         </div>
                         <div *ngSwitchCase="FormMode.Deleting">
+                            <header>
+                                Delete Item
+                            </header>
                             <d3s-delete-form
                                 [uri]="'form/MetricItem?id=' + selection?.ID"
                                 [method]="'delete'"

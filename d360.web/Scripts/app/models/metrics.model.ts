@@ -19,6 +19,7 @@ export class MapForm {
     Map: Map;
     Items: Item[] = [];
     ObjectTypes: any[] = [];
+    Conditions: Condition[] = [];
 }
 
 export class ConditionForm {

@@ -12,7 +12,7 @@ import { FormMode } from "../../../models/form.model";
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading">
                     <div class="row">
-                        <div class="col s12">
+                        <div class="col s6">
                             <div class="FieldName">
                                 Weight
                             </div>
@@ -20,6 +20,8 @@ import { FormMode } from "../../../models/form.model";
                                 <input type="number" style="width: 95%" [(ngModel)]="model.Map.Weight" />
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col s6">
                             <div class="FieldName">
                                 Metric Item
@@ -47,7 +49,7 @@ import { FormMode } from "../../../models/form.model";
                                 Effective Start Date
                             </div>
                             <div>
-                                <p-calendar [(ngModel)]="model.Map.EffectiveStartDate" [showTime]="false" [dateFormat]="getLocaleDateString()"></p-calendar>
+                                <p-calendar [(ngModel)]="model.Map.EffectiveStartDate" [showTime]="false" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'95%'}"></p-calendar>
                             </div>
                         </div> 
                         <div class="col s6">
@@ -55,15 +57,15 @@ import { FormMode } from "../../../models/form.model";
                                 Effective End Date
                             </div>
                             <div>
-                                <p-calendar [(ngModel)]="model.Map.EffectiveEndDate" [showTime]="false" [dateFormat]="getLocaleDateString()"></p-calendar>
+                                <p-calendar [(ngModel)]="model.Map.EffectiveEndDate" [showTime]="false" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'95%'}"></p-calendar>
                             </div>
                         </div> 
-                        <div class="col s12" *ngIf="model.Map.ID > 0">
+                        <div class="col s12" *ngIf="model?.Map?.ObjectID != null && model?.Map?.ObjectID > 0">
                             <div class="FieldName">
                                 Conditions
                             </div>
                             <div>
-                                <d3s-admin-metric-condition-list [mapId]="model?.Map?.ID || 0" [objectType]="model.Map.Object" [objectId]="model.Map.ObjectID" (formModeChange)="conditionFormMode = $event">
+                                <d3s-admin-metric-condition-list [(conditions)]="model.Conditions" [mapId]="model?.Map?.ID || 0" [objectType]="model.Map.Object" [objectId]="model.Map.ObjectID" (formModeChange)="conditionFormMode = $event">
                                 </d3s-admin-metric-condition-list>
                             </div>
                         </div> 
@@ -74,7 +76,7 @@ import { FormMode } from "../../../models/form.model";
                     </div>
                 </div>
                 `,
-    providers: [MetricsService, MessagesService]
+    providers: [MetricsService]
 })
 
 export class AdminMetricMapEditorComponent extends BaseComponent implements OnInit {
@@ -150,7 +152,8 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
 
     save() {
         this.isLoading = true;
-        this.metricsService.saveMap(this.model.Map)
+        
+        this.metricsService.saveMap(this.model)
             .then(r => {
                 this.showMessageForResult(this.messagesService, r);
                 this.isLoading = false;

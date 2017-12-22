@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
 import { Condition } from '../../../models/metrics.model';
@@ -25,9 +25,9 @@ import { MessagesService } from '../../../services/messages.service';
                                 <p-column field="andOrName" header="And Or">
                                 </p-column>                          
                                 <p-column  [style]="{width:'40px'}">
-                                    <ng-template let-condition="rowData" pTemplate type="body">
+                                    <ng-template let-condition="rowData" let-i="rowIndex" pTemplate type="body">
                                         <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="selection = condition; delete()"><i class="fa fa-trash-o"></i></a>                                    
+                                            <a style="cursor:pointer;" (click)="selection = condition; delete(i)"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
                                     </ng-template>
                                 </p-column> 
@@ -39,8 +39,9 @@ import { MessagesService } from '../../../services/messages.service';
                                 [fieldId]="0"
                                 [objectType]="objectType"
                                 [objectId]="objectId"
+                                [condition]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
-                                (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); load()">
+                                (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
                             </d3s-admin-metric-condition-editor>
                         </div>
                         <div *ngSwitchCase="FormMode.Editing">
@@ -49,19 +50,23 @@ import { MessagesService } from '../../../services/messages.service';
                                 [fieldId]="selection?.FieldTypeID"
                                 [objectType]="objectType"
                                 [objectId]="objectId"
+                                [condition]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
-                                (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); load()">
+                                (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
                             </d3s-admin-metric-condition-editor>
                         </div>
                         <div *ngSwitchCase="FormMode.Deleting">
-                            <d3s-delete-form
-                                [uri]="'form/MetricCondition?mapId=' + selection?.MapID + '&fieldTypeId=' + selection?.FieldTypeID"
-                                [method]="'delete'"
-                                [prompt]="'Are you sure you want to delete this condition?'"                                         
-                                (onCancel)="formMode = FormMode.Default"
-                                (onDeleteSuccess)="formMode = FormMode.Default; formModeChange.emit(formMode);load();"
-                                (onDeleteFail)="formMode = FormMode.Default; formModeChange.emit(formMode);">
-                            </d3s-delete-form> 
+                            <div class="row">
+                                <div class="col s12">
+                                    Are you sure you want to delete this condition?
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12" style="padding-top: 15px">
+                                    <button pButton type="button" label="Delete" (click)="confirmDelete()" style="float: right"></button>
+                                    <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default; formModeChange.emit(formMode);" style="float: right"></button>
+                                </div>
+                            </div> 
                         </div>
                     </div>    
                 </div>
@@ -69,20 +74,23 @@ import { MessagesService } from '../../../services/messages.service';
     providers: [MetricsService]
 })
 
-export class AdminMetricConditionListComponent extends BaseComponent implements OnInit {
+export class AdminMetricConditionListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() mapId: number;
     @Input() objectType: string;
     @Input() objectId: number;
+    @Input() conditions = [];
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();
     @Output() addClick = new EventEmitter();
+    @Output() conditionsChange = new EventEmitter();
 
     @Output() formModeChange = new EventEmitter();
-
-    private conditions = [];
+    
     private selection = null;
+    private selectedIndex = -1;
     private formMode = FormMode.Default;
     FormMode = FormMode;
+
 
 
     private operators = [
@@ -107,28 +115,26 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         this.load();
     }
 
+    ngOnChanges() {
+        this.load();
+
+    }
+
     load(): Promise<any> {
         this.isLoading = true;
-        if (this.mapId == null || this.mapId < 1) {
-            this.conditions = [];
-            this.isLoading = false;
-            return;
-        }
 
-        return this.metricsService.getConditions(this.mapId)
-            .then(r => {
-                this.conditions = r;
-                this.conditions.forEach(c => {
-                    c.operatorName = this.operators.find(o => o.value == c.Operator).label;
-                    c.andOrName = this.andOr.find(o => o.value == c.AndOr).label;
-                })
-                //console.log(this.items, r);
-                this.isLoading = false;
-            });
+        this.conditions.forEach(c => {
+            c.operatorName = this.operators.find(o => o.value == c.Operator).label;
+            c.andOrName = this.andOr.find(o => o.value == c.AndOr).label;
+        });
+        this.isLoading = false;
+
+        return Promise.resolve();
     }
 
     add() {
-        this.selection = null;
+        this.selection = new Condition();
+        this.selection.MapID = this.mapId;
         this.formMode = FormMode.Adding;
         this.formModeChange.emit(this.formMode);
     }
@@ -138,8 +144,28 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         this.formModeChange.emit(this.formMode);
     }
 
-    delete(e: any) {
+    delete(i: number) {
+        this.selectedIndex = i;
         this.formMode = FormMode.Deleting;
+        this.formModeChange.emit(this.formMode);
+    }
+
+    confirmDelete() {
+        this.conditions.splice(this.selectedIndex, 1).slice();
+        this.conditionsChange.emit(this.conditions);
+        this.formMode = FormMode.Default;
+        this.formModeChange.emit(this.formMode);
+    }
+
+    save(e: any) {
+        e.operatorName = this.operators.find(o => o.value == e.Operator).label;
+        e.andOrName = this.andOr.find(o => o.value == e.AndOr).label;
+
+        this.conditions.push(e);
+
+        this.conditions.slice();
+        this.conditionsChange.emit(this.conditions);
+        this.formMode = FormMode.Default;
         this.formModeChange.emit(this.formMode);
     }
 };

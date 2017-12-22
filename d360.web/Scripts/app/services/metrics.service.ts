@@ -89,8 +89,8 @@ export class MetricsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    public saveMap(model: Map): Promise<JsonResult> {
-        if (model.ID == null || model.ID < 1) {
+    public saveMap(model: MapForm): Promise<JsonResult> {
+        if (model.Map.ID == null || model.Map.ID < 1) {
             return this.http.post('form/MetricMap', model)
                 .toPromise()
                 .then(response => response.json())
