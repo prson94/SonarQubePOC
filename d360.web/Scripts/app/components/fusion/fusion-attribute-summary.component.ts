@@ -35,12 +35,26 @@ import { StateService } from '../../services/state.service';
                                         </div>
                                     </ng-template>
                             </p-column>
-                            <p-column *ngFor="let column of columns;let first = first" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
-                                <ng-template let-col let-item="rowData" pTemplate type="body">
-                                    <a *ngIf="first && item[column.datafield]" (click)="selectItem(item)">{{item[column.datafield]}}</a>
-                                    <span *ngIf="!first && item[column.datafield]" [innerHtml]="item[column.datafield]"></span>
+                            
+                            <ng-container *ngFor="let column of columns;let first = first">  
+                                <ng-container *ngIf="column.filtertype == 'bool'; then ifContent else elseContent"></ng-container>
+                                <ng-template #ifContent >
+                                    <p-column [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }">
+                                        <ng-template let-col="column" let-item="rowData" pTemplate type="body">
+                                            <span><i *ngIf="item[column.datafield]=='true'" class="fa fa-check enabled" title="True"></i></span>
+                                            <span><i *ngIf="item[column.datafield]=='false'" class="fa fa-times disabled" title="False"></i></span>
+                                        </ng-template>
+                                    </p-column>
                                 </ng-template>
-                            </p-column>                            
+                                <ng-template #elseContent>
+                                    <p-column  [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
+                                        <ng-template let-item="rowData" pTemplate type="body">
+                                            <a *ngIf="first && item[column.datafield]" (click)="selectItem(item)">{{item[column.datafield]}}</a>
+                                            <span *ngIf="!first && item[column.datafield]" [innerHtml]="item[column.datafield]"></span>
+                                        </ng-template>
+                                    </p-column>
+                                </ng-template>
+                            </ng-container>
                         </p-dataTable>                   
                         <div class="center" style="font-weight:bold"><d3s-grid-paging-info *ngIf="dt && dt.totalRecords" [totalRecords]="dt?.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></div>
                     </span>
