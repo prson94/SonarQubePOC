@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit } from '@angular/core';
+﻿import { Input, Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -18,7 +18,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     providers: [GridDefinitionService, UriBasedService, PermissionsService, ResourcesService, CompanySettingsService],
     template: `                                         
                 <header *ngIf="!showEditor && !showDelete && !showResetPwd">Users
-                    <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export()"></d3s-tile-actions>                            
                 </header>                           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor && !showResetPwd">
@@ -98,6 +98,8 @@ export class UserListComponent extends BaseComponent{
 
     theDeleteCallback: Function;
 
+    @ViewChild('dt') datatable;
+
     constructor(private route: ActivatedRoute,
         private router: Router,
         protected uriBasedService: UriBasedService,
@@ -122,6 +124,11 @@ export class UserListComponent extends BaseComponent{
     
     private openResource(event) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource',event.ResourceID));
+    }
+
+    public export() {
+        if (this.datatable)
+            this.datatable.exportCSV();
     }
 
     load() {
