@@ -186,6 +186,15 @@ order by    IT.SubjectID, FAT.Name", new { id }).AsQueryable();
 		A.Description,
         A.FusionTypeID,
 		T.Name as FusionType,
+        substring(
+        (
+            select	',' + ATY.Name + ':' + IA.DisplayValue  AS [text()]
+            from	FusionOwner [IO]
+					inner join Artifact IA on IA.ID = [IO].ArtifactID and [IO].FusionID = A.ID
+					inner join ArtifactType ATY on ATY.ID = IA.ArtifactTypeID
+            ORDER BY IA.DisplayValue
+            For XML PATH ('')
+        ), 2, 1000) as Owners,
         {0}
 		A.Enabled
 from	Fusion A {1} 
