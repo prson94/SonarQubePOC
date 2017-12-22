@@ -16,7 +16,7 @@
                     </p-column>
                 </ng-template>
                 <ng-template #elseContent>
-                    <p-column [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }" [filter]="!showSimpleFilter"></p-column>
+                    <p-column [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px', 'word-wrap':'break-word'}" [filter]="!showSimpleFilter"></p-column>
                 </ng-template>
             </ng-container>
             <p-column [style]="{ 'width': '30px' }">
