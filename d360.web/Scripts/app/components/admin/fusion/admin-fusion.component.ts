@@ -32,7 +32,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         private fusionService: FusionService,
         titleService: Title,
         private messagesService: MessagesService,
-        private objectStyleService: ObjectStyleService
+        private objectStyleService: ObjectStyleService        
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Fusion Types";
@@ -50,7 +50,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     ngOnDestroy() {
         this.clearSidebar();
     }
-
+    
     load() {
         this.isLoading = true;
         this.fusionService.getFusionTypes('$orderby=Name')
@@ -63,7 +63,9 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     
     add() {
         this.newFusionType = new FusionType();
-        this.newFusionStyle = new ObjectStyle();
+        this.newFusionStyle = new ObjectStyle();        
+        this.newFusionStyle.IconBackColor = '#000000';
+        this.newFusionStyle.IconForeColor = '#ffffff';        
         this.formMode = FormMode.Adding;
     }
 
