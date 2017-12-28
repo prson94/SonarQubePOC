@@ -90,19 +90,7 @@ export class WorkflowFieldsService {
                     type: 'date'
                 });
                 break;
-            case 'IssueType':
-                fields.push({
-                    value: 'Contextual|IssueObject',
-                    label: 'Issue Object',
-                    type: 'text'
-                });
-                fields.push({
-                    value: 'Contextual|IssueObjectID',
-                    label: 'Issue Object ID',
-                    type: 'number'
-                });
 
-                break;
         }
 
         return fields;

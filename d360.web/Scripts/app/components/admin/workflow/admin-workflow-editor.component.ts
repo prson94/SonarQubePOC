@@ -38,6 +38,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private changesTypes: ChangeTypeInfo[] = [];
     private selectedObjectType: any = null;
     private conditions: any[] = [];
+    private issueObjectTypes: any[] = [];
+    private selectedIssueObjectType: any = null;
 
     private showAddCondition: boolean = false;
     private hideObject: boolean = false;
@@ -94,79 +96,92 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             .then(r => { this.changesTypes = r; })
             .then(() => {
 
-                    return this.workflowService.getWorkflowTypeModel(this.id)
-                        .then(r => {
-                            if (this.id > 0 && this.model == null && r != null)
-                                this.model = r;
+                return this.workflowService.getWorkflowTypeModel(this.id)
+                    .then(r => {
+                        if (this.id > 0 && this.model == null && r != null)
+                            this.model = r;
 
-                            
-                            //console.log('load', this.model);
-                            //if (this.id > 0 && (this.model == null || (this.model.Nodes == null && this.model.Links == null) || (this.model.Nodes.length)))
-                            //    this.model = r;
 
-                            //create initial model and settings if needed
-                            if (this.model == null)
-                                this.model = new WorkflowDiagramModel();
-                            if (this.model.Event.SettingsObject == null)
-                                this.model.Event.SettingsObject = {};
-                            if (this.model.Event.SettingsObject.Settings == null)
-                                this.model.Event.SettingsObject.Settings = {};
+                        //console.log('load', this.model);
+                        //if (this.id > 0 && (this.model == null || (this.model.Nodes == null && this.model.Links == null) || (this.model.Nodes.length)))
+                        //    this.model = r;
 
-                            if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null
+                        //create initial model and settings if needed
+                        if (this.model == null)
+                            this.model = new WorkflowDiagramModel();
+                        if (this.model.Event.SettingsObject == null)
+                            this.model.Event.SettingsObject = {};
+                        if (this.model.Event.SettingsObject.Settings == null)
+                            this.model.Event.SettingsObject.Settings = {};
+
+                        if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null
                             && this.model.Event.SettingsObject.Settings.Visible != null) {
-                                this.hideObject = (this.model.Event.SettingsObject.Settings.Visible.toString() == "false") ? true : false;
+                            this.hideObject = (this.model.Event.SettingsObject.Settings.Visible.toString() == "false") ? true : false;
 
-                                if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null)
-                                    //convert to bool
-                                    this.model.Event.SettingsObject.Settings.SendAggregateEmail = this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString().toLowerCase() == "true" ? true : false;
-                            }
+                            if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null)
+                                //convert to bool
+                                this.model.Event.SettingsObject.Settings.SendAggregateEmail = this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString().toLowerCase() == "true" ? true : false;
+                        }
 
-                            this.selectedObjectType = (this.model.Event.ObjectID != null) ? this.model.Event.Object + '|' + this.model.Event.ObjectID.toString() : '';
-                            this.objectID = this.model.Event.ObjectID;
-                            this.objectType = this.model.Event.Object;
+                        this.selectedObjectType = (this.model.Event.ObjectID != null) ? this.model.Event.Object + '|' + this.model.Event.ObjectID.toString() : '';
+                        this.objectID = this.model.Event.ObjectID;
+                        this.objectType = this.model.Event.Object;
 
 
-                            if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
-                                let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
-                                this.conditions = [];
-                                conditions.forEach(c => this.conditions.push(c));
-                            }
-                            else if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
-                                this.conditions = [];
+                        if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
+                            let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
+                            this.conditions = [];
+                            conditions.forEach(c => this.conditions.push(c));
+                        }
+                        else if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
+                            this.conditions = [];
 
-                                if (this.model.Event.ConditionObject.Condition.length == null)
-                                    this.conditions.push(this.model.Event.ConditionObject.Condition);
-                                else
-                                    this.conditions = this.model.Event.ConditionObject.Condition;
-                            }
-                        })
-                        .then(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType))
-                        .then(r => {
-                            //need to apply names to loaded conditions
-                            r.forEach(t => {
-                                let c = this.conditions.filter(c => c['@FieldTypeID'] == t.ID);
-                                if (c != null)
-                                    c.forEach(f => f['@FieldName'] = t.FriendlyName);
-                                    //c['@FieldName'] = t.FriendlyName;
-                            });
-                        })
-                        .then(() => {
-                            //apply names to contextual fields
-                            this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
-                                let cx = this.workflowFieldsService
-                                    .getContextualFieldsForType(this.model.Event.ChangeType, this.model.Event.Object)
-                                    .find(x => x.value == 'Contextual|' + c['@ContextualFieldID']);
-                                if (cx != null)
-                                    c['@FieldName'] = cx.label;
-                            });
-                        })
-                        .then(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType))
-                        .then(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r))
-                        .then(() => {
-                            if (this.hideShoppingCart) {
-                                this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
-                            }
+                            if (this.model.Event.ConditionObject.Condition.length == null)
+                                this.conditions.push(this.model.Event.ConditionObject.Condition);
+                            else
+                                this.conditions = this.model.Event.ConditionObject.Condition;
+                        }
+                    })
+                    .then(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType))
+                    .then(r => {
+                        //need to apply names to loaded conditions
+                        r.forEach(t => {
+                            let c = this.conditions.filter(c => c['@FieldTypeID'] == t.ID);
+                            if (c != null)
+                                c.forEach(f => f['@FieldName'] = t.FriendlyName);
+                            //c['@FieldName'] = t.FriendlyName;
                         });
+                    })
+                    .then(() => {
+                        //apply names to contextual fields
+                        this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
+                            let cx = this.workflowFieldsService
+                                .getContextualFieldsForType(this.model.Event.ChangeType, this.model.Event.Object)
+                                .find(x => x.value == 'Contextual|' + c['@ContextualFieldID']);
+                            if (cx != null)
+                                c['@FieldName'] = cx.label;
+                        });
+                    })
+                    .then(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType))
+                    .then(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r))
+                    .then(() => {
+                        if (this.hideShoppingCart) {
+                            this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
+                        }
+                    })
+                    .then(() => {
+                        if (this.objectType == 'IssueType') {
+                            this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
+
+                            let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
+                            let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
+
+                            if (objectIndex > -1 && objectIdIndex > -1) {
+                                this.selectedIssueObjectType = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
+                            }
+
+                        }
+                    });
 
             })
             .then(() => this.loadResponsibilities())
@@ -203,6 +218,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
             }
 
+            if (this.objectType == 'IssueType') {
+                this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
+            }
+
             this.loadResponsibilities().then(() => this.validate());
         } else {
             this.isValid = false;
@@ -228,6 +247,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     addCondition(e: any) {
         this.conditions.push(e);
+        this.conditions = this.conditions.slice();
         this.showAddCondition = false;
         this.validate();
         //console.log(this.conditions);
@@ -236,6 +256,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     remove(item: any) {
         let i = this.conditions.findIndex(c => c == item);
         this.conditions.splice(i, 1);
+        this.conditions = this.conditions.slice();
         this.validate();
     }
 
@@ -251,6 +272,64 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.conditions.forEach(c => {
             delete c['@FieldName'];
         });
+
+        //console.log('save', this.objectType, this.selectedIssueObjectType);
+
+        let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
+        let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
+
+        if (this.objectType == 'IssueType') {
+            if (this.selectedIssueObjectType != null && this.selectedIssueObjectType.indexOf('|') > -1) {
+                let obj = this.selectedIssueObjectType.split('|')[0];
+                let objid = this.selectedIssueObjectType.split('|')[1];
+
+
+                if (objectIndex < 0) {
+                    this.conditions.push({
+                        '@ContextualFieldID': 'IssueObject',
+                        '@Operator': '=',
+                        '@ValueType': 'T',
+                        '@Value': obj
+                    });
+                } else {
+                    this.conditions[objectIndex]['@Value'] = obj;
+                }
+
+                if (objectIdIndex < 0) {
+                    this.conditions.push({
+                        '@ContextualFieldID': 'IssueObjectID',
+                        '@Operator': '=',
+                        '@ValueType': 'D',
+                        '@Value': objid
+                    });
+                } else {
+                    this.conditions[objectIdIndex]['@Value'] = objid;
+                }
+
+
+            } else {
+                if (objectIndex > -1) {
+                    this.conditions.splice(objectIndex, 1);
+                }
+
+                if (objectIdIndex > -1) {
+                    objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID'); //index may have changed depending on order
+                    this.conditions.splice(objectIdIndex, 1);
+                }
+            }
+        } else {
+            if (objectIndex > -1) {
+                this.conditions.splice(objectIndex, 1);
+            }
+
+            if (objectIdIndex > -1) {
+                objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
+                this.conditions.splice(objectIdIndex, 1);
+            }
+        }
+
+        //console.log('save', this.conditions);
+        
 
         if (this.model.Event.SettingsObject.Settings.SendAggregateEmail == false
             || this.model.Event.SettingsObject.Settings.SendAggregateEmail == null) {
@@ -281,6 +360,9 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         if (this.model == null) return;
 
         this.conditions.forEach(c => {
+            if (c['@ContextualFieldID'] != null && (c['@ContextualFieldID'] == 'IssueObject' || c['@ContextualFieldID'] == 'IssueObjectID'))
+                return;
+
             if (c['@FieldName'] == null) {
                 this.errorMessage = "One or more conditions is not valid.";
                 this.isValid = false;

@@ -36,6 +36,19 @@
                             [filter]="true">
                 </p-dropdown>
             </div>
+            <div *ngIf="objectType == 'IssueType'">
+                <div class="FieldName">
+                    Issue Object Type
+                </div>
+                <div>
+                    <p-dropdown [options]="issueObjectTypes"
+                                [(ngModel)]="selectedIssueObjectType"
+                                [style]="{'width': '95%'}"
+                                filterPlaceholder="Choose a value"
+                                [filter]="true">
+                    </p-dropdown>
+                </div>
+            </div>
             <div *ngIf="model.Event.ChangeType == WorkflowChangeType.Schedule">
                 <div class="FieldName">
                     Run Frequency (Days)

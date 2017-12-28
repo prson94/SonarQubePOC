@@ -91,6 +91,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
             this.workflowFieldsService.deleteUsedField(this.transition.condition[i]['@FormInputID'], this.transition.condition[i]['@VersionStepID'], this.transition.key);
 
         this.transition.condition.splice(i, 1);
+        this.transition.condition = this.transition.condition.slice();
         this.transitionChange.emit(this.transition);
     }
 
@@ -105,6 +106,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
                 this.workflowFieldsService.pushUsedField(e['@FormInputID'], e['@VersionStepID'], this.transition.key, this.transition.name);
 
             this.transition.condition.push(e);
+            this.transition.condition = this.transition.condition.slice();
             this.transitionChange.emit(this.transition);
 
         } else if (this.formMode == FormMode.Editing) {

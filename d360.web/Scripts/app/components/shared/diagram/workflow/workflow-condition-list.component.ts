@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, Output, EventEmitter, Input} from '@angular/core';
+﻿import { Component, NgZone, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import { Column, Header, MenuItem } from 'primeng/primeng';
 
@@ -9,7 +9,7 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
         &nbsp;
         <d3s-tile-actions hideTooltip="true" [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
     </header>
-    <p-dataTable [value]="conditions" selectionMode="single" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit(selection)" [immutable]="false">
+    <p-dataTable [value]="filteredConditions" selectionMode="single" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit(selection)" [immutable]="false">
         <p-column field="@FieldName" header="Field Name"></p-column>
         <p-column field="@Operator" header="Operator">
             <ng-template let-item="rowData" pTemplate type="body">
@@ -33,7 +33,7 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
 `
 })
 
-export class WorkflowConditionListComponent extends BaseComponent {
+export class WorkflowConditionListComponent extends BaseComponent implements OnChanges {
     @Input() conditions: any[] = [];
     @Input() selection;
     @Input() readonly = false;
@@ -41,6 +41,12 @@ export class WorkflowConditionListComponent extends BaseComponent {
     @Output() addClick = new EventEmitter();
     @Output() removeClick = new EventEmitter();
     @Output() editClick = new EventEmitter();
+
+    private filteredConditions: any[] = [];
+
+    ngOnChanges(changes: SimpleChanges) {
+        this.filteredConditions = this.conditions.filter(c => c['@ContextualFieldID'] == null || (c['@ContextualFieldID'] != 'IssueObject' && c['@ContextualFieldID'] != 'IssueObjectID'));
+    }
 
     constructor() {
         super();
