@@ -76,7 +76,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         if (changes['companySettings'].isFirstChange)
             this.isLoading = false;
     }
-
+   
     add() {
         this.selection = null;
         this.newFolder = new SiteNav();
@@ -196,6 +196,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                 .then(() => {
                     this.edit(this.editedMenuItem)
                 })
+                .then(() => this.stateService.reloadLeftNavMenu())
         } else {
             this.messagesService.showError("Error", "First item can not be moved up.")            
         }        
@@ -212,6 +213,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                 .then(() => {
                     this.edit(this.editedMenuItem)
                 })
+                .then(() => this.stateService.reloadLeftNavMenu())
         } else {
             this.messagesService.showError("Error", "Last item can not be moved down.")                       
         }        
