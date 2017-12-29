@@ -41,8 +41,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 106; //10
-            var fusionTypeID = 1;//13;
+            var companyID = 100; //10
+            var fusionTypeID = 30;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -61,9 +61,9 @@ SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Nam
                     declare @ft int
                     if not exists(select 1 from FieldType where Name = @n and [Object] = 'FusionType' and ObjectID = @oid) 
                     BEGIN 
-                    INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable, IsDisplayable, IsEditable) VALUES (@n, @f, @t, 'FusionType', @oid, @s, 0, @l, @d, @e)
+                    INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable, IsDisplayable, IsEditable, Category) VALUES (@n, @f, @t, 'FusionType', @oid, @s, 0, @l, @d, @e, @cat)
                     END",
-                new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionTypeID, s = o.SortOrder, l = o.IsListable, d = true, e = true });
+                new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionTypeID, s = o.SortOrder, l = o.IsListable, d = true, e = true, cat = o.Category });
             }
 
             loadFusionAttributeTypes(company, fusionType.ID, "FusionAttributeType", null, fusionAttributeTypes);
@@ -133,8 +133,8 @@ END",
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("mitimco2.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "MIT - 2017-18 2", File = bytes };
+            var bytes = File.ReadAllBytes("Thrivent-Prod-2018.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Thrivent - Prod - 2017-18", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

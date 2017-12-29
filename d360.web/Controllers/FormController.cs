@@ -8797,6 +8797,738 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region LEGACY Lineage (TO BE REMOVED WHEN NEW LINEAGE IS COMPLETE)
+
+        #region Supporting Json Feeds
+
+        /// <summary>
+        /// Gets a list of intersect types that support lineage.
+        /// </summary>
+        /// <returns>A list of relevant fusion attribute types.</returns>
+        [Route("Lineage_IntersectTypes")]
+        public JsonNetResult Lineage_IntersectTypes()
+        {
+            var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.DataLineage).Select(i => i.ID).Distinct().ToList();
+            return new JsonNetResult
+            {
+                Data = Company
+                    .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&
+                        i.Subject != "IntersectType" && i.Object != "IntersectType" &&
+                        i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType"
+                    )
+                    .ToList()
+                    .Select(i => new { title = $"{i.SubjectName} {i.PredicateName ?? "to"} {i.ObjectName}", value = $"{i.ID}" })
+                    .OrderBy(i => i.title),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Route("Lineage_IntersectTypeSources")]
+        public JsonNetResult Lineage_IntersectTypeSources()
+        {
+            var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.DataLineage).Select(i => i.ID).Distinct().ToList();
+
+            var detail = Company
+                    .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&
+                        i.Subject != "IntersectType" && i.Object != "IntersectType" &&
+                        i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType"
+                    ).ToList();
+
+            var sources = detail.Select(i => new { i.Subject, i.SubjectID, i.SubjectName }).Distinct().ToList();
+            var sourcesList = sources.Select(i => new { value = i.Subject + '|' + i.SubjectID, label = i.SubjectName, intersectTypeID = detail.First(d => d.Subject == i.Subject && d.SubjectID == i.SubjectID)?.ID ?? -1 });
+
+
+            return new JsonNetResult
+            {
+                Data = sourcesList.ToList().OrderBy(i => i.label),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Route("Lineage_IntersectTypeTargets"), NonNullableParameters]
+        public JsonNetResult Lineage_IntersectTypeTargets(string type, int id)
+        {
+            var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.DataLineage).Select(i => i.ID).Distinct().ToList();
+
+            var targets = Company
+                    .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&
+                        i.Subject != "IntersectType" && i.Object != "IntersectType" &&
+                        i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType"
+                    )
+                    .Where(i => i.Subject == type && i.SubjectID == id)
+                    .ToList().Select(i => new { value = i.Object + '|' + i.ObjectID, label = i.ObjectName, intersectTypeID = i.ID }).Distinct();
+
+
+
+            return new JsonNetResult
+            {
+                Data = targets.ToList().OrderBy(i => i.label),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
+        /// Gets a list of subjects based on the given intersect type.
+        /// </summary>
+        /// <param name="id">The Intersect Type's ID</param>
+        /// <returns>A list of name/value pairs.</returns>
+        [Route("Lineage_MapSubjects"), NonNullableParameters]
+        public JsonNetResult Lineage_MapSubjects(int id)//, SystemObjects o, int oid)
+        {
+            var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
+            if (intersectType == null)
+                return new JsonNetResult { Data = new { message = "Intersect Type not found." } };
+
+            var list = Company.Query<dynamic>(@"
+select  Name as title, 
+        Object+'|'+cast(ObjectID as varchar) as value 
+from    AssetDetail
+where   Type = @type 
+        and TypeID = @id
+order by Name", new { type = new Dapper.DbString { IsAnsi = true, Value = intersectType.Subject }, id = id = intersectType.SubjectID });
+
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        /// <summary>
+        /// Gets a list of objects based on the given intersect type.
+        /// </summary>
+        /// <param name="id">The Intersect Type's ID</param>
+        /// <returns>A list of name/value pairs.</returns>
+        [Route("Lineage_MapObjects"), NonNullableParameters]
+        public JsonNetResult Lineage_MapObjects(int id)//, SystemObjects o, int oid)
+        {
+            var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
+            if (intersectType == null)
+                return new JsonNetResult { Data = new { message = "Intersect Type not found." } };
+
+            var list = Company.Query<dynamic>(@"
+select  Name as title, 
+        Object+'|'+cast(ObjectID as varchar) as value 
+from    AssetDetail
+where   Type = @type 
+        and TypeID = @id
+order by Name", new { type = new Dapper.DbString { IsAnsi = true, Value = intersectType.Object }, id = id = intersectType.ObjectID });
+
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        /// <summary>
+        /// Gets a list of fusion attributes based on a search string provided 
+        /// that should match part of the TextPath of the fusoin attribute.
+        /// </summary>
+        /// <param name="intersectID">The intersectID we are searching under.</param>
+        /// <param name="phrase">Part of the text path to search for.</param>
+        /// <returns>A list of name/value pairs.</returns>
+        [Route(""), NonNullableParameters]
+        public JsonNetResult MapRule_FindFusion(int intersectID, string phrase)
+        {
+            var intersect = Company.Filter<IntersectDetail>(i => i.ID == intersectID).FirstOrDefault();
+            if (intersect == null)
+                return new JsonNetResult { Data = new { message = "Intersect not found." } };
+
+            phrase = $"%{phrase}%";
+
+            var list = Company.Query<dynamic>(@"
+select  A.ID,
+        A.TextPath,
+        T.TextPath as FusionAttributeType,
+        F.Name as Fusion
+from    FusionAttribute A
+        inner join GetFusionAttributesByOwningArtifact(@SubjectID) O on O.ID = A.FusionID 
+        and A.TextPath like @phrase
+        inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+        inner join Fusion F on F.ID = A.FusionID
+order by A.TextPath", new { phrase, SubjectID = intersect.SubjectID });
+
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        /// <summary>
+        /// Gets a list of map rules based on the currently selected map.
+        /// </summary>
+        /// <param name="model">The intersectID we are searching under.</param>
+        /// <returns>A deep hierarchy of map rules.</returns>
+        [HttpPost, Route("MapRulesByMap")]
+        public JsonNetResult MapRulesByMap(SourceTargetIntersectModel model)
+        {
+            var list = Company.Query<string>(@"
+select	MR.ID,
+		(
+			select	I.ID,
+					I.FusionAttributeID,
+					A.TextPath as FusionAttributeTextPath
+			from	MapRuleItem I
+					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 1
+			for json path
+		) as Sources,
+		(
+			select	I.ID,
+					I.FusionAttributeID,
+					A.TextPAth as FusionAttributeTextPath
+			from	MapRuleItem I
+					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 0
+			for json path
+		) as Targets,
+		MR.Transformation
+from	MapRule MR
+		inner join MapRuleMap MRM on MRM.MapRuleID = MR.ID
+		inner join Map M on M.ID = MRM.MapID
+		inner join MapItem SMI on SMI.MapID = M.ID and SMI.IntersectID = @s and SMI.DiagramKey = @sd
+		inner join MapItem TMI on TMI.MapID = M.ID and TMI.IntersectID = @t and TMI.DiagramKey = @td
+for json path", new { s = model.SourceIntersectID, sd = model.SourceDiagramKey, t = model.TargetIntersectID, td = model.TargetDiagramKey });
+
+            var json = string.Join("", list);
+            var arr = (string.IsNullOrEmpty(json)) ? new JArray() : JArray.Parse(json);
+
+            return new JsonNetResult
+            {
+                Data = arr,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
+        /// Gets a list of map rules based on the currently selected object.
+        /// </summary>
+        /// <param name="models">A collection of source/target intersect IDs.</param>
+        /// <returns>A deep hierarchy of map rules.</returns>
+        [HttpPost, Route("MapRulesByObject")]
+        public JsonNetResult MapRulesByObject(SourceTargetIntersectModels models)
+        {
+            if (models == null)
+                jsonNetException("No valid models present.", HttpStatusCode.BadRequest);
+
+            if (models.Items.Count <= 0)
+                jsonNetException("No valid models present.", HttpStatusCode.BadRequest);
+
+            var modelsSql = "";
+
+            models.Items.ForEach(m =>
+            {
+                modelsSql += (string.IsNullOrEmpty(modelsSql)) ? "" : " union ";
+                modelsSql += $"select {m.SourceIntersectID} as SourceIntersectID, {m.TargetIntersectID} as TargetIntersectID";
+            });
+            //need work on this query.
+            var list = Company.Query<string>($@"
+select	MR.ID,
+        O.SourceIntersectID,
+        O.TargetIntersectID,
+        (
+			select	I.ID,
+					I.SourceFusionAttributeID as FusionAttributeID,
+					A.TextPath as FusionAttributeTextPath
+			from	MapRuleItem I
+					inner join FusionAttribute A on A.ID = I.SourceFusionAttributeID and I.MapRuleID = MR.ID
+			for json path
+		) as Sources,
+		(
+			select	I.ID,
+					I.TargetFusionAttributeID as FusionAttributeID,
+					A.TextPath as FusionAttributeTextPath
+			from	MapRuleItem I
+					inner join FusionAttribute A on A.ID = I.TargetFusionAttributeID and I.MapRuleID = MR.ID
+			for json path
+		) as Targets,
+		MR.Transformation
+from	MapRule MR
+		inner join MapItemMap MIM on
+        inner join MapItem MI on MI.SourceIntersectID
+		inner join ({modelsSql}) O on O.SourceIntersectID = SMI.IntersectID and O.SourceDiagramKey = SMI.DiagramKey and O.TargetIntersectID = TMI.IntersectID and O.TargetDiagramKey = TMI.DiagramKey
+for json path");
+
+            var json = string.Join("", list);
+            var arr = (string.IsNullOrEmpty(json)) ? new JArray() : JArray.Parse(json);
+
+            return new JsonNetResult
+            {
+                Data = arr,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        //[ValidateHttpAntiForgeryToken, HttpPost, Route("MapRules_Save")]
+        //public JsonNetResult MapRules_Save(MapRulesModel model)
+        //{
+        //    if (model.Rules == null)
+        //        return jsonNetException("No rules specified", HttpStatusCode.BadRequest);
+
+        //    var message = "";
+
+        //    bool canCreate = true;// Company.HasPermission(obj, model.FocalID, Claim.Create);
+        //    bool canUpdate = true;//Company.HasPermission(obj, model.FocalID, Claim.Update);
+        //    bool canDelete = true;//Company.HasPermission(obj, model.FocalID, Claim.Delete);
+
+        //    model.Rules.ForEach(viewRule =>
+        //    {
+        //        var map = Company.Filter<Map>(i =>
+        //            i.MapItems.Any(mi => mi.SourceIntersectID == viewRule.SourceIntersectID && mi.TargetIntersectID == viewRule.TargetIntersectID),
+        //            i => i.MapItems
+        //            ).FirstOrDefault();
+
+        //        if (map == null)
+        //        {
+        //            message += "No valid map found for the provided source and target.";
+        //        }
+        //        else
+        //        {
+        //            if (viewRule.ID == 0 && !canCreate)
+        //            {
+        //                message += $"[{DateTime.Now}] You do not have permission to create mapping rules on this item.\n";
+        //            }
+        //            else if (viewRule.ID != 0 && !canUpdate)
+        //            {
+        //                message += $"[{DateTime.Now}] You do not have permission to update mapping rules on this item.\n";
+        //            }
+        //            else
+        //            {
+        //                MapRule mapRule = null;
+
+        //                if (viewRule.ID > 0)
+        //                {
+        //                    mapRule = Company.GetById<MapRule>(viewRule.ID, i => i.MapRuleItems);
+        //                }
+        //                else
+        //                {
+        //                    mapRule = new MapRule
+        //                    {
+        //                        MapRuleItems = new List<MapRuleItem>()
+        //                    };
+        //                }
+
+        //                if (mapRule != null)
+        //                {
+        //                    mapRule.Transformation = viewRule.Transformation;
+
+        //                    #region Process Sources
+
+        //                    viewRule.Sources.ForEach(s =>
+        //                    {
+        //                        if (s.FusionAttributeID > 0)
+        //                        {
+        //                            #region Process Targets
+
+        //                            viewRule.Targets.ForEach(t =>
+        //                            {
+        //                                if (t.FusionAttributeID > 0)
+        //                                {
+        //                                    var existingMapRuleItem = mapRule.MapRuleItems.SingleOrDefault(i => i.SourceFusionAttributeID == s.FusionAttributeID && i.TargetFusionAttributeID == t.FusionAttributeID);
+        //                                    if (existingMapRuleItem == null)
+        //                                    {
+        //                                        mapRule.MapRuleItems.Add(new MapRuleItem { SourceFusionAttributeID = s.FusionAttributeID, TargetFusionAttributeID = t.FusionAttributeID });
+        //                                    }
+        //                                }
+        //                            });
+
+        //                            #endregion
+
+        //                        }
+        //                    });
+
+        //                    #endregion
+
+        //                    #region Now check for any sources that have been deleted.
+
+        //                    var mapItemsToDelete = new List<int>();
+        //                    foreach (var existingMapRuleItem in mapRule.MapRuleItems)
+        //                    {
+        //                        if (
+        //                            !viewRule.Sources.Any(i => i.ID == existingMapRuleItem.ID) &&
+        //                            !viewRule.Targets.Any(i => i.ID == existingMapRuleItem.ID) &&
+        //                            existingMapRuleItem.ID > 0
+        //                        )
+        //                        {
+        //                            mapItemsToDelete.Add(existingMapRuleItem.ID);
+        //                        }
+        //                    }
+
+        //                    #endregion
+
+        //                    try
+        //                    {
+        //                        Company.SaveOrUpdate<MapRule>(mapRule);
+
+        //                        if (canDelete)
+        //                        {
+        //                            mapItemsToDelete.ForEach(id =>
+        //                            {
+        //                                var existingMapRuleItem = mapRule.MapRuleItems.Single(i => i.ID == id);
+        //                                Company.Delete<MapRuleItem>(existingMapRuleItem);
+        //                            });
+        //                        }
+        //                    }
+        //                    catch (Exception ex)
+        //                    {
+        //                        message += $"[{DateTime.Now}] An error occurred while saving rule changes: {ex.Message}\n{ex.StackTrace}\n\n";
+        //                    }
+
+        //                }
+        //                else
+        //                {
+        //                    message += $" The map rule with ID {viewRule.ID} could not be found.";
+        //                }
+        //            }
+        //        }
+        //    });
+
+        //    return new JsonNetResult
+        //    {
+        //        Data = new { message, error = !string.IsNullOrEmpty(message) },
+        //        Formatting = Newtonsoft.Json.Formatting.None
+        //    };
+        //}
+
+        #endregion
+
+        ///// <summary>
+        ///// Creates relationships for the various objects the user is adding to the diagram.
+        ///// </summary>
+        ///// <param name="model">An array of items to add relationships for.</param>
+        ///// <returns>A list of name/value pairs.</returns>
+        //[HttpPost, Route("Lineage_AddItemsToDiagram")]
+        //public JsonNetResult Lineage_AddItemsToDiagram(AddItemsToDiagramModel model)
+        //{
+        //    model.Items.ForEach(i =>
+        //    {
+        //        try
+        //        {
+        //            var intersect = Company.AddIntersect(i.IntersectTypeID, i.Subject, i.SubjectID, i.Object, i.ObjectID);
+        //            if (intersect != null)
+        //            {
+        //                i.Intersect = intersect;
+        //                i.IntersectID = intersect.ID;
+        //            }
+        //            else
+        //            {
+        //                i.ErrorMessage = "Relationship not successfully created";
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            i.ErrorMessage = ex.GetFullExceptionData();
+        //        }
+        //    });
+
+        //    return new JsonNetResult { Data = model.Items, Formatting = Newtonsoft.Json.Formatting.None };
+        //}
+
+        ///// <summary>
+        ///// Creates relationships for the various objects the user is adding to the diagram.
+        ///// </summary>
+        ///// <param name="models">An array of items to add relationships for.</param>
+        ///// <returns>A list of name/value pairs.</returns>
+        //[HttpPost, Route("Lineage_Update")]
+        //public JsonNetResult Lineage_Update(SourcePostModel models)
+        //{
+        //    var message = "";
+        //    var success = false;
+
+        //    models.Adds.ForEach(model =>
+        //    {
+        //        #region 
+        //        if (model.SourceIntersectID <= 0)
+        //        {
+        //            message += $"The source you provided is invalid.";
+        //        }
+        //        else
+        //        {
+        //            if (model.TargetIntersectID <= 0)
+        //            {
+        //                message += $"The target you provided is invalid.";
+        //            }
+        //            else
+        //            {
+        //                var newMap = new Map(); // { Transformation = model.Transformation };
+        //                newMap.MapItems = new List<MapItem>();
+        //                newMap.MapItems.Add(new MapItem { SourceIntersectID = model.SourceIntersectID, TargetIntersectID = model.TargetIntersectID });
+        //                Company.Add<Map>(newMap);
+        //            }
+        //        }
+
+        //        #endregion
+        //    });
+
+        //    models.Deletes.ForEach(model =>
+        //    {
+        //        #region 
+        //        if (model.MapID <= 0)
+        //        {
+        //            message = $"The ID ({model.MapID}) is invalid.";
+        //        }
+        //        else
+        //        {
+        //            var o = Company.GetById<Map>(model.MapID);
+        //            if (o == null)
+        //            {
+        //                message += $"The ID ({model.MapID}) could not be found.";
+        //            }
+        //            else
+        //            {
+        //                //if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Delete, ClaimObject.Relationship))
+        //                //{
+        //                //    message = FormInfo.Permisions_Error_Delete;
+        //                //}
+        //                //else
+        //                //{
+        //                Company.Delete<Map>(o);
+        //                //}
+        //            }
+        //        }
+        //        #endregion
+        //    });
+
+        //    models.Edits.ForEach(model =>
+        //    {
+        //        #region 
+        //        if (model.MapID <= 0)
+        //        {
+        //            message += $"The map ID ({model.MapID}) is invalid.";
+        //        }
+        //        else
+        //        {
+        //            var o = Company.GetById<Map>(model.MapID);
+        //            if (o == null)
+        //            {
+        //                message += $"The map with ID ({model.MapID}) cound not be found.";
+        //            }
+        //            else
+        //            {
+        //                //o.Transformation = model.Transformation;
+        //                Company.Update(o);
+        //            }
+        //        }
+        //        #endregion
+        //    });
+
+        //    success = string.IsNullOrEmpty(message);
+
+        //    if (string.IsNullOrEmpty(message))
+        //    {
+        //        message = "Successfully updated lineage.";
+        //    }
+
+        //    return new JsonNetResult
+        //    {
+        //        Data = new
+        //        {
+        //            message = message,
+        //            success = success
+        //        },
+        //        Formatting = Newtonsoft.Json.Formatting.None
+        //    };
+        //}
+
+        [HttpPost, Route("UpdateLineage")]
+        public JsonNetResult UpdateLineage(LineageEditorModel model)
+        {
+            model.Deletes?.ForEach(d =>
+            {
+                var mapItem = Company.GetById<MapItem>(d.ID);
+
+                var leftMaps = Company.MapItems.Where(m => m.TargetIntersectID == d.SourceIntersectID);
+                var rightMaps = Company.MapItems.Where(m => m.SourceIntersectID == d.TargetIntersectID);
+
+                try
+                {
+                    //leftMaps.ToList().ForEach(l =>
+                    //{
+                    //    //remove map items from map
+                    //    l.Maps.ToList().ForEach(m =>
+                    //    {
+                    //        m.MapItems.Remove(l);
+                    //    });
+
+                    //    //remove map sequences and contexts
+                    //    Company.MapSequences.RemoveRange(l.MapSequences);
+                    //    //remove the map item
+                    //    Company.MapItems.Remove(l);
+
+                    //});
+
+                    //rightMaps.ToList().ForEach(r =>
+                    //{
+                    //    r.Maps.ToList().ForEach(m =>
+                    //    {
+                    //        m.MapItems.Remove(r);
+                    //    });
+                    //    Company.MapSequences.RemoveRange(r.MapSequences);
+                    //    Company.MapItems.Remove(r);
+
+                    //});
+
+                    mapItem.Maps.ToList().ForEach(m =>
+                    {
+                        m.MapItems.Remove(mapItem);
+                    });
+                    Company.MapSequences.RemoveRange(mapItem.MapSequences);
+                    Company.MapItems.Remove(mapItem);
+
+                    Company.SaveChanges();
+
+                }
+                catch (Exception ex)
+                {
+                    //reset state on fail to avoid future errors in SaveChanges()
+                    if (mapItem != null)
+                        Company.Entry(mapItem).State = System.Data.Entity.EntityState.Unchanged;
+
+                    d.HasError = true;
+                    d.ErrorMessage = ex.GetFullExceptionData();
+                }
+            });
+
+            model.Adds?.ForEach(a =>
+            {
+                try
+                {
+                    var sourceIntersect = Company.IntersectDetails.Where(i =>
+                    i.IntersectTypeID == a.SourceIntersectTypeID &&
+                    i.SubjectID == a.SourceSubjectID &&
+                    i.ObjectID == a.SourceObjectID).SingleOrDefault();
+
+                    if (sourceIntersect == null)  //add source intersect if it doesn't exist
+                        sourceIntersect = Company.AddIntersect(a.SourceIntersectTypeID, a.SourceSubject, a.SourceSubjectID, a.SourceObject, a.SourceObjectID);
+
+
+                    var targetIntersect = Company.IntersectDetails.Where(i =>
+                    i.IntersectTypeID == a.TargetIntersectTypeID &&
+                    i.SubjectID == a.TargetSubjectID &&
+                    i.ObjectID == a.TargetObjectID).SingleOrDefault();
+
+                    if (targetIntersect == null)//add target intersect
+                        targetIntersect = Company.AddIntersect(a.TargetIntersectTypeID, a.TargetSubject, a.TargetSubjectID, a.TargetObject, a.TargetObjectID);
+
+                    //add map item
+                    var mapItem = Company.MapItems.Where(i => i.SourceIntersectID == sourceIntersect.ID && i.TargetIntersectID == targetIntersect.ID).SingleOrDefault();
+
+                    if (mapItem == null)
+                        mapItem = Company.MapItems.Add(new MapItem()
+                        {
+                            SourceIntersectID = sourceIntersect.ID,
+                            TargetIntersectID = targetIntersect.ID,
+                            CreatedBy = Company.CurrentResourceID,
+                            UpdatedBy = Company.CurrentResourceID
+                        });
+
+                    Company.SaveChanges();
+                    a.SourceIntersectID = sourceIntersect.ID;
+                    a.TargetIntersectID = targetIntersect.ID;
+                    a.ID = mapItem.ID;
+                }
+                catch (Exception ex)
+                {
+                    a.HasError = true;
+                    a.ErrorMessage = ex.GetFullExceptionData();
+                }
+            });
+
+            return new JsonNetResult
+            {
+                Data = model,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpPost, Route("UpdateTechnicalLineage")]
+        public JsonNetResult UpdateTechnicalLineage(LineageEditorTechnicalModel model)
+        {
+            model.Deletes?.ForEach(d =>
+            {
+                var mapRuleItem = Company.GetById<MapRuleItem>(d.ID);
+
+                var mapRuleItemMapItem = Company.MapRuleItemMapItems.Where(m => m.MapRuleItemID == mapRuleItem.ID).FirstOrDefault();
+
+                var leftMaps = Company.MapRuleItems.Where(m => m.TargetFusionAttributeID == d.SourceFusionAttributeID);
+                var rightMaps = Company.MapRuleItems.Where(m => m.SourceFusionAttributeID == d.TargetFusionAttributeID);
+
+                try
+                {
+                    if (mapRuleItemMapItem != null)
+                    {
+                        Company.MapRuleItemMapItems.Remove(mapRuleItemMapItem);
+                    }
+
+                    //leftMaps.ToList().ForEach(l =>
+                    //{
+                    //    //remove map items from map
+                    //    l.MapRules.ToList().ForEach(m =>
+                    //        {
+                    //            m.MapRuleItems.Remove(l);
+                    //        });
+
+                    //    //remove the map item
+                    //    Company.MapRuleItems.Remove(l);
+
+                    //});
+
+                    //rightMaps.ToList().ForEach(r =>
+                    //{
+                    //    r.MapRules.ToList().ForEach(m =>
+                    //    {
+                    //        m.MapRuleItems.Remove(r);
+                    //    });
+
+                    //    //remove the map item
+                    //    Company.MapRuleItems.Remove(r);
+
+                    //});
+
+                    mapRuleItem.MapRules.ToList().ForEach(m =>
+                    {
+                        m.MapRuleItems.Remove(mapRuleItem);
+                    });
+
+                    Company.MapRuleItems.Remove(mapRuleItem);
+
+                    Company.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    d.HasError = true;
+                    d.ErrorMessage = ex.GetFullExceptionData();
+                }
+            });
+
+            model.Adds?.ForEach(a =>
+            {
+                try
+                {
+                    var mapRuleItem = new MapRuleItem();
+                    mapRuleItem.SourceFusionAttributeID = a.SourceFusionAttributeID;
+                    mapRuleItem.TargetFusionAttributeID = a.TargetFusionAttributeID;
+
+                    //add map rule item
+                    Company.MapRuleItems.Add(mapRuleItem);
+                    Company.SaveChanges();
+
+                    //add map rule item map item
+                    if (a.MapItemID > 0)
+                    {
+                        Company.MapRuleItemMapItems.Add(new MapRuleItemMapItem()
+                        {
+                            MapItemID = a.MapItemID,
+                            MapRuleItemID = mapRuleItem.ID
+
+                        });
+                        Company.SaveChanges();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    a.HasError = true;
+                    a.ErrorMessage = ex.GetFullExceptionData();
+                }
+            });
+
+            return new JsonNetResult
+            {
+                Data = model,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        #endregion
+
         #region Load
 
         public class OptionModel

@@ -2193,8 +2193,20 @@ from    [Intersect] I
             if (string.IsNullOrWhiteSpace(query))
                 return Request.CreateResponse(HttpStatusCode.OK, "");
             query = sanitizeQueryString(query);
-            var types = Company.Query<IntersectType>(@"select * from IntersectType where [Subject] != 'FusionAttributeType' and [Object] != 'FusionAttributeType'
-                and [name] like '%' + @query + '%'", new { query });
+            var types = Company.Query<IntersectType>(@"
+select  ID, 
+        SubjectName + ' ' + coalesce(PredicateName, '/') + ' ' +  ObjectName as Name, 
+        Subject, 
+        SubjectID, 
+        Object, 
+        ObjectID 
+from    IntersectTypeDetail 
+where   [Subject] <> 'FusionAttributeType' 
+        and [Object] <> 'FusionAttributeType'
+        and (
+            [SubjectName] like '%' + @query + '%' OR
+            [ObjectName] like '%' + @query + '%'
+            )", new { query });
 
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
@@ -2206,22 +2218,26 @@ from    [Intersect] I
                 return Request.CreateResponse(HttpStatusCode.OK, "");
             query = sanitizeQueryString(query);
 
-            var sql = $@"select top {maxResults} 
-	                [Object] + '|' + cast(ObjectID as varchar) as ID,
-                    [Object],
-	                ObjectID,
-	                [Name],
-	                ObjectTypeName,
-	                IconBackColor,
-	                IconForeColor,
-                    case when [Name] like '{query}%' then
-                        1
-                    else
-                        10
-                    end as rnk
-                 from cache.ObjectDetails
-                where [ObjectType] = @type and ObjectTypeId = @id and [Name] like '%{query}%'
-                order by rnk, [Name]";
+            var sql = $@"
+select  top {maxResults} 
+        [Object] + '|' + cast(ObjectID as varchar) as ID,
+        [Object],
+	    ObjectID,
+	    DisplayValue as [Name],
+        DisplayValue as TextPath,
+	    TypeName as ObjectTypeName,
+	    BackColor as IconBackColor,
+	    ForeColor as IconForeColor,
+        case when [DisplayValue] like '{query}%' then
+            1
+        else
+            10
+        end as rnk
+from        AssetDetail 
+where       Type = @type 
+            and TypeID = @id
+            and DisplayValue like '%{query}%'
+order by    rnk, [Name]";
 
             var objects = Company.Query<dynamic>(sql, new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id });
 
@@ -7289,8 +7305,8 @@ from	    TaxonomyType FAT
             var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
 
 
-            var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.SortOrder);
-            
+            var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.ColumnOrder);
+
             var document = new SLDocument();
             document.AddWorksheet("Items");
             document.DeleteWorksheet("Sheet1");

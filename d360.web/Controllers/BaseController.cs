@@ -1039,7 +1039,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             public IEnumerable<dynamic> results { get; set; }
         }
 
-        internal string addOwnershipJoinCriteria(string joins, string ownerUsers, string ownerGroups)
+        internal string addOwnershipJoinCriteria(string joins, string ownerUsers, string ownerGroups, string idColumn = "A.ID")
         {
             int index = 0;
             if (!string.IsNullOrEmpty(ownerUsers))
@@ -1049,7 +1049,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     var ids = user.Split('|');
                     if (ids.Length == 2)
                     {
-                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Object = 'Artifact' and RD{index}.SecurityAsset = 'R' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
+                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.ObjectID = {idColumn} and RD{index}.Object = 'Artifact' and RD{index}.SecurityAsset = 'R' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
                         index++;
                     }
                 }
@@ -1062,7 +1062,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     var ids = group.Split('|');
                     if (ids.Length == 2)
                     {
-                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Object = 'Artifact' and RD{index}.SecurityAsset = 'G' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
+                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.ObjectID = {idColumn} and RD{index}.Object = 'Artifact' and RD{index}.SecurityAsset = 'G' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
                         index++;
                     }
                 }
@@ -1087,7 +1087,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             string filter = "", string ownerUsers = "", string ownerGroups = "",
             string sortDefaultField = "DisplayValue", string sortDefaultDirection = "asc",
             Dictionary<string, object> extraParams = null,
-            bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false)
+            bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false, string idColumn = "A.ID")
         {
             var requestParams = Request.Params;
             var dbArgs = new Dapper.DynamicParameters();
@@ -1109,7 +1109,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             var joins = "";
             var columns = "";
-            getDynamicFieldJoinStatements(objectTypeID, obj, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields);
+            getDynamicFieldJoinStatements(objectTypeID, obj, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
 
             if (fetchPermissions)
             {
@@ -1119,8 +1119,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 else
                 {                    
-                    columns += $" (select count(1) from securitydetail p_sd_edit where (A.ID = p_sd_edit.ObjectID and p_sd_edit.ObjectType = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
-                    columns += $" (select count(1) from securitydetail p_sd_delete where (A.ID = p_sd_delete.ObjectID and p_sd_delete.ObjectType = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
+                    columns += $" (select count(1) from securitydetail p_sd_edit where ({idColumn} = p_sd_edit.ObjectID and p_sd_edit.ObjectType = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
+                    columns += $" (select count(1) from securitydetail p_sd_delete where ({idColumn} = p_sd_delete.ObjectID and p_sd_delete.ObjectType = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
                 }
             }
 
@@ -1129,7 +1129,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             #endregion
 
             // Ownership Joins
-            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
+            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups, idColumn);
 
             // If simple filter specified add that criteria to the sql
             if (!string.IsNullOrEmpty(filter))
@@ -1142,14 +1142,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             #region Relation filtering
 
-            var filters = applyRelationFilteringExistsRawSuffix(Request, dbArgs, fields);
+            var filters = applyRelationFilteringExistsRawSuffix(Request, dbArgs, fields, idColumn);
 
             countSql += filters;
             querySql += filters;
 
             #endregion
 
-            filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields);  // Filtering
+            filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields, idColumn);  // Filtering
 
             countSql += filters;
             querySql += filters;
@@ -1241,7 +1241,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return relationFieldInfos;
         }
 
-        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null)
+        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID")
         {
             columns = "";
             joins = "";
@@ -1287,7 +1287,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         columns += ((isReferenceItemType || isFusionAttributeType) ? $"{name}_OT.Name" : $"{name}_OT.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
 
                         joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                        joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = A.ID" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = A.ID";
+                        joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
                         joins += (isReferenceItemType) 
                             ? $" left join [{tableName}] {name}_OT on " 
                             : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
@@ -1308,7 +1308,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
 
                         joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                        joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = A.ID" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = A.ID";
+                        joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
                         joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {f.LookupObjectFieldTypeID}";
                         joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
                         joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
@@ -1325,7 +1325,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 end as [{(useFriendlyName ? friendlyName : name)}], ";
 
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
                 }
                 else if (f.Type == DataType.Number.ToString())
                 {
@@ -1337,7 +1337,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 end as [{(useFriendlyName ? friendlyName : name)}], ";
 
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
                 }
                 else
                 {
@@ -1350,7 +1350,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 end as [{(useFriendlyName ? friendlyName : name)}], ";
 
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
                 }
             }
 
@@ -1433,7 +1433,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return $"({sb.ToString()})";
         }
 
-        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null, bool showSubsetColumns = false, List<int> subsetColumns = null)
+        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null, bool showSubsetColumns = false, List<int> subsetColumns = null, string idColumn = "A.ID")
         {
             columns = "";
             joins = "";
@@ -1475,7 +1475,7 @@ end as [{(useFriendlyName ? friendlyName : name)}]";
                 columns += thisColumn;
 
                 var thisJoin = $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} and {name}_TT.IsListable = 1 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
                 
                 joins += thisJoin;
 
@@ -1625,12 +1625,12 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return !(name.Contains('>') || name.Contains('<') || name.Contains('"') || name.Contains('/') || name.Contains('\\'));
         }
 
-        internal string applyRelationFilteringExists(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, List<FieldType> fields = null)
+        internal string applyRelationFilteringExists(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, List<FieldType> fields = null, string idColumn = "A.ID")
         {
-            return sql + applyRelationFilteringExistsRawSuffix(Request, dbParams, fields);                
+            return sql + applyRelationFilteringExistsRawSuffix(Request, dbParams, fields, idColumn);
         }
 
-        internal string applyRelationFilteringExistsRawSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, List<FieldType> fields = null)
+        internal string applyRelationFilteringExistsRawSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, List<FieldType> fields = null, string idColumn = "A.ID")
         {
             var query = Request.Params;
             int filterscount = 0;
@@ -1661,7 +1661,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                                 SourceObjectID
                                         from Relationship
                                         where SourceObjectType = 'Artifact'
-                                                and SourceObjectID = A.ID
+                                                and SourceObjectID = {idColumn}
                                         ) B left join Field relField on (relField.ObjectType = 'Intersect' and relField.ObjectID = B.ID and relField.FieldTypeID = {0})
                                         where " + filtersql + ")";
 
@@ -1674,7 +1674,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return sb.ToString();
         }
 
-        internal string applyHiddenFilteringSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams)
+        internal string applyHiddenFilteringSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, string idColumn = "A.ID")
         {
             var query = Request.Params;
 
@@ -1695,7 +1695,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
 
                     if (string.IsNullOrEmpty(filters))
-                        filter = $" inner join field hidft on (A.ID = hidft.objectID and hidft.ObjectType = 'Artifact') where ";
+                        filter = $" inner join field hidft on ({idColumn} = hidft.objectID and hidft.ObjectType = 'Artifact') where ";
                     else
                         filter = " and ";
 
@@ -1718,14 +1718,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields);
         }
 
-        internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null)
+        internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, string idColumn = "A.ID")
         {
             var query = Request.Params;
 
             #region Field Filters
 
             int filterscount = 0;
-            var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams) : string.Empty;
+            var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams, idColumn) : string.Empty;
 
             if (int.TryParse(query["filterscount"], out filterscount))
             {
@@ -1813,13 +1813,13 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                     inner join artifact a on(a.id = i_2.objectid and a.artifacttypeid = @id)
                                 where i.intersecttypeid = {int.Parse(RelationshipIntersectTypeID)} and i.objectid in ({idList})";
 
-                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $"A.ID in ({subSql})";
+                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $"{idColumn} in ({subSql})";
                         }
                         else
                         {
                             if (RelationshipIncludeType == "Any")
                             {
-                                filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $@"A.ID in (
+                                filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $@"{idColumn} in (
     select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
     union 
     select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
@@ -1833,7 +1833,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                     if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
                                     {
                                         filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ");
-                                        filters += $@"A.ID in (
+                                        filters += $@"{idColumn} in (
     select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
     union 
     select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
@@ -1876,7 +1876,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         {
                             dbParams.Add("attrTypeAdvFlt", "%" + AttributeSearchValue + "%"); // use bind variable to avoid sql injection
 
-                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + @"A.ID in (
+                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + @"{idColumn} in (
                     select ObjectID
                     from AttributeDetail
                     where ObjectType = 'Artifact' and AttributeTypeID = " + attributeTypeID + @" and FormattedValue like @attrTypeAdvFlt

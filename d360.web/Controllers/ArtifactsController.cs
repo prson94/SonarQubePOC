@@ -64,7 +64,7 @@ namespace d360.web.Controllers
                             ID.DisplayValue,
                             dbo.GenerateObjectUrl('Artifact', IAT.ObjectID, I.SubjectID) as ParentUrl
 				    from	[PredicateIntersect] I
-                            inner join Asset IA on I.Object = 'Artifact' and I.ObjectID = A.ID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
+                            inner join Asset IA on I.Object = A.Object and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
                             left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
 				    ) P";
@@ -74,16 +74,15 @@ namespace d360.web.Controllers
             #region Sql
 
             var sql = $@"
-select	A.ID,
+select	A.ObjectID as ID,
         {parentSqlColumn}
         {columns}
-		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
-from	Artifact A 
-        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
+		dbo.GenerateNgObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url
+from	AssetDetail A 
         {parentSqlJoin} 
         {joins} 
-		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID  
-where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
+		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID  
+where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and RP.AssetID is null";
 
             #endregion
 
@@ -204,16 +203,15 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
             #region Sql
 
             var sql = $@"
-select	A.ID,
+select	A.ObjectID as ID,
         {parentSqlColumn}
         {columns}
-		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
-from	Artifact A 
-        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
+		dbo.GenerateNgObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url
+from	AssetDetail A 
         {parentSqlJoin}
         {joins} 
-		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
-where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
+		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID 
+where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and RP.AssetID is null";
 
             #endregion
 
@@ -660,30 +658,29 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
             var d = new Dictionary<string, object>();
             d.Add("p", parentID);
 
-            var parent = Company.GetById<Artifact>(parentID, i => i.ArtifactType);
+            var parent = Company.Filter<Asset>(a => a.Object == "Artifact" && a.ObjectID == parentID);
             if (parent == null) throw new Exception("Parent Not found");
 
             var sql = @"
-select	A.ID,
+select	O.ObjectID as ID,
         P.ID as ParentID,
         P.DisplayValue as Parent,
-        dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
+        dbo.GenerateObjectUrl('Artifact', P.TypeID, P.ObjectID) as ParentUrl,
         {0}
-        dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
-from	Artifact A 
-        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
+        dbo.GenerateObjectUrl('Artifact', O.TypeID, O.ObjectID) as Url
+from	AssetDetail O
         {1} 
-        inner join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = 'Artifact' and PI.SubjectID = @p and PI.ObjectID = A.ID and PI.PredicateType = 3 
-        inner join Artifact P on P.ID = PI.SubjectID 
+        inner join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = O.Object and PI.SubjectID = @p and PI.ObjectID = O.ObjectID and PI.PredicateType = 3 
+        inner join AssetDetail P on P.Object = PI.Subject and P.ObjectID = PI.SubjectID 
 		left join AssetWithoutReadPermission RP on RP.ResourceID = " + Company.CurrentResourceID + @" and RP.AssetID = O.ID 
-where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
+where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1 and RP.AssetID is null";
             var model = processDynamicResults(
                 sql, Request,
                 "ArtifactType", childArtifactTypeID,
                 true,
                 sortDataField, sortOrder, pagenum, pagesize,
-                (parent.ArtifactType.ParentID.HasValue ? new string[] { "P.DisplayValue" } : new string[] { }),
-                filter, extraParams: d, applyHiddenFilters: true, includeIdColumn: false);
+                new string[] { "P.DisplayValue" },
+                filter, extraParams: d, applyHiddenFilters: true, includeIdColumn: false, idColumn: "O.ObjectID");
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -714,7 +711,7 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
                             ID.DisplayValue,
                             dbo.GenerateObjectUrl('Artifact', IAT.ObjectID, I.SubjectID) as ParentUrl
 				    from	[PredicateIntersect] I
-                            inner join Asset IA on I.Object = 'Artifact' and I.ObjectID = A.ID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
+                            inner join Asset IA on I.Object = A.Object and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
                             left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
 				    ) P";
@@ -724,24 +721,23 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
                 var djToken = "{1}";
 
                 var sql = $@"
-select	A.ID,
+select	A.ObjectID as ID,
         A.DisplayValue,
         {parentSqlColumn}
         {dcToken}
-        dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url            
-from	Artifact A 
+        dbo.GenerateObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url            
+from	AssetDetail A 
         {djToken} 
-        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
         {parentSqlJoin} 
-        left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
-where    A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
+        left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID 
+where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and RP.AssetID is null";
                 var model = processDynamicResults(
                     sql, Request, 
                     "ArtifactType", id, 
                     true, 
                     sortDataField, sortOrder, pagenum, pagesize,
                     (parentIntersectType != null ? new string[] { "P.DisplayValue" } : new string[] {  }), 
-                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true);
+                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true, idColumn: "A.ObjectID");
                 return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
             }
             catch (Exception ex)
@@ -786,25 +782,25 @@ where    A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
         public JsonNetResult GetTypes()
         {
             var models = Company.Query<ArtifactType>(@"
-select	    FAT.ID,
+select	    T.ID,
 		    IT.SubjectID as ParentID,
-		    FAT.Name,
-			FAT.AutoDisplayDescription,
-			FAT.CanOwnFusion,
-			FAT.DisplayFormat,
-		    T.CreatedBy,
-			T.CreatedOn,
+		    T.Name,
+			T.AutoDisplayDescription,
+			T.CanOwnFusion,
+			T.DisplayFormat,
+		    AT.CreatedBy,
+			AT.CreatedOn,
 			T.UpdatedBy,
 		    T.UpdatedOn,
-            T.ID as AssetTypeID		
-from	    ArtifactType FAT
-		    inner join AssetType T on T.Object = 'ArtifactType' and T.ObjectID = FAT.ID
+            AT.ID as AssetTypeID		
+from	    ArtifactType T
+			left join AssetType AT on AT.Object = 'ArtifactType' and AT.ObjectID = T.ID
 		    outer apply (
 					    select	IT.SubjectID
 					    from	IntersectType IT 
-							    inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = FAT.ID and P.ID = IT.PredicateID and P.Type = 3
+							    inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = T.ID and P.ID = IT.PredicateID and P.Type = 3
 					    ) IT
-order by    FAT.Name").AsQueryable();
+order by    T.Name").AsQueryable();
 
             return new JsonNetResult
             {

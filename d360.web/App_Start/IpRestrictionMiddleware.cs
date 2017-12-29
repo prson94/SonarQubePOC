@@ -94,7 +94,7 @@ from	Company C
 
             if (dict.ContainsKey(host))
             {
-                if (!host.Contains("-d3s")) // If d3s url, automatically allow the user as they are a Data3Sixty employee.
+                if (!host.Contains("-d3s") && !host.Contains("-igx")) // If d3s url, automatically allow the user as they are a Data3Sixty employee.
                 {
                     var ranges = dict[host];
                     if (ranges.Count > 0)

@@ -186,7 +186,7 @@ from	Artifact A
 where   A.ArtifactTypeID = @id and RP.AssetID is null 
 for json path";
 
-            var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();
+            var jsonResults = Company.Query<string>(querySql, new { id }).ToList();
 
             var json = string.Join("", jsonResults);
             var arr = JArray.Parse(json);

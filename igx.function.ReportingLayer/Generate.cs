@@ -179,8 +179,8 @@ namespace igx.function.ReportingLayer
         #endregion
 
         const string functionName = "ReportingLayer_Generate";
-        const string timerSettings = "0 */10 * * * *";
-        //const string timerSettings = "*/5 * * * * *";
+        //const string timerSettings = "0 */10 * * * *";
+        const string timerSettings = "*/5 * * * * *";
 
         [FunctionName(functionName)]
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TraceWriter log) //   
@@ -293,9 +293,31 @@ where   A.ArtifactTypeID = {o.ID}";
                             viewNames.Add(objectName);
 
                             selectSql = $@"
+with h as (
+	select	T.ID,
+			T.TaxonomyTypeID,
+			null as ParentID,
+			D.DisplayValue as TextPath,
+			1 as [Level]
+	from	Taxonomy T
+			inner join dbo.GetAssetDisplayValue() D on D.Object = '{objectType}' and D.ObjectID = T.ID
+			left join PredicateIntersect I on I.Object = '{objectType}' and I.ObjectID = T.ID and I.PredicateType = 4
+	where	T.TaxonomyTypeID = {o.ID} and I.IntersectID is null
+	union all
+	select	T.ID,
+			T.TaxonomyTypeID,
+			P.ID as ParentID,
+			P.TextPath + '/' + D.DisplayValue as TextPath,
+			P.[Level] + 1 as [Level]
+	from	Taxonomy T
+			inner join dbo.GetAssetDisplayValue() D on D.Object = '{objectType}' and D.ObjectID = T.ID
+			inner join PredicateIntersect I on I.Object = '{objectType}' and I.ObjectID = T.ID and I.PredicateType = 4
+			inner join h as P on I.Subject = '{objectType}' and I.SubjectID = P.ID
+	where	T.TaxonomyTypeID = {o.ID}
+)
+
 select  A.ID, 
         A.ParentID, 
-        A.DisplayValue, 
         A.TextPath, 
         A.[Level], 
         L.Name as LevelName, 
@@ -303,12 +325,10 @@ select  A.ID,
         {columns} 
         dbo.GenerateObjectUrl('{objectType}', A.TaxonomyTypeID, A.ID) as Url, 
         cast(S.Value * 100 as int) as CurrentScore
-from    Taxonomy A 
+from    h as A  
         {joins} 
-        inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
-        left join metrics.Score S on S.Object = 'Taxonomy' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
-    left join TaxonomyTypeLevel L on L.TaxonomyTypeID = A.TaxonomyTypeID and L.[Level] = A.[Level]
-where   A.TaxonomyTypeID = {o.ID}";
+        left join metrics.Score S on S.Object = '{objectType}' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
+        left join TaxonomyTypeLevel L on L.TaxonomyTypeID = A.TaxonomyTypeID and L.[Level] = A.[Level]";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -353,17 +373,44 @@ where   A.TaxonomyTypeID = {o.ID}";
                             viewNames.Add(objectName);
 
                             selectSql = $@"
+with h as (
+	select	T.ID,
+			T.PolicyTypeID,
+			null as ParentID,
+			D.DisplayValue,
+			D.DisplayValue as TextPath,
+			1 as [Level]
+	from	Policy T
+			inner join dbo.GetAssetDisplayValue() D on D.Object = '{objectType}' and D.ObjectID = T.ID
+			left join PredicateIntersect I on I.Object = '{objectType}' and I.ObjectID = T.ID and I.PredicateType = 4
+	where	T.PolicyTypeID = {o.ID} and I.IntersectID is null
+	union all
+	select	T.ID,
+			T.PolicyTypeID,
+			P.ID as ParentID,
+			D.DisplayValue,
+			P.TextPath + '/' + D.DisplayValue as TextPath,
+			P.[Level] + 1 as [Level]
+	from	Policy T
+			inner join dbo.GetAssetDisplayValue() D on D.Object = '{objectType}' and D.ObjectID = T.ID
+			inner join PredicateIntersect I on I.Object = '{objectType}' and I.ObjectID = T.ID and I.PredicateType = 4
+			inner join h as P on I.Subject = '{objectType}' and I.SubjectID = P.ID
+	where	T.PolicyTypeID = {o.ID}
+)
+
 select  A.ID, 
-        A.DisplayValue, 
+        A.ParentID, 
         A.TextPath, 
-        A.Description, 
+        A.[Level], 
+        L.Name as LevelName, 
+        L.Description as LevelDescription,
         {columns} 
         dbo.GenerateObjectUrl('{objectType}', A.PolicyTypeID, A.ID) as Url, 
-        cast(S.Value * 100 as int) as CurrentScore 
-from    Policy A 
-	    left join metrics.Score S on S.Object = 'Policy' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
+        cast(S.Value * 100 as int) as CurrentScore
+from    h as A  
         {joins} 
-where   A.PolicyTypeID = {o.ID}";
+        left join metrics.Score S on S.Object = '{objectType}' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
+        left join PolicyTypeLevel L on L.PolicyTypeID = A.PolicyTypeID and L.[Level] = A.[Level]";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -396,7 +443,6 @@ select  A.ID,
         a.UpdatedOn,
         CONVERT(VARCHAR(10), a.CreatedOn, 112) as CreatedOnKey,
         CONVERT(VARCHAR(10), a.UpdatedOn, 112) as UpdatedOnKey,
-        TX.Name as TaxonomyTypeName,
         S.Value as CurrentScore,
         cast(S.Value * 100 as int) as CurrentScorePct
 from    Artifact A  
@@ -531,14 +577,14 @@ from	FusionQueryAttribute O
                         selectSql = @"
 select 	O.ID, 
 	    O.ArtifactTypeID, 
-	    O.Name, 
-	    O.TextPath, 
+	    D.DisplayValue, 
 	    F.FieldTypeID, 
         FT.Name as FieldName, 
         FT.FriendlyName as FieldFriendlyName, 
 	    F.FormattedValue as FieldValue 
 from	Artifact O 
-	    inner join Field F on F.ObjectType = 'Artifact' and F.ObjectID = O.ID
+        inner join dbo.GetAssetDisplayValue() D on D.Object = 'Artifact' and D.ObjectID = O.ID
+        inner join Field F on F.ObjectType = 'Artifact' and F.ObjectID = O.ID
 	    inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -556,20 +602,43 @@ from	Artifact O
                         viewNames.Add(objectName);
 
                         selectSql = @"
+with h as (
+	select	T.ID,
+			T.TaxonomyTypeID,
+			null as ParentID,
+			D.DisplayValue as TextPath,
+			1 as [Level]
+	from	Taxonomy T
+			inner join dbo.GetAssetDisplayValue() D on D.Object = 'Taxonomy' and D.ObjectID = T.ID
+			left join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ID and I.PredicateType = 4
+	where	I.IntersectID is null
+	union all
+	select	T.ID,
+			T.TaxonomyTypeID,
+			P.ID as ParentID,
+			P.TextPath + '/' + D.DisplayValue as TextPath,
+			P.[Level] + 1 as [Level]
+	from	Taxonomy T
+			inner join dbo.GetAssetDisplayValue() D on D.Object = 'Taxonomy' and D.ObjectID = T.ID
+			inner join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ID and I.PredicateType = 4
+			inner join h as P on I.Subject = 'Taxonomy' and I.SubjectID = P.ID
+)
+
 SELECT  T.[ID] as [Taxonomy ID],
         T.[ParentID],
         T.[TaxonomyTypeID] as [Taxonomy Type id],
         T.DisplayValue,
-        T.[TextPath],
+        h.[TextPath],
         T.[Level] as [Taxonomy Level],
         T.[UpdatedOn],
         T.[UpdatedBy], 
         CONVERT(VARCHAR(10), t.UpdatedOn, 112) as UpdatedOnKey,
         TY.Name as [Taxonomy Type Name],
-        TL.Name as [Level Name]
-FROM [dbo].[Taxonomy] T
-inner join TaxonomyType Ty on TY.ID = t.TaxonomyTypeID
-inner join TaxonomyTypeLevel TL on TL.[TaxonomyTypeID] = TY.ID and TL.[Level] = T.[Level]";
+        coalesce(TL.Name, 'Level ' + cast(h.[Level] as varchar)) as [Level Name]
+FROM    Taxonomy T
+        inner join h on h.ID = T.ID
+        inner join TaxonomyType Ty on TY.ID = t.TaxonomyTypeID
+        left join TaxonomyTypeLevel TL on TL.[TaxonomyTypeID] = TY.ID and TL.[Level] = h.[Level]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -623,8 +692,7 @@ select		T.Name as ReferenceItemType,
 			I.UpdatedBy,
 			I.UpdatedOn
 from		ReferenceItem I
-			inner join ReferenceItemType T on T.ID = I.ReferenceItemTypeID and I.Visible = 1
-order by	T.Name";
+			inner join ReferenceItemType T on T.ID = I.ReferenceItemTypeID and I.Visible = 1";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -648,9 +716,7 @@ select		I.ReferenceItemTypeID,
 			F.FormattedValue
 from		Field F
 			inner join FieldType T on T.ID = F.FieldTypeID
-			inner join ReferenceItem I on F.ObjectType = 'ReferenceItem' and I.ID = F.ObjectID and I.Visible = 1
-order by	I.ReferenceItemTypeID,
-			I.ID";
+			inner join ReferenceItem I on F.ObjectType = 'ReferenceItem' and I.ID = F.ObjectID and I.Visible = 1";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -691,10 +757,38 @@ from	ResponsibilityTypeRelation R
                         viewNames.Add(objectName);
 
                         selectSql = @"
+with p as (
+	select	T.ID,
+			T.PolicyTypeID,
+			T.UpdatedOn,
+			T.UpdatedBy,
+			null as ParentID,
+			D.DisplayValue,
+			D.DisplayValue as TextPath,
+			1 as [Level]
+	from	Policy T
+			inner join dbo.GetAssetDisplayValue() D on D.Object = 'Policy' and D.ObjectID = T.ID
+			left join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ID and I.PredicateType = 4
+	where	I.IntersectID is null
+	union all
+	select	T.ID,
+			T.PolicyTypeID,
+			T.UpdatedOn,
+			T.UpdatedBy,
+			p.ID as ParentID,
+			D.DisplayValue,
+			p.TextPath + '.' + D.DisplayValue as TextPath,
+			p.[Level] + 1 as [Level]
+	from	Policy T
+			inner join dbo.GetAssetDisplayValue() D on D.Object = 'Policy' and D.ObjectID = T.ID
+			inner join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ID and I.PredicateType = 4
+			inner join p on I.Subject = 'Policy' and I.SubjectID = p.ID
+)
+
 SELECT  p.[ID] as [PolicyID],
         p.[ParentID],
-        p.[DisplayValue,
-        p.[TextPath] as [Policy TextPath],
+        D.DisplayValue,
+		p.TextPath,
         p.[UpdatedOn],
         p.[UpdatedBy],
         p.[PolicyTypeID],
@@ -702,7 +796,8 @@ SELECT  p.[ID] as [PolicyID],
         pt.Name as [Policy Type],
         ptl.Name as [Policy Level Name],
         CONVERT(VARCHAR(10), p.UpdatedOn, 112) as UpdatedOnKey
-FROM    [dbo].[Policy] p
+FROM    p
+        inner join dbo.GetAssetDisplayValue() D on D.Object = 'Policy' and D.ObjectID = p.ID
         inner Join PolicyType pt on pt.ID = p.[PolicyTypeID]
         inner Join PolicyTypeLevel ptl on ptl.PolicyTypeID = pt.ID and ptl.[Level] = p.[level]";
 
@@ -767,33 +862,7 @@ FROM    ResponsibilityDetails";
                         objectName = $"{SCHEMA}.[Relationship_All]";
                         viewNames.Add(objectName);
 
-                        selectSql = @"
-SELECT 
-I.[ID] as [IntersectID]
-    ,I.[IntersectTypeID]
-	,I.[Subject] as [SourceObject]
-	,I.[SubjectID] as [SourceObjectID]
-	,I.[Object] as [TargetObject]
-	,I.[ObjectID] as [TargetObjectID]
-    ,I.[Subject]
-    ,I.[SubjectID]
-    ,I.[SubjectName]
-    ,I.[SubjectUrl]
-    ,I.[SubjectType]
-    ,I.[SubjectTypeID]
-    ,I.[SubjectTypeName]
-    ,I.[Object]
-    ,I.[ObjectID]
-    ,I.[ObjectName]
-    ,I.[ObjectUrl]
-    ,I.[ObjectType]
-    ,I.[ObjectTypeID]
-    ,I.[ObjectTypeName]
-    ,I.[PredicateID]
-    ,I.[PredicateName]
-	,P.Inverse as PredicateInverse
-FROM [dbo].[IntersectDetail] I
-	inner join [Predicate] P on P.ID = I.[PredicateID]";
+                        selectSql = @"SELECT  ID as IntersectID, * FROM IntersectDetail";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -811,22 +880,22 @@ FROM [dbo].[IntersectDetail] I
 
                         selectSql = @"
 select 	O.ID, 
-	O.IntersectTypeID, 
-	O.Subject, 
-	O.SubjectID, 
-	O.SubjectTypeName, 
-	O.SubjectName, 
-	O.Object, 
-	O.ObjectID, 
-	O.ObjectTypeName, 
-	O.ObjectName, 
-	F.FieldTypeID, 
-    FT.Name as FieldName, 
-    FT.FriendlyName as FieldFriendlyName, 
-	F.FormattedValue as FieldValue 
+	    O.IntersectTypeID, 
+	    O.Subject, 
+	    O.SubjectID, 
+	    O.SubjectTypeName, 
+	    O.SubjectName, 
+	    O.Object, 
+	    O.ObjectID, 
+	    O.ObjectTypeName, 
+	    O.ObjectName, 
+	    F.FieldTypeID, 
+        FT.Name as FieldName, 
+        FT.FriendlyName as FieldFriendlyName, 
+	    F.FormattedValue as FieldValue 
 from	IntersectDetail O 
-	inner join Field F on F.ObjectType = 'Intersect' and F.ObjectID = O.ID
-	inner join FieldType FT on FT.ID = F.FieldTypeID";
+	    inner join Field F on F.ObjectType = 'Intersect' and F.ObjectID = O.ID
+	    inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -844,15 +913,11 @@ from	IntersectDetail O
 
                         selectSql = @"
 select	R.ID,
-	    R.Name,
+	    D.DisplayValue as Name,
 	    R.RuleTypeID,
         RT.Name as RuleType,
         R.RuleDimensionID,
-	    D.Name as RuleDimensionName,
-	    R.Description,
-	    R.Purpose,
-	    R.Measurement,
-	    R.Resolution,
+	    RD.Name as RuleDimensionName,
 	    R.Threshold,
 	    R.Status,
 	    R.CreatedOn,
@@ -860,8 +925,9 @@ select	R.ID,
 	    R.UpdatedOn,
 	    R.UpdatedBy
 from	[Rule] R
-	    inner join RuleType RT on RT.ID = R.RuleTypeID 
-        left join RuleDimension D on D.ID = R.RuleDimensionID";
+        inner join dbo.GetAssetDisplayValue() D on D.Object = 'Rule' and D.ObjectID = R.ID 
+        inner join RuleType RT on RT.ID = R.RuleTypeID 
+        left join RuleDimension RD on RD.ID = R.RuleDimensionID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -879,13 +945,14 @@ from	[Rule] R
 
                         selectSql = @"
 select 	O.ID as RuleID, 
-	    O.Name as RuleName, 
+	    D.DisplayValue as RuleName, 
 	    F.FieldTypeID, 
         FT.Name as FieldName, 
         FT.FriendlyName as FieldFriendlyName, 
 	    F.FormattedValue as FieldValue 
 from	[Rule] O 
-	    inner join Field F on F.ObjectType = 'Rule' and F.ObjectID = O.ID
+	    inner join dbo.GetAssetDisplayValue() D on D.Object = 'Rule' and D.ObjectID = O.ID 
+        inner join Field F on F.ObjectType = 'Rule' and F.ObjectID = O.ID
 	    inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -906,7 +973,7 @@ from	[Rule] O
 select	R.RuleTypeID,
 		RT.Name as RuleType,
 		I.RuleID,
-		R.Name as [Rule],
+		D.DisplayValue as [Rule],
 		I.ID as RuleImplementationID,
 		coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)) as RuleImplementation,
 		I.SourceID,
@@ -919,11 +986,12 @@ select	R.RuleTypeID,
 from	RuleImplementation I
 		left join RuleResultQualifierType Q on Q.RuleImplementationID = I.ID
 		inner join [Rule] R on R.ID = I.RuleID
+        inner join dbo.GetAssetDisplayValue() D on D.Object = 'Rule' and D.ObjectID = R.ID 
 		inner join RuleType RT on RT.ID = R.RuleTypeID 
 group by R.RuleTypeID,
 		RT.Name,
 		I.RuleID,
-		R.Name,
+		D.DisplayValue,
 		I.ID,
 		coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)),
 		I.SourceID,
@@ -1061,26 +1129,20 @@ from	workflow.ItemStep S
                         selectSql = @"
 select	R.ID as IntersectID,
 		S.ID as SourceID,
-		S.Name as SourceName,
-        S.TextPath as SourceTextPath,
+		SD.DisplayValue as SourceName,
 		ST.Name as SourceType,
-		S.[Level] as SourceLevel,
-		SL.Name as SourceLevelName,
-		dbo.GenerateObjectUrl('Taxonomy', S.TaxonomyTypeID, S.ID) as SourceURL,
+		dbo.GenerateObjectUrl('Taxonomy', S.TaxonomyTypeID, S.ID) as SourceUrl,
 		T.ID as TargetID,
-		T.Name as TargetName,
-        T.TextPath as TargetTextPath,
+		TD.DisplayValue as TargetName,
 		TT.Name as TargetType,
-		T.[Level] as TargetLevel,
-		TL.Name as TargetLevelName,
-		dbo.GenerateObjectUrl('Taxonomy', T.TaxonomyTypeID, T.ID) as TargetUrl,
+		dbo.GenerateObjectUrl('Taxonomy', T.TaxonomyTypeID, T.ID) as TargetUrl 
 from	[Intersect] R
 		inner join Taxonomy S on R.Subject = 'Taxonomy' and S.ID = R.SubjectID
-		inner join Taxonomy T on R.Object = 'Taxonomy' and T.ID = R.ObjectID
-		inner join TaxonomyType ST on ST.ID = S.TaxonomyTypeID
-        left join TaxonomyTypeLevel SL on SL.TaxonomyTypeID = S.TaxonomyTypeID and S.[Level] = SL.[Level]
-		inner join TaxonomyType TT on TT.ID = T.TaxonomyTypeID
-		left join TaxonomyTypeLevel TL on TL.TaxonomyTypeID = T.TaxonomyTypeID and T.[Level] = TL.[Level]";
+        inner join dbo.GetAssetDisplayValue() SD on SD.Object = R.Subject and SD.ObjectID = R.SubjectID 
+        inner join TaxonomyType ST on ST.ID = S.TaxonomyTypeID 
+        inner join Taxonomy T on R.Object = 'Taxonomy' and T.ID = R.ObjectID 
+        inner join dbo.GetAssetDisplayValue() TD on TD.Object = R.Object and TD.ObjectID = R.ObjectID 
+        inner join TaxonomyType TT on TT.ID = T.TaxonomyTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

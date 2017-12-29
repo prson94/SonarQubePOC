@@ -30,9 +30,15 @@ namespace d360.web.Controllers
             ViewData.Add("SingleSignOn", IsSingleSignOn());
 
             var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
-            if (res != null) {
+            if (res != null)
+            {
                 ViewData.Add("ResourceName", res.FullName);
                 ViewData.Add("ResourceEmail", res.Email);
+            }
+            else
+            {
+                ViewData.Add("ResourceName", "");
+                ViewData.Add("ResourceEmail", "");
             }
             return View("App");
         }

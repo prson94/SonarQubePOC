@@ -49,7 +49,7 @@ namespace igx.function.DataQuality
 							    'Artifact' as Object,
 							    O.ID as ObjectID
 					    from	Artifact O
-							    inner join ArtifactType T on T.ID = O.ArtifactTypeID and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ArtifactType' and T.ID = QT.ResolutionObjectID and O.TextPath = Q.Value
+							    inner join ArtifactType T on T.ID = O.ArtifactTypeID and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ArtifactType' and T.ID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
 					    ) R_A
 		    outer apply (
 					    select	top 1
@@ -63,7 +63,7 @@ namespace igx.function.DataQuality
 							    'Taxonomy' as Object,
 							    O.ID as ObjectID
 					    from	Taxonomy O
-							    inner join TaxonomyType T on T.ID = O.TaxonomyTypeID and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'TaxonomyType' and T.ID = QT.ResolutionObjectID and O.TextPath = Q.Value
+							    inner join TaxonomyType T on T.ID = O.TaxonomyTypeID and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'TaxonomyType' and T.ID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
 					    ) R_T");
 
                         #endregion

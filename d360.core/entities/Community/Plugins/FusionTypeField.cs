@@ -21,6 +21,9 @@ namespace d360.core.entities.Plugins
         public string Type { get; set; }
 
         [DataMember]
+        public string Category { get; set; }
+
+        [DataMember]
         public int SortOrder { get; set; }
 
         [DataMember]

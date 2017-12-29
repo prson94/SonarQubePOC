@@ -13,6 +13,7 @@
   </ItemGroup>
   <ItemGroup>    
     <PackageReference Include="Dapper" Version="1.50.2" />    
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.5.0" />    
     <PackageReference Include="EnterpriseLibrary.TransientFaultHandling" Version="6.0.1304" />    
     <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data" Version="6.0.1304.1" />    
     <PackageReference Include="EntityFramework" Version="6.1.3" />    

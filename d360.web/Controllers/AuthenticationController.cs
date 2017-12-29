@@ -310,8 +310,12 @@ namespace d360.web.Controllers
                                 Status = "Active",
                                 Username = userName
                             };
-                            Community.Add<Resource>(resource);
-                            Community.Add<CompanyResource>(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                            Community.Add(resource);
+                            Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                            if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
+                            {
+                                Company.Add(new GlobalReportingResource { DateLastLoggedIn = resource.DateLastLoggedIn, Email = resource.Email, FirstName = resource.FirstName, IsAdministrator = false, LastName = resource.LastName, ResourceID = resource.ID, Status = resource.Status });
+                            }
 
                             Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
                             //Trace.TraceInformation("AssertionConsumerService => Finished creating resource account for Username: {0}.", userName);
@@ -324,7 +328,11 @@ namespace d360.web.Controllers
                         {
                             if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
                             {
-                                Community.Add<CompanyResource>(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
+                                {
+                                    Company.Add(new GlobalReportingResource { DateLastLoggedIn = resource.DateLastLoggedIn, Email = resource.Email, FirstName = resource.FirstName, IsAdministrator = false, LastName = resource.LastName, ResourceID = resource.ID, Status = resource.Status });
+                                }                                
                             }
                             else
                             {

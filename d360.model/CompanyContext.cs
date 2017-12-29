@@ -190,20 +190,6 @@ namespace d360.model
 
         public DbSet<LookupType> LookupTypes { get; set; }
 
-        public DbSet<Map> Maps { get; set; }
-
-        public DbSet<MapGroup> MapGroups { get; set; }
-
-        public DbSet<MapGroupItem> MapGroupItems { get; set; }
-
-        public DbSet<MapType> MapTypes { get; set; }
-
-        public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
-
-        public DbSet<MapTypeTemplate> MapTypeTemplates { get; set; }
-
-        public DbSet<MapTypeTemplateItem> MapTypeTemplateItems { get; set; }
-
         public DbSet<Nym> Nyms { get; set; }
 
         public DbSet<NymRelation> NymRelations { get; set; }
@@ -280,8 +266,38 @@ namespace d360.model
 
         #endregion
 
+        #region Legacy Lineage
+
+        public DbSet<Map> Maps { get; set; }
+
+        public DbSet<MapGroup> MapGroups { get; set; }
+
+        public DbSet<MapGroupItem> MapGroupItems { get; set; }
+
+        public DbSet<MapType> MapTypes { get; set; }
+
+        public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
+
+        public DbSet<MapTypeTemplate> MapTypeTemplates { get; set; }
+
+        public DbSet<MapTypeTemplateItem> MapTypeTemplateItems { get; set; }
+
+        public DbSet<MapItem> MapItems { get; set; }
+
+        public DbSet<MapRule> MapRules { get; set; }
+
+        public DbSet<MapRuleItem> MapRuleItems { get; set; }
+
+        public DbSet<MapRuleItemMapItem> MapRuleItemMapItems { get; set; }
+
+        public DbSet<MapSequence> MapSequences { get; set; }
+
+        public DbSet<MapSequenceContext> MapSequenceContexts { get; set; }
+
+        #endregion
+
         #region Repository Methods
-        
+
 
         public void AddOrUpdateFields(List<Field> items)
         {
