@@ -4,8 +4,6 @@ import { WorkflowService } from '../../../../services/workflow.service';
 
 import * as _ from 'lodash';
 
-declare var CompanySettings;
-
 @Component({
     selector: 'd3s-workflow-template-tool',
     providers: [WorkflowService],
@@ -30,7 +28,6 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
 
     private defaultFields = [
         { value: '[OBJECT_NAME]', label: 'Object Name' },
-        { value: '[OBJECT_TAXONOMY]', label: 'Object Subject Area' },
         { value: '[SCORE]', label: 'Object Score' },
         { value: '[WORKFLOW_INITIATOR]', label: 'Workflow Initiator Name' },
         { value: '[ACTION_DETAILS]', label: 'Action Details' },
@@ -42,12 +39,6 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     }
 
     ngOnInit() {
-        if (CompanySettings != null && CompanySettings.ArtifactType_TaxonomyTypeID != null) {
-            let field = this.defaultFields.find(d => d.value == '[OBJECT_TAXONOMY]');
-            if (field != null)
-                field.label = 'Object ' + CompanySettings.ArtifactType_TaxonomyTypeID;
-        }
-
         this.fields = _.cloneDeep(this.defaultFields);
     }
 
