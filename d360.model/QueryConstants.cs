@@ -513,7 +513,7 @@ select		top 100 percent
             dbo.GenerateObjectUrl('Taxonomy', C.TaxonomyTypeID, C.ID) as Url
 from		Taxonomy C
 			inner join h on h.ID = C.ParentID
-order by	C.Name
+order by	Name
 )
 select	0 as ID, 
 		null as ParentID,
