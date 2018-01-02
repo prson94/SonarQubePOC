@@ -94,6 +94,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.step.settings = {};
         this.originalStep = _.cloneDeep(this.step);
 
+
         if (this.step.activityType == WorkflowActivityType.EmailNotification) {
             this.responsibilityService.getResponsibilityTypesByObject(this.objectType, this.objectId)
                 .then(r => {
