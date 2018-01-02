@@ -2448,6 +2448,7 @@ order by    rnk, [Name]";
 
             public string SortColumn { get; set; }
             public int? SortOrder { get; set; }
+            public int? Width { get; set; }
 
             public string Filter { get; set; }
 
@@ -2571,13 +2572,13 @@ order by    rnk, [Name]";
                         //Create the column/field to display the visible column cell.
                         var fc = new ComplexColumnModel
                         {
-                            DisplayColumn = (ft.Type == "Boolean") ? 
+                            DisplayColumn = (ft.Type == "Boolean") ?
 $@"case 
     when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then lower({tbtPrefix}.AllowAllLabel) 
     when {tbPrefix}.Value is not null then lower({tbPrefix}.FormattedValue)
     when {tbtPrefix}.DefaultValue is not null then lower({tbtPrefix}.DefaultFormattedValue) 
     else '' 
-end" : 
+end" :
 $@"case 
     when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then {tbtPrefix}.AllowAllLabel 
     when {tbPrefix}.Value is not null then {tbPrefix}.FormattedValue 
@@ -2587,7 +2588,8 @@ end",
                             text = i.OverrideDisplayName ?? ft.FriendlyName,
                             datafield = $"{dataField}",
                             SortColumn = ft.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"{tbPrefix}.FormattedValue") : string.Empty,
-                            OutputColumn = true
+                            OutputColumn = true,
+                            Width = i.Width
                         };
                         setColumnTypeInfo(ft, i, fc);
 
@@ -2673,7 +2675,8 @@ end",
                                 text = i.OverrideDisplayName ?? i.FieldTypeName.Replace("Related Item~", ""),
                                 datafield = $"{dataField}",
                                 SortColumn = i.SortOrder > 0 ? $"coalesce({tbDetailPrefix}.Name, {tbFAPrefix}.TextPath)" : string.Empty,
-                                OutputColumn = true
+                                OutputColumn = true,
+                                Width = i.Width
                             };
                             setColumnTypeInfo(ft, i, fc);
 
@@ -2717,7 +2720,8 @@ end",
                             SortColumn = i.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"A{pos}.{i.FieldTypeName}") : string.Empty,
                             datafield = $"{dataField}",
                             text = i.OverrideDisplayName ?? i.FieldTypeName,
-                            OutputColumn = true
+                            OutputColumn = true,
+                            Width = i.Width
                         };
                         setColumnTypeInfo(ft, i, oc);
                         columnModels.Add(oc);
@@ -2753,7 +2757,8 @@ end",
                                     objectfield = $"{dataField}_Object",
                                     objectidfield = $"{dataField}_ObjectID",
                                     SortColumn = objectSortColumn,
-                                    urlfield = $"{dataField}_Url"
+                                    urlfield = $"{dataField}_Url",
+                                    Width = i.Width
                                 };
 
                                 setColumnTypeInfo(ft, i, ac);
@@ -2777,6 +2782,7 @@ end",
                                     datafield = $"{dataField}",
                                     OutputColumn = true,
                                     SortColumn = objectSortColumn,
+                                    Width = i.Width,
                                     contextfield = $"{dataField}_Context",
                                     objectfield = $"{dataField}_Object",
                                     objectidfield = $"{dataField}_ObjectID",
@@ -2808,6 +2814,7 @@ end",
                                     objectfield = $"{dataField}_Object",
                                     objectidfield = $"{dataField}_ObjectID",
                                     SortColumn = objectSortColumn,
+                                    Width = i.Width,
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, pc);
@@ -2837,6 +2844,7 @@ end",
                                         objectfield = $"{dataField}_Object",
                                         objectidfield = $"{dataField}_ObjectID",
                                         SortColumn = objectSortColumn,
+                                        Width = i.Width,
                                         urlfield = $"{dataField}_Url"
                                     };
 
@@ -2857,7 +2865,8 @@ end",
                                         text = objectFriendlyName,
                                         datafield = $"{dataField}",
                                         SortColumn = objectSortColumn,
-                                        OutputColumn = true
+                                        OutputColumn = true,
+                                        Width = i.Width
                                     };
                                     setColumnTypeInfo(ft, i, rec2);
                                     columnModels.Add(rec2);
@@ -2875,6 +2884,7 @@ end",
                                     text = objectFriendlyName,
                                     datafield = $"{dataField}",
                                     OutputColumn = true,
+                                    Width = i.Width,
                                     contextfield = $"{dataField}_Context",
                                     objectfield = $"{dataField}_Object",
                                     objectidfield = $"{dataField}_ObjectID",
@@ -2902,6 +2912,7 @@ end",
                                     text = objectFriendlyName,
                                     datafield = $"{dataField}",
                                     OutputColumn = true,
+                                    Width = i.Width,
                                     contextfield = $"{dataField}_Context",
                                     objectfield = $"{dataField}_Object",
                                     objectidfield = $"{dataField}_ObjectID",
@@ -2931,6 +2942,7 @@ end",
                                         text = objectFriendlyName,
                                         datafield = $"{dataField}",
                                         OutputColumn = true,
+                                        Width = i.Width,
                                         contextfield = $"{dataField}_Context",
                                         objectfield = $"{dataField}_Object",
                                         objectidfield = $"{dataField}_ObjectID",
@@ -2957,7 +2969,8 @@ end",
                                         text = objectFriendlyName,
                                         datafield = $"{dataField}",
                                         SortColumn = objectSortColumn,
-                                        OutputColumn = true
+                                        OutputColumn = true,
+                                        Width = i.Width
                                     };
                                     setColumnTypeInfo(ft, i, dc);
                                     columnModels.Add(dc);
@@ -3342,7 +3355,9 @@ left join AssetWithoutReadPermission RP{i} on RP{i}.ResourceID = {Company.Curren
                                 objectfield = c.objectfield,
                                 objectidfield = c.objectidfield,
                                 urlfield = c.urlfield,
-                                description = c.description
+                                description = c.description,
+                                columnWidth = c.Width
+                                
                             };
                             if (!string.IsNullOrEmpty(c.format)) gc.cellsformat = c.format;
                             columns.Add(gc);

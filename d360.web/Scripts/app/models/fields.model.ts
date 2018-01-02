@@ -146,6 +146,7 @@ export class FieldTypeItemDisplayFieldEditorModel {
     Filter: string;
     OverrideDisplayName: string;
     DisplayOrder: number;
+    Width: number;
 }
 
 export class FieldTypeRelationItemEditorModel {

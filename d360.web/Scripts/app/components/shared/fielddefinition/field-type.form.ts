@@ -263,6 +263,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                 d.FilterValue = item.Filter;
                                 d.OverrideDisplayName = item.OverrideDisplayName;
                                 d.SortOrder = item.SortOrder;
+                                d.Width = item.Width;
 
                                 if (d.DisplayOrder != null)
                                     this.changeDisplayOrder(item, parent); 
@@ -603,6 +604,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         this.isLoading = true;
+        //console.log('save', this.model);
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {

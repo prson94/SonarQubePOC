@@ -387,6 +387,7 @@ namespace d360.web.Models
             filterable = true;
             columngroup = null;
             columntype = COLUMN_TYPE_STRING;
+            columnWidth = null;
             filtertype = FILTER_TYPE_STRING;
             filteritems = new List<string>();
         }

@@ -302,6 +302,7 @@
                                                 <th>Name</th>
                                                 <th>Display Name Override</th>
                                                 <th>Show?</th>
+                                                <th>Column Width (px)</th>
                                                 <th>Column Order</th>
                                                 <th>Sort Order</th>
                                                 <th>Filter</th>
@@ -315,6 +316,9 @@
                                                 </td>
                                                 <td style="width: 10%">
                                                     <input [ngModelOptions]="{standalone: true}" type="checkbox" [ngModel]="d.Show" (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);" />
+                                                </td>
+                                                <td style="width: 10%">
+                                                    <input [ngModelOptions]="{standalone: true}" type="number" [(ngModel)]="d.Width" />
                                                 </td>
                                                 <td style="width: 10%">
                                                     <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.DisplayOrder" style="width:95%" (ngModelChange)="changeDisplayOrder(d, i)">
@@ -336,7 +340,7 @@
                                 </td>
                             </tr>
                             <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
-                                <td colspan="5">&nbsp;</td>
+                                <td colspan="7">&nbsp;</td>
                             </tr>
                         </tbody>
                     </table>

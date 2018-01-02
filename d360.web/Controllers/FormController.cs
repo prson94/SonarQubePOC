@@ -3747,7 +3747,8 @@ namespace d360.web.Controllers
                                     SortOrder = f.SortOrder ?? 0,
                                     OverrideDisplayName = f.OverrideDisplayName,
                                     Filter = f.FilterValue,
-                                    Show = f.Show
+                                    Show = f.Show,
+                                    Width = f.Width
                                 });
                             }
                         }
@@ -4347,7 +4348,8 @@ namespace d360.web.Controllers
                                     SortOrder = f.SortOrder ?? 0,
                                     OverrideDisplayName = f.OverrideDisplayName,
                                     Filter = f.FilterValue,
-                                    Show = f.Show
+                                    Show = f.Show,
+                                    Width = f.Width
                                 });
                             }
                         }

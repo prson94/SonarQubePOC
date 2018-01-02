@@ -268,6 +268,7 @@ namespace d360.web.Models
         public int ObjectID { get; set; }
         public string OverrideDisplayName { get; set; }
         public int DisplayOrder { get; set; }
+        public int? Width { get; set; }
     }
 
     public class FieldLookupRelationItem
@@ -289,6 +290,7 @@ namespace d360.web.Models
         public int DisplayOrder { get; set; }
         public int SortOrder { get; set; }
         public bool Show { get; set; } = true;
+        public int? Width { get; set; } = null;
     }
 
     public class FieldValidity
