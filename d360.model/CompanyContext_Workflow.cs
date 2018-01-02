@@ -1378,20 +1378,7 @@ namespace d360.model
 
                 result = result.Replace("[OBJECT_NAME]", itemLink);
             }
-
-            //if (result.Contains("[OBJECT_TAXONOMY]") && objectInfo.Object == core.SystemObjects.Artifact)
-            //{
-            //    //get the objects name
-            //    var artifact = Artifacts.Where(i => i.ID == objectInfo.ObjectID).Include(x => x.TaxonomyType).FirstOrDefault();
-                
-            //    var taxonomy = "(unknown)";
-
-            //    if (artifact != null)
-            //        taxonomy = artifact.TaxonomyType.Name;
-
-            //    result = result.Replace("[OBJECT_TAXONOMY]", taxonomy);
-            //}
-
+            
             if (result.Contains("[ACTION_DETAILS]"))
             {
                 //get the details of the issue and add them in
