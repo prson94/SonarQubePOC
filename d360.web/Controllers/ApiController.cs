@@ -2363,8 +2363,28 @@ order by    rnk, [Name]";
         }
 
         [Route("lineage/objects/{assetTypeId:int}"), HttpGet]
-        public HttpResponseMessage GetLineageObjects(int assetTypeId)
+        public HttpResponseMessage GetLineageObjects(int assetTypeId, int offset = 0 , int rows = 100000, string query = null)
         {
+            query = sanitizeQueryString(query);
+            if (string.IsNullOrWhiteSpace(query))
+                query = null;
+            int count = 0;
+
+            var countSql = @"
+                select 
+                    count(*)
+                from 
+                    asset a
+                inner join assettype t on t.id = a.assettypeid
+				left join objectstyle s on s.objecttype = t.[object] and s.objectid = t.objectid
+                left join FusionAttribute FA on FA.ID = A.ObjectID and A.[Object] = 'FusionAttribute'
+                inner join dbo.GetAssetDisplayValue() d on d.ID = a.ID
+                where  
+                    t.id = @id and (@query is null or coalesce(FA.TextPath, d.DisplayValue) like '%' + @query + '%')";
+
+            if (offset == 0 || query != null)
+                count = Company.Query<int>(countSql, new { id = assetTypeId, query = query }).FirstOrDefault();
+
             var sql = @"select 
                     a.ID as assetId,
                     coalesce(FA.TextPath, d.DisplayValue) as [name],
@@ -2381,11 +2401,17 @@ order by    rnk, [Name]";
                 left join FusionAttribute FA on FA.ID = A.ObjectID and A.[Object] = 'FusionAttribute'
                 inner join dbo.GetAssetDisplayValue() d on d.ID = a.ID
                 where  
-                    t.id = @id";
+                    t.id = @id and (@query is null or coalesce(FA.TextPath, d.DisplayValue) like '%' + @query + '%')
+					order by t.id
+					OFFSET  @offset ROWS FETCH NEXT @rows ROWS ONLY;";
 
-            var results = Company.Query<dynamic>(sql, new { id = assetTypeId }).ToList();
+            var results = Company.Query<dynamic>(sql, new { id = assetTypeId, offset = offset, rows = rows, query = query }).ToList();
 
-            return Request.CreateResponse(HttpStatusCode.OK, results);
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                count = count,
+                results = results
+            });
         }
         #endregion
 

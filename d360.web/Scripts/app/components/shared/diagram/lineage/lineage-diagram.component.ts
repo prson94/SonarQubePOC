@@ -65,6 +65,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private objects = [];
     private selectedObjects;
     private objectsLoading = false;
+    private totalRecords = 0;
+    private gridIsLoading = false;
 
     public diagramMode: DiagramMode = DiagramMode.Diagram;
     DiagramMode = DiagramMode;
@@ -506,24 +508,34 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             });
     }
 
+    private lazyLoad(e: any) {
+        //console.log('lazyLoad', e);
+        this.lineageService.getLineageObjects(+this.selectedAssetTypeId, e.first, e.rows, e.globalFilter)
+            .then(r => {
+                this.objects = r.results;
+                if (e.globalFilter != null || e.first == 0)
+                    this.totalRecords = r.count;
+            });
+    }
+
     private selectObjectType(e: any) {
         this.selectedAssetTypeId = e;
-        this.loadObjects();
-
     }
 
     private loadObjects(): Promise<any> {
         if (_.isNaN(+this.selectedAssetTypeId)) {
             this.objects = [];
             this.selectedObjects = null;
+            this.totalRecords = 0;
             return;
         }
 
         this.objectsLoading = true;
-        return this.lineageService.getLineageObjects(+this.selectedAssetTypeId)
+        return this.lineageService.getLineageObjects(+this.selectedAssetTypeId, 0, 25, null)
             .then(r => {
                 this.selectedObjects = null;
-                this.objects = r;
+                this.objects = r.results;
+                this.totalRecords = r.count;
                 this.objectsLoading = false;
                 //console.log('loadObjects', this.objects);
             });
