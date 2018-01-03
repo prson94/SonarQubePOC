@@ -2848,7 +2848,7 @@ namespace d360.web.Controllers
                       FROM [dbo].[SiteNav] v
 		                    left join artifacttype a on a.id = v.objectID and v.Object = 'ArtifactType'
                             WHERE   v.ParentID = @parentId
-                            ORDER BY v.SortOrder desc";
+                            ORDER BY v.SortOrder";
 
             var items = Company.Query<SiteNav>(sql, new { parentId = id });
             var maxSortOrderVal = items.Max(p => p.SortOrder);

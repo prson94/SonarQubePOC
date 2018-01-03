@@ -313,10 +313,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     this.availableItems = r;
                 })
                 .then(() => this.siteMenuService.getSiteNavFolderItems(this.selection.ID))
-                .then(s => {
+                .then(s => {                    
                     this.folderItems = s;
+                    this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
                     this.isLoading = false;
-                });
+                })
+                .then(() => this.stateService.reloadLeftNavMenu());
         }
     }
 

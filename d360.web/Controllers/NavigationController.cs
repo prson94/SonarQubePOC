@@ -115,7 +115,7 @@ namespace d360.web.Controllers
                     var record = Company.GetById<SiteNav>(d.ID);
                     Company.Delete(record);
                 });
-
+                item.SortOrder = Company.SiteNav.Max(i=> i.SortOrder) + 1;
                 Company.Add(item);
                 Company.SaveChanges();
                 message = "Folder item added successfully.";
