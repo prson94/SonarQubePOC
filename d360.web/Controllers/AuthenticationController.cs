@@ -140,15 +140,46 @@ namespace d360.web.Controllers
                     Telemetry.TrackTrace(new TraceTelemetry { Message = $"Login => relayState: {relayState}", SeverityLevel = SeverityLevel.Information });
                     //Trace.TraceInformation("Login => relayState: {0}", relayState);
 
-                    using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("d360.web.d3s-signing.pfx"))
+                    if (Community.CurrentCompanySsoModel.SignInitialSSORequest)
                     {
-                        var bytes = new byte[stream.Length];
-                        stream.Read(bytes, 0, bytes.Length);
-                        X509Certificate2 x509Certificate = new X509Certificate2(bytes, "D3S");
+                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"Login => signing initial authentication request" });
 
-                        telemetry = null;
+                        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("d360.web.d3s-signing.pfx"))
+                        {
+                            var bytes = new byte[stream.Length];
+                            stream.Read(bytes, 0, bytes.Length);
+                            X509Certificate2 x509Certificate = new X509Certificate2(bytes, "D3S");
 
-                        ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, relayState, x509Certificate != null ? x509Certificate.PrivateKey : null, "http://www.w3.org/2000/09/xmldsig#rsa-sha1");
+                            telemetry = null;
+
+                            ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, relayState, x509Certificate != null ? x509Certificate.PrivateKey : null, "http://www.w3.org/2000/09/xmldsig#rsa-sha1");
+                        }
+                    }
+                    else
+                    {
+                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"Login => not signing initial authentication request" });
+
+                        var hashString = "";
+                        switch (Community.CurrentCompanySsoModel.HashAlgorithmType)
+                        {
+                            case HashAlgorithmType.SHA1:
+                                hashString = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
+                                break;
+                            case HashAlgorithmType.SHA224:
+                                hashString = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha224";
+                                break;
+                            case HashAlgorithmType.SHA256:
+                                hashString = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+                                break;
+                            case HashAlgorithmType.SHA384:
+                                hashString = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
+                                break;
+                            case HashAlgorithmType.SHA512:
+                                hashString = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
+                                break;
+                        }
+                        
+                        ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, relayState, null, hashString);                        
                     }
                     
                     return new EmptyResult();

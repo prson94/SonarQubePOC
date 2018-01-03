@@ -259,7 +259,8 @@ namespace d360.model
                                 cds.DomainSetting.IdpSloEndpoint,
                                 cds.DomainSetting.IdpSsoEndpoint,
                                 cds.DomainSetting.IdpDomainCertificate,
-                                cds.DomainSetting.SpDomainCertificate
+                                cds.DomainSetting.SpDomainCertificate,
+                                cds.DomainSetting.SignInitialSSORequest
                             }
                             ).SingleOrDefault();
                 if (model != null)
@@ -269,6 +270,7 @@ namespace d360.model
                     CurrentCompanySsoModel.IdpSloEndpoint = model.IdpSloEndpoint;
                     CurrentCompanySsoModel.IdpSsoEndpoint = model.IdpSsoEndpoint;
                     CurrentCompanySsoModel.HashAlgorithmType = model.HashAlgorithmType;
+                    CurrentCompanySsoModel.SignInitialSSORequest = model.SignInitialSSORequest;
 
                     if (model.IdpDomainCertificate != null)
                     {

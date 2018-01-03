@@ -38,6 +38,8 @@ namespace d360.core.entities
         public byte[] SpCertificateFile { get; set; }
         public string SpCertificatePassword { get; set; }
         public HashAlgorithmType HashAlgorithmType { get; set; }
+
+        public bool SignInitialSSORequest { get; set; }
     }
 
     /// <summary>

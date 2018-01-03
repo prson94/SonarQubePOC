@@ -21,6 +21,8 @@ namespace d360.core.entities
 
         public HashAlgorithmType HashAlgorithmType { get; set; }
 
+        public bool SignInitialSSORequest { get; set; }
+
         [IgnoreDataMember, ForeignKey("IdpDomainCertificateID")]
         public DomainCertificate IdpDomainCertificate { get; set; }
 
