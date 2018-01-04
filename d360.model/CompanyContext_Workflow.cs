@@ -708,8 +708,10 @@ namespace d360.model
                     var rels = val.Split(',');
 
                     // if it just supports one item just use the first selected.
-                    if(supportsJustOne)
-                        rels = rels.Where((v, idx) => idx != 0).ToArray();
+                    if (supportsJustOne)
+                    {                        
+                        rels = new string[] { rels.First() };
+                    }                        
 
                     foreach (var rel in rels)
                     {
