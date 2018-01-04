@@ -18,6 +18,8 @@ import { ObjectDetail } from '../../models/object-detail.model';
 import { Tag } from '../../models/tag.model';
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-workflow-raise-issue',    
     template: `
@@ -28,7 +30,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                         <header>Take Action</header>                        
                             <div class="row">
                                 <div class="col s12">
-                                    <div class="FieldName">What item would you like to report a problem with?</div>
+                                    <div class="FieldName">{{actionMessage}}</div>
                                     <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectID;selectedObjectType=objectType;" value="current">{{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}</label></div>
                                     <div>
                                         <label style="padding-left:20px"><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption">Other item</label>
@@ -42,7 +44,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                                                 placeholder="Select an item"
                                                 field="TextPath" 
                                                 (onSelect)="selectItem()">     
-                                            <ng-template let-item>
+                                            <ng-template let-item pTemplate="item">
                                                 <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
                                             </ng-template>                  
                                         </p-autoComplete></div>                                        
@@ -78,6 +80,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private selectedOption: string = 'other';
     private issueType: WorkflowIssueType;
     private issueTypes: WorkflowIssueType[] = [];
+    private actionMessage: string = CompanySettings.ActionMessage;
 
     constructor(
         private tagService: TagService,
@@ -111,10 +114,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
         this.clearSidebar();     
     }
-
-    ngOnDestroy() {
     
-    }
     
     private loadDetails(objectId, objectType) {        
         if (objectId == undefined || objectType == undefined) return;
@@ -133,7 +133,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.isLoading = true;
         this.workflowService.getWorkflowIssueTypes()
             .then(result => {
-                this.issueTypes = result;                
+                this.issueTypes = result;
+                if (this.issueTypes != null && this.issueTypes.length == 1) this.issueType = this.issueTypes[0];
                 this.isLoading = false;
             });
     }
