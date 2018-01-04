@@ -233,6 +233,7 @@
     <Compile Include="GraphTests.cs" />
     <Compile Include="IndexerTests.cs" />
     <Compile Include="IgcTests.cs" />
+    <Compile Include="ActiveDirectorySynch.cs" />
     <Compile Include="WorkflowTests.cs" />
     <Compile Include="RunJobsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -261,23 +262,9 @@
     <None Include="job_scheduling_data_2_0.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="mitimco2.cer">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
-    <None Include="StateStreetDetails.pbix">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Telstra.cer">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Thrivent-Prod-2018.cer">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="SQL\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
     <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />

@@ -26,6 +26,11 @@ namespace d360.test.jobs
             return list;
         }
 
+        internal SqlConnection getCommunityConnection()
+        {
+            return new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+        }
+
         internal SqlConnection getCompanyConnection(int companyID)
         {
             var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
