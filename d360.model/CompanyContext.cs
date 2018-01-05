@@ -1850,7 +1850,8 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
         public override int SaveChanges()
         {
             int returnValue = 0;
-            
+            var changedFields = new List<Field>();
+
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added))
             {
                 #region Business logic : ICreatedMetadata
@@ -1970,6 +1971,21 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                             
                             break;
                     }
+                }
+                #endregion
+
+                #region Business logic : Field
+                if (entry.Entity is Field)
+                {
+
+                    var field = (Field)entry.Entity;
+                    var existing = Fields.AsNoTracking().FirstOrDefault<Field>(f => f.FieldTypeID == field.FieldTypeID && f.ObjectID == field.ObjectID && f.ObjectType == field.ObjectType);
+                    if (existing != null)
+                    {
+                        if (existing.Value != field.Value)
+                            changedFields.Add(field);
+                    }
+
                 }
                 #endregion
 
@@ -2491,16 +2507,45 @@ select @err";
             }
             
             // create events for the objects this needs to be done after save changes so we have new objects id's
-            if(IsEventingEnabled) CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities);
+            if(IsEventingEnabled) CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
 
             return returnValue;
         }
 
-        private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities)
+        private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities, List<Field> changedFields)
         {
             //get any objects that implement EventTrackedEntity so we can add messages for them
             var events = new List<EventInfo>();
-            
+            var fieldEvents = new List<EventObjectInfo>();
+
+            //we need to create event objects for field changes. Add them here
+            foreach (var field in changedFields)
+            {
+                var fieldType = FieldTypes.AsNoTracking().FirstOrDefault(f => f.ID == field.FieldTypeID);
+                var eventInfo = fieldEvents.FirstOrDefault(f => f.Object.ToString() == field.ObjectType && f.ObjectID == field.ObjectID);
+                if (eventInfo != null)
+                {
+                    eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
+                }
+                else
+                {
+                    eventInfo = new EventObjectInfo();
+                    eventInfo.Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), field.ObjectType);
+                    eventInfo.ObjectID = field.ObjectID;
+                    eventInfo.ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fieldType.Object);
+                    eventInfo.ObjectTypeID = fieldType.ObjectID;
+                    eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
+                    fieldEvents.Add(eventInfo);
+                }
+
+            }
+
+            foreach (var fieldEvent in fieldEvents)
+            {
+                addQE(events, ChangeType.Update, fieldEvent);
+            }
+
+
             foreach (var modified in modifiedEntities)
             {
                 addQE(events, ChangeType.Update, modified.GetEventObjectInfo());
