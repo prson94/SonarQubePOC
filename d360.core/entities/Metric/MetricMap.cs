@@ -26,7 +26,7 @@ namespace d360.core.entities.Metric
         public DateTime EffectiveStartDate { get; set; }
 
         [DataMember]
-        public DateTime EffectiveEndDate { get; set; }
+        public DateTime? EffectiveEndDate { get; set; }
 
         [IgnoreDataMember, NotMapped]
         public virtual MetricGroup Group { get; set; }

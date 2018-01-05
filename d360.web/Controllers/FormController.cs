@@ -10386,7 +10386,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = DateTime.Now.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
@@ -10410,7 +10410,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveStartDate.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveEndDate.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveEndDate == null ? null : item.EffectiveEndDate.ToString() });
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = item.Description });
 
@@ -10476,7 +10476,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Percentage.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null), Value = map.Weight.ToString() });
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveStartDate.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveEndDate.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveEndDate.ToString() });
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
             list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.Object + '|' + map.ObjectID.ToString() });
@@ -10898,13 +10898,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
+                
+
                 MetricItem m = new MetricItem
                 {
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate")),
-                    EffectiveEndDate = DateTime.Parse(parseTextField(form, "EffectiveEndDate")),
+                    EffectiveEndDate = null
                 };
+
+                if (DateTime.TryParse(parseTextField(form, "EffectiveEndDate"), out var end))
+                    m.EffectiveEndDate = end;
 
 
                 Company.Add(m);
@@ -10940,7 +10945,10 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 m.Name = parseTextField(form, "Name");
                 m.Description = parseTextField(form, "Description");
                 m.EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate"));
-                m.EffectiveEndDate = DateTime.Parse(parseTextField(form, "EffectiveEndDate"));
+                m.EffectiveEndDate = null;
+
+                if (DateTime.TryParse(parseTextField(form, "EffectiveEndDate"), out var end))
+                    m.EffectiveEndDate = end;
 
 
                 Company.Update(m);

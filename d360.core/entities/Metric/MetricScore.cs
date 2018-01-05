@@ -14,7 +14,7 @@ namespace d360.core.entities.Metric
 
         public DateTime EffectiveStartDate { get; set; }
 
-        public DateTime EffectiveEndDate { get; set; }
+        public DateTime? EffectiveEndDate { get; set; }
 
         public decimal Value { get; set; }
 

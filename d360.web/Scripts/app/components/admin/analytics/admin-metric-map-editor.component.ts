@@ -143,7 +143,7 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
                 valid = false;
             if (this.model.Map.Weight == null || this.model.Map.Weight < 0 || this.model.Map.Weight > 1)
                 valid = false;
-            if (this.model.Map.EffectiveEndDate == null || this.model.Map.EffectiveStartDate == null)
+            if (this.model.Map.EffectiveStartDate == null)
                 valid = false;
         }
 
