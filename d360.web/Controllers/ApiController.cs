@@ -7340,6 +7340,14 @@ from	    TaxonomyType FAT
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
+        [HttpGet, Route("referenceItems/field/{fieldId:int}/items.json")]
+        public Task<HttpResponseMessage> GetReferenceItemsByFieldId(int fieldId)
+        {
+            var field = Company.GetById<FieldType>(fieldId);
+            return GetReferenceItems((int)field.LookupObjectID);
+
+        }
+
         [HttpGet, Route("referenceItems/{typeID:int}/items.xls")]
         public async Task<HttpResponseMessage> GetReferenceItemsExcel(int typeID)
         {

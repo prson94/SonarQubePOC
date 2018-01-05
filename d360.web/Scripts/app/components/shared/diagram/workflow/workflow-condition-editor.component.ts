@@ -11,6 +11,8 @@ import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
+import * as go from 'gojs';
+
 @Component({
     selector: 'd3s-workflow-condition-editor',
     providers: [WorkflowService],
@@ -23,6 +25,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     @Input() formFields: any[] = [];
     @Input() condition: any = null;
     @Input() changeType: WorkflowChangeType = null;
+    @Input() diagram: go.Diagram;
     @Output() onSave = new EventEmitter();
     @Output() onClose = new EventEmitter();
 
@@ -117,6 +120,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
                 if (this.formFields.length > 0) {
                     this.formFields.forEach(f => {
+                        if (f['@type'] == 'relationshipType')
+                            return;
                         this.fieldList.push({
                             value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
                             label: 'Form :: ' + f['@label']
@@ -168,7 +173,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.selectedField = e;
         this.selectedIssueObject = null;
 
-       // console.log('selectField: ', e);
+        //console.log('selectField: ', e);
 
         if (this.selectedField.split('|')[0] == 'FieldType') {
 
@@ -208,6 +213,36 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.selectedType = input['@type'].toLowerCase();
 
             this.setOperators(this.selectedType, this.selectedField.split('|')[0]);
+
+
+            if (this.selectedType == 'list' || this.selectedType == 'relationshiptype') {
+                if (this.diagram != null) {
+                    //find the form step and figure out what the reference field is
+                    let node = this.diagram.model.findNodeDataForKey(input['@stepId']);
+                    if (node != null) {
+                        let formField = node.fields.form.field.find(i => i['@id'] == input['@id']);
+                        if (formField != null) {
+                            let fieldId = +formField['@referenceFieldId'] || 0;
+                            //console.log('formField', formField, fieldId);
+                            if (fieldId != null && fieldId > 0) {
+                                this.workflowService.getReferenceItemsForField(fieldId)
+                                    .then(r => {
+                                        this.lookups = [];
+                                        r.forEach(i => {
+                                            this.lookups.push({
+                                                value: i.ID,
+                                                label: i.Code
+                                            });
+                                        });
+                                    });
+                            }
+                        }
+                    }
+                }
+            }
+
+            //console.log(this.selectedType, this.selectedField, input, this.diagram);
+            //this.diagram.model.nodeDataArray.filter(n => n.key == f['@stepId'])[0].fields.form.field.filter(f => f['@id'] == 'list1')[0]['@referenceFieldId']
 
             delete this.condition['@FieldTypeID'];
             delete this.condition['@label'];
@@ -250,6 +285,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         switch (type.toLowerCase()) {
             case 'boolean':
             case 'lookup':
+            case 'list':
             case 'fusionlookup':
             case 'text':
                 this.operators = [

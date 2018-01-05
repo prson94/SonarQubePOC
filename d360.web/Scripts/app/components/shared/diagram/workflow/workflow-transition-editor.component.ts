@@ -20,6 +20,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
 import * as _ from 'lodash';
+import * as go from 'gojs';
 
 @Component({
     selector: 'd3s-workflow-transition-editor',
@@ -31,6 +32,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() transition: LinkModel;
+    @Input() diagram: go.Diagram;
     @Output() transitionChange = new EventEmitter();
 
     private originalTransition: LinkModel;

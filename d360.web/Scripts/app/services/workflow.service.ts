@@ -377,4 +377,11 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getReferenceItemsForField(fieldId: number) {
+        return this.http.get(`api/referenceItems/field/${fieldId}/items.json`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

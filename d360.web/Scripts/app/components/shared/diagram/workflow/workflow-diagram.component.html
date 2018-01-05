@@ -112,7 +112,9 @@
                         </d3s-workflow-step-editor>
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
-                        <d3s-workflow-transition-editor [objectId]="model.Event.ObjectID"
+                        <d3s-workflow-transition-editor 
+                                                        [diagram]="diagram"
+                                                        [objectId]="model.Event.ObjectID"
                                                         [objectType]="model.Event.Object"
                                                         [transition]="selectedData"
                                                         (transitionChange)="changeTransition($event)">
