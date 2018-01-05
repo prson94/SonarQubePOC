@@ -14210,6 +14210,19 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                     value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
                 });
 
+            //remove any selected items that no longer exist in available list
+            if (selectedAllocations != null && selectedAllocations.Count > 0)
+            {
+                int indx = selectedAllocations.Count - 1;
+                while (indx >= 0)
+                {
+                    var tag = $"{selectedAllocations[indx].ObjectType}|{selectedAllocations[indx].ObjectID}";
+                    if (!allocations.Any(x => x.value == tag))
+                        selectedAllocations.RemoveAt(indx);
+                    indx--;
+                }
+            }
+
             return new JsonNetResult
             {
                 Data = new
