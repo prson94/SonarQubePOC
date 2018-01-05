@@ -69,22 +69,14 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.load();
     }
 
-    confirmDelete(e: any) {
-        var msg = {
-            type: 'success',
-            title: 'Success',
-            message: 'Item deleted successfully'
-        };
-
+    confirmDelete(e: any) {        
         if (e == 'error') {
-            msg = {
-                type: 'error',
-                title: 'Error',
-                message: 'An error occurred'
-            }
+            this.messagesService.showError('Error', 'An error occurred');
         }
-
-        this.showMessageForResult(this.messagesService, e);
+        else {
+            this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
+        }
+        
         this.formMode = FormMode.Default;
         this.load();
     }
