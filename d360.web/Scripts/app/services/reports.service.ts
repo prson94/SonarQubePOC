@@ -26,7 +26,7 @@ export class ReportsService extends BaseService {
         if (report.VisibleToRoles != null && report.VisibleToRoles.length > 0) report.VisibleTo = report.VisibleToRoles.join(",");
         else report.VisibleTo = null;
         if (report.ID == undefined || !report.ID) {
-            return this.postDynamic(this.http, 'report', report, file);
+            return this.postDynamic(this.http, 'report', report, file, false);
         }
         return this.putDynamic(this.http, 'report', report, file);
     }
