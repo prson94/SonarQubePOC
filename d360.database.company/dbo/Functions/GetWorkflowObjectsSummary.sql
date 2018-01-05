@@ -34,9 +34,9 @@ return (
 	end from 
 	(
 		select distinct top 5 
-		utility.GetAssetDisplayValue(a.ID) as name, i.object, i.objectid from workflow.item i
-		inner join Asset a on a.object = i.object and a.objectid = i.objectid
-		--join cache.ObjectDetails d on d.object = i.object and d.objectid = i.objectid
+		utility.GetAssetDisplayValue(a.ID) as name, coalesce(a.object,s.object) as object, coalesce(a.objectid,s.objectid) as objectid from workflow.item i
+		left join Issue s on i.object = 'Issue' and s.id = i.objectid
+		inner join Asset a on (i.object = 'Issue' and a.object = s.object and a.objectid = s.objectid) or (i.object != 'Issue' and a.object = i.object and a.objectid = i.objectid)
 		where versionid = @versionId and ((@filteredObjectId is not null and (i.object = @filteredObject and i.objectId = @filteredObjectId)) or (@filteredObjectId is null))
 		order by 1
 	) x 
