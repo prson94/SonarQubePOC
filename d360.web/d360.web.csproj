@@ -1051,7 +1051,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-item-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-map-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-map-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-scoretype-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.ts" />
@@ -1228,8 +1227,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-tile-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-scoretypemetric-checktype-input.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-scoretypemetric-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.component.ts" />
