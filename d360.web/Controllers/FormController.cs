@@ -9529,6 +9529,160 @@ for json path");
             };
         }
 
+        #region MapSequence
+
+        public class MapItemsSequenceEditModel
+        {
+            public List<MapItemSequenceEditModel> Items { get; set; }
+        }
+
+        public class BaseObjectModel
+        {
+            public string Object { get; set; }
+            public int ObjectID { get; set; }
+        }
+
+
+        public class MapItemSequenceEditModel
+        {
+            public MapItemSequenceEditModel()
+            {
+                Contexts = new List<BaseObjectModel>();
+            }
+            public int ID { get; set; }
+            public int MapItemID { get; set; }
+            public string Description { get; set; }
+            public int Sequence { get; set; }
+            public List<BaseObjectModel> Contexts { get; set; }
+            public bool IsDeleting { get; set; } = false;
+        }
+
+        [HttpGet, Route("mapsequence/{type}/{id:int}/mapitems")]
+        public JsonNetResult GetMapItemsForMapSequenceManagement(string type, int id)
+        {
+            var availableItems = Company.Query<dynamic>(
+                QueryConstants.MapItemsForMapSequenceManagement,
+                new
+                {
+                    type = new Dapper.DbString { IsAnsi = true, Value = type },
+                    id
+                }
+            );
+
+            var availableIDs = availableItems.Select(i => (int)i.ID).ToList();
+
+            var referencedItems = Company.Filter<MapSequence>(i =>
+               availableIDs.Contains(i.MapItemID),
+                i => i.MapSequenceContexts,
+                i => i.MapItem
+            )
+            .OrderBy(i => i.Sequence)
+            .Select(i => new
+            {
+                i.ID,
+                i.MapItemID,
+                i.MapItem.TargetIntersectID,
+                i.Sequence,
+                i.Description,
+                Contexts = i.MapSequenceContexts.Select(c => new { c.Object, c.ObjectID }).ToList()
+            });
+
+
+            var contexts = Company.Query<dynamic>(@"select * from
+                                                (
+                                                select a.Name, 'Artifact|' + cast(a.id as varchar(10)) as ID, 'Glossary' as Category, t.name as Type, cast(0 as bit) as Checked from artifact a
+                                                join artifacttype t on t.id = a.artifacttypeid
+                                                union all
+                                                select x.Name, 'Taxonomy|' + cast(x.id as varchar(10)) as ID, 'Model' as Category, t.name as Type, cast(0 as bit) as Checked from taxonomy x
+                                                join taxonomytype t on t.id = x.taxonomytypeid
+                                                ) z
+                                                order by name").ToList();
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    Available = availableItems,
+                    Referenced = referencedItems,
+                    Contexts = contexts
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpPost, Route("mapsequence/{type}/{id:int}/mapitems")]
+        public JsonResult SetMapItemsForMapSequenceManagement(SystemObjects type, int id, MapItemsSequenceEditModel model)
+        {
+            try
+            {
+                if (!Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                model.Items.ForEach(m =>
+                {
+                    MapSequence mapSequence = null;
+                    if (m.ID > 0)
+                    {
+                        mapSequence = Company.GetById<MapSequence>(m.ID, i => i.MapSequenceContexts);
+                    }
+
+                    if (m.IsDeleting)
+                    {
+                        if (mapSequence == null)
+                        {
+                            //return jsonException($"Map Sequence ID {m.ID} not found", HttpStatusCode.Forbidden);
+                            return;
+                        }
+
+                        Company.MapSequences.Remove(mapSequence);
+                        Company.SaveChanges();
+                    }
+                    else
+                    {
+                        if (mapSequence == null)
+                        {
+                            mapSequence = new MapSequence { };
+                        }
+
+
+
+                        mapSequence.Description = m.Description;
+                        mapSequence.MapItemID = m.MapItemID;
+                        mapSequence.Sequence = m.Sequence;
+
+                        if (m.Contexts.Count > 0)
+                        {
+                            m.Contexts.ForEach(c => {
+                                mapSequence.MapSequenceContexts.Add(
+                                    new MapSequenceContext
+                                    {
+                                        Object = c.Object,
+                                        ObjectID = c.ObjectID
+                                    }
+                                );
+                            });
+                        }
+
+                        Company.SaveOrUpdate<MapSequence>(mapSequence);
+                    }
+
+                });
+
+                return jsonSuccess("Source Conditions successfully created.", "0", "add", HttpStatusCode.Created, null);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Load

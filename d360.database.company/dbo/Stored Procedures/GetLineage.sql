@@ -1,5 +1,4 @@
-﻿
-CREATE procedure [dbo].[GetLineage]
+﻿CREATE procedure [dbo].[GetLineage]
 --declare 
 	@type varchar(50),
 	@id int,
@@ -232,7 +231,25 @@ begin
 					cross apply (
 								select	count(1) as C
 								from	MapItem MI 
-										inner join MapSequence MS on MS.MapItemID = MI.ID and MI.TargetIntersectID = TI.ID
+										inner join MapSequence MS on MS.MapItemID = MI.ID 
+								where
+									(@type = TI.[subject] and @id = TI.subjectid and
+										(
+											MI.TargetIntersectID in 
+											(select id from [intersect] i where 
+												(i.[object] = @type and i.objectid = @id) or
+												(i.[subject] = @type and i.subjectid = @id)
+												)
+										)
+									)
+									or
+									(MI.TargetIntersectID in 
+										(select id from [intersect] i where
+												(i.[object] = @type and i.objectid = @id and i.[subject] = ti.[subject] and i.subjectid = ti.subjectid) or
+												(i.[subject] = @type and i.subjectid = @id and i.[object] = ti.[subject] and i.objectid = ti.subjectid)
+										)
+									)
+									
 								) HSR
 
 		--if editor data is being passed
