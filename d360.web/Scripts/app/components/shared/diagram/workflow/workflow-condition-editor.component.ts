@@ -353,7 +353,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     selectIssueObject(e: any) {
-        console.log(e);
+        //console.log(e);
         this.condition['@Object'] = e.Object;
         this.condition['@ObjectID'] = e.ObjectID;
         this.condition['@Value'] = e.TextPath;
@@ -365,5 +365,17 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             .then(r => {
                 this.suggestions = r;
             });
+    }
+
+    changeValue(e: any) {
+        this.condition['@Value'] = e;
+
+        if (this.selectedType == 'lookup' || this.selectedType == 'list') {
+            let lookup = this.lookups.find(l => l.value == e);
+
+            this.condition['@ValueLabel'] = lookup == null ? e : lookup.label;
+        } else {
+            this.condition['@ValueLabel'] = e;
+        }
     }
 }

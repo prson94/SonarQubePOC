@@ -10426,13 +10426,15 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
 
             var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-            var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
+            var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
+                    (
+                    select 
 	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
 	                    {0} + T.[Name] as [Text] 
                     from 
 	                    AssetType T 
-                    order by 
-	                    [Name]", QueryConstants.HighLevelTypeCaseStatement)).ToList();
+                    ) x order by x.Text
+                    ", QueryConstants.HighLevelTypeCaseStatement)).ToList();
 
 
             list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = groupId.ToString() });
@@ -10462,13 +10464,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
 
             var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-            var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
+            var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
+                    (
+                    select 
 	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
 	                    {0} + T.[Name] as [Text] 
                     from 
 	                    AssetType T 
-                    order by 
-	                    [Name]", QueryConstants.HighLevelTypeCaseStatement)).ToList();
+                    ) x order by x.Text", QueryConstants.HighLevelTypeCaseStatement)).ToList();
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = map.ID.ToString() });
             list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = map.GroupID.ToString() });

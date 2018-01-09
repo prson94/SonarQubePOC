@@ -61,8 +61,8 @@ import { MessagesService } from '../../../services/messages.service';
                                 [method]="'delete'"
                                 [prompt]="'Are you sure you want to delete this mapping?'"                                         
                                 (onCancel)="formMode = FormMode.Default"
-                                (onDeleteSuccess)="formMode = FormMode.Default; load();"
-                                (onDeleteFail)="formMode = FormMode.Default">
+                                (onDeleteSuccess)="deleteEvent($event); formMode = FormMode.Default; load();"
+                                (onDeleteFail)="deleteEvent($event); formMode = FormMode.Default">
                             </d3s-delete-form> 
                         </div>
                     </div>    
@@ -117,5 +117,9 @@ export class AdminMetricMapListComponent extends BaseComponent implements OnInit
 
     delete(e: any) {
         this.formMode = FormMode.Deleting;
+    }
+
+    deleteEvent(e: any) {
+        this.showMessageForResult(this.messagesService, e.result);
     }
 };

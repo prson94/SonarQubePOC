@@ -26,7 +26,7 @@
                     Value
                 </div>
                 <div>
-                    <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Value']">
+                    <select style="width:95%;" placeholder="Choose a value" [ngModel]="condition['@Value']" (ngModelChange)="changeValue($event)">
                         <option></option>
                         <option *ngFor="let b of bool" [value]="b.value">{{b.label}}</option>
                     </select>
@@ -38,7 +38,7 @@
                     Days Since
                 </div>
                 <div>
-                    <input type="number" [(ngModel)]="condition['@Value']" style="width: 95%" />
+                    <input type="number" [ngModel]="condition['@Value']" (ngModelChange)="changeValue($event)" style="width: 95%" />
                 </div>
             </div>
 
@@ -47,7 +47,7 @@
                     Value
                 </div>
                 <div>
-                    <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Value']">
+                    <select style="width:95%;" placeholder="Choose a value" [ngModel]="condition['@Value']" (ngModelChange)="changeValue($event)">
                         <option></option>
                         <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
                     </select>
@@ -68,7 +68,7 @@
                     Value
                 </div>
                 <div>
-                    <input type="text" [(ngModel)]="condition['@Value']" style="width: 95%" />
+                    <input type="text" [ngModel]="condition['@Value']" (ngModelChange)="changeValue($event)" style="width: 95%" />
                 </div>
             </div>
         </div>

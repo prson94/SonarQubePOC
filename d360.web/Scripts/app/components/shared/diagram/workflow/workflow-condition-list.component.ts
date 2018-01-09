@@ -18,7 +18,7 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
         </p-column>
         <p-column field="@Value" header="Value">
             <ng-template let-item="rowData" pTemplate type="body">
-                {{(item['@Operator'] == 'C') ? '[any value change]' : item['@Value']}}
+                {{(item['@Operator'] == 'C') ? '[any value change]' : (item['@ValueLabel'] == null ? item['@Value'] : item['@ValueLabel']) }}
             </ng-template>
         </p-column>
         <p-column *ngIf="!readonly">
