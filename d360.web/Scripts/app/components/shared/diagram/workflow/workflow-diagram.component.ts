@@ -424,7 +424,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         m.Nodes = nodes;
         m.Links = links;
 
-
         //console.log('save', m);
 
         this.isLoading = true;
@@ -743,6 +742,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             cond.forEach(c => {
                 delete c['@FieldName'];
                 delete c['_$visited'];
+                delete c['@ValueLabel'];
             });
 
             n.Condition = JSON.stringify({ Conditions: { Condition: cond } });

@@ -242,6 +242,7 @@ order by wi.StartedOn desc";
             var type = Company.WorkflowTypes.Find(id);
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
+
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
             var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
 
@@ -253,11 +254,11 @@ order by wi.StartedOn desc";
 
             links.ForEach(l =>
             {
-                l.ConditionObject = XmlToDynamic(l.Condition);
+                l.ConditionObject = XmlToDynamic(GetConditionLabels(l.Condition));
                 l.SettingsObject = XmlToDynamic(l.Settings);
             });
 
-            @event.ConditionObject = XmlToDynamic(@event.Condition);
+            @event.ConditionObject = XmlToDynamic(GetConditionLabels(@event.Condition));
             @event.SettingsObject = XmlToDynamic(@event.Settings, false);
 
             return new WorkflowDiagramModel
@@ -890,6 +891,7 @@ order by wi.StartedOn desc";
             if (type == null || type.State != core.enums.State.Active)
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
 
+            
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
             var model = GetWorkflowDiagram(id, currentVersion?.Version);
 
@@ -1683,6 +1685,11 @@ order by wi.StartedOn desc";
         }
 
         #region Helper Methods
+
+        private string GetConditionLabels(string conditions)
+        {
+            return Company.Query<string>("select dbo.GetWorkflowConditionLabels(@conditions)", new { conditions }).FirstOrDefault();
+        }
 
         private dynamic XmlToDynamic(string xml, bool omitRootElement = true)
         {

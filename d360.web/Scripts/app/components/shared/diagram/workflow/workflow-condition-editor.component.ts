@@ -320,6 +320,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case 'boolean':
                 return 'B';
             case 'lookup':
+            case 'list':
+            case 'relationshiptype':
                 return 'L';
             //case 'FusionLookup':
             //    return 'FL';

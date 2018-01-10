@@ -595,6 +595,7 @@
     <Build Include="Security\metrics.sql" />
     <Build Include="Security\analytics.sql" />
     <Build Include="dbo\Sequences\FusionAttribute_Seq.sql" />
+    <Build Include="dbo\Functions\GetWorkflowConditionLabels.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
