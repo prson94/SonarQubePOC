@@ -909,6 +909,10 @@ a.ui-menuitem-link {
 }*/
 
 
+/* fixes a 1 pixel gap between menus and icons in IE */
+.ui-menuitem-link.ui-corner-all {
+    padding-bottom: 1px;
+}
 
 /* PanelMenu */
 .ui-panelmenu .ui-panelmenu-header.ui-state-active,

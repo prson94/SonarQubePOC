@@ -898,13 +898,16 @@ a.ui-menuitem-link {
     color:white;
 }*/
 
-
+/* fixes a 1 pixel gap between menus and icons in IE */
+.ui-menuitem-link.ui-corner-all {
+    padding-bottom: 1px;
+}
 
 /* PanelMenu */
 .ui-panelmenu .ui-panelmenu-header.ui-state-active,
 .ui-panelmenu .ui-panelmenu-header.ui-state-active a {
-    border: 1px solid #156090; 
-    background: #186ba0; 
+    border: 1px solid #156090;
+    background: #186ba0;
     color: #FFFFFF;
 }
 
