@@ -29,7 +29,7 @@
                     </div>
                     <div class="col l6 m6 s12">
                         <div class="FieldName">Available Field Tokens</div>
-                        <p-dropdown [options]="model.Tokens" [style]="{'width':'100%'}"></p-dropdown>
+                        <p-dropdown [options]="model.Tokens" (onChange)="selectToken($event)" [style]="{'width':'100%'}"></p-dropdown>
                     </div>
                 </div>
 

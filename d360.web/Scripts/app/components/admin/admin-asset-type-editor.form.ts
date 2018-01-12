@@ -110,4 +110,18 @@ export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges
                     }
                 });
     }
-};
+
+    private selectToken(e: any) {
+        if (e == null)
+            return;
+
+        let value = e.value;
+
+        if (e.value == null || e.value == '' || e.value == 'null')
+            return;
+
+        if (this.model.AssetType.DisplayFormat == null)
+            this.model.AssetType.DisplayFormat = '';
+        this.model.AssetType.DisplayFormat += e.value;
+    }
+}

@@ -114,7 +114,7 @@
                     <input name="lookupDisplayFormat" pInputText type="text" [(ngModel)]="model.FieldType.LookupDisplayFormat" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
-                    <div class="FieldName">&nbsp;</div>
+                    <div class="FieldName" style="display:block">&nbsp;</div>
                     <select [ngModel]="selectedLookupToken" (ngModelChange)="selectDisplayToken($event)" [disabled]="model.LookupTokens?.length < 1" style="width:98%" name="lookupTokens2">
                         <option [value]="null"></option>
                         <option *ngFor="let t of model.LookupTokens" [value]="t.value">{{t.label}}</option>
@@ -125,7 +125,7 @@
                     <input name="lookupEditFormat" pInputText type="text" [(ngModel)]="model.FieldType.LookupEditFormat" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
-                    <div class="FieldName">&nbsp;</div>
+                    <div class="FieldName" style="display:block">&nbsp;</div>
                     <select [ngModel]="selectedFormatToken" (ngModelChange)="selectEditToken($event)" [disabled]="model.LookupTokens?.length < 1" style="width:98%" name="lookupTokens">
                         <option [value]="null"></option>
                         <option *ngFor="let t of model.LookupTokens" [value]="t.value">{{t.label}}</option>
@@ -141,7 +141,7 @@
                     <input name="validationPattern" pInputText type="text" [(ngModel)]="model.FieldType.Pattern" (change)="validatePattern()" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
-                    <div class="FieldName">&nbsp;</div>
+                    <div class="FieldName" style="display:block">&nbsp;</div>
                     <p-dropdown name="validationPattersOpt" [options]="lookups.Patterns" (onChange)="model.FieldType.Pattern = $event.value; validatePattern()" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col s3">
