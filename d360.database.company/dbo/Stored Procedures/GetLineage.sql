@@ -102,49 +102,6 @@ begin
 								R.TargetObjectID = D2.ObjectID
 					where	R.Adding = 1 
 			end;
-
-			-- cte to insert points BEGIN
-/*		with cte as (
-			select	ID,
-					SourceIntersectID,
-					TargetIntersectID,
-					1 as [Level]
-			from	@points P
-			where not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = P.ID)
-			union all
-			select	S.ID,
-					S.SourceIntersectID,
-					S.TargetIntersectID,
-					T.[Level] + 1 as [Level]
-			from	MapItem S
-					inner join cte T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID
-			where	T.[Level] <= 10 and not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID)
-		)
-		insert into @points
-			select ID, SourceIntersectID, TargetIntersectID from cte where ID not in (select ID from @points);
-
-
-		with cteF as (
-			select	ID,
-					SourceIntersectID,
-					TargetIntersectID,
-					1 as [Level]
-			from	@forwardPoints P
-			where not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = P.ID)
-			union all
-			select	S.ID,
-					S.SourceIntersectID,
-					S.TargetIntersectID,
-					T.[Level] + 1 as [Level]
-			from	MapItem S
-					inner join cteF T on T.TargetIntersectID = S.SourceIntersectID and S.ID <> T.ID
-			where	T.[Level] <= 10 and not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID)
-		)
-		insert into @points
-			select ID, SourceIntersectID, TargetIntersectID from cteF where ID not in (select ID from @forwardPoints)*/
-		--end CTE to insert points
-
-		--loop through until there are no more new levels
 		
 		set @currentDepth = 0;
 
@@ -233,6 +190,7 @@ begin
 								from	MapItem MI 
 										inner join MapSequence MS on MS.MapItemID = MI.ID 
 								where
+									MI.ID = O.ID and (
 									(@type = TI.[subject] and @id = TI.subjectid and
 										(
 											MI.TargetIntersectID in 
@@ -248,7 +206,7 @@ begin
 												(i.[object] = @type and i.objectid = @id and i.[subject] = ti.[subject] and i.subjectid = ti.subjectid) or
 												(i.[subject] = @type and i.subjectid = @id and i.[object] = ti.[subject] and i.objectid = ti.subjectid)
 										)
-									)
+									))
 									
 								) HSR
 
