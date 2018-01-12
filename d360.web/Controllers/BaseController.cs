@@ -1163,12 +1163,18 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
                 {
                     var columnName = useFriendlyName ? field.FriendlyName.Replace("[", "").Replace("]", "") : $"Field{field.ID}";
-                    if (field.Type == "Number")
-                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS bigint)";
-                    if (field.Type == "Date")
-                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS date)";
-                    else
-                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
+                    switch (field.Type)
+                    {
+                        case "Number":
+                            sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS bigint)";
+                            break;
+                        case "Date":
+                            sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS date)";
+                            break;
+                        default:
+                            sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
+                            break;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(sortSql))

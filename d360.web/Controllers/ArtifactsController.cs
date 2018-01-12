@@ -43,7 +43,7 @@ namespace d360.web.Controllers
             };
             var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
 
-            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns, true, false, listableOnly, fields);
+            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns, true, false, listableOnly, fields, "A.ObjectID");
 
             var dbArgs = new Dapper.DynamicParameters();
 
@@ -163,7 +163,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and RP.Asse
                         
             var fields = getFieldTypesByObjectType("ArtifactType", artifactTypeId, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
 
-            getDynamicFieldJoinStatements(artifactTypeId, "Artifact", out joins, out columns, true, false, listableOnly, fields);
+            getDynamicFieldJoinStatements(artifactTypeId, "Artifact", out joins, out columns, true, false, listableOnly, fields, "A.ObjectID");
             
             var oldFields = new List<FieldType>(fields);
             //if include fields is specified only include field ids from list

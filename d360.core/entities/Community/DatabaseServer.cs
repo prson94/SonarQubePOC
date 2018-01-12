@@ -12,12 +12,6 @@ namespace d360.core.entities
 
         public string Password { get; set; }
 
-        public string FusionQueue { get; set; }
-
         public string SearchServer { get; set; }
-
-        public string EventTopic { get; set; }
-
-        public bool IsDevelopment { get; set; }
     }
 }

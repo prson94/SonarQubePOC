@@ -103,27 +103,29 @@ from	Comment C
 		left join reporting.Global_Resource PR on PR.ResourceID = P.CreatingResourceID
 where	(select count(*) from comment where parentID = @CommentID) > 0 OR C.DateCreated < (getdate() - (5 / 24.0 / 60.0)) ";
 
-        public static string Resources = @"select	F.ResourceID,
-R.FirstName + ' ' + R.LastName as Name,
-R.Email
+        public static string Resources = @"
+select	F.ResourceID,
+        R.FirstName + ' ' + R.LastName as Name,
+        R.Email
 from	CommentRelation CR
-inner join FollowDetail F on F.ObjectType = CR.ObjectType and F.ObjectID = CR.ObjectID  and CR.CommentID = @CommentID
-inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID and R.Email not like '%?subject=%'
+        inner join FollowDetail F on F.ObjectType = CR.ObjectType and F.ObjectID = CR.ObjectID  and CR.CommentID = @CommentID
+        inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID and R.Email not like '%?subject=%'
 union
 select	coalesce(RG.ResourceID, R.ResponsibleObjectID) as ResourceID,
-RE.FirstName + ' ' + RE.LastName as Name,
-RE.Email
+        RE.FirstName + ' ' + RE.LastName as Name,
+        RE.Email
 from	CommentRelation CR
-inner join ResponsibilityDetail R on R.ObjectType = CR.ObjectType and R.ObjectID = CR.ObjectID and CR.CommentID = @CommentID
-left join ResourceGroup RG on R.ResponsibleObjectType = 'Group' and RG.GroupID = R.ResponsibleObjectID
-inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceID, R.ResponsibleObjectID) and RE.Email not like '%?subject=%'";
+        inner join ResponsibilityDetail R on R.ObjectType = CR.ObjectType and R.ObjectID = CR.ObjectID and CR.CommentID = @CommentID
+        left join ResourceGroup RG on R.ResponsibleObjectType = 'Group' and RG.GroupID = R.ResponsibleObjectID
+        inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceID, R.ResponsibleObjectID) and RE.Email not like '%?subject=%'";
 
         public static string FusionResources = @"
 select	R.ResourceID, 
         RE.FirstName + ' ' + RE.LastName as Name, 
         RE.Email 
-from	ResponsibilityDetails R on R.Object = 'Fusion' and R.ObjectID = @id 
-        inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID and RE.Email not like '%?subject=%'";
+from	ResponsibilityDetails R 
+        inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID and RE.Email not like '%?subject=%' 
+where   R.Object = 'Fusion' and R.ObjectID = @id;";
 
         public static string FusionInfo = @"
 select  F.ID as FusionID, 
@@ -152,19 +154,19 @@ from    Fusion F
         #region Style Cache; SQL Statements
 
         public static string StyleCache = @"
-update	T
-set		T.IconBackColor = S.IconBackColor,
-T.IconForeColor = S.IconForeColor,
-T.IconText = S.IconText
-from	cache.ObjectDetails T
-inner join ObjectStyle S on S.ObjectType = @type and S.ObjectID = @id and T.ObjectType = S.ObjectType and T.ObjectTypeID = S.ObjectID;
+update	T 
+set		T.IconBackColor = S.IconBackColor, 
+        T.IconForeColor = S.IconForeColor, 
+        T.IconText = S.IconText 
+from	cache.ObjectDetails T 
+        inner join ObjectStyle S on S.ObjectType = @type and S.ObjectID = @id and T.ObjectType = S.ObjectType and T.ObjectTypeID = S.ObjectID;
 
-update	T
-set		T.IconBackColor = S.IconBackColor,
-T.IconForeColor = S.IconForeColor,
-T.IconText = S.IconText
-from	cache.ObjectDetails T
-inner join ObjectStyle S on S.ObjectType = @type and S.ObjectID = @id and T.[Object] = S.ObjectType and T.ObjectID = S.ObjectID;";
+update	T 
+set		T.IconBackColor = S.IconBackColor, 
+        T.IconForeColor = S.IconForeColor, 
+        T.IconText = S.IconText 
+from	cache.ObjectDetails T 
+        inner join ObjectStyle S on S.ObjectType = @type and S.ObjectID = @id and T.[Object] = S.ObjectType and T.ObjectID = S.ObjectID;";
 
         #endregion
     }

@@ -14,7 +14,9 @@ namespace d360.core.enums
         [Name("UAT")]
         UAT = 2,
         [Name("Production")]
-        Production = 3
+        Production = 3,
+        [Name("LEGACYDEV")]
+        LegacyDevelopment = 4
     }
 
     public class EnvironmentLevelInfo

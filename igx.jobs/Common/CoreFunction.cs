@@ -8,9 +8,54 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using System.Data.SqlClient;
+using Dapper;
+using d360.core;
+using System.IO;
 
 namespace igx.jobs
 {
+    public static class ConnectionExtensions
+    {
+        public static void ProcessTask(this SqlConnection company, TextWriter log, string functionName, int companyID, string sql, int timeout = 1400)
+        {
+            bool processStatus = false;
+            var processTask = company.ExecuteAsync(sql, commandTimeout: 1400);
+            processTask.ContinueWith(t =>
+            {
+                string exceptionData = "";
+                if (t.Exception != null)
+                {
+                    exceptionData = t.Exception.GetFullExceptionData();
+                    if (t.Exception.InnerExceptions != null)
+                    {
+                        foreach (var ex in t.Exception.InnerExceptions)
+                        {
+                            exceptionData += ex.GetFullExceptionData();
+                        }
+                    }
+                    CoreFunction.AITrackException(functionName, t.Exception, companyID);
+                }
+
+                if (t.IsCompleted)
+                {
+                    if (t.IsFaulted)
+                    {
+                        CoreFunction.AITrackException(functionName, t.Exception, companyID);
+                    }
+                }
+
+                processStatus = false;
+            });
+
+            while (processStatus && (processTask.Exception == null))
+            {
+                log.WriteLine("Processing scores for company {0}...", companyID);
+                System.Threading.Thread.Sleep(30000);
+            }
+        }
+    }
+
     public static class CoreFunction
     {
         #region AppInsights

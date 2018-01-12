@@ -29,7 +29,7 @@ namespace igx.jobs
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
                         company.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                        company.Execute("sp_updatestats", commandTimeout: 1400);
+                        company.ProcessTask(log, functionName, c.CompanyID, "sp_updatestats", 1400);
                         company.Close();
                         company.Dispose();
                     }

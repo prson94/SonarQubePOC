@@ -8,14 +8,16 @@ namespace igx.jobs
         static void Main()
         {
             var config = new JobHostConfiguration {
-                DashboardConnectionString = CoreFunction.GetConfigValueByKey("MainStorageAccount"),
-                StorageConnectionString = CoreFunction.GetConfigValueByKey("MainStorageAccount"),
+                DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
+                StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
                 NameResolver = new QueueNameResolver()
             };
+
             if (config.IsDevelopment)
             {
                 config.UseDevelopmentSettings();
             }
+
             config.UseApplicationInsights();
             config.UseCore();
             config.UseServiceBus();
