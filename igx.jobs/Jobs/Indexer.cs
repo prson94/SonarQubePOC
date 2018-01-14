@@ -35,6 +35,7 @@ namespace igx.jobs
             {
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
+                
 
                 companies.ForEach(c =>
                 {
@@ -49,15 +50,22 @@ namespace igx.jobs
 
                         bool useNewSchema = false;
 
-                        if (c.CompanyID.In(4, 5, 65, 72, 74))
+                        //if (c.CompanyID.In(4, 5, 65, 72, 74))
                         {
                             useNewSchema = true;
                         }
 
                         source.ClearIndex(c.CompanyID);
 
-                        models = LoadArtifacts(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadArtifacts(company, c.CompanyID, source, useNewSchema);
+                            source.AddToIndex(models);
+                        }
+                        catch(Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
                         models = LoadAttributes(company, c.CompanyID, source, useNewSchema);
                         source.AddToIndex(models);
@@ -80,8 +88,15 @@ namespace igx.jobs
                         models = LoadRules(company, c.CompanyID, source, useNewSchema);
                         source.AddToIndex(models);
 
-                        models = LoadFusionAttributes(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadFusionAttributes(company, c.CompanyID, source, useNewSchema);
+                            source.AddToIndex(models);
+                        }                     
+                        catch (Exception e)
+                        {
+                            CoreFunction.AITrackException(functionName, e, c.CompanyID);
+                        }
 
                         models = LoadArtifactSynonyms(company, c.CompanyID, source, useNewSchema);
                         source.AddToIndex(models);
