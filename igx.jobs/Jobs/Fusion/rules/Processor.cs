@@ -416,7 +416,12 @@ namespace igx.jobs.fusion.rules
         {
             var sql = "select max(DateStarted) from fusion.RuleLog";
 
-            return (await company.QueryAsync<DateTime>(sql)).FirstOrDefault();            
+            var res =  (await company.QueryAsync<DateTime?>(sql)).FirstOrDefault();
+
+            if (res.HasValue)
+                return res.Value;
+
+            return DateTime.MinValue;
         }
 
         /// <summary>
