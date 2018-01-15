@@ -864,7 +864,8 @@ from	MapItem MI
 		inner join IntersectDetail R on R.ID = MI.SourceIntersectID
 where	(
 			@focal + cast(@focalID as varchar) <> @obj + cast(@objID as varchar) and 
-			MI.TargetIntersectID in 
+			
+			(MI.TargetIntersectID in 
 			( 
 				select	ID 
 				from	[Intersect] 
@@ -872,11 +873,20 @@ where	(
 						(Subject = @focal and SubjectID = @focalID and Object = @obj and ObjectID = @objID) OR 
 						(Subject = @obj and SubjectID = @objID and Object = @focal and ObjectID = @focalID) 
 						) 
-			)
+			) or
+						(MI.SourceIntersectID in 
+			( 
+				select	ID 
+				from	[Intersect] 
+				where	( 
+						(Subject = @focal and SubjectID = @focalID and Object = @obj and ObjectID = @objID) OR 
+						(Subject = @obj and SubjectID = @objID and Object = @focal and ObjectID = @focalID) 
+						) 
+			)))
 		) OR
 		(
 			@focal + cast(@focalID as varchar) = @obj + cast(@objID as varchar) and 
-			MI.TargetIntersectID in 
+			(MI.TargetIntersectID in 
 			( 
 				select	ID 
 				from	[Intersect] 
@@ -884,6 +894,17 @@ where	(
 						(Subject = @focal and SubjectID = @focalID) OR 
 						(Object = @focal and ObjectID = @focalID) 
 						) 
+			)
+			or
+			MI.SourceIntersectID in 
+			( 
+				select	ID 
+				from	[Intersect] 
+				where	( 
+						(Subject = @focal and SubjectID = @focalID) OR 
+						(Object = @focal and ObjectID = @focalID) 
+						) 
+			)
 			)
 		)
 order by MS.Sequence";

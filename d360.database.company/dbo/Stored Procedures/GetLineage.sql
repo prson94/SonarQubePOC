@@ -102,7 +102,7 @@ begin
 								R.TargetObjectID = D2.ObjectID
 					where	R.Adding = 1 
 			end;
-		
+
 		set @currentDepth = 0;
 
 		while( exists(select 1 from @points ps where ps.depth = @currentDepth) and (@currentDepth < 13))
@@ -143,7 +143,7 @@ begin
 			TargetSubjectTypeName nvarchar(500), TargetSubjectName nvarchar(500), TargetSubjectShortName nvarchar(500), TargetSubject varchar(50), TargetSubjectID int, TargetSubjectIconBackColor varchar(7), TargetSubjectIconForeColor varchar(7), 
 			TargetObjectTypeName nvarchar(500), TargetObjectName nvarchar(500), TargetObjectShortName nvarchar(500), TargetObject varchar(50), TargetObjectID int, TargetObjectIconBackColor varchar(7), TargetObjectIconForeColor varchar(7),
 
-			HasSourceRules bit
+			SourceHasSourceRules bit, TargetHasSourceRules bit
 		)
 
 		insert into @items
@@ -179,18 +179,46 @@ begin
 					TI.ObjectIconBackColor,
 					TI.ObjectIconForeColor,
 					case 
-						when HSR.C > 0 then cast(1 as bit)
+						when SHSR.C > 0 then cast(1 as bit)
 						else cast(0 as bit)
-					end as HasSourceRules
+					end as SourceHasSourceRules,
+										case 
+						when THSR.C > 0 then cast(1 as bit)
+						else cast(0 as bit)
+					end as TargetHasSourceRules
 			from	@points O
 					inner join IntersectDetail SI on SI.ID = O.SourceIntersectID
 					inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID
 					cross apply (
 								select	count(1) as C
 								from	MapItem MI 
-										inner join MapSequence MS on MS.MapItemID = MI.ID 
-								where
-									MI.ID = O.ID and (
+										inner join MapSequence MS on MS.MapItemID = MI.ID
+								where MI.ID = O.ID and (
+									(@type = SI.[subject] and @id = SI.subjectid and
+										(
+											MI.SourceIntersectID in 
+											(select id from [intersect] i where 
+												(i.[object] = @type and i.objectid = @id) or
+												(i.[subject] = @type and i.subjectid = @id)
+												)
+										)
+									)
+									or
+									(MI.SourceIntersectID in 
+										(select id from [intersect] i where
+												(i.[object] = @type and i.objectid = @id and i.[subject] = si.[subject] and i.subjectid = si.subjectid) or
+												(i.[subject] = @type and i.subjectid = @id and i.[object] = si.[subject] and i.objectid = si.subjectid)
+										)
+									)
+
+									)
+									
+								) SHSR
+								cross apply (
+								select	count(1) as C
+								from	MapItem MI 
+										inner join MapSequence MS on MS.MapItemID = MI.ID
+								where MI.ID = O.ID and (
 									(@type = TI.[subject] and @id = TI.subjectid and
 										(
 											MI.TargetIntersectID in 
@@ -206,9 +234,12 @@ begin
 												(i.[object] = @type and i.objectid = @id and i.[subject] = ti.[subject] and i.subjectid = ti.subjectid) or
 												(i.[subject] = @type and i.subjectid = @id and i.[object] = ti.[subject] and i.objectid = ti.subjectid)
 										)
-									))
+									)
+
+									)
 									
-								) HSR
+								) THSR
+
 
 		--if editor data is being passed
 		if EXISTS (SELECT 1 FROM @rows)
@@ -256,7 +287,8 @@ begin
 				R.TargetObjectID,
 				TB.IconBackColor as TargetObjectIconBackColor,
 				TB.IconForeColor as TargetObjectIconForeColor,
-				0 as HasSourceRules
+				0 as SourceHasSourceRules,
+				0 as TargetHasSourceRules
 			from @rows R 
 			inner join cache.ObjectDetails SS on SS.[Object] = R.SourceSubject AND SS.ObjectID = R.SourceSubjectID
 			inner join cache.ObjectDetails SO on SO.[Object] = R.SourceObject AND SO.ObjectID = R.SourceObjectID
@@ -315,8 +347,14 @@ begin
 								else 'Normal'
 							end as template,
 							null as other,
-							0 as HasSourceRules--I.HasSourceRules
+							0 as hasSourceRules
 					from	@items I;
+
+					--perform this update separately to avoid duplicate in the above query
+					update n
+					set n.HasSourceRules = 1
+					from @nodes n
+					inner join @items i on n.[key] = (i.SourceSubject + '.' + cast(i.SourceSubjectID as varchar)) and i.SourceHasSourceRules = 1;
 
 			--insert into @nodes
 			merge	@nodes as T
@@ -336,12 +374,12 @@ begin
 								else 'Normal'
 							end as template,
 							null as other,
-							I.HasSourceRules
+							I.TargetHasSourceRules as HasSourceRules
 					from	@items I
 					where	I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) not in (select [key] from @nodes)
 					) S
 			on		(T.[key] = S.[key])
-			when	matched then
+			when matched then
 			update	set
 					T.HasSourceRules = S.HasSourceRules
 			when	not matched then
@@ -475,6 +513,12 @@ begin
 						0 as HasSourceRules
 				from	@items
 
+				update n
+				set n.HasSourceRules = 1
+				from @nodes n
+				inner join @items i on n.[key] = (i.SourceSubject + '.' + cast(i.SourceSubjectID as varchar)) and i.SourceHasSourceRules = 1;
+
+
 			merge	@nodes as T
 			using	(
 					select	distinct
@@ -492,7 +536,7 @@ begin
 								else 'SupportNormal'
 							end as template,
 							null as other,
-							HasSourceRules
+							TargetHasSourceRules as HasSourceRules
 					from	@items
 					where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
 					) S
@@ -521,7 +565,7 @@ begin
 								else 'Normal'
 							end as template,
 							null as other,
-							HasSourceRules
+							TargetHasSourceRules as HasSourceRules
 					from	@items
 					where	TargetSubject + '.' + cast(TargetSubjectID as varchar) not in (select [key] from @nodes)
 					) S
@@ -645,82 +689,7 @@ begin
 	
 		if @type = 'FusionAttribute'
 			begin
-			/*	insert into #tFusionPoints
-					select	I.ID,
-							NULL,
-							I.SourceFusionAttributeID,
-							I.TargetFusionAttributeID
-					from	MapRuleItem I
-							inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
-							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
-					where	I.SourceFusionAttributeID = @id or I.TargetFusionAttributeID = @id;
-
-				--insert adding items if editor data is present
-				if EXISTS (SELECT 1 FROM @technicalRows)
-				begin
-					insert into #tFusionPoints
-					select
-						ID,
-						MapItemID,
-						SourceFusionAttributeID,
-						TargetFusionAttributeID
-					from @technicalRows
-					where Adding = 1;
-				end;
-
-				-- forward items
-				with cte as (
-					select	ID,
-							SourceFusionAttributeID,
-							TargetFusionAttributeID,
-							1 as [Level]
-					from	#tFusionPoints S
-					where not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID)
-					union all
-					select	S.ID,
-							S.SourceFusionAttributeID,
-							S.TargetFusionAttributeID,
-							T.[Level] + 1 as [Level]
-					from	MapRuleItem S
-							inner join cte T on T.TargetFusionAttributeID = S.SourceFusionAttributeID and S.ID <> T.ID
-					where	T.[Level] <= 13 and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID)
-				)
-				insert into #tFusionPoints
-					select distinct	ID, 
-							NULL, 
-							SourceFusionAttributeID, 
-							TargetFusionAttributeID
-					from	cte 
-					where	ID not in (select ID from #tFusionPoints);
-
-				-- backward items
-				with cte as (
-					select		I.ID,                                           
-                                I.SourceFusionAttributeID,
-                                I.TargetFusionAttributeID,
-                                1 as [Level]
-                    from   MapRuleItem I
-                                inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
-                                inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
-                    where  I.SourceFusionAttributeID = @id or I.TargetFusionAttributeID = @id 
-						   and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = I.ID)
-					union all
-					select	S.ID,
-							S.SourceFusionAttributeID,
-							S.TargetFusionAttributeID,
-							T.[Level] + 1 as [Level]
-					from	MapRuleItem S
-							inner join cte T on T.SourceFusionAttributeID = S.TargetFusionAttributeID and S.ID <> T.ID
-					where	T.[Level] <= 13 and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID)
-				)
-				insert into #tFusionPoints
-					select distinct	ID, 
-							NULL, 
-							SourceFusionAttributeID, 
-							TargetFusionAttributeID
-					from	cte 
-					where	ID not in (select ID from #tFusionPoints);
-					*/
+			
 
 				-- iterative approach no cte
 				-- insert the starting points
@@ -1023,70 +992,7 @@ begin
 				end;
 
 
-				-- cte version
-				/*
-				with cteFusionForward as (
-					select	ID, 
-							MapItemID, 
-							SourceFusionAttributeID, 
-							TargetFusionAttributeID,
-							1 as [Level]
-					from	#tFusionPoints S
-					where not exists (select 1 from @technicalRows R where R.Deleting = 1 and R.ID = S.ID)
-					union all
-					select	S.ID,
-							T.MapItemID,
-							S.SourceFusionAttributeID,
-							S.TargetFusionAttributeID,
-							T.[Level] + 1 as [Level]
-					from	MapRuleItem S
-							inner join cteFusionForward T on T.SourceFusionAttributeID = S.TargetFusionAttributeID and S.ID <> T.ID
-							inner join FusionAttribute SFA on SFA.ID = S.SourceFusionAttributeID and SFA.Deleted = 0
-							inner join FusionAttribute TFA on TFA.ID = S.TargetFusionAttributeID and TFA.Deleted = 0
-					where	T.[Level] <= 25 and not exists (select 1 from @technicalRows R where R.Deleting = 1 AND R.ID = S.ID)
-				)
-
-				insert into #tFusionPoints
-					select distinct	ID,
-							NULL,
-							SourceFusionAttributeID,
-							TargetFusionAttributeID
-					from	cteFusionForward
-					where	ID not in (select ID from #tFusionPoints)
-					OPTION (MAXRECURSION 200) ;
-
-				with cteFusionBackward as (
-					select	ID, 
-							MapItemID, 
-							SourceFusionAttributeID, 
-							TargetFusionAttributeID,
-							1 as [Level]
-					from	#tFusionPoints S
-					where not exists (select 1 from @technicalRows R where R.Deleting = 1 AND R.ID = S.ID)
-					union all
-					select	S.ID,
-							T.MapItemID,
-							S.SourceFusionAttributeID,
-							S.TargetFusionAttributeID,
-							T.[Level] + 1 as [Level]
-					from	MapRuleItem S
-							inner join cteFusionBackward T on T.TargetFusionAttributeID = S.SourceFusionAttributeID and S.ID <> T.ID
-							inner join FusionAttribute SFA on SFA.ID = S.SourceFusionAttributeID and SFA.Deleted = 0
-							inner join FusionAttribute TFA on TFA.ID = S.TargetFusionAttributeID and TFA.Deleted = 0
-					where	T.[Level] <= 25 and not exists (select 1 from @technicalRows R where R.Deleting = 1 AND R.ID = S.ID)
-				)
-
-				insert into #tFusionPoints
-					select distinct	ID,
-							NULL,
-							SourceFusionAttributeID,
-							TargetFusionAttributeID
-					from	cteFusionBackward
-					where	ID not in (select ID from #tFusionPoints)
-					OPTION (MAXRECURSION 200) ;
-
-				*/
-				-- end cte version
+	
 
 				-- begin iterative version
 				--loop through until there are no more new levels
