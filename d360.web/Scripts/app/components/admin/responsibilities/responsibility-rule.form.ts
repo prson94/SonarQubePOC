@@ -131,7 +131,14 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                                             this.model.ObjectString = r.Object + '|' + r.ObjectID;
                                             this.isLoading = false;
                                         });
-                                });
+                                }).then(d => {
+                                    //load the then islookup and field values
+                                    if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0) {
+                                        for (let item of this.model.StructuredDefinition.Then.Conditions) {
+                                            this.loadThenValuesForFieldType(item,false);
+                                        }
+                                    }
+                                })
                         });             
         } else {
             this.actionName = 'Add';
@@ -258,9 +265,9 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return Promise.all(promises).then(() => { });
     }
 
-    private loadThenValuesForFieldType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
+    private loadThenValuesForFieldType(item: any, clearValue?: boolean): Promise<void> {
         let selectedFieldType = this.thenFieldTypes.find(f => f.value == item.FieldTypeID.toString());
-        item.Value = "";
+        if (clearValue !== undefined && clearValue === true) item.Value = "";
         if (selectedFieldType) {
             item.FieldTypeName = selectedFieldType.label;
             if (selectedFieldType.isLookup) {

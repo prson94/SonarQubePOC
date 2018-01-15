@@ -61,18 +61,10 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
 
         this.responsibilityTypeService.getRelationRulesByResponsibilityType(this.id)
             .then(data => {
-                this.rows = data;
-                //this.fieldDefinitions.forEach(d => {
-                //    if (d.Type == 'ComplexRelationLookup') d.Type = 'Relation Lookup';
-                //    if (d.Type == 'RelationLookup') d.Type = 'Relation Lookup';
-                //    if (d.Type == 'FusionLookup') d.Type = 'Fusion Lookup';
-                //    if (d.Type == 'DateTime') d.Type = 'Date Time';
-                //    if (d.Type == 'FilteredLookup') d.Type = 'Filtered Lookup';
-                //});
+                this.rows = data;                
                 this.selectedRow = null;
                 this.isLoading = false;
             });
-
     }
 
     edit(id: number): void {
@@ -80,7 +72,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
         this.isEditing = true;
         this.isDeleting = false;
         this.isAdding = false;       
-        this.onEdit.emit(); 
+        this.onEdit.emit();
     }
 
     add(): void {
@@ -108,16 +100,13 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     deleteRule(id: number) {
         this.responsibilityTypeService.deleteRule(id).then(res => {
             this.showMessageForResult(this.messagesService, res);
-            if (!res.isError) {            
-                this.isDeleting = false;                
+            if (!res.isError){   
+                this.isDeleting = false;
                 let index = this.rows.findIndex(f => f.ID == id);
                 if (index >= 0 && index < this.rows.length)
                     this.rows.splice(index, 1);
                 this.onFieldsChanged.emit();
             }
-        });
-        
+        });        
     }
 }
-
-
