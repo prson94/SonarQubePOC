@@ -37,6 +37,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     @Input() objectType: string;
     @Input() readonly: boolean = true;
     @ViewChild('diagram') diagramRef;
+    @ViewChild('gb') globalFilterRef;
 
     DiagramObjectType = DiagramObjectType;
 
@@ -520,6 +521,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private selectObjectType(e: any) {
         this.selectedAssetTypeId = e;
+        this.lazyLoad({
+            first: 0,
+            rows: 10,
+            globalFilter: this.globalFilterRef.nativeElement.value || '' 
+        });
     }
 
     private loadObjects(): Promise<any> {

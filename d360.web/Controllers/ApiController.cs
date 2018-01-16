@@ -2409,7 +2409,7 @@ order by    rnk, [Name]";
                 inner join dbo.GetAssetDisplayValue() d on d.ID = a.ID
                 where  
                     t.id = @id and (@query is null or coalesce(FA.TextPath, d.DisplayValue) like '%' + @query + '%')
-					order by t.id
+					order by fa.textpath, d.displayvalue
 					OFFSET  @offset ROWS FETCH NEXT @rows ROWS ONLY;";
 
             var results = Company.Query<dynamic>(sql, new { id = assetTypeId, offset = offset, rows = rows, query = query }).ToList();

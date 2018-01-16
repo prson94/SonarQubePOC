@@ -50,7 +50,7 @@
                                 Object Type
                             </div>
                             <div>
-                                <select style="width: 95%" [ngModel]="selectedAssetTypeId" (ngModelChange)="selectObjectType($event);">
+                                <select style="width: 100%" [ngModel]="selectedAssetTypeId" (ngModelChange)="selectObjectType($event);">
                                     <option></option>
                                     <option *ngFor="let o of objectTypes" [value]="o.value">{{o.label}}</option>
                                 </select>
