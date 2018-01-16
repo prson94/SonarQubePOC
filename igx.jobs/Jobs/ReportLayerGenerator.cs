@@ -179,8 +179,8 @@ namespace igx.jobs
         #endregion
 
         const string functionName = "ReportingLayer_Generate";
-        //const string timerSettings = "0 */10 * * * *";
-        const string timerSettings = "*/5 * * * * *";
+        const string timerSettings = "0 */10 * * * *";
+        //const string timerSettings = "*/5 * * * * *";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
         {

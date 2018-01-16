@@ -556,6 +556,7 @@ namespace d360.web.Controllers
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
+                    fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     if (hasParentType)
                     {
@@ -678,6 +679,7 @@ namespace d360.web.Controllers
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
+                    fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "ParentID", type = "number" });
                     fields.Add(new GridField { name = "PolicyTypeID", type = "number" });
@@ -692,6 +694,7 @@ namespace d360.web.Controllers
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code" });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
+                    fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Code", type = "string" });
                     fields.Add(new GridField { name = "ReferenceItemType", type = "number" });
@@ -732,6 +735,7 @@ namespace d360.web.Controllers
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
+                    fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "RuleTypeID", type = "number" });
@@ -799,7 +803,9 @@ where   h.ID <> @t order by h.[Level] desc;
 
                     filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
                     filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+                    columns.Add(new GridColumn { text = "Asset ID", datafield = "AssetID", filteritems = new List<string>() });
                     columns.Add(new GridColumn { text = detail.Name, datafield = "Name", filteritems = new List<string>() });
+                    fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
 
@@ -894,6 +900,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             fields.Add(getGridFieldForColumn(field, useNameAsDataField: false));
                         }
 
+                        fields.Add(new GridField { name = "AssetID", type = "number" });
                         fields.Add(new GridField { name = "ID", type = "number" });
                         fields.Add(new GridField { name = "ParentID", type = "number" });
                         fields.Add(new GridField { name = "TaxonomyTypeID", type = "number" });

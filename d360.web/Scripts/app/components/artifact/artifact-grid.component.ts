@@ -34,7 +34,7 @@ import { StringConstants } from '../../static/string-constants';
                     </div>
                     <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>                    
                     <d3s-artifact-custom-export *ngIf="showCustomExport" (closeClick)="showCustomExport=false" 
-                            [artifactType]="artifactType" 
+                            [artifactType]="artifactType"  
                             [sortOrder]="stateService.artifactTypeFilters.sortOrder" 
                             [sortField]="stateService.artifactTypeFilters.sortField"
                             [filters]="stateService.artifactTypeFilters.filters"
@@ -52,6 +52,7 @@ import { StringConstants } from '../../static/string-constants';
                                     <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)" style="display:block; word-wrap:break-word"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>                                         
                                 </ng-template>
                             </p-column>
+                            <p-column [style]="{width:'75px'}" field="AssetID" header="Asset ID"></p-column>
                             <p-column [style]="{width:'30px'}" *ngIf="showEditButton">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" *ngIf="item.P_CanEdit">

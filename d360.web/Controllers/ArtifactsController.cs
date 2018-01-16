@@ -662,7 +662,8 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and RP.Asse
             if (parent == null) throw new Exception("Parent Not found");
 
             var sql = @"
-select	O.ObjectID as ID,
+select	O.ID as AssetID,
+        O.ObjectID as ID,
         P.ID as ParentID,
         P.DisplayValue as Parent,
         dbo.GenerateObjectUrl('Artifact', P.TypeID, P.ObjectID) as ParentUrl,
@@ -721,7 +722,8 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1 and RP.Asse
                 var djToken = "{1}";
 
                 var sql = $@"
-select	A.ObjectID as ID,
+select	A.ID as AssetID,
+        A.ObjectID as ID,
         A.DisplayValue,
         {parentSqlColumn}
         {dcToken}

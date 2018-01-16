@@ -22,7 +22,7 @@ namespace igx.jobs
         const string functionName = "Workflow_Subscriber";
         const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 25;
 
-        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Listen)]BrokeredMessage brokeredMessage, TextWriter log)
+        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
         {
             try
             {

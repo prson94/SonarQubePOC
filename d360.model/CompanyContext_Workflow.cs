@@ -1171,8 +1171,6 @@ namespace d360.model
 
         private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings, List<string> items)
         {
-            
-            var url = "";
             var prefix = "";
             using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
             {

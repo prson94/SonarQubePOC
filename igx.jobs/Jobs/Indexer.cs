@@ -48,89 +48,65 @@ namespace igx.jobs
                         company.OpenWithRetry(RetryPolicy.DefaultFixed);
 
 
-                        bool useNewSchema = false;
-
-                        //if (c.CompanyID.In(4, 5, 65, 72, 74))
-                        {
-                            useNewSchema = true;
-                        }
-
                         source.ClearIndex(c.CompanyID);
 
-                        try
+                        models = LoadArtifacts(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadAttributes(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadModels(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadPolicies(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadFusionTypes(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadReferenceItemTypes(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadGroups(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadRules(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadFusionAttributes(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadArtifactSynonyms(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        models = LoadCustomSynonyms(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+
+                        var users = new List<AddToIndexModel>();
+
+                        #region Company Users
+
+                        var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
+
+                        users = company.Query(sql).ToList().Select(u => new AddToIndexModel
                         {
-                            models = LoadArtifacts(company, c.CompanyID, source, useNewSchema);
-                            source.AddToIndex(models);
-                        }
-                        catch(Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
-
-                        models = LoadAttributes(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
-
-                        models = LoadModels(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
-
-                        models = LoadPolicies(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
-
-                        models = LoadFusionTypes(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
-
-                        models = LoadReferenceItemTypes(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
-
-                        models = LoadGroups(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
-
-                        models = LoadRules(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
-
-                        try
-                        {
-                            models = LoadFusionAttributes(company, c.CompanyID, source, useNewSchema);
-                            source.AddToIndex(models);
-                        }                     
-                        catch (Exception e)
-                        {
-                            CoreFunction.AITrackException(functionName, e, c.CompanyID);
-                        }
-
-                        models = LoadArtifactSynonyms(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
-
-                        models = LoadCustomSynonyms(company, c.CompanyID, source, useNewSchema);
-                        source.AddToIndex(models);
-
-                        if (!useNewSchema)
-                        {
-                            var users = new List<AddToIndexModel>();
-
-                            #region Company Users
-
-                            var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
-
-                            users = company.Query(sql).ToList().Select(u => new AddToIndexModel
-                            {
-                                Group = "Users",
-                                CompanyID = c.CompanyID,
-                                Type = "User",
-                                ID = u.ResourceID,
-                                RelativeUrl = $"#/resources/{u.ResourceID}",
-                                Fields = new Dictionary<string, string>() {
+                            Group = "Users",
+                            CompanyID = c.CompanyID,
+                            Type = "User",
+                            ID = u.ResourceID,
+                            RelativeUrl = $"#/resources/{u.ResourceID}",
+                            Fields = new Dictionary<string, string>() {
                                     { "Name", $"{u.FirstName} {u.LastName}" },
                                     { "Type", "User" },
                                     { "Email", u.Email },
                                     { "Username", u.Username }
                                 }
-                            }).ToList();
+                        }).ToList();
 
-                            source.AddToIndex(users);
+                        source.AddToIndex(users);
 
-                            #endregion
-                        }
+                        #endregion
 
                         company.Close();
                     }
@@ -152,86 +128,43 @@ namespace igx.jobs
 
         #region Supporting Functions
 
-        private static List<AddToIndexModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = "";
-
-            if (useNewSchema)
-            {
-                sql = @"                    	
-                    (select	
-	                    SubjectArt.DisplayValue as 'Synonym',	
-	                    I.Subject as 'SynonymObjectType',
-	                    I.SubjectID as  'SynonymObjectID',
-	                    ObjectArt.DisplayValue as 'SynonymFor',	
-	                    I.Object as 'SynonymForObject',
-	                    I.ObjectID as 'SynonymForObjectID',		
-	                    dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
-	                    ArtType.Name as 'SynonymForObjectType',
-                        P.Name as 'PredicateName'
-                    from [intersect] I
-	                    inner join IntersectType T on T.ID = I.IntersectTypeID 
-                        inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                    inner join Artifact SubjectArt on SubjectArt.ID = I.SubjectID and I.Subject = 'Artifact'
-	                    inner join Artifact ObjectArt on ObjectArt.ID = I.ObjectID and I.Object = 'Artifact'
-	                    inner join ArtifactType ArtType on ObjectArt.ArtifactTypeID = ArtType.ID)
-                    Union
-                    (select	
-	                    SubjectArt.DisplayValue as 'Synonym',	
-	                    I.Object as 'SynonymObjectType',
-	                    I.ObjectID as  'SynonymObjectID',
-	                    ObjectArt.DisplayValue as 'SynonymFor',	
-	                    I.Subject as 'SynonymForObject',
-	                    I.SubjectID as 'SynonymForObjectID',		
-	                    dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
-	                    ArtType.Name as 'SynonymForObjectType',
-                        P.Name as 'PredicateName'	
-                    from [intersect] I
-	                    inner join IntersectType T on T.ID = I.IntersectTypeID 
-                        inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                    inner join Artifact SubjectArt on SubjectArt.ID = I.ObjectID and I.Subject = 'Artifact'
-	                    inner join Artifact ObjectArt on ObjectArt.ID = I.SubjectID and I.Object = 'Artifact'
-	                    inner join ArtifactType ArtType on ObjectArt.ArtifactTypeID = ArtType.ID)
-                    order by ObjectArt.DisplayValue";
-            }
-            else
-            {
-                sql = @"                    	
-                    (select	
-	                    SubjectArt.Name as 'Synonym',	
-	                    I.Subject as 'SynonymObjectType',
-	                    I.SubjectID as  'SynonymObjectID',
-	                    ObjectArt.Name as 'SynonymFor',	
-	                    I.Object as 'SynonymForObject',
-	                    I.ObjectID as 'SynonymForObjectID',		
-	                    dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
-	                    ArtType.Name as 'SynonymForObjectType',
-                        P.Name as 'PredicateName'
-                    from [intersect] I
-	                    inner join IntersectType T on T.ID = I.IntersectTypeID 
-                        inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                    inner join Artifact SubjectArt on SubjectArt.ID = I.SubjectID and I.Subject = 'Artifact'
-	                    inner join Artifact ObjectArt on ObjectArt.ID = I.ObjectID and I.Object = 'Artifact'
-	                    inner join ArtifactType ArtType on ObjectArt.ArtifactTypeID = ArtType.ID)
-                    Union
-                    (select	
-	                    SubjectArt.Name as 'Synonym',	
-	                    I.Object as 'SynonymObjectType',
-	                    I.ObjectID as  'SynonymObjectID',
-	                    ObjectArt.Name as 'SynonymFor',	
-	                    I.Subject as 'SynonymForObject',
-	                    I.SubjectID as 'SynonymForObjectID',		
-	                    dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
-	                    ArtType.Name as 'SynonymForObjectType',
-                        P.Name as 'PredicateName'	
-                    from [intersect] I
-	                    inner join IntersectType T on T.ID = I.IntersectTypeID 
-                        inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                    inner join Artifact SubjectArt on SubjectArt.ID = I.ObjectID and I.Subject = 'Artifact'
-	                    inner join Artifact ObjectArt on ObjectArt.ID = I.SubjectID and I.Object = 'Artifact'
-	                    inner join ArtifactType ArtType on ObjectArt.ArtifactTypeID = ArtType.ID)
-                    order by ObjectArt.Name";
-            }
+            var sql = @"                    	
+                (select	
+	                SubjectArt.DisplayValue as 'Synonym',	
+	                I.Subject as 'SynonymObjectType',
+	                I.SubjectID as  'SynonymObjectID',
+	                ObjectArt.DisplayValue as 'SynonymFor',	
+	                I.Object as 'SynonymForObject',
+	                I.ObjectID as 'SynonymForObjectID',		
+	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
+	                ArtType.Name as 'SynonymForObjectType',
+                    P.Name as 'PredicateName'
+                from [intersect] I
+	                inner join IntersectType T on T.ID = I.IntersectTypeID 
+                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+	                inner join Artifact SubjectArt on SubjectArt.ID = I.SubjectID and I.Subject = 'Artifact'
+	                inner join Artifact ObjectArt on ObjectArt.ID = I.ObjectID and I.Object = 'Artifact'
+	                inner join ArtifactType ArtType on ObjectArt.ArtifactTypeID = ArtType.ID)
+                Union
+                (select	
+	                SubjectArt.DisplayValue as 'Synonym',	
+	                I.Object as 'SynonymObjectType',
+	                I.ObjectID as  'SynonymObjectID',
+	                ObjectArt.DisplayValue as 'SynonymFor',	
+	                I.Subject as 'SynonymForObject',
+	                I.SubjectID as 'SynonymForObjectID',		
+	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
+	                ArtType.Name as 'SynonymForObjectType',
+                    P.Name as 'PredicateName'	
+                from [intersect] I
+	                inner join IntersectType T on T.ID = I.IntersectTypeID 
+                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+	                inner join Artifact SubjectArt on SubjectArt.ID = I.ObjectID and I.Subject = 'Artifact'
+	                inner join Artifact ObjectArt on ObjectArt.ID = I.SubjectID and I.Object = 'Artifact'
+	                inner join ArtifactType ArtType on ObjectArt.ArtifactTypeID = ArtType.ID)
+                order by ObjectArt.DisplayValue";
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
             {
@@ -253,7 +186,7 @@ namespace igx.jobs
             });
         }
 
-        private static List<AddToIndexModel> LoadCustomSynonyms(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadCustomSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select 
@@ -290,7 +223,7 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadFusionAttributes(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadFusionAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"select
 	                            f.ID,
@@ -319,27 +252,13 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = "";
-
-            if (useNewSchema)
-            {
-                sql = @"SELECT R.[ID]
+            var sql = @"SELECT R.[ID]
                                     ,R.DisplayValue as [Name]    
                                     ,T.Name as [RuleType]
 								    ,[dbo].GenerateNgObjectUrl('Rule',R.RuleTypeID,R.ID) as [Url]
                                 FROM [dbo].[Rule] R inner join RuleType T on T.ID = R.RuleTypeID";
-            }
-            else
-            {
-                sql = @"SELECT R.[ID]
-                                    ,R.[Name]
-                                    ,R.[Description]      
-                                    ,T.Name as [RuleType]
-								    ,[dbo].GenerateNgObjectUrl('Rule',R.RuleTypeID,R.ID) as [Url]
-                                FROM [dbo].[Rule] R inner join RuleType T on T.ID = R.RuleTypeID";
-            }
 
             var sType = SystemObjects.Rule.ToString();
 
@@ -361,7 +280,7 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"SELECT [ID],[Name],[Description] FROM [Group]";
 
@@ -384,7 +303,7 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"select ID, Name, [Description] from ReferenceItemType";
             var sType = "Reference";
@@ -406,31 +325,15 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = "";
-
-            if (useNewSchema)
-            {
-                sql = @"select  p.ID,
+            var sql = @"select  p.ID,
                                 p.DisplayValue as Name,
                                 p.TextPath,
                                 pt.Name as [PolicyType],
                                 p.PolicyTypeID as [PolicyTypeID]
                        from     [Policy] p 
                                 inner join PolicyType pt on p.PolicyTypeID = pt.ID";
-            }
-            else
-            {
-                sql = @"select  p.ID,
-                                p.Name,
-                                p.[Description],
-                                p.TextPath,
-                                pt.Name as [PolicyType],
-                                p.PolicyTypeID as [PolicyTypeID]
-                       from     [Policy] p 
-                                inner join PolicyType pt on p.PolicyTypeID = pt.ID";
-            }
 
             var sType = SystemObjects.Policy.ToString();
 
@@ -453,24 +356,16 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = "";
-
-            if (useNewSchema)
-            {
-                sql = @"
-select  A.ID, 
-        A.ArtifactTypeID,
-        A.DisplayValue as Name, 
-        T.Name as ArtifactType
-from    Artifact A 
-        inner join ArtifactType T on T.ID = A.ArtifactTypeID";
-            }
-            else
-            {
-                sql = @"select A.*, T.Name as ArtifactType, V.Name as Taxonomy from Artifact A inner join ArtifactType T on T.ID = A.ArtifactTypeID inner join TaxonomyType V on V.ID = A.TaxonomyTypeID";
-            }
+            var sql = @"
+select	ObjectID,
+		TypeID,
+		DisplayValue,
+		TypeName
+from	AssetDetail
+where	Type = 'ArtifactType'
+		and State = 1";
 
             var sType = SystemObjects.Artifact.ToString();
 
@@ -481,20 +376,20 @@ from    Artifact A
                     Group = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.ArtifactType,
-                    RelativeUrl = $"/artifact/{o.ArtifactTypeID}/{o.ID}",
+                    Type = o.TypeName,
+                    RelativeUrl = $"/artifact/{o.TypeID}/{o.ObjectID}",
                     Fields = new Dictionary<string, string>() {
-                        { "Name", o.Name },
-                        { "Type", o.ArtifactType },
-                        { "Description", o.Description ?? "" },
-                        { "Status", o.Status ?? "" },
-                        { "Taxonomy", o.Taxonomy ?? "" }
+                        { "Name", o.DisplayValue },
+                        { "Type", o.TypeName },
+                        { "Description", "" },
+                        { "Status", "Active" },
+                        { "Taxonomy", "" }
                     }
                 };
             });
         }
 
-        private static List<AddToIndexModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select	AD.ID, AD.Name, AD.FormattedValue, OD.Url 
@@ -520,24 +415,17 @@ from	AttributeDetail AD
             });
         }
 
-        private static List<AddToIndexModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = "";
+            var sql = @"
+select	ObjectID,
+		TypeID,
+		DisplayValue,
+		TypeName
+from	AssetDetail
+where	Type = 'TaxonomyType'
+		and State = 1";
 
-            if (useNewSchema)
-            {
-                sql = @"
-select  A.ID, 
-        A.TaxonomyTypeID,
-        A.DisplayValue as Name, 
-        T.Name as TaxonomyType
-from    Taxonomy A 
-        inner join TaxonomyType T on T.ID = A.TaxonomyTypeID";
-            }
-            else
-            {
-                sql = @"select O.*, T.Name as TaxonomyType from Taxonomy O inner join TaxonomyType T on T.ID = O.TaxonomyTypeID";
-            }
 
             var sType = SystemObjects.Taxonomy.ToString();
 
@@ -548,19 +436,19 @@ from    Taxonomy A
                     Group = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.ArtifactType,
-                    RelativeUrl = $"/model/{o.TaxonomyTypeID};hierarchyId={o.ID}",
+                    Type = o.TypeName,
+                    RelativeUrl = $"/model/{o.TypeID};hierarchyId={o.ObjectID}",
                     Fields = new Dictionary<string, string>() {
-                        { "Name", o.Name },
-                        { "Type", o.TaxonomyType },
-                        { "Description", o.Description ?? "" },
-                        { "TextPath", o.TextPath ?? "" }
+                        { "Name", o.DisplayValue },
+                        { "Type", o.TypeName },
+                        { "Description", "" },
+                        { "TextPath", o.DisplayValue ?? "" }
                     }
                 };
             });
         }
 
-        private static List<AddToIndexModel> LoadFusionTypes(SqlConnection context, int companyID, ElasticSearchSource source, bool useNewSchema = false)
+        private static List<AddToIndexModel> LoadFusionTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select  f.id as ID,
