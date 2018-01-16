@@ -283,6 +283,12 @@ from	cache.ObjectDetails T
                             new { t = new Dapper.DbString { Value = o.ToString(), IsAnsi = true }, i = oid }
                             ).ToDictionary(k => k.Name, v => v.FormattedValue);
 
+                        var itemUrl = detail != null ? detail.Url : "";
+                        var itemTypeName = detail != null ? detail.TypeName : "";
+                        var itemName = detail != null ? detail.Name : "";
+                        var itemParentType = detail != null ? detail.ParentType : "";
+                        var itemParentId = detail != null ? detail.ParentID.Value : 0;
+
                         if (detail != null)
                         {
                             if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
@@ -306,24 +312,62 @@ from	cache.ObjectDetails T
                                 else fields.Add("Type", detail.TypeName);
                             }
                         }
+                        else if((detail == null) && (string.Compare(o, "Synonym", true) == 0))
+                        {
+                            var sql = @"
+                                        select 
+	                                        s.Name as 'Synonym'
+	                                        ,c.Name as 'SynonymFor'
+	                                        ,s.[Object] as 'SynonymForObject'
+	                                        ,s.[ObjectID] as 'SynonymForObjectID'
+	                                        ,dbo.GenerateObjectUrl(s.[Object], c.ObjectTypeID, s.[ObjectID]) as 'Url'
+	                                        ,c.ObjectTypeName as 'SynonymForObjectType'	
+                                            ,p.Name as 'PredicateName'    
+                                            ,s.ID as 'ID'                
+                                        from
+	                                        [dbo].[nym] s
+	                                        inner join [cache].[objectdetails] c on (s.[Object] = c.[Object] and s.[ObjectID] = c.[ObjectID])
+                                            inner join [dbo].[predicate] p on (s.predicateid = p.id) where s.id = @id";
+
+                            //custom synonym load details from nym table
+                            var nymRecord = companyConnection.Query<dynamic>(sql, new { id = oid }).FirstOrDefault();
+
+                            if(nymRecord != null)
+                            {
+                                itemName = nymRecord.Synonym;
+
+                                var nymDetail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = nymRecord.SynonymForObject, i = nymRecord.SynonymForObjectID }).SingleOrDefault();
+
+
+                                fields.Add("NymType", nymRecord.PredicateName);
+                                fields.Add("Name", nymRecord.Synonym);
+                                fields.Add("SynonymFor", nymRecord.SynonymFor);
+                                fields.Add("SynonymForObject", nymRecord.SynonymForObject);
+                                fields.Add("SynonymForObjectType", nymRecord.SynonymForObjectType);
+
+                                itemParentId = nymRecord.SynonymForObjectID;
+                                itemParentType = nymRecord.PredicateName;
+                                itemUrl = nymDetail.Url;
+                            }
+                        }
 
                         #endregion
 
                         switch (a)
                         {
                             case "A":   //Add
-                                var add = new AddToIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.AddToIndex, Type = detail.TypeName };
+                                var add = new AddToIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.AddToIndex, Type = itemTypeName };
                                 if (o == "Synonym")
                                 {
-                                    add.ItemUniqueID = $"custom|{detail.Name}|{detail.ParentType}|{detail.ParentID.Value}";
+                                    add.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
                                 }
                                 indexCollectionModel.Adds.Add(add);
                                 break;
                             case "U":   //Update
-                                var update = new UpdateInIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.UpdateInIndex, Type = detail.TypeName };
+                                var update = new UpdateInIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.UpdateInIndex, Type = itemTypeName };
                                 if (o == "Synonym")
                                 {
-                                    update.ItemUniqueID = $"custom|{detail.Name}|{detail.ParentType}|{detail.ParentID.Value}";
+                                    update.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
                                 }
                                 indexCollectionModel.Updates.Add(update);
                                 break;
