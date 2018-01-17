@@ -723,8 +723,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1 and RP.Asse
 
                 var sql = $@"
 select	A.ID as AssetID,
-        A.ObjectID as ID,
-        A.DisplayValue,
+        A.ObjectID as ID,        
         {parentSqlColumn}
         {dcToken}
         dbo.GenerateObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url            

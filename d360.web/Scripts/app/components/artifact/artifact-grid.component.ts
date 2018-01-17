@@ -13,10 +13,11 @@ import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { ObjectDetailService } from '../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-artifact-grid',
-    providers: [GridDefinitionService, ArtifactService, PermissionsService],
+    providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService],
     template: ` <header *ngIf="!showEditor && !showDelete">
                     <i *ngIf="artifactType && artifactType.Description" class="fa" [ngClass]="{'fa-plus-square-o':!showArtifactDetails,'fa-minus-square-o':showArtifactDetails}" aria-hidden="true" style="padding-right:5px;cursor:pointer;font-size:12px" title="Details" (click)="toggleArtifactDetail()" (mouseenter)="showArtifactDetails=true"></i>
                     {{artifactType?.Name}}
@@ -63,7 +64,7 @@ import { StringConstants } from '../../static/string-constants';
                             <p-column  [style]="{width:'35px'}" *ngIf="showDeleteButton">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" *ngIf="item.P_CanDelete">
-                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                            <a style="cursor:pointer;" (click)="selected=item;doShowDelete();"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
                                     </ng-template>
                             </p-column>                            
@@ -135,7 +136,9 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         private router: Router,
         private gridDefinitionService: GridDefinitionService,
         private artifactService: ArtifactService,
-        private changeDetectorRef: ChangeDetectorRef) {
+        private changeDetectorRef: ChangeDetectorRef,
+        private objectDetailService: ObjectDetailService
+    ) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
@@ -317,6 +320,14 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     private toggleArtifactDetail() {
         this.showArtifactDetails = !this.showArtifactDetails;
+    }
+
+    protected doShowDelete() {
+        this.objectDetailService.getObject(this.selected.ID, 'Artifact').then(r => {
+            this.selected.DisplayValue = r.DisplayValue;
+            this.showDelete = true;
+            this.changeDetectorRef.markForCheck();            
+        })        
     }
 }
 
