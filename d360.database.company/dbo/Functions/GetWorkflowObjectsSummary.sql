@@ -1,7 +1,4 @@
-﻿
-
-
-CREATE FUNCTION [dbo].[GetWorkflowObjectsSummary]
+﻿CREATE FUNCTION [dbo].[GetWorkflowObjectsSummary]
 (
 	@versionId int,
 	@filteredObject varchar(50) = null,
@@ -14,11 +11,10 @@ BEGIN
 declare @itemCount int;
 
 select @itemCount = count(*) from workflow.item i
-join Asset a on a.object = i.object and a.objectid = i.objectid
 where versionid = @versionId;
 
 return (
-	select string_agg(x.Name, ', ') + 
+	select string_agg(utility.GetAssetDisplayValue(x.id), ', ') + 
 	case when @filteredObjectId is not null then
 		case when @itemCount > 1 then
 			' and ' + cast((@itemCount - 1) as varchar) + ' more...'
@@ -34,14 +30,12 @@ return (
 	end from 
 	(
 		select distinct top 5 
-		utility.GetAssetDisplayValue(a.ID) as name, coalesce(a.object,s.object) as object, coalesce(a.objectid,s.objectid) as objectid from workflow.item i
+		coalesce(a2.id, a.id) as id, coalesce(a.object,a2.object) as object, coalesce(a.objectid,a2.objectid) as objectid from workflow.item i
+		inner join Asset a on i.object != 'Issue' and a.object = i.object and a.objectid = i.objectid
 		left join Issue s on i.object = 'Issue' and s.id = i.objectid
-		inner join Asset a on (i.object = 'Issue' and a.object = s.object and a.objectid = s.objectid) or (i.object != 'Issue' and a.object = i.object and a.objectid = i.objectid)
+		left join Asset a2 on i.object = 'Issue' and a2.object = s.object and a2.objectid = s.objectid
 		where versionid = @versionId and ((@filteredObjectId is not null and (i.object = @filteredObject and i.objectId = @filteredObjectId)) or (@filteredObjectId is null))
 		order by 1
 	) x 
 )
 END
-GO
-
-

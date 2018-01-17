@@ -1501,7 +1501,7 @@ order by wi.StartedOn desc";
                             {
                                 if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
                                 {
-                                    if (settings.ResponsibilityTypeID is Array)
+                                    if (settings.ResponsibilityTypeID is Newtonsoft.Json.Linq.JArray)
                                     {
                                         if (int.TryParse(settings.ResponsibilityTypeID[0].Value, out int d))
                                             resId = d;
@@ -1530,7 +1530,7 @@ order by wi.StartedOn desc";
                         case WorkflowActivityType.EmailNotification:
                             if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
                             {
-                                if (settings.ResponsibilityTypeID is Array)
+                                if (settings.ResponsibilityTypeID is Newtonsoft.Json.Linq.JArray)
                                 {
                                     if (int.TryParse(settings.ResponsibilityTypeID[0].Value, out int d))
                                         resId = d;
