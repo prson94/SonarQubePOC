@@ -1179,7 +1179,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                 if (string.IsNullOrEmpty(sortSql))
                 {
-                    sortSql = "DisplayValue";
+                    sortSql = sortDefaultField;
                 }
 
                 querySql += " ORDER BY " + sortSql;

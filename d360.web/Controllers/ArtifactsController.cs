@@ -738,7 +738,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and RP.Asse
                     true, 
                     sortDataField, sortOrder, pagenum, pagesize,
                     (parentIntersectType != null ? new string[] { "P.DisplayValue" } : new string[] {  }), 
-                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true, idColumn: "A.ObjectID");
+                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true, idColumn: "A.ObjectID", sortDefaultField:"1");
                 return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
             }
             catch (Exception ex)
