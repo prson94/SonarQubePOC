@@ -133,8 +133,8 @@ END",
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("Thrivent-Prod-2018.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Thrivent - Prod - 2017-18", File = bytes };
+            var bytes = File.ReadAllBytes("mm.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "MassMutual - 2018-19", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 
@@ -146,7 +146,7 @@ END",
             var company = new CompanyContext(community, new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider() { CompanyID = 74, ResourceID = 0, CompanyPrefix = "lmtom", IsAdministrator = true }, true);//getCompanyConnection(companyID);
 
             var bytes = File.ReadAllBytes("Export.xlsx");
-            var export = new ArtifactTypeExportTemplate { Name = "Data Guidance", TemplateFile = bytes, ArtifactTypeID = 10, ExportViewType = core.enums.ExportView.Grouped, IncludeUrl = false, IncludeParent = false, UpdatedBy = 0, UpdatedOn = DateTime.UtcNow, IncludeFields = "0"  };
+            var export = new ArtifactTypeExportTemplate { Name = "Data Guidance", TemplateFile = bytes, ArtifactTypeID = 10, ExportViewType = d360.core.enums.ExportView.Grouped, IncludeUrl = false, IncludeParent = false, UpdatedBy = 0, UpdatedOn = DateTime.UtcNow, IncludeFields = "0"  };
             company.Add(export);
         }
 

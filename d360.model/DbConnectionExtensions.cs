@@ -28,7 +28,7 @@ from	Asset A
                     {
                         if (w.FieldTypeID > 0)
                         {
-                            whenSql += $@"inner join Field F{fCount} on F{fCount}.ObjectType = A.Object and F{fCount}.ObjectID = A.ObjectID and F{fCount}.FieldTypeID = {w.FieldTypeID} and F{fCount}.Value = '{w.Value}' ";
+                            whenSql += $@"inner join FieldDetail F{fCount} on F{fCount}.Object = A.Object and F{fCount}.ObjectID = A.ObjectID and F{fCount}.FieldTypeID = {w.FieldTypeID} and F{fCount}.Value = '{w.Value}' ";   
                         }
                         else
                         {
@@ -104,7 +104,7 @@ from	reporting.Global_Resource O ";
                 {
                     if (rc.FieldTypeID > 0)
                     {
-                        thenSql += $"inner join Field F{tCount} on F{tCount}.ObjectType = '{obj}' and F{tCount}.ObjectID = O.{uniqueIdField} and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
+                        thenSql += $"inner join FieldDetail F{tCount} on F{tCount}.Object = '{obj}' and F{tCount}.ObjectID = O.{uniqueIdField} and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
                     }
                     else
                     {

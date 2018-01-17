@@ -46,6 +46,7 @@ namespace d360.core.entities
         public string ObjectType { get; set; }
         [Key, Column(Order = 3)]
         public int ObjectID { get; set; }
+
         public string Value { get; set; }
         public string FormattedValue { get; set; }
         [Column(TypeName = "varchar"), StringLength(500)]

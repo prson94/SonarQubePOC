@@ -1,5 +1,6 @@
 using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
@@ -26,7 +27,7 @@ namespace igx.jobs
             return name;
         }
 
-        static void getDynamicFieldJoinStatements(List<FieldType> fields, string type, out string joins, out string columns)
+        static void getDynamicFieldJoinStatements(List<FieldType> fields, string type, out string joins, out string columns, string idColumn = "A.ID")
         {
             columns = "";
             joins = "";
@@ -34,12 +35,8 @@ namespace igx.jobs
             foreach (var f in fields)
             {
                 var name = cleanObjectName(f.Name);
-                if (f.Type == "Lookup")
-                    columns += string.Format("[{0}].Value as [{0}ID], [{0}].FormattedValue as [{0}], ", name);
-                else
-                    columns += string.Format("[{0}].FormattedValue as [{0}], ", name);
-
-                joins += string.Format(" left join Field [{0}] on [{0}].ObjectType = '{2}' and [{0}].ObjectID = A.ID and [{0}].FieldTypeID = {1}", name, f.ID, type);
+                columns += (f.Type == "Lookup") ? $"[{name}].Value as [{name}ID], [{name}].FormattedValue as [{name}], " : $"[{name}].FormattedValue as [{name}], ";
+                joins += $" left join FieldDetail [{name}] on [{name}].Object = '{type}' and [{name}].ObjectID = {idColumn} and [{name}].FieldTypeID = {f.ID}";
             }
 
             fields = null;
@@ -58,123 +55,6 @@ namespace igx.jobs
                 Console.WriteLine("Attempted SQL: " + viewSql);
             }
         }
-
-        #endregion
-
-        #region Object Views
-
-        //static void GenerateAttributeView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
-        //{
-        //    name = cleanObjectName(name);
-        //    var objectName = string.Format("{0}.[{1}_{2}Attributes]", schema, prefix, name);
-        //    viewNames.Add(objectName);
-
-        //    var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-        //    var sql = new StringBuilder("");
-        //    sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
-        //    sql.AppendFormat("VIEW {0} AS ", objectName);
-
-        //    sql.AppendFormat("select A.ID as {0}ID, A.Name as {0}Name, ", name);
-        //    if (includeOwningModel) sql.Append("V.ID as SubjectAreaID, V.Name as SubjectArea, ");
-        //    sql.AppendFormat("[dbo].GenerateObjectUrl('{0}', A.{1}, A.ID) as {0}Url, AD.ID as AttributeID, AD.ParentID as ParentAttributeID, AD.Name as Attribute, AD.FormattedValue as AttributeValue ", objectType, objectTypeKeyName);
-        //    sql.AppendFormat("from {0} A ", tableName);
-        //    if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
-        //    sql.AppendFormat(@"inner join AttributeDetail AD on AD.ObjectType = '{0}' and AD.ObjectID = A.ID and A.{2} = {1}", objectType, typeID, objectTypeKeyName);
-
-        //    try
-        //    {
-        //        companyConnection.Execute(sql.ToString());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-        //        Console.WriteLine(msg);
-        //        Console.WriteLine("Attempted SQL: " + sql);
-        //    }
-        //}
-
-        //        static void GeneratObjectRelationshipView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
-        //        {
-        //            name = cleanObjectName(name);
-        //            var objectName = string.Format("{0}.[{1}_{2}Relationships]", schema, prefix, name);
-        //            viewNames.Add(objectName);
-
-        //            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-        //            var sql = new StringBuilder("");
-        //            sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
-        //            sql.AppendFormat("VIEW {0} AS ", objectName);
-
-        //            sql.AppendFormat("select R.ID as IntersectID, A.ID as [{0}ID], A.Name as [{0}Name], ", name);
-        //            if (includeOwningModel) sql.AppendFormat("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, P.ID as [{0}ParentID], P.TextPath as [{0}ParentName], ", name);
-        //            sql.Append(@"case when (R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectTypeName else R.SubjectTypeName end as TargetType, 
-        //case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.Object else R.Subject end as Target,
-        //case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectID else R.SubjectID end as TargetID,
-        //case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectName else R.SubjectName end as TargetName,
-        //case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectUrl else R.SubjectUrl end as TargetUrl,
-        //TR.[Count] as ChildRelationshipCount ");
-        //            sql.Append("from IntersectDetail R ");
-        //            sql.Append($"inner join {tableName} A on A.{objectTypeKeyName} = {typeID} and ((R.Subject = '{objectType}' and A.ID = R.SubjectID) OR (R.Object = '{objectType}' and A.ID = R.ObjectID)) ");
-        //            if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
-        //            if (includeOwningModel) sql.Append("left join Artifact P on P.ID = A.ParentID ");
-        //            sql.Append("outer apply (select	count(1) as [Count] from [Intersect] where Subject = 'Intersect' and SubjectID = R.ID) TR");
-
-        //            try
-        //            {
-        //                companyConnection.Execute(sql.ToString());
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-        //                Console.WriteLine(msg);
-        //                Console.WriteLine("Attempted SQL: " + sql);
-        //            }
-        //        }
-
-        //        static void GenerateObjectResponsibilityView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectType, int typeID)
-        //        {
-        //            name = cleanObjectName(name);
-        //            var objectName = string.Format("{0}.[{1}_{2}Responsibilities]", schema, prefix, name);
-        //            viewNames.Add(objectName);
-
-        //            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-        //            var selectSql = string.Format(@"select	R.ObjectID as {0}ID,
-        //		R.ObjectName as Name,
-        //		R.ObjectUrl as Url,
-        //		R.ResponsibleObjectName,
-        //		R.ResponsibleObjectType,
-        //		R.ResponsibleObjectUrl,
-        //		R.PrimaryOwnerResourceID,
-        //		R.PrimaryOwnerResourceName,
-        //		R.PrimaryOwnerResourceUrl,
-        //		R.Role,
-        //		--R.RedFlagged,
-        //		R.CurrentScore,
-        //		R.ContextItems,
-        //		R.AssigningItemType,
-        //		R.AssigningItemID--,
-        //		--R.AssigningItemName,
-        //		--R.AssigningItemUrl,
-        //		--R.AssigningTypeName
-        //from	ResponsibilityDetail R
-        //where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
-
-        //            var viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-        //            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
-
-        //            try
-        //            {
-        //                companyConnection.Execute(viewSql.ToString());
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-        //                Console.WriteLine(msg);
-        //                Console.WriteLine("Attempted SQL: " + viewSql);
-        //            }
-        //        }
 
         #endregion
 
@@ -229,24 +109,42 @@ namespace igx.jobs
                             var joins = "";
                             var columns = "";
 
-                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Artifact", out joins, out columns);
+                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Artifact", out joins, out columns, "A.ObjectID");
 
                             objectName = $"{SCHEMA}.[{prefix}_{pluralize.Pluralize(cleanObjectName(o.Name))}]";
                             viewNames.Add(objectName);
 
+                            var parentIntersectType = companyConnection.Query<IntersectTypeDetail>("select * from IntersectTypeDetail where Object = 'ArtifactType' and ObjectID = @id and PredicateType = @pt", new { id = o.ID, pt = (int)PredicateType.InterTypeHierarchy }).FirstOrDefault();
+
+                            var parentSqlColumn = @"";
+                            var parentSqlJoin = @"";
+
+                            if (parentIntersectType != null)
+                            {
+                                parentSqlColumn = @"P.ParentID, P.DisplayValue as ParentDisplayValue, ";
+                                parentSqlJoin = @" outer apply (
+				    select	I.SubjectID as ParentID,
+                            ID.DisplayValue
+				    from	[PredicateIntersect] I
+                            inner join Asset IA on I.Object = A.Object and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
+                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID
+                            left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
+				    ) P";
+                            }
+
+
                             selectSql = $@"
 select  A.ID, 
         A.DisplayValue, 
-        A.ParentID, 
-        P.DisplayValue as ParentDisplayValue, 
+        {parentSqlColumn}
         {columns} 
-        dbo.GenerateObjectUrl('{objectType}', A.ArtifactTypeID, A.ID) as Url, 
+        dbo.GenerateObjectUrl('{objectType}', A.TypeID, A.ObjectID) as Url, 
         cast(S.Value * 100 as int) as CurrentScore 
-from    Artifact A 
-        left join metrics.Score S on S.Object = 'Artifact' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
-        left join Artifact P on P.ID = A.ParentID 
+from    AssetDetail A 
+        left join metrics.Score S on S.Object = 'Artifact' and S.ObjectID = A.ObjectID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
         {joins} 
-where   A.ArtifactTypeID = {o.ID}";
+        {parentSqlJoin} 
+where   A.Type = 'ArtifactType' and A.TypeID = {o.ID}";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -433,20 +331,20 @@ from    h as A
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select  A.ID,
-        A.ParentID,
-        A.ArtifactTypeID,
+select  A.ObjectID as ID,
+        I.SubjectID as ParentID,
+        A.TypeID as ArtifactTypeID,
         A.DisplayValue,
-        T.Name as ArtifactType,
-        a.CreatedOn,
-        a.UpdatedOn,
-        CONVERT(VARCHAR(10), a.CreatedOn, 112) as CreatedOnKey,
-        CONVERT(VARCHAR(10), a.UpdatedOn, 112) as UpdatedOnKey,
+        A.TypeName as ArtifactType,
+        A.CreatedOn,
+        coalesce(A.UpdatedOn, A.CreatedOn) as UpdatedOn,
+		A.KeyHash,
         S.Value as CurrentScore,
         cast(S.Value * 100 as int) as CurrentScorePct
-from    Artifact A  
+from    AssetDetail A  
+		left join PredicateIntersect I on I.Object = 'Artifact' and I.ObjectID = A.ID and I.PredicateType = 3
     	left join metrics.Score S on S.Object = 'Artifact' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
-        inner join ArtifactType T on T.ID = A.ArtifactTypeID";
+where	A.AssetTypeClass = 1";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -574,17 +472,17 @@ from	FusionQueryAttribute O
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select 	O.ID, 
-	    O.ArtifactTypeID, 
-	    D.DisplayValue, 
+select 	O.ObjectID, 
+	    O.TypeID as ArtifactTypeID, 
+	    O.DisplayValue, 
 	    F.FieldTypeID, 
         FT.Name as FieldName, 
         FT.FriendlyName as FieldFriendlyName, 
 	    F.FormattedValue as FieldValue 
-from	Artifact O 
-        inner join dbo.GetAssetDisplayValue() D on D.Object = 'Artifact' and D.ObjectID = O.ID
-        inner join Field F on F.ObjectType = 'Artifact' and F.ObjectID = O.ID
-	    inner join FieldType FT on FT.ID = F.FieldTypeID";
+from	AssetDetail O 
+        inner join Field F on F.AssetID = O.ID
+	    inner join FieldType FT on FT.ID = F.FieldTypeID
+where	O.AssetTypeClass = 1";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

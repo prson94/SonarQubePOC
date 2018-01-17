@@ -9793,7 +9793,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 document.SetCellValue(1, i + 1, model.Name);
 
-                if (model.IsLookup && model.Lookups != null)
+                if (model.IsLookup && !model.AllowMultipleValues && model.Lookups != null)
                 {
                     var dv = document.CreateDataValidation(2, i + 1, model.Lookups.Count + 1, i + 1);
                     CreateExcelList(lookupColumns++, document, "Lookups", dv, model.Lookups.Select(m => m.Value));

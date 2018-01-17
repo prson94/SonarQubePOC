@@ -29,11 +29,6 @@ namespace d360.core.enums
         ]
         FusionAttribute = 4,
         [
-            Name("Fusion Query"),
-            Description("Fusion query assets.")
-        ]
-        FusionQuery = 4,
-        [
             Name("Attribute Group"),
             Description("Attribute group data.")
         ]
@@ -62,7 +57,23 @@ namespace d360.core.enums
             Name("Organization"),
             Description("Organization asset.")
         ]
-        Organization = 10
+        Organization = 10,
+        [
+            Name("User"),
+            Description("User asset.")
+        ]
+        User = 11,
+        [
+            Name("Group"),
+            Description("Group asset.")
+        ]
+        Group = 12,
+        [
+            Name("Fusion Query"),
+            Description("Fusion query assets.")
+        ]
+        FusionQuery = 13
+
     }
 
     public class AssetTypeClassInfo
