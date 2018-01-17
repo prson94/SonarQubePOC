@@ -851,7 +851,7 @@ namespace d360.web.Controllers
                                 }
                                 else
                                 {
-                                    ModelState.AddModelError("Unauthorized", "Your organisation is not yet registered with the Market Business Glossary or you details are invalid. Please contact <a href='mailto:datasupport@londonmarketgroup.co.uk'>datasupport@londonmarketgroup.co.uk</a> for assistance.");
+                                    ModelState.AddModelError("Unauthorized", "Your organisation is not yet registered with the Market Business Glossary or your details are invalid. Please contact <a href='mailto:datasupport@londonmarketgroup.co.uk'>datasupport@londonmarketgroup.co.uk</a> for assistance.");
                                     return View(model);
                                 }
 
