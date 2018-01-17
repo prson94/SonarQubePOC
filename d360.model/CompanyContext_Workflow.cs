@@ -1369,8 +1369,22 @@ namespace d360.model
             //replace [OBJECT_NAME] with the object name            
             if (result.Contains("[OBJECT_NAME]"))
             {
-                //get the objects name
-                var item = GetObjectDetail(objectInfo.Object.ToString(), objectInfo.ObjectID);
+                ObjectDetail item = null;
+                if (objectInfo.Object == SystemObjects.Issue)
+                {
+                    var issue = Issues.Where(i => i.ID == objectInfo.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+                    
+                    if (issue != null)
+                    {
+                        item = GetObjectDetail(issue.Object, issue.ObjectID);
+                    }
+                }
+                else
+                {
+                    //get the objects name
+                    item = GetObjectDetail(objectInfo.Object.ToString(), objectInfo.ObjectID);
+                }
+
                 var itemLink = "(unknown item)";
 
                 if (item != null)                

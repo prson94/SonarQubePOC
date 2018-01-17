@@ -77,7 +77,14 @@ namespace d360.model.workflow
                     if (item.Operator == core.enums.Workflow.CriteriaOperator.Changed)
                         return changedFields.Contains(item.FieldTypeId);
 
-                    if (!item.IsValueMatch(value.FormattedValue)) return false;
+                    if (item.ValueDataType == core.enums.Workflow.CriteriaValueDataType.Lookup)
+                    {
+                        if (!item.IsValueMatch(value.Value)) return false;
+                    }
+                    else
+                    {
+                        if (!item.IsValueMatch(value.FormattedValue)) return false;
+                    }
                 }
                 else if ((item.ContextualFieldID ?? "").ToLower() == "score")
                 {
