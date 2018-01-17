@@ -1501,15 +1501,18 @@ order by wi.StartedOn desc";
                             {
                                 if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
                                 {
-                                    if (settings.ResponsibilityTypeID.Count != null)
-                                        resId = (int)settings.ResponsibilityTypeID[0];
-                                    else if (settings.ResponsibilityTypeID != null)
-                                        resId = (int)settings.ResponsibiltyTypeID;
+                                    if (settings.ResponsibilityTypeID is Array)
+                                    {
+                                        if (int.TryParse(settings.ResponsibilityTypeID[0].Value, out int d))
+                                            resId = d;
+                                    }
+                                    else if (int.TryParse(settings.ResponsibilityTypeID.Value, out int d))
+                                        resId = d;
 
                                     if (resId > 0)
                                     {
                                         var resources = Company.Query<string>(responsibilitySql, new { id = resId });
-                                        result.ResponsibleUser = "";
+                                        result.ResponsibleUser = resources.FirstOrDefault();
                                     }
 
                                 }
@@ -1527,15 +1530,18 @@ order by wi.StartedOn desc";
                         case WorkflowActivityType.EmailNotification:
                             if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
                             {
-                                if (settings.ResponsibilityTypeID.Count != null)
-                                    resId = (int)settings.ResponsibilityTypeID[0];
-                                else if (settings.ResponsibilityTypeID != null)
-                                    resId = (int)settings.ResponsibiltyTypeID;
+                                if (settings.ResponsibilityTypeID is Array)
+                                {
+                                    if (int.TryParse(settings.ResponsibilityTypeID[0].Value, out int d))
+                                        resId = d;
+                                }
+                                else if (int.TryParse(settings.ResponsibilityTypeID.Value, out int d))
+                                    resId = d;
 
                                 if (resId > 0)
                                 {
                                     var resources = Company.Query<string>(responsibilitySql, new { id = resId });
-                                    result.ResponsibleUser = "";
+                                    result.ResponsibleUser = resources.FirstOrDefault();
                                 }
                             }
                             else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
