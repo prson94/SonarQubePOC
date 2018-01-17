@@ -673,8 +673,7 @@ from	AssetDetail O
         {1} 
         inner join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = O.Object and PI.SubjectID = @p and PI.ObjectID = O.ObjectID and PI.PredicateType = 3 
         inner join AssetDetail P on P.Object = PI.Subject and P.ObjectID = PI.SubjectID 
-		left join AssetWithoutReadPermission RP on RP.ResourceID = " + Company.CurrentResourceID + @" and RP.AssetID = O.ID 
-where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1 and RP.AssetID is null";
+where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = " + Company.CurrentResourceID + @" and RP.AssetID = A.ID)";
             var model = processDynamicResults(
                 sql, Request,
                 "ArtifactType", childArtifactTypeID,
@@ -729,9 +728,9 @@ select	A.ID as AssetID,
         dbo.GenerateObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url            
 from	AssetDetail A 
         {djToken} 
-        {parentSqlJoin} 
-        left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID 
-where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and RP.AssetID is null";
+        {parentSqlJoin}         
+where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = " + Company.CurrentResourceID + @" and RP.AssetID = A.ID)";
+                
                 var model = processDynamicResults(
                     sql, Request, 
                     "ArtifactType", id, 
