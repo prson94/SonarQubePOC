@@ -4286,7 +4286,7 @@ from    (
                 querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com')";
             }
 
-            var sql = string.Format(@"select * from ({0}) A", querySql);
+            var sql = string.Format(@"select * from ({0}) A order by FullName", querySql);
 
             return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, new { id = typeID }));
         }
