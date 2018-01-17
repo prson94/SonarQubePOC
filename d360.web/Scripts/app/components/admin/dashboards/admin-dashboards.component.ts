@@ -130,7 +130,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
         this.reportsService.getReports().then(result => {
             this.isLoading = false;
             for (var report of result) {
-                if (report.ReportType == 'sagacity') report.DisplayType = 'Data3Sixty Analyze';
+                if (report.ReportType == 'sagacity') report.DisplayType = 'Data3Sixty Foundation';
                 else report.DisplayType = report.ReportType;
             }
             this.reports = result;            
@@ -176,7 +176,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                     this.reports[this.findReportIndex(event.report.ID)] = event.report;
                 }
 
-                if (event.report.ReportType == 'sagacity') event.report.DisplayType = 'Data3Sixty Analyze';
+                if (event.report.ReportType == 'sagacity') event.report.DisplayType = 'Data3Sixty Foundation';
                 else event.report.DisplayType = event.report.ReportType;
                 
                 this.selected = event.report;

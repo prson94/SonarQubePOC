@@ -5687,12 +5687,28 @@ where    A.RuleID = @id", new { id });
                             }
                         });
 
+                        var reportType = "";
+
+                        switch (report.ReportType ?? "")
+                        {
+                            case "powerbi":
+                                reportType = "Power BI";
+                                break;
+                            case "sagacity":
+                                reportType = "Data3Sixty Foundation";
+                                break;
+                            default:
+                                reportType = "Default";
+                                break;
+                        }
+
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Report Type", FieldName = "ReportType", Value = (report.ReportType == "powerbi" ? "Power BI" : "Default") }
+                                new ReadOnlyField { Name = "Report Type", FieldName = "ReportType", Value = reportType}
                             }
                         });
 
