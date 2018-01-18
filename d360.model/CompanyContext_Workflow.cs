@@ -1398,7 +1398,55 @@ namespace d360.model
 
                 result = result.Replace("[OBJECT_NAME]", itemLink);
             }
-            
+
+            if (result.Contains("[REL_OBJECT_NAME]"))
+            {
+                var itemLink = "";
+                if (objectInfo.Object == SystemObjects.Intersect)
+                {
+                    var intersect = Intersects.Where(i => i.ID == objectInfo.ObjectID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        var item = GetObjectDetail(intersect.Object, intersect.ObjectID);
+
+                        if (item != null)
+                        {
+                            if (supportHtml)
+                                itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+                            else
+                                itemLink = item.Name;
+                        }
+                    }
+                }
+
+                result = result.Replace("[REL_OBJECT_NAME]", itemLink);
+            }
+
+            if (result.Contains("[REL_SUBJECT_NAME]"))
+            {
+                var itemLink = "";
+                if (objectInfo.Object == SystemObjects.Intersect)
+                {
+                    var intersect = Intersects.Where(i => i.ID == objectInfo.ObjectID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        var item = GetObjectDetail(intersect.Subject, intersect.SubjectID);
+
+                        if (item != null)
+                        {
+                            if (supportHtml)
+                                itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+                            else
+                                itemLink = item.Name;
+                        }
+                    }
+                }
+
+                result = result.Replace("[REL_SUBJECT_NAME]", itemLink);
+            }
+
             if (result.Contains("[ACTION_DETAILS]"))
             {
                 //get the details of the issue and add them in
