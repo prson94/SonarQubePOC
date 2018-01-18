@@ -1450,7 +1450,7 @@ namespace d360.model
 
             if (result.Contains("[SCORE]"))
             {
-                var score = objectInfo.Score.HasValue ? "(unknown score)" : objectInfo.Score.Value.ToString();
+                var score = objectInfo.Score.HasValue ? objectInfo.Score.Value.ToString() : "(unknown score)";
                 
                 result = result.Replace("[SCORE]", score);
             }
