@@ -1373,7 +1373,23 @@ from	cte a
         [Route("fusion/rule/relate/intersectTypes")]
         public IQueryable GetIntersectTypes()
         {
-            return Company.Filter<IntersectType>(x => x.SubjectID > 0 && x.ObjectID > 0 && !string.IsNullOrEmpty(x.Subject) && !string.IsNullOrEmpty(x.Object) && (!x.IsSystem ?? true)).OrderBy(x => x.Name).Select(x => new { Name = x.Name, ID = x.ID, Subject = x.Subject, SubjectID = x.SubjectID, Object = x.Object, ObjectID = x.ObjectID }).OrderBy(x => x.Name);
+            return Company.Filter<IntersectTypeDetail>(x => 
+                x.SubjectID > 0 && 
+                x.ObjectID > 0 && 
+                !string.IsNullOrEmpty(x.Subject) && 
+                !string.IsNullOrEmpty(x.Object) && 
+                !x.IsSystem)
+                .OrderBy(x => x.SubjectName)
+                .ThenBy(x => x.ObjectName)
+                .ToList()
+                .Select(x => new {
+                    Name = $"{x.SubjectName} {x.PredicateName ?? " / "} {x.ObjectName}",
+                    x.ID,
+                    x.Subject,
+                    x.SubjectID,
+                    x.Object,
+                    x.ObjectID
+                }).OrderBy(x => x.Name).AsQueryable();
         }
 
         [Route("fusion/rule/relate/objectTypes")]

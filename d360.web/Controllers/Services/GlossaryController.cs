@@ -51,7 +51,7 @@ namespace d360.web.Controllers.Services
         {
             var joins = "";
             var columns = "";
-
+            
             var fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id).ToList();
             var fieldTypeIDs = fields.Select(i => i.ID).ToList();
             var filteredLookupDefinitions = Company.Filter<FieldTypeFilteredLookupDefinition>(i => fieldTypeIDs.Contains(i.FieldTypeID), i => i.FieldTypeFilteredLookupDisplayFields).ToList();
@@ -163,12 +163,15 @@ namespace d360.web.Controllers.Services
                         }
                         break;
                     case "FusionLookup":
-                        //columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
-                        //joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = 'Artifact' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID);
+                    case "FieldFromRelationship":
+                    case "OwnershipLookup":
+                    case "RefListRelationship":
+                    case "Relationship":
+                    case "ComplexRelationLookup":
                         break;
                     default:
                         columns += $"T{f.ID}.FormattedValue as [{name}], ";
-                        joins += $" left join Field T{f.ID} on T{f.ID}.ObjectType = 'Artifact' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
+                        joins += $" left join FieldDetail T{f.ID} on T{f.ID}.Object = 'Artifact' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
                         break;
                 }
             }
@@ -351,7 +354,7 @@ from    FieldWithRelation F
                         break;
                     default:
                         columns += $"T{f.ID}.FormattedValue as [{name}], ";
-                        joins += $" left join Field T{f.ID} on T{f.ID}.ObjectType = 'Artifact' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
+                        joins += $" left join FieldDetail T{f.ID} on T{f.ID}.Object = 'Artifact' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
                         break;
                 }
             }

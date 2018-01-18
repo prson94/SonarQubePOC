@@ -81,8 +81,7 @@ select	A.ObjectID as ID,
 from	AssetDetail A 
         {parentSqlJoin} 
         {joins} 
-		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID  
-where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and RP.AssetID is null";
+where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID)";
 
             #endregion
 
@@ -210,8 +209,7 @@ select	A.ObjectID as ID,
 from	AssetDetail A 
         {parentSqlJoin}
         {joins} 
-		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID 
-where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and RP.AssetID is null";
+where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID)";
 
             #endregion
 

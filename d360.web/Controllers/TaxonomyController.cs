@@ -39,8 +39,7 @@ from	AssetDetail A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-		--left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID 
-where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 --and RP.AssetID is null", new { id });
+where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1", new { id });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -77,8 +76,7 @@ from	AssetDetail A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID 
-where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 and RP.AssetID is null";
+where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID)";
 
             var models = Company.Query<dynamic>(sql, new { type = SystemObjects.TaxonomyType.ToString(), id, pt = PredicateType.IntraTypeHierarchy });
 
