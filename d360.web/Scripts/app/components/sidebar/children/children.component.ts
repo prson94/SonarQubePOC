@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent} from '../../shared/base.component';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { ObjectStatistics, ObjectStatisticChildItem } from '../../../models/object-statistics.model';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-children',    
@@ -27,7 +28,7 @@ import { ObjectStatistics, ObjectStatisticChildItem } from '../../../models/obje
                     </div>
                 </div>
                 `,
-    providers: [ObjectStatisticsService],
+    providers: [ObjectStatisticsService, ObjectDetailService],
 })
 
 export class ChildrenComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -38,6 +39,7 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
 
     constructor(
         protected objectStatisticsService: ObjectStatisticsService,
+        protected objectDetailService: ObjectDetailService,
         private route: ActivatedRoute,
         private router: Router,
     ) {
@@ -65,6 +67,10 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
                 this.children = res.Items;                
                 this.selected = this.children.length > 0 ? this.children[0] : null;
                 this.isLoading = false;
+            });
+        this.objectDetailService.getObject(this.objectID, this.objectType)
+            .then(res => {
+                this.objectName = res.DisplayValue;
             });
     }    
 };

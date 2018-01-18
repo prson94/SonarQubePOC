@@ -46,7 +46,6 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     private sortOrder: SortOrder;
     private filter: string;
     
-
     constructor(protected router: Router, protected gridDefinitionService: GridDefinitionService, protected artifactService: ArtifactService) {
         super();
     }
@@ -76,11 +75,9 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this.artifactService.getArtifactByParentAndArtifactType(this.parentId, this.artifactTypeId, this.filter, this.numberOfRows, this.currentPage, this.sortField, this.sortOrder).
             then(res => {
                 this.artifacts = res;
-
             });
     }
     
-
     getFieldsDefinition() {
         this.isLoading = true;
         this.gridDefinitionService.getGridDefinition(this.artifactTypeId, "ArtifactType")
@@ -98,7 +95,6 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                 window.clearTimeout(this.simpleSearchID);
                 this.simpleSearchID = 0;
             }
-
             this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);
         }
     }
@@ -112,5 +108,4 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     selectArtifact(artifact) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('Artifact', artifact.ID, this.artifactTypeId));
     }
-
 };
