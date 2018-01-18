@@ -1550,7 +1550,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	            ta.ObjectID, 
 	            dbo.GenerateNgObjectUrl(ta.Object, ta.ObjectID, 0) as NgUrl, 
 	            v.id as VersionID,
-	            dbo.GetWorkflowObjectsSummary(v.id, @filteredObject, @filteredObjectId) as ObjectNames, 
+	            dbo.GetWorkflowObjectsSummary(t.id, @filteredObject, @filteredObjectId) as ObjectNames, 
  	            null as Responsibility, 
 	            null as SpecificUser,
 	            case when count(s.StepID) > 0 then
@@ -1572,7 +1572,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             left join workflow.versionstep vs on vs.versionid = v.id
             left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
             left join workflow.itemassignment ia on ia.itemid = s.id
-            where t.id in ({0}) and t.State <> 3
+            where {0} t.State <> 3
+            {1}
             group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,ta.Name, ta.Object, 
             ta.ObjectID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
 			)

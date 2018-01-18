@@ -1092,6 +1092,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-ip-restriction.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu-permissions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-change-pwd.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-key.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-password.component.ts" />
@@ -1394,7 +1395,6 @@
     <TypeScriptCompile Include="Scripts\app\components\model\model-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.ts" />

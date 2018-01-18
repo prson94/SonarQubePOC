@@ -1465,15 +1465,34 @@ order by wi.StartedOn desc";
         [Route("typelist"), HttpGet]
         public HttpResponseMessage GetWorkflowsByTypeList(string types, string filteredObject = null, int? filteredObjectId = null)
         {
+            string issueSql = "", typeSql = "t.id in ({0}) and";
+
+            if (types != null && types.ToLower().Trim() == "all")
+                typeSql = "";
+
             //should only ever be comma separated list of numbers, remove anything else
             types = Regex.Replace(types ?? "", "[^0123456789, ]", string.Empty);
-
             types = types.Trim().TrimEnd(',');
 
             if (string.IsNullOrWhiteSpace(types))
                 types = "-1";
 
-            var results = Company.Query<dynamic>(string.Format(QueryConstants.WorkflowTypeList, types), new { filteredObject, filteredObjectId }).ToList();
+            if (!string.IsNullOrEmpty(typeSql))
+                typeSql = string.Format(typeSql, types);
+
+            //get issue workflows related to the object as well
+            if (filteredObjectId != null)
+            {
+                issueSql = @" and e.[Object] != 'IssueType' or (e.Object = 'IssueType' and t.id in
+					        (select t.id from workflow.type t
+	                            inner join workflow.eventregistration e on e.typeid = t.id and e.object = 'IssueType'
+	                            inner join workflow.[version] v on t.id = v.typeid
+	                            inner join workflow.item i on i.versionid = v.id
+                                inner join issue s on s.id = i.objectid and i.object = 'Issue'
+	                            where s.object = @filteredObject and s.objectid = @filteredObjectId))";
+            }
+            var sql = string.Format(QueryConstants.WorkflowTypeList, typeSql, issueSql);
+            var results = Company.Query<dynamic>(sql, new { filteredObject, filteredObjectId }).ToList();
 
             #region parse XML
 

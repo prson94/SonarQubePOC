@@ -84,11 +84,12 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
 
 
         this.isLoading = true;
-        let typeList = "";
-        this.workflowTypes.forEach(s => typeList += s.toString() + ',');
-        this.workflowService.getWorkflowsByTypeList(typeList, this.useFilteredObject ? this.objectType : null, this.useFilteredObject ? this.objectId : null)
+        //let typeList = "";
+        //this.workflowTypes.forEach(s => typeList += s.toString() + ',');
+        this.workflowService.getWorkflowsByTypeList("all", this.useFilteredObject ? this.objectType : null, this.useFilteredObject ? this.objectId : null)
             .then(r => {
                 this.workflowItems = r;
+                console.log(this.useFilteredObject, this.objectType, this.objectId, this.workflowItems);
                 r.forEach(i => {
                     if (i.ResponsibleUser != null && i.ResponsibleUser.constructor === Array) {
                         i.ResponsibleUser = i.ResponsibleUser[0];
