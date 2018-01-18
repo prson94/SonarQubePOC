@@ -514,7 +514,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.lineageService.getLineageObjects(+this.selectedAssetTypeId, e.first, e.rows, e.globalFilter)
             .then(r => {
                 this.objects = r.results;
-                if (e.globalFilter != null || e.first == 0)
+                if ((e.globalFilter != null && e.globalFilter != "") || e.first == 0)
                     this.totalRecords = r.count;
             });
     }
@@ -524,7 +524,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.lazyLoad({
             first: 0,
             rows: 10,
-            globalFilter: this.globalFilterRef.nativeElement.value || '' 
+            globalFilter: (this.globalFilterRef != null && this.globalFilterRef.nativeElement != null) ? this.globalFilterRef.nativeElement.value : '' 
         });
     }
 

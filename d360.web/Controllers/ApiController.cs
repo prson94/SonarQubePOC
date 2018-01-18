@@ -2393,24 +2393,23 @@ order by    rnk, [Name]";
                 query = null;
             int count = 0;
 
-            var countSql = @"
-                select 
+            var assetType = Company.GetById<AssetType>(assetTypeId);
+            bool isFusionAttributeType = assetType?.Object == SystemObjects.FusionAttributeType.ToString();
+
+
+            #region Sql
+
+            string countSql = @"select 
                     count(*)
                 from 
                     asset a
                 inner join assettype t on t.id = a.assettypeid
-				left join objectstyle s on s.objecttype = t.[object] and s.objectid = t.objectid
-                left join FusionAttribute FA on FA.ID = A.ObjectID and A.[Object] = 'FusionAttribute'
-                inner join dbo.GetAssetDisplayValue() d on d.ID = a.ID
+				{0}
                 where  
-                    t.id = @id and (@query is null or coalesce(FA.TextPath, d.DisplayValue) like '%' + @query + '%')";
-
-            if (offset == 0 || query != null)
-                count = Company.Query<int>(countSql, new { id = assetTypeId, query = query }).FirstOrDefault();
-
-            var sql = @"select 
+                    t.id = @id and (@query is null or {1} like '%' + @query + '%')";
+            string sql = @"select 
                     a.ID as assetId,
-                    coalesce(FA.TextPath, d.DisplayValue) as [name],
+                    {0} as [name],
                     t.[Name] as typeName,
 					coalesce(s.IconBackColor, '#000') as backColor,
 					coalesce(s.IconForeColor, '#fff') as foreColor,
@@ -2421,14 +2420,32 @@ order by    rnk, [Name]";
                     asset a
                 inner join assettype t on t.id = a.assettypeid
 				left join objectstyle s on s.objecttype = t.[object] and s.objectid = t.objectid
-                left join FusionAttribute FA on FA.ID = A.ObjectID and A.[Object] = 'FusionAttribute'
-                inner join dbo.GetAssetDisplayValue() d on d.ID = a.ID
+                {1}
                 where  
-                    t.id = @id and (@query is null or coalesce(FA.TextPath, d.DisplayValue) like '%' + @query + '%')
-					order by fa.textpath, d.displayvalue
-					OFFSET  @offset ROWS FETCH NEXT @rows ROWS ONLY;";
+                    t.id = @id and (@query is null or {2} like '%' + @query + '%')
+					order by {3}
+					OFFSET  @offset ROWS FETCH NEXT @rows ROWS ONLY";
 
-            var results = Company.Query<dynamic>(sql, new { id = assetTypeId, offset = offset, rows = rows, query = query }).ToList();
+            #endregion
+            string fieldName, join;
+
+            if(isFusionAttributeType)
+            {
+                fieldName = "fa.TextPath";
+                join = "inner join FusionAttribute fa on fa.ID = A.ObjectID";
+            } else
+            {
+                fieldName = "d.DisplayValue";
+                join = "cross apply dbo.GetAssetDisplayValueById(a.id) d";
+            }
+
+            countSql = string.Format(countSql, join, fieldName);
+            sql = string.Format(sql, fieldName, join, fieldName, fieldName);
+
+            if (offset == 0 || query != null)
+                count = Company.Query<int>(countSql, new { id = assetTypeId, query = new Dapper.DbString { Value = query, IsAnsi = true } }).FirstOrDefault();
+
+            var results = Company.Query<dynamic>(sql, new { id = assetTypeId, offset = offset, rows = rows, query = new Dapper.DbString { Value = query, IsAnsi = true } }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
