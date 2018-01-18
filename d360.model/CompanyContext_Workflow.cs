@@ -1145,7 +1145,7 @@ namespace d360.model
                 var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
                 var emailBody = $"<p>The Data3Sixty workflow <b>{item.Step.Version.Type.Name}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
-                var customBody = ProcessMessageBody(settings.BodyTemplate, objectInfo, prefix, item);
+                var customBody = ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
 
                 if (!string.IsNullOrEmpty(customBody))
                 {
@@ -1229,7 +1229,8 @@ namespace d360.model
 
             url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
 
-            settings.BodyTemplate = ProcessMessageBody(settings.BodyTemplate, objectInfo, prefix, item);
+            settings.BodyTemplate = ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
+            settings.SubjectTemplate = ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item,false);
 
             settings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{settings.BodyTemplate}<p>Item Workflow Details {url}</p>";
 
@@ -1363,7 +1364,7 @@ namespace d360.model
             }
         }
 
-        private string ProcessMessageBody(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep)
+        private string ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)
         {
             var result = bodyTemplate;
             //replace [OBJECT_NAME] with the object name            
@@ -1387,8 +1388,13 @@ namespace d360.model
 
                 var itemLink = "(unknown item)";
 
-                if (item != null)                
-                    itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+                if (item != null)
+                {
+                    if(supportHtml)
+                        itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+                    else
+                        itemLink = item.Name;
+                }
 
                 result = result.Replace("[OBJECT_NAME]", itemLink);
             }
@@ -1404,13 +1410,17 @@ namespace d360.model
                 {
                     var item = GetObjectDetail(issue.Object, issue.ObjectID);
 
-                    if(item != null)
+                    if (item != null)
+                    {
                         issueInfo = $"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{item.Name}</b>.  <br>Criticality Level: {issue.Criticality}";
+                    }
 
                     var creator = GlobalReportingResources.Where(x => x.ResourceID == issue.CreatedBy).FirstOrDefault();
 
                     if (creator != null)
+                    {
                         issueInfo += $"<br>Created By <b>{creator.FullName}</b>";
+                    }
                     
                     //get any field values for this issue
                     var fieldTypes = FieldTypes.Where(x => x.Object == "IssueType" && x.ObjectID == issue.IssueTypeID);
