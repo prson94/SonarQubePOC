@@ -33,6 +33,11 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
         { value: '[ACTION_DETAILS]', label: 'Action Details' },
     ];
 
+    private relationshipFields = [
+        { value: '[REL_SUBJECT_NAME]', label: 'Relationship Subject Name' },
+        { value: '[REL_OBJECT_NAME]', label: 'Relationship Object Name' },
+    ];
+
     private selected = "none";
 
     constructor(private workflowService: WorkflowService) {
@@ -49,6 +54,10 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
                 .then(r => {
                     this.fields = [];
                     this.fields = _.cloneDeep(this.defaultFields);
+
+                    if (this.objectType == 'IntersectType')
+                        this.fields = this.fields.concat(_.cloneDeep(this.relationshipFields));
+
                     r.forEach(f => {
                         this.fields.push({
                             value: '[FIELD'+ f.ID +']',
