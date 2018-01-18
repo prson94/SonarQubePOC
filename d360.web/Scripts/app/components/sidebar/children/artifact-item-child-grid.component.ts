@@ -17,17 +17,10 @@ import { StringConstants } from '../../../static/string-constants';
                     <span *ngIf="!isLoading">        
                         <input type="text" class="grid-simple-filter" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="filter" placeholder="Search..." autofocus autocomplete="off" />                                             
                         <p-dataTable #dt lazy="true" [totalRecords]="artifacts?.total" [value]="artifacts?.results" selectionMode="single" [rows]="numberOfRows" paginator="true" pageLinks="3" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="DisplayValue" header="Name" sortable="true"  [style]="{'width':'250px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">                                    
-                                    <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ID">
-                                        <a (click)="selectArtifact(item)">{{item.DisplayValue}}</a>
-                                    </d3s-preview-tooltip>
-                                </ng-template>
-                            </p-column>
+                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                            
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">
                                 <ng-template let-item="rowData" pTemplate type="body">
-                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
+                                    <a (click)="selectArtifact(item)"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>
                                 </ng-template>
                             </p-column>                        
                         </p-dataTable>                   
