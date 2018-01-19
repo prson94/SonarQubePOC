@@ -1050,6 +1050,11 @@ namespace d360.model
             List<core.entities.GlobalReportingResource> users = new List<core.entities.GlobalReportingResource>();
             //based on the step settings get the users
 
+            var companySettings = Community.GetCompanySettings();
+
+            var fromName = companySettings["WorkflowFromName"] ?? "Data3Sixty Workflow";
+            var fromEmail = companySettings["WorkflowFromEmail"] ?? "no-reply@data3sixty.com";
+
             if (settings.RecipientType == EmailTaskRecipientType.Initiator)
             {
                 if (item.Item.StartedBy <= 0)
@@ -1160,7 +1165,7 @@ namespace d360.model
 
                     emailedUsers.Add(user.Email);
 
-                    await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true);
+                    await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true, fromEmail, fromName);
                 }
 
                 SaveItemStepEmailedUsers(item, emailedUsers);
@@ -1182,14 +1187,13 @@ namespace d360.model
             }
 
             settings.EmailMessageTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{settings.EmailMessageTemplate}";
-
-            //if (items.Any()) settings.EmailMessageTemplate += "<b>The following items triggered this workflow:</b></br>";
-
-            /*foreach (var item in items)
-            {
-                settings.EmailMessageTemplate += $"<br>{item}";
-            }*/
+            
             settings.EmailMessageTemplate += "</body></html>";
+
+            var companySettings = Community.GetCompanySettings();
+            
+            var fromName = companySettings["WorkflowFromName"] ?? "Data3Sixty Workflow";
+            var fromEmail = companySettings["WorkflowFromEmail"] ?? "no-reply@data3sixty.com";
 
             if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
             {
@@ -1204,8 +1208,8 @@ namespace d360.model
                 {
 
                     Console.WriteLine($"DEBUG : WORKFLOW AGGREGATE EMAIL IS EMAILING [{email}].");
-
-                    await extensions.mail.SimpleMessage.SendMessage(settings.EmailHeader, email, "", settings.EmailMessageTemplate, true);
+                    
+                    await extensions.mail.SimpleMessage.SendMessage(settings.EmailHeader, email, "", settings.EmailMessageTemplate, true,fromEmail,fromName);
                 }
             }
         }
@@ -1233,6 +1237,11 @@ namespace d360.model
             settings.SubjectTemplate = ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item,false);
 
             settings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{settings.BodyTemplate}<p>Item Workflow Details {url}</p>";
+
+            var companySettings = Community.GetCompanySettings();
+
+            var fromName = companySettings["WorkflowFromName"] ?? "Data3Sixty Workflow";
+            var fromEmail = companySettings["WorkflowFromEmail"] ?? "no-reply@data3sixty.com";
 
             //if the setting to include responses from froms is enabled then get previous form responses and put in xml
             if (settings.ShouldIncludeFormResponses)
@@ -1304,7 +1313,7 @@ namespace d360.model
                 Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{res.Email}].");
                 emailedUsers.Add(res.Email);
 
-                await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, settings.BodyTemplate, true);
+                await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, settings.BodyTemplate, true, fromEmail, fromName);
             }
             else if(settings.RecipientType == EmailTaskRecipientType.Responsibility)
             {
@@ -1316,7 +1325,7 @@ namespace d360.model
 
                     emailedUsers.Add(user.Email);
 
-                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true);
+                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
                 }
             }
             else if(settings.RecipientType == EmailTaskRecipientType.SpecificUser)
@@ -1334,7 +1343,7 @@ namespace d360.model
                 {
                     emailedUsers.Add(email);
 
-                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, email, "", settings.BodyTemplate, true);
+                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, email, "", settings.BodyTemplate, true, fromEmail, fromName);
                 }
             }
 

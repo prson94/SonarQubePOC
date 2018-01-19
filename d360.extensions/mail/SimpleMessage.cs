@@ -35,13 +35,13 @@ namespace d360.extensions.mail
 
         }
 
-        public static async Task SendMessage(string subject, string toEmail, string toName, string content, bool useHtml = false)
+        public static async Task SendMessage(string subject, string toEmail, string toName, string content, bool useHtml = false, string fromEmail = "no-reply@data3sixty.com", string fromName = "Data3Sixty Workflow")
         {
             var message = new MandrillMessage();
 
             message.AddTo(toEmail, toName);            
-            message.FromEmail = "no-reply@data3sixty.com";
-            message.FromName = "Data3Sixty Workflow";
+            message.FromEmail = fromEmail;
+            message.FromName = fromName;
 
             // Add the message properties.
             message.TrackClicks = false;
