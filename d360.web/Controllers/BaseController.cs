@@ -593,30 +593,22 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                     obj = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID) ? intersectType.Object : intersectType.Subject;
                                     objID = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID) ? intersectType.ObjectID : intersectType.SubjectID;
 
-                                    var sql = "";
+                                    var sql = $"select ObjectID as Value, DisplayValue as Text from AssetDetail where [Type] = '{obj}' and TypeID = {objID} order by DisplayValue";
 
                                     switch (obj)
                                     {
                                         case "ArtifactType":
-                                            sql = $"select ID as Value, DisplayValue as Text from Artifact where ArtifactTypeID = {objID} order by DisplayValue";
+                                        case "PolicyType":
+                                        case "ReferenceItemType":
+                                        case "RuleType":
+                                        case "TaxonomyType":
+                                            sql = $"select A.ID as Value, P.TextPath as Text from AssetWithType A cross apply GetAssetTextPathById(A.ID, '.') P where A.[Type] = '{obj}' and A.TypeID = {objID} order by P.TextPath";
                                             break;
                                         case "FusionAttributeType":
                                             sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";
                                             break;
-                                        case "PolicyType":
-                                            sql = $"select ID as Value, TextPath as Text from [Policy] where PolicyTypeID = {objID} order by TextPath";
-                                            break;
-                                        case "ReferenceItemType":
-                                            sql = $"select ID as Value, DisplayValue as Text from [ReferenceItem] where ReferenceItemTypeID = {objID} order by DisplayValue";
-                                            break;
                                         case "ResourceType":
                                             sql = $"select ID as Value, LastName + ', ' + FirstName as Text from reporting.[Global_Resource] order by LastName + ', ' + FirstName";
-                                            break;
-                                        case "RuleType":
-                                            sql = $"select ID as Value, DisplayValue as Text from [Rule] where RuleTypeID = {objID} order by DisplayValue";
-                                            break;
-                                        case "TaxonomyType":
-                                            sql = $"select ID as Value, TextPath as Text from Taxonomy where TaxonomyTypeID = {objID} order by TextPath";
                                             break;
                                     }
 

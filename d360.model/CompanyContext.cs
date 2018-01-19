@@ -771,17 +771,17 @@ from	TaxonomyType
         public AssetDetail GetAssetDetail(long id)
         {
             var model = Query<AssetDetail>(@"
-select	A.ID,
-		utility.GetAssetDisplayValue(A.ID) as DisplayValue,
-		A.AssetTypeID,
-		A.State,
-		A.Object,
-		A.ObjectID,
-		T.Name as AssetTypeName,
-		T.Object as Type,
-		T.ObjectID as TypeID
-from	Asset A
-		inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @id", new { id }).SingleOrDefault();
+select	ID,
+		DisplayValue,
+		AssetTypeID,
+		State,
+		Object,
+		ObjectID,
+		TypeName as AssetTypeName,
+		Type,
+	    TypeID
+from	AssetDetail
+where   ID = @id", new { id }).SingleOrDefault();
 
             return model;
         }

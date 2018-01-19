@@ -287,7 +287,7 @@ from	cache.ObjectDetails T
                         var itemTypeName = detail != null ? detail.TypeName : "";
                         var itemName = detail != null ? detail.Name : "";
                         var itemParentType = detail != null ? detail.ParentType : "";
-                        var itemParentId = detail != null ? detail.ParentID.Value : 0;
+                        var itemParentId = detail != null ? (detail.ParentID ?? 0) : 0;
 
                         if (detail != null)
                         {
@@ -302,8 +302,8 @@ from	cache.ObjectDetails T
                             }
                             else
                             {
-                                if (fields.ContainsKey("Description")) fields["Description"] = detail.Description;
-                                else fields.Add("Description", detail.Description);
+                                if (fields.ContainsKey("Description"))
+                                    fields.Add("Description", fields["Description"]);
 
                                 if (fields.ContainsKey("TextPath")) fields["TextPath"] = detail.TextPath;
                                 else fields.Add("TextPath", detail.TextPath);
@@ -411,53 +411,14 @@ from    [queue].[Task] T
                         {
                             switch (q.Action)
                             {
-                                case "Analytic":
-                                #region
-                                    companyConnection.Execute("exec utility.CalculateStatistics @Type, @ID", new { Type = q.Object, ID = q.ObjectID }, null, 180);    // 3 minute timeout.
-                                break;
-                                #endregion
                                 case "Add":
                                 #region
-                                    if (!string.IsNullOrEmpty(q.Custom))
-                                    {
-                                        var customXml = XElement.Parse(q.Custom);
-                                        companyConnection.Execute(
-                                            "exec AsyncAddObject @Object, @ObjectID, @ParentObject, @ParentObjectID, @ResourceID",
-                                            new
-                                            {
-                                                q.Object,
-                                                q.ObjectID,
-                                                ParentObject = customXml.Element("ActionObject").Value,
-                                                ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                                                ResourceID = int.Parse(customXml.Element("ResourceID").Value)
-                                            },
-                                            null,
-                                            10800);    // 180 minute timeout.
-
-                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A");
-                                    }
+                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A");
                                 break;
                                 #endregion
                                 case "Delete":
                                 #region
-                                    if (!string.IsNullOrEmpty(q.Custom))
-                                    {
-                                        var customXml = XElement.Parse(q.Custom);
-                                        companyConnection.Execute(
-                                            "exec AsyncDeleteObject @Object, @ObjectID, @ParentObject, @ParentObjectID, @ResourceID",
-                                            new
-                                            {
-                                                q.Object,
-                                                q.ObjectID,
-                                                ParentObject = customXml.Element("ActionObject").Value,
-                                                ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                                                ResourceID = int.Parse(customXml.Element("ResourceID").Value)
-                                            },
-                                            null,
-                                            10800);    // 180 minute timeout.
-
-                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D");
-                                    }
+                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D");
                                 break;
                                 #endregion
                                 case "EventTopicNotification":
@@ -607,63 +568,14 @@ from    [queue].[Task] T
                                     }
                                 break;
                                 #endregion
-                                case "ObjectCache":
-                                #region
-                                    companyConnection.Execute("exec cache.SynchronizeObjectDetails @type, @id", new { type = q.Object, id = q.ObjectID }, null, 180);
-                                break;
-                                #endregion
                                 case "ObjectIndex":
                                 #region
-                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom);
-                                break;
-                                #endregion
-                                case "ObjectStyleCache":
-                                #region
-                                    companyConnection.Execute(Sql.StyleCache, new { type = q.Object, id = q.ObjectID }, null, 7200);
-                                break;
-                                #endregion
-                                case "ObjectVersion":
-                                #region
-                                    if (!string.IsNullOrEmpty(q.Custom))
-                                    {
-                                        var customXml = XElement.Parse(q.Custom);
-                                        companyConnection.Execute(
-                                            "EXEC utility.AddAuditEntry @Object, @ObjectID, @ResourceID, @Date, @Action, @ActionObject, @ActionObjectID",
-                                            new
-                                            {
-                                                q.Object,
-                                                q.ObjectID,
-                                                ResourceID = int.Parse(customXml.Element("ResourceID").Value),
-                                                q.Date,
-                                                Action = customXml.Element("Action").Value,
-                                                ActionObject = customXml.Element("ActionObject").Value,
-                                                ActionObjectID = int.Parse(customXml.Element("ActionObjectID").Value)
-                                            },
-                                            null,
-                                            7200);
-                                    }
+                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom);
                                 break;
                                 #endregion
                                 case "Update":
                                 #region
-                                    if (!string.IsNullOrEmpty(q.Custom))
-                                    {
-                                        var customXml = XElement.Parse(q.Custom);
-                                        companyConnection.Execute(
-                                            "exec AsyncUpdateObject @Object, @ObjectID, @ParentObject, @ParentObjectID, @ResourceID",
-                                            new
-                                            {
-                                                q.Object,
-                                                q.ObjectID,
-                                                ParentObject = customXml.Element("ActionObject").Value,
-                                                ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                                                ResourceID = int.Parse(customXml.Element("ResourceID").Value)
-                                            },
-                                            null,
-                                            10800);    // 180 minute timeout.
-
-                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
-                                    }
+                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
                                 break;
                                 #endregion
                             }
