@@ -53,7 +53,7 @@ import { ObjectDetailService } from '../../services/object-detail.service';
                                     <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)" style="display:block; word-wrap:break-word"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>                                         
                                 </ng-template>
                             </p-column>
-                            <p-column [style]="{width:'75px'}" field="AssetID" header="Asset ID"></p-column>
+                            <!--p-column [style]="{width:'75px'}" field="AssetID" header="Asset ID"></p-column-->
                             <p-column [style]="{width:'30px'}" *ngIf="showEditButton">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" *ngIf="item.P_CanEdit">

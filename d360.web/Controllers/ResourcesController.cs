@@ -656,7 +656,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
 
 
-                return Json(new { DisplayName = (det != null ? det.Name : ""), TypeName = (det != null ? det.TypeName : ""), Url = (det != null ? $"/{det.Url}" : ""), FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
+                return Json(new { det.AssetID, DisplayName = (det != null ? det.Name : ""), TypeName = (det != null ? det.TypeName : ""), Url = (det != null ? $"/{det.Url}" : ""), FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {

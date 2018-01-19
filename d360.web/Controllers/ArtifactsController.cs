@@ -73,8 +73,10 @@ namespace d360.web.Controllers
 
             #region Sql
 
+            //A.ID as AssetID, 
+        
             var sql = $@"
-select	A.ObjectID as ID,
+select	A.ObjectID as ID, 
         {parentSqlColumn}
         {columns}
 		dbo.GenerateNgObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url
@@ -122,6 +124,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
             if (type.ParentID.HasValue)
                 fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
 
+            //fields.Add(new FieldType { Type = "Number", Name = "AssetID", FriendlyName = "Asset ID" });
             fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
             var results = Company.Query<dynamic>(sql, dbArgs);            

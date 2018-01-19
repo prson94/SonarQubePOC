@@ -175,16 +175,20 @@ order by RT.Name", new { id }).AsQueryable();
             return has;
         }
 
-        public bool HasPermission(SystemObjects type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
+        public bool HasPermission(string type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
         {
             bool hasPermission = CurrentResourceIsAdmin;
             if (!hasPermission)
             {
-                var sType = type.ToString();
-                hasPermission = Any<SecurityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID && i.Claim == claim && i.ClaimObject == claimObject);
+                hasPermission = Any<SecurityDetail>(i => i.ObjectType == type && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID && i.Claim == claim && i.ClaimObject == claimObject);
             }
 
             return hasPermission;
+        }
+
+        public bool HasPermission(SystemObjects type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
+        {
+            return HasPermission(type.ToString(), id, claim, claimObject);
         }
 
         #endregion
