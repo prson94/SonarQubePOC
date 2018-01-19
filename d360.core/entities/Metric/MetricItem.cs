@@ -19,5 +19,8 @@ namespace d360.core.entities.Metric
         [DataMember]
         public DateTime? EffectiveEndDate { get; set; }
 
+        [DataMember]
+        public string SourceID { get; set; }
+
     }
 }

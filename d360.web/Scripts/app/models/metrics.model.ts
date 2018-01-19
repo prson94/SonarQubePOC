@@ -8,6 +8,7 @@ export class Group {
     Weight: number;
     EffectiveStartDate: string;
     EffectiveEndDate: string;
+    SourceID: string;
 }
 
 export class GroupForm {
@@ -34,6 +35,7 @@ export class Item {
     Description: string;
     EffectiveStartDate: string;
     EffectiveEndDate: string;
+    SourceID: string;
 }
 
 export class Map {

@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { Map, MapForm } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -17,7 +17,7 @@ import { FormMode } from "../../../models/form.model";
                                 Weight
                             </div>
                             <div>
-                                <input type="number" style="width: 95%" [(ngModel)]="model.Map.Weight" />
+                                <input #weight type="number" style="width: 95%" [ngModel]="model.Map.Weight" (ngModelChange)="model.Map.Weight = clamp($event, 0, 1, 3)" />
                             </div>
                         </div>
                     </div>
@@ -85,6 +85,8 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
+    @ViewChild('weight') weightInput: ElementRef;
+
     verb = "Add";
 
     model: MapForm = null;
@@ -108,7 +110,9 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
                 .then(r => {
                     this.model = r;
                     this.objectTypeString = r.Map.Object + '|' + r.Map.ObjectID.toString();
-                    this.model.Map.EffectiveStartDate = new Date(this.model.Map.EffectiveStartDate);
+                    if (this.model.Map.EffectiveStartDate != null)
+                        this.model.Map.EffectiveStartDate = new Date(this.model.Map.EffectiveStartDate);
+                    if (this.model.Map.EffectiveEndDate != null)
                     this.model.Map.EffectiveEndDate = new Date(this.model.Map.EffectiveEndDate);
                     this.isLoading = false;
                     //console.log(this.model);
@@ -393,5 +397,28 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
             "es-US": "m/d/yy"
         };
         return formats[navigator.language] || 'mm/dd/yy';
+    }
+
+    private clamp(val: number, min: number, max: number, precision: number): number {
+
+        if (val == null || isNaN(+val))
+            return null;
+
+        let newVal = val;
+
+        if (val < min) newVal = min;
+        if (val > max) newVal = max;
+
+        if (precision > 0 && newVal != null && newVal != 0) {
+            let mod = Math.pow(10, precision);
+            newVal = Math.round(newVal * mod) / mod;
+        }
+
+        //console.log(val, newVal);
+        if (this.weightInput != null && this.weightInput.nativeElement != null)
+            this.weightInput.nativeElement.value = newVal;
+
+        return newVal;
+
     }
 };

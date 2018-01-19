@@ -11,12 +11,20 @@ import { MessagesService } from '../../../services/messages.service';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading">
                     <div class="row">
-                        <div class="col s12">
+                        <div class="col s6">
                             <div class="FieldName">
                                 Name
                             </div>
                             <div>
                                 <input type="text" [(ngModel)]="model.Group.Name" style="width: 95%" />
+                            </div>
+                        </div>
+                        <div class="col s6">
+                            <div class="FieldName">
+                                Source ID
+                            </div>
+                            <div>
+                                <input type="text" [(ngModel)]="model.Group.SourceID" style="width: 95%" />
                             </div>
                         </div>
                         <div class="col s12">

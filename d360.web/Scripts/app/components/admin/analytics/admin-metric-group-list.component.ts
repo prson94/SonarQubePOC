@@ -4,6 +4,7 @@ import { Group } from '../../../models/metrics.model';
 import { TreeNode } from 'primeng/primeng';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
+import { MessagesService } from '../../../services/messages.service';
 
 @Component({
     selector: 'd3s-admin-metric-group-list',
@@ -65,7 +66,7 @@ import { FormMode } from '../../../models/form.model';
 
                 </div>
                 `,
-    providers: [MetricsService]
+    providers: [MetricsService, MessagesService]
 })
 
 export class AdminMetricGroupListComponent extends BaseComponent implements OnInit {
@@ -77,7 +78,7 @@ export class AdminMetricGroupListComponent extends BaseComponent implements OnIn
     private formMode = FormMode.Default;
     FormMode = FormMode;
 
-    constructor(private metricsService: MetricsService) {
+    constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
         super();
     }
 
