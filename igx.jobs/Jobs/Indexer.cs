@@ -50,38 +50,115 @@ namespace igx.jobs
 
                         source.ClearIndex(c.CompanyID);
 
-                        models = LoadArtifacts(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadArtifacts(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadAttributes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadAttributes(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadModels(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadModels(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadPolicies(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadPolicies(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadFusionTypes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadFusionTypes(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadReferenceItemTypes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadReferenceItemTypes(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadGroups(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadGroups(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadRules(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadRules(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadFusionAttributes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadFusionAttributes(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadArtifactSynonyms(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadArtifactSynonyms(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
-                        models = LoadCustomSynonyms(company, c.CompanyID, source);
-                        source.AddToIndex(models);
+                        try
+                        {
+                            models = LoadCustomSynonyms(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
 
                         var users = new List<AddToIndexModel>();
 
@@ -359,7 +436,7 @@ from
         private static List<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
-select	ObjectID,
+select	ObjectID as ID,
 		TypeID,
 		DisplayValue,
 		TypeName
@@ -377,7 +454,7 @@ where	Type = 'ArtifactType'
                     CompanyID = companyID,
                     ID = o.ID,
                     Type = o.TypeName,
-                    RelativeUrl = $"/artifact/{o.TypeID}/{o.ObjectID}",
+                    RelativeUrl = $"/artifact/{o.TypeID}/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
                         { "Type", o.TypeName },
@@ -418,7 +495,7 @@ from	AttributeDetail AD
         private static List<AddToIndexModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
-select	ObjectID,
+select	ObjectID as ID,
 		TypeID,
 		DisplayValue,
 		TypeName
@@ -437,7 +514,7 @@ where	Type = 'TaxonomyType'
                     CompanyID = companyID,
                     ID = o.ID,
                     Type = o.TypeName,
-                    RelativeUrl = $"/model/{o.TypeID};hierarchyId={o.ObjectID}",
+                    RelativeUrl = $"/model/{o.TypeID};hierarchyId={o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
                         { "Type", o.TypeName },
