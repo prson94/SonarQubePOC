@@ -16,6 +16,7 @@ import { FormMode } from "../../../models/form.model";
                             <div class="FieldName">
                                 Weight
                             </div>
+                            <div class="directions">Weight must be a value between 0 and 1</div>
                             <div>
                                 <input #weight type="number" style="width: 95%" [ngModel]="model.Map.Weight" (ngModelChange)="model.Map.Weight = clamp($event, 0, 1, 3)" />
                             </div>

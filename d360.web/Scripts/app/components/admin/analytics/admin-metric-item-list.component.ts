@@ -21,7 +21,8 @@ import { MessagesService } from '../../../services/messages.service';
                                 <p-column field="Name" header="Name" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
                                 <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
                                     <ng-template pTemplate type="body" let-item="rowData">
-                                        <span [innerHTML]="item?.Description"></span>
+                                        <span *ngIf="item?.Description == null"></span>
+                                        <span *ngIf="item?.Description != null" [innerHTML]="item?.Description"></span>
                                     </ng-template>
                                 </p-column>
                                 <p-column [style]="{width:'40px'}">
