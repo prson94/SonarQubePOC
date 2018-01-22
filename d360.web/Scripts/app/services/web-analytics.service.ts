@@ -13,7 +13,7 @@ export class WebAnalyticsService extends BaseService {
         
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });
-
+        
         this.http.post('webanalytics/logactivity', JSON.stringify(activity), options)
             .toPromise()
             .catch(err => this.handleError(err));          

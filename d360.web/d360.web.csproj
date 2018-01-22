@@ -408,6 +408,7 @@
     </Compile>
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Controllers\TilesController.cs" />
+    <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\ValidateHttpAntiForgeryTokenAttribute.cs" />
     <Compile Include="Global.asax.cs">

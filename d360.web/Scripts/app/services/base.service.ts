@@ -56,7 +56,7 @@ export class BaseService {
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
-
+        
         return http
             .post(`form/dynamicedit/create/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
@@ -82,16 +82,11 @@ export class BaseService {
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
-
+        
         return http
             .put(`form/dynamicedit/edit/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
-    }
-
-    protected addRequestVerificationHeaders(headers: Headers) {
-        headers.append('RequestVerificationToken', (<HTMLInputElement>document.getElementById('antiForgeryToken')).value);
-        headers.append('X-Requested-With', 'XMLHttpRequest');
-    }
+    }    
 }

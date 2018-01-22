@@ -27,6 +27,7 @@ using d360.extensions;
 using System.Threading.Tasks;
 using Dapper;
 using d360.core.entities.Metric;
+using d360.web.Filters;
 
 namespace d360.web.Controllers
 {
@@ -3932,18 +3933,7 @@ order by C.TextPath";
         #endregion
         
         #region Governance/Ownership/Responsibility
-
-        //[Route("groups/{id:int}/ownership")]
-        //public IQueryable<ResponsibilityDetail> GetResponsibilitiesByGroup(int id)
-        //{
-        //    return Company.GetResponsibilitiesByResource(SystemObjects.Group, id);
-        //}
-
-        //[Route("resources/{id:int}/ownership")]
-        //public IQueryable<ResponsibilityDetailForResource> GetResponsibilitiesByResource(int id)
-        //{
-        //    return Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == id);
-        //}
+        
 
         [Route("resources/{resourceID:int}/ownership/{type}/{id:int}")]
         public IEnumerable<dynamic> GetResponsibilitiesByResourceByType(int resourceID, SystemObjects type, int id)
@@ -7078,6 +7068,7 @@ SELECT (
         }
 
         [Route("survey/{surveyId}/{objectId}/{type}")]
+        [ValidateHttpAntiForgeryTokenAttribute]
         public CreateResponse PostSurveyResponse(int surveyId, int objectId, string type, SurveyResponseModel data)
         {
             var survey = new Survey

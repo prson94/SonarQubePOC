@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.model;
+using d360.web.Filters;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
@@ -53,6 +54,7 @@ namespace d360.web.Controllers
 
         
         [Route("LogActivity"), HttpPost()]
+        [ValidateHttpAntiForgeryToken]
         public async Task PostLogActivity(WebActivityEntity value)
         {
             //write the activity somewhere

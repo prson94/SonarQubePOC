@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System;
 using d360.web.Models.Attributes;
 using d360.extensions;
+using d360.web.Filters;
 
 namespace d360.web.Controllers
 {
@@ -91,7 +92,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPost, Route("AddFolderItem")]
+        [Authorize, HttpPost, Route("AddFolderItem"), ValidateAntiForgeryToken]
         public JsonNetResult AddFolderItem(SiteNav item)
         {
             var success = true;
@@ -134,7 +135,7 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpPost, Route("RemoveFolderItem"), NonNullableParameters]
+        [Authorize, HttpPost, Route("RemoveFolderItem"), NonNullableParameters, ValidateAntiForgeryToken]
         public JsonNetResult RemoveFolderItem(int id)
         {
             var success = true;
@@ -162,7 +163,7 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpPost, Route("RemoveFolder"), NonNullableParameters]
+        [Authorize, HttpPost, Route("RemoveFolder"), NonNullableParameters, ValidateAntiForgeryToken]
         public JsonNetResult RemoveFolder(int id)
         {
             var success = true;
@@ -198,7 +199,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPost, Route("AddFolder")]
+        [Authorize, HttpPost, Route("AddFolder"), AjaxValidateAntiForgeryToken]
         public JsonNetResult AddFolder(AddSiteNavModel model)
         {
             var success = true;

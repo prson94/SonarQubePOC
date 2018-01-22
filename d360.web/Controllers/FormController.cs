@@ -26,8 +26,7 @@ using System.Web.Mvc;
 using System.Xml.Linq;
 
 namespace d360.web.Controllers
-{
-    [ValidateHttpAntiForgeryToken]
+{    
     [RoutePrefix("form"), Authorize, AiHandleError, NonNullableParameters]
     public class FormController : BaseController
     {
@@ -313,7 +312,7 @@ namespace d360.web.Controllers
 
         #region Dynamic Editor Field Type Information For Angular2
 
-        [HttpPost, Route("dynamiceditor/new/{objectType}")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamiceditor/new/{objectType}")]
         public JsonResult DynamicEditorAddFields(string objectType, object[] param)
         {
             switch ((objectType ?? "").ToUpper())
@@ -325,7 +324,7 @@ namespace d360.web.Controllers
             throw new Exception("Invalid or non implemented editor type");
         }
 
-        [HttpPost, Route("dynamiceditor/edit/{objectType}")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamiceditor/edit/{objectType}")]
         public JsonResult DynamicEditorEditFields(string objectType, object[] param)
         {
             switch ((objectType ?? "").ToUpper())
@@ -642,7 +641,7 @@ namespace d360.web.Controllers
             throw new Exception("Invalid / unsupported edit type");
         }
 
-        [HttpPost, Route("dynamicedit/create/{objectType}"), ValidateInput(false)]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamicedit/create/{objectType}"), ValidateInput(false)]
         public async Task<JsonResult> DynamicCreate(string objectType, string json)
         {
             JObject jsonObject = JObject.Parse(json);
@@ -732,7 +731,7 @@ namespace d360.web.Controllers
             throw new Exception("Invalid / unsupported create type");
         }
 
-        [HttpPost, Route("dynamicedit/copy/{objectType}"), ValidateInput(false)]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamicedit/copy/{objectType}"), ValidateInput(false)]
         public JsonResult DynamicCopy(string objectType, string json)
         {
             JObject jsonObject = JObject.Parse(json);
@@ -890,7 +889,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddArtifact"), ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false)]
+        [Route("AddArtifact"), HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false)]
         public JsonResult AddArtifact(FormCollection form)
         {
             try
@@ -1131,7 +1130,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("ArtifactType"), Route("ArtifactType"), NonNullableParameters]
+        [HttpDelete, ActionName("ArtifactType"), Route("ArtifactType"), NonNullableParameters]
         public JsonResult DeleteArtifactType(int id)
         {
             try
@@ -1346,7 +1345,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("AssetType"), Route("AssetType")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("AssetType"), Route("AssetType")]
         public JsonResult PostAssetType(AssetTypeEditorModel model)
         {
             try
@@ -1511,7 +1510,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("AssetType"), Route("AssetType")]
+        [HttpPut, ActionName("AssetType"), Route("AssetType")]
         public JsonResult PutAssetType(AssetTypeEditorModel model)
         {
             try
@@ -1659,7 +1658,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("AssetType"), Route("AssetType"), NonNullableParameters]
+        [HttpDelete, ActionName("AssetType"), Route("AssetType"), NonNullableParameters]
         public JsonResult DeleteAssetType(int id)
         {
             try
@@ -1775,7 +1774,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttribute")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddAttribute")]
         public JsonResult AddAttribute(FormCollection form)
         {
             try
@@ -1927,7 +1926,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttributeType")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddAttributeType")]
         public JsonResult AddAttributeType(FormCollection form)
         {
             try
@@ -2105,7 +2104,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttributeTypeCategory")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddAttributeTypeCategory")]
         public JsonResult AddAttributeTypeCategory(FormCollection form)
         {
             try
@@ -2295,7 +2294,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttributeTypeRelation")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddAttributeTypeRelation")]
         public JsonResult AddAttributeTypeRelation(FormCollection form)
         {
             try
@@ -3544,7 +3543,7 @@ namespace d360.web.Controllers
             if (nameUpper == "PARENTID")  throw new Exception("Use of a field type with the name " + name + " is prohibited.");
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFieldType")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFieldType")]
         public JsonResult AddFieldType(FieldTypeEditorModel model)
         {
             try
@@ -4596,7 +4595,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusion")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusion")]
         public JsonResult AddFusion(FormCollection form)
         {
             try
@@ -4780,7 +4779,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PostAddFusionRule")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("PostAddFusionRule")]
         public JsonResult PostAddFusionRule(FusionRule r)
         {
             try
@@ -4824,7 +4823,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionRule")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRule")]
         public JsonResult AddFusionRule(FormCollection form)
         {
             try
@@ -4911,7 +4910,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpPost, Route("PostEditFusionRule")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("PostEditFusionRule")]
         public JsonResult PostEditFusionRule(FusionRule r)
         {
             try
@@ -5129,7 +5128,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("TestFusionRuleFilter")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("TestFusionRuleFilter")]
         public JsonNetResult TestFusionRuleFilter(FusionRuleFilterEditorModel form)
         {
             try
@@ -5183,7 +5182,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("AddFusionRuleFilter")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRuleFilter")]
         public JsonResult AddFusionRuleFilter(FusionRuleFilterEditorModel form)
         {
             try
@@ -5270,7 +5269,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("EditFusionRuleFilter")]
+        [HttpPut, ValidateInput(false), Route("EditFusionRuleFilter")]
         public JsonResult EditFusionRuleFilter(FusionRuleFilterEditorModel form)
         {
             try
@@ -5314,7 +5313,7 @@ namespace d360.web.Controllers
             }
         }
 
-        //[ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionRuleItem")]
+        //[ValidateHttpAntiForgeryToken, HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRuleItem")]
         //public JsonResult AddFusionRuleItem(FormCollection form)
         //{
         //    try
@@ -5452,7 +5451,7 @@ namespace d360.web.Controllers
             };
         }
         
-        [HttpPost, ValidateInput(false),ValidateHttpAntiForgeryToken, Route("PostAddFusionRuleItem")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),Route("PostAddFusionRuleItem")]
         public JsonResult PostAddFusionRuleItem(FusionAddItemModel form)
         {
             try
@@ -5512,7 +5511,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionRuleItem")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRuleItem")]
         public JsonResult AddFusionRuleItem(FormCollection form)
         {
             try
@@ -5634,7 +5633,7 @@ namespace d360.web.Controllers
 
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PostAddFusionRuleStep")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  Route("PostAddFusionRuleStep")]
         public JsonResult PostAddFusionRuleStep(FusionRuleStep s)
         {
             try
@@ -6358,7 +6357,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PutEditFusionRuleStep")]
+        [HttpPut, ValidateInput(false), Route("PutEditFusionRuleStep")]
         public JsonResult PutEditFusionRuleStep(FusionRuleStep s)
         {
             try
@@ -6418,7 +6417,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("MoveFusionRuleStep")]
+        [HttpPut, ValidateInput(false), Route("MoveFusionRuleStep")]
         public ActionResult MoveFusionRuleStep(int ruleID, int ruleStepID, bool moveUp)
         {
             var direction = moveUp ? "UP" : "DOWN";
@@ -6770,7 +6769,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PostAddFusionRuleStepMapping")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("PostAddFusionRuleStepMapping")]
         public JsonResult PostAddFusionRuleStepMapping(FusionRuleStepMapping map)
         {
             try
@@ -6822,7 +6821,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionRuleStepMapping")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRuleStepMapping")]
         public JsonResult AddFusionRuleStepMapping(FormCollection form)
         {
             try
@@ -6998,7 +6997,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PutEditFusionRuleStepMapping")]
+        [HttpPut, ValidateInput(false), Route("PutEditFusionRuleStepMapping")]
         public JsonResult PutEditFusionRuleStepMapping(FusionRuleStepMapping map)
         {
             try
@@ -7163,7 +7162,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ActionName("FusionType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("FusionType")]
+        [ActionName("FusionType"), HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("FusionType")]
         public JsonResult PostFusionType(FusionType fusion, ObjectStyle style = null)
         {
             try
@@ -7401,7 +7400,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionAttributeTypeCustomQuery")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionAttributeTypeCustomQuery")]
         public JsonResult AddFusionAttributeTypeCustomQuery(FormCollection form)
         {
             try
@@ -7440,7 +7439,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("EditFusionAttributeTypeCustomQuery")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("EditFusionAttributeTypeCustomQuery")]
         public JsonResult EditFusionAttributeTypeCustomQuery(FormCollection form)
         {
             try
@@ -7655,7 +7654,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionSchedule")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionSchedule")]
         public JsonResult AddFusionSchedule(FormCollection form)
         {
             try
@@ -7692,7 +7691,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("EditFusionSchedule")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("EditFusionSchedule")]
         public JsonResult EditFusionSchedule(FormCollection form)
         {
             try
@@ -7892,7 +7891,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIntersectType")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddIntersectType")]
         public JsonResult AddIntersectType(FormCollection form)
         {
             try
@@ -8113,7 +8112,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIssue")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddIssue")]
         public JsonResult AddIssue(FormCollection form)
         {
             try
@@ -8184,7 +8183,7 @@ namespace d360.web.Controllers
 
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIssueType")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddIssueType")]
         public JsonResult AddIssueType(FormCollection form)
         {
             try
@@ -8425,7 +8424,7 @@ namespace d360.web.Controllers
 
         #region Group : Add
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddGroup")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddGroup")]
         public JsonResult AddGroup(FormCollection form)
         {
             try
@@ -8478,7 +8477,7 @@ namespace d360.web.Controllers
 
         #region Group : Add User
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddGroupUser")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddGroupUser")]
         public JsonResult AddGroupUser(FormCollection form)
         {
             try
@@ -8507,7 +8506,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpPost, ValidateHttpAntiForgeryToken, ValidateInput(false), ActionName("ResourceGroup"), Route("ResourceGroup")]
+        [HttpPost, AjaxValidateAntiForgeryToken,  ValidateInput(false), ActionName("ResourceGroup"), Route("ResourceGroup")]
         public JsonResult PostResourceGroup(ResourceGroup model)
         {
             try
@@ -8576,7 +8575,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, ValidateHttpAntiForgeryToken, ActionName("ResourceGroup"), Route("ResourceGroup"), NonNullableParameters]
+        [HttpDelete,  ActionName("ResourceGroup"), Route("ResourceGroup"), NonNullableParameters]
         public JsonResult DeleteResourceGroup(int groupID, int resourceID)
         {
             try
@@ -8695,7 +8694,7 @@ namespace d360.web.Controllers
             }
         }
         
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group"), Route("Group")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  ActionName("Group"), Route("Group")]
         public JsonResult PostGroup(Group model)
         {
             try
@@ -8731,7 +8730,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group"), Route("Group")]
+        [HttpPut, ValidateInput(false),  ActionName("Group"), Route("Group")]
         public JsonResult PutGroup(Group model)
         {
             try
@@ -8984,7 +8983,7 @@ order by A.TextPath", new { phrase, SubjectID = intersect.SubjectID });
         /// </summary>
         /// <param name="model">The intersectID we are searching under.</param>
         /// <returns>A deep hierarchy of map rules.</returns>
-        [HttpPost, Route("MapRulesByMap")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("MapRulesByMap")]
         public JsonNetResult MapRulesByMap(SourceTargetIntersectModel model)
         {
             var list = Company.Query<string>(@"
@@ -9028,7 +9027,7 @@ for json path", new { s = model.SourceIntersectID, sd = model.SourceDiagramKey, 
         /// </summary>
         /// <param name="models">A collection of source/target intersect IDs.</param>
         /// <returns>A deep hierarchy of map rules.</returns>
-        [HttpPost, Route("MapRulesByObject")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("MapRulesByObject")]
         public JsonNetResult MapRulesByObject(SourceTargetIntersectModels models)
         {
             if (models == null)
@@ -9082,7 +9081,7 @@ for json path");
             };
         }
 
-        //[ValidateHttpAntiForgeryToken, HttpPost, Route("MapRules_Save")]
+        //[ HttpPost, AjaxValidateAntiForgeryToken, Route("MapRules_Save")]
         //public JsonNetResult MapRules_Save(MapRulesModel model)
         //{
         //    if (model.Rules == null)
@@ -9220,7 +9219,7 @@ for json path");
         ///// </summary>
         ///// <param name="model">An array of items to add relationships for.</param>
         ///// <returns>A list of name/value pairs.</returns>
-        //[HttpPost, Route("Lineage_AddItemsToDiagram")]
+        //[HttpPost, AjaxValidateAntiForgeryToken, Route("Lineage_AddItemsToDiagram")]
         //public JsonNetResult Lineage_AddItemsToDiagram(AddItemsToDiagramModel model)
         //{
         //    model.Items.ForEach(i =>
@@ -9252,7 +9251,7 @@ for json path");
         ///// </summary>
         ///// <param name="models">An array of items to add relationships for.</param>
         ///// <returns>A list of name/value pairs.</returns>
-        //[HttpPost, Route("Lineage_Update")]
+        //[HttpPost, AjaxValidateAntiForgeryToken, Route("Lineage_Update")]
         //public JsonNetResult Lineage_Update(SourcePostModel models)
         //{
         //    var message = "";
@@ -9353,7 +9352,7 @@ for json path");
         //    };
         //}
 
-        [HttpPost, Route("UpdateLineage")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateLineage")]
         public JsonNetResult UpdateLineage(LineageEditorModel model)
         {
             if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Update))
@@ -9467,7 +9466,7 @@ for json path");
             };
         }
 
-        [HttpPost, Route("UpdateTechnicalLineage")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateTechnicalLineage")]
         public JsonNetResult UpdateTechnicalLineage(LineageEditorTechnicalModel model)
         {
             if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Update))
@@ -9649,7 +9648,7 @@ for json path");
             };
         }
 
-        [HttpPost, Route("mapsequence/{type}/{id:int}/mapitems")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("mapsequence/{type}/{id:int}/mapitems")]
         public JsonResult SetMapItemsForMapSequenceManagement(SystemObjects type, int id, MapItemsSequenceEditModel model)
         {
             try
@@ -9870,7 +9869,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             dataValidation.AllowList($"={range}", true, true);
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddLoad")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddLoad")]
         public JsonResult AddLoad(LoadFilePostModel model)
         {
             try
@@ -10120,7 +10119,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #region Form Get/Post
         
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddLookup")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddLookup")]
         public JsonResult AddLookup(FormCollection form)
         {
             try
@@ -10285,7 +10284,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             public string Name { get; set; }
         }
 
-        [HttpPost, ValidateInput(false), Route("AddLookupTypeRaw")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddLookupTypeRaw")]
         public JsonResult AddLookupTypeRaw(LookupTypeModel lookup)
         {
             var form = new FormCollection();
@@ -10294,7 +10293,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return AddLookupType(form);
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddLookupType")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddLookupType")]
         public JsonResult AddLookupType(FormCollection form)
         {
             try
@@ -10463,7 +10462,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         }
 
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddMap")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddMap")]
         public JsonResult AddMap(FormCollection form)
         {
             try
@@ -10500,7 +10499,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditMap")]
+        [ HttpPut, ValidateInput(false), Route("EditMap")]
         public JsonResult EditMap(FormCollection form)
         {
             try
@@ -10687,7 +10686,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricMap")]
+        [ HttpDelete, ValidateInput(false), Route("MetricMap")]
         public JsonResult DeleteMetricMap(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -10778,7 +10777,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             };
         }
 
-        [HttpPost, Route("MetricCondition"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("MetricCondition"), ValidateInput(false)]
         public JsonResult PostMetricCondition(MetricCondition model)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -10804,7 +10803,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return jsonSuccess("Metric condition added successfully", model.MapID.ToString(), "add", HttpStatusCode.OK);
         }
 
-        [HttpPut, Route("MetricCondition"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPut, Route("MetricCondition"), ValidateInput(false)]
         public JsonResult PutMetricCondition(MetricCondition model)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -10836,7 +10835,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return jsonSuccess("Condition updated successfully", model.MapID.ToString(), "edit", HttpStatusCode.OK);
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricCondition")]
+        [ HttpDelete, ValidateInput(false), Route("MetricCondition")]
         public JsonResult DeleteMetricCondition(int mapId, int fieldTypeId)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -10863,7 +10862,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return jsonSuccess("Condition deleted successfully", mapId.ToString(), "delete", HttpStatusCode.OK);
         }
 
-        [HttpPost, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("MetricMap"), ValidateInput(false)]
         public JsonResult PostMetricMap(MetricMapFormModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -10901,7 +10900,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         }
 
-        [HttpPut, Route("MetricMap"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPut, Route("MetricMap"), ValidateInput(false)]
         public JsonResult PutMetricMap(MetricMapFormModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -10976,7 +10975,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         }
 
-        [HttpPost, Route("MetricGroup"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("MetricGroup"), ValidateInput(false)]
         public JsonResult PostMetricGroup(MetricGroupFormModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -11003,7 +11002,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             
         }
 
-        [HttpPut, Route("MetricGroup"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPut, Route("MetricGroup"), ValidateInput(false)]
         public JsonResult PutMetricGroup(MetricGroupFormModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -11053,7 +11052,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricGroup")]
+        [ HttpDelete, ValidateInput(false), Route("MetricGroup")]
         public JsonResult DeleteMetricGroup(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -11091,7 +11090,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return jsonSuccess("Group deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false),  Route("MetricItem")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  Route("MetricItem")]
         public JsonResult PostMetricItem(FormCollection form)
         {
             try
@@ -11129,7 +11128,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("MetricItem")]
+        [ HttpPut, ValidateInput(false), Route("MetricItem")]
         public JsonResult PutMetricItem(FormCollection form)
         {
             try
@@ -11169,7 +11168,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ValidateInput(false), Route("MetricItem")]
+        [ HttpDelete, ValidateInput(false), Route("MetricItem")]
         public JsonResult DeleteMetricItem(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -11264,7 +11263,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("Organization"), Route("Organization")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("Organization"), Route("Organization")]
         public JsonResult PostOrganization(FormCollection form)
         {
             try
@@ -11316,7 +11315,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("Organization"), Route("Organization")]
+        [ HttpPut, ActionName("Organization"), Route("Organization")]
         public JsonResult PutOrganization(FormCollection form)
         {
             try
@@ -11361,7 +11360,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("Organization"), Route("Organization"), NonNullableParameters]
+        [ HttpDelete, ActionName("Organization"), Route("Organization"), NonNullableParameters]
         public JsonResult DeleteOrganization(int id)
         {
             try
@@ -11468,7 +11467,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("Contract"), Route("Contract")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("Contract"), Route("Contract")]
         public JsonResult PostContract(FormCollection form)
         {
             try
@@ -11507,7 +11506,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("Contract"), Route("Contract")]
+        [ HttpPut, ActionName("Contract"), Route("Contract")]
         public JsonResult PutContract(FormCollection form)
         {
             try
@@ -11544,7 +11543,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("Contract"), Route("Contract"), NonNullableParameters]
+        [ HttpDelete, ActionName("Contract"), Route("Contract"), NonNullableParameters]
         public JsonResult DeleteContract(int id)
         {
             try
@@ -11629,7 +11628,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("OrganizationDomain"), Route("OrganizationDomain")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("OrganizationDomain"), Route("OrganizationDomain")]
         public JsonResult PostOrganizationDomain(FormCollection form)
         {
             try
@@ -11666,7 +11665,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("OrganizationDomain"), Route("OrganizationDomain")]
+        [ HttpPut, ActionName("OrganizationDomain"), Route("OrganizationDomain")]
         public JsonResult PutOrganizationDomain(FormCollection form)
         {
             try
@@ -11703,7 +11702,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("OrganizationDomain"), Route("OrganizationDomain"), NonNullableParameters]
+        [ HttpDelete, ActionName("OrganizationDomain"), Route("OrganizationDomain"), NonNullableParameters]
         public JsonResult DeleteOrganizationDomain(int id)
         {
             try
@@ -11787,7 +11786,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("OrganizationInvitation"), Route("OrganizationInvitation")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("OrganizationInvitation"), Route("OrganizationInvitation")]
         public JsonResult PostOrganizationInvitation(FormCollection form)
         {
             try
@@ -11836,7 +11835,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("OrganizationInvitation"), Route("OrganizationInvitation")]
+        [ HttpPut, ActionName("OrganizationInvitation"), Route("OrganizationInvitation")]
         public JsonResult PutOrganizationInvitation(FormCollection form)
         {
             try
@@ -11887,7 +11886,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("OrganizationInvitation"), Route("OrganizationInvitation"), NonNullableParameters]
+        [ HttpDelete, ActionName("OrganizationInvitation"), Route("OrganizationInvitation"), NonNullableParameters]
         public JsonResult DeleteOrganizationInvitation(int id)
         {
             try
@@ -11996,7 +11995,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicy")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPolicy")]
         public JsonResult AddPolicy(FormCollection form)
         {
             try
@@ -12259,7 +12258,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicyTypeLevel")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPolicyTypeLevel")]
         public JsonResult AddPolicyTypeLevel(FormCollection form)
         {
             try
@@ -12426,7 +12425,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPredicate")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPredicate")]
         public JsonResult AddPredicate(FormCollection form)
         {
             try
@@ -12592,7 +12591,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
         
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReferenceItem")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddReferenceItem")]
         public JsonResult AddReferenceItem(FormCollection form)
         {
             try
@@ -12710,7 +12709,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #region Reference Item Types
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReferenceItemType")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddReferenceItemType")]
         public JsonResult AddReferenceItemType(FormCollection form)
         {
             try
@@ -13098,7 +13097,7 @@ order by D.TextPath";
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRelationship")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRelationship")]
         public JsonResult AddRelationship(FormCollection form)
         {
             try
@@ -13580,7 +13579,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReport")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddReport")]
         public async Task<JsonResult> AddReport(FormCollection form)
         {
             try
@@ -13725,7 +13724,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPowerBICredentials")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPowerBICredentials")]
         public async Task<JsonResult> AddPowerBICredentials(FormCollection form)
         {
             try
@@ -13986,7 +13985,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
 
         #region Form Get/Post
         
-        [HttpPost, ValidateHttpAntiForgeryToken, ValidateInput(false), Route("AddReportTile")]
+        [HttpPost, AjaxValidateAntiForgeryToken,  ValidateInput(false), Route("AddReportTile")]
         public JsonResult AddReportTile(FormCollection form, bool isNg = false)
         {
             try
@@ -14247,7 +14246,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
             };
         }
 
-        [HttpPost, Route("Responsibility")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("Responsibility")]
         public JsonResult Responsibility(ResponsibilityTypeRelationOverrideItem r)
         {
             ResponsibilityTypeRelationOverrideItem model;
@@ -14358,7 +14357,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
 
         #region Form Get/Post
 
-        [HttpDelete, ValidateHttpAntiForgeryToken, Route("DeleteResponsibilityTypeByID"), NonNullableParameters]
+        [HttpDelete,  Route("DeleteResponsibilityTypeByID"), NonNullableParameters]
         public JsonResult DeleteResponsibilityTypeByID(int id)
         {
             try
@@ -14440,7 +14439,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
             };
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityType"), Route("ResponsibilityType")]
+        [HttpPut, ValidateInput(false),  ActionName("ResponsibilityType"), Route("ResponsibilityType")]
         public JsonResult PutResponsibilityType(ResponsibilityType model)
         {
             try
@@ -14475,7 +14474,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
             }
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityType"), Route("ResponsibilityType")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResponsibilityType"), Route("ResponsibilityType")]
         public JsonResult PostResponsibilityType(ResponsibilityType model)
         {
             try
@@ -14522,7 +14521,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                 });
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddResponsibilityTypeClaims")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddResponsibilityTypeClaims")]
         public JsonResult AddResponsibilityTypeClaims(FormCollection form)
         {
             try
@@ -14686,7 +14685,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
 
         #region JSON Feeds
 
-        [HttpPost, Route("ResponsibilityTypeRelationRule_WhenTest"), NonNullableParameters]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("ResponsibilityTypeRelationRule_WhenTest"), NonNullableParameters]
         public JsonNetResult ResponsibilityTypeRelationRule_WhenTest(ResponsibilityTypeRelationRule rule)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -14696,7 +14695,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
             return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [HttpPost, Route("ResponsibilityTypeRelationRule_ThenTest"), NonNullableParameters]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("ResponsibilityTypeRelationRule_ThenTest"), NonNullableParameters]
         public JsonNetResult ResponsibilityTypeRelationRule_ThenTest(ResponsibilityTypeRelationRule rule)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -14920,7 +14919,7 @@ order by DN.DisplayValue");
 
         #region Form Get/Post
 
-        [HttpDelete, ValidateHttpAntiForgeryToken, Route("DeleteResponsibilityTypeRelationRuleByID"), NonNullableParameters]
+        [HttpDelete,  Route("DeleteResponsibilityTypeRelationRuleByID"), NonNullableParameters]
         public JsonResult DeleteResponsibilityTypeRelationRuleByID(int id)
         {
             try
@@ -14972,7 +14971,7 @@ order by DN.DisplayValue");
             };
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
+        [HttpPut, ValidateInput(false),  ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
         public JsonResult PutResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
         {
             try
@@ -15006,7 +15005,7 @@ order by DN.DisplayValue");
             }
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
         public JsonResult PostResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
         {
             try
@@ -15164,7 +15163,7 @@ order by DN.DisplayValue");
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddResource")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddResource")]
         public JsonResult AddResource(FormCollection form)
         {
             try
@@ -15263,7 +15262,7 @@ order by DN.DisplayValue");
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("ResetResourcePassword")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("ResetResourcePassword")]
         public JsonResult ResetResourcePassword(FormCollection form)
         {
             try
@@ -15588,7 +15587,7 @@ order by DN.DisplayValue");
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddQuestionType")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddQuestionType")]
         public JsonResult AddQuestionType(QuestionTypeEditorModel model)
         {
             try
@@ -15656,7 +15655,7 @@ order by DN.DisplayValue");
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditQuestionType")]
+        [ HttpPut, ValidateInput(false), Route("EditQuestionType")]
         public JsonResult EditQuestionType(QuestionTypeEditorModel model)
         {
             try
@@ -15829,7 +15828,7 @@ order by DN.DisplayValue");
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRule")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRule")]
         public JsonResult AddRule(FormCollection form)
         {
             try
@@ -16012,7 +16011,7 @@ order by DN.DisplayValue");
 
         #endregion
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRuleDimension")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRuleDimension")]
         public JsonResult AddRuleDimension(FormCollection form)
         {
             try
@@ -16205,7 +16204,7 @@ order by DN.DisplayValue");
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRuleImplementation")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRuleImplementation")]
         public JsonResult AddRuleImplementation(FormCollection form)
         {
             try
@@ -16406,7 +16405,7 @@ order by DN.DisplayValue");
 
         #region Form Get/Post
 
-        [HttpPut, Route("MoveRuleQualifierType"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPut, Route("MoveRuleQualifierType"), ValidateInput(false)]
         public JsonResult MoveRuleQualifierType(int id, bool moveUp = false)
         {
             try
@@ -16428,7 +16427,7 @@ order by DN.DisplayValue");
             return jsonSuccess("Rule Qualifier moved", id.ToString(), "move", HttpStatusCode.OK);
         }
 
-        [HttpPost, Route("AddRuleQualifierType"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("AddRuleQualifierType"), ValidateInput(false)]
         public JsonResult AddQualifierType(RuleResultQualifierType model)
         {
             try
@@ -16446,7 +16445,7 @@ order by DN.DisplayValue");
             return jsonSuccess("Qualifier Type added successfully", model.ID.ToString(), "add", HttpStatusCode.OK);
         }
 
-        [HttpPut, Route("EditRuleQualifierType"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPut, Route("EditRuleQualifierType"), ValidateInput(false)]
         public JsonResult EditQualifierType(RuleResultQualifierType model)
         {
             try
@@ -16554,7 +16553,7 @@ order by DN.DisplayValue");
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRuleType")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRuleType")]
         public JsonResult AddRuleType(FormCollection form)
         {
             try
@@ -16681,7 +16680,7 @@ order by DN.DisplayValue");
 
         #endregion
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddScoreType")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddScoreType")]
         public JsonResult AddScoreType(FormCollection form)
         {
             try
@@ -17004,7 +17003,7 @@ from    [IntersectType] RT
             return fields.ToString();
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddScoreTypeMetric")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddScoreTypeMetric")]
         public JsonResult AddScoreTypeMetric(FormCollection form)
         {
             try
@@ -17270,7 +17269,7 @@ from    [IntersectType] RT
         }
 
 
-        [HttpPost, Route("shoppingcart/request")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("shoppingcart/request")]
         public JsonResult RequestShoppingCart(ShoppingCart cart)
         {
             var myCart = Company.GetById<ShoppingCart>(cart.ID);
@@ -17296,7 +17295,7 @@ from    [IntersectType] RT
 
         }
 
-        [HttpPost, Route("shoppingcart/clear")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("shoppingcart/clear")]
         public JsonResult EmptyShoppingCart(int cartID)
         {
             try
@@ -17325,7 +17324,7 @@ from    [IntersectType] RT
 
         #region Shortcut
 
-        [HttpPost, Route("shortcut/add")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("shortcut/add")]
         public JsonResult AddShortcut(Shortcut shortcut)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -17604,7 +17603,7 @@ from    [IntersectType] RT
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddSurveyType")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddSurveyType")]
         public JsonResult AddSurveyType(FormCollection form)
         {
             try
@@ -17809,7 +17808,7 @@ from    [IntersectType] RT
         #region Form Get/Post
 
 
-        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddNymAllocation")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddNymAllocation")]
         public JsonResult AddNymAllocation(NymAllocationModel model)
         {
             try
@@ -17856,7 +17855,7 @@ from    [IntersectType] RT
         }
         
 
-        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddCustomSynonym")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddCustomSynonym")]
         public JsonResult AddCustomSynonym(FormCollection form)
         {
             try
@@ -17897,7 +17896,7 @@ from    [IntersectType] RT
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddSynonym")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddSynonym")]
         public JsonResult AddSynonym(SynonymEditModel model)
         {
             try
@@ -18156,7 +18155,7 @@ order by TextPath
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomy")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddTaxonomy")]
         public JsonResult AddTaxonomy(FormCollection form)
         {
             try
@@ -18490,7 +18489,7 @@ order by TextPath
             public string TaxonomyTypeID { get; set; }
         }
                 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomyTypeLevel")]
+        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddTaxonomyTypeLevel")]
         public JsonResult AddTaxonomyTypeLevel(FormCollection form)
         {
             try

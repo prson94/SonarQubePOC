@@ -18,6 +18,7 @@ using d360.core.entities.Views;
 using SpreadsheetLight;
 using System.IO;
 using d360.web.Models.Attributes;
+using d360.web.Filters;
 
 namespace d360.web.Models
 {
@@ -603,7 +604,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             return Json(Company.GetLookupItemsAsDictionary(typeID), JsonRequestBehavior.AllowGet);
         }
         
-        [HttpPost, Route("UpdateFollowStatus"), NonNullableParameters]
+        [HttpPost, Route("UpdateFollowStatus"), NonNullableParameters, AjaxValidateAntiForgeryToken]
         public JsonResult UpdateFollowStatus(SystemObjects type, int id, bool includeChildren = false)
         {
             try

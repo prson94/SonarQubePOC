@@ -14,9 +14,7 @@ export class SocialService extends BaseService {
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
         });
-
-        this.addRequestVerificationHeaders(headers);
-
+        
         return this.http
             .post(`services/community/comments`, `IsNg=true&ObjectType=${objectType}&ObjectID=${objectID > 0 ? objectID : ''}&Skip=${page ? page : 0}&Take=${count ? count : 10}&DateFilter=-${daysToLookBack}&TypeFilter=${typeFilter == undefined ? '' : typeFilter}`,  { headers: headers })
             .toPromise()
@@ -28,9 +26,7 @@ export class SocialService extends BaseService {
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
         });
-
-        this.addRequestVerificationHeaders(headers);
-
+        
         return this.http
             .post('services/community/vote', `CommentID=${commentID}&Vote=${vote}`, { headers: headers })
             .toPromise()
@@ -42,9 +38,7 @@ export class SocialService extends BaseService {
         let headers = new Headers();
 
         headers.append('Content-Type', 'application/json');
-
-        this.addRequestVerificationHeaders(headers);
-
+        
         return this.http
             .post('services/community/edit', commentEditData, { headers: headers })
             .toPromise()
@@ -56,9 +50,7 @@ export class SocialService extends BaseService {
         let headers = new Headers();
 
         headers.append('Content-Type', 'application/json');
-
-        this.addRequestVerificationHeaders(headers);
-
+        
         return this.http
             .post('services/community/comment', commentAddData, { headers: headers })
             .toPromise()
