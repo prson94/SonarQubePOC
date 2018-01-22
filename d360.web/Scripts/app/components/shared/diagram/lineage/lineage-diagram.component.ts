@@ -646,12 +646,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             model.Nodes.push(nn);
         });
 
-        console.log('save', model);
+        //console.log('save', model);
         this.isLoading = true;
         this.lineageService.postLineageDiagram(model)
             .then(r => {
-                console.log('save response', r);
+                //console.log('save response', r);
                 this.isLoading = false;
+                this.populateDiagram();
                 if (r != null && r.type != null)
                     this.showMessageForResult(this.messagesService, r);
             });
