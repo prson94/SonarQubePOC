@@ -12,6 +12,7 @@ export class TooltipInfo {
     Url: string;    
     FieldValues: TooltipFieldValue[];    
     Description: string;
+    ShowTooltip: boolean;
 }
 
 export class LookupTooltipInfo {

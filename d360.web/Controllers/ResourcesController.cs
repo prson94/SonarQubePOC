@@ -631,9 +631,22 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         {
             try
             {
-                var det = Company.GetObjectDetail(objectType, objectID);
+                //check if the user has access
+                var accessSql = "select count(1) from AssetWithoutReadPermission arp where arp.resourceid = @resourceId and arp.[object] = @Type and arp.objectid = @ID";
 
-                var sql = @"select 
+                var accessCount = Company.Query<int>(accessSql, new { @resourceId = Company.CurrentResourceID, @Type = objectType, @ID = objectID }).FirstOrDefault();
+
+                bool show = false;
+                ObjectDetail det = null;
+                List<FieldTooltipValueModel> res = new List<FieldTooltipValueModel>();
+                string desc = "";
+
+                if (accessCount <= 0)
+                {
+                    show = true;
+                    det = Company.GetObjectDetail(objectType, objectID);
+
+                    var sql = @"select 
                                 f.FormattedValue as [Value],
 	                            ft.FriendlyName as Name
                             from
@@ -642,9 +655,9 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                                 inner
                             join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')";
 
-                var res = Company.Query<FieldTooltipValueModel>(sql, new { ty = objectType, obj = objectID });
+                    res = Company.Query<FieldTooltipValueModel>(sql, new { ty = objectType, obj = objectID }).ToList();
 
-                var descSql = @"select 
+                    var descSql = @"select 
                                 f.FormattedValue as [Value]	                            
                             from
                                 fieldtype ft
@@ -652,11 +665,11 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                                 inner
                             join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name = 'Description')";
 
-                var desc = Company.Query<string>(descSql, new { ty = objectType, obj = objectID }).FirstOrDefault();
+                    desc = Company.Query<string>(descSql, new { ty = objectType, obj = objectID }).FirstOrDefault();
 
+                }
 
-
-                return Json(new { det.AssetID, DisplayName = (det != null ? det.Name : ""), TypeName = (det != null ? det.TypeName : ""), Url = (det != null ? $"/{det.Url}" : ""), FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
+                return Json(new { ShowTooltip = show, AssetID = (det != null ? det.AssetID : -1), DisplayName = (det != null ? det.Name : ""), TypeName = (det != null ? det.TypeName : ""), Url = (det != null ? $"/{det.Url}" : ""), FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {

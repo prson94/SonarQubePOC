@@ -47,6 +47,10 @@ export class PreviewTooltipComponent  {
         if (!this.data) {
             //get object properties for the tooltip
             this.toolTipService.getTooltipInfo(this.objectType, this.objectId).then(res => {
+                if (!res.ShowTooltip) {
+                    this.active = false;
+                    return;
+                }
                 this.data = res;
                 this.showPanel(item.children[0].nextElementSibling, item);
                 this.ref.markForCheck();
