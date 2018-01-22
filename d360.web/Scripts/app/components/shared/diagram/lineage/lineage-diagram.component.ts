@@ -68,6 +68,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private objectsLoading = false;
     private totalRecords = 0;
     private gridIsLoading = false;
+    private addObjectsWarning = "";
 
     public diagramMode: DiagramMode = DiagramMode.Diagram;
     DiagramMode = DiagramMode;
@@ -511,11 +512,14 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private lazyLoad(e: any) {
         //console.log('lazyLoad', e);
+        this.objectsLoading = true;
         this.lineageService.getLineageObjects(+this.selectedAssetTypeId, e.first, e.rows, e.globalFilter)
             .then(r => {
                 this.objects = r.results;
                 if ((e.globalFilter != null && e.globalFilter != "") || e.first == 0)
                     this.totalRecords = r.count;
+
+                this.objectsLoading = false;
             });
     }
 
@@ -551,9 +555,22 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.selectedObjects == null || this.selectedObjects.length < 1)
             return;
 
+        this.addObjectsWarning = "";
+
         this.diagram.startTransaction('Add Objects');
         //console.log('add', this.selectedObjects, this.objects);
         this.selectedObjects.forEach(s => {
+
+            let ix = this.diagram.model.nodeDataArray.findIndex(i => (<any>i).object == s.object && (<any>i).objectId == s.objectId);
+
+            if (ix > -1) {
+                if (this.addObjectsWarning == "")
+                    this.addObjectsWarning = "The following objects already exist on the lineage and were not added: "
+
+                this.addObjectsWarning += s.name + ', ';
+                return;
+            }
+
             let m = new NodeModelV2();
             m.assetId = s.assetId;
             m.backColor = s.backColor;
@@ -569,6 +586,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         });
 
+        if (this.addObjectsWarning != "") {
+            //remove trailing comma
+            this.addObjectsWarning = this.addObjectsWarning.trim();
+            this.addObjectsWarning = this.addObjectsWarning.substr(0, this.addObjectsWarning.length - 1);
+        }
         this.selectedObjects = null;
 
         this.diagram.commitTransaction('Add Objects');
