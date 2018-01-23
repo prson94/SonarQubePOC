@@ -25,6 +25,11 @@ import { MessagesService } from '../../../services/messages.service';
                                         <span *ngIf="item?.Description != null" [innerHTML]="item?.Description"></span>
                                     </ng-template>
                                 </p-column>
+                               <p-column field="ID" header="Status" [sortable]="false" [filter]="!showSimpleFilter">
+                                    <ng-template pTemplate type="body" let-item="rowData">
+                                        <span>{{isActive(item)}}</span>
+                                    </ng-template>
+                                </p-column>
                                 <p-column [style]="{width:'40px'}">
                                     <ng-template let-metric="rowData" pTemplate type="body">
                                         <div class="RowTools">
@@ -121,5 +126,24 @@ export class AdminMetricItemListComponent extends BaseComponent implements OnIni
 
     delete(e: any) {
         this.formMode = FormMode.Deleting;
+    }
+
+    isActive(item: Item): string {
+        if (item.EffectiveStartDate == null || item.EffectiveStartDate == "")
+            return 'Inactive';
+
+        var start = new Date(item.EffectiveStartDate);
+        var end = new Date(item.EffectiveEndDate);
+        var now = new Date(Date.now());
+
+        if (start < now) {
+            if (item.EffectiveEndDate == null || item.EffectiveEndDate == "")
+                return 'Active';
+            if (end > now)
+                return 'Active';
+        }
+
+        return 'Inactive';
+
     }
 };

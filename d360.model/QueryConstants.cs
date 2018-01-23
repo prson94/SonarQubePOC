@@ -1614,7 +1614,7 @@ select
 									end as 'TypeName'
 	                                ,od.ObjectType as 'ObjectType'
 	                                ,od.ObjectTypeID as 'ObjectTypeID'
-	                                ,coalesce(it.Name, od.Name,'(unknown)') as 'ObjectName'
+	                                ,coalesce(cod.Name, od.Name, it.Name, '(unknown)') as 'ObjectName'
 	                                ,wis.id as 'ItemStepID'
 	                                ,wvs.name as 'StepName'
 	                                ,wvs.steptype as 'StepType'

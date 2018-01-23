@@ -14,17 +14,17 @@ import { Title } from '@angular/platform-browser';
                         </div>
                     </div>
                     <div class="col s5">
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">  
-                                    <d3s-admin-metric-item-list></d3s-admin-metric-item-list>
-                                </div>
-                            </div>
-                        </div> 
                         <div class="row" *ngIf="selection != null">
                             <div class="col s12">
                                 <div class="tile tile-detail">  
                                     <d3s-admin-metric-map-list [groupId]="selection?.ID" [groupName]="selection?.Name"></d3s-admin-metric-map-list>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">  
+                                    <d3s-admin-metric-item-list></d3s-admin-metric-item-list>
                                 </div>
                             </div>
                         </div> 
