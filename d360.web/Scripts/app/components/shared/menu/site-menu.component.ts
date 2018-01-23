@@ -136,7 +136,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 }
                 
                 this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order
-                        
+
                 if (result.IsAdmin) this.buildAdminMenu();
 
                 // used to enable guard that allows access to administrative routes                                

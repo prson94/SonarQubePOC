@@ -2422,6 +2422,15 @@ namespace d360.web.Controllers
         public JsonNetResult StyleCustomizations()
         {
             var css = "";
+
+            //only admins can access this route
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+
+
             //go to azure storage for this company try to get the custom css
             try
             {
@@ -2482,6 +2491,12 @@ namespace d360.web.Controllers
         [Route("CompanySettings")]
         public JsonNetResult CompanySettings()
         {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+
             var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
             var model = new CompanySettingsEditorModel();
             model.DisableCommunityPosting = (settings.Any(i => i.SettingID == 1) ? bool.Parse(settings.Single(i => i.SettingID == 1).Value) : false);
@@ -10001,6 +10016,13 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("loads/{id:int}/Errors.xlsx"), FileDownload, HttpGet]
         public FileResult ErrorLoadFile(int id)
         {
+            //only admins can access this route
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+
             var loadColumns = Company.Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
             var loadItems = Company.Query<dynamic>("select RowIndex, StatusMessage from LoadItem where LoadID = @id and Status = 0 order by RowIndex asc", new { id}).ToList();
             var loadItemColumnss = Company.Query<LoadItemColumn>("select C.* from LoadItem I inner join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @id and I.Status = 0 order by I.RowIndex asc, C.ColumnIndex asc", new { id }).ToList();
@@ -10049,6 +10071,13 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("loads/{id:int}/all.xlsx"), FileDownload, HttpGet]
         public FileResult FullLoadFile(int id)
         {
+            //only admins can access this route
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+
             var load = Company.GetById<Load>(id);
             return File(load.File, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
         }

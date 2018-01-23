@@ -70,7 +70,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
 
         this.workflowService.getChangeTypes()
             .then(r => this.changeTypes = r)
-            .then(() => this.workflowService.getTypes())
+            .then(() => this.workflowService.getAdminTypes())
             .then(r => {
                 this.items = r
                 this.items.forEach(i => {

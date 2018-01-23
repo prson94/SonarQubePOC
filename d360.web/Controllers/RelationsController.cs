@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web.Mvc;
 
 namespace d360.web.Controllers
@@ -111,6 +112,12 @@ namespace d360.web.Controllers
         [HttpGet, Route("Predicates")]
         public JsonNetResult Predicates()
         {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+
             var predicates = Company.Table<Predicate>().OrderBy(i => i.Name);
             var usage = Company.Filter<IntersectType>(i => i.PredicateID.HasValue).Select(i => i.PredicateID.Value).Distinct().ToList();
             var data = new List<dynamic>();
@@ -145,6 +152,12 @@ namespace d360.web.Controllers
         [Route("_IntersectTypes")]
         public JsonNetResult _IntersectTypes()
         {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+
             var models = Company.Query<dynamic>(
 @"select    ID,
 			Subject,

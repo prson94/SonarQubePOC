@@ -104,17 +104,20 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             });
         }
 
-        let fields = new RightSidebarItem()
-        fields.hasDynamicUrl = true;
-        fields.icons = ['fa-drivers-license-o'];
-        fields.tag = 'fields'
-        fields.title = 'Field Definitions'
-        fields.url = '/sidebar/fields'
-        fields.dynamicUrlCallback = (() => {
-            return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-        });
+        if (this.authenticationService.isAdmin) {
+            let fields = new RightSidebarItem()
+            fields.hasDynamicUrl = true;
+            fields.icons = ['fa-drivers-license-o'];
+            fields.tag = 'fields'
+            fields.title = 'Field Definitions'
+            fields.url = '/sidebar/fields'
+            fields.dynamicUrlCallback = (() => {
+                return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+            });
+
+            this.rightSidebarService.showItem(fields);
+        }        
         
-        this.rightSidebarService.showItem(fields);
 
         if (this.authenticationService.isAdmin) {
             let permissions = new RightSidebarItem()

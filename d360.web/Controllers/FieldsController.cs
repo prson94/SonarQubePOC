@@ -54,6 +54,12 @@ namespace d360.web.Controllers
         [Route("{type}/{id:int}/full")]
         public JsonNetResult _FieldTypesByObjectFull(SystemObjects type, int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+
             var types = DataType.Text.GetDataTypeInfoList();
             var list = (from ft in Company.GetFieldTypesByObject(type, id).ToList()
                        join dt in types on ft.Type equals dt.Name

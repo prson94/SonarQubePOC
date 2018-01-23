@@ -42,7 +42,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     }
 
     load(): void {
-        this.responsibilityTypeService.getResponsibilityTypes()
+        this.responsibilityTypeService.getAdminResponsibilityTypes()
             .then(data => {
                 this.responsibilityTypeItems = data;
                 this.selectedRow = this.responsibilityTypeItems[0];

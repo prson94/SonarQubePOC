@@ -488,6 +488,12 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         [HttpGet, Route("_Lookups"), NonNullableParameters]
         public JsonResult _Lookups(string sortDataField, string sortOrder, int pagenum = 0, int pagesize = 10)
         {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+            
             var list = Company.Table<LookupType>();
 
             var total = list.Count();

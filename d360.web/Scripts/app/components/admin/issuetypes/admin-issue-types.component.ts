@@ -112,7 +112,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 
     private load() {
         this.isLoading = true;
-        this.workflowService.getWorkflowIssueTypes()
+        this.workflowService.getAdminWorkflowIssueTypes()
             .then(result => {
                 this.issueTypes = result;
                 this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;

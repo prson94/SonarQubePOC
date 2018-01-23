@@ -92,6 +92,13 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getAdminWorkflowIssueTypes(): Promise<WorkflowIssueType[]> {
+        return this.http.get('api/adminissuetypes')
+            .toPromise()
+            .then(response => <WorkflowIssueType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     deleteWorkflowIssueType(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'ISSUETYPE', id);
     }
@@ -175,6 +182,13 @@ export class WorkflowService extends BaseService {
         return this.http.get('services/workflow/transitiontypes')
             .toPromise()
             .then(response => <TransitionTypeInfo[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getAdminTypes(): Promise<any> {
+        return this.http.get('services/workflow/admintypes')
+            .toPromise()
+            .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 

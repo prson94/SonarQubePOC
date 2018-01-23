@@ -1577,24 +1577,33 @@ from	cte a
         [HttpGet, Route("loads")]
         public IEnumerable<LoadDetail> GetLoads()
         {
-            return Company.GetLoadDetails();
-        }
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+            }
 
-        [HttpGet, Route("loads/{id:int}")]
-        public LoadDetail GetLoad(int id)
-        {
-            return Company.GetLoadDetail(id);
+            return Company.GetLoadDetails();
         }
 
         [HttpGet, Route("loads/{id:int}/columns")]
         public IEnumerable<dynamic> GetLoadColumns(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+            }
+
             return Company.GetLoadColumnDetails(id);
         }
 
         [HttpGet, Route("loads/{id:int}/items")]
         public IEnumerable<dynamic> GetLoadItems(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+            }
+            
             return Company.GetLoadItemDetails(id);
         }
 
@@ -4000,6 +4009,22 @@ from	ResponsibilityDetails RD
                 .AsQueryable();
         }
 
+        [Route("ownership/admintypes")]
+        public IQueryable<dynamic> GetAdminResponsibilityTypes()
+        {
+            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+            
+            return Company.Table<ResponsibilityType>()
+                .Select(i => new
+                {
+                    i.ID,
+                    i.Name,
+                    i.Description
+                })
+                .OrderBy(i => i.Name)
+                .AsQueryable();
+        }
+
         [Route("ownership/types/{id:int}/claims")]
         public IQueryable<ResponsibilityTypeClaimDetail> GetClaimsByResponsibilityType(int id)
         {
@@ -4052,6 +4077,8 @@ from    ResponsibilityTypeRelationRule R
         [Route("ownership/{type}/{id:int}/responsibilitytypes")]
         public HttpResponseMessage GetResponsibilityTypesByObject(SystemObjects type, int id)
         {
+            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+
             var sType = type.ToString();
             return Request.CreateResponse(HttpStatusCode.OK,
                 Company.Filter<ResponsibilityTypeRelation>(i => i.ObjectID == id && i.ObjectType == sType, i => i.ResponsibilityType)
@@ -4377,6 +4404,8 @@ from    (
         [Route("ruletypes")]
         public IQueryable<RuleType> GetRuleTypes()
         {
+            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+
             return Company.Table<RuleType>();
         }
 
@@ -6959,6 +6988,8 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
         [Route("surveys")]
         public IQueryable<SurveyType> GetSurveyTypes()
         {
+            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+
             return Company.Table<SurveyType>();
         }
 
@@ -7480,6 +7511,17 @@ from	    TaxonomyType FAT
 
         #region Issue Types
 
+        [Route("adminissuetypes")]
+        public IQueryable<core.entities.IssueType> GetAdminIssueTypes()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));                
+            }
+
+            return Company.Table<core.entities.IssueType>();
+        }
+
         [Route("issuetypes")]
         public IQueryable<core.entities.IssueType> GetIssueTypes()
         {
@@ -7515,6 +7557,8 @@ from	    TaxonomyType FAT
         [Route("metrics/groups")]
         public IQueryable<MetricGroup> GetMetricGroups()
         {
+            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+
             return Company.Table<MetricGroup>();
         }
 

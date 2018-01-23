@@ -30,7 +30,9 @@ namespace d360.web.Controllers.Services
         public IEnumerable<OrganizationTypeDetail> GetOrganizationTypes()
         {
             if (!Company.CurrentResourceIsAdmin)
-                return null;
+            {
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+            }
 
             return Company.Query<OrganizationTypeDetail>(@"
                 select		T.ID,
@@ -64,7 +66,7 @@ namespace d360.web.Controllers.Services
         public IEnumerable<ContractModel> GetDefaultContracts()
         {
             if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
 
             return (
                     from c in Company.Contracts.ToList()

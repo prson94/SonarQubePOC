@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Xml.Linq;
 using System.Data.Entity;
+using System.Net;
 
 namespace d360.web.Controllers
 {
@@ -76,6 +77,12 @@ namespace d360.web.Controllers
         [Route("reports")]
         public JsonNetResult GetReports()
         {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+
             var reports = Company.Reports.Include(rpt=>rpt.Responsibilities).OrderBy(x => x.Name).ToList();
 
             foreach (var report in reports)

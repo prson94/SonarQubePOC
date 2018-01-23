@@ -31,6 +31,13 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
             .catch(err => this.handleError(err));
     }
 
+    getAdminResponsibilityTypes(): Promise<ResponsibilityType[]> {
+        return this.http.get('api/ownership/admintypes')
+            .toPromise()
+            .then(response => <ResponsibilityType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getResponsibilityType(id: number, group: ResponsibilityTypeGroup = ResponsibilityTypeGroup.People): Promise<ResponsibilityType> {
         return this.http.get(`form/ResponsibilityType?id=${id}&group=${group}`)
             .toPromise()

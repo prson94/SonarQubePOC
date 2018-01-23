@@ -724,6 +724,20 @@ order by wi.StartedOn desc";
             return TransitionType.Always.GetList();
         }
 
+
+        [Route("admintypes"), HttpGet]
+        public HttpResponseMessage GetWorkflowAdminTypes()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+            }
+
+            var types = Company.Query<dynamic>(QueryConstants.WorkflowList).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, types);
+        }
+
         [Route("types"), HttpGet]
         public HttpResponseMessage GetWorkflowTypes()
         {

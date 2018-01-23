@@ -12,6 +12,8 @@ export class AdminUserGuard implements CanActivate {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {                
         if (this.authenticationService.isAdmin) {
+            //
+            console.log('auth');
             return true;
         }
         else {

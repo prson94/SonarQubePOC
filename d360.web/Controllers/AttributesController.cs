@@ -7,6 +7,7 @@ using d360.web.Models;
 using d360.core.enums;
 using d360.model;
 using d360.web.Models.Attributes;
+using System.Net;
 
 namespace d360.web.Controllers
 {
@@ -138,6 +139,12 @@ namespace d360.web.Controllers
         [Route("fulltypes")]
         public JsonNetResult GetFullTypes()
         {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+
             return new JsonNetResult
             {
                 Data = Company.Table<AttributeType>().OrderBy(i => i.Parent.Name).ThenBy(i => i.Name),
