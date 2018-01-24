@@ -78,7 +78,7 @@ export class LinkModelV2 {
     from: string;
     to: string;
     intersectId: number = -1;
-    intersectTypeId: number;
+    intersectTypeId: number = -1;
     state: number;
     predicate: string;
     predicates: PredicateInfo[] = [];

@@ -49,8 +49,8 @@
                             <div class="FieldName">
                                 Object Type
                             </div>
-                            <div>
-                                <select style="width: 100%" [ngModel]="selectedAssetTypeId" (ngModelChange)="selectObjectType($event);" [disabled]="objectsLoading">
+                            <div  >
+                                <select style="width: 100%" [ngModel]="selectedAssetTypeId" (ngModelChange)="selectObjectType($event);">
                                     <option></option>
                                     <option *ngFor="let o of objectTypes" [value]="o.value">{{o.label}}</option>
                                 </select>
@@ -61,7 +61,7 @@
                             <div class="FieldName">
                                 Choose Objects
                             </div>
-                            <div *ngIf="objectsLoading">
+                            <div *ngIf="false">
                                 <d3s-loading isLoading="true"></d3s-loading>
                             </div>
                             <div>
