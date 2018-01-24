@@ -14,7 +14,10 @@ import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../
                                     <div class="col s12">
                                         <span *ngSwitchCase="'dropdownlist'">                                            
                                             <p-multiSelect [name]="'FilterValue_' + index" [options]="field.filteritems | arraySelectItemPipe" [(ngModel)]="field.value" [style]="{width:'100%'}"></p-multiSelect>
-                                        </span>                                
+                                        </span>           
+                                        <span *ngSwitchCase="'datetimeinput'">                            
+                                            <p-calendar [(ngModel)]="field.value" [name]="'FilterValue_' + index" [dateFormat]="getLocaleDateString()"></p-calendar>
+                                        </span>
                                         <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" [ngModel]="field.value" (ngModelChange)="field.value = $event" placeholder="Enter a value" style="width:100%;">                                 
                                     </div>
                                 </div>
@@ -80,6 +83,14 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent {
                     this.filters.push(filter);
                 }                
             }
+            else if (field.columntype == "datetimeinput") {
+                filter.condition = "EQUALS";
+                
+                var date = new Date(field.value);                
+                filter.value = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
+                filter.fieldtype = (field.hiddenfield) ? GridFilterFieldType.Hidden : GridFilterFieldType.Normal;
+                this.filters.push(filter);
+            }
             else {
                 filter.condition = "CONTAINS";
                 filter.value = field.value;
@@ -90,5 +101,5 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent {
         
         this.filtersChange.emit(this.filters);
         this.filterChanged.emit();        
-    }
+    }    
 };

@@ -41,6 +41,7 @@ export function highchartsFactory() {
 
 import {    
     InputTextModule,    
+    CalendarModule,
     DataTableModule,
     TreeTableModule,
     ButtonModule,
@@ -50,6 +51,7 @@ import {
     TooltipModule,        
     SharedModule,
 } from 'primeng/primeng';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -61,7 +63,8 @@ import {
         ArtifactRoutingModule,
 
         //primeng        
-        InputTextModule,        
+        InputTextModule, 
+        CalendarModule, 
         DataTableModule,
         TreeTableModule,
         ButtonModule,
