@@ -89,6 +89,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private overlayMaxHeight = 700;
     private overlayWidth = 500;
     private history = [];
+    private showPredicateNames = true;
 
     constructor(
         private myElement: ElementRef,
@@ -416,6 +417,18 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 items: null,
                 title: 'Save Lineage'
             });
+
+        let top = {
+            icon: 'fa-eye',
+            items: [{
+                icon: null,
+                items: null,
+                label: 'Toggle Predicate Names'
+            }],
+            title: ''
+        }
+
+        this.menuItems.push(top);
 
         this.menuItems.push({
             icon: 'fa-search-plus',
@@ -970,6 +983,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     public menuClick(e: MenuItem) {
+        //console.log('menuClick', e);
         if (e.icon == 'fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
         } else if (e.icon == 'fa-pencil') {
@@ -997,6 +1011,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.zoomDiagram(this.diagram.scale + .1);
         } else if (e.icon == 'fa-search-minus') {
             this.zoomDiagram(this.diagram.scale - .1);
+        } else if (e.icon == null && e.label == 'Toggle Predicate Names') {
+            this.showPredicateNames = !this.showPredicateNames;
+            this.diagramModelAsGraph().linkDataArray.forEach(l => {
+                this.diagram.model.setDataProperty(l, "text", null);
+            });
+
         }
     }
 
@@ -1244,12 +1264,14 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     //strokeDashArray: [3, 2]
                 },
                     //only visible if there's a label
-                    new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                    //new go.Binding("visible", "text", a => { return (a && this.showPredicateNames ? true : false) })
+                    new go.Binding("visible", "text", a => { return (a && this.showPredicateNames ? true : false) })
                 ), // the link shape
                 this.g(go.TextBlock, {
                     textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
                 },
                     // the label
+                    new go.Binding("visible", "text", a => { return (a && this.showPredicateNames ? true : false) }),
                     new go.Binding("text", "text")
                 )
             )
@@ -1283,12 +1305,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     //strokeDashArray: [3, 2]
                 },
                     //only visible if there's a label
-                    new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                    new go.Binding("visible", "text", a => { return (a && this.showPredicateNames ? true : false) }),
                 ), // the link shape
                 this.g(go.TextBlock, {
                     textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4,
                 },
                     // the label
+                    new go.Binding("visible", "text", a => { return (a && this.showPredicateNames ? true : false) }),
                     new go.Binding("text", "text")
                 )
             )
@@ -1322,12 +1345,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     //strokeDashArray: [3, 2]
                 },
                     //only visible if there's a label
-                    new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                    new go.Binding("visible", "text", a => { return (a && this.showPredicateNames ? true : false) }),
                 ), // the link shape
                 this.g(go.TextBlock, {
                     textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
                 },
                     // the label
+                    new go.Binding("visible", "text", a => { return (a && this.showPredicateNames ? true : false) }),
                     new go.Binding("text", "text").makeTwoWay()
                 )
             )
