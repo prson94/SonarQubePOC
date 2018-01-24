@@ -289,7 +289,7 @@ namespace d360.extensions.search
                         else
                             bFirst = false;
 
-                        var val = f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
+                        var val = f.Value.Replace("\r", "").Replace("\n", "").Replace("\v","").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
                         val = HtmlUtilities.RemoveTags(val);
 
                         sb.Append("\"");
