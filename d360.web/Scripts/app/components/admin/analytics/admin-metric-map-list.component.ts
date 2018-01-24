@@ -20,6 +20,11 @@ import { MessagesService } from '../../../services/messages.service';
                                 <p-column field="itemName" header="Item" ></p-column>
                                 <p-column field="objectName" header="Object" ></p-column>
                                 <p-column field="Weight" header="Weight" ></p-column>
+                               <p-column field="ID" header="Status" [sortable]="false" [filter]="!showSimpleFilter">
+                                    <ng-template pTemplate type="body" let-item="rowData">
+                                        <span>{{isActive(item)}}</span>
+                                    </ng-template>
+                                </p-column>
                                 <p-column [style]="{width:'40px'}">
                                     <ng-template let-map="rowData" pTemplate type="body">
                                         <div class="RowTools">
@@ -121,5 +126,24 @@ export class AdminMetricMapListComponent extends BaseComponent implements OnInit
 
     deleteEvent(e: any) {
         this.showMessageForResult(this.messagesService, e.result);
+    }
+
+    isActive(item: Item): string {
+        if (item.EffectiveStartDate == null || item.EffectiveStartDate == "")
+            return 'Inactive';
+
+        var start = new Date(item.EffectiveStartDate);
+        var end = new Date(item.EffectiveEndDate);
+        var now = new Date(Date.now());
+
+        if (start < now) {
+            if (item.EffectiveEndDate == null || item.EffectiveEndDate == "")
+                return 'Active';
+            if (end > now)
+                return 'Active';
+        }
+
+        return 'Inactive';
+
     }
 };
