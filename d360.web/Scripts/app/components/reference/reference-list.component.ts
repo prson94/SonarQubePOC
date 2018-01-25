@@ -9,12 +9,14 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ReferenceService } from '../../services/reference.service';
+import { UriBasedService } from '../../services/uri-based.service';
+import { ClaimsService } from '../../services/claims.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AuthenticationService } from '../../services/authentication.service';
 
 @Component({
-    selector: 'd3s-reference-list',   
-   
+    selector: 'd3s-reference-list',
+
     template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
@@ -39,10 +41,10 @@ import { AuthenticationService } from '../../services/authentication.service';
                     </div>
                 </div>
                `,
-    providers: [PermissionsService, ReferenceService],
+    providers: [PermissionsService, ReferenceService, UriBasedService, ClaimsService],
 })
 
-export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {    
+export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private selectedReferenceItemType: ReferenceItemType;
     private selectedReferenceListId: number = 0;
@@ -55,14 +57,18 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected referenceService: ReferenceService,
-        protected authenticationService: AuthenticationService
+        protected authenticationService: AuthenticationService,
+        private uriBasedService: UriBasedService,
+        private claimsService: ClaimsService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
+    }
+
+    ngOnInit() {
         this.setCommonRightSideBar(true, true, false, true, true, true, false, true);
 
-        if (this.auditSidebar)
-        {
+        if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
                 return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceItemType.ID}`
@@ -116,8 +122,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             });
 
             this.rightSidebarService.showItem(fields);
-        }        
-        
+        }
+
 
         if (this.authenticationService.isAdmin) {
             let permissions = new RightSidebarItem()
@@ -131,9 +137,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             });
             this.rightSidebarService.showItem(permissions);
         }
-    }
 
-    ngOnInit() {
+
         this.setBrowserTitle(this.titleService, 'Reference');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
@@ -143,8 +148,33 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
         this.sub = this.route.params.subscribe(params => {
+            let claims = [];
+            //load default perms
+            this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
+
             this.selectedReferenceListId = +params['referenceListId']; // (+) converts string 'id' to a number
+
+            //load specific type perms if applicable
+            if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {
+                this.claimsService.getClaims(this.selectedReferenceListId, 'ReferenceItemType')
+                    .then(r => claims = r)
+                    .then(() => {
+                        if (claims != null && claims.length > 0) {
+                            this.uriBasedService.getItems(`api/ownership/ReferenceItemType/${this.selectedReferenceListId}/claims`).
+                                then(r => {
+                                    this.permissions = [];
+                                    r.forEach(i => {
+                                        this.permissions.push({
+                                            Claim: i.Claim.toString(),
+                                            ClaimObject: i.ClaimObject.toString()
+                                        })
+                                    });
+                                });
+                        }
+                    });
+            }
         });
+
     }
 
     ngOnDestroy() {
@@ -155,9 +185,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         if (this.selectedReferenceItemType == null) return "";
 
         return `api/referenceItems/${this.selectedReferenceItemType.ID}/items.json`;
-    }  
+    }
 
-    exportDataToExcel(): void{
+    exportDataToExcel(): void {
         if (!this.selectedReferenceItemType) return;
 
         this.referenceService.exportReferenceItems(this.selectedReferenceItemType.ID, this.selectedReferenceItemType.Name);
