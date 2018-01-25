@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { ArtifactService } from '../../services/artifacts.service';
 import { Count} from '../../models/counts.model';
-import { Artifact } from '../../models/artifacts.model';
+import { AssetDetail } from '../../models/asset.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
@@ -21,7 +21,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="DisplayValue" header="Name" sortable="true" [filter]="!showSimpleFilter">
                                 <ng-template let-col let-item="rowData" pTemplate type="body">
-                                    <a (click)="artifactLink(item.ArtifactTypeID, item.ID)">{{item.DisplayValue}}</a>
+                                    <a (click)="artifactLink(item.TypeID, item.ObjectID)">{{item.DisplayValue}}</a>
                                 </ng-template>
                             </p-column>                                                                                                   
                             <p-column field="CreatedOn" header="Created" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}">
@@ -49,8 +49,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 })
 
 export class ActivityDetailsTile extends BaseComponent implements OnInit {    
-    private items: Artifact[] = [];
-    private selected: Artifact;
+    private items: AssetDetail[] = [];
+    private selected: AssetDetail;
 
     @Input() objectName: string;
     @Input() objectId: number = 0;
@@ -69,7 +69,7 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
     }
 
     private navigateToArtifact() {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${this.selected.ArtifactTypeID}/${this.selected.ID}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${this.selected.TypeID}/${this.selected.ObjectID}`);
     }
 
     private artifactLink(artifactTypeId, artifactId) {

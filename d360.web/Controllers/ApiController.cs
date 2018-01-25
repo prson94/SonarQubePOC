@@ -7262,16 +7262,25 @@ from	    TaxonomyType FAT
         #region Counts
 
         [Route("CountItems/Activity/{artifactTypeId}/{days}")]
-        public IQueryable<Artifact> GetAreaActivityItems(int artifactTypeId, int days)
+        public IEnumerable<AssetDetail> GetAreaActivityItems(int artifactTypeId, int days)
         {
+            var sql = @"select 
+                            *
+                        from
+                            assetdetail a                            
+                        where
+                            a.[object] = 'Artifact' and a.[typeid] = @typeId";
+
             if (days != 0)
             {
                 DateTime startDate = DateTime.Now.AddDays(days * -1);
 
-                return Company.Filter<Artifact>(i => (i.CreatedOn > startDate || i.UpdatedOn > startDate) && i.ArtifactTypeID == artifactTypeId);
+                sql += " and (a.createdon > @startDate or a.updatedon > @startDate)";
+
+                return Company.Query<AssetDetail>(sql, new { typeId = artifactTypeId, startDate = startDate });            
             }
 
-            return Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactTypeId);
+            return Company.Query<AssetDetail>(sql, new { typeId = artifactTypeId});
         }
 
         [Route("Count/{area}/{days}")]

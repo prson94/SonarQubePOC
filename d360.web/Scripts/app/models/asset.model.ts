@@ -58,3 +58,17 @@ export class AssetType {
     UpdatedBy: number;
     UpdatedOn: string;
 }
+
+export class AssetDetail {
+    AssetTypeID: number;
+    AssetTypeName: string;
+    CreatedOn: Date;
+    DisplayValue: string;
+    ID: number;
+    Object: string;
+    ObjectID: number;
+    State: number;
+    Type: string;
+    TypeID: number;
+    UpdatedOn: Date;
+}

@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -23,6 +24,9 @@ namespace d360.core.entities
         public string Type { get; set; }
 
         public int TypeID { get; set; }
+
+        public DateTime?  CreatedOn { get; set; }
+        public DateTime? UpdatedOn { get; set; }
 
     }
 }

@@ -8,6 +8,7 @@ import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
+import { AssetDetail } from '../models/asset.model';
 
 @Injectable()
 export class ArtifactService extends BaseService {
@@ -212,10 +213,10 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getActivityDetails(artifactTypeId: number, daysToLookBack): Promise<Artifact[]> {
+    getActivityDetails(artifactTypeId: number, daysToLookBack): Promise<AssetDetail[]> {
         return this.http.get(`api/countitems/activity/${artifactTypeId}/${daysToLookBack}`)
             .toPromise()
-            .then(response => <Artifact[]>response.json())
+            .then(response => <AssetDetail[]>response.json())
             .catch(err => this.handleError(err));
     }
 
