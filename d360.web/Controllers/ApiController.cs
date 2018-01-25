@@ -5641,7 +5641,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Allocations", FieldName = "Allocations", FieldDescription = "", Value = allocations }
+                                new ReadOnlyField { Name = "Assigned to Asset", FieldName = "Allocations", FieldDescription = "", Value = allocations }
                             }
                         });
 
