@@ -1147,7 +1147,13 @@ namespace d360.model
                 var obj = GetObjectDetail(objectInfo.Object.ToString(), objectInfo.ObjectID);
 
                 var itemName = (obj == null) ? "(unknown)" : obj.Name;
-                var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
+                var emailSubject = "";
+
+                if (!string.IsNullOrEmpty(settings.SubjectTemplate))
+                    emailSubject = ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item,false);
+                else
+                    emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
+
                 var emailBody = $"<p>The Data3Sixty workflow <b>{item.Step.Version.Type.Name}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
                 var customBody = ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
