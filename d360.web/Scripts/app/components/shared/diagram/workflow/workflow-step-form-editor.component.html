@@ -101,6 +101,14 @@
     <div class="row" style="padding-top: 8px" *ngIf="step.settings.SendFormEmail == true">
         <div class="col s12">
             <div class="FieldName">
+                Subject
+            </div>
+            <div>
+                <input type="text" style="width:95%" [ngModel]="step.settings.MessageSubjectTemplate" (ngModelChange)="step.settings.MessageSubjectTemplate = $event; stepChange.emit(step)" />
+            </div>
+        </div>
+        <div class="col s12">
+            <div class="FieldName">
                 Body
             </div>
             <div style="width: 95%">

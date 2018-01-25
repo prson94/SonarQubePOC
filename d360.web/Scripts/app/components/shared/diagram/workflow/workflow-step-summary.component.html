@@ -83,7 +83,7 @@
                 </div>
             </div>
             <!--FORM-->
-            <div *ngSwitchCase="WorkflowActivityType.Form" class="row"  style="padding-top:10px">
+            <div *ngSwitchCase="WorkflowActivityType.Form" class="row" style="padding-top:10px">
                 <ng-container *ngIf="step != null && step.fields != null && step.fields.form != null">
                     <div class="col s6" *ngIf="step.fields.form['@title'] != null">
                         <div class="FieldName">
@@ -101,7 +101,7 @@
 
                         </div>
                     </div>
-                </ng-container>           
+                </ng-container>
                 <div class="col s6">
                     <div class="FieldName">
                         Response Type
@@ -158,6 +158,14 @@
                     </div>
                     <div>
                         {{step?.fields?.form['@allowReassignObject'].toString() == 'true' ? 'Yes' : 'No'}}
+                    </div>
+                </div>
+                <div class="col s12" *ngIf="step.settings['SendFormEmail'] != null && step.settings['SendFormEmail'].toString() == 'true' && step?.settings?.MessageSubjectTemplate != null">
+                    <div class="FieldName">
+                        Subject
+                    </div>
+                    <div>
+                        {{step?.settings['MessageSubjectTemplate']}}
                     </div>
                 </div>
                 <div class="col s12" *ngIf="step.settings['SendFormEmail'] != null && step.settings['SendFormEmail'].toString() == 'true'">

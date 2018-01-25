@@ -1105,8 +1105,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
                 if (n.settings.SendFormEmail == true) {
                     n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
+                    n.settings.MessageSubjectTemplate = e.settings.MessageSubjectTemplate;
                 } else {
                     delete e.settings.MessageBodyTemplate;
+                    delete e.settings.MessageSubjectTemplate;
                 }
                 if (this.model.Event.Object == 'IntersectType') {
                     n.settings.ResponsibilitySide = e.settings.ResponsibilitySide;
