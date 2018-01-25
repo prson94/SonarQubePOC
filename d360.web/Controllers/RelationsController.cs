@@ -175,6 +175,69 @@ order by	SubjectName,
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
+        
+
+
+        [Route("_intersectTypeItems/{id:int}/excel.xls"), FileDownload, HttpGet]
+        public FileResult _IntersectTypeItemsExcel(int id)
+        {
+            var models = Company.Query<dynamic>(
+                @"select 
+                    [Subject], 
+                    SubjectID, 
+                    SubjectName, 
+                    SubjectTypeName, 
+                    [Object], 
+                    ObjectID, 
+                    ObjectName, 
+                    ObjectTypeName, 
+                    PredicateName 
+                from 
+                    intersectdetail 
+                where intersecttypeid = @id", new { id = id });
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            int index = 1;
+            document.SetCellValue(1, index++, "Subject Type");
+            document.SetCellValue(1, index++, "Subject ID");
+            document.SetCellValue(1, index++, "Subject Name");
+            document.SetCellValue(1, index++, "Subject Type Name");
+            document.SetCellValue(1, index++, "Predicate");
+            document.SetCellValue(1, index++, "Object Type");
+            document.SetCellValue(1, index++, "Object ID");
+            document.SetCellValue(1, index++, "Object Name");
+            document.SetCellValue(1, index++, "Object Type Name");
+            
+            #endregion
+
+            int rowNumber = 1;
+            foreach (var row in models)
+            {
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, (string)row.Subject);
+                document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
+                document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
+                document.SetCellValue(rowNumber, index++, (string)row.SubjectTypeName);
+                document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
+                document.SetCellValue(rowNumber, index++, (string)row.Object);
+                document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
+                document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
+                document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
+            }
+
+            #endregion
+
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", string.Format("Relationship Type Items {0}.xlsx", System.DateTime.Now.ToShortDateString()));
+        }
 
         [Route("_IntersectTypes/excel.xls"), FileDownload, HttpGet]        
         public FileResult _IntersectTypesExcel()

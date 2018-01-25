@@ -31,6 +31,13 @@ import { BaseComponent } from '../../shared/base.component';
                             <p-column [style]="{width:'40px'}">
                                 <ng-template let-relationship="rowData" pTemplate type="body">
                                     <div class="RowTools">
+                                        <a style="cursor:pointer;" title="Download all relationships in this type" (click)="downloadRel(relationship)"><i class="fa fa-download"></i></a>                                        
+                                    </div>
+                                </ng-template>
+                            </p-column>      
+                            <p-column [style]="{width:'40px'}">
+                                <ng-template let-relationship="rowData" pTemplate type="body">
+                                    <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=relationship;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                     </div>
                                 </ng-template>
@@ -132,7 +139,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         this.relationshipsService.saveRelationship(event.relationship)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
-                this.getRelationships(); // reload relationship detail and relationship models are incompatible               
+                this.getRelationships();
                 this.showEditor = false;
             });
     }
@@ -152,5 +159,9 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     displayTypeName(type: string) {
         if (!type) return "";
         return type.replace("Type", "");
+    }
+
+    public downloadRel(relationship: RelationshipType) {
+        this.relationshipsService.exportRelationshipTypeItems(relationship);
     }
 }

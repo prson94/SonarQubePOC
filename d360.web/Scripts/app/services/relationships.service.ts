@@ -19,6 +19,10 @@ export class RelationshipsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    exportRelationshipTypeItems(relType: RelationshipType) {
+        this.http.get(`relations/_intersectTypeItems/${relType.ID}/excel.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'relationship type items'));
+    }
+
     exportRelationshipTypes() {        
         this.http.get('relations/_intersectTypes/excel.xls', { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'relationship types'));              
     }
