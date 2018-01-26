@@ -43,7 +43,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()" >
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showAdd()" *ngIf="model.MaximumDepth > item.data.level"><i class="fa fa-plus"></i></a>                                        
+                                    <a style="cursor:pointer;" (click)="selected=item;showAdd()" *ngIf="model.MaximumDepth > item.data.Level"><i class="fa fa-plus"></i></a>                                        
                                 </div>
                             </ng-template>
                         </p-column>     
@@ -162,10 +162,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private loadModelHierarchy(modelId: number) {
         this.modelsService.getModelHierarchy(modelId, true, true)
-            .then(result => {
-                //result.forEach(function (part, index, theArray) {
-                //    theArray[index].Description = theArray[index].Description ? String(theArray[index].Description).replace(/<[^>]+>/gm, '') : '';
-                //});
+            .then(result => {                
                 this.modelHierarchy = result;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
@@ -185,14 +182,14 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
                         
             if (thisLevel && thisLevel.length > 0)
-                return thisLevel[0].DisplayValue;
+                return thisLevel[0].Name;
             else
                 return `(Level ${this.selectedLevel + 1}) Item`;
         }
 
         let thisLevel = this.levels.filter(x => x.Level == this.selected.data.level);
 
-        if (thisLevel && thisLevel.length > 0) return thisLevel[0].DisplayValue;
+        if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
         return `(Level ${this.selected.data.level + 1}) Item`;       
     }
     
@@ -213,7 +210,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                     ID: root.ID, 
                     HasChildren: root.HasChildren, 
                     DisplayValue: root.DisplayValue, 
-                    TextPath: root.TextPath, 
+                    TextPath: root.TextPath,
                     Level: root.Level
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
@@ -239,7 +236,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     deleteModelHierarchy(id: number) {
         this.isLoading = true;
         this.modelsService.deleteModelHierarchy(id).then(res => {            
-            if (!res.isError) {
+            if (!res.isError) {                
                 this.deleteSelectedTreeNode(id);
             }
 
@@ -255,7 +252,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
         // add root nodes
         for (var i = 0; i < this.treeNodeArray.length; i++) {
-            if (this.treeNodeArray[i].data.id && this.treeNodeArray[i].data.ID == id) {
+            if (this.treeNodeArray[i].data.ID && this.treeNodeArray[i].data.ID == id) {
                 this.treeNodeArray.splice(i, 1);
                 return
             }
@@ -269,15 +266,14 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         let node = nodes[0];
 
         while (node) {
-            if (node.data.id && node.data.ID == id) {
-
+            if (node.data.ID && node.data.ID == id) {
                 return node;
             }
 
             //push children
             if (node.children) {
                 for (var i = 0; i < node.children.length; i++) {                    
-                    if (node.children[i].data.id && node.children[i].data.ID == id) {
+                    if (node.children[i].data.ID && node.children[i].data.ID == id) {
                         node.children.splice(i, 1);
                         return
                     }
@@ -309,11 +305,10 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         this.showEditor = false;        
     }
 
-    private showAdd() {
+    private showAdd() {        
         this.showEditor = true;        
         this.selectedParentID = this.selected ? this.selected.data.ID : undefined;
         this.selectedLevel = this.selected ? this.selected.data.Level : 0;
         this.selected = null;
-    }
-    
+    }    
 };

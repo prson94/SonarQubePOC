@@ -62,8 +62,10 @@ select	A.ObjectID as ID, P.SubjectID as ParentID, A.TypeID as TaxonomyTypeID, A.
         case 
             when DC.ItemsCount > 0 then cast(1 as bit) 
             else cast(0 as bit) 
-        end as HasChildren 
+        end as HasChildren,
+        Tax.Level 
 from	AssetDetail A
+        inner join taxonomy Tax on (A.objectID = Tax.id)
         {joins} 
         CROSS APPLY (
             		select	count(1) as [ItemsCount]
