@@ -66,79 +66,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     }
 
     ngOnInit() {
-        this.setCommonRightSideBar(true, true, false, true, true, true, false, true);
-
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-            });
-        }
-
-        if (this.ownershipSidebar) {
-            this.ownershipSidebar.hasDynamicUrl = true;
-            this.ownershipSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/ownership/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-            });
-        }
-
-        if (this.impactSidebar) {
-            this.impactSidebar.hasDynamicUrl = true;
-            this.impactSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-            });
-        }
-
-        if (this.lineageSidebar) {
-            this.lineageSidebar.hasDynamicUrl = true;
-            this.lineageSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/visualization/lineage/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-            });
-        }
-
-        if (this.relationsSidebar) {
-            this.relationsSidebar.hasDynamicUrl = true;
-            this.relationsSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-            });
-        }
-
-        if (this.monitorSidebar) {
-            this.monitorSidebar.hasDynamicUrl = true;
-            this.monitorSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-            });
-        }
-
-        if (this.authenticationService.isAdmin) {
-            let fields = new RightSidebarItem()
-            fields.hasDynamicUrl = true;
-            fields.icons = ['fa-drivers-license-o'];
-            fields.tag = 'fields'
-            fields.title = 'Field Definitions'
-            fields.url = '/sidebar/fields'
-            fields.dynamicUrlCallback = (() => {
-                return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-            });
-
-            this.rightSidebarService.showItem(fields);
-        }
-
-
-        if (this.authenticationService.isAdmin) {
-            let permissions = new RightSidebarItem()
-            permissions.hasDynamicUrl = true;
-            permissions.icons = ['fa-ban'];
-            permissions.tag = 'responsibilities'
-            permissions.title = 'Responsibilities'
-            permissions.url = '/sidebar/responsibilities'
-            permissions.dynamicUrlCallback = (() => {
-                return `/sidebar/responsibilities/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-            });
-            this.rightSidebarService.showItem(permissions);
-        }
-
-
         this.setBrowserTitle(this.titleService, 'Reference');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
@@ -148,6 +75,80 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
         this.sub = this.route.params.subscribe(params => {
+
+            this.setCommonRightSideBar(true, true, false, true, true, true, false, true);
+
+            if (this.auditSidebar) {
+                this.auditSidebar.hasDynamicUrl = true;
+                this.auditSidebar.dynamicUrlCallback = (() => {
+                    return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+                });
+            }
+
+            if (this.ownershipSidebar) {
+                this.ownershipSidebar.hasDynamicUrl = true;
+                this.ownershipSidebar.dynamicUrlCallback = (() => {
+                    return `/sidebar/ownership/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+                });
+            }
+
+            if (this.impactSidebar) {
+                this.impactSidebar.hasDynamicUrl = true;
+                this.impactSidebar.dynamicUrlCallback = (() => {
+                    return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+                });
+            }
+
+            if (this.lineageSidebar) {
+                this.lineageSidebar.hasDynamicUrl = true;
+                this.lineageSidebar.dynamicUrlCallback = (() => {
+                    return `/sidebar/visualization/lineage/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+                });
+            }
+
+            if (this.relationsSidebar) {
+                this.relationsSidebar.hasDynamicUrl = true;
+                this.relationsSidebar.dynamicUrlCallback = (() => {
+                    return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+                });
+            }
+
+            if (this.monitorSidebar) {
+                this.monitorSidebar.hasDynamicUrl = true;
+                this.monitorSidebar.dynamicUrlCallback = (() => {
+                    return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+                });
+            }
+
+            if (this.authenticationService.isAdmin) {
+                let fields = new RightSidebarItem()
+                fields.hasDynamicUrl = true;
+                fields.icons = ['fa-drivers-license-o'];
+                fields.tag = 'fields'
+                fields.title = 'Field Definitions'
+                fields.url = '/sidebar/fields'
+                fields.dynamicUrlCallback = (() => {
+                    return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+                });
+
+                this.rightSidebarService.showItem(fields);
+            }
+
+
+            if (this.authenticationService.isAdmin) {
+                let permissions = new RightSidebarItem()
+                permissions.hasDynamicUrl = true;
+                permissions.icons = ['fa-ban'];
+                permissions.tag = 'responsibilities'
+                permissions.title = 'Responsibilities'
+                permissions.url = '/sidebar/responsibilities'
+                permissions.dynamicUrlCallback = (() => {
+                    return `/sidebar/responsibilities/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+                });
+                this.rightSidebarService.showItem(permissions);
+            }
+
+
             let claims = [];
             //load default perms
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
