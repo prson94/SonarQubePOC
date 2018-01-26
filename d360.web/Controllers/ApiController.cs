@@ -460,6 +460,9 @@ namespace d360.web.Controllers
                 case "Html":
                     fieldType = "html";
                     break;
+                case "Link":
+                    fieldType = "html";
+                    break;
             }
 
             return fieldType;
