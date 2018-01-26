@@ -17,7 +17,7 @@ import { AssetTypeService } from "../../../services/asset-type.services";
     providers: [TaxonomiesService, FieldsService, AssetTypeService],
     template:   `<div *ngIf="showEditor || showDelete && !isLoading" class="row">
                     <div class="tile tile-detail">     
-                        <d3s-asset-type-editor-form *ngIf="showEditor" [assetTypeClass]="'M'" [id]="selectedTaxonomy?.AssetTypeID" [title]="'Edit Model Type'" (onCancel)="closeEditor()" (onComplete)="saveModel($event)"></d3s-asset-type-editor-form>
+                        <d3s-asset-type-editor-form *ngIf="showEditor" [assetTypeClass]="'M'" [id]="selectedTaxonomy?.AssetTypeID" [title]="(selectedTaxonomy == null ? 'New' : 'Edit') + ' Model Type'" (onCancel)="closeEditor()" (onComplete)="saveModel($event)"></d3s-asset-type-editor-form>
                         <d3s-delete-form *ngIf="showDelete"
                                     [callback]="theDeleteCallback"
                                     [itemId]="selectedTaxonomy?.AssetTypeID"
