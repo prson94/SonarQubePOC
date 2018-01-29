@@ -562,6 +562,7 @@ order by wi.StartedOn desc";
             ObjectDetail issueItemDetails = null;
             var issueTypeName = "";
             var issueObjectType = "";
+            var typeName = "";
 
             foreach (var item in properties)
             {
@@ -648,12 +649,17 @@ order by wi.StartedOn desc";
                             issueTypeName = issue.IssueType.Name;
                         issueItemDetails = Company.GetObjectDetail(issue.Object, issue.ObjectID);
                         issueObjectType = issue.Object;
+                        typeName = details.TypeName;
                     }
                     break;
                 default:
                     details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
+                    typeName = (details != null ? details.TypeName : "");
                     break;
             }
+
+            if (itemStep.Item.Object == "Intersect" && string.IsNullOrEmpty(typeName))
+                typeName = "Relationship";
 
             var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(itemStep.Step.Settings));
 
@@ -689,7 +695,7 @@ order by wi.StartedOn desc";
                 ObjectType = itemStep.Item.Object,
                 ObjectID = itemStep.Item.ObjectID,
                 ObjectTypeID = details.TypeID,
-                TypeName = details.TypeName,
+                TypeName = typeName,
                 IsUserAllowedToComplete = IsUserAllowedToComplete,
                 IssueObject = issueObjectType,
                 IssueObjectID = issueItemDetails != null ? issueItemDetails.ID : 0,
