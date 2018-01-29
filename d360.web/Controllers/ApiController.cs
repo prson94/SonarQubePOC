@@ -2264,7 +2264,7 @@ select  top {maxResults}
 	    TypeName as ObjectTypeName,
 	    BackColor as IconBackColor,
 	    ForeColor as IconForeColor,
-        case when [DisplayValue] like '{query}%' then
+        case when [DisplayValue] like @query + '%' then
             1
         else
             10
@@ -2272,10 +2272,11 @@ select  top {maxResults}
 from        AssetDetail 
 where       Type = @type 
             and TypeID = @id
-            and DisplayValue like '%{query}%'
+            and DisplayValue like '%' + @query + '%'
 order by    rnk, [Name]";
 
-            var objects = Company.Query<dynamic>(sql, new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id });
+
+            var objects = Company.Query<dynamic>(sql, new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id, query });
 
             return Request.CreateResponse(HttpStatusCode.OK, objects);
         }
