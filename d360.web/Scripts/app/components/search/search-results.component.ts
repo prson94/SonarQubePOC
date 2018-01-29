@@ -23,7 +23,7 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
                                     <ng-template let-category ngFor [ngForOf]="categories">
                                         <div class="row">
                                             <div class="col l10 m10 s11 entry">
-                                                <i class="search-category-type-group fa fa-angle-right" data-bind="click: toggleVisibility,visible: showToggle,css: {'fa-angle-right' : showRow, 'fa-angle-down' : !showRow()}"></i>
+                                                <i class="search-category-type-group fa fa-angle-right" data-bind="click: toggleVisibility,visible: showToggle,css: {'fa-angle-right' : showRow, 'fa-angle-down' : !showRow()}"></i>&nbsp;
                                                 <a (click)="selectCategory(category);" style="cursor:pointer" class="search-type-link" [title]="category.DisplayName" [ngClass]="{selected:category.DisplayName==selectedCategory?.DisplayName}">{{category.DisplayName}}</a>                                            
                                             </div>
                                             <div class="col l2 m2 s1">
