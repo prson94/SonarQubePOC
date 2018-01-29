@@ -1432,15 +1432,18 @@ order by wi.StartedOn desc";
 										else assettype.name
 									end as 'TypeName'
 	                                ,assettype.[Object] as 'ObjectType'
-	                                ,assettype.ObjectID as 'ObjectTypeID'
-	                                ,coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)') as 'ObjectName'
+	                                ,assettype.ObjectID as 'ObjectTypeID'	                                
+                                    ,case 
+                                        when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
+                                        else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
+                                    end as 'ObjectName'
 	                                ,wis.id as 'ItemStepID'
 	                                ,wvs.name as 'StepName'
 	                                ,wvs.steptype as 'StepType'
 	                                ,wvs.activitytype as 'ActivityType'
                                     ,iss.[object] as 'IssueObject'
 									,iss.[objectid] as 'IssueObjectID'
-                                    ,utility.getassetdisplayvalue(cod.id) as 'IssueObjectName'
+                                    ,utility.getassetdisplayvalue(cod.id) as 'IssueObjectName'                                    
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -1453,7 +1456,7 @@ order by wi.StartedOn desc";
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                                     left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
                                     left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
-                                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)
+                                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
                                 where
                                     wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
                            ";
