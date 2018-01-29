@@ -112,10 +112,19 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
                 .then(r => {
                     this.model = r;
                     this.objectTypeString = r.Map.Object + '|' + r.Map.ObjectID.toString();
-                    if (this.model.Map.EffectiveStartDate != null)
+
+                    //add timezone offset
+                    if (this.model.Map.EffectiveStartDate != null) {
                         this.model.Map.EffectiveStartDate = new Date(this.model.Map.EffectiveStartDate);
-                    if (this.model.Map.EffectiveEndDate != null)
-                    this.model.Map.EffectiveEndDate = new Date(this.model.Map.EffectiveEndDate);
+                        this.model.Map.EffectiveStartDate.setMinutes(this.model.Map.EffectiveStartDate.getMinutes() + this.model.Map.EffectiveStartDate.getTimezoneOffset());
+                    }
+                        
+                    if (this.model.Map.EffectiveEndDate != null) {
+                        this.model.Map.EffectiveEndDate = new Date(this.model.Map.EffectiveEndDate);
+                        this.model.Map.EffectiveEndDate.setMinutes(this.model.Map.EffectiveEndDate.getMinutes() + this.model.Map.EffectiveEndDate.getTimezoneOffset());
+                    }
+
+                    console.log('load after', (<Date>this.model.Map.EffectiveEndDate || new Date()).getTime(), (<Date>this.model.Map.EffectiveStartDate || new Date()).getTime());
                     this.isLoading = false;
                     //console.log(this.model);
                 });
@@ -158,13 +167,12 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
 
     save() {
         this.isLoading = true;
-        //console.log('save', (this.model.Map.EffectiveEndDate || '').toString(), (this.model.Map.EffectiveStartDate || '').toString());
 
-        //if (this.model.Map.EffectiveEndDate != null)
-        //    this.model.Map.EffectiveEndDate = this.getUTCDate(new Date(this.model.Map.EffectiveEndDate));
-        //if (this.model.Map.EffectiveStartDate != null)
-        //    this.model.Map.EffectiveStartDate = this.getUTCDate(new Date(this.model.Map.EffectiveStartDate));
-        //console.log('save', (this.model.Map.EffectiveEndDate || '').toString(), (this.model.Map.EffectiveStartDate || '').toString());
+        if (this.model.Map.EffectiveEndDate != null)
+            this.model.Map.EffectiveEndDate = new Date(this.model.Map.EffectiveEndDate).toISOString();
+        if (this.model.Map.EffectiveStartDate != null)
+            this.model.Map.EffectiveStartDate = new Date(this.model.Map.EffectiveStartDate).toISOString();
+
         this.metricsService.saveMap(this.model)
             .then(r => {
                 this.showMessageForResult(this.messagesService, r);
