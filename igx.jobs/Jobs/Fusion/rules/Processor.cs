@@ -19,7 +19,7 @@ namespace igx.jobs.fusion.rules
 
         public static int? ExecuteQueryTimeout { get; private set; }
 
-        public static async void Process(int companyId, TextWriter log)
+        public static async Task Process(int companyId, TextWriter log)
         {
             
             using (var company = CompanyConnectionUtils.GetCompanyConnection(companyId))
@@ -421,7 +421,7 @@ namespace igx.jobs.fusion.rules
             if (res.HasValue)
                 return res.Value;
 
-            return DateTime.MinValue;
+            return new DateTime(1990, 1,1);
         }
 
         /// <summary>
