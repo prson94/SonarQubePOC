@@ -4,6 +4,7 @@ import { EditorField } from '../../../models/editor-field.model';
 import { SelectItem } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
+import { FormHelpers } from '../../../static/form-helpers';
 
 declare var CompanySettings;
 
@@ -212,18 +213,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
 
         let val = e.target.value;
 
-        if (val == '' || val == null || isNaN(+val))
-            return;
-
-        let newVal = +val;
-
-        if (+val < min) newVal = min;
-        if (+val > max) newVal = max;
-
-        if (precision > 0 && newVal != null && newVal != 0) {
-            let mod = Math.pow(10, precision);
-            newVal = Math.round(newVal * mod) / mod;
-        }
+        let newVal = FormHelpers.clamp(val, min, max, precision);
 
         if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
             this.form.controls[this.field.FieldName].setValue(newVal);
