@@ -154,7 +154,15 @@ namespace d360.model.workflow
                                     //check if the value matches
                                     var formValue = formModel.GetFormValueById(item.FormInputId);
 
-                                    return string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0;
+                                    if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
+                                    {
+                                        return string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0;
+                                    }
+                                    else
+                                    {
+                                        //true operator
+                                        return string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0;
+                                    }                                    
                                 }
                         case core.enums.Workflow.FormResponseType.All:
                                 {
@@ -165,7 +173,15 @@ namespace d360.model.workflow
 
                                     foreach (var val in formValues)
                                     {
-                                        if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
+                                        if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
+                                        {
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
+                                        }
+                                        else
+                                        {
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
+                                        }
+                                        
                                     }
                                     return true;
                                 }
@@ -177,7 +193,15 @@ namespace d360.model.workflow
                                 
                                 foreach (var val in formValues)
                                 {
-                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;                                    
+                                    if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
+                                    {
+                                        if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) matchCount++;
+                                    }
+                                    else
+                                    {
+                                        if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;
+                                    }
+                                    
                                 }
 
                                 return matchCount > (formValues.Count / 2);
