@@ -20,6 +20,13 @@ namespace d360.core.entities
         }
     }
 
+    public class BasicAsset
+    {
+        public int AssetID { get; set; }
+        public int ObjectID { get; set; }
+        public string ObjectName { get; set; }
+    }
+
     public class AllocationPossibility
     {
         public int ObjectTypeID { get; set; }

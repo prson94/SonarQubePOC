@@ -9,7 +9,10 @@ import { Router } from '@angular/router';
             <div *ngIf="field.Values && field.Values.length > 0">
                 <div *ngFor="let item of field.Values">                    
                     <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID">
-                        <a (click)="navigate(item.TooltipUrl)" [innerHtml]="item.Value"></a>
+                        <a *ngIf="item.TooltipUrl;else arrayNoUrl" (click)="navigate(item.TooltipUrl)" [innerHtml]="item.Value"></a>
+                        <ng-template #arrayNoUrl>
+                            <span [innerHtml]="item.Value"></span>
+                        </ng-template>
                     </d3s-preview-tooltip>
                 </div>
             </div>            
@@ -23,9 +26,14 @@ import { Router } from '@angular/router';
                 </div>
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date' && field.DataType != 'text' && field.DataType != 'bool'" class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(field.Name == 'Name' ? 'bold':'')}"></div>
                 <div *ngIf="field.Type == DetailFieldType.Tooltip" class="FieldDisplayContent">                    
-                    <d3s-lookup-tooltip [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                        <a (click)="navigate(field.TooltipUrl)" [innerHtml]="field.Value"></a>
+                    <d3s-lookup-tooltip *ngIf="field.TooltipUrl;else noLinkTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
+                        <a (click)="navigate(field.TooltipUrl)" [innerHtml]="field.Value"></a>                        
                     </d3s-lookup-tooltip>
+                    <ng-template #noLinkTooltip>
+                        <d3s-lookup-tooltip  [objectType]="field.TooltipType" [objectId]="field.TooltipID">
+                            <span [innerHtml]="field.Value"></span>
+                        </d3s-lookup-tooltip>
+                    </ng-template>                    
                 </div>
                 <div *ngIf="field.Type == DetailFieldType.Lookup">
                     <d3s-dynamic-lookup-grid *ngIf="field.Data && field.Data.Values && field.Data.Values.length > 0" [data]="field.Data" [hideHeader]="field.HideHeader" [hideFooter]="field.HideFooter" [hideFilter]="field.HideFilter"></d3s-dynamic-lookup-grid>

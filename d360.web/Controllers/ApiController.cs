@@ -73,7 +73,7 @@ namespace d360.web.Controllers
             public string Type { get; set; }
             public int ID { get; set; }
         }
-
+        
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
             var list = new List<DetailReadOnlyRowModel>();
@@ -255,6 +255,21 @@ namespace d360.web.Controllers
                             var intersects = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id)));
                             if (intersects != null)
                             {
+                                //load the current users permissions to these objects if they dont have access we cant show the link to let them go nowhere
+                                var objectsToCheckAccesFor = new List<BasicAsset>();
+                                
+                                foreach(var intersect in intersects)
+                                {
+                                    var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
+                                    
+                                    var obj = isSubject ? intersect.Object : intersect.Subject;
+                                    var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+
+                                    objectsToCheckAccesFor.Add(new BasicAsset { ObjectID = objID, ObjectName = obj });
+                                }
+
+                                var objectsWithoutReadAccess = GetObjectsWithoutReadAccess(objectsToCheckAccesFor);
+
                                 foreach (var intersect in intersects)
                                 {
                                     var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
@@ -262,6 +277,14 @@ namespace d360.web.Controllers
                                     var url = isSubject ? intersect.ObjectUrl : intersect.SubjectUrl;
                                     var obj = isSubject ? intersect.Object : intersect.Subject;
                                     var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+
+                                    if(objectsWithoutReadAccess != null && objectsWithoutReadAccess.Count > 0)
+                                    {
+                                        if(objectsWithoutReadAccess.Any(x=>(x.Object == obj && x.ObjectID == objID)))
+                                        {
+                                            url = null;
+                                        }
+                                    }
                                                                         
                                     values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });                                    
                                 }
@@ -330,6 +353,33 @@ namespace d360.web.Controllers
 
 
             return list;
+        }
+
+        private List<AssetWithoutReadPermission> GetObjectsWithoutReadAccess(List<BasicAsset> objectsToCheckAccesFor)
+        {
+            if (objectsToCheckAccesFor == null || objectsToCheckAccesFor.Count == 0) return new List<AssetWithoutReadPermission>();
+
+            Dapper.DynamicParameters dbParams = new DynamicParameters();
+
+            var dynamicSql = "";
+            var indx = 0;
+            foreach (var item in objectsToCheckAccesFor)
+            {
+                if (indx != 0) dynamicSql += " or ";
+
+                dynamicSql += $"[object] = @obj{indx} and [objectid] = @objId{indx}";
+
+                dbParams.Add($"obj{indx}", item.ObjectName);
+                dbParams.Add($"objId{indx}", item.ObjectID);
+
+                indx++;
+            }
+                        
+            var sql = @"select [Object], ObjectId from AssetWithoutReadPermission where ResourceID = @resId and (" + dynamicSql + ")";
+
+            dbParams.Add("resId", Company.CurrentResourceID);
+
+            return Company.Query<AssetWithoutReadPermission>(sql, dbParams).ToList();
         }
 
         List<DetailReadOnlyRowModel> loadDisplayableRelationshipsAsFields(SystemObjects type, int id)
