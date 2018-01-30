@@ -347,7 +347,6 @@ namespace d360.web.Controllers
                 {
                     var map = new Map();
                     map.MapTypeID = m.ObjectTypeID;
-                    map.MapTypeTemplateID = m.MapTypeTemplateID;
                     Company.Add(map);
                     Company.SaveChanges();
                     mapMappings.Add(m.Key, map.ID);
