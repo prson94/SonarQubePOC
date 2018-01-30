@@ -334,17 +334,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
 
             if ((this.tab == 'add' || this.tab == 'edit') && this.readonly) {
-                if (this.showInfoTab)
                     this.tab = 'info';
-                else
-                    this.tab = '';
             } else if (this.tab == 'info' && !this.showInfoTab) {
                 if (!this.readonly) {
                     if (this.showLinkTabs)
                         this.tab = 'edit';
                     else
                         this.tab = 'add';
-
                 }
                 else {
                     this.tab = '';
@@ -374,11 +370,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         } else {
             if (!this.readonly) {
-                this.tab = 'add';
+                if (this.tab == '')
+                    this.tab = 'add';
                 this.showNodeTabs = false;
                 this.showLinkTabs = false;
                 this.showInfoTab = false;
-                this.isWindowVisible = false;
+                this.isWindowVisible = true;
             } else {
                 this.showNodeTabs = false;
                 this.showLinkTabs = false;
