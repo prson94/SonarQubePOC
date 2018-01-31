@@ -41,8 +41,8 @@ namespace igx.tests
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 100; //10
-            var fusionTypeID = 30;//13;
+            var companyID = 109; //10
+            var fusionTypeID = 17;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -72,10 +72,14 @@ SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Nam
                 company.Execute(@"
 if not exists(select 1 from IntersectType where Subject = @type and SubjectID = @si and Object = @type and ObjectID = @ti) 
 BEGIN 
-			INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy, IsSystem, CreatedBy, CreatedOn) 
-            values (@type, @si, @type, @ti, @dt, @u, @system, @u, @dt)
+        declare @predicateID int
+        select  top 1 
+                @predicateID = ID 
+        from    [Predicate] where [Type] = @pt 
+		INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy, IsSystem, CreatedBy, CreatedOn, PredicateID) 
+        values (@type, @si, @type, @ti, @dt, @u, @system, @u, @dt, @predicateID)
 END", 
-                new { type = "FusionAttributeType", si = t.StartFusionAttributeTypeID, ti = t.EndFusionAttributeTypeID, system = true, ro = t.ReadOnly, dt = DateTime.UtcNow, u = 0 });
+                new { type = "FusionAttributeType", si = t.StartFusionAttributeTypeID, ti = t.EndFusionAttributeTypeID, system = true, ro = t.ReadOnly, dt = DateTime.UtcNow, u = 0, pt = t.PredicateType });
             });
         }
 
@@ -133,8 +137,8 @@ END",
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("mm.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "MassMutual - 2018-19", File = bytes };
+            var bytes = File.ReadAllBytes("Data3Sixty Govern.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Infogix Signing Certificate - 2018-21", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

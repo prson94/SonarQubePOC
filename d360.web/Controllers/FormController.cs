@@ -1304,6 +1304,10 @@ namespace d360.web.Controllers
                             i.Predicate.Type == parentPredicateType
                         ).SingleOrDefault();
 
+
+                        if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy) //If model or policy you must always have a predicate to load.
+                            loadPredicates = true;
+
                         if (intersectType != null)
                         {
                             loadPredicates = true;
@@ -1587,10 +1591,10 @@ namespace d360.web.Controllers
                         if (t.MaximumDepth <= 0 || t.MaximumDepth > 10)
                             throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");
 
-                        var currentMaxLevel = Company.Query<int>("select coalesce(max([Level]), 0) from Taxonomy where TaxonomyTypeID = @t", new { t = t.ID }).SingleOrDefault();
+                        //var currentMaxLevel = Company.Query<int>("select coalesce(max([Level]), 0) from Taxonomy where TaxonomyTypeID = @t", new { t = t.ID }).SingleOrDefault();
 
-                        if (currentMaxLevel > t.MaximumDepth)
-                            throw new InvalidFieldException(d360.core.resources.Fields.MaximumDepth_Name, "less than the current maximum depth of " + currentMaxLevel);
+                        //if (currentMaxLevel > t.MaximumDepth)
+                        //    throw new InvalidFieldException(d360.core.resources.Fields.MaximumDepth_Name, "less than the current maximum depth of " + currentMaxLevel);
 
                         Company.Update(t);
 
@@ -1628,12 +1632,27 @@ namespace d360.web.Controllers
                         i.Predicate.Type == parentPredicateType
                     ).SingleOrDefault();
 
-                    if (intersectType != null)
+                    if (model.SelectedPredicateID.HasValue)
                     {
-                        if (intersectType.PredicateID != model.SelectedPredicateID && model.SelectedPredicateID.HasValue)
+                        if (intersectType != null)
                         {
-                            intersectType.PredicateID = model.SelectedPredicateID.Value;
-                            Company.Update(intersectType);
+                            if (intersectType.PredicateID != model.SelectedPredicateID)
+                            {
+                                intersectType.PredicateID = model.SelectedPredicateID.Value;
+                                Company.Update(intersectType);
+                            }
+                        }
+                        else
+                        {
+                            intersectType = new IntersectType {
+                                IsSystem = true,
+                                Subject = parentType.ToString(),
+                                SubjectID = model.ParentID.HasValue ? model.ParentID.Value : model.AssetType.ObjectID,
+                                Object = model.AssetType.Object,
+                                ObjectID = model.AssetType.ObjectID,
+                                PredicateID = model.SelectedPredicateID.Value
+                            };
+                            Company.Add(intersectType);
                         }
                     }
                 }
@@ -18100,36 +18119,29 @@ from    [IntersectType] RT
             var list = new List<EditableField>();
             var a = Company.GetById<Taxonomy>(id);
 
+            var parent = Company.Filter<IntersectDetail>(i => i.Subject == "Taxonomy" && i.Object == "Taxonomy" && i.ObjectID == id && i.PredicateType == PredicateType.IntraTypeHierarchy).FirstOrDefault();
+
             var parents = Company.Query<dynamic>(@"
-declare @typeName nvarchar(250)
+select	A.ObjectID as ID,
+		P.TextPath as Name
+from	AssetDetail A
+		cross apply dbo.GetAssetTextPathById(A.ID, '/') P
+where	Type = 'TaxonomyType' and TypeID = @t",
+new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
-select	@typeName = Name + '/'
-from	TaxonomyType
-where ID = @t;
+            var thisEntry = parents.FirstOrDefault(i => i.ID == id);
 
-with P as	(
-			select	ID,
-					ParentID
-			from	Taxonomy
-			where	TaxonomyTypeID = @t and ID = @i
-			union all
-			select	C.ID,
-					C.ParentID
-			from	Taxonomy C
-					inner join P on P.ID = C.ParentID
-			)
+            parents.RemoveAll(i => i.Name.StartsWith(thisEntry.Name));
 
-select	ID,
-		REPLACE(TextPath, @typeName, '') as Name 
-from	Taxonomy 
-where	TaxonomyTypeID = @t
-		and ID not in (select ID from P)
-order by TextPath
-", new { t = a.TaxonomyTypeID, i = a.ID }).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = (i.ID.ToString() == a.ParentID.ToString()) }).ToList();
-            parents.Insert(0, new SelectListItem { Text = "- Root -", Value = "0", Selected = !(a.ParentID.HasValue) });
+            var parentItems = parents.Select(i => new SelectListItem {
+                Text = i.Name,
+                Value = $"{i.ID}",
+                Selected = (parent != null ? ((int)i.ID == parent.SubjectID) : false)
+            }).ToList();
+            parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "0", Selected = (parent == null) });
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = Resources.FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parents, Value = ((a.ParentID.HasValue) ? a.ParentID.Value.ToString() : "0") });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = Resources.FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((a.ParentID.HasValue) ? a.ParentID.Value.ToString() : "0") });
             list =(
                 loadDynamicFields(
                     SystemObjects.Taxonomy.ToString(),
@@ -18193,21 +18205,6 @@ order by TextPath
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var model = new Taxonomy { TaxonomyTypeID = typeID };
-                model.Level = 0;
-
-                if(!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")
-                {
-                    if (int.TryParse(form["ParentID"], out int parentId))
-                    {
-                        //get the parent so we can load its level
-                        var parent = Company.Taxonomies.Where(x => x.ID == parentId).FirstOrDefault();
-
-                        if(parent != null)
-                        {
-                            model.Level = parent.Level++;
-                        }
-                    }
-                }
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Taxonomy>(model, fields);
@@ -18282,8 +18279,7 @@ order by TextPath
 
                 dynamic custom = new
                 {
-                    TaxonomyTypeID = model.TaxonomyTypeID,
-                    ParentID = model.ParentID,
+                    model.TaxonomyTypeID,
                     Context = form["_context"]
                 };
 
@@ -18319,13 +18315,6 @@ order by TextPath
 
                 var parentID = parseIntField(form, "ParentID");
 
-                if(parentID > 0)
-                {
-                    var parent = Company.Taxonomies.Where(x => x.ID == parentID).FirstOrDefault();
-
-                    if (parent != null) model.Level = parent.Level++;
-                }
-
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.TaxonomyTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Taxonomy>(model, fields);
 
@@ -18349,12 +18338,34 @@ order by TextPath
                             Company.Update(intersect);
                         }
                     }
+                    else
+                    {
+                        var intersectType = Company.Filter<IntersectTypeDetail>(i =>
+                            i.Object == "TaxonomyType" &&
+                            i.ObjectID == model.TaxonomyTypeID &&
+                            i.PredicateType.Value == PredicateType.IntraTypeHierarchy
+                        ).SingleOrDefault();
+
+                        if (intersectType != null)
+                        {
+                            intersect = new Intersect
+                            {
+                                Subject = SystemObjects.Taxonomy.ToString(),
+                                SubjectID = parseIntField(form, "ParentID"),
+                                Object = SystemObjects.Taxonomy.ToString(),
+                                ObjectID = model.ID,
+                                IntersectTypeID = intersectType.ID
+                            };
+
+                            Company.Add(intersect);
+                        }
+                    }
                 }
 
                 dynamic custom = new
                 {
-                    TaxonomyTypeID = model.TaxonomyTypeID,
-                    ParentID = model.ParentID,
+                    model.TaxonomyTypeID,
+                    ParentID = parentID,
                     Context = form["_context"]
                 };
 

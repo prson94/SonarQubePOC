@@ -273,41 +273,43 @@ namespace d360.web.Controllers
                 string firstName = null;
                 string lastName = null;
 
+                var customClaims = new Dictionary<string, string>();
+
+                var submittedAttributes = "";
                 foreach (SAMLAttribute a in attributes)
                 {
-                    Telemetry.TrackTrace(new TraceTelemetry { Message = $"SAML Attribute is {a.Name}", SeverityLevel = SeverityLevel.Information });
-                    //Trace.TraceInformation("SAML Attribute is {0}", a.Name);
+                    var attName = a.Name.ToLower().Trim();
+                    var attValue = "";
+                    if (a.Values.Count > 0)
+                    {
+                        attValue = (string)a.Values[0].Data;
+                    }
+                    submittedAttributes += $"{attName}: {attValue}; ";
 
-                    switch (a.Name.ToLower())
+                    switch (attName)
                     {
                         case "username":
                         case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name":
-                            if (a.Values.Count > 0)
-                            {
-                                userName = (string)a.Values[0].Data;
-                            }
+                            userName = attValue;
                             break;
                         case "first":
                         case "firstname":
                         case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname":
-                            if (a.Values.Count > 0)
-                            {
-                                firstName = (string)a.Values[0].Data;
-                            }
+                            firstName = attValue;
                             break;
                         case "last":
                         case "lastname":
                         case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname":
-                            if (a.Values.Count > 0)
-                            {
-                                lastName = (string)a.Values[0].Data;
-                            }
+                            lastName = attValue;
+                            break;
+                        default:
+                            customClaims.Add(attName, attValue);
                             break;
                     }
                 }
 
+                Telemetry.TrackTrace(new TraceTelemetry { Message = $"SAML Attributes are: {submittedAttributes}", SeverityLevel = SeverityLevel.Information });
                 Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel = SeverityLevel.Information });
-                //Trace.TraceInformation("AssertionConsumerService => Username: {0}, FirstName: {1}, LastName: {2}", userName, firstName, lastName);
 
                 //if (samlAssertion.Subject.NameID != null) userName = samlAssertion.Subject.NameID.NameIdentifier;
                 //if (string.IsNullOrEmpty(userName)) throw new ArgumentException("The SAML assertion doesn't contain a subject name.");
@@ -400,7 +402,48 @@ namespace d360.web.Controllers
                                 sessionLengthMinutes = FormsAuthentication.Timeout.TotalMinutes;
                         }
                         // Create a login context for the asserted identity.
-                        //FormsAuthentication.SetAuthCookie(userName, false);
+
+                        #region Process custom claims
+
+                        try
+                        {
+                            var resourceTypeFields = Company.Filter<FieldType>(i => i.Object == "ResourceType" && i.ObjectID == 1 && !i.IsEditable).ToList();
+                            var resourceFields = Company.Filter<Field>(i => i.ObjectType == "Resource" && i.ObjectID == resource.ID).ToList();
+                            var shouldSaveFields = false;
+
+                            foreach (var f in resourceTypeFields.Where(i => customClaims.Keys.Contains(i.Name.ToLower())))
+                            {
+                                var claimName = f.Name.Trim().ToLower();
+
+                                var rf = resourceFields.FirstOrDefault(i => i.FieldTypeID == f.ID);
+                                if (rf != null)
+                                {
+                                    if (rf.Value != customClaims[claimName])
+                                    {
+                                        rf.Value = customClaims[claimName];
+                                        shouldSaveFields = true;
+                                    }
+                                }
+                                else
+                                {
+                                    rf = new Field { FieldTypeID = f.ID, ObjectType = "Resource", ObjectID = resource.ID, Value = customClaims[claimName] };
+                                    Company.Fields.Add(rf);
+                                    shouldSaveFields = true;
+                                }
+                            }
+
+                            if (shouldSaveFields)
+                            {
+                                Company.SaveChanges();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Error processing custom claims for: {userName}. Error is: {ex.Message}.", SeverityLevel = SeverityLevel.Error });
+                        }
+
+                        #endregion
+
                         var ticket = new FormsAuthenticationTicket(
                             1,
                             userName,
@@ -452,7 +495,6 @@ namespace d360.web.Controllers
                                 Message = $"AssertionConsumerService => Referencing resource: {resource.ID}. Should not authorize with the system account.  The username is: {userName}",
                                 SeverityLevel = SeverityLevel.Error
                             });
-                        //Trace.TraceError("AssertionConsumerService => Referencing resource: {0}. Should not authorize with the system account.  The username is: {1}", resource.ID, userName);
                     }
                 }
 

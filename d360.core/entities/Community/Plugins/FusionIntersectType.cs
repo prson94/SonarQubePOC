@@ -15,5 +15,7 @@ namespace d360.core.entities.Plugins
         public int FusionTypeID { get; set; }
         [DataMember]
         public bool ReadOnly { get; set; }
+        [DataMember]
+        public int? PredicateType { get; set; }
     }
 }

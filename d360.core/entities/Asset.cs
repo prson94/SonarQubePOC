@@ -37,4 +37,19 @@ namespace d360.core.entities
         [DataMember]
         public virtual ICollection<Field> Fields { get; set; }
     }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class AssetApiModel: BaseObject
+    {
+        public long ID { get; set; }
+
+        public int AssetTypeID { get; set; }
+
+        public string SourceID { get; set; }
+
+        //public string KeyHash { get; set; }
+
+        [DataMember, ForeignKey("AssetID")]
+        public virtual ICollection<FieldApiModel> Fields { get; set; }
+    }
 }

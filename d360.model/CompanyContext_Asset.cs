@@ -16,6 +16,10 @@ namespace d360.model
 
         public DbSet<AssetType> AssetTypes { get; set; }
 
+        public DbSet<AssetApiModel> AssetApiModels { get; set; }
+
+        public DbSet<FieldApiModel> FieldApiModels { get; set; }
+
         #endregion
 
         #region Engine Methods

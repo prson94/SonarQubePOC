@@ -357,6 +357,7 @@
     <Compile Include="Controllers\PartsController.cs" />
     <Compile Include="Controllers\Services\CommunityController.cs" />
     <Compile Include="Controllers\Services\AssetsController.cs" />
+    <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\ReferenceController.cs" />
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />

@@ -717,6 +717,7 @@ select
     '/Resource/' + cast(ResourceID as varchar(250)) as ResourceURI,
     'Individual' as ResourceType,
     ResourceID,
+    Email, 
     LastName + ', ' + FirstName as Resourcename
 from reporting.Global_Resource
 Union
@@ -724,6 +725,7 @@ Union
     '/Group/' + cast(ID as varchar(250)) as ResourceURI,
     'Group' as ResourceType,
     ID as ResourceID,
+    null as Email,
     Name as Resourcename
 FROM [dbo].[Group]";
 
