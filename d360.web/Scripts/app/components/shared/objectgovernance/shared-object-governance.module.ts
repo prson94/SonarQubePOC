@@ -29,13 +29,12 @@ import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
 declare var require: any;
 export function highchartsFactory() {
-    const highcharts = require('highcharts');
-    const highChartsMore = require('highcharts/highcharts-more');
+    const hc = require('highcharts');
+    const hcm = require('highcharts/highcharts-more'); // used for more category of charts    
     const solidGauge = require('highcharts/modules/solid-gauge');
-    ChartModule.forRoot(require('highcharts'),
-        require('highcharts/highcharts-more'),
-        require('highcharts/modules/solid-gauge'));
-    return highcharts;
+    hcm(hc);    
+    solidGauge(hc);
+    return hc;
 }
 
 @NgModule({

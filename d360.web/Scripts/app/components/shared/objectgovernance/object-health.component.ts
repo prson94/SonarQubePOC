@@ -5,8 +5,7 @@ import { PointBreakdown, AverageScore } from '../../../models/score.model';
 
 declare var require: any;
 const Highcharts = require('highcharts/highstock.src');
-require('highcharts/highcharts-more')(Highcharts);
-require('highcharts/modules/solid-gauge')(Highcharts);
+
 
 @Component({
     selector: 'd3s-object-health',    
