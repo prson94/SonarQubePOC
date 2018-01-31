@@ -597,15 +597,29 @@ namespace d360.web.Controllers
 
                     var artifactType = Company.GetById<ArtifactType>(id);
                     var hasParentType = false;
+                    var parentTypeId = -1;
 
                     if (artifactType != null)
-                        hasParentType = artifactType.ParentID.HasValue;
+                    {
+
+                        var interTypeIntersect = Company.Query<IntersectType>(@"select I.* from IntersectType I
+                                        inner join [Predicate] P on P.ID = I.PredicateID
+                                        where I.[Object] = 'ArtifactType' and I.[ObjectID] = @objectId and P.Type = @predicateType", 
+                                        new { objectId = artifactType.ID, predicateType = (int)PredicateType.InterTypeHierarchy }).FirstOrDefault(); 
+
+                        if (interTypeIntersect != null)
+                        {
+                            hasParentType = true;
+                            parentTypeId = interTypeIntersect.SubjectID;
+                        }
+
+                    }
 
                     staticFieldCount = hasParentType ? 4 : 3;
 
                     if (hasParentType)
                     {
-                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID).OrderBy(i => i.DisplayValue).Select(i => i.DisplayValue).ToList(), columnWidth = 200 });
+                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == parentTypeId).OrderBy(i => i.DisplayValue).Select(i => i.DisplayValue).ToList(), columnWidth = 200 });
                     }
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
