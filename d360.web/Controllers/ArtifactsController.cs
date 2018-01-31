@@ -681,7 +681,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1 and not exi
                 true,
                 sortDataField, sortOrder, pagenum, pagesize,
                 new string[] { "P.DisplayValue" },
-                filter, extraParams: d, applyHiddenFilters: true, includeIdColumn: false, idColumn: "O.ObjectID");
+                filter, extraParams: d, applyHiddenFilters: true, includeIdColumn: false, idColumn: "O.ID", innerIdColumn:"O.ObjectID");
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -738,7 +738,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
                     true, 
                     sortDataField, sortOrder, pagenum, pagesize,
                     (parentIntersectType != null ? new string[] { "P.DisplayValue" } : new string[] {  }), 
-                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true, idColumn: "A.ObjectID", sortDefaultField:"1");
+                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true, idColumn: "A.ID", innerIdColumn: "A.ObjectID", sortDefaultField:"1");
                 return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
             }
             catch (Exception ex)

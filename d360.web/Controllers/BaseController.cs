@@ -1079,7 +1079,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             string filter = "", string ownerUsers = "", string ownerGroups = "",
             string sortDefaultField = "DisplayValue", string sortDefaultDirection = "asc",
             Dictionary<string, object> extraParams = null,
-            bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false, string idColumn = "A.ID")
+            bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false, string idColumn = "A.ID", string innerIdColumn = "A.ID")
         {
             var requestParams = Request.Params;
             var dbArgs = new Dapper.DynamicParameters();
@@ -1101,7 +1101,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             var joins = "";
             var columns = "";
-            getDynamicFieldJoinStatements(objectTypeID, obj, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
+            getDynamicFieldJoinStatements(objectTypeID, obj, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, innerIdColumn);
 
             if (fetchPermissions)
             {
@@ -1111,8 +1111,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 else
                 {                    
-                    columns += $" (select count(1) from securitydetail p_sd_edit where ({idColumn} = p_sd_edit.ObjectID and p_sd_edit.ObjectType = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
-                    columns += $" (select count(1) from securitydetail p_sd_delete where ({idColumn} = p_sd_delete.ObjectID and p_sd_delete.ObjectType = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
+                    columns += $" (select count(1) from securitydetail p_sd_edit where ({innerIdColumn} = p_sd_edit.ObjectID and p_sd_edit.ObjectType = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
+                    columns += $" (select count(1) from securitydetail p_sd_delete where ({innerIdColumn} = p_sd_delete.ObjectID and p_sd_delete.ObjectType = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
                 }
             }
 
@@ -1121,7 +1121,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             #endregion
 
             // Ownership Joins
-            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups, idColumn);
+            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups, innerIdColumn);
 
             // If simple filter specified add that criteria to the sql
             if (!string.IsNullOrEmpty(filter))
