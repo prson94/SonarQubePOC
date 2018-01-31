@@ -34,8 +34,11 @@ import { MessagesService } from '../../services/messages.service';
                                                     <div class="FieldName" [innerHtml]="field.Label"></div>
                                                     <input *ngSwitchCase="fieldType.Text" [name]="'input_'+indx" style="width: 100%;" type="string" [(ngModel)]="field.Value" >  
                                                     <span *ngSwitchCase="fieldType.Boolean">&nbsp;&nbsp;
-                                                        <label><input [name]="'input_'+indx" type="radio" [value]="true"  [(ngModel)]="field.Value">&nbsp;Yes</label>&nbsp;
-                                                        <label><input [name]="'input_'+indx" type="radio" [value]="false" [(ngModel)]="field.Value">&nbsp;No</label>
+                                                        <label><input [name]="'input_'+indx" type="radio" [value]="true" required [(ngModel)]="field.Value" #f="ngModel" >&nbsp;Yes</label>&nbsp;
+                                                        <label><input [name]="'input_'+indx" type="radio" [value]="false" required [(ngModel)]="field.Value" #f="ngModel" >&nbsp;No</label>
+                                                        <span *ngIf="f.errors">
+                                                          <span *ngIf="f.errors.required" class="error">&nbsp;&nbsp;&nbsp;* This field is required </span>                                                          
+                                                        </span>
                                                     </span>                                                
                                                     <input *ngSwitchCase="fieldType.Integer" [name]="'input_'+indx" style="width: 100%;" type="number" [(ngModel)]="field.Value" >  
                                                     <textarea *ngSwitchCase="fieldType.TextArea" [name]="'input_'+indx" style="width: 100%;" [(ngModel)]="field.Value" ></textarea>
