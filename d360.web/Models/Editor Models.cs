@@ -685,6 +685,9 @@ namespace d360.web.Models
         public List<ContractRegisterModel> Contracts { get; set; }
 
         public bool IsUsingActiveDirectory { get; set; }
+
+        [Display(Name = "Title")]
+        public string Title { get; set; }
     }
 
     public class ContractRegisterModel

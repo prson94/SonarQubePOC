@@ -156,69 +156,77 @@
                     </div>
                 </div>
 
-                <div class="row form-tools">
-                    <div class="col s12">
-                        <input id="loginButton" type="submit" value="Register" tabindex="3" style="width:25%; min-width: 100px" />
+                <div class="row">
+                    <div class="col l6 m6 s12">
+                        <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.Title)</div>
+                        <input type="text" id="Title" name="Title" value="@Model.Title" required pattern=".{2,}" title="Title name must be at least 2 characters long." style="width:100%" />
                     </div>
+                </div>
+
+                <div class="row form-tools">
+                        <div class="col s12">
+                            <input id="loginButton" type="submit" value="Register" tabindex="3" style="width:25%; min-width: 100px" />
+                        </div>
                 </div>
             }
         }
 
-        @if (Model.Step == RegisterStep.TermsOfUse || Model.Step == RegisterStep.ADTermsOfUse)
-        {
-            <div>Please read the terms of use below, then click Accept.</div>
-
-            if (Model.Contracts == null)
-            {
-                Model.Contracts = new List<d360.web.Models.ContractRegisterModel>();
-            }
-
-            for (int i = 0; i < Model.Contracts.Count; i++)
-            {
-                var isLastContract = (i == Model.Contracts.Count - 1);
-                if (!isLastContract)
-                {
-                    <div id="contract@(i)" style="display:@(i == 0 ? "block" : "none")">
-                        <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
-                            @Html.Raw(Model.Contracts[i].Contract.Body)
-                        </div>
-                        <div style="margin-bottom: 10px">
-                            @Html.CheckBox("Accept", Model.Contracts[i].Accept, new { onclick = "document.getElementById('accept" + i + "').disabled = !this.checked" }) Accept?
-                        </div>
-                        <div class="form-tools">
-                            <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" onclick="document.getElementById('contract@(i)').style.display = 'none'; document.getElementById('contract@(i + 1)').style.display = 'block';" />
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    using (Html.BeginForm())
+                    @if (Model.Step == RegisterStep.TermsOfUse || Model.Step == RegisterStep.ADTermsOfUse)
                     {
-                        <input type="hidden" id="Step" name="Step" value="@Model.Step" />
-                        <input type="hidden" id="Email" name="Email" value="@Model.Email" />
-                        <input type="hidden" id="FirstName" name="FirstName" value="@Model.FirstName" />
-                        <input type="hidden" id="LastName" name="LastName" value="@Model.LastName" />
-                        <input type="hidden" id="RegistrationID" name="RegistrationID" value="@Model.RegistrationID" />
+                        <div>Please read the terms of use below, then click Accept.</div>
 
-                        <div id="contract@(i)" style="display:@(i == 0 ? "block" : "none")">
-                            <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
-                                @Html.Raw(Model.Contracts[i].Contract.Body)
-                            </div>
-                            <div style="margin-bottom: 10px">
-                                @Html.CheckBox("Accept", Model.Accept ?? false, new { onclick = "document.getElementById('accept" + i + "').disabled = !this.checked" }) Accept?
-                            </div>
-                            <div class="form-tools">
-                                <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" />
-                            </div>
-                        </div>
+                        if (Model.Contracts == null)
+                        {
+                            Model.Contracts = new List<d360.web.Models.ContractRegisterModel>();
+                        }
+
+                        for (int i = 0; i < Model.Contracts.Count; i++)
+                        {
+                            var isLastContract = (i == Model.Contracts.Count - 1);
+                            if (!isLastContract)
+                            {
+                                <div id="contract@(i)" style="display:@(i == 0 ? "block" : "none")">
+                                    <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
+                                        @Html.Raw(Model.Contracts[i].Contract.Body)
+                                    </div>
+                                    <div style="margin-bottom: 10px">
+                                        @Html.CheckBox("Accept", Model.Contracts[i].Accept, new { onclick = "document.getElementById('accept" + i + "').disabled = !this.checked" }) Accept?
+                                    </div>
+                                    <div class="form-tools">
+                                        <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" onclick="document.getElementById('contract@(i)').style.display = 'none'; document.getElementById('contract@(i + 1)').style.display = 'block';" />
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                using (Html.BeginForm())
+                                {
+                                    <input type="hidden" id="Step" name="Step" value="@Model.Step" />
+                                    <input type="hidden" id="Email" name="Email" value="@Model.Email" />
+                                    <input type="hidden" id="FirstName" name="FirstName" value="@Model.FirstName" />
+                                    <input type="hidden" id="LastName" name="LastName" value="@Model.LastName" />
+                                    <input type="hidden" id="Title" name="Title" value="@Model.Title" />
+                                    <input type="hidden" id="RegistrationID" name="RegistrationID" value="@Model.RegistrationID" />
+
+                                    <div id="contract@(i)" style="display:@(i == 0 ? "block" : "none")">
+                                        <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
+                                            @Html.Raw(Model.Contracts[i].Contract.Body)
+                                        </div>
+                                        <div style="margin-bottom: 10px">
+                                            @Html.CheckBox("Accept", Model.Accept ?? false, new { onclick = "document.getElementById('accept" + i + "').disabled = !this.checked" }) Accept?
+                                        </div>
+                                        <div class="form-tools">
+                                            <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" />
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        }
 
-        @if (Model.Step == RegisterStep.TermsOfUseValidated)
-        {
-            <div>@Html.Raw(Model.Message)</div>
-        }
-    </div>
+                    @if (Model.Step == RegisterStep.TermsOfUseValidated)
+                    {
+                        <div>@Html.Raw(Model.Message)</div>
+                    }
+                </div>
 </body>

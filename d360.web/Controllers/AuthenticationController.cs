@@ -671,7 +671,7 @@ namespace d360.web.Controllers
             return View("Register", model);
         }
 
-        private async Task<InvitedUserResult> registerAzureActiveDirectoryGuest(string email, string firstName, string lastName, string url)
+        private async Task<InvitedUserResult> registerAzureActiveDirectoryGuest(string email, string firstName, string lastName, string title, string url)
         {            
             var settings = Community.GetCompanySettings();
             var tenantId = settings["AzureADTenant"];     //ad tenant / directory id
@@ -686,7 +686,7 @@ namespace d360.web.Controllers
                 // from portal
                 //var clientId = "a9f106b3-52fc-43ca-b33b-9e53a58b40dd"; // application id from portal
                 //var clientSecret = "5w+fAVAdSv1bZtHMVBwAQy1AJtbUr/2v1X3rbCRpY0U=";  // encoded key from azure portal app key
-                var invite = await AzureGraphProvider.CreateGuestAccount(email, firstName, lastName, url, tenantId, clientId, clientSecret);
+                var invite = await AzureGraphProvider.CreateGuestAccount(email, firstName, lastName, title, url, tenantId, clientId, clientSecret);
 
                 return invite;
             }
@@ -1120,7 +1120,7 @@ namespace d360.web.Controllers
                                         aadReturnDomain = $"https://{aadReturnDomain}/";
                                     }
 
-                                    var inviteResult = await registerAzureActiveDirectoryGuest(model.Email, model.FirstName, model.LastName, aadReturnDomain);
+                                    var inviteResult = await registerAzureActiveDirectoryGuest(model.Email, model.FirstName, model.LastName, model.Title, aadReturnDomain);
 
                                     if(inviteResult != null && !string.IsNullOrEmpty(inviteResult.inviteRedeemUrl))
                                     {
@@ -1241,7 +1241,7 @@ namespace d360.web.Controllers
                                         aadReturnDomain = $"https://{aadReturnDomain}/";
                                     }
 
-                                    await registerAzureActiveDirectoryGuest(model.Email, model.FirstName, model.LastName, aadReturnDomain);
+                                    await registerAzureActiveDirectoryGuest(model.Email, model.FirstName, model.Title, model.LastName, aadReturnDomain);
                                     model.Message = "Thank you for accepting the terms of use.  Please review your mail for an invitation to use Data3Sixty.";
                                 }
                                 else

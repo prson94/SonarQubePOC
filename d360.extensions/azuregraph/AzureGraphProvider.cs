@@ -47,6 +47,8 @@ namespace d360.extensions.azuregraph
     {
         public string givenName { get; set; }
         public string surname { get; set; }
+
+        public string jobTitle { get; set; }
     }
 
     public class InvitedUserResultId
@@ -71,7 +73,7 @@ namespace d360.extensions.azuregraph
     public class AzureGraphProvider
     {       
         // Get an authenticated Microsoft Graph Service client.
-        public static async Task<InvitedUserResult> CreateGuestAccount(string email, string firstName, string lastName, string url, string tenantId, string clientId, string clientSecret)
+        public static async Task<InvitedUserResult> CreateGuestAccount(string email, string firstName, string lastName, string title, string url, string tenantId, string clientId, string clientSecret)
         {            
             //var tenantId = "b0f971a2-a021-43c6-b4e9-8bf500ebf35b"; // azure ad tenant / directory id
 
@@ -83,7 +85,7 @@ namespace d360.extensions.azuregraph
             var inviteResponse = await InviteUser(token, email, url, false);
 
             if(inviteResponse != null && inviteResponse.invitedUser != null)
-                await UpdateUser(token, inviteResponse.invitedUser.id, firstName, lastName);
+                await UpdateUser(token, inviteResponse.invitedUser.id, firstName, lastName, title);
 
             return inviteResponse;
         }
@@ -110,7 +112,7 @@ namespace d360.extensions.azuregraph
 
         }
 
-        private async static Task UpdateUser(string token, string email, string v1, string v2)
+        private async static Task UpdateUser(string token, string email, string firstName, string lastName, string title)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -118,8 +120,9 @@ namespace d360.extensions.azuregraph
                 //  StringContent queryString = new StringContent("{\"invitedUserEmailAddress\":\"" + email + "\",\"inviteRedirectUrl\":\"" + url + "\", \"sendInvitationMessage\":true}", Encoding.UTF8, "application/json");
                 var invite = new InvitedUser
                 {
-                    givenName = v1,
-                    surname = v2
+                    givenName = firstName,
+                    surname = lastName,
+                    jobTitle = title
                 };
 
                 StringContent queryString = new StringContent(JsonConvert.SerializeObject(invite), Encoding.UTF8, "application/json");
