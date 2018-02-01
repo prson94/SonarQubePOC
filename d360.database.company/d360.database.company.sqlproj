@@ -142,6 +142,9 @@
     <Folder Include="metrics\Stored Procedures\" />
     <Folder Include="analytics\Stored Procedures\" />
     <Folder Include="dbo\Sequences\" />
+    <Folder Include="lineage" />
+    <Folder Include="lineage\Stored Procedures" />
+    <Folder Include="lineage\Functions" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="fusion\Tables\StagingRelation.sql">
@@ -596,6 +599,8 @@
     <Build Include="Security\analytics.sql" />
     <Build Include="dbo\Sequences\FusionAttribute_Seq.sql" />
     <Build Include="dbo\Functions\GetWorkflowConditionLabels.sql" />
+    <Build Include="lineage\Stored Procedures\GetByObject.sql" />
+    <Build Include="lineage\Functions\GetTrailForOject.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
