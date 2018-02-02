@@ -1550,7 +1550,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	            ta.ObjectID, 
 	            dbo.GenerateNgObjectUrl(ta.Object, ta.ObjectID, 0) as NgUrl, 
 	            v.id as VersionID,
-	            dbo.GetWorkflowObjectsSummary(t.id, @filteredObject, @filteredObjectId) as ObjectNames, 
+	            dbo.GetWorkflowObjectsSummary(v.id, @filteredObject, @filteredObjectId) as ObjectNames, 
  	            null as Responsibility, 
 	            null as SpecificUser,
 	            case when count(s.StepID) > 0 then

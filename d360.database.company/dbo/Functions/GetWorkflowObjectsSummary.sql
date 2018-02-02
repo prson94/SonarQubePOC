@@ -1,6 +1,6 @@
 ﻿CREATE FUNCTION [dbo].[GetWorkflowObjectsSummary]
 (
-	@typeId int,
+	@versionId int,
 	@filteredObject varchar(50) = null,
 	@filteredObjectId int = null
 )
@@ -11,7 +11,7 @@ BEGIN
 declare @itemCount int;
 
 select @itemCount = count(*) from workflow.item i
-inner join workflow.version v on v.id = i.versionid and v.typeid = @typeId
+inner join workflow.version v on v.id = @versionId and i.versionid = @versionid;
 
 return (
 	select string_agg(utility.GetAssetDisplayValue(x.id), ', ') + 
@@ -34,8 +34,8 @@ return (
 		left join Asset a on i.object != 'Issue' and a.object = i.object and a.objectid = i.objectid
 		left join Issue s on i.object = 'Issue' and s.id = i.objectid
 		left join Asset a2 on i.object = 'Issue' and a2.object = s.object and a2.objectid = s.objectid
-		inner join workflow.type t on t.id = @typeId
-		inner join workflow.version v on v.typeid = t.id and i.versionid = v.id
+		inner join workflow.version v on i.versionid = v.id and v.id = @versionId
+		inner join workflow.type t on t.id = v.typeid
 		where ((@filteredObjectId is not null and (coalesce(a2.object, a.object) = @filteredObject and coalesce(a2.objectId, a.objectId) = @filteredObjectId)) or (@filteredObjectId is null))
 		order by 1
 	) x 
