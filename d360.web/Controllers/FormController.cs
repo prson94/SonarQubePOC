@@ -17398,8 +17398,10 @@ from    [IntersectType] RT
 
                     }
                 }
+
                 var MaxDisplayShortcut = Company.Shortcuts.OrderByDescending(o => o.DisplayOrder).FirstOrDefault();
-                shortcut.DisplayOrder = MaxDisplayShortcut.DisplayOrder + 1;
+                shortcut.DisplayOrder = (MaxDisplayShortcut != null) ? MaxDisplayShortcut.DisplayOrder + 1 : 0;
+                
 
 
                 shortcut.Url += "";
