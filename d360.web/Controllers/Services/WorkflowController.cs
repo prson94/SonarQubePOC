@@ -1611,14 +1611,17 @@ order by wi.StartedOn desc";
         public HttpResponseMessage GetWorkflowVersionStepHistory(int id, string filteredObject = null, int? filteredObjectId = null)
         {
             var sql = QueryConstants.WorkflowVersionStepHistory;
-
+            //			left join issue s on m.object = 'Issue' and s.id = m.objectID
             if (filteredObject != null && filteredObjectId != null)
             {
-                sql = string.Format(sql, "inner join workflow.item m on m.id = i.itemid and m.object = @filteredObject and m.objectid = @filteredObjectId");
+                if (filteredObject == "Issue")
+                    sql = string.Format(sql, "inner join workflow.item m on m.id = i.itemid", "left join issue s on m.object = 'Issue' and s.id = m.objectID and s.object = @filteredObject and s.objectid = @filteredObjectId");
+                else
+                    sql = string.Format(sql, "inner join workflow.item m on m.id = i.itemid and m.object = @filteredObject and m.objectid = @filteredObjectId", "left join issue s on m.object = 'Issue' and s.id = m.objectID");
             }
             else
             {
-                sql = string.Format(sql, "left join workflow.item m on m.id = i.itemid");
+                sql = string.Format(sql, "left join workflow.item m on m.id = i.itemid", "left join issue s on m.object = 'Issue' and s.id = m.objectID");
             }
 
             var results = Company.Query<dynamic>(sql, new { id, filteredObject, filteredObjectId }).ToList();
@@ -1633,9 +1636,24 @@ order by wi.StartedOn desc";
         }
 
         [Route("versionstep/history/{id:int}/excel.xls"), HttpGet]
-        public HttpResponseMessage GetWorkflowVersionStepHistoryExcel(int id)
+        public HttpResponseMessage GetWorkflowVersionStepHistoryExcel(int id,  string filteredObject = null, int? filteredObjectId = null)
         {
-            var results = Company.Query<dynamic>(QueryConstants.WorkflowVersionStepHistory, new { id }).ToList();
+
+            var sql = QueryConstants.WorkflowVersionStepHistory;
+            //			left join issue s on m.object = 'Issue' and s.id = m.objectID
+            if (filteredObject != null && filteredObjectId != null)
+            {
+                if (filteredObject == "Issue")
+                    sql = string.Format(sql, "inner join workflow.item m on m.id = i.itemid", "left join issue s on m.object = 'Issue' and s.id = m.objectID and s.object = @filteredObject and s.objectid = @filteredObjectId");
+                else
+                    sql = string.Format(sql, "inner join workflow.item m on m.id = i.itemid and m.object = @filteredObject and m.objectid = @filteredObjectId", "left join issue s on m.object = 'Issue' and s.id = m.objectID");
+            }
+            else
+            {
+                sql = string.Format(sql, "left join workflow.item m on m.id = i.itemid", "left join issue s on m.object = 'Issue' and s.id = m.objectID");
+            }
+
+            var results = Company.Query<dynamic>(sql, new { id }).ToList();
 
             #region Header
 

@@ -352,8 +352,14 @@ export class WorkflowService extends BaseService {
 
     }
 
-    exportVersionStepHistory(id: number) {
-        window.location.assign(`services/workflow/versionstep/history/${id}/excel.xls`);
+    exportVersionStepHistory(id: number, filteredObject: string = null, filteredObjectId: number = null) {
+        let uri = 'services/workflow/versionstep/history/${id}/excel.xls';
+
+        if (filteredObject != null && filteredObjectId != null) {
+            uri += `?filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+        }
+
+        window.location.assign(uri);
     }
 
     getWorkflowOpenActions(types: string) {

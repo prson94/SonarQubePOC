@@ -66,7 +66,7 @@ export class WorkflowHistoryComponent extends BaseComponent implements OnInit, O
     }
 
     export() {
-        this.workflowService.exportVersionStepHistory(this.versionStepId);
+        this.workflowService.exportVersionStepHistory(this.versionStepId, this.filteredObject, this.filteredObjectId);
     }
 
     navigate(url: string) {
