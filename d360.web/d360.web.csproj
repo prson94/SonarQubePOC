@@ -941,7 +941,7 @@
     <None Include="Content\styles\Root.less" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <None Include="Properties\PublishProfiles\UI - UAT - AU - East.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Uat - AU - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Uat - EU - North.pubxml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
