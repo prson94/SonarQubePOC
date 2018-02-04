@@ -87,40 +87,6 @@ from    Artifact a
         inner join artifacttype at on a.artifacttypeid = at.id                        
 group by at.name,at.id order by at.name";
 
-        public static string ArtifactBreadcrumbItem = @"
-with h as
-	(
-	select	[ObjectID] as ID, [Name], [ParentID], [Url], [ObjectTypeName], [ObjectTypeID],
-			[dbo].GenerateObjectUrl(ObjectType, ObjectTypeID, ObjectTypeID) as TypeUrl,
-			0 as [Level]
-	from	[cache].[ObjectDetails]
-	where	[Object] = 'Artifact' and ObjectID = @id
-	union all
-	select	P.[ObjectID] as ID, P.[Name], P.[ParentID], P.[Url], P.[ObjectTypeName], P.[ObjectTypeID],
-			[dbo].GenerateObjectUrl(P.ObjectType, P.ObjectTypeID, P.ObjectTypeID) as TypeUrl,
-			C.[Level]-1 as [Level]
-	from	[cache].[ObjectDetails] P
-			inner join h C on P.[Object] = 'Artifact' and P.ObjectID = C.ParentID
-	)
-select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]";
-
-        public static string ArtifactNgBreadcrumbItem = @"
-with h as
-	(
-	select	[ObjectID] as ID, [Name], [ParentID], [NgUrl] as Url, [ObjectTypeName], [ObjectTypeID],
-			[dbo].GenerateNgObjectUrl(ObjectType, ObjectTypeID, ObjectTypeID) as TypeUrl,
-			0 as [Level]
-	from	[cache].[ObjectDetails]
-	where	[Object] = 'Artifact' and ObjectID = @id
-	union all
-	select	P.[ObjectID] as ID, P.[Name], P.[ParentID], P.[NgUrl] as Url, P.[ObjectTypeName], P.[ObjectTypeID],
-			[dbo].GenerateNgObjectUrl(P.ObjectType, P.ObjectTypeID, P.ObjectTypeID) as TypeUrl,
-			C.[Level]-1 as [Level]
-	from	[cache].[ObjectDetails] P
-			inner join h C on P.[Object] = 'Artifact' and P.ObjectID = C.ParentID
-	)
-select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]";
-
         public static string ObjectNymTypes = @"
                                 select 
 	                                P.ID as [ID],
@@ -135,30 +101,6 @@ select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]";
                                         P.ID as [ID], P.Name as [Name] 
                                 from  [dbo].[NymRelation] R inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = @ot and R.ObjectID = @id
     ";
-
-        public static string ArtifactSettingsItem = @"
-select	*
-from	(
-		select	case 
-					when count(1) > 0 then cast(1 as bit)
-					else cast(0 as bit)
-				end as AllowAttributes
-		from	AttributeTypeRelation
-		where	ObjectType = 'ArtifactType' and ObjectID = @id
-		) A		
-		inner join	(
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit) 
-							end as AllowPredicateHierarchies
-					from	(
-								select	IT.ID
-								from	IntersectType IT
-										inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3 -- TypeOf
-								where	((IT.Subject = 'ArtifactType' and IT.SubjectID = @id) OR (IT.Object = 'ArtifactType' and IT.ObjectID = @id))
-
-							) O
-					) P on 1=1";
 
         public static string ArtifactTypeStatisticsList = @"
 select		T.ID,
@@ -494,49 +436,73 @@ from    [Group] G
         inner join ResourceGroup RG on RG.GroupID = G.ID and G.ID = @id
         inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID";
 
-        public static string InformationCatalogDiagramData = @"
-with h as (
-select		top 100 percent	
-			T.ID,
-			0 as ParentID,
-			T.DisplayValue as Name,
-            dbo.GenerateObjectUrl('Taxonomy', T.TaxonomyTypeID, T.ID) as Url
-from		Taxonomy T
-where	    T.TaxonomyTypeID = @id
-			and T.ParentID is null
-order by	Name
-union all
-select		top 100 percent	
-			C.ID,
-			C.ParentID,
-			C.DisplayValue as Name,
-            dbo.GenerateObjectUrl('Taxonomy', C.TaxonomyTypeID, C.ID) as Url
-from		Taxonomy C
-			inner join h on h.ID = C.ParentID
-order by	Name
-)
+        public static string InformationCatalogDiagramData = $@"
 select	0 as ID, 
 		null as ParentID,
-		Name,
-        dbo.GenerateObjectUrl('TaxonomyType', ID, ID) as Url,
-        cast(0 as bit) as RelationshipsExist
+		Name
 from	TaxonomyType
 where	ID = @ID
 union
-select	ID, 
-		ParentID, 
-		Name,
-        Url,
-        cast(R.RelationshipsExist as bit) as RelationshipsExist
-from	h
-        cross apply (
-                    select  case 
-                                when count(1) > 0 then 1
-                                else 0
-                            end as RelationshipsExist
-                    from    [Intersect] N 
-                    where   ([Subject] = 'Taxonomy' and [SubjectID] = h.ID) OR ([Object] = 'Taxonomy' and [ObjectID] = h.ID)
-                    ) R";
+select	A.ObjectID as ID, 
+        coalesce(P.SubjectID, 0) as ParentID, 
+        A.DisplayValue as Name
+from	AssetDetail A
+		outer apply (
+					select	I.SubjectID
+					from	[Intersect] I
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+					) P
+where   A.Type = 'TaxonomyType' and A.TypeID = @ID AND A.[State] = 1";
+
+//        public static string InformationCatalogDiagramData = @"
+//select	A.ObjectID as ID, P.SubjectID as ParentID, A.TypeID as TaxonomyTypeID, A.DisplayValue,
+//        A.ID as AssetID,  
+//        {columns} 
+//        case 
+//            when DC.ItemsCount > 0 then cast(1 as bit) 
+//            else cast(0 as bit) 
+//        end as HasChildren,
+//        L.Level 
+//from	AssetDetail A
+//        cross apply dbo.GetAssetLevelById(A.ID) L
+//        {joins} 
+//        CROSS APPLY (
+//            		select	count(1) as [ItemsCount]
+//            		from	[Intersect]
+//            		where	([Subject] = A.Object and SubjectID = A.ObjectID) OR ([Object] = A.Object and ObjectID = A.ObjectID)
+//            		) DC 
+//		outer apply (
+//					select	I.SubjectID
+//					from	[Intersect] I
+//                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+//							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+//					) P
+//where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID)
+
+
+//select	0 as ID, 
+//		null as ParentID,
+//		Name,
+//        dbo.GenerateObjectUrl('TaxonomyType', ID, ID) as Url,
+//        cast(0 as bit) as RelationshipsExist
+//from	TaxonomyType
+//where	ID = @ID
+//union
+//select	ID, 
+//		ParentID, 
+//		Name,
+//        Url,
+//        cast(R.RelationshipsExist as bit) as RelationshipsExist
+//from	h
+//        cross apply (
+//                    select  case 
+//                                when count(1) > 0 then 1
+//                                else 0
+//                            end as RelationshipsExist
+//                    from    [Intersect] N 
+//                    where   ([Subject] = 'Taxonomy' and [SubjectID] = h.ID) OR ([Object] = 'Taxonomy' and [ObjectID] = h.ID)
+//                    ) R";
 
 
         public static string LookupAllocations = @"

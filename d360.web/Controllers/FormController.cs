@@ -13571,7 +13571,18 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                             sql = $@"select C.Object, C.ObjectID, O.DisplayValue AS Name from [Rule] O inner join {sql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
                         case "TaxonomyType":
-                            sql = $@"select C.Object, C.ObjectID, O.TextPath as Name from Taxonomy O inner join {sql} order by O.TextPath";
+                            sql = $@"
+select	A.Object,
+        A.ObjectID, 
+        TP.TextPath as Name 
+from	AssetDetail A 
+        cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
+where   A.Type = @targetType 
+        and A.TypeID = @targetTypeID 
+        and A.[State] = 1 
+        and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID) 
+order by TP.TextPath"; 
+                            //select C.Object, C.ObjectID, O.TextPath as Name from Taxonomy O inner join {sql} order by O.TextPath
                             break;
                     }
                     break;

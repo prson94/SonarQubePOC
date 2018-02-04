@@ -1,10 +1,25 @@
-﻿using System.Web.Mvc;
+﻿using d360.core.entities;
 using d360.model;
+using d360.core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using d360.core.exceptions;
+using d360.core.enums;
+using System.Collections;
+using System.Text;
+using Newtonsoft.Json.Linq;
 
-namespace d360.web.Controllers
+namespace d360.web.Controllers.Services
 {
+    /// <summary>
+    /// This service houses all endpoints handling custom API configurations.
+    /// </summary>
     [RoutePrefix("services/custom"), Authorize]
-    public class CustomController : BaseController
+    public class CustomController : BaseApiController
     {
         #region DI
 
@@ -14,34 +29,45 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Json
-
         /// <summary>
-        /// 
+        /// Sends back data based on a custom route.
         /// </summary>
-        /// <param name="id">The ID of the rule to retrieve attributes for.</param>
-        /// <param name="typeID">The ID of the attribute type to get.</param>
+        /// <param name="service"></param>
+        /// <param name="endpoint"></param>
+        /// <param name="version"></param>
+        /// <param name="entityFormat"></param>
         /// <returns></returns>
-        [Route("rules/{id}/attributes/{typeID}"), HttpGet]
-        public JsonNetResult GetAttributesByAttributeType(int id, int typeID)
+        [HttpGet, Route("{service}/{endpoint}/{version}/{*entityFormat}")]
+        public HttpResponseMessage GetDataBasedOnRoute(string service, string endpoint, string version, string entityFormat)
         {
-            var joins = "";
-            var columns = "";
-            getDynamicFieldJoinStatements(typeID, "Attribute", out joins, out columns);
+            var queryParams = Request.GetQueryNameValuePairs();
 
-            var querySql = string.Format(@"select A.ID, {0} T.Name
-from	Attribute A 
-inner join AttributeType T on T.ID = A.AttributeTypeID and T.ID = @typeID and A.ObjectType = 'Rule' and A.ObjectID = @id {1}", columns, joins);
+            var assets = Company.Filter<AssetApiModel>(i => i.AssetTypeID == 1, 
+                i => i.Fields);
 
-            var sql = string.Format(@"select * from ({0}) A", querySql);
-
-            var models = Company.Query<dynamic>(sql, new { id = id, typeID = typeID });
-            return new JsonNetResult
+            if (queryParams.Any(i => i.Key == "_sort"))
             {
-                Data = models
-            };            
+                var sort = queryParams.SingleOrDefault(i => i.Key == "_sort");
+                var arrSort = sort.Value.Split(',').ToList();
+                foreach (var sRaw in arrSort)
+                {
+                    var s = sRaw;
+                    var sAsc = true;
+                    if (s.StartsWith("-"))
+                    {
+                        sAsc = false;
+                        s = s.Replace("-", "");
+                    }
+
+                    assets = sAsc ? assets.OrderBy(i => i.Fields.Single(f => f.Name == s)).AsQueryable() :
+                                    assets.OrderByDescending(i => i.Fields.Single(f => f.Name == s)).AsQueryable();
+                }
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, assets);
+
+            //return Request.CreateResponse<string>($"Service: {service}, Endpoint: {endpoint}, Version: {version}, Entity: {entityFormat}");
         }
 
-         #endregion
     }
 }

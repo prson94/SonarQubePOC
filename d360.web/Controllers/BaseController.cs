@@ -188,7 +188,7 @@ namespace d360.web.Controllers
 
         #region Private Methods
 
-        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "ID")
+        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "ID", string nameColumnOverride = "")
         {
             columns = "";
             joins = "";
@@ -219,27 +219,44 @@ namespace d360.web.Controllers
                     var fieldName = $"Field{f.ID}";
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
 
-                    columns += $@"case 
+                    // Allows for overriding the value for Name with that of another column, like TextPath.
+                    if (!string.IsNullOrEmpty(nameColumnOverride) && name == "Name")
+                    {
+                        columns += $@"{nameColumnOverride} as [{fieldName}], ";
+                    }
+                    else
+                    {
+                        columns += $@"case 
     when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
     when {name}_T.Value is not null then {name}_T.FormattedValue 
     when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
     else '' 
-end as [{fieldName}], ";
+    end as [{fieldName}], ";
 
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.{coreTableIdJoinColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                        joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} 
+    left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.{coreTableIdJoinColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                    }
                 }
                 else
                 {
                     if (includeIdColumn) columns += string.Format("{0}_T.Value as [{0}ID], ", name);
-                    columns += $@"case 
+
+                    // Allows for overriding the value for Name with that of another column, like TextPath.
+                    if (!string.IsNullOrEmpty(nameColumnOverride) && name == "Name")
+                    {
+                        columns += $@"{nameColumnOverride} as [{name}], ";
+                    }
+                    else
+                    {
+                            columns += $@"case 
     when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
     when {name}_T.Value is not null then {name}_T.FormattedValue 
     when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
     else '' 
-end as [{name}], ";
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationTypeString}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.{coreTableIdJoinColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+    end as [{name}], ";
+                        joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationTypeString}' and {name}_TT.ObjectID = {typeID} 
+    left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.{coreTableIdJoinColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                    }
                 }
             }
             fields = null;

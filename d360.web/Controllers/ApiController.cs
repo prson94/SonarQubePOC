@@ -478,7 +478,12 @@ namespace d360.web.Controllers
                     break;
             }
 
-            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = item.ColumnWidth };
+            var width = item.ColumnWidth;
+            if (!width.HasValue)
+            {
+                width = (int)dynamicFieldWidth;
+            }
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -6688,7 +6693,7 @@ where    A.RuleID = @id", new { id });
             var sourceJoins = "";
             var sourceColumns = "";
 
-            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "ObjectID");
+            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "ObjectID", "A.Name");
 
             joins = joins + sourceJoins;
             columns = columns + sourceColumns;
@@ -6705,18 +6710,23 @@ where    A.RuleID = @id", new { id });
 select  {columns} 
         A.*
 from	(
-select	ID,
+select	I.ID,
         IntersectTypeID,
-        Object,
-		ObjectID,
-		ObjectName as Name,
-        ObjectUrl as Url,
-		ObjectType as Type,
-		ObjectTypeID as TypeID,
-		ObjectTypeName as TypeName,
-		T.HasTechnicalRelationships,
-        A.HasAttributes
-from	IntersectDetail I
+        case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
+		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
+		P.TextPath as Name,
+        --case when I.Subject = @type and I.SubjectID = @id then ObjectUrl else SubjectUrl end as Url,
+		case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
+		case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
+		AST.Name as TypeName,
+		T.HasTechnicalRelationships
+from	[Intersect] I
+		inner join IntersectType IT on IT.ID = I.IntersectTypeID
+		inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
+									and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end
+		inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
+								and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
+		cross apply dbo.GetAssetTextPathById(IA.ID, '/') P
 		cross apply (
 					select	case 
 								when count(1) > 0 then cast(1 as bit)
@@ -6725,50 +6735,16 @@ from	IntersectDetail I
 					from	[Intersect]
 					where	Subject = 'Intersect' and SubjectID = I.ID
 					) T
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasAttributes
-					from	[Attribute]
-					where	ObjectType = 'Intersect' and ObjectID = I.ID
-					) A
-where	Subject ='{type.ToString()}'  and SubjectID = {id} and IntersectTypeID = {intersectTypeID} 
-union
-select	ID,
-        IntersectTypeID,
-        Subject as Object,
-		SubjectID as ObjectID,
-		SubjectName as Name,
-        SubjectUrl as Url,
-		SubjectType as Type,
-		SubjectTypeID as TypeID,
-		SubjectTypeName as TypeName,
-		T.HasTechnicalRelationships,
-        A.HasAttributes
-from	IntersectDetail I
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID
-					) T
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasAttributes
-					from	[Attribute]
-					where	ObjectType = 'Intersect' and ObjectID = I.ID
-					) A
-where	Object = '{type.ToString()}' and ObjectID = {id} and IntersectTypeID = {intersectTypeID} 
-        ) A {joins}";
+where	(
+        (I.Subject = @type  and I.SubjectID = @id) or
+        (I.Object = @type and I.ObjectID = @id)
+        )
+        and IntersectTypeID = {intersectTypeID} 
+        ) A 
+{joins} 
+order by A.Name";
 
-            querySql += " order by A.Name";
-
-            return Company.Query<dynamic>(querySql);
+            return Company.Query<dynamic>(querySql, new { it = intersectTypeID, type = new Dapper.DbString { IsAnsi = false, Value = type.ToString() }, id });
         }
 
         [Route("export/{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/excel.xls"), HttpGet]

@@ -942,7 +942,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <None Include="Properties\PublishProfiles\UI - UAT - AU - East.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - UAT - UK - London.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Uat - EU - North.pubxml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -957,6 +957,10 @@
     <Content Include="Views\Shared\Anonymous.cshtml" />
     <Content Include="Views\Authentication\Register.cshtml" />
     <Content Include="Views\Shared\GenericError.cshtml" />
+    <None Include="Properties\PublishProfiles\UI - Uat - IN - Central.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Uat - UK - South.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Uat - US - Central.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Uat - US - East.pubxml" />
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
