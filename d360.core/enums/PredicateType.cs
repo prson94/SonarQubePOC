@@ -16,7 +16,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false),
-            AllowEditFromRelationshipEditor(false)
+            AllowEditFromRelationshipEditor(true)
         ]
         DataLineage = 1,
         [
