@@ -1252,7 +1252,7 @@ namespace d360.model
             //if the setting to include responses from froms is enabled then get previous form responses and put in xml
             if (settings.ShouldIncludeFormResponses)
             {
-                var formResponses = WorkflowItemSteps.Where(x => x.ItemID == item.ItemID && x.Step.ActivityType == WorkflowActivityType.Form);
+                var formResponses = WorkflowItemSteps.Where(x => x.ItemID == item.ItemID && x.Step.ActivityType == WorkflowActivityType.Form).Include(x=>x.Step);
 
                 StringBuilder sb = new StringBuilder();
                 sb.Append($"<br><br><b>Form responses</b><br>");
@@ -1262,7 +1262,11 @@ namespace d360.model
                     if (string.IsNullOrEmpty(formResponse.Fields)) continue;
 
                     var xml = XElement.Parse(formResponse.Fields);
-                    
+
+                    var name = formResponse.Step != null ? formResponse.Step.Name : "(unknown)";
+
+                    sb.Append($"<br><br>{name}");
+
                     foreach (var form in xml.Elements("form"))
                     {
                         int resourceID = 0;
@@ -1291,9 +1295,9 @@ namespace d360.model
                             sb.Append($"<b>{fieldName}</b> {value}<br>");
                         }
                     }
-
-                    settings.BodyTemplate += sb.ToString();
 	            }
+                
+                settings.BodyTemplate += sb.ToString();
             }
 
             settings.BodyTemplate += "</body></html>";
