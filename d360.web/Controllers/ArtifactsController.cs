@@ -628,7 +628,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
         private string getRowFieldValue(dynamic row, FieldType field)
         {
             if(field != null && field.ID > 0)
-                return (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]);
+                return (((row as IDictionary<string, object>)[$"Field{field.ID}"]) ?? "").ToString();
             else if(field != null && field.Name == "Parent")
                 return (string)((row as IDictionary<string, object>)["Parent"]);
             else if (field != null && field.Name == "Url")
