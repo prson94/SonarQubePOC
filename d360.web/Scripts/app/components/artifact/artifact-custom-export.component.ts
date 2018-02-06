@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ArtifactType, ArtifactTypeExportTemplate } from '../../models/artifact-type.model';
 import { ArtifactService } from '../../services/artifacts.service';
 import { BaseComponent } from '../shared/base.component';
@@ -19,7 +19,8 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                         <button pButton type="button" style="width: '150px';" label="Close" (click)="closeClick.emit()"></button>                        
                     </div>                    
                 </div>        
-                `,
+                `,    
+        changeDetection: ChangeDetectionStrategy.OnPush,  
     providers: [ArtifactService]
 })
 
@@ -37,7 +38,10 @@ export class ArtifactCustomExportComponent extends BaseComponent implements OnIn
 
     private exportOptions: ArtifactTypeExportTemplate[];
     
-    constructor(protected artifactService: ArtifactService) { super();   }
+    constructor(
+        protected artifactService: ArtifactService,
+        private changeDetectorRef: ChangeDetectorRef
+    ) { super(); }
 
     ngOnInit() {
         this.load();
@@ -48,6 +52,7 @@ export class ArtifactCustomExportComponent extends BaseComponent implements OnIn
         this.artifactService.getArtifactTypeExportTemplates(this.artifactType.ID).then(res => {
             this.isLoading = false;
             this.exportOptions = res;
+            this.changeDetectorRef.markForCheck();
         });
     }
 
