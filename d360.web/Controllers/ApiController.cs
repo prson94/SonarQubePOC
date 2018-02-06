@@ -601,30 +601,14 @@ namespace d360.web.Controllers
                     settings = Community.GetCompanySettings();
 
                     var artifactType = Company.GetById<ArtifactType>(id);
-                    var hasParentType = false;
-                    var parentTypeId = -1;
-
-                    if (artifactType != null)
-                    {
-
-                        var interTypeIntersect = Company.Query<IntersectType>(@"select I.* from IntersectType I
-                                        inner join [Predicate] P on P.ID = I.PredicateID
-                                        where I.[Object] = 'ArtifactType' and I.[ObjectID] = @objectId and P.Type = @predicateType", 
-                                        new { objectId = artifactType.ID, predicateType = (int)PredicateType.InterTypeHierarchy }).FirstOrDefault(); 
-
-                        if (interTypeIntersect != null)
-                        {
-                            hasParentType = true;
-                            parentTypeId = interTypeIntersect.SubjectID;
-                        }
-
-                    }
+                    var parentType = Company.GetParentType<ArtifactType>(id);
+                    var hasParentType = parentType != null;
 
                     staticFieldCount = hasParentType ? 4 : 3;
 
                     if (hasParentType)
                     {
-                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == parentTypeId).OrderBy(i => i.DisplayValue).Select(i => i.DisplayValue).ToList(), columnWidth = 200 });
+                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == parentType.ID).OrderBy(i => i.DisplayValue).Select(i => i.DisplayValue).ToList(), columnWidth = 200 });
                     }
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
@@ -1103,7 +1087,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("ID", artifactType.ID);
             model.Add("Name", artifactType.Name);
             model.Add("Description", artifactType.Description);
-            model.Add("ParentID", artifactType.ParentID);
+            model.Add("ParentID", Company.GetParentType<ArtifactType>(artifactType.ID)?.ID ?? null);
             model.Add("CanOwnFusion", artifactType.CanOwnFusion);
             model.Add("HasCustomExportTemplates", Company.ArtifactTypeExportTemplates.Where(x => x.ArtifactTypeID == typeID).Any());
             model.Add("AutoDisplayDescription", artifactType.AutoDisplayDescription);
@@ -4803,17 +4787,18 @@ where    A.RuleID = @id", new { id });
                     #region Fields
 
                     var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
+                    var parent = Company.GetParentObject<Artifact>(id);
                     if (artifact != null)
                     {
-                        if (artifact.Parent != null)
+                        if (parent != null)
                         {
-                            var parentUrl = Company.Query<string>($"select dbo.GenerateObjectUrl('Artifact', {artifact.Parent.ArtifactTypeID}, {artifact.Parent.ID})").First();
+                            var parentUrl = Company.Query<string>($"select dbo.GenerateObjectUrl('Artifact', {parent.ArtifactTypeID}, {parent.ID})").First();
 
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.ParentID), FieldName = "ArtifactParentName", FieldDescription = artifact.GetDescription(i => i.ParentID), Value = artifact.Parent.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = artifact.Parent.ID }
+                                    new ReadOnlyField { Name = parent.GetName(i => i.ID) , FieldName = "ArtifactParentName", FieldDescription = parent.GetDescription(i => i.ID), Value = parent.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ID}
                                 }
                             });
                         }
@@ -5440,7 +5425,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.Policy:
                     #region Fields
-                    var policy = Company.GetById<Policy>(id, i => i.Children);
+                    var policy = Company.GetById<Policy>(id);
                     if (policy != null)
                     {
                         var policyLevelInfo = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == policy.PolicyTypeID && i.Level == policy.Level).SingleOrDefault();

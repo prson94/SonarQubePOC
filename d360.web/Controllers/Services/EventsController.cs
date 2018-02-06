@@ -146,9 +146,7 @@ namespace d360.web.Controllers.Services
                         throw new MissingPropertiesException("ParentID");
                     }
                 }
-                if (parentID > 0) item.ParentID = parentID;
 
-                
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, id).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
 
                 var fields = new List<Field>();
@@ -164,7 +162,28 @@ namespace d360.web.Controllers.Services
                 });
 
                 Company.SaveOrUpdate<Policy>(item, fields);
-                
+
+
+                if (parentID > 0)
+                {
+                    var parent = Company.GetById<Policy>(parentID);
+                    if (parent == null)
+                        return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"The parent policy with id {parentID} could not be found.");
+                    var intersectType = Company.GetHierarchyIntersectType(SystemObjects.PolicyType, parent.PolicyTypeID, id);
+                    if (intersectType != null)
+                    {
+                        var intersect = new Intersect()
+                        {
+                            Subject = "Policy",
+                            Object = "Policy",
+                            SubjectID = parentID,
+                            ObjectID = item.ID
+                        };
+
+                        Company.SaveOrUpdate(intersect);
+                    }
+                }
+
 
                 return Request.CreateResponse<Policy>(HttpStatusCode.Created, item);
             }
@@ -217,7 +236,38 @@ namespace d360.web.Controllers.Services
                         throw new MissingPropertiesException("ParentID");
                     }
                 }
-                if (parentID > 0) item.ParentID = parentID;
+
+                if (parentID > 0)
+                {
+                    var parent = Company.GetById<Policy>(parentID);
+                    var existing = Company.GetParentObject<Policy>(item.ID);
+                    var intersectType = Company.GetHierarchyIntersectType(SystemObjects.TaxonomyType, parent.PolicyTypeID, item.PolicyTypeID);
+                    if (intersectType == null)
+                        throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+
+                    if (existing == null)
+                    {
+                        var intersect = new Intersect()
+                        {
+                            Subject = "Policy",
+                            Object = "Policy",
+                            SubjectID = parentID,
+                            ObjectID = item.ID,
+                            IntersectTypeID = intersectType.ID,
+                        };
+
+                        Company.Add(intersect);
+                    }
+                    else if (existing.ID != parentID)
+                    {
+                        var intersect = Company.Filter<Intersect>(i => i.Subject == "Policy" && i.Object == "Policy" && i.SubjectID == existing.ID && i.ObjectID == item.ID).FirstOrDefault();
+                        if (intersect != null)
+                        {
+                            intersect.SubjectID = parentID;
+                            Company.Update(intersect);
+                        }
+                    }
+                }
 
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>

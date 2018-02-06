@@ -121,7 +121,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
                 sql = applySortSuffix(sql, sortDataField, sortOrder, sortFieldType: sortColumnType(sortDataField, fields));
             }
 
-            if (type.ParentID.HasValue)
+            if (Company.TypeHasParent(SystemObjects.ArtifactType, type.ID))
                 fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
 
             //fields.Add(new FieldType { Type = "Number", Name = "AssetID", FriendlyName = "Asset ID" });
@@ -254,7 +254,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
             var results = Company.Query<dynamic>(sql, dbArgs);
                                     
             SLDocument document = null;
-            if (template.IncludeParent && type.ParentID > 0) fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
+            if (template.IncludeParent && Company.TypeHasParent(SystemObjects.ArtifactType, type.ID)) fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
             if (template.IncludeUrl) fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
             var styles = template.ArtifactTypeExportTemplateStyles;
@@ -788,7 +788,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
                 return null;
             }
 
-            var models = Company.Query<ArtifactType>(@"
+            var models = Company.Query<dynamic>(@"
 select	    T.ID,
 		    IT.SubjectID as ParentID,
 		    T.Name,
@@ -811,7 +811,7 @@ order by    T.Name").AsQueryable();
 
             return new JsonNetResult
             {
-                Data = models.Select(i => new { i.ID, i.Name, i.ParentID, i.AssetTypeID, expanded = true }),
+                Data = models.ToList().Select(i => new { i.ID, i.Name, i.ParentID, i.AssetTypeID, expanded = true }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

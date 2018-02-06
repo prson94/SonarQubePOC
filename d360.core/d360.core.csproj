@@ -195,6 +195,7 @@
     <Compile Include="entities\Transitive\FusionRuleFilterItem.cs" />
     <Compile Include="entities\Transitive\FieldFilterModel.cs" />
     <Compile Include="entities\Transitive\FusionProcessingData.cs" />
+    <Compile Include="entities\Transitive\PredicateIntersect.cs" />
     <Compile Include="entities\Views\MapRuleItemDetail.cs" />
     <Compile Include="entities\Views\FusionExecutionResultDetail.cs" />
     <Compile Include="entities\Community\CompanyDomainSetting.cs" />
