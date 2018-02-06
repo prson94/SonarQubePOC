@@ -92,7 +92,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPost, Route("AddFolderItem"), ValidateAntiForgeryToken]
+        [Authorize, HttpPost, Route("AddFolderItem"), AjaxValidateAntiForgeryToken]
         public JsonNetResult AddFolderItem(SiteNav item)
         {
             var success = true;
@@ -135,7 +135,7 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpPost, Route("RemoveFolderItem"), NonNullableParameters, ValidateAntiForgeryToken]
+        [Authorize, HttpPost, Route("RemoveFolderItem"), NonNullableParameters, AjaxValidateAntiForgeryToken]
         public JsonNetResult RemoveFolderItem(int id)
         {
             var success = true;
@@ -163,7 +163,7 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpPost, Route("RemoveFolder"), NonNullableParameters, ValidateAntiForgeryToken]
+        [Authorize, HttpPost, Route("RemoveFolder"), NonNullableParameters, AjaxValidateAntiForgeryToken]
         public JsonNetResult RemoveFolder(int id)
         {
             var success = true;
@@ -406,7 +406,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPost, Route("permissions/set")]
+        [Authorize, HttpPost, Route("permissions/set"), AjaxValidateAntiForgeryToken]
         public JsonNetResult SetSiteNavPermissions(SiteNav nav)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -444,7 +444,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPost, Route("permissions/add")]
+        [Authorize, HttpPost, Route("permissions/add"), AjaxValidateAntiForgeryToken]
         public JsonNetResult AddSiteNavPermission(SiteNavPermission perm)
         {
             var nav = Company.GetById<SiteNav>(perm.SiteNavID);
