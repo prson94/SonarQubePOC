@@ -66,7 +66,7 @@ import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
                         </div>
                     </div>    
                     <div class="row" *ngIf="possibleTechnicalIntersectTypes.length == 0">                
-                        <div class="center">This relationship type doesnt have any technical relationship types configured.  Please setup a relationship type that can be on this relationship type in order to add technical relationships here.</div>
+                        <div class="center">This relationship type does not have any technical relationship types configured.</div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
                             <button pButton type="button" (click)="closeAddTech();" label="Cancel" style="width: 150px;"></button>
@@ -118,7 +118,6 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
             });
         this.relationshipsService.getPossibleTechnicalRelations(this.relationship.ID).
             then(res => {
-                console.log(res);
                 this.possibleTechnicalIntersectTypes = res;
             });
     }
