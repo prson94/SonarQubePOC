@@ -9,7 +9,8 @@
         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
         <p-column header="Object" field="Name" [style]="{'width' : '120px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
             <ng-template pTemplate="body" let-item="rowData">
-                <a (click)="navigate(item.NgUrl)">{{item.Name}}</a>
+                <a *ngIf="item.NgUrl != null" (click)="navigate(item.NgUrl)">{{item.Name}}</a>
+                <span *ngIf="item.NgUrl == null">{{item.Name}}</span>
             </ng-template>
         </p-column>
         <p-column header="Status" field="Status" [style]="{'width' : '80px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">></p-column>

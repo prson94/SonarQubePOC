@@ -1444,81 +1444,86 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             where p.SiteNavID = @id";
 
         public static string WorkflowVersionStepHistory = @"
-            select 
-	            i.ID as ItemStepID, 
-	            convert(varchar(max),i.Fields) as Fields,
-	            i.StartedOn,
-	            i.CompletedOn,
-	            r.FirstName + ' ' + r.LastName as StartedBy,
-	            r2.FirstName + ' ' + r2.LastName as CompletedBy,
-	            coalesce(s.[Object], m.[Object]) as [Object],
-	            coalesce(s.ObjectID, m.ObjectID) as ObjectID,
-	            dv.DisplayValue as [Name], 
-	            d.ObjectTypeName,
-	            ul.[Url] as NgUrl, 
-	            d.TextPath,
-	            vs.[Name] as StepName, 
-	            string_agg(r3.FirstName + ' ' + r3.LastName, ', ') as Assignments,
-	            convert(varchar(max),vs.Settings) as Settings,
-	            vs.StepType as StepType,
-	            vs.ActivityType,
-	            case when i.CompletedOn is not null then
-		            case when vs.ActivityType = 2 then
-			            'Status was changed to '  + convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/Status[1]/text()[1]','varchar(max)')
-		            when vs.ActivityType = 3 then
-			            'Form completed by ' + 
-				            case when i.CompletedBy is not null and convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/FormResponseType[1]/text()[1]', 'varchar(max)') = 'FirstResponse'  then
-					            coalesce(max(r2.FirstName + ' ' + r2.LastName), '[unknown]')
-				            else
-					            coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
-				            end
-		            when vs.ActivityType = 1 then
-			            case when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
-				            'Email sent to ' + r.FirstName + ' ' + r.LastName
-			            when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
-				            'Email sent to ' + coalesce(convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
-			            when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Responsibility' then
-				            'Email sent to ' + dbo.GetOwnersListForWorkflow(t.id,vs.id)
-			            else
-				            'Email sent'
-			            end
-		            else
-			            'Step completed'
-		            end
-	            when vs.ActivityType = 3 then --form
-		            'Waiting for form completion by ' + coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
-	            when vs.ActivityType = 1 then --email
-		            'An error occurred or the email is currently queued for sending'
-	            else
-		            ''
-	            end as [Comment],
-	            case when i.CompletedOn is not null then
-		            'Complete'
-	            else
-		            'In Progress'
-	            end as [Status],
-	            null as SettingsObject,
-	            null as FieldsObject
-            from workflow.itemstep i
-            {0}
-            {1}
-            left join workflow.itemassignment a on a.itemid = m.id
-            inner join Asset ss on ss.object = coalesce(s.object, m.object) and ss.objectid = coalesce(s.objectid, m.objectid)
-            inner join AssetType st on st.id = ss.assetTypeId
-            cross apply dbo.GetAssetDisplayValueById(ss.id) dv
-            cross apply dbo.GetAssetUrl(ss.Object, st.ObjectID, ss.ObjectID) ul
-            left join workflow.versionstep vs on vs.id = i.stepid
-            left join cache.objectdetails d on d.object = m.object and d.objectid = m.objectid
-            left join reporting.Global_resource r on r.ResourceID = i.StartedBy
-            left join reporting.Global_resource r2 on r2.ResourceID = i.CompletedBy
-            left join reporting.Global_resource r3 on r3.ResourceID = a.ResourceObjectID
-            left join workflow.version v on v.id = vs.versionid
-            left join workflow.type t on t.id = v.typeid
-            where vs.id = @id
-            group by i.id, i.startedon, i.completedon, i.completedby, r.FirstName, r.LastName, r2.FirstName, r2.LastName, coalesce(s.object, m.Object), coalesce(s.ObjectID, m.ObjectID), dv.DisplayValue,
-            d.ObjectTypeName, ul.[Url], d.TextPath, vs.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType, vs.id, t.id, convert(varchar(max),i.Fields)
-
-
+           select 
+	IST.ID as ItemStepID, 
+	convert(varchar(max),IST.Fields) as Fields,
+	IST.StartedOn,
+	IST.CompletedOn,
+	RS.FirstName + ' ' + RS.LastName as StartedBy,
+	RC.FirstName + ' ' + RC.LastName as CompletedBy,
+	coalesce(s.[Object], I.[Object]) as [Object],
+	coalesce(s.ObjectID, I.ObjectID) as ObjectID,
+	coalesce(dv.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName) as [Name], 
+	D.ObjectTypeName,
+	UL.[Url] as NgUrl, 
+	D.TextPath,
+	VS.[Name] as StepName, 
+	string_agg(RA.FirstName + ' ' + RA.LastName, ', ') as Assignments,
+	convert(varchar(max),VS.Settings) as Settings,
+	VS.StepType as StepType,
+	VS.ActivityType,
+	case when IST.CompletedOn is not null then
+		case when VS.ActivityType = 2 then
+			'Status was changed to '  + convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/Status[1]/text()[1]','varchar(max)')
+		when VS.ActivityType = 3 then
+			'Form completed by ' + 
+				case when IST.CompletedBy is not null and convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/FormResponseType[1]/text()[1]', 'varchar(max)') = 'FirstResponse'  then
+					coalesce(max(RC.FirstName + ' ' + RC.LastName), '[unknown]')
+				else
+					coalesce(string_agg(RA.FirstName + ' ' + RA.LastName, ', '), '[unknown]')
+				end
+		when VS.ActivityType = 1 then
+			case when convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
+				'Email sent to ' + RS.FirstName + ' ' + RS.LastName
+			when convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
+				'Email sent to ' + coalesce(convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
+			when convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Responsibility' then
+				'Email sent to ' + dbo.GetOwnersListForWorkflow(T.ID, VS.ID)
+			else
+				'Email sent'
+			end
+		else
+			'Step completed'
+		end
+	when VS.ActivityType = 3 then --form
+		'Waiting for form completion by ' + coalesce(string_agg(RA.FirstName + ' ' + RA.LastName, ', '), '[unknown]')
+	when VS.ActivityType = 1 then --email
+		'An error occurred or the email is currently queued for sending'
+	else
+		''
+	end as [Comment],
+	case when IST.CompletedOn is not null then
+		'Complete'
+	else
+		'In Progress'
+	end as [Status],
+	null as SettingsObject,
+	null as FieldsObject
+from 
+	workflow.ItemStep IST
+	left join workflow.Item I on I.ID = IST.ItemID
+	left join Issue s on I.[Object] = 'Issue' and S.ID = I.ObjectID
+	left join workflow.ItemAssignment IA on IA.ItemID = I.ID
+	left join [IntersectDetail] ISD on coalesce(s.[Object], I.[Object]) = 'Intersect' and ISD.ID = coalesce(s.ObjectID, I.ObjectID)
+	left join Asset A on A.[Object] = coalesce(s.[Object], I.[Object]) and A.ObjectID = coalesce(s.ObjectID, I.ObjectID)
+	left join AssetType AST on AST.id = A.AssetTypeID
+	cross apply dbo.GetAssetDisplayValueById(A.ID) DV
+	cross apply dbo.GetAssetUrl(A.[Object], AST.ObjectID, A.ObjectID) UL
+	left join workflow.VersionStep VS on VS.ID = IST.StepID
+	left join cache.ObjectDetails D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
+	left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
+	left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
+	left join reporting.Global_resource RA on RA.ResourceID = IA.ResourceObjectID
+	left join workflow.[Version] V on V.ID = VS.VersionID
+	left join workflow.[Type] T on T.ID = V.TypeID
+where 
+	VS.ID = @id
+group by 
+	IST.ID, IST.StartedOn, IST.CompletedOn, IST.CompletedBy, RS.FirstName, RS.LastName, RC.FirstName, RC.LastName, 
+	coalesce(S.[Object], I.[Object]), coalesce(S.ObjectID, I.ObjectID), 
+	coalesce(DV.DisplayValue,ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName),
+	D.ObjectTypeName, UL.[Url], D.TextPath, VS.[Name], 
+	convert(varchar(max),VS.Settings), VS.StepType, VS.ActivityType, VS.ID, T.ID, convert(varchar(max), IST.Fields)
 ";
 
         public static string WorkflowTypeList = @"
