@@ -308,6 +308,7 @@ namespace d360.model
                 var existingFieldTypeIDs = Filter<Field>(i => i.ObjectID == oID && i.ObjectType == oType).Select(i => i.FieldTypeID).ToList();
                 items.ForEach(item =>
                 {
+                    item.UpdatedBy = CurrentResourceID;
                     //UPDATE
                     if (existingFieldTypeIDs.Any(i => item.FieldTypeID == i))
                     {

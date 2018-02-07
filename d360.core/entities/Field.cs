@@ -25,6 +25,9 @@ namespace d360.core.entities
         [DataMember]
         public string FormattedValue { get; set; }
 
+        [DataMember]
+        public int UpdatedBy { get; set; }
+
         [IgnoreDataMember]
         public FieldType FieldType { get; set; }
     }

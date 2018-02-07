@@ -129,7 +129,7 @@ namespace d360.model
 
             foreach (var field in fields)
             {
-                Fields.Add(new Field { Value = field.Value, ObjectType = "Issue", ObjectID = issue.ID, FieldTypeID = field.FieldTypeID });
+                Fields.Add(new Field { Value = field.Value, ObjectType = "Issue", ObjectID = issue.ID, FieldTypeID = field.FieldTypeID, UpdatedBy = CurrentResourceID });
             }
 
             SaveChanges();
@@ -810,7 +810,8 @@ namespace d360.model
                             Value = val,
                             FieldTypeID = fieldType.ID,
                             ObjectID = objectInfo.ObjectID,
-                            ObjectType = objectInfo.Object.ToString()
+                            ObjectType = objectInfo.Object.ToString(),
+                            UpdatedBy = CurrentResourceID
                         };
 
                         Add<core.entities.Field>(newField);

@@ -517,7 +517,7 @@ where   A.ArtifactTypeID = @id and RP.AssetID is null";
                 fieldTypes.ForEach(f =>
                 {
                     if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Artifact.ToString(), Value = model[f.Name].ToString() });
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Artifact.ToString(), Value = model[f.Name].ToString(), UpdatedBy = Company.CurrentResourceID });
                     else
                     {
                         if (f.IsRequired)
@@ -635,7 +635,7 @@ where   A.ArtifactTypeID = @id and RP.AssetID is null";
                 fieldTypes.ForEach(f =>
                 {
                     if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Artifact.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString() });
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Artifact.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString(), UpdatedBy = Company.CurrentResourceID });
                 });
 
                 Company.SaveOrUpdate<Artifact>(item, fields);
@@ -739,7 +739,7 @@ where A.TaxonomyTypeID = @id and RP.AssetID is null";
                 fieldTypes.ForEach(f =>
                 {
                     if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Taxonomy.ToString(), Value = model[f.Name].ToString() });
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Taxonomy.ToString(), Value = model[f.Name].ToString(), UpdatedBy=Company.CurrentResourceID });
                     else
                     {
                         if (f.IsRequired)
@@ -857,7 +857,7 @@ where A.TaxonomyTypeID = @id and RP.AssetID is null";
                 fieldTypes.ForEach(f =>
                 {
                     if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Taxonomy.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString() });
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Taxonomy.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString(), UpdatedBy = Company.CurrentResourceID });
                 });
 
                 Company.SaveOrUpdate<Taxonomy>(item, fields);

@@ -65,7 +65,7 @@ namespace d360.web.Controllers.Services
                 fieldTypes.ForEach(f =>
                 {
                     if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.ReferenceItem.ToString(), Value = model[f.Name].ToString() });
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.ReferenceItem.ToString(), Value = model[f.Name].ToString(), UpdatedBy = Company.CurrentResourceID });
                     else
                     {
                         if (f.IsRequired)
@@ -226,7 +226,7 @@ namespace d360.web.Controllers.Services
                 fieldTypes.ForEach(f =>
                 {
                     if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.ReferenceItem.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString() });
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.ReferenceItem.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString(), UpdatedBy = Company.CurrentResourceID });
                 });
 
                 Company.SaveOrUpdate(item, fields);
