@@ -474,8 +474,8 @@ namespace d360.extensions.search
 
             //turn on highlighting
 
-            sb.Append(", \"highlight\": {\"fields\": {\"*\": { \"pre_tags\": [\"<em class='search-highlight'>\"],\"post_tags\": [\"</em>\"],\"number_of_fragments\" : 0 }},\"require_field_match\": false  }");
-
+            sb.Append(", \"highlight\": {\"fields\": {\"Name\": { \"pre_tags\": [\"<em class='search-highlight'>\"],\"post_tags\": [\"</em>\"],\"number_of_fragments\" : 0 }},\"require_field_match\": false  }");
+            
             sb.Append("}");
 
             //if no group specified get the categories for this search
