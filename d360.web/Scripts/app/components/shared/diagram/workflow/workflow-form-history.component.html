@@ -32,7 +32,8 @@
             <div class="col s12">
                 <div class="FieldName">{{f['@label']}}</div>
                 <div *ngIf="f['@fieldtype'] == 'boolean'">
-                    <p-toggleButton onLabel="Yes" offLabel="No" onIcon="fa-check-square" offIcon="fa-times" [ngModel]="f['@value']" disabled></p-toggleButton>
+                    <input type="radio" name="boolGroup" [checked]="f['@value'] != null && f['@value'].toString().toLowerCase() == 'true'" disabled /> Yes 
+                    <input type="radio" name="boolGroup" [checked]="f['@value'] != null && f['@value'].toString().toLowerCase() == 'false'" disabled /> No 
                 </div>
                 <div *ngIf="f['@fieldtype'] == 'textarea'">
                     <textarea style="width: 100%;" [ngModel]="f['@value']" readonly></textarea>

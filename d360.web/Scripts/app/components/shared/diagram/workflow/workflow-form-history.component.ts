@@ -92,7 +92,6 @@ export class WorkflowFormHistoryComponent extends BaseComponent implements OnIni
     }
 
     selectForm(i: number) {
-        console.log(this.selectedForm, i);
         if (i < 0) {
             this.selectedForm = null;
             return;
