@@ -118,7 +118,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.diagram.div = null;
             if (this.palette != null && this.palette.div != null)
                 this.palette.div = null;
-
+            
             this.selectedData = null;
             this.initializeDiagram();
             this.resizeDiagram();
@@ -144,6 +144,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private initializeDiagram(): Promise<any> {
         if (this.diagram != null) {
+            this.reOrderLayout();
             return Promise.resolve();
         }
 
@@ -172,6 +173,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.diagram.toolManager.linkingTool.isEnabled = !this.readonly;
         this.diagram.toolManager.linkingTool.archetypeLinkData = new LinkModelV2();
+        this.diagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelNone;
 
         this.diagram.allowDrop = true;
 
@@ -195,6 +197,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.isLoading = false;
                 this.isWindowVisible = windowVisible;
                 this.reOrderLayout();
+                //workaround for IE11 not respecting initial diagram scale. 
+                //After layout is complete or a zoom button is pressed it is automatically set back to go.Diagram.None
+                this.diagram.autoScale = go.Diagram.UniformToFill;
             });
     }
 
@@ -863,16 +868,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         let oOffset = this.overlayOffset - 125;
         this.diagramRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
         this.overlayMaxHeight = window.innerHeight - oOffset;
-
-        this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
-        this.diagram.requestUpdate();
     }
 
     private zoomDiagram(v: number) {
+        this.diagram.autoScale = go.Diagram.None;
         if (v < .1 || v > 2.5)
             return;
         this.diagram.scale = v;
-        //console.log('zoomDiagram', v, this.diagram);
     }
 
     private ChangedSelection(e: any) {
@@ -1080,16 +1082,15 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
 
         let dg = this.g(go.Diagram, 'LineageDiagram', {
-            initialContentAlignment: go.Spot.Center,
+            initialContentAlignment: go.Spot.Left,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
-            //initialPosition: go.Spot.Center,
+            initialPosition: new go.Point(125, 125),
             layout: this.g(go.LayeredDigraphLayout, {
-                //angle: 0,
+                direction: 0,
                 layerSpacing: 25,
                 columnSpacing: 25
-                //rowSpacing: 10
             }),
             "undoManager.isEnabled": true
         });
