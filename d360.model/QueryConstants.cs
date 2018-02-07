@@ -1419,7 +1419,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
 				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy
-				where t.State = 1";
+				where t.State = 1
+                order by t.Name asc";
 
         public static string ShoppingCartItemList = @"
                 select 
@@ -1584,7 +1585,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	            left join reporting.Global_resource r on r.ResourceID = i.StartedBy
 	            group by stepid
             ) s on s.stepid = a.currentstepid
-            order by a.Name asc, a.Version asc, a.UpdatedOn desc";
+            order by a.Name asc, a.Version desc, a.UpdatedOn desc";
 
         public static string WorkflowAssignments = @"
 select
