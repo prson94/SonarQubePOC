@@ -1,9 +1,13 @@
 ﻿export class FormHelpers {
 
     //clamp a numeric value between min and max inclusive, to precision decimal places
-    static clamp(val: number, min: number, max: number, precision: number): number {
+    static clamp(val: any, min: number, max: number, precision: number): any {
+        if (val == null)
+            return null;
 
-        if (val == null || isNaN(+val))
+        if (val.toString() == '.')
+            return "0.";
+        if (isNaN(+val))
             return null;
 
         let newVal = val;

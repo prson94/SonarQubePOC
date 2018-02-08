@@ -1594,43 +1594,44 @@ group by
 
         public static string WorkflowAssignments = @"
 select
-	                                wt.name as 'WorkflowName'
-                                    ,wt.id as TypeID
-                                    ,wv.version as Version
-	                                ,wi.[object] as 'Object'
-	                                ,wi.[objectid] as 'ObjectID'
-	                                ,wi.startedOn as 'StartedOn'
-	                                ,wi.startedBy as 'StartedByResourceID'
-                                    ,wi.id as 'ItemID'
-	                                ,gr.firstName + ' ' + gr.lastName as 'StartedBy'
+	                                 WT.[Name] as 'WorkflowName'
+                                    ,WT.ID as TypeID
+                                    ,WV.[Version] as [Version]
+	                                ,WI.[Object] as 'Object'
+	                                ,WI.[ObjectID] as 'ObjectID'
+	                                ,WI.StartedOn as 'StartedOn'
+	                                ,WI.StartedBy as 'StartedByResourceID'
+                                    ,WI.ID as 'ItemID'
+	                                ,GR.FirstName + ' ' + GR.LastName as 'StartedBy'
 	                                ,case 
-										when wi.[object] = 'Issue' then it.Name
-										else od.ObjectTypeName
+										when WI.[Object] = 'Issue' then IT.[Name]
+										else AD.TypeName
 									end as 'TypeName'
-	                                ,od.ObjectType as 'ObjectType'
-	                                ,od.ObjectTypeID as 'ObjectTypeID'
-	                                ,coalesce(cod.Name, od.Name, it.Name, '(unknown)') as 'ObjectName'
-	                                ,wis.id as 'ItemStepID'
-	                                ,wvs.name as 'StepName'
-	                                ,wvs.steptype as 'StepType'
-	                                ,wvs.activitytype as 'ActivityType'
-                                    ,iss.[object] as 'IssueObject'
-									,iss.[objectid] as 'IssueObjectID'
-                                    ,cod.name as 'IssueObjectName'
+	                                ,AD.[Type] as 'ObjectType'
+	                                ,AD.TypeID as 'ObjectTypeID'
+	                                ,coalesce(CAD.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName, AD.DisplayValue, IT.[Name], '(unknown)') as 'ObjectName'
+	                                ,WIS.ID as 'ItemStepID'
+	                                ,WVS.[Name] as 'StepName'
+	                                ,WVS.StepType as 'StepType'
+	                                ,WVS.ActivityType as 'ActivityType'
+                                    ,ISS.[Object] as 'IssueObject'
+									,ISS.[ObjectID] as 'IssueObjectID'
+                                    ,CAD.DisplayValue as 'IssueObjectName'
                                 from
-	                                [workflow].[type] wt
-	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
-	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)
-	                                inner join [reporting].global_resource gr on (wi.startedby = gr.resourceid)
-	                                left join [cache].objectdetails od on(od.[object] = wi.[object] and od.[objectid] = wi.[objectid])
-	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @resourceId)
-	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
-	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
-                                    left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
-                                    left outer join cache.objectdetails cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
-                                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)
+	                                [workflow].[Type] WT
+	                                inner join workflow.[Version] WV on WT.ID = WV.TypeID
+	                                inner join workflow.Item WI on WV.ID = WI.VersionID
+	                                inner join reporting.Global_Resource GR on WI.StartedBy = GR.ResourceID
+									left join AssetDetail AD on AD.[Object] = WI.[Object] and AD.[ObjectID] = WI.[ObjectID]
+									left join IntersectDetail ISD on WI.[Object] = 'Intersect' and WI.ObjectID = ISD.ID
+	                                inner join workflow.ItemAssignment WIA on WIA.ItemID = WI.ID and WIA.ResourceObject = 'Resource' and WIA.ResourceObjectID = @resourceId
+	                                inner join workflow.ItemStep WIS on WIS.ItemID = WI.ID and WIS.CompletedOn is null
+	                                inner join workflow.VersionStep WVS on WVS.ID = WIS.StepID
+                                    left outer join Issue ISS on WI.[ObjectID] = ISS.ID and WI.[Object] = 'Issue'
+									left outer join AssetDetail CAD on ISS.ObjectID = CAD.ObjectID and CAD.[Object] = ISS.[Object]
+                                    left outer join Issuetype IT on ISS.IssueTypeID = IT.ID
                                 where
-                                    wt.id in ({0}) and  wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3";
+                                     WT.ID in ({0}) and WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3";
 
     }
 }

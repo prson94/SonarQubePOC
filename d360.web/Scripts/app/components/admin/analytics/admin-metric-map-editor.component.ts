@@ -19,7 +19,7 @@ import { FormHelpers } from '../../../static/form-helpers';
                             </div>
                             <div class="directions">Weight must be a value between 0 and 1</div>
                             <div>
-                                <input #weight type="number" style="width: 95%" [ngModel]="model.Map.Weight" (ngModelChange)="model.Map.Weight = clamp($event, 0, 1, 3)" />
+                                <input #weight type="text" style="width: 95%" [ngModel]="model.Map.Weight" (ngModelChange)="model.Map.Weight = clamp($event, 0, 1, 3)" />
                             </div>
                         </div>
                     </div>
@@ -156,7 +156,7 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
                 valid = false;
             if (this.model.Map.ItemID == null || this.model.Map.ItemID < 1)
                 valid = false;
-            if (this.model.Map.Weight == null || this.model.Map.Weight < 0 || this.model.Map.Weight > 1)
+            if ((<any>this.model.Map).Weight == "" || this.model.Map.Weight == null || this.model.Map.Weight < 0 || this.model.Map.Weight > 1)
                 valid = false;
             if (this.model.Map.EffectiveStartDate == null)
                 valid = false;
@@ -203,7 +203,7 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
         return FormHelpers.getLocaleDateString();
     }
 
-    private clamp(val: number, min: number, max: number, precision: number): number {
+    private clamp(val: any, min: number, max: number, precision: number): any {
         let newVal = FormHelpers.clamp(val, min, max, precision);
 
         if (this.weightInput != null && this.weightInput.nativeElement != null)
