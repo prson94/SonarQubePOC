@@ -10,7 +10,6 @@ import { ReferenceItemType } from '../../models/reference.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ReferenceService } from '../../services/reference.service';
 import { UriBasedService } from '../../services/uri-based.service';
-import { ClaimsService } from '../../services/claims.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AuthenticationService } from '../../services/authentication.service';
 
@@ -34,20 +33,21 @@ import { AuthenticationService } from '../../services/authentication.service';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid #itemsGrid [sortField]="'Code'" [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
+                                    <d3s-dynamic-grid #itemsGrid [sortField]="'Code'" [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions() && canReadSelectedType" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                `,
-    providers: [PermissionsService, ReferenceService, UriBasedService, ClaimsService],
+    providers: [PermissionsService, ReferenceService, UriBasedService],
 })
 
 export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private selectedReferenceItemType: ReferenceItemType;
     private selectedReferenceListId: number = 0;
+    private canReadSelectedType = true;
 
     constructor(
         rightSidebarService: RightSidebarService,
@@ -58,8 +58,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected referenceService: ReferenceService,
         protected authenticationService: AuthenticationService,
-        private uriBasedService: UriBasedService,
-        private claimsService: ClaimsService
+        private uriBasedService: UriBasedService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -75,7 +74,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
         this.sub = this.route.params.subscribe(params => {
-
+            this.canReadSelectedType = false;
             this.setCommonRightSideBar(true, true, false, true, true, true, false, true);
 
             if (this.auditSidebar) {
@@ -154,24 +153,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
             this.selectedReferenceListId = +params['referenceListId']; // (+) converts string 'id' to a number
-
-            //load specific type perms if applicable
+            //check if the user has permission to read the selected type
             if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {
-                this.claimsService.getClaims(this.selectedReferenceListId, 'ReferenceItemType')
-                    .then(r => claims = r)
-                    .then(() => {
-                        if (claims != null && claims.length > 0) {
-                            this.uriBasedService.getItems(`api/ownership/ReferenceItemType/${this.selectedReferenceListId}/claims`).
-                                then(r => {
-                                    this.permissions = [];
-                                    r.forEach(i => {
-                                        this.permissions.push({
-                                            Claim: i.Claim.toString(),
-                                            ClaimObject: i.ClaimObject.toString()
-                                        })
-                                    });
-                                });
-                        }
+                this.referenceService.canReadReferenceType(this.selectedReferenceListId)
+                    .then(r => {
+                        this.canReadSelectedType = r;
                     });
             }
         });

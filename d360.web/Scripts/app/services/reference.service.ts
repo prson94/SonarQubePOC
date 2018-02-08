@@ -17,6 +17,13 @@ export class ReferenceService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    canReadReferenceType(id: number): Promise<boolean> {
+        return this.http.get(`api/canReadReferenceItemType/${id}`)
+            .toPromise()
+            .then(response => <boolean>response.json())
+            .catch(err => this.handleError(err));
+    };
+
     saveReferenceItemType(item: ReferenceItemType) {
         if (item.ID == undefined || !item.ID) {
             return this.postDynamic(this.http, 'referenceItemType', item);

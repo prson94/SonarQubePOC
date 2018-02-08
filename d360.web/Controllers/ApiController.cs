@@ -7456,12 +7456,23 @@ from	    TaxonomyType FAT
 
         #region Reference - new replaces domain
 
-        [Route("referenceItemTypes")]
+        [HttpGet, Route("referenceItemTypes")]
         public IQueryable<ReferenceItemType> GetReferenceItemTypes()
         {
             return Company.Table<ReferenceItemType>();
         }
-        
+
+        [HttpGet, Route("canReadReferenceItemType/{id:int}")]
+        public async Task<HttpResponseMessage> CanReadReferenceItemType(int id)
+        {
+            var records = await Company.QueryAsync<dynamic>(@"select 1 from AssetWithoutReadPermission A
+                inner join ReferenceItem r on r.ID = a.objectID
+                inner join ReferenceItemType t on t.ID = r.ReferenceItemTypeID
+                where a.Object = 'ReferenceItem' and t.ID = @id and ResourceID = @resource", new { id, resource = Company.CurrentResourceID });
+
+            return Request.CreateResponse(HttpStatusCode.OK, !records.Any());
+        }
+
         [HttpGet, Route("referenceItems/{typeID:int}/items.json")]
         public async Task<HttpResponseMessage> GetReferenceItems(int typeID)
         {
