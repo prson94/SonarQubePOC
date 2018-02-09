@@ -15292,16 +15292,7 @@ order by DN.DisplayValue");
 
                     Company.Add<GlobalReportingResource>(gr);
                 }
-
-                if (Request.ContentLength > 0)
-                {
-                    //var length = Request.ContentLength;
-                    //var bytes = new byte[length];
-                    //Request.InputStream.Read(bytes, 0, length); 
-                    //HttpPostedFileBase photo = Request.Files["Image"];
-                    //SecurityService.EditResourceImage(a.ID, Request.InputStream);
-                }
-
+                
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, a.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, typeID).ToList(), form, Server);
                 Company.AddOrUpdateFields(fields);
@@ -15409,11 +15400,25 @@ order by DN.DisplayValue");
 
                 if (id <= 0) throw new NotFoundException("Resource with ID less than or equal to 0 cannot be removed.");
 
+                var newEmail = parseTextField(form, "Email");
+                                
+                if (string.IsNullOrEmpty(newEmail)) throw new NoFormDataException("Resource doesnt have a valid email / username specified.");
+
+                //we need to compare the new email to the old email.  If they are different, we need to check if the new email already exists for another user
+                // if the username is already in use we should throw an error to prevent this from happening as the other account should be updated
+                if (string.Compare(newEmail, model.Username, true) != 0)
+                {
+                    //check if the resource already exists in community
+                    var a = Community.Filter<Resource>(i => i.Email == newEmail).FirstOrDefault();
+
+                    if (a != null) throw new Exception("Cannot update the user.  The specified email address / username is already in use.");
+                }
+
                 // Static fields
                 model.FirstName = parseNameField(form, "FirstName");
                 model.LastName = parseNameField(form, "LastName");
-                model.Email = parseTextField(form, "Email");
-                model.Username = parseTextField(form, "Email");
+                model.Email = newEmail;
+                model.Username = newEmail;
                 model.Status = parseBooleanField(form, "Status") ? "Active" : "Inactive";
 
                 Community.Update<Resource>(model);    //Must be first before saving fields.
@@ -15438,11 +15443,7 @@ order by DN.DisplayValue");
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
-
-                if (Request.ContentLength > 0)
-                {
-                    //SecurityService.EditResourceImage(model.ID, Request.InputStream);
-                }
+                                
 
                 return jsonSuccess("Resource successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }

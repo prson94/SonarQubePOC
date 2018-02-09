@@ -184,6 +184,7 @@ export class UserListComponent extends BaseComponent{
         this.isLoading = true;
         this.uriBasedService.saveItem('form/dynamicedit/create/resource/', 'form/dynamicedit/edit/resource/', event.item)
             .then(result => {                
+                this.showMessageForResult(this.messagesService, result);
                 this.showEditor = false;
                 this.getData();
             });
