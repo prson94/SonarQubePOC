@@ -75,7 +75,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
         this.sub = this.route.params.subscribe(params => {
             this.canReadSelectedType = false;
-            this.setCommonRightSideBar(true, true, false, true, true, true, false, true);
+            this.setCommonRightSideBar(true, false, false, true, true, true, false, true);
 
             if (this.auditSidebar) {
                 this.auditSidebar.hasDynamicUrl = true;
@@ -83,14 +83,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                     return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceItemType.ID}`
                 });
             }
-
-            if (this.ownershipSidebar) {
-                this.ownershipSidebar.hasDynamicUrl = true;
-                this.ownershipSidebar.dynamicUrlCallback = (() => {
-                    return `/sidebar/ownership/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-                });
-            }
-
+            
             if (this.impactSidebar) {
                 this.impactSidebar.hasDynamicUrl = true;
                 this.impactSidebar.dynamicUrlCallback = (() => {
