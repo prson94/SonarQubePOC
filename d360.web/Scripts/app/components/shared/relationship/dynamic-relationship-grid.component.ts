@@ -53,7 +53,7 @@ declare var CompanySettings;
                 </div>
                 <d3s-dynamic-editor *ngIf="shouldShowEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="intersectTypeID" [objectType]="'IntersectType'" [targetType]="objectType" [targetTypeID]="objectID" [title]="targetName + ' Relationship'" [selection]="addRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                
                 <div *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">
-                    <h5 class="center-align" style="font-weight:bold;">No relationships exist from this object to this object type.  Use the plus link in the upper left of this tile to setup new relationships.</h5>                    
+                    <h5 class="center-align" style="font-weight:bold;">No relationships exist from this object to this object type.  Use the plus link in the upper right of this tile to setup new relationships.</h5>                    
                 </div>                                                   
                 
                 `
