@@ -118,7 +118,7 @@ namespace d360.web
 
             if (context.Request.User.Identity.IsAuthenticated)
             {
-                u = users.SingleOrDefault(i => i.Username == context.Request.User.Identity.Name.ToLower());
+                u = users.FirstOrDefault(i => i.Username == context.Request.User.Identity.Name.ToLower());
             }
 
 
