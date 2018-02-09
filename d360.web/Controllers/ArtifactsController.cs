@@ -76,10 +76,10 @@ namespace d360.web.Controllers
             //A.ID as AssetID, 
         
             var sql = $@"
-select	A.ObjectID as ID, 
+select	A.ObjectID as ID,
         {parentSqlColumn}
         {columns}
-		dbo.GenerateNgObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url
+        A.ID as AssetID,dbo.GenerateNgObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url
 from	AssetDetail A 
         {parentSqlJoin} 
         {joins} 
@@ -124,7 +124,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
             if (Company.TypeHasParent(SystemObjects.ArtifactType, type.ID))
                 fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
 
-            //fields.Add(new FieldType { Type = "Number", Name = "AssetID", FriendlyName = "Asset ID" });
+            fields.Add(new FieldType { Type = "Number", Name = "AssetID", FriendlyName = "Asset ID" });
             fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
             var results = Company.Query<dynamic>(sql, dbArgs);            
@@ -633,6 +633,8 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
                 return (string)((row as IDictionary<string, object>)["Parent"]);
             else if (field != null && field.Name == "Url")
                 return (string)((row as IDictionary<string, object>)["Url"]);
+            else if (field != null && field.Name == "AssetID")
+                return (string)((row as IDictionary<string, object>)["AssetID"].ToString());
             return "";
         }
 

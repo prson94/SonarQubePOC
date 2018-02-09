@@ -396,6 +396,7 @@ select * from h where ID <> @t order by h.[Level] desc;";
             #endregion
 
             sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "ID", FieldName = "A.ID", FieldFriendlyName = "ID" });
+            sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "AssetID", FieldName = "B.ID as AssetID", FieldFriendlyName = "Asset ID" });
             sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "Name", FieldName = "A.Name", FieldFriendlyName = fusionAttributeTypeName });
 
             #region Dynamic Fields
@@ -480,10 +481,13 @@ order by    Name";
             }
 
             var sql = $@"
-select  {columns} 
-from	FusionAttribute A 
+select  {columns}
+from	FusionAttribute A
+left outer join Asset B
+on B.ObjectID = A.ID
         {joins}
         {intersectOuterApply}
+       
 where   A.FusionID = @f 
         and A.FusionAttributeTypeID = @t 
         and A.Deleted = 0";
