@@ -37,6 +37,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     private model: ImpactDiagramModel;
     public selectedObject: string;
     public selectedObjectID: number;
+    public selectedAssetID: number;
 
     private zoomLevel: number = 50;
     private tab: string = 'info';
@@ -628,11 +629,14 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         let data = (node != null) ? node.data : null;
 
         if (data && data.obj && data.objid) {
+            console.log('c', data);
             this.selectedObject = data.obj;
             this.selectedObjectID = data.objid;
+            this.selectedAssetID = data.assetId;
         } else {
             this.selectedObject = null;
             this.selectedObjectID = null;
+            this.selectedAssetID = null;
             this.selectTab('info');
         }
     }

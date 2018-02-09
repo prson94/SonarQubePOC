@@ -57,8 +57,8 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    public getLineageResponsibilities(type: string, id: number, showHidden = false): Promise<Responsibility[]> {
-        return this.http.get(`api/${type}/${id}/ownership?showHidden=${showHidden}`)
+    public getLineageResponsibilities(assetId: number): Promise<Responsibility[]> {
+        return this.http.get(`api/${assetId}/ownership`)
             .toPromise()
             .then(response => <Responsibility[]>response.json())
             .catch(err => this.handleError(err));

@@ -90,6 +90,8 @@ namespace d360.web.Models
     {
         [DataMember(Name = "key")]
         public int ID { get; set; }
+        [DataMember(Name = "assetId")]
+        public long AssetID { get; set;  }
         //[IgnoreDataMember]
         [DataMember(Name = "parent")]
         public int? ParentID { get; set; }

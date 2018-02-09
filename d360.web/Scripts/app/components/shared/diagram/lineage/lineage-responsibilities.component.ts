@@ -10,9 +10,8 @@ import { BaseComponent } from '../../base.component';
         <div *ngIf="!isLoading">
             <p-dataTable #dt [value]="items" [rowsPerPageOptions]="defaultPagingOptions" >
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="Role" header="Role"></p-column>
-                <p-column field="ResponsibleObjectName" header="Resource"></p-column>
-                <p-column field="ResponsibleObjectType" header="Group Owmer"></p-column>
+                <p-column field="ResponsibilityTypeName" header="Role"></p-column>
+                <p-column field="SecurityAssetName" header="Resource/Group"></p-column>
             </p-dataTable>
         </div>
     `,
@@ -20,8 +19,7 @@ import { BaseComponent } from '../../base.component';
 })
 
 export class LineageResponsibilitiesComponent extends BaseComponent implements OnInit, OnChanges {
-    @Input() objectType: string;
-    @Input() objectId: number;
+    @Input() assetId: number;
     isLoading = false;
 
     items: Responsibility[] = [];
@@ -38,16 +36,15 @@ export class LineageResponsibilitiesComponent extends BaseComponent implements O
 
     load() {
 
-        if (this.objectType == null || this.objectId == null) {
+        if (this.assetId == null || this.assetId < 1) {
             this.items = [];
             return;
         }
 
         this.isLoading = true;
-        this.diagramService.getLineageResponsibilities(this.objectType, this.objectId)
+        this.diagramService.getLineageResponsibilities(this.assetId)
             .then(data => {
                 this.isLoading = false;
-                //console.log(data);
                 this.items = data;
             });
     }

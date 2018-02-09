@@ -19,6 +19,8 @@ import * as _ from 'lodash';
 
 declare var window: any;
 
+
+//NOTE: this is the deprecated legacy lineage component, to be removed eventually
 @Component({
     selector: 'd3s-lineage',
     templateUrl: './lineage.component.html',

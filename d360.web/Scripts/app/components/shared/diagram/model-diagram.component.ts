@@ -38,7 +38,7 @@ declare var window: any;
                     <d3s-lineage-object-detail *ngIf="selectedNode != null" [objectType]="(selectedNode.key == 0) ? 'TaxonomyType' : 'Taxonomy'" [objectId]="(selectedNode.key == 0) ? id : selectedNode.key"></d3s-lineage-object-detail>
                 </div>
                 <div *ngSwitchCase="'user'">
-                    <d3s-lineage-responsibilities *ngIf="selectedNode != null" objectType="Taxonomy" [objectId]="selectedNode.key"></d3s-lineage-responsibilities>
+                    <d3s-lineage-responsibilities *ngIf="selectedNode != null" [assetId]="selectedNode.key"></d3s-lineage-responsibilities>
                 </div>
                 <div *ngSwitchCase="'relations'">
                     <d3s-lineage-relations *ngIf="selectedNode != null" objectType="Taxonomy" [objectId]="selectedNode.key"></d3s-lineage-relations>

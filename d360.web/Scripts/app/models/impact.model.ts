@@ -15,6 +15,7 @@ export class LinkModel {
 }
 
 export class NodeModel {
+    assetId: number;
     back: string;
     fore: string;
     intersectid: number;

@@ -24,6 +24,7 @@ export class ModelHierarchy {
 }
 
 export class HierarchyDiagramModel {
+    assetId: number;
     RelationshipsExist: boolean;
     children: HierarchyDiagramModel[] = [];
     key: string;

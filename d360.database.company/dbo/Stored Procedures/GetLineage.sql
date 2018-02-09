@@ -14,6 +14,7 @@ as
 begin
 	declare @links table ([from] varchar(250), [to] varchar(250), category varchar(50))
 	declare @nodes table (
+		assetId int,
 		[key] varchar(250), 
 		obj varchar(50), [objid] int, [type] varchar(50), typeName nvarchar(250), name nvarchar(500), shortname nvarchar(500),
 		back varchar(7), fore varchar(7), template varchar(50), other varchar(500),
@@ -333,6 +334,7 @@ begin
 					from	@items S
 			insert into @nodes
 					select	distinct
+							A.ID as assetId,
 							I.SourceSubject + '.' + cast(I.SourceSubjectID as varchar) as [key],
 							I.SourceSubject as [obj],
 							I.SourceSubjectID as [objid], 
@@ -348,7 +350,8 @@ begin
 							end as template,
 							null as other,
 							0 as hasSourceRules
-					from	@items I;
+					from	@items I
+					left join Asset A on A.[Object] = I.SourceSubject and A.ObjectID = I.SourceSubjectID;;
 
 					--perform this update separately to avoid duplicate in the above query
 					update n
@@ -360,6 +363,7 @@ begin
 			merge	@nodes as T
 			using	(
 					select	distinct
+							A.ID as assetId,
 							I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) as [key],
 							I.TargetSubject as [obj],
 							I.TargetSubjectID as [objid], 
@@ -376,6 +380,7 @@ begin
 							null as other,
 							I.TargetHasSourceRules as HasSourceRules
 					from	@items I
+					left join Asset A on A.[Object] = I.TargetSubject and A.ObjectID = I.TargetSubjectID
 					where	I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) not in (select [key] from @nodes)
 					) S
 			on		(T.[key] = S.[key])
@@ -383,8 +388,8 @@ begin
 			update	set
 					T.HasSourceRules = S.HasSourceRules
 			when	not matched then
-			insert	([key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
-			values	(S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+			insert	(assetId, [key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
+			values	(S.assetId, S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
 					--where	I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) not in (select [key] from @nodes)
 
 			if @usageOnly = 1 --Remove elements that are not tied to the current object via any Usage predicate type.
@@ -477,6 +482,7 @@ begin
 
 			insert into @nodes
 				select	distinct
+						A.ID as assetId,
 						SourceSubject + '.' + cast(SourceSubjectID as varchar) as [key],
 						SourceSubject as [obj],
 						SourceSubjectID as [objid], 
@@ -493,9 +499,11 @@ begin
 						null as other,
 						0 as HasSourceRules
 				from	@items 
+				left join Asset A on A.[Object] = SourceSubject and A.ObjectID = SourceSubjectID
 
 			insert into @nodes
 				select	distinct
+						A.ID as assetId,
 						cast(SourceIntersectID as varchar) + '.S' as [key],
 						SourceObject as [obj],
 						SourceObjectID as [objid], 
@@ -512,6 +520,7 @@ begin
 						null as other,
 						0 as HasSourceRules
 				from	@items
+				left join Asset A on A.[Object] = SourceObject and A.ObjectID = SourceObjectID
 
 				update n
 				set n.HasSourceRules = 1
@@ -522,6 +531,7 @@ begin
 			merge	@nodes as T
 			using	(
 					select	distinct
+							A.ID as assetId,
 							cast(TargetIntersectID as varchar) + '.T' as [key],
 							TargetObject as [obj],
 							TargetObjectID as [objid], 
@@ -538,6 +548,7 @@ begin
 							null as other,
 							TargetHasSourceRules as HasSourceRules
 					from	@items
+					left join Asset A on A.[Object] = TargetObject and A.ObjectID = TargetObjectID
 					where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
 					) S
 			on		(T.[key] = S.[key])
@@ -545,12 +556,13 @@ begin
 			update	set
 					T.HasSourceRules = S.HasSourceRules
 			when	not matched then
-			insert	([key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
-			values	(S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+			insert	(assetId, [key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
+			values	(S.assetId, S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
 
 			merge	@nodes as T
 			using	(
 					select	distinct
+							A.ID as assetId,
 							TargetSubject + '.' + cast(TargetSubjectID as varchar) as [key],
 							TargetSubject as [obj],
 							TargetSubjectID as [objid], 
@@ -567,6 +579,7 @@ begin
 							null as other,
 							TargetHasSourceRules as HasSourceRules
 					from	@items
+					left join Asset A on A.[Object] = TargetSubject and A.ObjectID = TargetSubjectID
 					where	TargetSubject + '.' + cast(TargetSubjectID as varchar) not in (select [key] from @nodes)
 					) S
 			on		(T.[key] = S.[key])
@@ -574,8 +587,8 @@ begin
 			update	set
 					T.HasSourceRules = S.HasSourceRules
 			when	not matched then
-			insert	([key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
-			values	(S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+			insert	(assetId, [key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
+			values	(S.assetId, S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
 
 --select	* from	@links
 --select	* from	@nodes
@@ -1054,6 +1067,7 @@ begin
 					left join @tItems B on B.MapItemID = J.MapItemID
 		insert into @nodes
 			select	distinct
+					A.ID as assetId,
 					cast(S.SourceFusionAttributeID as varchar),-- + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [key],
 					'FusionAttribute' as [obj],
 					SourceFusionAttributeID as [objid], 
@@ -1072,8 +1086,10 @@ begin
 					left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
 					left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
 					left join @tItems B on B.MapItemID = J.MapItemID
+					left join Asset A on A.[Object] = 'FusionAttribute' and A.ObjectID = SourceFusionAttributeID
 		insert into @nodes
 			select	distinct
+					A.ID as assetId,
 					cast(S.TargetFusionAttributeID as varchar),-- + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [key],
 					'FusionAttribute' as [obj],
 					TargetFusionAttributeID as [objid], 
@@ -1092,6 +1108,7 @@ begin
 					left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
 					left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
 					left join @tItems B on B.MapItemID = J.MapItemID
+					left join Asset A on A.[Object] = 'FusionAttribute' and A.ObjectID = TargetFusionAttributeID
 			where	cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') not in (select [key] from @nodes)
 
 			--gets rid of dupes
