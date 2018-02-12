@@ -651,7 +651,7 @@ button.ui-button:disabled {
     border-radius: 0;
     padding: 0 10px;
     height: 25px;
-    word-break:break-word;
+    word-wrap:break-word;
 }
 /*.ui-datatable tbody td {
     border:none;
