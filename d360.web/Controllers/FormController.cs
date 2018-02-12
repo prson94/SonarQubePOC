@@ -15936,7 +15936,7 @@ order by DN.DisplayValue");
                 if (!Company.HasPermission(SystemObjects.RuleType, model.RuleTypeID, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete(model);
+                Company.Delete(SystemObjects.Rule, model.ID);
 
                 dynamic custom = new
                 {
