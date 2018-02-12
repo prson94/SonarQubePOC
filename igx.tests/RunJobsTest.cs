@@ -41,8 +41,8 @@ namespace igx.tests
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 110; //10
-            var fusionTypeID = 26;//13;
+            var companyID = 109; //10
+            var fusionTypeID = 8;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -137,8 +137,8 @@ END",
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("Data3Sixty Govern.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Infogix Signing Certificate - 2018-21", File = bytes };
+            var bytes = File.ReadAllBytes("nmprod.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Northwestern Mutual - AAD - 2018-19", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

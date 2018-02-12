@@ -910,9 +910,6 @@
     <Content Include="fonts\fontawesome-webfont.ttf" />
     <Content Include="fonts\fontawesome-webfont.eot" />
     <EmbeddedResource Include="d3s-signing.pfx" />
-    <None Include="Properties\PublishProfiles\Development - Publish CI Folder.pubxml" />
-    <None Include="Properties\PublishProfiles\Nightly - Publish CI Folder.pubxml" />
-    <None Include="Properties\PublishProfiles\UAT - Publish CI Folder.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Client Development - AU - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Client Development - IN - Central.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Client Development - UK - South.pubxml" />
@@ -1548,6 +1545,7 @@
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shortcuts.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\site-customizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tooltip.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow-fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
