@@ -11,8 +11,7 @@ const routes: Routes = [
     {
         path: '',
         component: PolicyComponent,
-        children: [
-            { path: SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION + '/:policyTaxonomyClass', component: PolicyListComponent },
+        children: [            
             { path: SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION, component: PolicyListComponent },
             { path: ':policyTypeId', component: PolicyItemComponent },
             { path: ':policyTypeId/structure', component: PolicyItemStructureComponent },

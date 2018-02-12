@@ -56,28 +56,21 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
         protected policiesService: PoliciesService) {
         super();
         this.rightSidebarService = rightSidebarService;
-        this.setCommonRightSideBar(true, true);
+        this.setCommonRightSideBar(true);
         
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
                 return `/sidebar/audit/PolicyType/${this.selected.ID}`
             });
-        }
-
-        if (this.ownershipSidebar) {
-            this.ownershipSidebar.hasDynamicUrl = true;
-            this.ownershipSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/ownership/PolicyType/${this.selected.ID}`
-            });
-        }
+        }        
     }
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.headerBreadcrumbService.clearCurrentObjectInfo();
             this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}`));
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies'));
             
             this.loadPolicies();
         });
@@ -93,8 +86,7 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
         this.policiesService.getPolicyTypes()
             .then(result => {
                 this.policyClassName = '';
-                this.isLoading = false;
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyClassName));
+                this.isLoading = false;             
                 this.policies = result;
                 this.setBrowserTitle(this.titleService, `Policies`);
                 if (this.policies.length && this.policies.length > 0) this.selected = this.policies[0];

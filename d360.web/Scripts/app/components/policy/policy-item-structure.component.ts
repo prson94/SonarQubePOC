@@ -103,7 +103,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         super();
         this.rightSidebarService = rightSidebarService;
         this.clearSidebar();
-        this.setCommonRightSideBar(true, true);
+        this.setCommonRightSideBar(true);
 
         this.theDeleteCallback = this.deletePolicyItem.bind(this);
     }
@@ -200,7 +200,6 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         this.showDelete = false;
     }
     
-
     private add() {            
         this.selectedParentID = this.selected ? this.selected.data.ID : null;
         this.selectedLevel = this.selected ? this.selected.data.Level : 0;
