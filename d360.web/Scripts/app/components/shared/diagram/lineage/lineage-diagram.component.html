@@ -96,7 +96,7 @@
             </ng-container>
             <ng-container *ngSwitchCase="'edit'">
                 <div *ngIf="showLinkTabs">
-                    <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length >= 1">
+                    <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length >= 1 && selection?.count == 1">
                         <div class="row">
                             <div class="col s12">
                                 <div class="FieldName">Choose Predicate(s)</div>
@@ -111,6 +111,13 @@
                                                multiple="true">
                                     </p-listbox>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div  *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length >= 1 && selection?.count > 1">
+                        <div class="row">
+                            <div class="col s12">
+                                More than one object is selected on the diagram. Please select a single link or node to edit it.
                             </div>
                         </div>
                     </div>
