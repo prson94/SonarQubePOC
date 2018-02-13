@@ -7,9 +7,13 @@ import { GridColumn } from '../models/grid-definition.model';
 import { SelectItem } from 'primeng/components/common/api';
 import { JsonResult } from '../models/jsonresult.model';
 
+declare var CompanySettings: any;
 
 @Injectable()
 export class LoadService extends BaseService {
+
+    lineageFlag: boolean = true;
+    aOptions: any[] = [];
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
@@ -35,17 +39,21 @@ export class LoadService extends BaseService {
     }
 
     getActionOptions(): SelectItem[] {
-        return [
-            { label: 'Promotion', value: 'P' },
-            { label: 'Relation', value: 'R' },
-            { label: 'Responsibilities', value: 'O' },
-            { label: 'Unrelation', value: 'U' },
-            { label: 'Lineage : Business', value: 'BL' },
-            { label: 'Lineage : Technical', value: 'TL' }//,
-            //{ label: 'Synonyms', value: 'S' }
-        ];
+        this.aOptions = 
+            [   { label: 'Promotion', value: 'P' },
+                { label: 'Relation', value: 'R' },
+                { label: 'Responsibilities', value: 'O' },
+                { label: 'Unrelation', value: 'U' } 
+        ]
+        if (CompanySettings != null && CompanySettings.UseLegacyLineage != null) {
+            this.lineageFlag = CompanySettings.UseLegacyLineage;
+        }
+        if (this.lineageFlag) {
+            this.aOptions.push({ label: 'Lineage : Business', value: 'BL' });
+            this.aOptions.push({ label: 'Lineage : Technical', value: 'TL' });
+        }
+        return this.aOptions;
     }
-
 
     getTypeOptions(action: string): Promise<SelectItem[]> {
         return this.http.get(`/form/Load_TypeOptions?act=${action}`)
