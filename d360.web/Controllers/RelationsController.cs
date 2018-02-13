@@ -175,9 +175,6 @@ order by	SubjectName,
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
-        
-
-
         [Route("_intersectTypeItems/{id:int}/excel.xls"), FileDownload, HttpGet]
         public FileResult _IntersectTypeItemsExcel(int id)
         {
@@ -265,6 +262,7 @@ order by	SubjectName,
             #region Header
 
             int index = 1;
+            document.SetCellValue(1, index++, "ID");
             document.SetCellValue(1, index++, "Subject");
             document.SetCellValue(1, index++, "Subject Type");
             document.SetCellValue(1, index++, "Predicate");            
@@ -278,6 +276,7 @@ order by	SubjectName,
             {
                 index = 1;
                 rowNumber++;
+                document.SetCellValue(rowNumber, index++, (int)row.ID);
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.Subject);
                 document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
