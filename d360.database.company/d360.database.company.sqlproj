@@ -587,7 +587,6 @@
     <Build Include="dbo\Stored Procedures\UpdateObject.sql" />
     <Build Include="dbo\Stored Procedures\GetRenderedTemplateBodyNg_2.sql" />
     <Build Include="dbo\Stored Procedures\GetReferenceItemValues_1.sql" />
-    <Build Include="dbo\Stored Procedures\GetLineageOld.sql" />
     <Build Include="bulkload\Stored Procedures\GetLoadColumns.sql" />
     <Build Include="metrics\Stored Procedures\LoadFromStaging.sql" />
     <Build Include="analytics\Stored Procedures\AddStatistic.sql" />

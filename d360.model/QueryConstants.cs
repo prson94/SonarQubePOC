@@ -1450,7 +1450,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             where p.SiteNavID = @id";
 
         public static string WorkflowVersionStepHistory = @"
-           select 
+   select 
 	IST.ID as ItemStepID, 
 	convert(varchar(max),IST.Fields) as Fields,
 	IST.StartedOn,
@@ -1464,7 +1464,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	UL.[Url] as NgUrl, 
 	D.TextPath,
 	VS.[Name] as StepName, 
-	string_agg(RA.FirstName + ' ' + RA.LastName, ', ') as Assignments,
+	dbo.GetWorkflowResponsibleUsers(IST.ID, 0) as Assignments,
 	convert(varchar(max),VS.Settings) as Settings,
 	VS.StepType as StepType,
 	VS.ActivityType,
@@ -1474,9 +1474,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 		when VS.ActivityType = 3 then
 			'Form completed by ' + 
 				case when IST.CompletedBy is not null and convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/FormResponseType[1]/text()[1]', 'varchar(max)') = 'FirstResponse'  then
-					coalesce(max(RC.FirstName + ' ' + RC.LastName), '[unknown]')
+					dbo.GetWorkflowResponsibleUsers(IST.ID, 1)
 				else
-					coalesce(string_agg(RA.FirstName + ' ' + RA.LastName, ', '), '[unknown]')
+					dbo.GetWorkflowResponsibleUsers(IST.ID, 0)
 				end
 		when VS.ActivityType = 1 then
 			case when convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
@@ -1492,7 +1492,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 			'Step completed'
 		end
 	when VS.ActivityType = 3 then --form
-		'Waiting for form completion by ' + coalesce(string_agg(RA.FirstName + ' ' + RA.LastName, ', '), '[unknown]')
+		'Waiting for form completion by ' + dbo.GetWorkflowResponsibleUsers(IST.ID, 0)
 	when VS.ActivityType = 1 then --email
 		'An error occurred or the email is currently queued for sending'
 	else
@@ -1505,31 +1505,25 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	end as [Status],
 	null as SettingsObject,
 	null as FieldsObject
+
 from 
 	workflow.ItemStep IST
 	left join workflow.Item I on I.ID = IST.ItemID
 	left join Issue s on I.[Object] = 'Issue' and S.ID = I.ObjectID
-	left join workflow.ItemAssignment IA on IA.ItemID = I.ID
 	left join [IntersectDetail] ISD on coalesce(s.[Object], I.[Object]) = 'Intersect' and ISD.ID = coalesce(s.ObjectID, I.ObjectID)
 	left join Asset A on A.[Object] = coalesce(s.[Object], I.[Object]) and A.ObjectID = coalesce(s.ObjectID, I.ObjectID)
 	left join AssetType AST on AST.id = A.AssetTypeID
 	cross apply dbo.GetAssetDisplayValueById(A.ID) DV
 	cross apply dbo.GetAssetUrl(A.[Object], AST.ObjectID, A.ObjectID) UL
-	left join workflow.VersionStep VS on VS.ID = IST.StepID
+	inner join workflow.VersionStep VS on VS.ID = IST.StepID
 	left join cache.ObjectDetails D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
 	left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
 	left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
-	left join reporting.Global_resource RA on RA.ResourceID = IA.ResourceObjectID
-	left join workflow.[Version] V on V.ID = VS.VersionID
-	left join workflow.[Type] T on T.ID = V.TypeID
+	inner join workflow.[Version] V on V.ID = VS.VersionID
+	inner join workflow.[Type] T on T.ID = V.TypeID
 where 
-	VS.ID = @id
-group by 
-	IST.ID, IST.StartedOn, IST.CompletedOn, IST.CompletedBy, RS.FirstName, RS.LastName, RC.FirstName, RC.LastName, 
-	coalesce(S.[Object], I.[Object]), coalesce(S.ObjectID, I.ObjectID), 
-	coalesce(DV.DisplayValue,ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName),
-	D.ObjectTypeName, UL.[Url], D.TextPath, VS.[Name], 
-	convert(varchar(max),VS.Settings), VS.StepType, VS.ActivityType, VS.ID, T.ID, convert(varchar(max), IST.Fields)
+	VS.ID = 689
+order by IST.StartedOn desc, IST.CompletedOn desc
 ";
 
         public static string WorkflowTypeList = @"
