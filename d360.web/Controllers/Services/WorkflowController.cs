@@ -361,7 +361,7 @@ order by wi.StartedOn desc";
 
                 if(itemStepsModel == null)
                 {
-                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "CANNOT FIND THE ITEM STEP FOR THE SPEICIFIED PARAMETERS");
+                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "CANNOT FIND THE ITEM STEP FOR THE SPECIFIED PARAMETERS");
                 }
 
                 if (string.IsNullOrEmpty(itemStepsModel.Settings))

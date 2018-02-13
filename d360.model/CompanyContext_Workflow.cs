@@ -451,35 +451,24 @@ namespace d360.model
                 if (fromItemStep == null) throw new Exception("ERROR - CANNOT FIND ITEM FROM STEP");
 
                 long toItemStepID = 0;
-                // insert item step record for the to item step if none exist
-                var itemStepTo = WorkflowItemSteps.Where(x => x.ItemID == itemID && x.StepID == transition.ToVersionStepID).FirstOrDefault();
-
-                if (itemStepTo == null)
-                {
-                    Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
-
-                    var toItemStep = new WorkflowItemStep
-                    {
-                        StartedOn = DateTime.UtcNow,
-                        StartedBy = CurrentResourceID,
-                        StepID = transition.ToVersionStepID,
-                        Fields = "<fields/>",
-                        Settings = "<settings/>",
-                        ItemID = itemID
-                    };
-
-                    WorkflowItemSteps.Add(toItemStep);
-                    SaveChanges();
-
-                    toItemStepID = toItemStep.ID;
-                }
-                else
-                {
-                    Console.WriteLine($"DEBUG ITEMSTEP DATA ALREADY EXISTS {itemStepTo.ID}");
-
-                    toItemStepID = itemStepTo.ID;
-                }
                 
+                Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
+
+                var toItemStep = new WorkflowItemStep
+                {
+                    StartedOn = DateTime.UtcNow,
+                    StartedBy = CurrentResourceID,
+                    StepID = transition.ToVersionStepID,
+                    Fields = "<fields/>",
+                    Settings = "<settings/>",
+                    ItemID = itemID
+                };
+
+                WorkflowItemSteps.Add(toItemStep);
+                SaveChanges();
+
+                toItemStepID = toItemStep.ID;
+                                
                 if(toItemStepID <= 0)
                 {
                     Console.WriteLine($"ERROR - ITEMSTEP ID IS LESS THAN OR EQUAL TO ZERO MEANING IT DOESNT EXIST AND WE CANT INSERT A NEW ONE.  THIS SHOULD NOT HAPPEN!");
