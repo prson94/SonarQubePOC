@@ -1048,24 +1048,28 @@ where	T.ID = @id";
 
         public static string SimilarItems = @"
                     select top 10
-						objectid,
-	                    Name,
-	                    Url, 
-	                    IconForeColor, 
-	                    IconBackColor, 
-	                    [Description],
-	                    objecttypeid,
-						case when Name like @query + '%' then
+						a.objectid,
+						a.[object],
+	                    d.DisplayValue as Name,
+	                    u.[Url], 
+	                    os.IconForeColor, 
+	                    os.IconBackColor, 
+	                    t.objectid as objecttypeid,
+						case when d.DisplayValue like @query + '%' then
 							0
 						else
 							1
 						end as rnk
                     from 
-	                    cache.objectdetails
+	                    Asset a
+					inner join AssetType t on t.ID = a.AssetTypeID
+					left join ObjectStyle os on os.ObjectType = t.[Object] and os.ObjectID = t.ObjectID
+					cross apply dbo.GetAssetDisplayValueById(a.ID) d
+					cross apply dbo.GetAssetUrl(@type, t.ObjectID, a.ObjectID) u
                     where 
-	                    [object] = @type
-	                    and (@typeID is null or objectTypeID = @typeID)
-	                    and Name like '%' + @query + '%'
+	                    a.[Object] = @type
+	                    and (@typeID is null or t.objectID = @typeID)
+	                    and d.DisplayValue like '%' + @query + '%'
 					order by rnk
             ";
 

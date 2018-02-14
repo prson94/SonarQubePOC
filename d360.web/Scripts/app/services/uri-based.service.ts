@@ -4,6 +4,7 @@ import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { ObjectStyle } from '../models/object-style.model';
 import { JsonResult } from '../models/jsonresult.model';
+import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class UriBasedService extends BaseService {
@@ -72,5 +73,15 @@ export class UriBasedService extends BaseService {
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
+    }
+
+    getAsObservable(uri: string) {
+        return this.http.get(uri).map(res => res.json());
+    }
+
+    search(uri: string, query: Observable<string>, debounceTime: number = 300, emptyResults: boolean = false) {
+        return query.debounceTime(debounceTime)
+            .distinctUntilChanged()
+            .switchMap(query => this.getAsObservable(uri + query));
     }
 }

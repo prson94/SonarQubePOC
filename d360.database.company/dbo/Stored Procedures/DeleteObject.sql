@@ -1,5 +1,4 @@
-﻿
-CREATE procedure [dbo].[DeleteObject]
+﻿CREATE procedure [dbo].[DeleteObject]
 	@Obj varchar(50),
 	@ObjectID int,
 	@ResourceID int
@@ -217,6 +216,12 @@ begin
 			delete TaxonomyType where ID = @ObjectID
 		end
 
+		if @Object = 'OrganizationType'
+		begin
+			delete Organization where OrganizationTypeID = @ObjectID
+			delete OrganizationType where ID = @ObjectID			
+		end
+
 		if @Object = 'Artifact'
 		begin
 			-- HIERARCHY
@@ -233,23 +238,6 @@ begin
 						)
 			insert into @h 
 				select ID from h
-
-			-- AUDIT
-			insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
-				select	@Object, 
-						O.ID, 
-						O.DisplayValue, 
-						coalesce(O.UpdatedBy, 0), 
-						coalesce(O.UpdatedOn, getutcdate()), 
-						'Deleted', 
-						@Object, 
-						O.ID, 
-						T.Name, 
-						O.DisplayValue, 
-						'This artifact has been removed.' 
-				from	Artifact O
-						inner join @h I on I.ID = O.ID 
-						inner join ArtifactType T on T.ID = O.ArtifactTypeID;
 			
 			-- DELETE
 			delete Artifact where ID in (select ID from @h)
@@ -273,23 +261,6 @@ begin
 			insert into @h 
 				select ID from th
 
-			-- AUDIT
-			insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
-				select	@Object, 
-						O.ID, 
-						O.DisplayValue, 
-						coalesce(O.UpdatedBy, 0), 
-						coalesce(O.UpdatedOn, getutcdate()), 
-						'Deleted', 
-						@Object, 
-						O.ID, 
-						T.Name, 
-						O.DisplayValue, 
-						'This policy has been removed.' 
-				from	[Policy] O
-						inner join @h I on I.ID = O.ID 
-						inner join PolicyType T on T.ID = O.PolicyTypeID;
-
 			-- DELETE
 			delete [Policy] where ID in (select ID from @h)
 		end
@@ -298,23 +269,11 @@ begin
 		begin
 			insert into @h values (@ObjectID)
 
-			-- AUDIT
-			insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
-				select	@Object, 
-						O.ID, 
-						O.DisplayValue, 
-						coalesce(O.UpdatedBy, 0), 
-						coalesce(O.UpdatedOn, getutcdate()), 
-						'Deleted', 
-						@Object, 
-						O.ID, 
-						T.Name, 
-						O.DisplayValue, 
-						'This rule has been removed.' 
-				from	[Rule] O
-						inner join @h I on I.ID = O.ID 
-						inner join RuleType T on T.ID = O.RuleTypeID;
 			-- DELETE
+			delete T
+			from   RuleResultQualifierType T
+				   inner join RuleImplementation I on I.ID = T.RuleImplementationID and I.RuleID in (select ID from @h)
+
 			delete	Q
 			from	RuleResultQualifier Q 
 					inner join RuleResult S on S.ID = Q.RuleResultID
@@ -347,26 +306,14 @@ begin
 
 			insert into @h 
 				select ID from th
-
-			-- AUDIT
-			insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
-				select	@Object, 
-						O.ID, 
-						O.DisplayValue, 
-						coalesce(O.UpdatedBy, 0), 
-						coalesce(O.UpdatedOn, getutcdate()), 
-						'Deleted', 
-						@Object, 
-						O.ID, 
-						T.Name, 
-						O.DisplayValue, 
-						'This model has been removed.' 
-				from	[Taxonomy] O
-						inner join @h I on I.ID = O.ID 
-						inner join TaxonomyType T on T.ID = O.TaxonomyTypeID;
 			
 			-- DELETE
 			delete Taxonomy where ID in (select ID from @h)
+		end
+
+		if @Object = 'Intersect'
+		begin
+			delete [Intersect] where ID = @ObjectID
 		end
 
 		-- Final check to see if @h table variable has anything in it form above. If not, auto-insert the curent ObjectID we got from the procedure parameters.
@@ -552,5 +499,3 @@ begin
 		rollback transaction @trans
 	end catch
 end
-GO
-
