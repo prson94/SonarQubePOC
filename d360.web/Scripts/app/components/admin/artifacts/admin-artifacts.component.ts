@@ -23,6 +23,7 @@ import { AssetTypeClass } from "../../../models/asset.model";
 export class AdminArtifactsComponent extends AdminBaseComponent implements OnDestroy { 
     searchFilter: string = "";
     objectType: string = "ArtifactType";
+    adminType: string = "Artifacts";
     selectedRow: TreeNode;
     
     isAdding = false;
@@ -97,6 +98,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = false;
+        this.selectedRow = { data: { ID: 0 } };
+        this.load();
     }
 
     actionComplete(e: any, type: string = ''): void {

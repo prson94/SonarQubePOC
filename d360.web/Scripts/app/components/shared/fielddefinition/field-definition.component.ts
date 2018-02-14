@@ -34,10 +34,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     private theDeleteCallback: Function;
 
-    
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService) {
         super();
-
         this.theDeleteCallback = this.deleteFieldType.bind(this);
     }
 
@@ -56,17 +54,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 this.isDeleting = false;
             }
         }
-    
         this.load();
     }
 
     load(): void {
-
         if (this.objectType == null || this.objectID == null)
             return;
-
         this.isLoading = true;
-
         this.fieldsService.getFields(this.objectID, this.objectType)
             .then(data => {
                 this.fieldDefinitions = data;
@@ -80,7 +74,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 this.selectedRow = null;
                 this.isLoading = false;
             });
-
     }
 
     edit(id: number): void {
@@ -124,7 +117,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 this.onFieldsChanged.emit();
             }
         });
-        
     }
 
     moveUp(field: FieldDefinition) {
