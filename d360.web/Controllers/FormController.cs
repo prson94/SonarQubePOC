@@ -2944,9 +2944,9 @@ namespace d360.web.Controllers
                     list = new List<ArtifactType>();
                     parent = Company.GetParentType<ArtifactType>(id);
                     if (parent != null)
-                        list.Add(parent);
+                        list.Add((ArtifactType)parent);
 
-                        ((List<ArtifactType>)list).Select(i => new { value = $"0|ArtifactType|{i.ID}", title = i.Name })
+                        list = ((List<ArtifactType>)list).Select(i => new { value = $"0|ArtifactType|{i.ID}", title = i.Name })
                         .Where(i => i.title != null)
                         .ToList();
                     break;
@@ -2954,9 +2954,9 @@ namespace d360.web.Controllers
                     list = new List<FusionAttributeType>();
                     parent = Company.GetParentType<FusionAttributeType>(id);
                     if (parent != null)
-                        list.Add(parent);
+                        list.Add((FusionAttributeType)parent);
 
-                    ((List<FusionAttributeType>)list).Select(i => new { value = $"0|FusionAttributeType|{i.ID}", title = i.Name })
+                    list = ((List<FusionAttributeType>)list).Select(i => new { value = $"0|FusionAttributeType|{i.ID}", title = i.Name })
                         .Where(i => i.title != null)
                         .ToList();
                     break;

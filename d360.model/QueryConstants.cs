@@ -1526,7 +1526,7 @@ from
 	inner join workflow.[Version] V on V.ID = VS.VersionID
 	inner join workflow.[Type] T on T.ID = V.TypeID
 where 
-	VS.ID = 689
+	VS.ID = @id
 order by IST.StartedOn desc, IST.CompletedOn desc
 ";
 
