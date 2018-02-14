@@ -1442,22 +1442,19 @@ namespace d360.web.Controllers
                         break;
                 }
 
-                if (model.ParentID.HasValue && model.SelectedPredicateID.HasValue)
+                if (model.ParentID.HasValue || model.SelectedPredicateID.HasValue)
                 {
-                    if (model.ParentID.Value > 0)
+                    var intersectType = new IntersectType
                     {
-                        var intersectType = new IntersectType
-                        {
-                            Subject = parentType.ToString(),
-                            SubjectID = model.ParentID.HasValue ? model.ParentID.Value : model.AssetType.ObjectID,
-                            SubjectCardinality = Cardinality.One,
-                            Object = model.AssetType.Object,
-                            ObjectID = model.AssetType.ObjectID,
-                            ObjectCardinality = Cardinality.Many,
-                            PredicateID = model.SelectedPredicateID
-                        };
-                        Company.Add(intersectType);
-                    }
+                        Subject = parentType.ToString(),
+                        SubjectID = (model.ParentID.HasValue && model.ParentID.Value > 0) ? model.ParentID.Value : model.AssetType.ObjectID,
+                        SubjectCardinality = Cardinality.One,
+                        Object = model.AssetType.Object,
+                        ObjectID = model.AssetType.ObjectID,
+                        ObjectCardinality = Cardinality.Many,
+                        PredicateID = model.SelectedPredicateID
+                    };
+                    Company.Add(intersectType);
                 }
 
                 upsertObjectStyle(model.AssetType.Object, model.AssetType.ObjectID, model.IconForeColor, model.IconBackColor, model.AssetType.Name);
