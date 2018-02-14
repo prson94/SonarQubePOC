@@ -96,7 +96,6 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
                 return `/sidebar/audit/TaxonomyType/${this.selectedTaxonomy.ID}`
             });
         }
-        this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag'], 'admin/classification/TaxonomyTypeClass'));
     }
 
     ngOnInit() {
