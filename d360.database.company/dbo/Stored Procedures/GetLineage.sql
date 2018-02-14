@@ -1073,16 +1073,16 @@ begin
 					SourceFusionAttributeID as [objid], 
 					'FusionAttribute' as [type],
 					T.Name as typeName,
-					A.TextPath as name,
-					A.Name as shortname,
+					FA.TextPath as name,
+					FA.Name as shortname,
 					COALESCE(ST.IconBackColor, '#000') as back,
 					COALESCE(ST.IconForeColor, '#fff') as fore,
 					'Fusion' as template,
 					B.SourceSubjectTypeName + ' : ' + B.SourceSubjectName as other,
 					null
 			from	#tFusionPoints S
-					inner join FusionAttribute A on A.ID = S.SourceFusionAttributeID
-					inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+					inner join FusionAttribute FA on FA.ID = S.SourceFusionAttributeID
+					inner join FusionAttributeType T on T.ID = FA.FusionAttributeTypeID
 					left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
 					left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
 					left join @tItems B on B.MapItemID = J.MapItemID
@@ -1095,16 +1095,16 @@ begin
 					TargetFusionAttributeID as [objid], 
 					'FusionAttribute' as [type],
 					T.Name as typeName,
-					A.TextPath as name,
-					A.Name as shortname,
+					FA.TextPath as name,
+					FA.Name as shortname,
 					COALESCE(ST.IconBackColor, '#000') as back,
 					COALESCE(ST.IconForeColor, '#fff') as fore,
 					'Fusion' as template,
 					B.TargetSubjectTypeName + ' : ' + B.TargetSubjectName as other,
 					null
 			from	#tFusionPoints S
-					inner join FusionAttribute A on A.ID = S.TargetFusionAttributeID
-					inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+					inner join FusionAttribute FA on FA.ID = S.TargetFusionAttributeID
+					inner join FusionAttributeType T on T.ID = FA.FusionAttributeTypeID
 					left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
 					left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
 					left join @tItems B on B.MapItemID = J.MapItemID
