@@ -28,7 +28,7 @@ export class ArtifactService extends BaseService {
             uri += '&filterscount=' + normalFilters.length;
 
             for (let filter of normalFilters) {
-                uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${filter.value}`;
+                uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${encodeURIComponent(filter.value)}`;
                 count++;
             }
 
