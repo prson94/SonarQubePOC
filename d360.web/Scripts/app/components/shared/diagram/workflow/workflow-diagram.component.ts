@@ -541,13 +541,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private getActivityTypes(): Promise<any> {
         return this.workflowService.getActivityTypes()
             .then(r => {
-                let none = r.findIndex(a => a.ID == 0);
+                let excluded = r.findIndex(a => a.ID == WorkflowActivityType.None);
+                
+                if (excluded >= 0)
+                    r.splice(excluded, 1);
 
-                if (none >= 0)
-                    r.splice(none, 1);
+                excluded = r.findIndex(a => a.ID == WorkflowActivityType.StatusChange); //deprecated
+                if (excluded >= 0)
+                    r.splice(excluded, 1);
 
                 this.activityTypes = r;
-                //console.log(r);
             });
 
     }

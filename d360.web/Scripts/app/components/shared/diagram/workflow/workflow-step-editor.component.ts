@@ -49,7 +49,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         'Certified'
     ];
     private states = [
-        //'Unknown',
         { value: '0', label: 'Pending Add' },
         { value: '1', label: 'Active' },
         { value: '2', label: 'Pending Delete' },
@@ -156,7 +155,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     appendField(e: string) {
-        //console.log(this.step.settings.MessageBodyTemplate, this.quill);
+        //console.log(this.step.settings.MessageBodyTemplate, this.quill, e);
 
         if (this.quill != null) {
             let len = this.quill.getLength();

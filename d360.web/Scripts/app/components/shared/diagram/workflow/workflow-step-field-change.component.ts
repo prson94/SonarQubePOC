@@ -187,13 +187,29 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         //console.log('save', field);
 
-        //join multiselect value into a comma delimited string
-        if (this.field.AllowMultipleValues && this.field.Type.toLowerCase() == 'lookup') {
-            //primeng junk value
-            if (field['@Value'] != null && field['@Value']._$visited != null)
-                delete field['@Value']._$visited;
-            if (field['@Value'] != null && Array.isArray(field['@Value']))
-                field['@Value'] = field['@Value'].join();
+
+        if (this.field.Type.toLowerCase() == 'lookup') {
+            //join multiselect value into a comma delimited string
+            if (this.field.AllowMultipleValues) {
+                let valueLabels = [];
+                //primeng junk value
+                if (field['@Value'] != null && field['@Value']._$visited != null)
+                    delete field['@Value']._$visited;
+                if (field['@Value'] != null && Array.isArray(field['@Value'])) {
+                    field['@Value'].forEach(v => {
+                        let label = this.lookups.find(l => l.value == v);
+                        if (label != null)
+                            valueLabels.push(label.label);
+                    });
+                    field['@Value'] = field['@Value'].join();
+                    field['@ValueLabel'] = valueLabels.join();
+                }
+
+            } else {
+                let valueLabel = this.lookups.find(l => l.value == field['@Value']);
+                field['@ValueLabel'] = valueLabel == null ? field['@Value'] : valueLabel.label;
+            }
+
         } else {
             delete field['@AppendValue'];
         }
@@ -209,6 +225,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         if (clearValue || useCurrentDate || useFormValue) {
             delete field['@Value'];
+            delete field['@ValueLabel'];
         }
         if (useFormValue) {
             delete field['@UseCurrentDate'];
@@ -389,7 +406,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     getValue(i: any): string {
         let val = "";
         if (i != null) {
-            val = i['@Value'];
+            if (i['@ValueLabel'] != null)
+                val = i['@ValueLabel'];
+            else
+                val = i['@Value'];
         }
 
         if (val.length > 50) {

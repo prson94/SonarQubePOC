@@ -101,7 +101,10 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     getValue(i: any): string {
         let val = "";
         if (i != null) {
-            val = i['@Value'];
+            if (i['@ValueLabel'] != null)
+                val = i['@ValueLabel'];
+            else
+                val = i['@Value'];
         }
 
         if (val.length > 50) {
