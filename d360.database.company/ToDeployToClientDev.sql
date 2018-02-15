@@ -1,4 +1,23 @@
-﻿-- lineage.GetByObject -----------------------------
+﻿
+ALTER TRIGGER [dbo].[Rule_AfterDelete]
+   ON  [dbo].[Rule] 
+   AFTER DELETE
+AS 
+	SET NOCOUNT ON
+	update	Asset
+	set		[State] = 3
+	where	Object = 'Rule' and ObjectID in (select ID from deleted)
+
+	delete Q
+	from AssetDataQualityProperty Q
+	inner join Asset A on A.ID = Q.ID and A.Object = 'Rule' and A.ObjectID in (select ID from deleted)
+
+	delete Asset where Object = 'Rule' and ObjectID in (select ID from deleted)
+
+
+
+GO
+-- lineage.GetByObject -----------------------------
 ALTER procedure [lineage].[GetByObject]
 --declare
 	@Object varchar(50),-- = 'Artifact',
