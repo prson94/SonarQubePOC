@@ -23,6 +23,7 @@ import { MenuItem } from 'primeng/primeng';
 
 import * as go from 'gojs';
 import * as _ from 'lodash';
+import { Subject } from 'rxjs';
 
 declare var window: any;
 
@@ -69,6 +70,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private totalRecords = 0;
     private gridIsLoading = false;
     private addObjectsWarning = "";
+    private objectSource$ = new Subject<any>();
+    private objectSearchSub: any;
 
     public diagramMode: DiagramMode = DiagramMode.Diagram;
     DiagramMode = DiagramMode;
@@ -102,6 +105,16 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     public ngOnInit() {
+
+        this.objectSearchSub = this.lineageService.getLineageObjects(this.objectSource$)
+            .subscribe(res => {
+                                this.objects = res.results.results;
+                if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0)
+                    this.totalRecords = res.results.count;
+
+                this.objectsLoading = false;
+            });
+
         this.readonly = true;
         this.history.push({
             object: this.objectType,
@@ -137,7 +150,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.palette != null)
             this.palette.div = null;
 
-
+        this.objectSearchSub.unsubscribe();
     }
 
     //#region helper methods
@@ -161,6 +174,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.diagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.diagram.addDiagramListener('BackgroundSingleClicked', e => this.BackgroundSingleClicked(e));
+        this.diagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
 
         this.diagram.toolManager.linkingTool.linkValidation = (a, b, c, d) => this.canLink(a, b, c, d);
 
@@ -197,6 +211,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.isLoading = false;
                 this.isWindowVisible = windowVisible;
                 this.reOrderLayout();
+                
                 //workaround for IE11 not respecting initial diagram scale. 
                 //After layout is complete or a zoom button is pressed it is automatically set back to go.Diagram.None
                 this.diagram.autoScale = go.Diagram.UniformToFill;
@@ -528,44 +543,17 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private lazyLoad(e: any) {
         //console.log('lazyLoad', e);
         this.objectsLoading = true;
-        this.lineageService.getLineageObjects(+this.selectedAssetTypeId, e.first, e.rows, e.globalFilter)
-            .then(r => {
-                this.objects = r.results;
-                if ((e.globalFilter != null && e.globalFilter != "") || e.first == 0)
-                    this.totalRecords = r.count;
-
-                this.objectsLoading = false;
-            });
+        this.objectSource$.next({ assetTypeId: +this.selectedAssetTypeId, event: e });
     }
 
     private selectObjectType(e: any) {
-        //console.log('selectObjectType', e);
+        //console.log('selectObjectType', e);        
         this.selectedAssetTypeId = e;
         this.lazyLoad({
             first: 0,
             rows: 10,
             globalFilter: (this.globalFilterRef != null && this.globalFilterRef.nativeElement != null) ? this.globalFilterRef.nativeElement.value : '' 
         });
-    }
-
-    private loadObjects(): Promise<any> {
-        //console.log('loadObjects');
-        if (_.isNaN(+this.selectedAssetTypeId)) {
-            this.objects = [];
-            this.selectedObjects = null;
-            this.totalRecords = 0;
-            return;
-        }
-
-        this.objectsLoading = true;
-        return this.lineageService.getLineageObjects(+this.selectedAssetTypeId, 0, 25, null)
-            .then(r => {
-                this.selectedObjects = null;
-                this.objects = r.results;
-                this.totalRecords = r.count;
-                this.objectsLoading = false;
-                //console.log('loadObjects', this.objects);
-            });
     }
 
     private add() {
@@ -981,6 +969,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.commitTransaction('Link Drawn');
     }
 
+    private InitialLayoutCompleted() {
+        this.diagram.scrollMode = go.Diagram.InfiniteScroll;
+    }
+
     public menuClick(e: MenuItem) {
         //console.log('menuClick', e);
         if (e.icon == 'fa-info-circle') {
@@ -1361,7 +1353,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             {
                 fill: "transparent",
                 stroke: null,
-                desiredSize: new go.Size(7, 7),
+                desiredSize: new go.Size(9, 9),
                 alignment: spot, alignmentFocus: spot,
                 portId: name,
                 fromSpot: spot, toSpot: spot,

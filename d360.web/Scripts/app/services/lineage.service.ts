@@ -57,15 +57,18 @@ export class LineageService extends BaseService {
             .map(response => <any[]>response.json());
     }
 
-    public getLineageObjects(typeId: number, offset: number, rows: number, query: string): Promise<any> {
-        let uri = `api/lineage/objects/${typeId}?offset=${offset}&rows=${rows}`;
-        if (query != null && query.length > 0)
-            uri += `&query=${query}`;
+    public getLineageObjects(event: Observable<any>) {
+        let uri = `api/lineage/objects/`;
+        return event
+            .distinctUntilChanged()
+            .switchMap(event => {
+                let uri = `api/lineage/objects/${event.assetTypeId}?offset=${event.event.first}&rows=${event.event.rows}`;
 
-        return this.http.get(uri)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+                if (event.event.globalFilter != null && event.event.globalFilter.length > 0)
+                    uri += `&query=${event.event.globalFilter}`;
+                return this.http.get(uri).map(res => res.json())
+                    .map(res => { return { assetTypeId: event.assetTypeId, results: res, event: event.event }});
+            });
     }
 
     public getLineageObjectDetail(type: string, id: number): Promise<any> {

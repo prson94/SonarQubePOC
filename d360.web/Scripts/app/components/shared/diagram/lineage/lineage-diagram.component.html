@@ -61,28 +61,30 @@
                             <div class="FieldName">
                                 Choose Objects
                             </div>
-                            <div *ngIf="false">
-                                <d3s-loading isLoading="true"></d3s-loading>
-                            </div>
                             <div>
                                 <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable #dt 
-                                            [globalFilter]="gb" 
-                                             scrollable="true" 
-                                             scrollWidth="100%" 
-                                             [rowsPerPageOptions]="defaultPagingOptions" 
-                                             [value]="objects" 
-                                             [rows]="defaultInitialItemsPerPage" 
-                                             paginator="true" 
-                                             pageLinks="3"  
-                                             [(selection)]="selectedObjects" 
-                                             lazy="true"
-                                             (onLazyLoad)="lazyLoad($event)" 
-                                             [totalRecords]="totalRecords">
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                    <p-column selectionMode="multiple" [style]="{'width':'30px'}"></p-column>
-                                    <p-column field="name" header="Name"></p-column>
-                                </p-dataTable>                       
+                                <div [hidden]="!objectsLoading">
+                                    <d3s-loading isLoading="true"></d3s-loading>
+                                </div>
+                                <div [hidden]="objectsLoading">
+                                    <p-dataTable #dt
+                                                 [globalFilter]="gb"
+                                                 scrollable="true"
+                                                 scrollWidth="100%"
+                                                 [rowsPerPageOptions]="defaultPagingOptions"
+                                                 [value]="objects"
+                                                 [rows]="defaultInitialItemsPerPage"
+                                                 paginator="true"
+                                                 pageLinks="3"
+                                                 [(selection)]="selectedObjects"
+                                                 lazy="true"
+                                                 (onLazyLoad)="lazyLoad($event)"
+                                                 [totalRecords]="totalRecords">
+                                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
+                                        <p-column selectionMode="multiple" [style]="{'width':'30px'}"></p-column>
+                                        <p-column field="name" header="Name"></p-column>
+                                    </p-dataTable>
+                                </div>
                             </div>
                         </div>
                         <div *ngIf="addObjectsWarning != ''" style="padding: 10px">
