@@ -1442,7 +1442,7 @@ namespace d360.web.Controllers
                         break;
                 }
 
-                if (model.ParentID.HasValue || model.SelectedPredicateID.HasValue)
+                if (model.SelectedPredicateID.HasValue)
                 {
                     var intersectType = new IntersectType
                     {
