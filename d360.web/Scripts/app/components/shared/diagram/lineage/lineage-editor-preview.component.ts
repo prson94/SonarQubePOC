@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter, ViewChild, AfterViewInit } from '@angular/core';
 import { DiagramService } from '../../../../services/diagram.service';
 import { MessagesService } from '../../../../services/messages.service';
-import { BaseComponent } from '../../base.component';
+import { DiagramBaseComponent } from '../diagram-base.component';
 import {
     LineageEditorRow,
     LineageEditorModel,
@@ -34,7 +34,7 @@ import * as go from 'gojs';
     providers: [DiagramService]
 })
 
-export class LineageEditorPreviewComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class LineageEditorPreviewComponent extends DiagramBaseComponent implements OnInit, AfterViewInit {
     @Input() businessModel: LineageEditorModel = new LineageEditorModel();
     @Input() technicalModel: LineageEditorTechnicalModel = new LineageEditorTechnicalModel();
     @Input() type: string;
@@ -45,8 +45,6 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
     @Output() viewChange = new EventEmitter();
     @ViewChild('diagram') diagramRef;
 
-    private g = go.GraphObject.make;
-    private myDiagram: go.Diagram;
 
     private initialLinks: go.Link[] = [];
     private initialNodes: go.Node[] = [];
@@ -69,21 +67,21 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
     private initializeDiagram() {
         
 
-        this.myDiagram = this.createDiagram();
+        this.diagram = this.createDiagram();
 
-        this.myDiagram.nodeTemplateMap.add("Focal", this.createFocalNode());
-        this.myDiagram.nodeTemplateMap.add("Normal", this.createNormalNode());
-        this.myDiagram.nodeTemplateMap.add("SupportFocal", this.createSupportFocalNode());
-        this.myDiagram.nodeTemplateMap.add("SupportNormal", this.createSupportNormalNode());
-        this.myDiagram.nodeTemplateMap.add("Fusion", this.createFusionNode());
+        this.diagram.nodeTemplateMap.add("Focal", this.createFocalNode());
+        this.diagram.nodeTemplateMap.add("Normal", this.createNormalNode());
+        this.diagram.nodeTemplateMap.add("SupportFocal", this.createSupportFocalNode());
+        this.diagram.nodeTemplateMap.add("SupportNormal", this.createSupportNormalNode());
+        this.diagram.nodeTemplateMap.add("Fusion", this.createFusionNode());
 
-        this.myDiagram.linkTemplateMap.add("", this.createDefaultLink());
-        this.myDiagram.linkTemplateMap.add("Support", this.createSupportLink());
+        this.diagram.linkTemplateMap.add("", this.createDefaultLink());
+        this.diagram.linkTemplateMap.add("Support", this.createSupportLink());
 
-        this.myDiagram.grid.visible = false;
-        this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
-        this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
-        this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
+        this.diagram.grid.visible = false;
+        this.diagram.grid.gridCellSize = new go.Size(8, 8);
+        this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
+        this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
         this.populateDiagram();
     }
@@ -118,13 +116,13 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
 
     public menuClick(e: MenuItem) {
         if (e.icon == 'fa-search-plus') {
-            this.myDiagram.scale += .1;
-            if (this.myDiagram.scale > 2.5)
-                this.myDiagram.scale = 2.5;
+            this.diagram.scale += .1;
+            if (this.diagram.scale > 2.5)
+                this.diagram.scale = 2.5;
         } else if (e.icon == 'fa-search-minus') {
-            this.myDiagram.scale -= .1;
-            if (this.myDiagram.scale < .1)
-                this.myDiagram.scale = .1;
+            this.diagram.scale -= .1;
+            if (this.diagram.scale < .1)
+                this.diagram.scale = .1;
         } else if (e.label == 'Business System Flow') {
             this.view = LineageView.SystemFlow;
             this.viewChange.emit(LineageView.SystemFlow);
@@ -152,14 +150,14 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                 this.parseData(data);
             })
             .then(() => {
-                this.myDiagram.zoomToFit();
+                this.diagram.zoomToFit();
                 this.isLoading = false;
             });
     }
 
     private parseData(data: any) {
-        this.myDiagram.startTransaction("load_all_data");
-        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+        this.diagram.startTransaction("load_all_data");
+        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
         dm.nodeDataArray = [];
         dm.linkDataArray = [];
         this.initialNodes = [];
@@ -222,7 +220,7 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         }
 
         for (var i = 0; i < modelList.length; i++) {
-            this.myDiagram.model.addNodeData(modelList[i]);
+            this.diagram.model.addNodeData(modelList[i]);
         }
 
         dm.linkCategoryProperty = "Category";
@@ -236,7 +234,7 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         this.initialLinks = _.cloneDeep(linkList);
         this.initialNodes = _.cloneDeep(modelList);
 
-        this.myDiagram.commitTransaction("load_all_data");
+        this.diagram.commitTransaction("load_all_data");
     }
 
     private htmlDecode(val: string): string {
