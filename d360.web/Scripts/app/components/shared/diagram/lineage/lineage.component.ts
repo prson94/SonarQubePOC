@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
 import { PermissionsService } from '../../../../services/permissions.service';
 import { DiagramService } from '../../../../services/diagram.service';
-import { BaseComponent } from '../../base.component';
+import { DiagramBaseComponent } from '../diagram-base.component';
 import {
     DiagramObjectType,
     LinkModel,
@@ -27,7 +27,7 @@ declare var window: any;
     providers: [ PermissionsService, DiagramService ]
 })
 
-export class LineageComponent extends BaseComponent implements OnInit, AfterViewInit  {
+export class LineageComponent extends DiagramBaseComponent implements OnInit, AfterViewInit  {
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
@@ -67,9 +67,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     private headerText = 'Info';
     private zoomLevel: number = 50;
 
-    //diagram properties
-    private g = go.GraphObject.make;
-    private myDiagram: go.Diagram;
 
     constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService, private renderer: Renderer) {
         super();
@@ -81,7 +78,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.originalObjectID = this.objectID;
 
         if (this.objectType == 'FusionAttribute') {
-            this.view = LineageView.Technical;//start fusion at the technical view.
+            this.view = LineageView.Technical; //start fusion at the technical view.
             this.nameOnly = false; //dont start with name only true in tech view it is very confusing
         }
 
@@ -97,7 +94,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
     public ngOnDestroy() {
         //garbage collection
-        this.myDiagram.div = null;
+        this.diagram.div = null;
     }
 
     //#region helper methods
@@ -114,34 +111,34 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     changeNameOnly() {
-        for (var i = 0; i < this.myDiagram.model.nodeDataArray.length; i++) {
-            let model: NodeModel = this.myDiagram.model.nodeDataArray[i] as NodeModel;
+        for (var i = 0; i < this.diagram.model.nodeDataArray.length; i++) {
+            let model: NodeModel = this.diagram.model.nodeDataArray[i] as NodeModel;
             model.name = this.nameOnly ? model.shortname : model.textpath;
             //console.log(model.name);
         }
-        this.myDiagram.rebuildParts();
+        this.diagram.rebuildParts();
     }
 
     private initializeDiagram() {
-        this.myDiagram = this.createDiagram();
+        this.diagram = this.createDiagram();
 
-        this.myDiagram.nodeTemplateMap.add("Focal", this.createFocalNode());
-        this.myDiagram.nodeTemplateMap.add("Normal", this.createNormalNode());
-        this.myDiagram.nodeTemplateMap.add("SupportFocal", this.createSupportFocalNode());
-        this.myDiagram.nodeTemplateMap.add("SupportNormal", this.createSupportNormalNode());
-        this.myDiagram.nodeTemplateMap.add("Fusion", this.createFusionNode());
+        this.diagram.nodeTemplateMap.add("Focal", this.createFocalNode());
+        this.diagram.nodeTemplateMap.add("Normal", this.createNormalNode());
+        this.diagram.nodeTemplateMap.add("SupportFocal", this.createSupportFocalNode());
+        this.diagram.nodeTemplateMap.add("SupportNormal", this.createSupportNormalNode());
+        this.diagram.nodeTemplateMap.add("Fusion", this.createFusionNode());
 
-        this.myDiagram.linkTemplateMap.add("", this.createDefaultLink());
-        this.myDiagram.linkTemplateMap.add("Support", this.createSupportLink());
+        this.diagram.linkTemplateMap.add("", this.createDefaultLink());
+        this.diagram.linkTemplateMap.add("Support", this.createSupportLink());
 
-        this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
-        this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
-        this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.diagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
+        this.diagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
+        this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
 
-        this.myDiagram.grid.visible = false;
-        this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
-        this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
-        this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
+        this.diagram.grid.visible = false;
+        this.diagram.grid.gridCellSize = new go.Size(8, 8);
+        this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
+        this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
         this.populateDiagram();
     }
@@ -159,16 +156,16 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
             })
             .then(() => {
                 this.reOrderLayout();
-                this.myDiagram.zoomToFit();
-                this.zoomLevel = _.clamp(this.myDiagram.scale * 75, 0, 100);
+                this.diagram.zoomToFit();
+                this.zoomLevel = _.clamp(this.diagram.scale * 75, 0, 100);
                 this.isLoading = false;
                 this.isWindowVisible = windowVisible;
             });
     }
 
     private parseData(data: any) {
-        this.myDiagram.startTransaction("load_all_data");
-        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+        this.diagram.startTransaction("load_all_data");
+        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
         dm.nodeDataArray = [];
         dm.linkDataArray = [];
         this.initialNodes = [];
@@ -241,7 +238,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         }
 
         for (var i = 0; i < modelList.length; i++) {
-            this.myDiagram.model.addNodeData(modelList[i]);
+            this.diagram.model.addNodeData(modelList[i]);
         }
 
         dm.linkCategoryProperty = "Category";
@@ -257,7 +254,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
         this.refreshControls(null);  //set buttons/expanders to defaults
 
-        this.myDiagram.commitTransaction("load_all_data");
+        this.diagram.commitTransaction("load_all_data");
         this.reOrderLayout();
     }
 
@@ -370,8 +367,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
             } else if (data.diagramObjectType == DiagramObjectType.Link) {
 
-                var from = this.myDiagram.model.findNodeDataForKey(data.from);
-                var to = this.myDiagram.model.findNodeDataForKey(data.to);
+                var from = this.diagram.model.findNodeDataForKey(data.from);
+                var to = this.diagram.model.findNodeDataForKey(data.to);
 
                 if (from.obj && from.objid) {
                     this.source = from.obj;
@@ -386,8 +383,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     private reOrderLayout() {
-        this.myDiagram.layout.invalidateLayout();
-        this.myDiagram.requestUpdate();
+        this.diagram.layout.invalidateLayout();
+        this.diagram.requestUpdate();
     }
     
     private selectTab(val: string) {
@@ -434,7 +431,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     private zoomDiagram(v: number) {
-        this.myDiagram.scale = v;
+        this.diagram.scale = v;
         //console.log('zoomDiagram', v, this.myDiagram);
     }
 
@@ -483,13 +480,13 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
             this.objectID = this.originalObjectID;
             this.populateDiagram();
         } else if (e.icon == 'fa-search-plus') {
-            this.myDiagram.scale += .1;
-            if (this.myDiagram.scale > 2.5)
-                this.myDiagram.scale = 2.5;
+            this.diagram.scale += .1;
+            if (this.diagram.scale > 2.5)
+                this.diagram.scale = 2.5;
         } else if (e.icon == 'fa-search-minus') {
-            this.myDiagram.scale -= .1;
-            if (this.myDiagram.scale < .1)
-                this.myDiagram.scale = .1;
+            this.diagram.scale -= .1;
+            if (this.diagram.scale < .1)
+                this.diagram.scale = .1;
         } else if (e.icon == 'fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
         } else if (e.label == 'Business System Flow') {
