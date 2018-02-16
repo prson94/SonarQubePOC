@@ -22,7 +22,7 @@ import { Permission } from '../../../models/permission.model'
                     <div class="col l3 s12 relationship-container">
                         <ng-template ngFor let-rel [ngForOf]="relationshipItems">                        
                             <div class="row relationship" *ngIf="(rel.Count > 0 && !showEmptyRelationshipTypes) || showEmptyRelationshipTypes" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;cardinalityShow = (rel.Cardinality == 2) || (rel.Count == 0 && rel.Cardinality != 2);">
-                                <div class="col s10 name" style="word-wrap: break-word;"><i class="fa inactive-tool-icon" [ngClass]="{'fa-book':rel.Object=='ArtifactType','fa-sitemap':rel.Object=='TaxonomyType','fa-university':rel.Object=='PolicyType','fa-database':rel.Object=='FusionAttributeType','fa-pie-chart':rel.Object=='RuleType', 'fa-user':rel.Object=='ResourceType', 'fa-list':rel.Object=='ReferenceItemType'}" [pTooltip]="rel.Object | technicalNameToDisplayValue"></i> {{rel.Name}}</div>
+                                <div class="col s10 name" style="word-wrap: break-word;"><i class="fa inactive-tool-icon" [ngClass]="{'fa-book':rel.Object=='ArtifactType','fa-sitemap':rel.Object=='TaxonomyType','fa-university':rel.Object=='PolicyType','fa-database':(rel.Object==('FusionAttributeType') || rel.Object==('FusionQueryAttributeType')),'fa-pie-chart':rel.Object=='RuleType', 'fa-user':rel.Object=='ResourceType', 'fa-list':rel.Object=='ReferenceItemType'}" [pTooltip]="rel.Object | technicalNameToDisplayValue"></i> {{rel.Name}}</div>
                                 <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count != 0}">{{rel.Count}}</div>
                             </div>                        
                         </ng-template>
@@ -53,7 +53,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     hasRelationships: boolean;
     showAddRelationship: boolean = false;
     showEmptyRelationshipTypes: boolean = true;
-    
+        
     @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
     
     constructor(protected relationshipsService : RelationshipsService) {
@@ -80,9 +80,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         this.relationshipsService.getRelationshipCounts(this.objectType, this.objectID)
             .then(result => {
                 this.relationshipItems = result;
-
                 this.selected = null;
-                for (let relation of this.relationshipItems){
+                for (let relation of this.relationshipItems) {
                     if (relation.Count > 0) {
                         this.selected = relation;
                         break;
