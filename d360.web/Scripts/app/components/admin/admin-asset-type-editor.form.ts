@@ -25,7 +25,8 @@ export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges
 
     theAssetTypeClass: AssetTypeClass;
     action: string = "Edit";    
-    model: AssetTypeEditorModel;    
+    model: AssetTypeEditorModel;   
+    spinNum: number = 1;
     private isSaving = false;
 
     constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesService) {
@@ -65,6 +66,11 @@ export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges
             .then(data => {
                 this.model = data;
 
+                this.spinNum = this.model.AssetType.HierarchyMaximumDepth;
+                if (this.spinNum == 0) {
+                    this.spinNum = 1;
+                }
+
                 if (this.topTypeID)
                 {
                     this.model.TopLevelTypeID = this.topTypeID;
@@ -89,6 +95,7 @@ export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges
 
     private save(): void {
         this.isSaving = true;
+        this.model.AssetType.HierarchyMaximumDepth = this.spinNum;
         if (this.model.AssetType.ID > 0)
             this.assetTypeService.putAssetType(this.model)
                 .then(data => {
