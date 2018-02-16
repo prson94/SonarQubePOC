@@ -54,10 +54,9 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
             this.loadSeriesData();
             this.loadScoreData();
         }
-        console.log(this.score);
-        console.log(changes['score']);
+        
         if (this.score != null && changes['score']) {
-            console.log('in here');
+            
             this.scoreChart = {
 
                 chart: {
