@@ -418,32 +418,7 @@ select * from h where ID <> @t order by h.[Level] desc;";
             });
 
             #endregion
-
-            #region Intersects
-
-            var intersectSql = $@"
-select      distinct
-            ID,
-            Name  
-from        IntersectType 
-where       (Subject = '{type}' and SubjectID = {fusionAttributeTypeID})
-            or (Object = '{type}' and ObjectID = {fusionAttributeTypeID})
-order by    Name";
-            var intersects = Company.Query<dynamic>(intersectSql).Distinct().ToList();
-
-            intersects.ForEach(i =>
-            {
-                sqlFieldModels.Add(new SqlFieldModel
-                {
-                    FieldColumnName = $"IntersectType{i.ID}",
-                    FieldName = $"P.IntersectType{i.ID}",
-                    FieldFriendlyName = i.Name,
-                    JoinOrder = 100
-                });
-            });
-
-            #endregion
-
+                       
             var dbArgs = new Dapper.DynamicParameters();
             dbArgs.Add("f", fusionID);
             dbArgs.Add("t", fusionAttributeTypeID);
@@ -452,41 +427,13 @@ order by    Name";
 
             string columns = string.Join(", ", sqlFieldModels.Where(c => !c.FieldName.Contains("P.IntersectType")).Select(c => c.FieldName));
             string joins = string.Join(" ", sqlFieldModels.Where(o => !string.IsNullOrEmpty(o.FieldJoin)).OrderBy(o => o.JoinOrder).Select(o => o.FieldJoin));
-            string intersectColumns = string.Join(", ", sqlFieldModels.Where(c => c.FieldName.Contains("P.IntersectType")).Select(c => c.FieldName));
-            string intersectOuterApply = "";
-            if (!string.IsNullOrEmpty(intersectColumns))
-            {
-                columns += ", RT.*";
-                intersectOuterApply = $@"
-        outer apply (
-	                select	{intersectColumns}
-	                from	(
-			                select	'IntersectType' + cast(RT.ID as varchar(10)) as [IntersectType],
-					                count(R.IntersectTypeID) as [Count]
-			                from	(
-					                select	ID 
-					                from	[IntersectType]
-					                where	(Subject = 'FusionAttributeType' and SubjectID = A.FusionAttributeTypeID) 
-                                            OR (Object = 'FusionAttributeType' and ObjectID = A.FusionAttributeTypeID)
-					                ) RT
-					                left join cache.Relationships R on R.IntersectTypeID = RT.ID 
-														                and R.SourceObject = 'FusionAttribute'
-														                and R.SourceObjectID = A.ID
-			                group by 'IntersectType' + cast(RT.ID as varchar(10))
-			                ) as I
-	                pivot	(
-			                min([Count]) for [IntersectType] in ({intersectColumns.Replace("P.", "")})
-			                ) as P
-	                ) RT";
-            }
-
+            
             var sql = $@"
 select  {columns}
 from	FusionAttribute A
 left outer join Asset B
-on B.ObjectID = A.ID
-        {joins}
-        {intersectOuterApply}
+on B.ObjectID = A.ID and B.[Object] = 'FusionAttribute'
+        {joins}       
        
 where   A.FusionID = @f 
         and A.FusionAttributeTypeID = @t 
@@ -519,7 +466,9 @@ where   A.FusionID = @f
             }
             //document.FreezePanes(1, col);
             #endregion
-            
+
+            document.AutoFitColumn(1, totalColumns);
+
             foreach (var item in query)
             {
                 var obj = (item as IDictionary<string, object>);
@@ -532,7 +481,7 @@ where   A.FusionID = @f
                 }
             }
 
-            document.AutoFitColumn(1, totalColumns);
+            
 
             #endregion
 
