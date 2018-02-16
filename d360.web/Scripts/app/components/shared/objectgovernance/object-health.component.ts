@@ -17,8 +17,8 @@ const Highcharts = require('highcharts/highstock.src');
                         <i *ngIf="isTrend('down')" class="fa fa-arrow-circle-down governance-value-fail" aria-hidden="true" title="score trending down"></i>
                     </td>                 
                     <td style="width:100px">
-                        <chart *ngIf="score" [options]="scoreChart"></chart>
-                        <span *ngIf="!score">N/A</span>
+                        <chart *ngIf="score!=null;else noScoreBlock" [options]="scoreChart"></chart>
+                        <ng-template #noScoreBlock><span>N/A</span></ng-template>
                     <td>
                     <td class="hide-on-med-and-down"><span class="title" style="vertical-align:top">Score</span></td>                    
                 </tr>
@@ -31,7 +31,7 @@ const Highcharts = require('highcharts/highstock.src');
 })
 
 export class ObjectHealthComponent extends BaseComponent implements OnChanges {    
-    @Input() score: any = 0;
+    @Input() score: any = null;
 
     @Input() showDetails: boolean = false;    
     @Input() objectID: number;
@@ -54,7 +54,10 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
             this.loadSeriesData();
             this.loadScoreData();
         }
-        if (this.score && changes['score']) {
+        console.log(this.score);
+        console.log(changes['score']);
+        if (this.score != null && changes['score']) {
+            console.log('in here');
             this.scoreChart = {
 
                 chart: {

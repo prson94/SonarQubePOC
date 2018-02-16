@@ -69,21 +69,21 @@ namespace d360.model
                 switch (i.Group)
                 {
                     case "Comments":
-                        model.CommentCount = i.Value;                        
+                        model.CommentCount = i.Value.GetValueOrDefault();                        
                         model.CommentLast = i.MostRecent;
                         break;
                     case "Followers":
-                        model.FollowerCount = i.Value;                        
+                        model.FollowerCount = i.Value.GetValueOrDefault();                        
                         break;
                     case "Score":
                         model.Score = i.Value;                        
                         break;
                     case "Issues":
-                        model.IssueCount = i.Value;                        
+                        model.IssueCount = i.Value.GetValueOrDefault();                        
                         model.IssueLast = i.MostRecent;
                         break;
                     default:
-                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name ?? ""), TypeID = i.TypeID });
+                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value.GetValueOrDefault(), Name = pluralize.Pluralize(i.Name ?? ""), TypeID = i.TypeID });
                         break;
                 }
             });

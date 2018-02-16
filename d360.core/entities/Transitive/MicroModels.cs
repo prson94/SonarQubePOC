@@ -233,7 +233,7 @@ namespace d360.core.entities
         public DateTime? CommentLast { get; set; }
 
         [DataMember]
-        public int Score { get; set; }
+        public int? Score { get; set; }
         
         [DataMember]
         public int IssueCount { get; set; }
@@ -268,7 +268,7 @@ namespace d360.core.entities
         public string Name { get; set; }
         
         [DataMember]
-        public int Value { get; set; }
+        public int? Value { get; set; }
 
         [DataMember]
         public string Group { get; set; }
