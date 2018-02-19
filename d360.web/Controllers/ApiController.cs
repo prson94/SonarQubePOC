@@ -1110,9 +1110,26 @@ where   h.ID <> @t order by h.[Level] desc;
         }
 
         [Route("artifacttypes")]
-        public IQueryable<ArtifactType> GetArtifactTypes()
+        public IEnumerable<ArtifactType> GetArtifactTypes()
         {
-            return Company.Table<ArtifactType>();
+            var artifactTypes = Company.Table<ArtifactType>().ToList();
+
+            //get intersecttypes for intra parent so we can determine parents
+
+            var artifactParentRelations = Company.IntersectTypeDetails.Where(x => x.PredicateType == PredicateType.InterTypeHierarchy && x.Object == "ArtifactType" && x.Subject == "ArtifactType").ToList();
+
+            foreach (var artifactType in artifactTypes)
+            {
+                //
+                var parents = artifactParentRelations.Where(x => x.ObjectID == artifactType.ID).FirstOrDefault();
+
+                if(parents != null)
+                {
+                    artifactType.ParentID = parents.SubjectID;
+                }
+            }
+
+            return artifactTypes;
         }
 
         [Route("artifacts/{id:int}/{take:int?}")]

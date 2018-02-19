@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 
 namespace igx.jobs.fusion.rules
 {
@@ -63,6 +64,9 @@ namespace igx.jobs.fusion.rules
             // add new records for any items that havent already been promoted to the artifact table
             await CreateNewArtifacts(company, Rule.ID, Step.ID);
 
+            // add intersects for parents from promotionParents table
+            await CreateParentIntersects(company, Rule.ID, Step.ID);
+
             Stats.PromotedArtifacts = await GetNewItemCount(company);
                         
 #if DEBUG
@@ -71,6 +75,7 @@ namespace igx.jobs.fusion.rules
 
             await PerformPostPromote(company, PromoteToObjectID, PromoteToObject);            
         }
+
 
         private async Task MapItemParents(SqlConnection company, List<int> itemsToPromote)
         {
@@ -172,6 +177,33 @@ namespace igx.jobs.fusion.rules
 
         }
 
+        private async Task CreateParentIntersects(SqlConnection company, int ruleId, int stepId)
+        {
+            //get the intersecttype for this object
+            var intersectTypeId = (await company.QueryAsync<int>("select id from intersecttypedetail where subject = 'ArtifactType' and [object] = 'ArtifactType' and [objectid] = @id and PredicateType = 3",
+                        new { id = PromoteToObjectID })).FirstOrDefault();
+
+            if (intersectTypeId <= 0) return; // no valid parent intersect type
+
+            // merge
+            var sql = @"MERGE	[intersect] AS T
+					USING	(
+                        select
+                                I.ID								
+                                ,pp.ParentID
+                                ,pI.ObjectID
+						from	#promotionParents pp
+                                inner join #promotedItems pI on (pp.objectid = pI.attributeid)
+                                left outer join [intersect] I on(pp.ParentID = I.SubjectID and pI.ObjectID = I.ObjectID and I.IntersectTypeID = @IntersectTypeID)																			
+                        ) as S
+                    ON		T.ID = S.ID
+					WHEN	NOT MATCHED THEN
+							INSERT (IntersectTypeID,[Subject], SubjectID, [Object], ObjectID, State,CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Deleted, Visible) 
+							VALUES (@IntersectTypeID, 'Artifact', S.ParentID, 'Artifact', S.ObjectID, 1,0,getutcdate(), 0,getutcdate(),0,1);";
+
+            await company.ExecuteAsync(sql, new { IntersectTypeID = intersectTypeId });
+        }
+
         private async Task CreateNewArtifacts(SqlConnection company, int ruleId, int ruleStepId)
         {
             // merge
@@ -180,18 +212,16 @@ namespace igx.jobs.fusion.rules
 	                    USING   (
 			                    select distinct
 									ftemp.ID,
-									ftemp.ObjectType,
-                                    pp.ParentID as ParentID
+									ftemp.ObjectType
 								from
-									#fields ftemp
-                                    left join #promotionParents pp on (pp.ObjectID = ftemp.ID)
+									#fields ftemp                                    
                                 where
                                     not exists(select 1 from #promotedItems tmp where tmp.attributeID = ftemp.ID) and not exists(select 1 from [fusion].rulepromotion where ruleid = @ruleid and rulestepid = @rulestepid and attributeid = ftemp.ID)									
 			                    ) S
 	                    ON      (1 != 1)
 	                    WHEN NOT MATCHED THEN
-	                        INSERT  (ArtifactTypeID, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy, Visible, ParentID)
-	                        VALUES  (@promoteToId, getutcdate(), 0, getutcdate(), 0, 1, S.ParentID)                        
+	                        INSERT  (ArtifactTypeID, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy, Visible)
+	                        VALUES  (@promoteToId, getutcdate(), 0, getutcdate(), 0, 1)                        
                         output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;";
             await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact", rulestepid = ruleStepId, ruleid = ruleId });
         }
