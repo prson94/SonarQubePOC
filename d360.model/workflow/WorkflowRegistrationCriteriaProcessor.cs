@@ -116,7 +116,7 @@ namespace d360.model.workflow
                 else if(item.VersionStepId > 0)
                 {
                     //load the results of the form version step
-                    var formStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).Include(x=>x.Step).FirstOrDefault();
+                    var formStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).Include(x=>x.Step).OrderByDescending(x=>x.ID).FirstOrDefault();
                     
                     if(formStep == null)
                     {
