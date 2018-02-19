@@ -3132,7 +3132,7 @@ namespace d360.web.Controllers
             else if (type == SystemObjects.FusionAttributeType)
             {
                 list.Add("Name", 0);
-                list.Add("TextPath", 0);
+
             }
             else if (type == SystemObjects.FusionQueryAttributeType)
             {
@@ -3143,6 +3143,8 @@ namespace d360.web.Controllers
                 list.Add("DisplayValue", 0);
                 //list.Add("TextPath", 0);
             }
+
+            list.Add("TextPath", 0);
 
             var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
                 .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString())

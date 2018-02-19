@@ -2843,7 +2843,23 @@ end",
                 {
                     #region DEFAULT
 
-                    if (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID)
+                    if (i.FieldTypeName.ToLower() == "textpath")
+                    {
+                        var oc = new ComplexColumnModel
+                        {
+                            DisplayColumn = $@"(select T.TextPath from Asset a
+                                cross apply dbo.GetAssetTextPathById(a.ID, '/') T
+                                where a.[Object] = '{join.Object.Replace("Type","")}' and a.[ObjectID] = A{pos}.ID)",
+                            SortColumn = i.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"A{pos}TextPath") : string.Empty,
+                            datafield = $"{dataField}",
+                            text = i.OverrideDisplayName ?? i.FieldTypeName,
+                            OutputColumn = true,
+                            Width = i.Width
+                        };
+                        setColumnTypeInfo(ft, i, oc);
+                        columnModels.Add(oc);
+                    }
+                    else if (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID)
                     {
                         #region IntersectType field
 
@@ -3395,10 +3411,10 @@ left join AssetWithoutReadPermission RP{i} on RP{i}.ResourceID = {Company.Curren
                             switch (join.Object)
                             {
                                 case "ArtifactType":
-                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',A{i-1}.ID))";
                                     if (i == 0)
                                     {
-                                        join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ParentID = {id}";
+                                        join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',{id}))";
                                     }
                                     break;
                                 case "FusionAttributeType":
@@ -3422,10 +3438,10 @@ left join AssetWithoutReadPermission RP{i} on RP{i}.ResourceID = {Company.Curren
                             switch (join.Object)
                             {
                                 case "ArtifactType":
-                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.ArtifactTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = dbo.GetParentObjectId('Artifact', A{i-1}.ID) and A{i}.ArtifactTypeID = {join.ObjectID}";
                                     if (i == 0)
                                     {
-                                        join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID in (select ParentID from Artifact where ID = {id})";
+                                        join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID = dbo.GetParentObjectId('Artifact', {id})";
                                     }
                                     break;
                                 case "FusionAttributeType":
