@@ -208,7 +208,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         
     }
 
-    changeResponsiblity(e: any) {
+    changeResponsibility(e: any) {
         this.step.settings.ResponsibilityTypeID = e;
         let rt = this.responsibilities.find(r => r.ResponsibilityTypeID == e);
         if (rt)
