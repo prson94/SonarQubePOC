@@ -716,7 +716,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1 and not exi
 				    from	[PredicateIntersect] I
                             inner join Asset IA on I.Object = A.Object and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
-                            left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
+                            cross apply dbo.GetAssetDisplayValueById(IA.ID) ID
 				    ) P";
                 }
 
