@@ -601,6 +601,8 @@
     <Build Include="lineage\Stored Procedures\GetByObject.sql" />
     <Build Include="lineage\Functions\GetTrailForOject.sql" />
     <Build Include="dbo\Functions\GetWorkflowResponsibleUsers.sql" />
+    <Build Include="dbo\Functions\GetChildObjectIds.sql" />
+    <Build Include="dbo\Functions\GetParentObjectId.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

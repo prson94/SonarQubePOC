@@ -23,6 +23,8 @@ begin
 		)
 	declare @objects table (Type varchar(50), ID int)
 	declare @currentDepth int = 0;
+	declare @maxItems int = 500;
+	declare @itemCount int = 0;
 	
 	if @view in (0, 1, 2)
 	begin
@@ -677,9 +679,6 @@ begin
 
 	if @view in (3,4)
 	begin
-	
-		--declare @tFusionPoints table (	ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int);
-		--declare @tFusionPoints table (	ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int, Depth int);
 
 		IF OBJECT_ID('tempdb..#tFusionPoints') IS NOT NULL
 			DROP TABLE #tFusionPoints;
@@ -707,7 +706,8 @@ begin
 				-- iterative approach no cte
 				-- insert the starting points
 				insert into #tFusionPoints
-					select I.ID,
+					select  top (@maxItems) 
+							I.ID,
 							NULL,
 							I.SourceFusionAttributeID,
 							I.TargetFusionAttributeID, 
@@ -718,20 +718,26 @@ begin
 							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
 					where	I.SourceFusionAttributeID = @id --or I.TargetFusionAttributeID = @id;
 
-				insert into #tFusionPoints
-					select	I.ID,
-							NULL,
-							I.SourceFusionAttributeID,
-							I.TargetFusionAttributeID,
-							0,
-							'A'
-					from	MapRuleItem I
-							inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
-							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
-					where	I.TargetFusionAttributeID = @id and 
-						not exists (select 1 from #tFusionPoints pt where pt.SourceFusionAttributeID = I.TargetFusionAttributeID and pt.TargetFusionAttributeID = I.SourceFusionAttributeID)
-						
-						
+				set @maxItems = @maxItems - (select count(*) from #tFusionPoints);
+
+				if (@maxItems > 0)
+					begin
+						insert into #tFusionPoints
+						select	top (@maxItems)
+							    I.ID,
+								NULL,
+								I.SourceFusionAttributeID,
+								I.TargetFusionAttributeID,
+								0,
+								'A'
+						from	MapRuleItem I
+								inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
+								inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
+						where	I.TargetFusionAttributeID = @id and 
+							not exists (select 1 from #tFusionPoints pt where pt.SourceFusionAttributeID = I.TargetFusionAttributeID and pt.TargetFusionAttributeID = I.SourceFusionAttributeID)
+
+						set @maxItems = @maxItems - (select count(*) from #tFusionPoints);
+					end
 
 
 				--insert adding items if editor data is present
@@ -750,14 +756,15 @@ begin
 				end;
 
 				--loop through until there are no more new levels
-				--declare @currentDepth int = 0;
 				set @currentDepth = 0;
 
-				while( exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < 13))
+				while(exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < 13) and (@maxItems > 0))
 				begin
-					
+					set @itemCount = (select count(*) from #tFusionPoints)
+
 					insert into #tFusionPoints
-						select distinct	S.ID,
+						select distinct	top (@maxItems)
+								S.ID,
 								NULL,
 								S.SourceFusionAttributeID,
 								S.TargetFusionAttributeID,
@@ -768,20 +775,30 @@ begin
 						where not exists (select ID from #tFusionPoints where ID = S.ID)
 							and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
 
-					insert into #tFusionPoints
-						select distinct	S.ID,
-								NULL,
-								S.SourceFusionAttributeID,
-								S.TargetFusionAttributeID,
-								@currentDepth+1,
-								'B'
-						from	MapRuleItem S
-								inner join #tFusionPoints FP on FP.TargetFusionAttributeID = S.SourceFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','B')
-						where not exists (select ID from #tFusionPoints where ID = S.ID) 
-								and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+						set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+						set @itemCount = (select count(*) from #tFusionPoints);
+
+						if @maxItems > 0
+						begin
+							insert into #tFusionPoints
+							select distinct top (@maxItems)	
+									S.ID,
+									NULL,
+									S.SourceFusionAttributeID,
+									S.TargetFusionAttributeID,
+									@currentDepth+1,
+									'B'
+							from	MapRuleItem S
+									inner join #tFusionPoints FP on FP.TargetFusionAttributeID = S.SourceFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','B')
+							where not exists (select ID from #tFusionPoints where ID = S.ID) 
+									and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+							set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+							set @itemCount = (select count(*) from #tFusionPoints);
+						end
+
 
 						set @currentDepth = @currentDepth + 1;
-
 						print @currentDepth;
 				end
 				
@@ -976,7 +993,8 @@ begin
 							--select * from @tItems;
 
 				insert into #tFusionPoints
-					select	J.MapRuleItemID,
+					select	top (@maxItems) 
+							J.MapRuleItemID,
 							J.MapItemID,
 							T.SourceFusionAttributeID,
 							T.TargetFusionAttributeID,
@@ -988,6 +1006,7 @@ begin
 							inner join FusionAttribute SFA on SFA.ID = T.SourceFusionAttributeID and SFA.Deleted = 0
 							inner join FusionAttribute TFA on TFA.ID = T.TargetFusionAttributeID and TFA.Deleted = 0;
 
+				set @maxItems = @maxItems - (select count(*) from #tFusionPoints);
 				
 				--insert adding items if editor data is passed
 				if EXISTS (SELECT 1 FROM @technicalRows)
@@ -1011,11 +1030,13 @@ begin
 				--loop through until there are no more new levels
 				set @currentDepth = 0;
 				
-				while( exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < 13) )
-				begin
-					
+				while( exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < 13) and (@maxItems > 0))
+				begin	
+					set @itemCount = (select count(*) from #tFusionPoints);
+
 					insert into #tFusionPoints
-						select distinct	S.ID,
+						select distinct top (@maxItems)	
+							    S.ID,
 								NULL,
 								S.SourceFusionAttributeID,
 								S.TargetFusionAttributeID,
@@ -1026,20 +1047,29 @@ begin
 						where not exists (select ID from #tFusionPoints where ID = S.ID)
 							and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
 
-					insert into #tFusionPoints
-						select distinct	S.ID,
-								NULL,
-								S.SourceFusionAttributeID,
-								S.TargetFusionAttributeID,
-								@currentDepth+1,
-								'B'
-						from	MapRuleItem S
-								inner join #tFusionPoints FP on FP.TargetFusionAttributeID = S.SourceFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','B')
-						where not exists (select ID from #tFusionPoints where ID = S.ID) 
-								and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+					set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+					set @itemCount = (select count(*) from #tFusionPoints);
+
+					if (@maxItems > 0)
+					begin
+						insert into #tFusionPoints
+							select distinct	top (@maxItems) 
+							        S.ID,
+									NULL,
+									S.SourceFusionAttributeID,
+									S.TargetFusionAttributeID,
+									@currentDepth+1,
+									'B'
+							from	MapRuleItem S
+									inner join #tFusionPoints FP on FP.TargetFusionAttributeID = S.SourceFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','B')
+							where not exists (select ID from #tFusionPoints where ID = S.ID) 
+									and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+					set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+					end
+
 
 						set @currentDepth = @currentDepth + 1;
-
 						print @currentDepth;
 				end
 
