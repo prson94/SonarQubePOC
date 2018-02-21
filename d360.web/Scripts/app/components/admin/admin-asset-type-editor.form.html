@@ -17,7 +17,7 @@
                     </div>
                     <div class="col l6 m6 s12" *ngIf="showParentPredicates && (model.Predicates.length > 1)">
                         <div class="FieldNameRequired">Predicate To Parent</div>
-                        <p-dropdown [options]="model.Predicates" #predicate="ngModel" [(ngModel)]="model.SelectedPredicateID" [style]="{'width':'100%'}" name="predicate" [required]="assetTypeClass=='M'"></p-dropdown>
+                        <p-dropdown [options]="model.Predicates" #predicate="ngModel" [(ngModel)]="model.SelectedPredicateID" [style]="{'width':'100%'}" name="predicate" [required]="assetTypeClass == 'M' || assetTypeClass == 'P'"></p-dropdown>
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
                     </div>
                 </div>
