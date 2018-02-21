@@ -13,20 +13,20 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
                     <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="issues" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="openIssue($event.data);" >
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'100px'}" [filter]="!showSimpleFilter">
                             <ng-template let-col let-data="rowData" pTemplate type="body">
                                 <a (click)="openIssue(data)" *ngIf="data.WorkflowItemID > 0">{{data.ActivityName}}</a>
                                 <span *ngIf="!data.WorkflowItemID || data.WorkflowItemID <= 0">{{data.ActivityName}}</span>
                             </ng-template>
                         </p-column>
-                        <p-column field="Criticality" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="IssueTypeName" header="Type" sortable="true" [style]="{'width':'150px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Body" header="Description" [sortable]="false" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="Criticality" header="Criticality" sortable="true" [style]="{'width':'100px'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="IssueTypeName" header="Type" sortable="true" [style]="{'width':'200px'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="Body" header="Description" [sortable]="false" [style]="{'width':'300px'}" [filter]="!showSimpleFilter">
                             <ng-template let-col let-issue="rowData" pTemplate type="body">
                                 <span [innerHtml]="issue?.Body"></span>
                             </ng-template>
-                        </p-column>             
-                        <p-column field="Name" header="Item Name">
+                        </p-column> 
+                        <p-column field="Name" header="Item Name" [sortable]="false" [style]="{'width':'200px'}" [filter]="!showSimpleFilter">
                             <ng-template let-col let-issue="rowData" pTemplate type="body">                                
                                 <d3s-preview-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID">{{issue.Name}}</d3s-preview-tooltip>
                             </ng-template>
