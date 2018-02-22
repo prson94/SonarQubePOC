@@ -43,7 +43,7 @@ BEGIN
 	where 
 		((@Forward = 1 and [Subject] = @Object and SubjectID = @ObjectID) OR
 		(@Forward = 0 and [Object] = @Object and ObjectID = @ObjectID)) AND
-		PredicateType = 1;
+		PredicateType = 1 AND P.[State] <> 3;
 		
 
 	declare @i int;
@@ -67,7 +67,7 @@ BEGIN
 		where 
 			((@Forward = 1 and P.[Subject] = I.[Object] and P.SubjectID = I.ObjectID) OR
 			(@Forward = 0 and P.[Object] = I.[Subject] and P.ObjectID = I.SubjectID)) AND
-			P.PredicateType = 1 AND P.IntersectID not in (select IntersectID from @tbl);
+			P.PredicateType = 1 AND P.[State] <> 3 AND P.IntersectID not in (select IntersectID from @tbl);
 
 		select @i = count(*) from @tbl where Visited = 0;
 	end

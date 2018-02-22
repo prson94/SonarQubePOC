@@ -599,7 +599,7 @@
     <Build Include="dbo\Sequences\FusionAttribute_Seq.sql" />
     <Build Include="dbo\Functions\GetWorkflowConditionLabels.sql" />
     <Build Include="lineage\Stored Procedures\GetByObject.sql" />
-    <Build Include="lineage\Functions\GetTrailForOject.sql" />
+    <Build Include="lineage\Functions\GetTrailForObject.sql" />
     <Build Include="dbo\Functions\GetWorkflowResponsibleUsers.sql" />
     <Build Include="dbo\Functions\GetChildObjectIds.sql" />
     <Build Include="dbo\Functions\GetParentObjectId.sql" />
