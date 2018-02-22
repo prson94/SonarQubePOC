@@ -83,11 +83,5 @@ export class LineageService extends BaseService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
-
-    public postLineage(model: LineageEditorModelV2) {
-        return this.http.post('diagrams/lineage/save', model)
-            .toPromise()
-            .catch(err => this.handleError(err));
-    }
     
 }
