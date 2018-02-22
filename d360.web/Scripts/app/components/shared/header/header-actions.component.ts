@@ -30,9 +30,11 @@ declare var CompanySettings;
 })
 
 export class HeaderActionsComponent {
-    @Output() controlWidthChange = new EventEmitter();    
+    @Output() controlWidthChange = new EventEmitter();
     public isAdminUrl = false;
     private uri = "";
+    public notTopArtifact: boolean = true;
+    public testuri: string[] = [];
     public hasRaiseIssueButton: boolean = true;
     public showShoppingCart: boolean = false;
 
@@ -56,10 +58,20 @@ export class HeaderActionsComponent {
         this.routerSub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
                 this.uri = _.trimStart(e.urlAfterRedirects, '/');
+                if ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT.toUpperCase())) {
+                    this.testuri = this.uri.toLowerCase().split("/");
+                    if (this.testuri.length < 3) {
+                        this.notTopArtifact = false;
+                    } else {
+                        this.notTopArtifact = true;
+                    }
+                }
+                else {
+                    this.notTopArtifact = true;
+                }
+                //dont show raise issue button on raise issue screen or any admin screens or top level artifact screen           
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
-
-                //dont show raise issue button on raise issue screen or any admin screens            
-                this.hasRaiseIssueButton = (!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && (e.urlAfterRedirects.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');
+                this.hasRaiseIssueButton = (!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && this.notTopArtifact && CompanySettings.DisableIssueManagement != 'true');
 
                 this.calculateControlWidth();
             }
