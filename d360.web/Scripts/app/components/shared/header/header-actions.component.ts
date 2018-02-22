@@ -59,7 +59,7 @@ export class HeaderActionsComponent {
             if (e instanceof NavigationEnd) {
                 this.uri = _.trimStart(e.urlAfterRedirects, '/');
                 if ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT.toUpperCase())) {
-                    this.testuri = this.uri.toLowerCase().split("/");
+                    this.testuri = this.uri.split("/");
                     if (this.testuri.length < 3) {
                         this.notTopArtifact = false;
                     } else {
