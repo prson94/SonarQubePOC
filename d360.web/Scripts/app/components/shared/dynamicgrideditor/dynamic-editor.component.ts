@@ -255,28 +255,28 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         let action = (this.selection == null ? "new" : "edit");
         if (this.copy == true) action = this.action;
         let values: any = {};
-
-        //takes the form and convert any array values to , separated string values
-        for (var p in this.form.value) {            
-            if (this.form.value.hasOwnProperty(p)) {
-                if (Array.isArray(this.form.value[p])) {
-                    values[p] = this.form.value[p].join();
-                }                
-                else {
-                    values[p] = this.form.value[p];
-                }                
-            }
-        }
-
+        
         //adjust any dates to utc
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p) && this.form.value[p] instanceof Date) {
                 this.form.value[p] = this.getUTCDate(this.form.value[p]);
             }
         }
+
+        //takes the form and convert any array values to , separated string values
+        for (var p in this.form.value) {
+            if (this.form.value.hasOwnProperty(p)) {
+                if (Array.isArray(this.form.value[p])) {
+                    values[p] = this.form.value[p].join();
+                }
+                else {
+                    values[p] = this.form.value[p];
+                }
+            }
+        }
         
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
-            this.isLoading = true;
+            this.isLoading = true;            
             this.uriBasedService.saveItem(this.createUri, this.editUri, values)
                 .then(result => {
                     this.showMessageForResult(this.messagesService, result);                    
@@ -284,7 +284,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     this.saveClick.emit({ item: result, action: action, values: values});    
                 });
         } else {            
-            this.saveClick.emit({ item: this.form.value, action: action });     
+            this.saveClick.emit({ item: values, action: action });     
         }
     }
 
