@@ -661,13 +661,15 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
         public List<FusionOwnerOption> GetFusionOwnerOptions()
         {
             return Database.Connection.Query<FusionOwnerOption>(@"
-	select	T.Name as [Type],
-			A.ID,
-			T.Name + ' : ' + A.DisplayValue as Name
-	from	Artifact A 
-			inner join ArtifactType T	on T.ID = A.ArtifactTypeID 
-										and T.CanOwnFusion = 1
-	order by	T.Name + ' : ' + A.DisplayValue").ToList();
+	select	ASTT.Name as [Type],
+			AST.ObjectID,
+			ASTT.Name + ' : ' + D.DisplayValue as Name
+	from	
+			Asset AST
+			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID
+			inner join ArtifactType T on (ASTT.ObjectID = T.ID and ASTT.[Object] = 'ArtifactType' and T.CanOwnFusion = 1)			
+            cross apply GetAssetDisplayValueById(AST.ID) D
+	order by	ASTT.Name + ' : ' + D.DisplayValue").ToList();
         }
 
         public List<FusionPromotionOption> GetFusionPromotionOptions()
