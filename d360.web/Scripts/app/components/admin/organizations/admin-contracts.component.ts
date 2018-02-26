@@ -106,18 +106,6 @@ export class AdminContractsComponent extends BaseComponent implements OnInit {
         if (this.selected == null && this.contracts.length > 0)
             this.selected = this.contracts[0];
     }
-   
-    save(event) {
-        this.showEditor = false;
-        this.isLoading = true;
-        this.organizationsService.saveContract(event.item)
-            .then(result => {
-                this.isLoading = false;
-                this.showMessageForResult(this.messagesService, result);
-                this.getContracts();                
-            });        
-    }
-    
 }
 
 

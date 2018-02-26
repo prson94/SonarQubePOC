@@ -84,11 +84,27 @@ export class OrganizationsService extends BaseService {
         return this.deleteDynamicWithResult(this.http, 'organization', id);
     }
 
-    saveContract(contract: ContractModel): Promise<JsonResult> {
-        if (contract.ID == undefined || !contract.ID) {
-            return this.postDynamic(this.http, 'contract', contract);
-        }
-        return this.putDynamic(this.http, 'contract', contract);
+    getContract(id: number): Promise<Contract> {
+        return this.http.get(`form/Contract/${id}`)
+            .toPromise()
+            .then(res => <Contract>res.json())
+            .catch(err => this.handleError(err));
+    }
+
+    putContract(contract: Contract, publish: boolean = false): Promise<JsonResult> {
+        return this.http.put(`form/Contract?publish=${publish}`, contract)
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+
+    }
+
+    postContract(contract: Contract, publish: boolean = false): Promise<JsonResult> {
+        return this.http.post(`form/Contract?publish=${publish}`, contract)
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+
     }
 
     deleteContract(id: number): Promise<JsonResult> {
@@ -115,28 +131,5 @@ export class OrganizationsService extends BaseService {
 
     deleteInvitation(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'organizationinvitation', id);
-    }
-
-    getContract(id: number): Promise<Contract> {
-        return this.http.get(`form/Contract/${id}`)
-            .toPromise()
-            .then(res => <Contract>res.json())
-            .catch(err => this.handleError(err));
-    }
-
-    putContract(contract: Contract, publish: boolean = false): Promise<JsonResult> {
-       return this.http.put(`form/Contract?publish=${publish}`, contract)
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
-
-    }
-
-    postContract(contract: Contract, publish: boolean = false): Promise<JsonResult> {
-        return this.http.post(`form/Contract?publish=${publish}`, contract)
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
-
     }
 }

@@ -11564,7 +11564,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     , JsonRequestBehavior.AllowGet);
         }
 
-        [HttpPut, AjaxValidateAntiForgeryToken, Route("Contract")]
+        [HttpPut, Route("Contract")]
         public JsonResult PutContract(Contract model, bool publish = false)
         {
             try
