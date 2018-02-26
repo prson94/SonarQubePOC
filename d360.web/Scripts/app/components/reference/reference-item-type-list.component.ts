@@ -34,8 +34,15 @@ import { ReferenceItemType } from '../../models/reference.model';
                                 </ng-template>
                             </p-column>       
                         </p-dataTable>  
-                    </span>
-                    <d3s-reference-item-type-editor *ngIf="showEditor" [referenceItemType]="selected" (closeClick)="showEditor = false;" (saveClick)="saveReferenceItemType($event)"></d3s-reference-item-type-editor>
+                    </span>                 
+                    <d3s-asset-type-editor *ngIf="showEditor" 
+                            [showParentPredicates]="false"
+                            [assetTypeClass]="'RT'"                             
+                            [id]="selected?.AssetTypeID" 
+                            [title]="selected != null ? 'Edit Reference List' : 'Add Reference List'" 
+                            (onCancel)="showEditor = false;" 
+                            (onComplete)="saveReferenceItemType($event)">
+                       </d3s-asset-type-editor>
                     <d3s-delete-form *ngIf="showDelete"
                         [callback]="theDeleteCallback"
                         [itemId]="selected?.ID"
@@ -79,8 +86,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
             .then(result => {
                 this.referenceTypes = result;
                 if (this.referenceTypes.length > 0) {
-                    if (this.initialSelectedListId > 0) {
-                        //console.log('here');
+                    if (this.initialSelectedListId > 0) {                        
                         let index = this.referenceTypes.findIndex(x => x.ID == this.initialSelectedListId);
                         this.initialSelectedListId = 0;
                         if (index >= 0 && index < this.referenceTypes.length) {
@@ -119,27 +125,9 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
             });        
     }
 
-    private saveReferenceItemType(event) {
-        this.isLoading = true;
-        this.referenceService.saveReferenceItemType(event.referenceItemType)
-            .then(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {                
-                    if (event.referenceItemType.ID == undefined) {
-                        event.referenceItemType.ID = Number(result.id);
-                        this.referenceTypes[this.referenceTypes.length] = event.referenceItemType;                        
-                    }
-                    else {
-                        let index = this.referenceTypes.findIndex(x => x.ID == event.referenceItemType.ID);
-                        if (index >= 0 && index < this.referenceTypes.length) {                            
-                            this.referenceTypes[index] = event.referenceItemType;                            
-                        }
-                    }                    
-                    this.selected = event.referenceItemType;
-                    this.selectedChange.emit(this.selected);
-                }
-                this.isLoading = false;
-                this.showEditor = false;
-            });        
+    private saveReferenceItemType(event) {                
+        this.showEditor = false;
+        if (event.id) this.initialSelectedListId = (0 + event.id);
+        this.load();
     }
 };

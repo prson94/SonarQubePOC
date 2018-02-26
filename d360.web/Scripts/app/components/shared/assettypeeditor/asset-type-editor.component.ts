@@ -1,17 +1,17 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
-import { BaseComponent } from '../shared/base.component';
-import { AssetTypeService } from "../../services/asset-type.services";
-import { AssetTypeClass, AssetTypeEditorModel } from "../../models/asset.model";
-import { MessagesService } from '../../services/messages.service';
+import { BaseComponent } from '../../shared/base.component';
+import { AssetTypeService } from "../../../services/asset-type.services";
+import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset.model";
+import { MessagesService } from '../../../services/messages.service';
 
 @Component({
-    selector: 'd3s-asset-type-editor-form',
-    templateUrl: './admin-asset-type-editor.form.html',
+    selector: 'd3s-asset-type-editor',
+    templateUrl: './asset-type-editor.component.html',
     providers: [AssetTypeService],
 })
 
-export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges {
+export class AssetTypeEditorComponent extends BaseComponent implements OnChanges {
     @Input() title: string = "Add Asset Type";
     @Input() id: number;
     @Input() parentID: number;
@@ -28,6 +28,12 @@ export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges
     model: AssetTypeEditorModel;   
     spinNum: number = 1;
     private isSaving = false;
+
+    showAssetStyles: boolean = true;
+    showAssetDepthSettings: boolean = false;
+    showAssetFusionSettings: boolean = false;
+    showAssetArtifactSettings: boolean = false;
+    showNotesField: boolean = false;
 
     constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesService) {
         super();
@@ -50,15 +56,26 @@ export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges
                 break;
             case 'G':
                 this.theAssetTypeClass = AssetTypeClass.Glossary;
+                this.showAssetArtifactSettings = true;
                 break;
             case 'M':
                 this.theAssetTypeClass = AssetTypeClass.Model;
+                this.showAssetDepthSettings = true;
                 break;
             case 'O':
                 this.theAssetTypeClass = AssetTypeClass.Organization;
                 break;
             case 'P':
                 this.theAssetTypeClass = AssetTypeClass.Policy;
+                this.showAssetDepthSettings = true;
+                break;
+            case 'RT':
+                this.theAssetTypeClass = AssetTypeClass.ReferenceItemType;
+                this.showAssetStyles = false;
+                this.showNotesField = true;
+                break;
+            case 'F':
+                this.showAssetFusionSettings = true;                
                 break;
         }
 
@@ -130,5 +147,11 @@ export class AdminAssetTypeEditorForm extends BaseComponent implements OnChanges
         if (this.model.AssetType.DisplayFormat == null)
             this.model.AssetType.DisplayFormat = '';
         this.model.AssetType.DisplayFormat += e.value;
+    }
+
+    get FirstColumnStyle(): string {
+        if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetFusionSettings || this.showAssetStyles)
+            return "col l8 m12 s12";
+        return "col s12";
     }
 }

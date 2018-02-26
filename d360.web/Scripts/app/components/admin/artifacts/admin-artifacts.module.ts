@@ -16,6 +16,7 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
+import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
 import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
 import { AdminArtifactsComponent } from './admin-artifacts.component';
@@ -69,6 +70,7 @@ import {
         PipesModule,
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
+        SharedAssetTypeEditorModule,
         
         SharedObjectDetailsModule,       
         SharedFieldDefinitionModule,

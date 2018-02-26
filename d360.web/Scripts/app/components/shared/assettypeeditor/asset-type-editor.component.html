@@ -8,7 +8,7 @@
     <header>{{title}}</header>
     <form #form="ngForm">
         <div class="row">
-            <div class="col l8 m6 s12">
+            <div [class]="FirstColumnStyle">
                 <div class="row">
                     <div class="col l6 m6 s12">
                         <div class="FieldNameRequired">Name</div>
@@ -39,9 +39,16 @@
                         <p-editor name="Description" [(ngModel)]="model.AssetType.Description" [style]="{'height':'150px'}"></p-editor>
                     </div>
                 </div>
+
+                <div class="row" *ngIf="showNotesField">
+                    <div class="col s12">
+                        <div class="FieldName">Notes</div>
+                        <p-editor name="Source Notes" [(ngModel)]="model.AssetType.Notes" [style]="{'height':'150px'}"></p-editor>
+                    </div>
+                </div>
             </div>
-            <div class="col l4 m6 s12">
-                <simple-accordion header="Settings" active="true" *ngIf="assetTypeClass == 'G'">
+            <div class="col l4 m12 s12">
+                <simple-accordion header="Settings" active="true" *ngIf="showAssetArtifactSettings">
                     <div class="FieldName">Auto Display Description?</div>
                     <div class="row">
                         <div class="col l1 m2 s12">
@@ -51,8 +58,6 @@
                             <div class="FieldInstructions">If enabled, the content of the description property is auto-displayed to all users on the list page for this artifact type.</div>
                         </div>
                     </div>
-
-
                     <div class="FieldName">Can Own Fusion?</div>
                     <div class="row">
                         <div class="col l1 m2 s12">
@@ -63,7 +68,7 @@
                         </div>
                     </div>
                 </simple-accordion>
-                <simple-accordion header="Settings" active="true" *ngIf="assetTypeClass == 'F'">
+                <simple-accordion header="Settings" active="true" *ngIf="showAssetFusionSettings">
                     <div class="FieldName">Scan Enabled?</div>
                     <div class="row">
                         <div class="col l1 m2 s12">
@@ -74,7 +79,7 @@
                         </div>
                     </div>
                 </simple-accordion>
-                <simple-accordion header="Settings" active="true" *ngIf="assetTypeClass == 'M' || assetTypeClass == 'P'">
+                <simple-accordion header="Settings" active="true" *ngIf="showAssetDepthSettings">
                     <div class="FieldName">Maximum Depth</div>
                     <div class="row">
                         <div class="col l6 m12 s12">
@@ -87,7 +92,7 @@
                 </simple-accordion>
 
 
-                <simple-accordion header="Styles" active="true">
+                <simple-accordion header="Styles" active="true" *ngIf="showAssetStyles">
                     <div class="FieldName">Background Color</div>
                     <div class="row">
                         <div class="col s12">

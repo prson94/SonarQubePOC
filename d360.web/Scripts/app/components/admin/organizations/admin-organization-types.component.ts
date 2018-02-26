@@ -35,7 +35,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         </p-column>
                     </p-dataTable>
                 </span>                
-                <d3s-asset-type-editor-form *ngIf="showEditor" [showParentPredicates]="false" [assetTypeClass]="'O'" [id]="type?.AssetTypeID" [title]="(type?'Edit':'Add') + ' Organization Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor-form>                
+                <d3s-asset-type-editor *ngIf="showEditor" [showParentPredicates]="false" [assetTypeClass]="'O'" [id]="type?.AssetTypeID" [title]="(type?'Edit':'Add') + ' Organization Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>                
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="type?.AssetTypeID"

@@ -1224,6 +1224,11 @@ namespace d360.web.Controllers
                         appendTitle = FormInfo.PolicyType;
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                         break;
+                    case AssetTypeClass.ReferenceItemType:
+                        ot = SystemObjects.ReferenceItemType;
+                        appendTitle = "Reference List";
+                        parentPredicateType = PredicateType.IntraTypeHierarchy;
+                        break;
                 }
 
                 if (id.HasValue)
@@ -1281,6 +1286,11 @@ namespace d360.web.Controllers
                             model.AssetType.Name = p.Name;
                             model.AssetType.Description = p.Description;
                             model.AssetType.DisplayFormat = p.DisplayFormat;
+                            break;
+                        case AssetTypeClass.ReferenceItemType:
+                            var r = Company.GetById<ReferenceItemType>(model.AssetType.ObjectID);
+                            model.AssetType.Name = r!= null ? r.Name : "";
+                            model.AssetType.Notes = r.SourceNotes;
                             break;
                     }
                     model.AssetType.Object = ot.ToString();
@@ -1440,6 +1450,20 @@ namespace d360.web.Controllers
                         model.AssetType.ObjectID = t.ID;
                         #endregion
                         break;
+                    case SystemObjects.ReferenceItemType:
+                        #region
+                        var rt = new ReferenceItemType
+                        {
+                            Name = model.AssetType.Name,
+                            DisplayFormat = model.AssetType.DisplayFormat,
+                            Description = model.AssetType.Description,     
+                            SourceNotes = model.AssetType.Notes
+                        };
+                        Company.Add(rt);
+                        parentType = SystemObjects.ReferenceItemType;
+                        model.AssetType.ObjectID = rt.ID;
+                        #endregion
+                        break;                        
                 }
 
                 if (model.SelectedPredicateID.HasValue)
@@ -1567,6 +1591,19 @@ namespace d360.web.Controllers
 
                         parentType = SystemObjects.PolicyType;
                         break;
+                    case SystemObjects.ReferenceItemType:
+                        var rt = Company.GetById<ReferenceItemType>(model.AssetType.ObjectID);
+                        if (rt == null) throw new NotFoundException("reference item type");
+
+                        rt.Name = model.AssetType.Name;
+                        rt.DisplayFormat = model.AssetType.DisplayFormat;
+                        rt.Description = model.AssetType.Description;
+                        rt.SourceNotes = model.AssetType.Notes;
+
+                        Company.Update(rt);
+
+                        parentType = SystemObjects.ReferenceItemType;
+                        break;
                     case SystemObjects.TaxonomyType:
                         var t = Company.GetById<TaxonomyType>(model.AssetType.ObjectID, i => i.TaxonomyTypeLevels);
                         if (t == null) throw new NotFoundException("model type");
@@ -1578,12 +1615,7 @@ namespace d360.web.Controllers
 
                         if (t.MaximumDepth <= 0 || t.MaximumDepth > 10)
                             throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");
-
-                        //var currentMaxLevel = Company.Query<int>("select coalesce(max([Level]), 0) from Taxonomy where TaxonomyTypeID = @t", new { t = t.ID }).SingleOrDefault();
-
-                        //if (currentMaxLevel > t.MaximumDepth)
-                        //    throw new InvalidFieldException(d360.core.resources.Fields.MaximumDepth_Name, "less than the current maximum depth of " + currentMaxLevel);
-
+                        
                         Company.Update(t);
 
                         for (int i = 1; i <= t.MaximumDepth; i++)

@@ -14,11 +14,11 @@ import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-fi
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
+import { SharedAssetTypeEditorModule } from '../shared/assettypeeditor/shared-asset-type-editor.module';
 
 import { ReferenceRoutingModule } from './reference.routes';
 import { ReferenceComponent } from './reference.component';
 import { ReferenceListComponent } from './reference-list.component';
-import { ReferenceItemTypeEditorComponent } from './reference-item-type-editor.component';
 import { ReferenceItemTypeGridComponent } from './reference-item-type-list.component';
 
 
@@ -57,10 +57,10 @@ import {
         SharedDynamicGridEditorModule,
         SharedGridPagingInfoModule,        
         SharedObjectDetailsModule,
+        SharedAssetTypeEditorModule,
         TilesModule,
     ],
-    declarations: [        
-        ReferenceItemTypeEditorComponent,
+    declarations: [                
         ReferenceItemTypeGridComponent,
         ReferenceListComponent,
         ReferenceComponent,

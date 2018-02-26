@@ -13,6 +13,8 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
+import { SharedAssetTypeEditorModule } from '../shared/assettypeeditor/shared-asset-type-editor.module';
+
 
 import {        
     ButtonModule,  
@@ -33,7 +35,6 @@ import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminNymAllocationsComponent } from './admin-nym-allocations.component';
 import { ClaimsTile } from './claims.tile';
 import { ClaimsMatrixPart } from './claims-matrix.part';
-import { AdminAssetTypeEditorForm } from "./admin-asset-type-editor.form";
 import { SimpleAccordionModule } from "../shared/simple-accordion.part";
 
 @NgModule({
@@ -45,14 +46,12 @@ import { SimpleAccordionModule } from "../shared/simple-accordion.part";
         AdminLevelEditorComponent,   
         AdminNymAllocationsComponent,             
         ClaimsMatrixPart,
-        ClaimsTile,
-        AdminAssetTypeEditorForm,
+        ClaimsTile,        
     ],
     exports: [
         AdminAllocationComponent,
         AdminClassificationsComponent,
-        ClaimsTile,
-        AdminAssetTypeEditorForm,
+        ClaimsTile,        
         AdminLevelListComponent,
     ],
     imports: [CommonModule,
@@ -79,6 +78,7 @@ import { SimpleAccordionModule } from "../shared/simple-accordion.part";
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,    
         SharedGridPagingInfoModule,
+        SharedAssetTypeEditorModule,
         TilesModule,
     ],
     providers: [

@@ -4,22 +4,22 @@
 </div>
 <div class="row" *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing || formMode == FormMode.Deleting">
     <div class="col s12">
-        <d3s-asset-type-editor-form *ngIf="formMode == FormMode.Adding" 
+        <d3s-asset-type-editor *ngIf="formMode == FormMode.Adding" 
             [assetTypeClass]="'FA'" 
             [topTypeID]="fusionType.ID" 
             [parentID]="selectedRow?.data.ID" 
             [title]="'Edit Type'" 
             (onCancel)="formMode = FormMode.Default;" 
             (onComplete)="save($event)">
-        </d3s-asset-type-editor-form>
-        <d3s-asset-type-editor-form *ngIf="formMode == FormMode.Editing" 
+        </d3s-asset-type-editor>
+        <d3s-asset-type-editor *ngIf="formMode == FormMode.Editing" 
             [assetTypeClass]="'FA'" 
             [topTypeID]="fusionType.ID" 
             [id]="selectedRow?.data.AssetTypeID" 
             [title]="'Add Sub Type'" 
             (onCancel)="formMode = FormMode.Default;" 
             (onComplete)="save($event)">
-        </d3s-asset-type-editor-form>
+        </d3s-asset-type-editor>
         <d3s-delete-form *ngIf="formMode == FormMode.Deleting" 
             [uri]="'form/AssetType?id='+ selectedRow.data.AssetTypeID"
             [method]="'delete'"

@@ -72,7 +72,12 @@ namespace d360.core.enums
             Name("Fusion Query"),
             Description("Fusion query assets.")
         ]
-        FusionQuery = 13
+        FusionQuery = 13,
+        [
+            Name("Reference List"),
+            Description("Reference Item List.")
+        ]
+        ReferenceItemType = 14
 
     }
 

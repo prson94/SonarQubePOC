@@ -31,7 +31,8 @@ export enum AssetTypeClass {
     Rule = 7,
     Map = 8,
     Reference = 9,
-    Organization = 10
+    Organization = 10,
+    ReferenceItemType = 14
 }
 
 export enum State {

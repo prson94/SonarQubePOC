@@ -34,12 +34,12 @@
     </div>
     <div *ngIf="isEditing" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-asset-type-editor-form [assetTypeClass]="'G'" [id]="selectedRow?.data?.AssetTypeID" [title]="'Edit Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor-form>
+            <d3s-asset-type-editor [assetTypeClass]="'G'" [id]="selectedRow?.data?.AssetTypeID" [title]="'Edit Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
         </div>
     </div>
     <div *ngIf="isAdding" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-asset-type-editor-form [assetTypeClass]="'G'" [parentID]="selectedRow?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor-form>
+            <d3s-asset-type-editor [assetTypeClass]="'G'" [parentID]="selectedRow?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
         </div>
     </div>    
     <div *ngIf="isDeleting" class="col s12 m7 l8">

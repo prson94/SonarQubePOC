@@ -14,7 +14,7 @@ import { MessagesService } from '../../../services/messages.service';
     selector: 'd3s-admin-policies-component',
     providers: [PoliciesService, AssetTypeService],
     template: ` <div class="tile tile-detail" *ngIf="showEditor || showDelete">
-                    <d3s-asset-type-editor-form  *ngIf="showEditor" [assetTypeClass]="'P'" [id]="selected?.AssetTypeID" [title]="(selected == null ? 'New' : 'Edit') +' Policy Type'" (onCancel)="closeEditor()" (onComplete)="savePolicyType($event)"></d3s-asset-type-editor-form>
+                    <d3s-asset-type-editor  *ngIf="showEditor" [assetTypeClass]="'P'" [id]="selected?.AssetTypeID" [title]="(selected == null ? 'New' : 'Edit') +' Policy Type'" (onCancel)="closeEditor()" (onComplete)="savePolicyType($event)"></d3s-asset-type-editor>
                     <d3s-delete-form *ngIf="showDelete"
                         [callback]="theDeleteCallback"
                         [itemId]="selected?.AssetTypeID"

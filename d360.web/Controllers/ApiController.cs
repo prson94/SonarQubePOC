@@ -7490,9 +7490,11 @@ from	    TaxonomyType FAT
         #region Reference - new replaces domain
 
         [HttpGet, Route("referenceItemTypes")]
-        public IQueryable<ReferenceItemType> GetReferenceItemTypes()
+        public IEnumerable<ReferenceItemType> GetReferenceItemTypes()
         {
-            return Company.Table<ReferenceItemType>();
+            var sql = "select rit.*, ast.id as AssetTypeID from referenceitemtype rit inner join assettype ast on rit.id = ast.objectid and ast.[object] = 'ReferenceItemType'";
+
+            return Company.Query<ReferenceItemType>(sql);            
         }
 
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]
