@@ -485,8 +485,6 @@ namespace d360.web.Controllers
                     return EditAttribute(form);
                 case "ATTRIBUTETYPE":
                     return EditAttributeType(form);
-                case "CONTRACT":
-                    return PutContract(form);
                 case "FUSION":
                     return EditFusion(form);
                 case "FUSIONATTRIBUTE":
@@ -660,8 +658,6 @@ namespace d360.web.Controllers
                     return AddAttribute(form);
                 case "ATTRIBUTETYPE":
                     return AddAttributeType(form);
-                case "CONTRACT":
-                    return PostContract(form);
                 case "CUSTOMSYNONYM":
                     return AddCustomSynonym(form);
                 case "FUSION":
@@ -11528,7 +11524,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-
         /// <param name="id">ID</param>
         [Route("Contract_DeleteFields"), NonNullableParameters]
         public JsonResult Contract_DeleteFields(int id)
@@ -11544,70 +11539,66 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("Contract"), Route("Contract")]
-        public JsonResult PostContract(FormCollection form)
+        [HttpGet, Route("Contract/{id:int}")]
+        public JsonResult GetContract(int id)
         {
-            try
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var contract = Company.GetById<Contract>(id);
+
+            return Json(new
             {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var o = new Contract
-                {
-                    OrganizationID = parseIntField(form, "OrganizationID"),
-                    Body = parseTextField(form, "Body"),
-                    ContractType = parseEnumField<ContractType>(form, "ContractType"),
-                    Title = parseTextField(form, "Title")
-                };
-
-                if (o.OrganizationID == 0) o.OrganizationID = null;
-
-                Company.Add(o);
-
-                dynamic custom = new
-                {
-                    title = o.Title,
-                    action = "add"
-                };
-
-                return jsonSuccess($"{o.ContractType.GetDisplayName()} contract successfully created.", o.ID.ToString(), "add", HttpStatusCode.Created, custom);
+                contract.ID,
+                contract.Title,
+                contract.Body,
+                contract.OrganizationID,
+                contract.ContractType,
+                contract.State,
+                PublishedOn = (contract.PublishedOn.HasValue ? ((DateTime)contract.PublishedOn).ToString() : "Never"),
+                UpdatedOn = (contract.UpdatedOn.HasValue ? ((DateTime)contract.UpdatedOn).ToString() : ""),
+                contract.UpdatedBy,
+                contract.CreatedOn,
+                contract.CreatedBy
             }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
+                    , JsonRequestBehavior.AllowGet);
         }
 
-        [ HttpPut, ActionName("Contract"), Route("Contract")]
-        public JsonResult PutContract(FormCollection form)
+        [HttpPut, AjaxValidateAntiForgeryToken, Route("Contract")]
+        public JsonResult PutContract(Contract model, bool publish = false)
         {
             try
             {
-                var id = parseIntField(form, "ID");
-                var o = Company.GetById<Contract>(id);
-                if (o == null) throw new NotFoundException("contract");
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                o.Body = parseTextField(form, "Body");
-                o.ContractType = parseEnumField<ContractType>(form, "ContractType");
-                o.Title = parseTextField(form, "Title");
+                int id = model.ID;
 
-                Company.Update(o);
+                if (id < 1)
+                    throw new NotFoundException("contract");
+
+                var contract = Company.GetById<Contract>(id);
+
+                if (contract == null)
+                    throw new NotFoundException("contract");
+
+
+                contract.Title = model.Title;
+                contract.Body = model.Body;
+                contract.ContractType = model.ContractType;
+                if (publish)
+                    contract.PublishedOn = DateTime.UtcNow;
+
+                Company.SaveOrUpdate(contract);
 
                 dynamic custom = new
                 {
-                    title = o.Title,
+                    title = model.Title,
                     action = "edit"
                 };
 
-                return jsonSuccess($"{o.ContractType.GetDisplayName()} contract successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess($"{model.ContractType.GetDisplayName()} contract successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+
             }
             catch (BaseException ex)
             {
@@ -11618,9 +11609,52 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+
         }
 
-        [ HttpDelete, ActionName("Contract"), Route("Contract"), NonNullableParameters]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("Contract")]
+        public JsonResult PostContract(Contract model, bool publish = false)
+        {
+
+            try
+            {
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var contract = new Contract();
+                contract.OrganizationID = model.OrganizationID;
+                contract.Title = model.Title;
+                contract.Body = model.Body;
+                contract.ContractType = model.ContractType;
+                if (publish)
+                    contract.PublishedOn = DateTime.UtcNow;
+
+                Company.Add(contract);
+
+                dynamic custom = new
+                {
+                    title = contract.Title,
+                    action = "add"
+                };
+
+                return jsonSuccess($"{contract.ContractType.GetDisplayName()} contract successfully created.", contract.ID.ToString(), "add", HttpStatusCode.Created, custom);
+
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+        }
+
+        [HttpDelete, ActionName("Contract"), Route("Contract"), NonNullableParameters]
         public JsonResult DeleteContract(int id)
         {
             try
@@ -11631,7 +11665,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete(o);
+                o.State = State.Deleted;
+                Company.SaveOrUpdate(o);
 
                 dynamic custom = new
                 {

@@ -71,17 +71,23 @@ namespace d360.web.Controllers.Services
             return (
                     from c in Company.Contracts.ToList()
                     join ct in ContractType.OrganizationTermsOfUse.GetEnumList() on c.ContractType equals ct.ID
-                    where !c.OrganizationID.HasValue
+                    where !c.OrganizationID.HasValue && c.State == State.Active
                     select new ContractModel
                     {
                         Body = c.Body,
                         ContractType = c.ContractType,
-                        ContractTypeDescription = ct.Description,
-                        ContractTypeName = ct.Name,
                         ID = c.ID,
                         OrganizationID = c.OrganizationID,
-                        OrganizationName = "Default",
-                        Title = c.Title
+                        Title = c.Title,
+                        UpdatedBy = c.UpdatedBy,
+                        UpdatedOn = c.UpdatedOn,
+                        CreatedBy = c.CreatedBy,
+                        CreatedOn = c.CreatedOn,
+                        State = c.State,
+                        PublishedOn = c.PublishedOn,
+                        ContractTypeDescription = ct.Description,
+                        ContractTypeName = ct.Name,  
+                        OrganizationName = "Default",                      
                     }
                     );
         }
@@ -100,16 +106,22 @@ namespace d360.web.Controllers.Services
             return (
                     from c in Company.Contracts.Include("Organization").ToList()
                     join ct in ContractType.OrganizationTermsOfUse.GetEnumList() on c.ContractType equals ct.ID
-                    where c.OrganizationID == id
+                    where c.OrganizationID == id && c.State == State.Active
                     select new ContractModel {
                         Body = c.Body,
                         ContractType = c.ContractType,
-                        ContractTypeDescription = ct.Description,
-                        ContractTypeName = ct.Name,
                         ID = c.ID,
                         OrganizationID = c.OrganizationID,
-                        OrganizationName = (c.Organization != null) ? c.Organization.Name : "Global",
-                        Title = c.Title
+                        Title = c.Title,
+                        UpdatedBy = c.UpdatedBy,
+                        UpdatedOn = c.UpdatedOn,
+                        CreatedBy = c.CreatedBy,
+                        CreatedOn = c.CreatedOn,
+                        State = c.State,
+                        PublishedOn = c.PublishedOn,
+                        ContractTypeDescription = ct.Description,
+                        ContractTypeName = ct.Name,
+                        OrganizationName = (c.Organization != null) ? c.Organization.Name : "Global",                      
                     }
                     );
         }

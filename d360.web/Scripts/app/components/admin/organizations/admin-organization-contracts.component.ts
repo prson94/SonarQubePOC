@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
-import { Organization, Contract, ContractType } from '../../../models/organization.model';
+import { Organization, ContractModel, ContractType } from '../../../models/organization.model';
 import { OrganizationsService } from '../../../services/organizations.service';
 import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -35,7 +35,14 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         </p-column>
                     </p-dataTable>  
                 </span>
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organization?.ID" [objectType]="'Contract'" [title]="'Contract'" [selection]="selected" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                <div *ngIf="showEditor">
+                    <d3s-admin-organization-contract-editor 
+                        [contractId]="selected?.ID" 
+                        [organizationId]="organization?.ID" 
+                        (onClose)="showEditor = false" 
+                        (onSave)="showEditor = false; getContracts()">
+                    </d3s-admin-organization-contract-editor>
+                </div>
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
@@ -56,8 +63,8 @@ export class AdminOrganizationContractsComponent extends BaseComponent implement
     showDelete: boolean = false;
     isLoading: boolean = false;
 
-    contracts: Contract[] = [];
-    selected: Contract;
+    contracts: ContractModel[] = [];
+    selected: ContractModel;
 
     theDeleteCallback: Function;
 

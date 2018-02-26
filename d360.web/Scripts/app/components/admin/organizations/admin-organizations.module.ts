@@ -19,6 +19,7 @@ import { AdminModule } from '../admin.module';
 import { AdminOrganizationTypesComponent } from './admin-organization-types.component';
 import { AdminOrganizationsComponent } from './admin-organizations.component';
 import { AdminOrganizationContractsComponent } from './admin-organization-contracts.component';
+import { AdminOrganizationContractEditorComponent } from './admin-organization-contract-editor.component';
 import { AdminOrganizationDomainsComponent } from './admin-organization-domains.component';
 import { AdminOrganizationInvitationsComponent } from './admin-organization-invitations.component';
 import { AdminOrganizationResourcesComponent } from './admin-organization-resources.component';
@@ -35,6 +36,7 @@ import {
     InputTextModule,
     SharedModule,
     DataTableModule,
+    EditorModule,
 } from 'primeng/primeng';
 
 
@@ -52,6 +54,7 @@ import {
         InputTextModule,
         SharedModule,
         DataTableModule,
+        EditorModule,
 
         //d3s       
         AdminModule,
@@ -70,6 +73,7 @@ import {
         AdminOrganizationListComponent,
         AdminOrganizationsComponent,     
         AdminOrganizationContractsComponent,
+        AdminOrganizationContractEditorComponent,
         AdminOrganizationDomainsComponent,
         AdminOrganizationInvitationsComponent,
         AdminOrganizationResourcesComponent,

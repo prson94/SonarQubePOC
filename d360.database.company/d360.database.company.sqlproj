@@ -603,13 +603,14 @@
     <Build Include="dbo\Functions\GetWorkflowResponsibleUsers.sql" />
     <Build Include="dbo\Functions\GetChildObjectIds.sql" />
     <Build Include="dbo\Functions\GetParentObjectId.sql" />
+    <Build Include="dbo\Views\AssetDetail.sql" />
+    <Build Include="dbo\Views\AssetWithType.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
     <None Include="DevelopmentCompare.scmp" />
     <None Include="LocalCompare.scmp" />
     <None Include="dbo\Stored Procedures\AddMapRelationship.sql" />
-    <None Include="dbo\Stored Procedures\GetLineageDiagram.sql" />
     <None Include="dbo\Stored Procedures\ExcludeMapIntersect.sql" />
     <None Include="dbo\Stored Procedures\FindExcludeMapIntersect.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByIntersect.sql" />

@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Organization, OrganizationDomain, OrganizationInvitation, OrganizationResource, OrganizationType, Contract, ContractType } from '../models/organization.model';
+import { Organization, OrganizationDomain, OrganizationInvitation, OrganizationResource, OrganizationType, ContractModel, ContractType, Contract } from '../models/organization.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -31,17 +31,17 @@ export class OrganizationsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getDefaultContracts(): Promise<Contract[]> {
+    getDefaultContracts(): Promise<ContractModel[]> {
         return this.http.get(`services/organizations/default/contracts`)
             .toPromise()
-            .then(response => <Contract[]>response.json())
+            .then(response => <ContractModel[]>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getContractsByOrganization(id: number): Promise<Contract[]> {        
+    getContractsByOrganization(id: number): Promise<ContractModel[]> {        
         return this.http.get(`services/organizations/${id}/contracts`)
             .toPromise()
-            .then(response => <Contract[]>response.json())
+            .then(response => <ContractModel[]>response.json())
             .catch(err => this.handleError(err));
     }
 
@@ -84,7 +84,7 @@ export class OrganizationsService extends BaseService {
         return this.deleteDynamicWithResult(this.http, 'organization', id);
     }
 
-    saveContract(contract: Contract): Promise<JsonResult> {
+    saveContract(contract: ContractModel): Promise<JsonResult> {
         if (contract.ID == undefined || !contract.ID) {
             return this.postDynamic(this.http, 'contract', contract);
         }
@@ -115,5 +115,28 @@ export class OrganizationsService extends BaseService {
 
     deleteInvitation(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'organizationinvitation', id);
+    }
+
+    getContract(id: number): Promise<Contract> {
+        return this.http.get(`form/Contract/${id}`)
+            .toPromise()
+            .then(res => <Contract>res.json())
+            .catch(err => this.handleError(err));
+    }
+
+    putContract(contract: Contract, publish: boolean = false): Promise<JsonResult> {
+       return this.http.put(`form/Contract?publish=${publish}`, contract)
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+
+    }
+
+    postContract(contract: Contract, publish: boolean = false): Promise<JsonResult> {
+        return this.http.post(`form/Contract?publish=${publish}`, contract)
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+
     }
 }

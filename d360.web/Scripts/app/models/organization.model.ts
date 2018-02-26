@@ -1,4 +1,6 @@
-﻿export class OrganizationType {
+﻿import { State } from "./asset.model";
+
+export class OrganizationType {
     ID: number;
     Name: string;
     Description: string;
@@ -23,12 +25,32 @@ export enum ContractType {
 }
 
 export class Contract {
+    ID: number;
+    OrganizationID: number;
+    Body: string;
+    ContractType: ContractType;
+    Title: string;
+    UpdatedOn: string;
+    UpdatedBy: number;
+    CreatedOn: string;
+    CreatedBy: number;
+    State: State = State.Active;
+    PublishedOn: string;
+}
+
+export class ContractModel {
     //part of base
     ID: number;
     OrganizationID: number;
     Body: string;
     ContractType: ContractType;
     Title: string;
+    UpdatedOn: string;
+    UpdatedBy: number;
+    CreatedOn: string;
+    CreatedBy: number;
+    State: State = State.Active;
+    PublishedOn: string;
 
     //part of view model
     ContractTypeName: string;
