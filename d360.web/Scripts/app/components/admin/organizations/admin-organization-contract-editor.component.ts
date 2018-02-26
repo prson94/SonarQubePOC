@@ -18,16 +18,18 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                             <div class="col s6">
                                 <div class="FieldName">Title</div>
                                 <div>
-                                    <input type="text" [(ngModel)]="contract.Title" style="width: 98%" name="title" required />
+                                    <input type="text" [(ngModel)]="contract.Title" style="width: 98%" name="title" required autocomplete="off" #title="ngModel" />
+                                    <div [hidden]="title.pristine || title.valid" class="errorMessage">* Title is required</div>
                                 </div>
                             </div>
                             <div class="col s6">
                                 <div class="FieldName">Contract Type</div>
                                 <div>
-                                    <select [(ngModel)]="contract.ContractType" name="contractType" style="width: 98%" required >
+                                    <select [(ngModel)]="contract.ContractType" name="contractType" style="width: 98%" required #type="ngModel" >
                                         <option></option>
                                         <option *ngFor="let c of contractType" [value]="c.value">{{c.label}}</option>
                                     </select>
+                                    <div [hidden]="type.pristine || type.valid" class="errorMessage">* Contract Type is required</div>
                                 </div>
                             </div>
                         </div>
@@ -40,7 +42,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 </div>
                             </div>
                         </div>
-                        <div class="row" style="padding-bottom: 10px" *ngIf="!isAdding">
+                        <div class="row" style="padding-bottom: 10px" *ngIf="!isAdding && false">
                             <div class="col s12">
                                 <div class="FieldName">Last Updated</div><div>{{contract.UpdatedOn}}</div>
                                 <div class="FieldName">Last published</div><div>{{contract.PublishedOn}}</div>
@@ -49,7 +51,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         <div class="row" style="padding-bottom: 10px">
                             <div class="col s12">
                                 <button pButton type="submit" label="Save" (click)="save()" [disabled]="!contractForm.form.valid"></button>
-                                <button pButton type="submit" label="Save & Publish" (click)="save(true)" [disabled]="!contractForm.form.valid"></button>
+                                <!--<button pButton type="submit" label="Save & Publish" (click)="save(true)" [disabled]="!contractForm.form.valid"></button>-->
                                 <button pButton type="button" label="Close" (click)="onClose.emit()"></button>
                             </div>
                         </div>
