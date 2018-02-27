@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, SimpleChange } from '@angular/core';
-import { Organization, ContractModel, ContractType } from '../../../models/organization.model';
+import { Organization, ContractDetail, ContractType } from '../../../models/organization.model';
 import { OrganizationsService } from '../../../services/organizations.service';
 import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -60,8 +60,8 @@ export class AdminContractsComponent extends BaseComponent implements OnInit {
     showDelete: boolean = false;
     isLoading: boolean = false;
 
-    contracts: ContractModel[] = [];
-    selected: ContractModel;
+    contracts: ContractDetail[] = [];
+    selected: ContractDetail;
 
     theDeleteCallback: Function;
 

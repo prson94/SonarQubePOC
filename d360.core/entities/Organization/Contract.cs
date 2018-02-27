@@ -32,7 +32,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class ContractModel : BaseIntObject, IIntObject
+    public class ContractDetail: BaseIntObject, IIntObject
     {
         [DataMember]
         public string Title { get; set; }
@@ -44,34 +44,25 @@ namespace d360.core.entities
         public int? OrganizationID { get; set; }
 
         [DataMember]
-        public string OrganizationName { get; set; }
-
-        [DataMember]
         public ContractType ContractType { get; set; }
 
         [DataMember]
-        public State State { get; set; }
-
-        [DataMember]
-        public DateTime? UpdatedOn { get; set; }
-
-        [DataMember]
-        public int? UpdatedBy { get; set; }
-
-        [DataMember]
-        public DateTime? CreatedOn { get; set; }
-
-        [DataMember]
-        public int? CreatedBy { get; set; }
-
-        [DataMember]
-        public DateTime? PublishedOn { get; set; }
-
+        public string OrganizationName { get; set; }
 
         [DataMember]
         public string ContractTypeName { get; set; }
 
         [DataMember]
         public string ContractTypeDescription { get; set; }
+
+        [DataMember]
+        public DateTime? PublishedOn { get; set; }
+
+        [DataMember]
+        public DateTime? UpdatedOn { get; set; }
+
+        [DataMember]
+        public int? UpdatedBy { get; set; }
     }
+
 }

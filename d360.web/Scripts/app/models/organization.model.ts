@@ -38,24 +38,18 @@ export class Contract {
     PublishedOn: string;
 }
 
-export class ContractModel {
-    //part of base
+export class ContractDetail {
     ID: number;
-    OrganizationID: number;
-    Body: string;
-    ContractType: ContractType;
     Title: string;
-    UpdatedOn: string;
-    UpdatedBy: number;
-    CreatedOn: string;
-    CreatedBy: number;
-    State: State = State.Active;
-    PublishedOn: string;
-
-    //part of view model
+    Body: string;
+    OrganizationID: number;
+    ContractType: ContractType;
+    OrganizationName: string;
     ContractTypeName: string;
     ContractTypeDescription: string;
-    OrganizationName: string;
+    PublishedOn: string;
+    UpdatedOn: string;
+    UpdatedBy: number;
 }
 
 export class OrganizationDomain {

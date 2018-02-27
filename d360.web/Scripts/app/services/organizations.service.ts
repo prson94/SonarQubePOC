@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Organization, OrganizationDomain, OrganizationInvitation, OrganizationResource, OrganizationType, ContractModel, ContractType, Contract } from '../models/organization.model';
+import { Organization, OrganizationDomain, OrganizationInvitation, OrganizationResource, OrganizationType, ContractType, Contract, ContractDetail } from '../models/organization.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -31,17 +31,17 @@ export class OrganizationsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getDefaultContracts(): Promise<ContractModel[]> {
+    getDefaultContracts(): Promise<ContractDetail[]> {
         return this.http.get(`services/organizations/default/contracts`)
             .toPromise()
-            .then(response => <ContractModel[]>response.json())
+            .then(response => <ContractDetail[]>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getContractsByOrganization(id: number): Promise<ContractModel[]> {        
+    getContractsByOrganization(id: number): Promise<ContractDetail[]> {        
         return this.http.get(`services/organizations/${id}/contracts`)
             .toPromise()
-            .then(response => <ContractModel[]>response.json())
+            .then(response => <ContractDetail[]>response.json())
             .catch(err => this.handleError(err));
     }
 

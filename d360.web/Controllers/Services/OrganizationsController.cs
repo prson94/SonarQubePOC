@@ -63,33 +63,33 @@ namespace d360.web.Controllers.Services
         /// </summary>
         /// <returns>Reutnrs a list of all contracts that are not specifically tied to any one organization, instead acting as a default contract for all organizations.</returns>
         [HttpGet, Route("default/contracts")]
-        public IEnumerable<ContractModel> GetDefaultContracts()
+        public IEnumerable<ContractDetail> GetDefaultContracts()
         {
             if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
 
-            return (
-                    from c in Company.Contracts.ToList()
-                    join ct in ContractType.OrganizationTermsOfUse.GetEnumList() on c.ContractType equals ct.ID
-                    where !c.OrganizationID.HasValue && c.State == State.Active
-                    select new ContractModel
-                    {
-                        Body = c.Body,
-                        ContractType = c.ContractType,
-                        ID = c.ID,
-                        OrganizationID = c.OrganizationID,
-                        Title = c.Title,
-                        UpdatedBy = c.UpdatedBy,
-                        UpdatedOn = c.UpdatedOn,
-                        CreatedBy = c.CreatedBy,
-                        CreatedOn = c.CreatedOn,
-                        State = c.State,
-                        PublishedOn = c.PublishedOn,
-                        ContractTypeDescription = ct.Description,
-                        ContractTypeName = ct.Name,  
-                        OrganizationName = "Default",                      
-                    }
-                    );
+            var contractTypes = ContractType.OrganizationTermsOfUse.GetEnumList();
+
+            return Company.Query<ContractDetail>(@"select 
+	                c.ID, 
+	                c.Title, 
+	                c.Body, 
+	                c.OrganizationID, 
+	                c.ContractType, 
+	                c.PublishedOn, 
+	                c.UpdatedOn, 
+	                c.UpdatedBy, 
+	                coalesce(O.Name, 'Default') as OrganizationName
+	                from [Contract] c
+	                left join Organization o on o.ID = c.OrganizationID
+	                where c.State <> 3 and c.OrganizationID is null")
+                .Select(c =>
+                {
+                    var ct = contractTypes.Find(t => t.ID == c.ContractType);
+                    c.ContractTypeName = ct.Name;
+                    c.ContractTypeDescription = ct.Description;
+                    return c;
+                });
         }
 
         /// <summary>
@@ -98,32 +98,34 @@ namespace d360.web.Controllers.Services
         /// <param name="id">The ID of the organization you want to retrieve contracts for.</param>
         /// <returns></returns>
         [HttpGet, Route("{id:int}/contracts")]
-        public IEnumerable<ContractModel> GetContractsByOrganization(int id)
+        public IEnumerable<ContractDetail> GetContractsByOrganization(int id)
         {
             if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
                 return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
-            return (
-                    from c in Company.Contracts.Include("Organization").ToList()
-                    join ct in ContractType.OrganizationTermsOfUse.GetEnumList() on c.ContractType equals ct.ID
-                    where c.OrganizationID == id && c.State == State.Active
-                    select new ContractModel {
-                        Body = c.Body,
-                        ContractType = c.ContractType,
-                        ID = c.ID,
-                        OrganizationID = c.OrganizationID,
-                        Title = c.Title,
-                        UpdatedBy = c.UpdatedBy,
-                        UpdatedOn = c.UpdatedOn,
-                        CreatedBy = c.CreatedBy,
-                        CreatedOn = c.CreatedOn,
-                        State = c.State,
-                        PublishedOn = c.PublishedOn,
-                        ContractTypeDescription = ct.Description,
-                        ContractTypeName = ct.Name,
-                        OrganizationName = (c.Organization != null) ? c.Organization.Name : "Global",                      
-                    }
-                    );
+
+            var contractTypes = ContractType.OrganizationTermsOfUse.GetEnumList();
+
+            return Company.Query<ContractDetail>(@"select 
+	                c.ID, 
+	                c.Title, 
+	                c.Body, 
+	                c.OrganizationID, 
+	                c.ContractType, 
+	                c.PublishedOn, 
+	                c.UpdatedOn, 
+	                c.UpdatedBy, 
+	                coalesce(O.Name, 'Default') as OrganizationName
+	                from [Contract] c
+	                left join Organization o on o.ID = c.OrganizationID
+	                where c.State <> 3 and c.OrganizationID = @id", new { id })
+                .Select(c =>
+                {
+                    var ct = contractTypes.Find(t => t.ID == c.ContractType);
+                    c.ContractTypeName = ct.Name;
+                    c.ContractTypeDescription = ct.Description;
+                    return c;
+                });
         }
 
         /// <summary>
