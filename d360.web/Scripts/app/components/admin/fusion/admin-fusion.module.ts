@@ -16,6 +16,7 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
 import { D3SSharedModule } from '../../shared/shared.module';
 
 import { AdminFusionComponent } from './admin-fusion.component';
@@ -83,6 +84,7 @@ import { CodemirrorModule } from 'ng2-codemirror';
         SharedFieldDefinitionModule,
         SharedResponsibilitiesModule,
         SharedDynamicGridEditorModule,
+        SharedAssetTypeEditorModule,
         TilesModule,
     ],
     declarations: [
