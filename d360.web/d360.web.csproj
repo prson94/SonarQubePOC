@@ -657,7 +657,7 @@
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
     <Content Include="Scripts\app\9.chunk.js" />
-    <Content Include="Scripts\app\components\admin\admin-asset-type-editor.form.html" />
+    <Content Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\responsibility-rules.component.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\responsibility-rule.form.html" />
     <Content Include="Scripts\app\components\admin\settings\admin-home.component.html" />
@@ -1035,7 +1035,7 @@
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\authentication-connection-backend.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-asset-type-editor.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-nym-allocations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-condition-editor.component.ts" />
@@ -1100,6 +1100,7 @@
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-change-pwd.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-key.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-password.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\shared-asset-type-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\diagram-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-editor.component.ts" />
@@ -1329,7 +1330,6 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.module.ts" />
