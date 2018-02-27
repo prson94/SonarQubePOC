@@ -29,7 +29,7 @@ declare var CompanySettings;
                         <p-column  [style]="{width:'28px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" *ngIf="hasDelete && !readOnly">                                                    
-                                        <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
                                 </ng-template>
                         </p-column>           
@@ -55,6 +55,13 @@ declare var CompanySettings;
                 <div *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">
                     <h5 class="center-align" style="font-weight:bold;">No relationships exist from this object to this object type.  Use the plus link in the upper right of this tile to setup new relationships.</h5>                    
                 </div>                                                   
+                <d3s-delete-form *ngIf="showDelete"
+                    [callback]="theDeleteCallback"
+                    [itemId]="selected?.ID"
+                    [method]="'callback'"
+                    [prompt]="'Are you sure you want to delete the relationship [' + [selected?.Name] + ']?'"                                         
+                    (onCancel)="showDelete=false;"
+                ></d3s-delete-form>   
                 
                 `
 })
@@ -91,12 +98,16 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     
     selected: any = null;
     showEditor: boolean = false;
+    showDelete: boolean = false;
+    theDeleteCallback: Function;
+
     private showTechnical: boolean = false;
 
     @ViewChild('dt') datatable;
     
-    constructor(private router: Router, private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService) {
+    constructor(private router: Router, private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService, private messagesService: MessagesService) {
         super();
+        this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
@@ -174,11 +185,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     deleteItem(item) {
-        this.relationshipsService.deleteRelationshipItem(item.ID).then(res => {
-            this.relations = this.relations.filter(x => x.ID != item.ID);
-
+        this.relationshipsService.deleteRelationshipItem(item).then(res => {
+            this.relations = this.relations.filter(x => x.ID != item);
             this.relationshipRemoved.emit();
         });
+        this.showDelete = false;
     }
 
     selectObject(item) {

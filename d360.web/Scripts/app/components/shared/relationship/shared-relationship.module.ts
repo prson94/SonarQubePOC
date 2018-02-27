@@ -25,6 +25,7 @@ import { SharedObjectDetailsModule } from '../objectdetails/shared-object-detail
 import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
+import { SharedDeleteFormModule } from '../../shared/delete.form';
 
 @NgModule({
     imports: [CommonModule,
@@ -40,7 +41,7 @@ import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.co
         SharedGridPagingInfoModule,    
         SharedObjectDetailsModule,    
         TilesModule,
-
+        SharedDeleteFormModule,
         //prime
         ButtonModule,
         DataTableModule,        
