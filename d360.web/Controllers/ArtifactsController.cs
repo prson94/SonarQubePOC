@@ -749,38 +749,6 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
             }
         }
 
-        private string addOwnershipJoinCriteria(string joins, string ownerUsers, string ownerGroups)
-        {
-            int index = 0;
-            if (!string.IsNullOrEmpty(ownerUsers))
-            {
-                foreach (var user in ownerUsers.Split(','))
-                {
-                    var ids = user.Split('|');
-                    if (ids.Length == 2)
-                    {
-                        joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'resource' and RD{index}.ResponsibleObjectID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
-                        index++;
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(ownerGroups))
-            {
-                foreach (var group in ownerGroups.Split(','))
-                {
-                    var ids = group.Split('|');
-                    if (ids.Length == 2)
-                    {
-                        joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'group' and RD{index}.ResponsibleObjectID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
-                        index++;
-                    }
-                }                
-            }
-
-            return joins;
-        }
-
         [Route("types")]
         public JsonNetResult GetTypes()
         {

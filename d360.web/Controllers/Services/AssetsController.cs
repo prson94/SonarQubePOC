@@ -736,6 +736,188 @@ from    #RelationshipTable T
             }
         }
 
+        /// <summary>
+        /// Takes a given set of relationships and bulk inserts/updates them.
+        /// </summary>
+        /// <returns>An HTTP status code and message.</returns>
+        [HttpPost, Route("ownership/bulk")]
+        public async Task<HttpResponseMessage> PostBulkAssetOwnersAsync()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update ownership via bulk asset manager.");
+
+            var prefix = "Assets.PostBulkAssetOwnersAsync => ";
+            var errorMessage = "";
+
+            string json = "";
+
+            if (Request.Content.IsMimeMultipartContent())
+            {
+                var streamProvider = new MultipartMemoryStreamProvider();
+                await Request.Content.ReadAsMultipartAsync(streamProvider);
+
+                json = await streamProvider.Contents.Single().ReadAsStringAsync();
+            }
+            else
+            {
+                json = await Request.Content.ReadAsStringAsync();
+            }
+
+            try
+            {
+                var import = JsonConvert.DeserializeObject<BulkOwnerImport>(json);
+
+                var ownerTable = new System.Data.DataTable();
+
+                ownerTable.Columns.Add("ItemNumber", typeof(int));
+                ownerTable.Columns.Add("SourceID", typeof(string));
+                ownerTable.Columns.Add("RoleName", typeof(string));
+                ownerTable.Columns.Add("UserId", typeof(string));
+                ownerTable.Columns.Add("UserIdFieldName", typeof(string));
+                ownerTable.Columns.Add("Message", typeof(string));
+                ownerTable.Columns.Add("Success", typeof(bool));
+                ownerTable.Columns.Add("IsNew", typeof(bool));
+
+                #region Generate data sets
+
+                for (int i = 1; i <= import.Items.Count; i++)
+                {
+                    var model = import.Items[i - 1];
+                    model.ItemNumber = i;
+
+                    var row = ownerTable.NewRow();
+
+                    row["ItemNumber"] = model.ItemNumber;
+                    row["SourceID"] = model.SourceID;
+                    row["RoleName"] = model.RoleName;
+                    row["UserId"] = model.UserId;
+                    row["UserIdFieldName"] = import.UserIdFieldName;
+
+                    ownerTable.Rows.Add(row);
+                }
+
+                #endregion
+
+                #region
+
+                List<dynamic> retResults = null;
+
+                if ((Company.Database.Connection as SqlConnection).State != System.Data.ConnectionState.Open)
+                    (Company.Database.Connection as SqlConnection).Open();
+
+                using (var trans = (Company.Database.Connection as SqlConnection).BeginTransaction())
+                {
+                    #region Asset Bulk Copy
+
+                    Company.Database.Connection.Execute(@"
+create table #OwnershipTable (
+    ItemNumber int not null,
+    SourceID nvarchar(1000) null,
+    RoleName nvarchar(1000) null,
+    UserId nvarchar(1000) null,
+    UserIdFieldName nvarchar(50) null,
+    Message nvarchar(2500) null,
+    Success bit null,
+    IsNew bit null
+)", transaction: trans);
+
+                    var assetBulkCopy = new SqlBulkCopy(
+                        (SqlConnection)Company.Database.Connection,
+                        SqlBulkCopyOptions.Default,
+                        trans);
+
+                    assetBulkCopy.BatchSize = ownerTable.Rows.Count;
+                    assetBulkCopy.DestinationTableName = "#OwnershipTable";
+                    assetBulkCopy.BulkCopyTimeout = 3600;
+
+                    assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
+                    assetBulkCopy.ColumnMappings.Add("RoleName", "RoleName");
+                    assetBulkCopy.ColumnMappings.Add("UserId", "UserId");
+                    assetBulkCopy.ColumnMappings.Add("UserIdFieldName", "UserIdFieldName");
+                    assetBulkCopy.ColumnMappings.Add("Message", "Message");
+                    assetBulkCopy.ColumnMappings.Add("Success", "Success");
+                    assetBulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+
+                    assetBulkCopy.WriteToServer(ownerTable);
+
+                    #endregion
+
+                    Company.Database.Connection.Execute($@"create table #UserTableResult (ItemNumber int, ResourceID int, UserId nvarchar(1000) null, UserIdFieldName nvarchar(50) null);", transaction: trans);
+
+                    Company.Database.Connection.Execute($@"
+insert into #UserTableResult 
+    select ItemNumber, null, UserId, UserIdFieldName from #OwnershipTable; 
+
+update  T 
+set     T.ResourceID = S.ResourceID 
+from    #UserTableResult  T 
+        inner join reporting.Global_Resource S on S.Email = T.UserId and lower(ltrim(rtrim(T.UserIdFieldName))) in ('username', 'email'); 
+
+update  T 
+set     T.ResourceID = F.ObjectID 
+from    #UserTableResult  T 
+        inner join FieldType FT on FT.Object = 'ResourceType' and FT.ObjectID = 1 and lower(ltrim(rtrim(FT.Name))) = lower(ltrim(rtrim(T.UserIdFieldName))) 
+        inner join Field F on F.FieldTypeID = FT.ID and F.FormattedValue = T.UserId; ", transaction: trans);
+
+                    Company.Database.Connection.Execute($@"create table #OwnershipMergeTableResult (ID bigint, ItemNumber int, [Action] nvarchar(10));", transaction: trans);
+
+                    Company.Database.Connection.Execute($@"
+merge into  [ResponsibilityTypeRelationOverrideItem] T
+using       (
+            select  R.ItemNumber,
+                    RTR.ResponsibilityTypeID,
+                    S.ID as AssetID,
+		            U.ResourceID
+            from    #OwnershipTable R
+		            inner join Asset S on S.SourceID = R.SourceID
+		            inner join AssetType ST on ST.ID = S.AssetTypeID
+
+		            inner join ResponsibilityTypeRelation	RTR on RTR.ObjectType = ST.Object and RTR.ObjectID = ST.ObjectID
+                    inner join ResponsibilityType           RT on RTR.ResponsibilityTypeID = RT.ID and LOWER(RT.Name) = LOWER(RTRIM(LTRIM(R.RoleName)))
+                    inner join #UserTableResult             U on U.ItemNumber = R.ItemNumber and U.ResourceID is not null
+            ) S
+on          (
+                T.ResponsibilityTypeID = S.ResponsibilityTypeID and 
+                T.AssetID = S.AssetID and 
+                T.SecurityAsset = 'R' and 
+                T.SecurityAssetID = S.ResourceID
+            )
+when not matched by target then
+    insert  (ResponsibilityTypeID, AssetID, SecurityAsset, SecurityAssetID)
+    values  (S.ResponsibilityTypeID, S.AssetID, 'R', S.ResourceID)
+output inserted.ID, S.ItemNumber, $action into #OwnershipMergeTableResult;
+
+update  T
+set     T.IsNew = case when S.[Action] = 'INSERT' then 1 else 0 end
+from    #OwnershipTable T
+        inner join #OwnershipMergeTableResult S on S.ItemNumber = T.ItemNumber;
+", new { @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
+
+
+                    retResults = Company.Database.Connection.Query<dynamic>("select * from #OwnershipTable", transaction: trans).ToList();
+
+                    trans.Commit();
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, retResults);
+
+                #endregion
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage);
+            }
+            finally
+            {
+                json = null;
+            }
+        }
+
         #endregion
     }
 }

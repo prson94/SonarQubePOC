@@ -178,6 +178,9 @@ namespace igx.jobs
                     case "PROD":
                         companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.Production).ToList();
                         break;
+                    case "ALTERNATE":
+                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.Alternate).ToList();
+                        break;
                 }
 
                 return companies;

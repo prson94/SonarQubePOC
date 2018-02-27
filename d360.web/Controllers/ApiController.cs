@@ -1092,7 +1092,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("HasCustomExportTemplates", Company.ArtifactTypeExportTemplates.Where(x => x.ArtifactTypeID == typeID).Any());
             model.Add("AutoDisplayDescription", artifactType.AutoDisplayDescription);
 
-            bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType == "powerbi").Any();
+            bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
             model.Add("HasDashboards", hasDashboards);
 
             var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
@@ -4523,7 +4523,7 @@ from    (
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString()) }
+                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") }
                 }
             );
         }

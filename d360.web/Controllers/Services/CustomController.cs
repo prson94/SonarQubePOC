@@ -42,12 +42,79 @@ namespace d360.web.Controllers.Services
         {
             var queryParams = Request.GetQueryNameValuePairs();
 
-            var assets = Company.Filter<AssetApiModel>(i => i.AssetTypeID == 1, 
-                i => i.Fields);
+            var config = (
+                         from s in Company.ApiServices
+                         from e in s.Endpoints
+                         from v in e.Versions
+                         from en in v.Entities
+                         from u in en.Uris
+                         from f in en.FieldTypes
+                         where s.UriPrefix == service
+                         where e.UriPrefix == endpoint
+                         where v.UriPrefix == version
+                         where u.Format == entityFormat
+                         select new {
+                             ServiceName = s.Name,
+                             en.AssetType,
+                             en.FieldTypes,
+                             f.AllowFilter,
+                             f.AllowSelect,
+                             f.AllowSort,
+                             f.JsonFieldNameOverride,
+                             f.XmlFieldNameOverride,
+                             f.FieldType,
+                             EntityUri = u
+                         });
 
-            if (queryParams.Any(i => i.Key == "_sort"))
+            if (config.Count() <= 0)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Endpoint not found.");
+
+            var acceptHeaders = Request.Headers.Accept;
+
+            var asJson = !acceptHeaders.Any(i => i.MediaType == "application/xml");
+
+            var sql = @"
+select  A.ID 
+        {0}
+from    AssetApiModel A
+        {1} 
+where   A.AssetTypeID = @id
+        {2}
+";
+
+            var columnSql = "";
+            var fieldSql = "";
+            foreach (var f in config)
             {
-                var sort = queryParams.SingleOrDefault(i => i.Key == "_sort");
+                
+                var fID = f.FieldType.ID;
+                if (f.AllowSelect)
+                {
+                    var fieldName = f.FieldType.Name;
+                    if (asJson && !string.IsNullOrEmpty(f.JsonFieldNameOverride))
+                    {
+                        fieldName = f.JsonFieldNameOverride.Trim();
+                    }
+                    else if (!string.IsNullOrEmpty(f.XmlFieldNameOverride))
+                    {
+                        fieldName = f.XmlFieldNameOverride.Trim();
+                    }
+
+                    // One last check.
+                    if (string.IsNullOrEmpty(fieldName))
+                    {
+                        fieldName = f.FieldType.Name;
+                    }
+
+                    columnSql += $", F{fID}.FormattedValue as [{fieldName}]";
+                    fieldSql += $" left join Field F{fID} on F{fID}.AssetID = A.ID and F{fID}.FieldTypeID = {f.FieldType.ID}";
+                }
+            }
+
+            var orderSql = "";
+            if (queryParams.Any(i => i.Key == "_order"))
+            {
+                var sort = queryParams.SingleOrDefault(i => i.Key == "_order");
                 var arrSort = sort.Value.Split(',').ToList();
                 foreach (var sRaw in arrSort)
                 {
@@ -56,15 +123,34 @@ namespace d360.web.Controllers.Services
                     if (s.StartsWith("-"))
                     {
                         sAsc = false;
-                        s = s.Replace("-", "");
+                        s = s.Replace("-", "").Trim();
                     }
 
-                    assets = sAsc ? assets.OrderBy(i => i.Fields.Single(f => f.Name == s)).AsQueryable() :
-                                    assets.OrderByDescending(i => i.Fields.Single(f => f.Name == s)).AsQueryable();
+                    var f = config.SingleOrDefault(i => i.JsonFieldNameOverride == s || i.XmlFieldNameOverride == s);
+
+                    if (f != null)
+                    {
+                        if (f.AllowSort)
+                        {
+                            orderSql += ((string.IsNullOrEmpty(orderSql)) ? " order by " : ", ") + $"F{f.FieldType.ID}.FormattedValue";
+                            orderSql += sAsc ? " asc" : " desc";
+                        }
+                    }
                 }
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK, assets);
+            sql = string.Format(sql, columnSql, fieldSql, orderSql);
+
+            var assets = Company.Query<dynamic>(sql, new { id = config.First().AssetType.ID });
+
+            if (asJson)
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, assets, "application/json");
+            }
+            else
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, assets, "application/xml");
+            }
 
             //return Request.CreateResponse<string>($"Service: {service}, Endpoint: {endpoint}, Version: {version}, Entity: {entityFormat}");
         }

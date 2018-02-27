@@ -1114,11 +1114,14 @@ namespace d360.web.Controllers
                 }
             }
 
-            #region Field Joins
-
             var joins = "";
             var columns = "";
+
+            // Field Joins
             getDynamicFieldJoinStatements(objectTypeID, obj, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, innerIdColumn);
+
+            // Ownership Joins
+            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups, innerIdColumn);
 
             if (fetchPermissions)
             {
@@ -1134,11 +1137,6 @@ namespace d360.web.Controllers
             }
 
             sql = string.Format(sql, columns, joins);
-
-            #endregion
-
-            // Ownership Joins
-            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups, innerIdColumn);
 
             // If simple filter specified add that criteria to the sql
             if (!string.IsNullOrEmpty(filter))

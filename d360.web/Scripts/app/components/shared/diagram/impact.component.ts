@@ -112,7 +112,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.diagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.diagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
-        //this.myDiagram.addDiagramListener('SelectionMoved', () => this.SelectionMoved());
+        //this.diagram.addDiagramListener('SelectionMoved', () => this.SelectionMoved());
 
         this.diagram.grid.visible = false;
         this.diagram.grid.gridCellSize = new go.Size(8, 8);

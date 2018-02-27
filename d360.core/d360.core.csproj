@@ -78,6 +78,12 @@
     <Compile Include="Config.cs" />
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
+    <Compile Include="entities\Api\ApiEntityUri.cs" />
+    <Compile Include="entities\Api\ApiEntityFieldType.cs" />
+    <Compile Include="entities\Api\ApiEntity.cs" />
+    <Compile Include="entities\Api\ApiEndpointVersion.cs" />
+    <Compile Include="entities\Api\ApiEndpoint.cs" />
+    <Compile Include="entities\Api\ApiService.cs" />
     <Compile Include="entities\Asset.cs" />
     <Compile Include="entities\AssetType.cs" />
     <Compile Include="entities\Community\Client.cs" />
@@ -299,6 +305,7 @@
     <Compile Include="entities\Workflow\Models.cs" />
     <Compile Include="entities\Workflow\WorkflowItemAssignment.cs" />
     <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
+    <Compile Include="enums\ApiUriType.cs" />
     <Compile Include="enums\BulkRelationshipOperation.cs" />
     <Compile Include="enums\EnvironmentLevel.cs" />
     <Compile Include="enums\FusionRuleFindSearchType.cs" />
@@ -443,5 +450,6 @@
       <Name>d360.utils</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

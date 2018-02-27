@@ -1809,6 +1809,12 @@
             </summary>
             <returns>An HTTP status code and message.</returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.AssetsController.PostBulkAssetOwnersAsync">
+            <summary>
+            Takes a given set of relationships and bulk inserts/updates them.
+            </summary>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.Services.CustomController">
             <summary>
             This service houses all endpoints handling custom API configurations.
