@@ -6,7 +6,7 @@
     Predicates: any[];
     Tokens: any[];
     AssetType: AssetType;
-
+    Parents: any[];
 
     // TODO: Extra fields to remove to appropriate classes when fully converted over to Asset.
     CanOwnFusion: boolean;              //ArtifactType

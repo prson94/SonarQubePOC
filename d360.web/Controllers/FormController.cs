@@ -902,6 +902,11 @@ namespace d360.web.Controllers
 
                 if (!string.IsNullOrEmpty(form["ParentID"]))
                 {
+                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, type.ID, SystemObjects.Artifact, parseIntField(form, "ParentID"), model.ID))
+                    {
+                        return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
+                    }
+                    /*
                     var intersectType = Company.Filter<IntersectTypeDetail>(i =>
                         i.Object == "ArtifactType" &&
                         i.ObjectID == type.ID &&
@@ -930,7 +935,7 @@ namespace d360.web.Controllers
                         }
 
                         Company.Add(intersect);
-                    }
+                    }*/
                 }
 
                 return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = model.ID });
@@ -1192,6 +1197,7 @@ namespace d360.web.Controllers
                 var model = new AssetTypeEditorModel();
                 var loadPredicates = false;
                 var parentPredicateType = PredicateType.InterTypeHierarchy;
+                var loadParentReferenceItemOptions = false;
 
                 var ot = SystemObjects.ArtifactType;
                 var appendTitle = "";
@@ -1222,8 +1228,8 @@ namespace d360.web.Controllers
                         break;
                     case AssetTypeClass.ReferenceItemType:
                         ot = SystemObjects.ReferenceItemType;
-                        appendTitle = "Reference List";
-                        parentPredicateType = PredicateType.IntraTypeHierarchy;
+                        appendTitle = "Reference List";                        
+                        loadParentReferenceItemOptions = true;
                         break;
                 }
 
@@ -1286,14 +1292,14 @@ namespace d360.web.Controllers
                         case AssetTypeClass.ReferenceItemType:
                             var r = Company.GetById<ReferenceItemType>(model.AssetType.ObjectID);
                             model.AssetType.Name = r!= null ? r.Name : "";
-                            model.AssetType.Notes = r.SourceNotes;
+                            model.AssetType.Notes = r.SourceNotes;                            
                             break;
                     }
                     model.AssetType.Object = ot.ToString();
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
 
-                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.Glossary || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy)
+                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.Glossary || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
                     {
                         var intersectType = Company.Filter<IntersectType>(i =>
                             i.Object == assetType.Object &&
@@ -1302,7 +1308,7 @@ namespace d360.web.Controllers
                         ).SingleOrDefault();
 
 
-                        if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy) //If model or policy you must always have a predicate to load.
+                        if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType) //If model or policy you must always have a predicate to load.
                             loadPredicates = true;
 
                         if (intersectType != null)
@@ -1332,6 +1338,20 @@ namespace d360.web.Controllers
                 if (loadPredicates)
                 {
                     model.Predicates = Company.Filter<Predicate>(i => i.Type == parentPredicateType).Select(i => new PrimeSelectItem { label = i.Inverse, value = i.ID.ToString() }).ToList();
+                }
+
+                if (loadParentReferenceItemOptions)
+                {
+                    if (model.AssetType != null && model.AssetType.ObjectID > 0)
+                    {
+                        var parents = Company.Query<PrimeSelectItem>("select ObjectID as value, Name as label from assettype where [object] = 'ReferenceItemType' and objectid != @id order by Name", new { id = model.AssetType.ObjectID }).ToList();
+                        model.Parents = parents;
+                    }
+                    else
+                    {
+                        var parents = Company.Query<PrimeSelectItem>("select ObjectID as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
+                        model.Parents = parents;
+                    }
                 }
 
                 return new JsonNetResult
@@ -12664,10 +12684,22 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             var list = new List<EditableField>();
             var type = Company.GetById<ReferenceItemType>(id);
+            var row = 1;
 
             list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), 2);
+            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString() });
+
+            //if the reference type has a parent we need to add parent field with the values from the parent
+
+            var parentType = Company.GetParentType<ReferenceItemType>(id);
+
+            if(parentType != null)
+            {
+                var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID) }).ToList() });
+            }
+                        
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -12696,9 +12728,23 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             if (!Company.HasPermission(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID, Claim.Update))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
+            var row = 1;
+
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
-            list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 2);
+            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
+
+            //if the reference type has a parent we need to add parent field with the values from the parent
+
+            var parentType = Company.GetParentType<ReferenceItemType>(a.ReferenceItemTypeID);
+
+            if (parentType != null)
+            {
+                var parent = Company.GetParentObject<ReferenceItem>(id);
+                var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ID : 0)  }).ToList() });
+            }
+
+            list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -12737,6 +12783,15 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<ReferenceItem>(a, fields);
 
+                
+                if (!string.IsNullOrEmpty(form["ParentID"]))
+                {
+                    if (!Company.AddObjectParentRelationship(SystemObjects.ReferenceItemType, typeID, SystemObjects.ReferenceItem, parseIntField(form, "ParentID"), a.ID))
+                    {
+                        return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
+                    }
+                }
+
                 return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -12764,8 +12819,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<ReferenceItem>(model);
-
+                Company.Delete(SystemObjects.ReferenceItem, id);
+                
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -12803,6 +12858,16 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<ReferenceItem>(model, fields);
+
+                
+
+                if (!string.IsNullOrEmpty(form["ParentID"]))
+                {
+                    if (!Company.UpdateObjectParentRelationship(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, SystemObjects.ReferenceItem, parseIntField(form, "ParentID"), model.ID))
+                    {
+                        return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
+                    }
+                }
 
                 return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }

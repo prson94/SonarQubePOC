@@ -63,6 +63,7 @@ namespace d360.web.Models
         public string Query { get; set; }
         public int? TopLevelTypeID { get; set; }
         public string Notes { get; set; }
+        public List<PrimeSelectItem> Parents { get; set; } = new List<PrimeSelectItem>();
     }
 
     public class KnockoutDisplayItem

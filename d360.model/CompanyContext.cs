@@ -822,6 +822,8 @@ where   ID = @id", new { id }).SingleOrDefault();
                 type = SystemObjects.TaxonomyType.ToString();
             else if (typeof(T) == typeof(FusionAttributeType))
                 type = SystemObjects.FusionAttributeType.ToString();
+            else if (typeof(T) == typeof(ReferenceItemType))
+                type = SystemObjects.ReferenceItemType.ToString();
 
             if (string.IsNullOrEmpty(type) || id < 0)
                 return default(T);
@@ -836,6 +838,78 @@ where   ID = @id", new { id }).SingleOrDefault();
 
             return GetById<T>(parentId);
 
+        }
+
+        public bool UpdateObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy)
+        {
+            var intersectType = Filter<IntersectTypeDetail>(i =>
+                        i.Object == type.ToString() &&
+                        i.ObjectID == typeId &&
+                        i.PredicateType.Value == predicateType
+                    ).SingleOrDefault();
+
+            if (intersectType != null)
+            {
+                var intersect = Intersects.FirstOrDefault(x => x.IntersectTypeID == intersectType.ID && x.Object == objectType.ToString() && x.ObjectID == objectID);
+
+                if (intersect == null)
+                    return AddObjectParentRelationship(type, typeId, objectType, parentID, objectID, predicateType);
+
+                var parentExists = Any<Asset>(i =>
+                    i.ObjectID == parentID &&
+                    i.AssetType.Object == type.ToString() &&
+                    i.AssetType.ObjectID == intersectType.SubjectID
+                    );
+
+                if (!parentExists)
+                {
+                    return false;
+                }
+
+                intersect.Subject = type.ToString();
+                intersect.SubjectID = parentID;
+
+                return SaveOrUpdate<Intersect>(intersect) > 0;
+                
+            }
+
+            return true;
+        }
+
+        public bool AddObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy)
+        {
+            var intersectType = Filter<IntersectTypeDetail>(i =>
+                        i.Object == type.ToString() &&
+                        i.ObjectID == typeId &&
+                        i.PredicateType.Value == predicateType
+                    ).SingleOrDefault();
+
+            if (intersectType != null)
+            {
+                var intersect = new Intersect
+                {
+                    Subject = objectType.ToString(),
+                    SubjectID = parentID,
+                    Object = objectType.ToString(),
+                    ObjectID = objectID,
+                    IntersectTypeID = intersectType.ID
+                };
+
+                var parentExists = Any<Asset>(i =>
+                    i.ObjectID == intersect.SubjectID &&
+                    i.AssetType.Object == type.ToString() &&
+                    i.AssetType.ObjectID == intersectType.SubjectID
+                    );
+
+                if (!parentExists)
+                {
+                    return false;
+                }
+
+                return Add(intersect);
+            }
+
+            return true;
         }
 
         public IntersectType GetHierarchyIntersectType(SystemObjects objectType, int subjectId, int objectId, PredicateType predicateType = PredicateType.InterTypeHierarchy)
@@ -911,6 +985,8 @@ where   ID = @id", new { id }).SingleOrDefault();
                 type = SystemObjects.Taxonomy.ToString();
             else if (typeof(T) == typeof(FusionAttribute))
                 type = SystemObjects.FusionAttribute.ToString();
+            else if (typeof(T) == typeof(ReferenceItem))
+                type = SystemObjects.ReferenceItem.ToString();
 
             if (string.IsNullOrEmpty(type) || id < 0)
                 return default(T);

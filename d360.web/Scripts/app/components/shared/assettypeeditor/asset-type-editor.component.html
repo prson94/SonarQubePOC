@@ -21,6 +21,15 @@
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
                     </div>
                 </div>
+
+                <div class="row" *ngIf="model.Parents && model.Parents.length > 0 && model.SelectedPredicateID > 0">
+                    <div class="col s12">
+                        <div class="FieldNameRequired">Parent</div>
+                        <p-dropdown filter="true" [options]="model.Parents" #parent="ngModel" [(ngModel)]="model.ParentID" [style]="{'width':'100%'}" name="parent" required></p-dropdown>
+                        <div [hidden]="parent.valid || parent.pristine" class="validation-text">Parent is required</div>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col l6 m6 s12">
                         <div class="FieldNameRequired">Display Format</div>

@@ -35,8 +35,7 @@ import { ReferenceItemType } from '../../models/reference.model';
                             </p-column>       
                         </p-dataTable>  
                     </span>                 
-                    <d3s-asset-type-editor *ngIf="showEditor" 
-                            [showParentPredicates]="false"
+                    <d3s-asset-type-editor *ngIf="showEditor"                             
                             [assetTypeClass]="'RT'"                             
                             [id]="selected?.AssetTypeID" 
                             [title]="selected != null ? 'Edit Reference List' : 'Add Reference List'" 

@@ -749,6 +749,19 @@ namespace d360.web.Controllers
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code" });
+
+                    var currentRefTypeID = id;
+                    var parentRefType = Company.GetParentType<ReferenceItemType>(id);
+                    var loopCount = 0;
+                    //add the parent columns
+                    while (parentRefType != null && loopCount < 20)
+                    {
+                        columns.Insert(0,new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ID}" });
+
+                        parentRefType = Company.GetParentType<ReferenceItemType>(parentRefType.ID);
+                        loopCount++;
+                    }
+
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
@@ -5823,6 +5836,27 @@ where    A.RuleID = @id", new { id });
                                 }
                             });
                         }
+
+                        var parentRefType = Company.GetParentType<ReferenceItemType>(refType.ID);
+
+                        var heirarchyColumns = new DetailReadOnlyRowModel
+                        {
+                            columns = (parentRefType != null) ? 2:1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Hierarchical", FieldName = "Hierarchical", FieldDescription = "Is this reference list a hierarchical reference list", Value = parentRefType != null ? "Yes":"No" }
+                            }                            
+                        };
+
+                        if(parentRefType != null)
+                        {
+                            heirarchyColumns.SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Parent", FieldName = "Parent", FieldDescription = "Parent Reference List", Value = parentRefType.Name }
+                            };
+                        }
+
+                        model.rows.Add(heirarchyColumns);                        
                     }
                     break;
                 #endregion
@@ -7530,6 +7564,20 @@ from	    TaxonomyType FAT
 
 
             var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.ColumnOrder);
+            var relations = new List<ReferenceItemType>();
+
+            var parent = Company.GetParentType<ReferenceItemType>(typeID);
+            var maxLoops = 20;
+
+            while(parent != null && maxLoops > 0)
+            {
+                relations.Insert(0,parent);
+
+                parent = Company.GetParentType<ReferenceItemType>(parent.ID);
+                                
+                maxLoops--;
+            }
+
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
@@ -7543,7 +7591,13 @@ from	    TaxonomyType FAT
 
             document.SetCellValue(1, ++colIndex, "Code");
 
-            //add fields for this relation
+            //add parents for this ref list
+            foreach (var refList in relations)
+            {
+                document.SetCellValue(1, ++colIndex, refList.Name ?? "");
+            }
+
+            //add fields for this 
             foreach (var field in fields)
             {
                 document.SetCellValue(1, ++colIndex, field.FriendlyName ?? "");
@@ -7559,9 +7613,19 @@ from	    TaxonomyType FAT
                 rowIndex++;
 
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Code ?? "");
-
-
+                
                 var rowDict = ((IDictionary<string, object>)row);
+
+                foreach(var parentRefList in relations)
+                {
+                    var key = $"Rel{parentRefList.ID}";
+
+                    if (rowDict.ContainsKey(key))
+                    {
+                        document.SetCellValue(rowIndex, ++dataColIndex, (rowDict[key] ?? "").ToString());                        
+                    }
+                }
+
                 foreach (var field in fields)
                 {
                     var fieldKey = $"Field{field.ID}";
