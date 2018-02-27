@@ -17,7 +17,7 @@ import { TreeNode } from 'primeng/primeng';
             </div>
         </div>
         <div class="row" style="margin-top: 20px">
-            <div class="col l5 m5 s12">
+            <div class="col l6 m6 s12">
                 <div style="float: left" class="FieldNameRequired">Filter Fields:</div>
                 <div style="float: right; width: 150px; text-align: right">
                     <input type="checkbox" [(ngModel)]="model.All" /> All Items
@@ -62,7 +62,7 @@ import { TreeNode } from 'primeng/primeng';
                 </table>
             </div>
 
-            <div class="col l2 m2 s12">
+            <div class="col l1 m1 s12">
             </div>
 
             <div class="col l5 m5 s12">
