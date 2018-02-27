@@ -71,7 +71,8 @@ export class HeaderActionsComponent {
                 }
                 //dont show raise issue button on raise issue screen or any admin screens or top level artifact screen           
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
-                this.hasRaiseIssueButton = (!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && this.notTopArtifact && CompanySettings.DisableIssueManagement != 'true');
+                this.hasRaiseIssueButton = (!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && CompanySettings.DisableIssueManagement != 'true');
+                //this.hasRaiseIssueButton = (!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && this.notTopArtifact && CompanySettings.DisableIssueManagement != 'true');
 
                 this.calculateControlWidth();
             }

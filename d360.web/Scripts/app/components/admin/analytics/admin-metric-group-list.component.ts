@@ -10,7 +10,7 @@ import { MessagesService } from '../../../services/messages.service';
     selector: 'd3s-admin-metric-group-list',
     template: ` 
                <header *ngIf="formMode == FormMode.Default">
-                    Groups
+                    Measure Groups
                     <d3s-tile-actions hasAdd="true" (addClick)="selectNode(null); add()"></d3s-tile-actions>
                 </header>
                <d3s-loading [isLoading]="isLoading"></d3s-loading>

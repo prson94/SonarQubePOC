@@ -9,7 +9,7 @@ import { MessagesService } from '../../../services/messages.service';
     selector: 'd3s-admin-metric-item-list',
     template: ` 
                 <header *ngIf="formMode == FormMode.Default">
-                    Items
+                    Measures
                     <d3s-tile-actions hasAdd="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>   
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
