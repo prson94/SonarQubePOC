@@ -632,6 +632,8 @@ namespace d360.model
         {
             Console.WriteLine("DEBUG - CHANGING ITEM STATE.");
 
+            Console.WriteLine($"Executing - [workflow].[changeItemState] {item.Step.Version.TypeID}, {item.Step.ID}, {item.ItemID} ");
+
             Database.Connection.Execute("[workflow].[changeItemState] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
         }
 
@@ -965,14 +967,7 @@ namespace d360.model
                     if (artifact == null) return;
                     artifact.Visible = visibility;
                     SaveChanges();
-                    break;                
-                case core.SystemObjects.Intersect:
-                    var intersect = Intersects.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    if (intersect == null) return;
-                    //intersect.Visible = visibility;
-                    intersect.State = visibility ? State.Active : State.PendingAdd;
-                    SaveChanges();
-                    break;                
+                    break;                                
                 case core.SystemObjects.Taxonomy:
                     var taxonomy = Taxonomies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
                     if (taxonomy == null) return;
