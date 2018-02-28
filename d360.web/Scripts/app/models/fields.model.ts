@@ -44,7 +44,7 @@ export class FieldTypeEditorModel {
     FilteredLookupItems: FilteredLookupItem[] = [];
     FilteredLookupItem: FilteredLookupItem;
     OwnershipLookupSettings: OwnershipLookupSettings;    
-    IsPrimaryFilter: boolean;
+    IsPrimaryFilter: boolean;    
 }
 
 export class OwnershipLookupSettings {
@@ -109,6 +109,7 @@ export class FieldType {
     Fields: Field[];
     FieldTypeFusionLookupDefinitions: FieldTypeFusionLookupDefinition[];
     FieldTypeRelationLookupDefinitions: FieldTypeRelationLookupDefinition[];
+    ParentFieldTypeID: number;
 }
 
 export class Field {

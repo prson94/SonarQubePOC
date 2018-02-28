@@ -107,7 +107,7 @@
             <div class="row">
                 <div class="col s6">
                     <div class="FieldNameRequired">Type of List</div>
-                    <p-dropdown name="lookup" [options]="lookups.Lookups" [ngModel]="model.selectedLookup" (ngModelChange)="model.selectedLookup=$event;lookupTypeSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    <p-dropdown filter="true" name="lookup" [options]="lookups.Lookups" [ngModel]="model.selectedLookup" (ngModelChange)="model.selectedLookup=$event;lookupTypeSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col s3">
                     <div class="FieldNameRequired">List Display Format</div>
@@ -120,7 +120,12 @@
                         <option *ngFor="let t of model.LookupTokens" [value]="t.value">{{t.label}}</option>
                     </select>
                 </div>
-                <div class="col s3 offset-s6">
+                <div class="col s6" *ngIf="listParentFields.length > 0; else noParentContent">
+                   <div class="FieldNameRequired">Parent List</div>
+                    <p-dropdown name="lookupparent" [options]="listParentFields" [(ngModel)]="model.FieldType.ParentFieldTypeID" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>             
+                </div>
+                <ng-template #noParentContent><div class="col s6">&nbsp;</div></ng-template>
+                <div class="col s3">
                     <div class="FieldNameRequired">List Edit Format</div>
                     <input name="lookupEditFormat" pInputText type="text" [(ngModel)]="model.FieldType.LookupEditFormat" style="width: 98%; display: block;" />
                 </div>

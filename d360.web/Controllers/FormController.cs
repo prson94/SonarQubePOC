@@ -3307,23 +3307,13 @@ namespace d360.web.Controllers
                 case SystemObjects.PolicyType:
                     list.Add("TextPath", "TextPath");
                     break;
-                //case SystemObjects.Predicate:
-                //    list.Add("Name", "Name");
-                //    list.Add("TextPath", "TextPath");
-                //    break;
                 case SystemObjects.Resource:
                 case SystemObjects.ResourceType:
                     list.Add("First Name", "FirstName");
                     list.Add("Last Name", "LastName");
                     list.Add("Email", "Email");
                     break;
-                case SystemObjects.RuleType:
-                    //list.Add("Name", "Name");
-                    //list.Add("Description", "Description");
-                    break;
-                case SystemObjects.TaxonomyType:
-                    //list.Add("Name", "Name");
-                    //list.Add("Description", "Description");
+                case SystemObjects.TaxonomyType:                    
                     list.Add("TextPath", "TextPath");
                     break;                
             }
@@ -3333,6 +3323,27 @@ namespace d360.web.Controllers
                 Data = list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+        }
+
+        [Route("Reference_Hierarchy"), NonNullableParameters]
+        public JsonNetResult Reference_Hierarchy(int id, SystemObjects objectType, int objectId)
+        {
+            //return possible hierarchy parents for this object type
+            var parent = Company.GetParentType<ReferenceItemType>(id);
+            var list = new List<PrimeSelectItem>();
+
+            if(parent != null)
+            {                
+                //get possible parent reference list types defined for this object / object id they cant already be parents
+                list = Company.FieldTypes.Where(x => x.Object == objectType.ToString() && x.ObjectID == objectId && x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == parent.ID).Select(i =>  new PrimeSelectItem { label = i.FriendlyName, value = i.ID.ToString() }).ToList();
+                if(list.Count > 0) list.Insert(0, new PrimeSelectItem { label = "", value = "" });
+            }
+
+            return new JsonNetResult
+            {
+                Data = list,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };            
         }
 
         [Route("FieldType_Lookup_DefaultValueOptions"), NonNullableParameters]
@@ -3665,6 +3676,9 @@ namespace d360.web.Controllers
                 {
                     throw new ConflictException("Error Occurred!", val.Message);
                 }
+
+                if (model.FieldType.Type != DataType.Lookup.ToString())                
+                    model.FieldType.ParentFieldTypeID = 0;
 
                 switch (model.FieldType.Type)
                 {
@@ -4028,6 +4042,11 @@ namespace d360.web.Controllers
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
                 ft.ColumnWidth = model.FieldType.ColumnWidth;
                 ft.AllowMultipleValues = model.FieldType.AllowMultipleValues;
+
+                if (model.FieldType.Type == DataType.Lookup.ToString())
+                    ft.ParentFieldTypeID = model.FieldType.ParentFieldTypeID;
+                else
+                    ft.ParentFieldTypeID = 0;
 
                 if (
                     (model.FieldType.Type == DataType.ComplexRelationLookup.ToString()) ||

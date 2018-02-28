@@ -80,7 +80,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private fieldsFromRelation: SelectItem[] = [];
 
     private supportsPrimaryFilterOption: boolean = false;
-    private displayFieldSelected: boolean = true;
+    private displayFieldSelected: boolean = true;    
+    public listParentFields: SelectItem[] = [];
 
     private errorMessage: string = "";
 
@@ -414,6 +415,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.LookupObjectType = type;
         
         this.loadDefaultValueOptions(type, id);
+        this.loadHierarchyOptions(type, id);
         return this.loadTokens(type, id);
     }
 
@@ -442,10 +444,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.fieldsService.getRelationObjectFields(this.objectType, this.objectID, value)
             .then(d => {
                 this.fieldsFromRelation = d;
-            })
-            //.then(() => {
-            //    this.isLoading = false;
-            //});
+            });            
     }
 
     private cardinalReferenceItemListFromRelationshipSelected(value: number): Promise<any> {
@@ -460,9 +459,21 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private cardinalFieldFromRelationship_FieldSelected(value: number): Promise<any> {
-        this.model.FieldType.LookupObjectFieldTypeID = value;
-        console.log(this.model.FieldType.LookupObjectFieldTypeID);
+        this.model.FieldType.LookupObjectFieldTypeID = value;        
         return Promise.resolve();
+    }
+
+    private loadHierarchyOptions(objectType: string, objectId: number): void {
+        this.listParentFields = [];
+        if (objectType != 'ReferenceItem') {
+            if (this.model != null && this.model.FieldType != null)
+                this.model.FieldType.ParentFieldTypeID = 0;
+            return;
+        }
+        
+        this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID).then(r => {
+            this.listParentFields = r;
+        });
     }
 
     private loadDefaultValueOptions(objectType: string, objectId: number): Promise<void> {
@@ -604,7 +615,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         this.isLoading = true;
-        //console.log('save', this.model);
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {

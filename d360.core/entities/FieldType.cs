@@ -108,6 +108,10 @@ namespace d360.core.entities
         [DataMember]
         public bool AllowMultipleValues { get; set; }
 
+
+        [DataMember]
+        public int ParentFieldTypeID { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 

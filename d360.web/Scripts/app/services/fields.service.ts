@@ -57,6 +57,13 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
+    getReferenceTypeHierarchyFields(id: number, objectType: string, objectId: number): Promise<SelectItem[]> {
+        return this.http.get(`form/Reference_Hierarchy?id=${id}&objectType=${objectType}&objectId=${objectId}`)
+            .toPromise()
+            .then(response => <SelectItem[]>response.json())            
+            .catch(err => this.handleError(err));
+    }
+
     getLookupDefaultValueOptions(id: number, type: string): Promise<SelectItem[]> {
         return this.http.get(`form/FieldType_Lookup_DefaultValueOptions?id=${id}&type=${type}`)
             .toPromise()
