@@ -3344,10 +3344,10 @@ namespace d360.web.Controllers
             switch (type)
             {
                 case SystemObjects.ArtifactType:
+                    var sql = "select ast.ObjectID as value,d.DisplayValue as title  from asset ast inner join assettype astt on (ast.assettypeid = astt.id and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where astt.ObjectID = @id order by d.DisplayValue";
+
                     list.AddRange(
-                        Company.Filter<Artifact>(i => i.ArtifactTypeID == id)
-                        .OrderBy(i => i.DisplayValue)
-                        .Select(i => new ListIntItem { title = i.DisplayValue, value = i.ID })
+                        Company.Query<ListIntItem>(sql, new { id = id }) 
                     );
                     break;
                 case SystemObjects.ReferenceItem:
