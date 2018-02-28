@@ -7501,25 +7501,9 @@ from	    TaxonomyType FAT
         [Route("breadcrumb/typeahead")]
         public IEnumerable<BreadcrumbTypeAheadModel> GetBreadcrumbTypeahead(string q, int num, SystemObjects objectType, int objectId)
         {
+            var sql = $"select top {num} d.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  cross apply [dbo].GetAssetDisplayValueById(ast.id) d cross apply [dbo].GetAssetUrl(astt.[object],astt.objectid, ast.objectid) u where ast.[object] = @typeName and astt.objectId = @typeId and d.DisplayValue like @search";
 
-            switch (objectType)
-            {
-                case SystemObjects.Artifact:
-                    return (from artifact in Company.Artifacts
-                            where artifact.DisplayValue.StartsWith(q) && artifact.ArtifactTypeID == objectId
-                            select artifact).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.DisplayValue, Url = string.Format("artifact/{0}/{1}", x.ArtifactTypeID, x.ID) });
-                case SystemObjects.TaxonomyType:
-                    return (from taxonomyType in Company.TaxonomyTypes
-                            where taxonomyType.Name.StartsWith(q)
-                            select taxonomyType).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("model/{0}", x.ID) });
-                case SystemObjects.Rule:
-                    return (from rule in Company.Rules
-                            where rule.DisplayValue.StartsWith(q)
-                            select rule).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.DisplayValue, Url = string.Format("rule/{0}", x.ID) });
-                default:
-                    break;
-            }
-            return null;
+            return Company.Query<BreadcrumbTypeAheadModel>(sql, new { typeName = objectType.ToString(), typeId = objectId, search = $"{q}%" });            
         }
 
         #endregion
