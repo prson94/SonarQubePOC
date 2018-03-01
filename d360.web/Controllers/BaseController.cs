@@ -804,7 +804,7 @@ namespace d360.web.Controllers
                                     switch (obj)
                                     {
                                         case "ArtifactType":
-                                            sql = $"select ID as Value, DisplayValue as Text from Artifact where ArtifactTypeID = {objID} order by DisplayValue";
+                                            sql = $"select ASS.ObjectID as Value, D.DisplayValue as Text from Asset ASS inner join AssetType ASST on ASS.AssetTypeID = ASST.ID and ASS.[Object] = 'Artifact' and ASST.ObjectID = {objID} cross apply GetAssetDisplayValueByID(ASS.ID) D order by D.DisplayValue";
                                             break;
                                         case "FusionAttributeType":
                                             sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";

@@ -905,37 +905,7 @@ namespace d360.web.Controllers
                     if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, type.ID, SystemObjects.Artifact, parseIntField(form, "ParentID"), model.ID))
                     {
                         return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
-                    }
-                    /*
-                    var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                        i.Object == "ArtifactType" &&
-                        i.ObjectID == type.ID &&
-                        i.PredicateType.Value == PredicateType.InterTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersectType != null)
-                    {
-                        var intersect = new Intersect {
-                            Subject = SystemObjects.Artifact.ToString(),
-                            SubjectID = parseIntField(form, "ParentID"),
-                            Object = SystemObjects.Artifact.ToString(),
-                            ObjectID = model.ID,
-                            IntersectTypeID = intersectType.ID
-                        };
-                   
-                        var parentExists = Company.Any<Asset>(i => 
-                            i.ObjectID == intersect.SubjectID && 
-                            i.AssetType.Object == "ArtifactType" && 
-                            i.AssetType.ObjectID == intersectType.SubjectID
-                            );
-
-                        if (!parentExists)
-                        {
-                            return jsonException($"Parent {intersectType.SubjectName} with ID {intersect.SubjectID} could not be found.", HttpStatusCode.NotFound);
-                        }
-
-                        Company.Add(intersect);
-                    }*/
+                    }                    
                 }
 
                 return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = model.ID });
