@@ -76,7 +76,13 @@ export class AdminOrganizationContractsComponent extends BaseComponent implement
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.organization != null) this.getContracts();
+        if (changes['organization']) {
+            if (this.organization != null)
+                this.getContracts();
+            else
+                this.contracts = [];
+        }
+        
     }
 
     getContracts() {

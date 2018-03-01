@@ -15,7 +15,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                    <p-dataTable #dt [globalFilter]="gb" [value]="organizationTypes" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowSelect)="type=$event.data;" (onRowDblclick)="type=$event.data;showEditor=true;typeChange.emit(type);" (selectionChange)="type=$event;typeChange.emit(type)" [selection]="type">
+                    <p-dataTable #dt [globalFilter]="gb" [value]="organizationTypes" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowSelect)="type=$event.data;typeChange.emit(type)" (onRowDblclick)="type=$event.data;showEditor=true;typeChange.emit(type);" (selectionChange)="type=$event;typeChange.emit(type)" [selection]="type">
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="OrganizationCount" header="Organization Count" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'150px'}"></p-column>
@@ -38,7 +38,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                 <d3s-asset-type-editor *ngIf="showEditor" [showParentPredicates]="false" [assetTypeClass]="'O'" [id]="type?.AssetTypeID" [title]="(type?'Edit':'Add') + ' Organization Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>                
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
-                    [itemId]="type?.AssetTypeID"
+                    [itemId]="type?.ID"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the organization type [' + [type?.Name] + ']?'" 
                     (onCancel)="showDelete=false;"
@@ -87,7 +87,7 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
     delete(id: number) {
         this.organizationsService.deleteOrganizationType(id).then(result => {
             this.showMessageForResult(this.messagesService, result);
-            if (result.type != 'error') this.organizationTypes = this.organizationTypes.filter(x => x.AssetTypeID != id);
+            if (result.type != 'error') this.organizationTypes = this.organizationTypes.filter(x => x.ID != id);
             this.showDelete = false;
         });
     }

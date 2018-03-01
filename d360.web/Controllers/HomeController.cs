@@ -1,7 +1,9 @@
 ﻿using System.Web.Mvc;
 using d360.core.entities;
 using d360.model;
+using d360.web.Filters;
 using System.Linq;
+using d360.core.enums;
 
 namespace d360.web.Controllers
 {
@@ -42,5 +44,18 @@ namespace d360.web.Controllers
             }
             return View("App");
         }
+
+        [Authorize, Route("terms")]
+        public ViewResult Terms()
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("Settings", Community.GetCompanySettings());
+            //TODO: logic for returning the appropriate contracts to the view here
+            var res = Company.GlobalReportingResources.Find(Company.CurrentResourceID);
+            var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == res.Email && (i.Accepted ?? false) == false && i.State == State.Active);
+
+            return View();
+        }
+
     }
 }

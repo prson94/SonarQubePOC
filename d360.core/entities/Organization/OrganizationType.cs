@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using d360.core.enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,6 +18,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string DisplayFormat { get; set; }
+
+        [DataMember]
+        public State State { get; set; } = State.Active;
 
         [IgnoreDataMember, ForeignKey("OrganizationTypeID")]
         public virtual ICollection<Organization> Organizations { get; set; }

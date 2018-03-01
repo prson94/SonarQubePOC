@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using d360.core.enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -26,6 +27,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string AdministratorEmail { get; set; }
+
+        [DataMember]
+        public State State { get; set; } = State.Active;
 
         [IgnoreDataMember, ForeignKey("OrganizationTypeID")]
         public virtual OrganizationType OrganizationType { get; set; }

@@ -656,11 +656,11 @@ namespace d360.web.Controllers
         public async Task<ActionResult> Register(Guid? registrationId = null, RegisterStep startStep = RegisterStep.Initial)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", Community.GetCompanySettings());
+            ViewData.Add("Settings", Community.GetCompanySettings()); 
 
             var model = new RegisterModel { Step = startStep, RegistrationID = registrationId, Accept = false};
             model.IsUsingActiveDirectory = isUsingActiveDirectory();
-            var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+            var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
 
             if (registrationId.HasValue)
             {
@@ -768,7 +768,7 @@ namespace d360.web.Controllers
                             emailDomain = emailDomain.Trim();
 
                             var domain = Company.OrganizationDomains.FirstOrDefault(d => d.Domain == emailDomain);
-                            var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+                            var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
 
 
                             if (orgs.Any())
@@ -965,7 +965,7 @@ namespace d360.web.Controllers
                                 {
                                     model.Email = registration.Email;
 
-                                    var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+                                    var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
 
                                     if (orgs.Any())
                                     {
@@ -1115,7 +1115,7 @@ namespace d360.web.Controllers
 
                                 #region Check if organization resource account exists
 
-                                var org = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+                                var org = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
 
                                 if (org.Any())
                                 {
@@ -1234,7 +1234,7 @@ namespace d360.web.Controllers
 
                                 #region Check if organization resource account exists
 
-                                var org = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+                                var org = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
 
                                 if (org.Any())
                                 {

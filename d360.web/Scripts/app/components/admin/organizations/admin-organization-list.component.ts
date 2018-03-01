@@ -18,7 +18,7 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <span *ngIf="!isLoading && !showEditor && !showDelete">
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="organization" (selectionChange)="organization=$event;organizationChange.emit(organization);" (onRowSelect)="organization=$event.data;" (onRowDblclick)="organization=$event.data;showEditor=true;organizationChange.emit(organization);">
+            <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="organization" (selectionChange)="organization=$event;organizationChange.emit($event);" (onRowSelect)="organization=$event.data;organizationChange.emit(organization);" (onRowDblclick)="organization=$event.data;showEditor=true;organizationChange.emit(organization);">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>
                 <p-column field="AdministratorEmail" header="Administrator Email"></p-column>
@@ -80,8 +80,18 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
         this.theDeleteCallback = this.deleteOrganization.bind(this);
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {            
-        if (this.organizationType != null && changes['organizationType']) this.getOrganizations();
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {     
+        if (changes['organizationType']) {
+            if (this.organizationType != null) {
+                this.getOrganizations();
+            } else {
+                this.organizations = [];
+                if (this.organization != null) {
+                    this.organization = null;
+                    this.organizationChange.emit(null);
+                }
+            }
+        }
     }
 
     getOrganizations() {
@@ -91,7 +101,10 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
             .then(result => {
                 this.organizations = result;
                 this.isLoading = false;
-                if (this.organizations.length > 0) this.organization = this.organizations[0];
+                if (this.organizations.length > 0)
+                    this.organization = this.organizations[0];
+                else
+                    this.organization = null;
 
                 this.organizationChange.emit(this.organization);
             });

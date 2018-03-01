@@ -11465,7 +11465,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 Company.OrganizationResources.RemoveRange(resources);
                 Company.OrganizationRegistrations.RemoveRange(registrations);
 
-                Company.Organizations.Remove(model);
+                //Company.Organizations.Remove(model);
+                model.State = State.Deleted;
 
                 Company.SaveChanges();
 
@@ -11487,6 +11488,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
+        
 
         #endregion
 
@@ -12036,6 +12039,45 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        #endregion
+
+        #region Organization Type
+        [HttpDelete, ActionName("OrganizationType"), Route("OrganizationType"), NonNullableParameters]
+        public JsonResult DeleteOrganizationType(int id)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+
+                var model = Company.GetById<OrganizationType>(id);
+                if (model == null) throw new NotFoundException("organizationType");
+
+                model.State = State.Deleted;
+
+                Company.SaveChanges();
+                
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "delete"
+                };
+
+                return jsonSuccess("Organization successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+ 
         }
 
         #endregion

@@ -67,7 +67,7 @@ export class OrganizationsService extends BaseService {
     }
 
     deleteOrganizationType(id: number): Promise<JsonResult> {
-        return this.http.delete(`/form/AssetType?id=${id}`)
+        return this.http.delete(`/form/OrganizationType?id=${id}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
