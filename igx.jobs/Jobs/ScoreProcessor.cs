@@ -10,7 +10,7 @@ namespace igx.jobs
     public static class ScoreProcessor
     {
         const string functionName = "Scoring_Calculate";
-        const string timerSettings = "0 */10 * * * *";
+        const string timerSettings = "0 */5 * * * *";
         //const string timerSettings = "*/10 * * * * *";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   

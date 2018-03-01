@@ -484,12 +484,11 @@ select 	O.ObjectID,
 	    O.TypeID as ArtifactTypeID, 
 	    O.DisplayValue, 
 	    F.FieldTypeID, 
-        FT.Name as FieldName, 
-        FT.FriendlyName as FieldFriendlyName, 
+        F.Name as FieldName, 
+        F.FriendlyName as FieldFriendlyName, 
 	    F.FormattedValue as FieldValue 
 from	AssetDetail O 
-        inner join Field F on F.AssetID = O.ID
-	    inner join FieldType FT on FT.ID = F.FieldTypeID
+        inner join FieldDetail F on F.AssetID = O.ID
 where	O.AssetTypeClass = 1";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -753,7 +752,7 @@ FROM [dbo].[Group]";
 
                         selectSql = @"
 SELECT  * 
-FROM    ResponsibilityDetails";
+FROM    ResponsibilityDetail";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

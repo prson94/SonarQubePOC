@@ -302,8 +302,13 @@ from	cache.ObjectDetails T
                             }
                             else
                             {
-                                if (fields.ContainsKey("Description"))
-                                    fields.Add("Description", fields["Description"]);
+                                if (!string.IsNullOrEmpty(detail.Description))
+                                {
+                                    if (fields.ContainsKey("Description"))
+                                        fields["Description"] = detail.Description;
+                                    else
+                                        fields.Add("Description", detail.Description);
+                                }
 
                                 if (fields.ContainsKey("TextPath")) fields["TextPath"] = detail.TextPath;
                                 else fields.Add("TextPath", detail.TextPath);
