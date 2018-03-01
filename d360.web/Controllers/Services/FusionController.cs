@@ -188,11 +188,12 @@ order by    IT.SubjectID, FAT.Name", new { id }).AsQueryable();
 		T.Name as FusionType,
         substring(
         (
-            select	',' + ATY.Name + ':' + IA.DisplayValue  AS [text()]
+            select	',' + ASST.Name + ':' + D.DisplayValue  AS [text()]
             from	FusionOwner [IO]
-					inner join Artifact IA on IA.ID = [IO].ArtifactID and [IO].FusionID = A.ID
-					inner join ArtifactType ATY on ATY.ID = IA.ArtifactTypeID
-            ORDER BY IA.DisplayValue
+					inner join Asset ASS on ASS.ObjectID = [IO].ArtifactID and [IO].FusionID = A.ID and ASS.[Object] = 'Artifact'
+					inner join AssetType ASST on ASS.AssetTypeID = ASST.ID
+					cross apply GetAssetDisplayValueById(ASS.ID) D
+            ORDER BY D.DisplayValue
             For XML PATH ('')
         ), 2, 1000) as Owners,
         {0}

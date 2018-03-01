@@ -662,7 +662,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
         {
             return Database.Connection.Query<FusionOwnerOption>(@"
 	select	ASTT.Name as [Type],
-			AST.ObjectID,
+			AST.ObjectID as ID,
 			ASTT.Name + ' : ' + D.DisplayValue as Name
 	from	
 			Asset AST
