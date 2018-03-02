@@ -5,7 +5,7 @@
         <d3s-tile-actions *ngIf="!isLoading" [hasExport]="true" (exportClick)="export()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
     </header>
     <input [hidden]="!showSimpleFilter || isLoading" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-    <p-dataTable *ngIf="!isLoading" #dt [globalFilter]="gb" [value]="history" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,15]" [paginator]="true" [pageLinks]="3" scrollable="true" scrollWidth="560px">
+    <p-dataTable *ngIf="!isLoading" #dt [globalFilter]="gb" [value]="history" selectionMode="single" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="true" [pageLinks]="3" scrollable="true" scrollWidth="560px">
         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
         <p-column header="Comment" field="Comment" [style]="{'width' : '180px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
             <ng-template pTemplate type="body" let-item="rowData">

@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
             <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-        <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="15" [rowsPerPageOptions]="[10,15,25]" [paginator]="true" [pageLinks]="3" [(selection)]="selection">
+        <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="15" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="true" [pageLinks]="3" [(selection)]="selection">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer> 
             <p-column header="Workflow Name" field="WorkflowName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
                 <ng-template let-item="rowData" type="body" pTemplate>
