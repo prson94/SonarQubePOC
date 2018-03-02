@@ -19,7 +19,9 @@ namespace d360.core.entities
 
         public int ObjectID { get; set; }
 
-        public string AssetTypeName { get; set; }
+        public AssetTypeClass AssetTypeClass { get; set; }
+
+        public string TypeName { get; set; }
 
         public string Type { get; set; }
 
