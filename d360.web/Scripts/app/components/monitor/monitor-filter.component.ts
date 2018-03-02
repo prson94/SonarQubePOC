@@ -7,13 +7,16 @@ import { WorkflowListItem } from '../../models/workflow.model';
 @Component({
     selector: 'd3s-monitor-filter',
     template: ` 
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading">
-    <div class="tile tile-detail" style="padding-bottom: 15px">
+
+
+<div class="tile tile-detail" style="padding-bottom: 15px">
+    <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
+    <div *ngIf="!isLoading">
         <header>Choose Workflow Types</header>
         <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
     </div>
 </div>
+
 
               `,
     providers: [WorkflowService],

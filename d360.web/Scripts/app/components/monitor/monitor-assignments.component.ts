@@ -8,9 +8,9 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'd3s-monitor-assignments',
     template: ` 
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading">
-    <div class="tile tile-detail">
+<div class="tile tile-detail">
+    <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
+    <div *ngIf="!isLoading">
         <header>
             My Assignments
             <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>

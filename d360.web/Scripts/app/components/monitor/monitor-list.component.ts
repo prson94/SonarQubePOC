@@ -8,9 +8,9 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'd3s-monitor-list',
     template: ` 
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading">
-    <div class="tile tile-detail">
+<div class="tile tile-detail">
+    <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
+    <div *ngIf="!isLoading">
         <header>
             Workflows
             <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
@@ -35,13 +35,13 @@ import { Router } from '@angular/router';
             <p-column field="UpdatedBy" header="Updated By" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
             <p-column field="Version" header="Version" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
             <p-column field="ResponsibleUser" header="Responsibility" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'120px'}" filterMatchMode="contains">
-               <ng-template pTemplate="body" let-item="rowData">
+                <ng-template pTemplate="body" let-item="rowData">
                     <span *ngIf="item.ResponsibleUser != null && item.ResponsibleUser.length > 15" [pTooltip]="item.ResponsibleUser" style="word-wrap:break-word;">{{item.ResponsibleUser | slice:0:15}}...</span>
                     <span *ngIf="item.ResponsibleUser != null && item.ResponsibleUser.length <= 15" style="word-wrap:break-word;">{{item.ResponsibleUser}}</span>
                 </ng-template>
             </p-column>
         </p-dataTable>
-    </div>
+    </div>     
 </div>
               `,
     providers: [WorkflowService],
@@ -54,7 +54,8 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
     @Input() objectType: string;
     @Input() objectId: number;
     @Output() filteredTypes = new EventEmitter();
-
+    @Output() onLoadComplete = new EventEmitter();
+    
     useFilteredObject: boolean = false;
     workflowItems: any[];
 
@@ -121,6 +122,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
                     this.selection = this.workflowItems[0];
                     this.selectionChange.emit(this.selection);
                 }
+                this.onLoadComplete.emit({ rows: this.workflowItems == null ? 0 : this.workflowItems.length });
                 this.isLoading = false;
             });
     }

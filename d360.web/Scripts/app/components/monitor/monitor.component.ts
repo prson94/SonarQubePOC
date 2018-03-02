@@ -11,7 +11,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     selector: 'd3s-monitor',
     template: ` 
 <div class="row">
-    <div class="col s12 m6">
+    <div class="col s12" [class.m6]="!expandRow">
         <d3s-monitor-filter [hidden]="isFiltered" (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
         
         <d3s-monitor-assignments *ngIf="isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
@@ -21,7 +21,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 (selectionChange)="selectedWorkflowType = $event" 
                 [objectType]="objectType" 
                 [objectId]="objectId" 
-                (filteredTypes)="filteredTypes = $event">
+                (filteredTypes)="filteredTypes = $event"
+                (onLoadComplete)="loadComplete($event)">
         </d3s-monitor-list>
 
         <d3s-monitor-assignments *ngIf="!isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
@@ -50,16 +51,16 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     @Input() objectType: string;
     @Input() objectId: number;
     selectedWorkflowTypes: any[];
-    selectedWorkflowType: any;
+    selectedWorkflowType: any = {};
     selectedWorkflowItem: any;
     selectedWorkflowItemDetail: any;
     selectAll: boolean = true;
     isFiltered: boolean = false;
     filteredTypes: any[];
+    expandRow: boolean = false;
 
     sub: any;
     type: number;
-
 
     constructor(
         protected titleService: Title,
@@ -99,5 +100,9 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+    }
+
+    loadComplete(e: any) {
+        this.expandRow = e.rows == 0;
     }
 }
