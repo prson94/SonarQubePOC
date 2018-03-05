@@ -154,7 +154,7 @@ export class FusionRuleFilterEditorComponent extends BaseComponent implements On
 
     deleteFilterItem(fld) {
         let ix: number = this.model.Items.indexOf(fld);
-        this.model.Items.splice(ix);
+        this.model.Items.splice(ix,1);
     }
 
     getTestResults() {
