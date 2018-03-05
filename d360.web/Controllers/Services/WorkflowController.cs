@@ -1465,6 +1465,7 @@ order by wi.StartedOn desc";
                                     left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
                                 where
                                     wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
+                                order by StartedOn desc
                            ";
 
                 var w = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
