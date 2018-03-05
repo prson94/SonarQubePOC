@@ -48,7 +48,7 @@ export class LoadService extends BaseService {
         if (CompanySettings != null && CompanySettings.UseLegacyLineage != null) {
             this.lineageFlag = CompanySettings.UseLegacyLineage;
         }
-        if (this.lineageFlag) {
+        if (this.lineageFlag == true) {
             this.aOptions.push({ label: 'Lineage : Business', value: 'BL' });
             this.aOptions.push({ label: 'Lineage : Technical', value: 'TL' });
         }
