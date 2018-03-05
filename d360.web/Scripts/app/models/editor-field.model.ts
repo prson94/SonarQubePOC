@@ -25,7 +25,10 @@ export class EditorField {
     Validations: FieldValidation[];
     TypeaheadUri: string;
     Category: string;
-    MultiSelect: boolean;    
+    MultiSelect: boolean;
+    ParentFieldTypeID: number;
+    ParentFieldTypeName: string;
+    FieldTypeID: number;
 }
 
 export class EditorCategory {

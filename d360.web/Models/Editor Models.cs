@@ -224,6 +224,15 @@ namespace d360.web.Models
         public string SimilarItemsUri { get; set; }
         [DataMember]
         public string Category { get; set; }
+
+        [DataMember]
+        public int? ParentFieldTypeID { get; set; }
+
+        [DataMember]
+        public string ParentFieldTypeName { get; set; }
+
+        [DataMember]
+        public int FieldTypeID { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

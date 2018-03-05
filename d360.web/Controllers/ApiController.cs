@@ -7769,5 +7769,43 @@ from	    TaxonomyType FAT
 
         #endregion
 
+        #region Cascading dropdown values
+
+        [Route("FieldType_CascadingListValues/{fieldTypeID:int}/{parentItemId:int}")]
+        public List<System.Web.Mvc.SelectListItem> GetCascadingDropdownFieldValues(int fieldTypeID, int parentItemId)
+        {
+            var predicateTypeId = 3;
+            List<System.Web.Mvc.SelectListItem> items = new List<System.Web.Mvc.SelectListItem>();
+
+            var fieldType = Company.FieldTypes.Where(x => x.ID == fieldTypeID).FirstOrDefault();
+
+            if(fieldType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
+            if((fieldType.LookupObjectType ?? "").ToUpper() != "REFERENCEITEM") throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
+            var referenceListType = Company.ReferenceItemTypes.Where(x => x.ID == fieldType.LookupObjectID).FirstOrDefault();
+
+            if(referenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+                        
+            var parentReferenceListType = Company.GetParentType<ReferenceItemType>(referenceListType.ID);
+
+            if(parentReferenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
+
+
+            //var sql = "select Text, Value from fieldlookupvalue where fieldTypeID = @id";
+            var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
+                        inner join[intersectdetail] id on(id.subjecttype = 'ReferenceItemType' and id.objecttype = 'ReferenceItemType' and id.predicatetype = @predicate and id.objectid = flv.value and id.objecttypeid = flv.lookupobjectid and id.subjecttypeid = @parentReferenceListTypeId)
+                        inner join[referenceitem] ri on(ri.referenceitemtypeid = id.subjecttypeid and ri.id = id.subjectid and ri.id = @parentReferenceItemId)
+                        where flv.fieldTypeID = @id";
+
+            items = Company.Query<System.Web.Mvc.SelectListItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parentItemId, parentReferenceListTypeId = parentReferenceListType.ID }).ToList();
+
+            return items;
+
+        }
+
+        #endregion
+
     }
 } 

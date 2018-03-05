@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups, LookupItem } from '../models/fields.model';
+import { EditorDropDownItem } from '../models/editor-field.model'
 import { SelectItem } from 'primeng/components/common/api';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -210,6 +211,13 @@ export class FieldsService extends BaseService implements IFieldsService {
 
     getFilteredLookupDisplayFields(type: string, id: number, listType: string, listID: number): Promise<any> {
         return this.http.get(`form/FieldType_FilteredLookup_DisplayFields?type=${type}&id=${id}&listType=${listType}&listID=${listID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getCascadingListFieldValues(fieldTypeId: number, parentItemId: number): Promise<EditorDropDownItem[]> {
+        return this.http.get(`api/FieldType_CascadingListValues/${fieldTypeId}/${parentItemId}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

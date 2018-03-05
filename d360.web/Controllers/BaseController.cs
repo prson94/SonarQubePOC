@@ -536,7 +536,8 @@ namespace d360.web.Controllers
                             FieldType = f.Type.ToString(),
                             FieldDescription = f.FormDescription,
                             Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage),
-                            Category = f.Category
+                            Category = f.Category,
+                            FieldTypeID = f.ID
                         };
 
                         if (!string.IsNullOrEmpty(f.DefaultValue))
@@ -571,19 +572,29 @@ namespace d360.web.Controllers
                             fld.FieldType = DataType.Lookup.ToString();
                             try
                             {
+                                fld.MultiSelect = f.AllowMultipleValues;
+                                fld.ParentFieldTypeID = f.ParentFieldTypeID;
+
                                 fld.Items = new List<SelectListItem>();
 
-                                if (!f.IsRequired && !f.AllowMultipleValues) fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
-                                if (f.AllowAllValue) fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
+                                if (f.ParentFieldTypeID > 0)
+                                {
+                                    var parent = Company.FieldTypes.Where(x => x.ID == f.ParentFieldTypeID).FirstOrDefault();
 
-                                fld.MultiSelect = f.AllowMultipleValues;
+                                    if (parent != null) fld.ParentFieldTypeName = parent.FriendlyName;
+                                }
+                                else
+                                {
+                                    if (!f.IsRequired && !f.AllowMultipleValues) fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+                                    if (f.AllowAllValue) fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
 
-                                fld.Items.AddRange(
-                                    Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
-                                    .OrderBy(o => o.Text)
-                                    .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                    .ToList()
-                                );
+                                    fld.Items.AddRange(
+                                        Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                                        .OrderBy(o => o.Text)
+                                        .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                        .ToList()
+                                    );
+                                }
                             }
                             catch
                             {
@@ -640,8 +651,11 @@ namespace d360.web.Controllers
                             }
                         }
 
-                        fld.Required = (f.MinimumLength > 0 || f.Length > 0);
-                        /* Boolean, Date, DateTime, Decimal, Integer, String */
+                        if(f.Type == DataType.Lookup.ToString())  // lookups dont set min / length properties
+                            fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
+                        else
+                            fld.Required = (f.MinimumLength > 0 || f.Length > 0);
+                        
                         list.Add(fld);
                     }
 
@@ -695,7 +709,8 @@ namespace d360.web.Controllers
                             FieldType = ft.Type.ToString(),
                             FieldDescription = ft.FormDescription,
                             Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage),
-                            Category = ft.Category
+                            Category = ft.Category,
+                            FieldTypeID = ft.ID
                         };
 
                         #region FusionLookup
@@ -732,38 +747,49 @@ namespace d360.web.Controllers
                             {
                                 fld.Items = new List<SelectListItem>();
 
-                                if (!ft.IsRequired)
-                                    fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
-
-                                if (ft.AllowAllValue)
-                                    fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
-
+                                fld.ParentFieldTypeID = ft.ParentFieldTypeID;
                                 fld.MultiSelect = ft.AllowMultipleValues;
 
-                                var items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
-                                        .OrderBy(o => o.Text)
-                                        .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                        .ToList();
 
-                                if (ft.AllowMultipleValues)
+                                if (ft.ParentFieldTypeID > 0)
                                 {
-                                    var selected = new List<string>();
-                                    // selected items need to go into multiplevalues array
-                                    if (f!= null && !string.IsNullOrWhiteSpace(f.Value))
-                                        selected = f.Value.Split(',').ToList();
-                                    else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
-                                        selected = ft.DefaultValue.Split(',').ToList();
+                                    var parent = Company.FieldTypes.Where(x => x.ID == ft.ParentFieldTypeID).FirstOrDefault();
 
-                                    foreach (var item in items)
+                                    if(parent != null) fld.ParentFieldTypeName = parent.FriendlyName;
+                                }
+                                else
+                                {
+
+                                    if (!ft.IsRequired)
+                                        fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+
+                                    if (ft.AllowAllValue)
+                                        fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
+
+                                    var items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
+                                            .OrderBy(o => o.Text)
+                                            .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                            .ToList();
+
+                                    if (ft.AllowMultipleValues)
                                     {
-                                        if (selected.Contains(item.Value)) item.Selected = true;
+                                        var selected = new List<string>();
+                                        // selected items need to go into multiplevalues array
+                                        if (f != null && !string.IsNullOrWhiteSpace(f.Value))
+                                            selected = f.Value.Split(',').ToList();
+                                        else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
+                                            selected = ft.DefaultValue.Split(',').ToList();
+
+                                        foreach (var item in items)
+                                        {
+                                            if (selected.Contains(item.Value)) item.Selected = true;
+                                        }
                                     }
                                     
+                                    fld.Items.AddRange(
+                                        items
+                                    );
                                 }
-
-                                fld.Items.AddRange(
-                                    items  
-                                );
                             }
                             catch
                             {
@@ -886,8 +912,13 @@ namespace d360.web.Controllers
 
                         #endregion Relationship
 
-                        fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
-                        /* Boolean, Date, DateTime, Decimal, Integer, String */
+                        if (ft.Type == DataType.Lookup.ToString())
+                            fld.Required = (ft.MinimumLength > 0 || ft.Length > 0 || ft.IsRequired);
+                        else
+                            fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
+
+
+
                         if (!ft.AllowMultipleValues)
                         {
                             if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;

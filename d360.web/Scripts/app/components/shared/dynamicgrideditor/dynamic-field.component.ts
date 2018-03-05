@@ -1,10 +1,12 @@
-﻿import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { EditorField } from '../../../models/editor-field.model';
 import { SelectItem } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 import { FormHelpers } from '../../../static/form-helpers';
+import { CascadeService } from '../../../services/cascade.service';
+import { FieldsService } from '../../../services/fields.service';
 
 declare var CompanySettings;
 
@@ -62,11 +64,16 @@ declare var CompanySettings;
                             </header>
                         </p-editor>                                                                                                             
                         <div *ngSwitchCase="'Lookup'">
-                            <select *ngIf="!field?.MultiSelect" [formControlName]="field.FieldName" style="height:auto;width:100%;" [(ngModel)]="field.Value">
-                                <option></option>
-                                <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
-                            </select>
-                            <p-multiSelect *ngIf="field?.MultiSelect" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
+                            <p-multiSelect *ngIf="field?.MultiSelect;else singleSelectList" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
+                            <ng-template #singleSelectList>                                
+                                <select [formControlName]="field.FieldName" style="height:auto;width:100%;" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">                                            
+                                    <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
+                                    <ng-template #blankOption>
+                                        <option value=""></option>
+                                    </ng-template>
+                                    <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
+                                </select>
+                            </ng-template>                            
                         </div>
                         <div *ngSwitchCase="'Relationship'">                           
                             <p-dropdown *ngIf="!field?.MultiSelect" [filter]="true" [options]="field.Items | dropdownItemToSelectItemPipe" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [style]="{width:'100%'}" ngDefaultControl></p-dropdown>
@@ -105,20 +112,27 @@ declare var CompanySettings;
                 </div>
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [FieldsService]
 })
 export class DynamicFieldComponent extends BaseComponent implements OnInit {
     @Input() field: EditorField;
     @Input() form: FormGroup;
+    
+    @Output() listItemChange = new EventEmitter();
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
-
+    private sub: any;
 
     private colorValue: string = '#000';
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
 
-    constructor() { super(); }
+    constructor(
+        private cascadeService: CascadeService,
+        private fieldsService: FieldsService,
+        private ref: ChangeDetectorRef
+    ) { super(); }
 
     ngOnInit() {
         if (this.field && this.field.Validations) {
@@ -141,6 +155,29 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
             this.colorValue = this.field.Value;
 
         }
+
+        this.sub = this.cascadeService.cascadeMessage$.subscribe(
+            casc => {
+                if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
+                    
+                    if (casc.parentListItemId == null || casc.parentListItemId <= 0) {
+                     //   this.field.Items = [];
+                       // this.ref.markForCheck();
+                    }
+                    else {
+                        //load the values for the list that is a child                    
+                        this.field.Items = [];
+                        return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).then(res => {
+                            this.field.Items = res;
+                            this.ref.markForCheck();
+                        })
+                    }
+                }
+            });
+    }
+
+    ngOnDestroy() {
+        this.sub.unsubscribe();
     }
 
     get isValid() {
@@ -223,5 +260,5 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
 
     numbersOnly(event) {
         return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 45;
-    }
+    }    
 }

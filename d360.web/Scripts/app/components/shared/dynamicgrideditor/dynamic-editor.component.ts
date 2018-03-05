@@ -3,6 +3,8 @@ import { FormArray, FormGroup, FormBuilder, Validators, FormControl } from '@ang
 import { EditorDefinitionService } from '../../../services/editor-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
 import { MessagesService } from '../../../services/messages.service';
+import { FieldsService } from '../../../services/fields.service';
+import { CascadeService } from '../../../services/cascade.service';
 import { EditorField, EditorRow, FieldValidation, EditorDropDownItem, EditorCategory } from '../../../models/editor-field.model';
 import { BaseComponent } from '../base.component';
 
@@ -18,14 +20,14 @@ import * as _ from 'lodash';
                             <simple-accordion *ngIf="category.name" [header]="category.name" [active]="true">                
                                 <div class="row" *ngFor="let row of category.rows">                          
                                     <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">                                
-                                        <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
+                                        <d3s-dynamic-field [field]="field" [form]="form" (listItemChange)="listSelectionChanged($event)"></d3s-dynamic-field>
                                     </div>
                                 </div>
                             </simple-accordion>
                             <span *ngIf="!category.name">
                             <div class="row" *ngFor="let row of category.rows">                          
                                 <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">                                
-                                    <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
+                                    <d3s-dynamic-field [field]="field" [form]="form" (listItemChange)="listSelectionChanged($event)" ></d3s-dynamic-field>
                                 </div>
                             </div>
                             </span>
@@ -39,7 +41,7 @@ import * as _ from 'lodash';
                     </form>                    
                 </div>
                 `,
-    providers: [EditorDefinitionService, UriBasedService],
+    providers: [EditorDefinitionService, UriBasedService, FieldsService, CascadeService],
     changeDetection: ChangeDetectionStrategy.OnPush, 
 })
 
@@ -76,8 +78,15 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     hasIconFields = false;
     fore: EditorField;
     back: EditorField;
-
-    constructor(private ref: ChangeDetectorRef, private formBuilder: FormBuilder, private messagesService: MessagesService, private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) {
+    
+    constructor(private ref: ChangeDetectorRef,
+        private formBuilder: FormBuilder,
+        private messagesService: MessagesService,
+        private editorDefinitionService: EditorDefinitionService,
+        private uriBasedService: UriBasedService,
+        private fieldsService: FieldsService,
+        private cascadeService: CascadeService
+    ) {
         super();
     }
 
@@ -291,5 +300,17 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     getUTCDate(date: Date): Date {        
         date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
         return date;
+    }
+
+    listSelectionChanged(event: any, control: any) {
+        //look for any fields with this as a parent        
+        var field = event.field
+        if (field == null || this.fields == null || this.fields.length <= 0) return;
+        
+        this.fields.forEach(editorField => {
+            if (editorField.ParentFieldTypeID == field.FieldTypeID) {
+                this.cascadeService.cascadeEvent(editorField.FieldTypeID, +event.value);        
+            }
+        });        
     }
 };
