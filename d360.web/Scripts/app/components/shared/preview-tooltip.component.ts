@@ -13,7 +13,7 @@ import { TooltipInfo, TooltipFieldValue } from '../../models/tooltip-info.model'
                         <h3 style="positon: relative"><a [routerLink]="data?.Url">{{data?.DisplayName}}</a> <small *ngIf="data && data.TypeName" style="background-color: #fff; float:right;font-size:65%;">{{data.TypeName}}</small></h3>
                         <div>&nbsp;</div>
                         <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
-                        <div><span *ngIf="data?.AssetID"><b>Asset ID</b>: <span [innerHtml]="data.AssetID"></span></span></div>
+                        <div *ngIf="data?.AssetID && data?.AssetID >0"><b>Asset ID</b>: <span [innerHtml]="data.AssetID"></span></div>
                         <div *ngFor="let field of data?.FieldValues"><span *ngIf="field.Value"><b>{{field.Name}}</b>: <span [innerHtml]="field.Value"></span></span></div>                        
                     </div>
                 </span>
