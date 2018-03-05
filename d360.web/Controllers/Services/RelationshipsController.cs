@@ -457,7 +457,26 @@ namespace d360.web.Controllers.Services
                             .FirstOrDefault();
 
                             if (existing != null)
+                            {
+                                if (existing.State == State.Deleted)
+                                {
+                                    //this intersect was soft deleted
+                                    //need to hard delete and re-add to trigger any potential workflows on relationships
+                                    var copy = new Intersect()
+                                    {
+                                        IntersectTypeID = existing.IntersectTypeID,
+                                        Subject = existing.Subject,
+                                        SubjectID = existing.SubjectID,
+                                        Object = existing.Object,
+                                        ObjectID = existing.ObjectID,
+                                    };
+
+                                    Company.Delete(existing);
+                                    Company.Add(copy);
+                                }
                                 return;
+                            }
+                                
 
                             Company.Add(intersect);
                             Company.SaveChanges();
