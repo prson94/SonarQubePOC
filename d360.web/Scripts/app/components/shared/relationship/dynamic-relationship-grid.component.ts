@@ -15,7 +15,7 @@ declare var CompanySettings;
     providers: [GridDefinitionService, RelationshipsService],
     template: `                   
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical">                    
+                <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical && !showDelete">                    
                     <input #gb [hidden]="!simpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                     <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
@@ -29,7 +29,7 @@ declare var CompanySettings;
                         <p-column  [style]="{width:'28px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" *ngIf="hasDelete && !readOnly">                                                    
-                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
+                                        <a style="cursor:pointer;" (click)="selected=item;doDelete();" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
                                 </ng-template>
                         </p-column>           
@@ -60,7 +60,7 @@ declare var CompanySettings;
                     [itemId]="selected?.ID"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the relationship [' + [selected?.Name] + ']?'"                                         
-                    (onCancel)="showDelete=false;"
+                    (onCancel)="cancelDelete();"
                 ></d3s-delete-form>   
                 
                 `
@@ -83,6 +83,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Output() addRelationshipChange = new EventEmitter();
     @Output() relationshipAdded = new EventEmitter();
     @Output() relationshipRemoved = new EventEmitter();
+    @Output() deleteOn = new EventEmitter();
+    @Output() deleteOff = new EventEmitter();
 
     @Input() simpleFilter: boolean;
 
@@ -189,9 +191,19 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             this.relations = this.relations.filter(x => x.ID != item);
             this.relationshipRemoved.emit();
         });
+        this.deleteOff.emit();
         this.showDelete = false;
     }
 
+    doDelete() {
+        this.deleteOn.emit();
+        this.showDelete = true;
+    }
+
+    cancelDelete() {
+        this.deleteOff.emit();
+        this.showDelete = false;
+    }
     selectObject(item) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
     }
