@@ -62,8 +62,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() newActionName: string = "New";
     @Input() hasHeader = true;
     @Input() copy: boolean;
-
-
+    
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
 
@@ -213,7 +212,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     for (let item of selected) {                        
                         field.Value.push(item.Value);
                     }
-                    if (field.Value.length == 0) field.Value = null;                   
+                    if (field.Value.length == 0) field.Value = null;                    
+                }
+                else if (field.FieldType == "Lookup" && field.Value) {
+                    if (field.Value != null && field.MultiSelect && typeof field.Value === "string") {                        
+                        field.Value = field.Value.split(',');
+                    }
                 }
                 group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
             }
@@ -302,15 +306,20 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         return date;
     }
 
-    listSelectionChanged(event: any, control: any) {
+    listSelectionChanged(event: any) {           
         //look for any fields with this as a parent        
-        var field = event.field
+        var field = event.field;        
         if (field == null || this.fields == null || this.fields.length <= 0) return;
-        
-        this.fields.forEach(editorField => {
-            if (editorField.ParentFieldTypeID == field.FieldTypeID) {
-                this.cascadeService.cascadeEvent(editorField.FieldTypeID, +event.value);        
+
+        var value = event.value;
+        if (Array.isArray(event.value)) {
+            value = event.value.join();
+        }       
+
+        this.fields.forEach(editorField => {            
+            if (editorField.ParentFieldTypeID == field.FieldTypeID) {                
+                this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);        
             }
-        });        
+        });
     }
 };

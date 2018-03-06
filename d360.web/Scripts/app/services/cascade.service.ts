@@ -11,7 +11,7 @@ export class CascadeService {
     cascadeMessage$ = this.cascadeSource.asObservable();
     
     // Service message commands
-    cascadeEvent(fieldTypeId: number, parentListId: number) {
+    cascadeEvent(fieldTypeId: number, parentListId: string) {
         this.cascadeSource.next(new CascadingChange(fieldTypeId, parentListId));
     }
 }

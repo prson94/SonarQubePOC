@@ -1,8 +1,8 @@
 ﻿export class CascadingChange {
-    parentListItemId: number;
+    parentListItemId: string;
     fieldTypeId: number;
 
-    constructor(fieldTypeId?: number, parentListItemId?: number) {
+    constructor(fieldTypeId: number, parentListItemId: string) {
         this.parentListItemId = parentListItemId;
         this.fieldTypeId = fieldTypeId;        
     }

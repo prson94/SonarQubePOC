@@ -216,8 +216,8 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
-    getCascadingListFieldValues(fieldTypeId: number, parentItemId: number): Promise<EditorDropDownItem[]> {
-        return this.http.get(`api/FieldType_CascadingListValues/${fieldTypeId}/${parentItemId}`)
+    getCascadingListFieldValues(fieldTypeId: number, parentItemId: string): Promise<EditorDropDownItem[]> {
+        return this.http.get(`api/FieldType_CascadingListValues/${fieldTypeId}?parentItemId=${parentItemId}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

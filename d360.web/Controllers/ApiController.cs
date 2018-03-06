@@ -7771,10 +7771,11 @@ from	    TaxonomyType FAT
 
         #region Cascading dropdown values
 
-        [Route("FieldType_CascadingListValues/{fieldTypeID:int}/{parentItemId:int}")]
-        public List<System.Web.Mvc.SelectListItem> GetCascadingDropdownFieldValues(int fieldTypeID, int parentItemId)
+        [Route("FieldType_CascadingListValues/{fieldTypeID:int}")]
+        public List<System.Web.Mvc.SelectListItem> GetCascadingDropdownFieldValues(int fieldTypeID, string parentItemId)
         {
             var predicateTypeId = 3;
+            var parents = parentItemId.Split(',');
             List<System.Web.Mvc.SelectListItem> items = new List<System.Web.Mvc.SelectListItem>();
 
             var fieldType = Company.FieldTypes.Where(x => x.ID == fieldTypeID).FirstOrDefault();
@@ -7796,10 +7797,10 @@ from	    TaxonomyType FAT
             //var sql = "select Text, Value from fieldlookupvalue where fieldTypeID = @id";
             var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
                         inner join[intersectdetail] id on(id.subjecttype = 'ReferenceItemType' and id.objecttype = 'ReferenceItemType' and id.predicatetype = @predicate and id.objectid = flv.value and id.objecttypeid = flv.lookupobjectid and id.subjecttypeid = @parentReferenceListTypeId)
-                        inner join[referenceitem] ri on(ri.referenceitemtypeid = id.subjecttypeid and ri.id = id.subjectid and ri.id = @parentReferenceItemId)
+                        inner join[referenceitem] ri on(ri.referenceitemtypeid = id.subjecttypeid and ri.id = id.subjectid and ri.id in @parentReferenceItemId)
                         where flv.fieldTypeID = @id";
 
-            items = Company.Query<System.Web.Mvc.SelectListItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parentItemId, parentReferenceListTypeId = parentReferenceListType.ID }).ToList();
+            items = Company.Query<System.Web.Mvc.SelectListItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ID }).ToList();
 
             return items;
 

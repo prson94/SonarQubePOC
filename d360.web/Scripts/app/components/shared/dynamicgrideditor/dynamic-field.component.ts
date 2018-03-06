@@ -64,9 +64,9 @@ declare var CompanySettings;
                             </header>
                         </p-editor>                                                                                                             
                         <div *ngSwitchCase="'Lookup'">
-                            <p-multiSelect *ngIf="field?.MultiSelect;else singleSelectList" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
+                            <p-multiSelect *ngIf="field?.MultiSelect;else singleSelectList" [formControlName]="field.FieldName" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
                             <ng-template #singleSelectList>                                
-                                <select [formControlName]="field.FieldName" style="height:auto;width:100%;" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">                                            
+                                <select [formControlName]="field.FieldName" style="height:auto;width:100%;" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
                                     <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
                                     <ng-template #blankOption>
                                         <option value=""></option>
@@ -132,9 +132,27 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
         private cascadeService: CascadeService,
         private fieldsService: FieldsService,
         private ref: ChangeDetectorRef
-    ) { super(); }
+    ) {
+        super();
+    }
 
     ngOnInit() {
+        this.sub = this.cascadeService.cascadeMessage$.subscribe(
+            casc => {
+                if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
+
+                    if (casc.parentListItemId != null && casc.parentListItemId.length > 0) {
+                        //load the values for the list that is a child                    
+                        this.field.Items = [];
+                        return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).then(res => {
+                            this.field.Items = res;
+
+                            this.ref.markForCheck();
+                        })
+                    }
+                }
+            });
+
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
@@ -153,27 +171,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
 
         if (this.field.FieldType == 'Color') {
             this.colorValue = this.field.Value;
-
         }
 
-        this.sub = this.cascadeService.cascadeMessage$.subscribe(
-            casc => {
-                if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
-                    
-                    if (casc.parentListItemId == null || casc.parentListItemId <= 0) {
-                     //   this.field.Items = [];
-                       // this.ref.markForCheck();
-                    }
-                    else {
-                        //load the values for the list that is a child                    
-                        this.field.Items = [];
-                        return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).then(res => {
-                            this.field.Items = res;
-                            this.ref.markForCheck();
-                        })
-                    }
-                }
-            });
+        if (this.field.FieldType == 'Lookup') {
+            window.setTimeout(() => {                
+                this.listItemChange.emit({ field: this.field, value: this.field.Value });
+            }, 250);            
+        }
     }
 
     ngOnDestroy() {
@@ -257,6 +261,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
             this.field.Value = newVal;
         }
     }   
+
+    multiselectLabel(): string {
+        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0)
+            return `Select a ${this.field.ParentFieldTypeName}`;
+        return "Choose";
+    }
 
     numbersOnly(event) {
         return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 45;

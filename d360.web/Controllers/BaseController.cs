@@ -756,6 +756,14 @@ namespace d360.web.Controllers
                                     var parent = Company.FieldTypes.Where(x => x.ID == ft.ParentFieldTypeID).FirstOrDefault();
 
                                     if(parent != null) fld.ParentFieldTypeName = parent.FriendlyName;
+
+                                    if (ft.AllowMultipleValues)
+                                    {
+                                        if (f != null && !string.IsNullOrWhiteSpace(f.Value))
+                                            fld.Value = f.Value;
+                                        else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
+                                            fld.Value = ft.DefaultValue;
+                                    }
                                 }
                                 else
                                 {
@@ -779,10 +787,10 @@ namespace d360.web.Controllers
                                             selected = f.Value.Split(',').ToList();
                                         else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
                                             selected = ft.DefaultValue.Split(',').ToList();
-
+                                                                                
                                         foreach (var item in items)
                                         {
-                                            if (selected.Contains(item.Value)) item.Selected = true;
+                                            if (selected.Contains(item.Value)) item.Selected = true;                                            
                                         }
                                     }
                                     
