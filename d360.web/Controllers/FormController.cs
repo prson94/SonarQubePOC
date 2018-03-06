@@ -11599,7 +11599,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 contract.Body = model.Body;
                 contract.ContractType = model.ContractType;
                 if (publish)
-                    contract.PublishedOn = DateTime.UtcNow;
+                    contract.PublishedOn = DateTime.Now;
 
                 Company.SaveOrUpdate(contract);
 
@@ -11640,7 +11640,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 contract.Body = model.Body;
                 contract.ContractType = model.ContractType;
                 if (publish)
-                    contract.PublishedOn = DateTime.UtcNow;
+                    contract.PublishedOn = DateTime.Now;
 
                 Company.Add(contract);
 
@@ -12044,6 +12044,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         #endregion
 
         #region Organization Type
+
         [HttpDelete, ActionName("OrganizationType"), Route("OrganizationType"), NonNullableParameters]
         public JsonResult DeleteOrganizationType(int id)
         {

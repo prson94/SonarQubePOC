@@ -38,6 +38,27 @@ export class Contract {
     PublishedOn: string;
 }
 
+export class ContractAcceptance {
+    ID: number;
+    ResourceID: number;
+    Accepted: boolean;
+    AcceptedOn: string;
+    ContractID: number;
+    OrganizationID: number;
+}
+
+export class ContractAcceptanceDetail {
+    ID: number;
+    ResourceID: number;
+    Accepted: boolean;
+    AcceptedOn: string;
+    ContractID: number;
+    OrganizationID: number;
+    ResourceName: string;
+    ContractName: string;
+}
+
+
 export class ContractDetail {
     ID: number;
     Title: string;

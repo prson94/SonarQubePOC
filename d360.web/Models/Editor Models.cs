@@ -699,6 +699,31 @@ namespace d360.web.Models
         [Display(Name = "Title")]
         public string Title { get; set; }
     }
+    public class TermsModel
+    {
+        public int OrganizationID { get; set; }
+        public int ResourceID { get; set; }
+
+        public bool OrganizationAccepted { get; set; }
+
+        public bool IsFirstUser { get; set; }
+
+        public List<ContractModel> Contracts { get; set; }
+    }
+
+    public class ContractModel
+    {
+        public ContractModel() { }
+
+        public ContractModel(Contract contract)
+        {
+            this.Contract = contract;
+            this.Acceptance = new ContractAcceptance();
+            this.Acceptance.ContractID = contract.ID;
+        }
+        public Contract Contract { get; set; }
+        public ContractAcceptance Acceptance { get; set; }
+    }
 
     public class ContractRegisterModel
     {
@@ -707,11 +732,27 @@ namespace d360.web.Models
         public ContractRegisterModel(Contract contract)
         {
             Contract = contract;
+            ContractAcceptance = new ContractAcceptance
+            {
+                ContractID = contract.ID,
+                Accepted = false  
+            };
             Accept = false;
         }
 
         public Contract Contract { get; set; }
+        public ContractAcceptance ContractAcceptance { get; set; }
+
         public bool Accept { get; set; } = false;
+
+        public bool IsAccepted
+        {
+            get
+            {
+                return this.ContractAcceptance?.Accepted ?? false;
+            }
+        }
+
     }
 
     public class HierarchyPostModel : BaseEditorModel

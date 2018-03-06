@@ -10,11 +10,11 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-admin-organization-resources',
     providers: [OrganizationsService],
     template: `
-               <header>Users for this organization 
+               <header *ngIf="!showHistory">Users for this organization 
                 <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading">
+                <div *ngIf="!isLoading && !showHistory">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                     <p-dataTable #dt [globalFilter]="gb" [value]="resources" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
@@ -36,9 +36,18 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 <span>{{item.DateLastLoggedIn | date : 'short'}}</span>
                             </ng-template>
                         </p-column>
+                        <p-column>
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selected=item;showHistory=true"><i class="fa fa-history"></i></a>                                        
+                                </div>
+                            </ng-template>
+                        </p-column>
                     </p-dataTable>  
-                </span>
-
+                </div>
+                <div *ngIf="!isLoading && showHistory">
+                    <d3s-admin-organization-contract-history [resourceId]="selected?.ResourceID" [resourceName]="(selected?.FirstName || '') + ' ' + (selected?.LastName || '')" (onClose)="showHistory = false"></d3s-admin-organization-contract-history>
+                </div>
                 `
 })
 
@@ -47,6 +56,7 @@ export class AdminOrganizationResourcesComponent extends BaseComponent implement
 
     error: any;
     isLoading: boolean = false;
+    showHistory: boolean = false;
 
     resources: OrganizationResource[] = [];
     selected: OrganizationResource;

@@ -1969,6 +1969,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetContractHistoryForResource(System.Int32)">
+            <summary>
+            Gets a list of all users across all organizations.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:d360.web.Controllers.Services.ScoringController">
             <summary>
             Search everything in Data3Sixty.

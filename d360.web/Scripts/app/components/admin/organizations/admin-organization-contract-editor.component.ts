@@ -42,16 +42,21 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 </div>
                             </div>
                         </div>
-                        <div class="row" style="padding-bottom: 10px" *ngIf="!isAdding && false">
-                            <div class="col s12">
-                                <div class="FieldName">Last Updated</div><div>{{contract.UpdatedOn}}</div>
-                                <div class="FieldName">Last published</div><div>{{contract.PublishedOn}}</div>
+                        <div class="row" style="padding-bottom: 10px" *ngIf="!isAdding">
+                            <div class="col s6">
+                                <div class="FieldName">Last Updated</div>
+                                <div>{{contract.UpdatedOn | date : 'short'}}</div>
                             </div>
+                            <div class="col s6">
+                                <div class="FieldName">Last published</div>
+                                <div>{{contract.PublishedOn == null ? 'Never' : (contract.PublishedOn | date : 'short')}}</div>
+                            </div>
+
                         </div>
                         <div class="row" style="padding-bottom: 10px">
                             <div class="col s12">
                                 <button pButton type="submit" label="Save" (click)="save()" [disabled]="!contractForm.form.valid"></button>
-                                <!--<button pButton type="submit" label="Save & Publish" (click)="save(true)" [disabled]="!contractForm.form.valid"></button>-->
+                                <button pButton type="submit" label="Save & Publish" (click)="save(true)" [disabled]="!contractForm.form.valid"></button>
                                 <button pButton type="button" label="Close" (click)="onClose.emit()"></button>
                             </div>
                         </div>

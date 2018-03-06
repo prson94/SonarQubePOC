@@ -25,6 +25,7 @@ import { AdminOrganizationInvitationsComponent } from './admin-organization-invi
 import { AdminOrganizationResourcesComponent } from './admin-organization-resources.component';
 import { AdminContractsComponent } from './admin-contracts.component';
 import { AdminOrganizationListComponent } from "./admin-organization-list.component";
+import { AdminOrganizationContractHistoryComponent } from "./admin-organization-contract-history.component";
 
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 
@@ -77,7 +78,8 @@ import {
         AdminOrganizationDomainsComponent,
         AdminOrganizationInvitationsComponent,
         AdminOrganizationResourcesComponent,
-        AdminContractsComponent
+        AdminContractsComponent,
+        AdminOrganizationContractHistoryComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

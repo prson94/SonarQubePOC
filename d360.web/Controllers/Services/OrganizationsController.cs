@@ -83,7 +83,8 @@ namespace d360.web.Controllers.Services
 	                coalesce(O.Name, 'Default') as OrganizationName
 	                from [Contract] c
 	                left join Organization o on o.ID = c.OrganizationID
-	                where c.State <> 3 and c.OrganizationID is null")
+	                where c.State <> 3 and c.OrganizationID is null
+                    order by c.Title asc")
                 .Select(c =>
                 {
                     var ct = contractTypes.Find(t => t.ID == c.ContractType);
@@ -119,7 +120,8 @@ namespace d360.web.Controllers.Services
 	                coalesce(O.Name, 'Default') as OrganizationName
 	                from [Contract] c
 	                left join Organization o on o.ID = c.OrganizationID
-	                where c.State <> 3 and c.OrganizationID = @id", new { id })
+	                where c.State <> 3 and c.OrganizationID = @id
+                    order by c.Title asc", new { id })
                 .Select(c =>
                 {
                     var ct = contractTypes.Find(t => t.ID == c.ContractType);
@@ -209,5 +211,22 @@ namespace d360.web.Controllers.Services
 
             return Company.Table<OrganizationResourceDetail>();
         }
+
+        /// <summary>
+        /// Gets a history of contract acceptance for the resource
+        /// </summary>
+        /// <param name="id">The ID of the resource you want to retrieve history for.</param>
+        /// <returns></returns>
+        [HttpGet, Route("acceptance/{id:int}")]
+        public IQueryable<ContractAcceptanceDetail> GetContractHistoryForResource(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
+
+            return Company.Query<ContractAcceptanceDetail>(@"select h.*, r.FirstName + ' ' + r.LastName as ResourceName, c.Title as ContractName from contractacceptance h
+                inner join reporting.Global_resource r on r.ResourceID = h.ResourceID
+                inner join [Contract] c on c.id = h.ContractID", new { id }).AsQueryable();
+        }
+
     }
 }

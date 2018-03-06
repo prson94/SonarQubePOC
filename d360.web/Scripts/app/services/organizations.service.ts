@@ -2,7 +2,18 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Organization, OrganizationDomain, OrganizationInvitation, OrganizationResource, OrganizationType, ContractType, Contract, ContractDetail } from '../models/organization.model';
+import {
+    Organization,
+    OrganizationDomain,
+    OrganizationInvitation,
+    OrganizationResource,
+    OrganizationType,
+    ContractType,
+    Contract,
+    ContractDetail,
+    ContractAcceptance,
+    ContractAcceptanceDetail
+} from '../models/organization.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -131,5 +142,12 @@ export class OrganizationsService extends BaseService {
 
     deleteInvitation(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'organizationinvitation', id);
+    }
+
+    getContractHistoryForResource(id: number): Promise<ContractAcceptanceDetail[]> {
+        return this.http.get(`services/organizations/acceptance/${id}`)
+            .toPromise()
+            .then(res => <ContractAcceptanceDetail[]>res.json())
+            .catch(err => this.handleError(err));
     }
 }
