@@ -6,6 +6,9 @@ RETURNS TABLE
 AS
 RETURN 
 (
+--declare @ResourceID int;
+--select @ResourceID = 3243;
+
 select 
 		C.ID as ContractID, 
 		C.OrganizationID, 
@@ -22,7 +25,7 @@ select
 		union all
 		select o.ResourceID, o.OrganizationID from OrganizationResource o
 	) R on R.OrganizationID = C.organizationID and R.ResourceID = @ResourceID
-	left join ContractAcceptanceHistory H on H.ContractID = C.ID and H.OrganizationID = C.OrganizationID 
+	left join ContractAcceptance H on H.ContractID = C.ID and H.OrganizationID = C.OrganizationID 
 		and H.AcceptedOn > C.PublishedOn and H.ResourceID = R.ResourceID
 	where 
 		C.[State] = 1 and C.PublishedOn is not null and C.OrganizationID is not null
@@ -38,11 +41,8 @@ select
 			1 
 		end as Accepted 
 	from [Contract] C 
-	left join ContractAcceptanceHistory H on H.ContractID = C.ID and H.OrganizationID = C.OrganizationID 
+	left join ContractAcceptance H on H.ContractID = C.ID and H.OrganizationID is null
 		and H.AcceptedOn > C.PublishedOn and H.ResourceID = @ResourceID
 	where 
 		C.[State] = 1 and C.OrganizationID is null and C.PublishedOn is not null
 )
-GO
-
-

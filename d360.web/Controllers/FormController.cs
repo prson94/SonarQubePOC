@@ -1392,6 +1392,9 @@ namespace d360.web.Controllers
                             Description = model.AssetType.Description,
                             DisplayFormat = model.AssetType.DisplayFormat
                         };
+                        var existing = Company.Filter<OrganizationType>(o => o.Name == org.Name && o.State == State.Active).FirstOrDefault();
+                        if (existing != null)
+                            return jsonException("There is already an organization type with that name.", HttpStatusCode.BadRequest);
                         Company.Add(org);
                         parentType = SystemObjects.OrganizationType;
                         model.AssetType.ObjectID = org.ID;

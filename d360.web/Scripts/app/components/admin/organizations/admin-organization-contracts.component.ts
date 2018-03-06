@@ -19,6 +19,11 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Title" header="Title" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="ContractTypeName" header="Type" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'220px'}"></p-column>
+                        <p-column field="PublishedOn" header="Published On" [sortable]="true" [filter]="!showSimpleFilter">
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                {{item.PublishedOn == null ? 'Never' : (item.PublishedOn | date : 'short')}}
+                            </ng-template>
+                        </p-column>
                         <p-column [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">

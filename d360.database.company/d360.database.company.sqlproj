@@ -605,6 +605,8 @@
     <Build Include="dbo\Functions\GetParentObjectId.sql" />
     <Build Include="dbo\Views\AssetDetail.sql" />
     <Build Include="dbo\Views\AssetWithType.sql" />
+    <Build Include="dbo\Tables\ContractAcceptance.sql" />
+    <Build Include="dbo\Functions\GetContractValidations.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

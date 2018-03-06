@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Web;
-using System.Web.Helpers;
 using System.Web.Mvc;
-using System.Data.SqlClient;
-using Dapper;
-using d360.core;
-using Microsoft.Owin.Host.SystemWeb.CallEnvironment;
-using Microsoft.Owin;
 
-namespace d360.web.Filters
+namespace d360.web.Models.Attributes
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class ValidateContractsAttribute : AuthorizeAttribute, IAuthorizationFilter
