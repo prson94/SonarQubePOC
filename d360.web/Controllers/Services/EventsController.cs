@@ -53,6 +53,14 @@ namespace d360.web.Controllers.Services
         }
 
         [DataContract]
+        public class RuleImplementationModel
+        {
+            public string SourceID { get; set; }
+            public string SourceUri { get; set; }
+            public string Name { get; set; }
+        }
+
+        [DataContract]
         public class ResultModel
         {
             [DataMember]
@@ -453,7 +461,7 @@ namespace d360.web.Controllers.Services
         /// <returns></returns>
         [
             Route("sourcerules/{sourceID}/events"),
-            Route("sourcerules/{sourceID}/results"), 
+            Route("sourcerules/{sourceID}/results"),
             HttpPost
         ]
         public HttpResponseMessage AddSourceRuleEvents(string sourceID, List<ResultModel> models)
@@ -486,8 +494,8 @@ namespace d360.web.Controllers.Services
         /// <param name="models">A collection of aggregated rule results.</param>
         /// <returns></returns>
         [
-            Route("rules/{id:int}/results"), 
-            Route("rules/{id:int}/events"), 
+            Route("rules/{id:int}/results"),
+            Route("rules/{id:int}/events"),
             HttpPost
         ]
         public HttpResponseMessage AddRuleResults(int id, List<ResultModel> models)
@@ -598,7 +606,7 @@ order by I.ID, QT.Name", new { id }).ToList();
                                 {
                                     var q = new RuleResultQualifierType { RuleImplementationID = ri.ID, Name = o.Name, Order = position };
                                     Company.Add(q);
-                                    
+
                                     //add to collection we are using in this execution.
                                     implementationQualifiers.Add(new ImplementationQualifier { ImplementationID = ri.ID, Name = o.Name, Order = position, RuleID = id, RuleResultQualifierTypeID = q.ID, SourceID = ri.SourceID });
 
@@ -868,6 +876,51 @@ order by A.RunDate desc, A.EffectiveDate desc";
             var models = Company.Query<dynamic>(sql);
 
             return Request.CreateResponse<dynamic>(HttpStatusCode.OK, models);
+        }
+
+        /// <summary>
+        /// Add a rule implementation to your environment.  Once created, this rule can hold results
+        /// </summary>
+        /// <param name="id">The rule ID</param>
+        /// <param name="model">A rule implemetation</param>
+        /// <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new rule is also returned.</returns>
+        [Route("implementation/{id:int}"), HttpPost]
+        public HttpResponseMessage AddRuleImplementation(int id, RuleImplementationModel model)
+        {
+            if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Create, ClaimObject.Root))
+                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add a rule implementation.");
+
+            RuleImplementation impl = new RuleImplementation();
+
+            try
+            {
+                var rule = Company.GetById<Rule>(id);
+
+                // Check that rule was found
+                if (rule == null)
+                {
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+                }
+
+                impl.RuleID = rule.ID;
+                impl.SourceID = model.SourceID;
+                impl.SourceUri = model.SourceUri;
+                impl.Name = model.Name;
+                
+                Company.Add<RuleImplementation>(impl);
+
+                Company.SaveChanges();
+                
+                return Request.CreateResponse(HttpStatusCode.Created, impl);
+            }        
+            catch (BaseException ex)
+            {
+                return Request.CreateErrorResponse(ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
+            }
         }
     }
 }
