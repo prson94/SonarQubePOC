@@ -15,7 +15,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
     selector: 'd3s-admin-organizations-component',
     providers: [OrganizationsService],
     template: `
-<div class="col l4 m6 s12">          
+<div class="col l4 m12">          
     <div class="tile tile-detail">
         <d3s-admin-organization-types [(type)]="selectedType"></d3s-admin-organization-types>
     </div>
@@ -23,7 +23,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
         <d3s-admin-contracts></d3s-admin-contracts>
     </div>
 </div>
-<div class="col l8 m6 s12">    
+<div class="col l8 m12">    
     <div class="row" *ngIf="selectedType">
         <div class="col s12">
             <div class="tile tile-detail">  

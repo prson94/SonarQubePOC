@@ -18,7 +18,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     <p-dataTable #dt [globalFilter]="gb" [value]="organizationTypes" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowSelect)="type=$event.data;typeChange.emit(type)" (onRowDblclick)="type=$event.data;showEditor=true;typeChange.emit(type);" (selectionChange)="type=$event;typeChange.emit(type)" [selection]="type">
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="OrganizationCount" header="Organization Count" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'150px'}"></p-column>
+                        <p-column field="OrganizationCount" header="Organization Count" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'max-width':'150px'}"></p-column>
                         <p-column [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">

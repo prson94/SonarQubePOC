@@ -23,6 +23,7 @@ begin
 		)
 	declare @objects table (Type varchar(50), ID int)
 	declare @currentDepth int = 0;
+	declare @maxDepth int = 6;
 	declare @maxItems int = 500;
 	declare @itemCount int = 0;
 	
@@ -54,11 +55,12 @@ begin
 				where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
 		end
 
-		declare @points table ( ID int, SourceIntersectID int, TargetIntersectID int, Depth int );
+		IF OBJECT_ID('tempdb..#points') IS NOT NULL DROP TABLE #points;
+		create table #points ( ID int, SourceIntersectID int, TargetIntersectID int, Depth int );
 		declare @forwardPoints table ( ID int, SourceIntersectID int, TargetIntersectID int );
 
 		-- get all items directly tied to the focal object.
-		insert into @points
+		insert into #points
 			select	top (@maxItems)
 				MI.ID, MI.SourceIntersectID, MI.TargetIntersectID, 0
 			from	MapItem MI
@@ -68,35 +70,35 @@ begin
 												( (TI.Subject = O.Type and TI.SubjectID = O.ID) OR (TI.Object = O.Type and TI.ObjectID = O.ID)  )
 			where not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = MI.ID)
 
-			set @maxItems = @maxItems - (select count(*) from @points);
+			set @maxItems = @maxItems - (select count(*) from #points);
 
 		-- get all items not directly tied to the focal object, but still tied to maps involved above.
 		if (@maxItems > 0)
 		begin
-			insert into @points
+			insert into #points
 				select	top (@maxItems)
 					MI.ID, MI.SourceIntersectID, MI.TargetIntersectID, 0
 				from	MapItem MI
 						inner join	(
 									select	ID.MapItemID
 									from	MapItemMap DM
-											inner join @points D on D.ID = DM.MapItemID
+											inner join #points D on D.ID = DM.MapItemID
 											inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
-																													select ID from @points
+																													select ID from #points
 																													)
 									) O on O.MapItemID = MI.ID
 				where not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = MI.ID);
 
-				set @maxItems = @maxItems - (select count(*) from @points);
+				set @maxItems = @maxItems - (select count(*) from #points);
 		end
 
 		insert into @forwardPoints
-			select ID,SourceIntersectID,TargetIntersectID from @points
+			select ID,SourceIntersectID,TargetIntersectID from #points
 
 			--join editor rows to any existing intersects
 			if exists(select 1 from @rows)
 			begin
-				insert into @points
+				insert into #points
 					select	R.ID,
 							D1.ID as SourceIntersectID,
 							D2.ID as TargetIntersectID,
@@ -117,39 +119,39 @@ begin
 
 		set @currentDepth = 0;
 
-		while( exists(select 1 from @points ps where ps.depth = @currentDepth) and (@currentDepth < 13) and (@maxItems > 0))
+		while( exists(select 1 from #points ps where ps.depth = @currentDepth) and (@currentDepth < @maxDepth) and (@maxItems > 0))
 		begin
 
-			set @itemCount = (select count(*) from @points);
+			set @itemCount = (select count(*) from #points);
 
-			insert into @points
+			insert into #points
 				select	top (@maxItems) 
 				    S.ID,
 					S.SourceIntersectID,
 					S.TargetIntersectID,
 					@currentDepth+1
 				from	MapItem S
-						inner join @points T on T.TargetIntersectID = S.SourceIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
-				where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID) and not exists (select ID from @points where ID = S.ID)
+						inner join #points T on T.TargetIntersectID = S.SourceIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+				where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID) and not exists (select ID from #points where ID = S.ID)
 
-			set @maxItems = @maxItems - ((select count(*) from @points) - @itemCount);
-			set @itemCount = (select count(*) from @points);
+			set @maxItems = @maxItems - ((select count(*) from #points) - @itemCount);
+			set @itemCount = (select count(*) from #points);
 
 			if (@maxItems > 0)
 			begin
 				
 
-				insert into @points
+				insert into #points
 					select	top (@maxItems)
 						S.ID,
 						S.SourceIntersectID,
 						S.TargetIntersectID,
 						@currentDepth+1
 					from	MapItem S
-							inner join @points T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+							inner join #points T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
 					where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID)
-						and not exists (select ID from @points where ID = S.ID)
-				set @maxItems = @maxItems - ((select count(*) from @points) - @itemCount);
+						and not exists (select ID from #points where ID = S.ID)
+				set @maxItems = @maxItems - ((select count(*) from #points) - @itemCount);
 			end
 
 			set @currentDepth = @currentDepth + 1;
@@ -211,7 +213,7 @@ begin
 						when THSR.C > 0 then cast(1 as bit)
 						else cast(0 as bit)
 					end as TargetHasSourceRules
-			from	@points O
+			from	#points O
 					inner join IntersectDetail SI on SI.ID = O.SourceIntersectID
 					inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID
 					cross apply (
@@ -780,7 +782,7 @@ begin
 				--loop through until there are no more new levels
 				set @currentDepth = 0;
 
-				while(exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < 13) and (@maxItems > 0))
+				while(exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < @maxDepth) and (@maxItems > 0))
 				begin
 					set @itemCount = (select count(*) from #tFusionPoints)
 
@@ -1052,7 +1054,7 @@ begin
 				--loop through until there are no more new levels
 				set @currentDepth = 0;
 				
-				while( exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < 13) and (@maxItems > 0))
+				while( exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < @maxDepth) and (@maxItems > 0))
 				begin	
 					set @itemCount = (select count(*) from #tFusionPoints);
 
