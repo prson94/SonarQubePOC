@@ -1969,13 +1969,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetContractHistoryForResource(System.Int32)">
-            <summary>
-            Gets a history of contract acceptance for the resource
-            </summary>
-            <param name="id">The ID of the resource you want to retrieve history for.</param>
-            <returns></returns>
-        </member>
         <member name="T:d360.web.Controllers.Services.ScoringController">
             <summary>
             Search everything in Data3Sixty.

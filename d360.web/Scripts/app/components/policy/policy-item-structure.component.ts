@@ -194,6 +194,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             if (res.type != 'error') {
                 this.deleteSelectedTreeNode(id);
                 this.headerActionsService.emitFavoritesChange();
+                this.selected = null;
             }
             this.isLoading = false;
         });

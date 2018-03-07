@@ -236,6 +236,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
             this.showMessageForResult(this.messagesService, res);
             this.headerActionsService.emitFavoritesChange();
+            this.selected = null;
             this.isLoading = false;
         });
         this.showDelete = false;
