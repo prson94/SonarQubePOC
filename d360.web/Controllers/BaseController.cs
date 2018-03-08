@@ -974,10 +974,10 @@ namespace d360.web.Controllers
                             if(!string.IsNullOrEmpty(value))
                                 items =  value.Split(',').Select<string, int>(int.Parse).ToList();
                             //delete any intersects for this object not in the list
-                            IQueryable<Intersect> intersects = null;
+                            List<Intersect> intersects = null;
                             if (isSubject)
                             {
-                                intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == o.ToString() && i.SubjectID == oid);
+                                intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == o.ToString() && i.SubjectID == oid).ToList();
                                 foreach (var intersect in intersects)
                                 {
                                     //check if the object is in the value list if not delete the intersect
@@ -989,7 +989,7 @@ namespace d360.web.Controllers
                             }
                             else
                             {
-                                intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == o.ToString() && i.ObjectID == oid);
+                                intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == o.ToString() && i.ObjectID == oid).ToList();
                                 foreach (var intersect in intersects)
                                 {
                                     //check if the object is in the value list if not delete the intersect
@@ -1029,7 +1029,7 @@ namespace d360.web.Controllers
                                     obj = o.ToString();
                                     objID = oid;
                                     sub = intersectType.Subject;
-                                    sub = (obj == "ReferenceItemType" && intersectType.SubjectID == 0) ? obj : obj.Replace("Type", "");
+                                    sub = (sub == "ReferenceItemType" && intersectType.SubjectID == 0) ? sub : sub.Replace("Type", "");
                                     subID = val;
 
                                     intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == obj && i.ObjectID == objID && i.SubjectID == val).FirstOrDefault();
