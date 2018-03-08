@@ -17,6 +17,7 @@ import { DiagramBaseComponent } from '../diagram-base.component';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { ObjectDetailService } from '../../../../services/object-detail.service';
+import { UriBasedService } from '../../../../services/uri-based.service';
 import {
     WorkflowDiagramModel,
     WorkflowDiagramNode,
@@ -46,7 +47,7 @@ declare var window: any;
 @Component({
     selector: 'd3s-workflow-diagram',
     templateUrl: './workflow-diagram.component.html',
-    providers: [PermissionsService, WorkflowService, ObjectDetailService]
+    providers: [PermissionsService, WorkflowService, ObjectDetailService, UriBasedService]
 })
 export class WorkflowDiagramComponent extends DiagramBaseComponent implements OnInit, OnChanges {
     @Input() id: number = 0;
@@ -113,6 +114,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         private renderer: Renderer,
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
+        private uriBasedService: UriBasedService,
         private objectDetailService: ObjectDetailService) {
         super();
     }
@@ -498,13 +500,27 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (this.objectTypeName != null || this.monitorView || !this.hasHeader)
             return;
 
-        this.objectDetailService.getObject(this.model.Event.ObjectID, this.model.Event.Object)
-            .then(r => {
-                if (r != null)
-                    this.objectTypeName = r.TypeName + ' :: ' + r.Name;
-                else
-                    this.objectTypeName = '';
-            });
+        let obj = this.model.Event.Object;
+
+        if (obj == 'Fusion') {
+            this.uriBasedService.getItems(`api/fusion/0/configurations/${this.model.Event.ObjectID}`)
+                .then(r => {
+                    if (r != null)
+                        this.objectTypeName = 'Fusion :: ' + r['Name'];
+                    else
+                        this.objectTypeName = '';
+                })
+        } else {
+            this.objectDetailService.getObject(this.model.Event.ObjectID, obj)
+                .then(r => {
+                    if (r != null)
+                        this.objectTypeName = r.TypeName + ' :: ' + r.Name;
+                    else
+                        this.objectTypeName = '';
+                });
+        }
+
+
     }
 
     private getAvailableFormInputs(link: LinkModel): string[] {
