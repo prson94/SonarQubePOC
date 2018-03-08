@@ -608,7 +608,19 @@ namespace d360.web.Controllers
 
                     if (hasParentType)
                     {
-                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == parentType.ID).OrderBy(i => i.DisplayValue).Select(i => i.DisplayValue).ToList(), columnWidth = 200 });
+                        columns.Add(new GridColumn
+                        {
+                            text = d360.core.resources.Fields.Parent_Name,
+                            datafield = "Parent",
+                            columntype = GridColumn.COLUMN_TYPE_DROPDOWN,
+                            filtertype = GridColumn.FILTER_TYPE_LIST,
+                            filterable = true,
+                            filteritems = Company.Query<string>(@"select D.DisplayValue from Artifact A
+                                inner join Asset B on B.[Object] = 'Artifact' and B.ObjectID = A.ID
+                                cross apply dbo.GetAssetDisplayValueById(B.ID) D
+                                where A.ArtifactTypeID = @parentId", new { parentId = parentType.ID }).ToList(),
+                            columnWidth = 200
+                        });
                     }
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
