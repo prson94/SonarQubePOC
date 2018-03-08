@@ -16724,7 +16724,7 @@ order by DN.DisplayValue");
             var list = new List<EditableField>();
             var a = new RuleType();
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DisplayFormat", Name = Resources.FieldInfo.DisplayFormat_Name, FieldDescription = Resources.FieldInfo.DisplayFormat_Description, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("DisplayFormat", Resources.FieldInfo.DisplayFormat_Name, true, "", 2, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DisplayFormat", Name = Resources.FieldInfo.DisplayFormat_Name, FieldDescription = Resources.FieldInfo.DisplayFormat_Description, FieldType = DataType.Text.ToString(), Value="{Name}", Validations = checkAndAddValidation("DisplayFormat", Resources.FieldInfo.DisplayFormat_Name, true, "", 2, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
             loadIconFields(list, 3);
 
@@ -16790,9 +16790,24 @@ order by DN.DisplayValue");
 
                 Company.Add<RuleType>(a);
 
-                upsertObjectStyle(SystemObjects.RuleType, a.ID, form, a.Name);
+                Company.Add(new FieldType
+                {
+                    ObjectID = a.ID,
+                    Object = "RuleType",
+                    IsListable = true,
+                    IsRequired = true,
+                    IsEditable = true,
+                    FriendlyName = "Name",
+                    Name = "Name",
+                    MaximumLength = 500,
+                    MinimumLength = 1,
+                    SortOrder = 1,
+                    Type = DataType.Text.ToString(),
+                    IsDisplayable = true,
+                    IsPartOfKey = true
+                });
 
-                
+                upsertObjectStyle(SystemObjects.RuleType, a.ID, form, a.Name);
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
