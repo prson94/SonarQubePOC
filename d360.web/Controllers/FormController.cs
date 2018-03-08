@@ -7552,6 +7552,23 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region FusionAttributeType
+
+        // used by filter icon in fusion page.
+        [Route("getfusionattributetypes"), NonNullableParameters]
+        public JsonNetResult GetFusionAttributeTypes(int fusionID)
+        {
+            var model = Company.GetById<Fusion>(fusionID, i => i.FusionType.FusionAttributeTypes);
+            return new JsonNetResult
+            {
+                Data = model.FusionType.FusionAttributeTypes.OrderBy(i => i.TextPath),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+
+        #endregion
+
         #region FusionQueryAttributeType
 
         protected JsonResult EditFusionQueryAttribute(FormCollection form)//(int typeID, int id, FusionAttributeType model)
