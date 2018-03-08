@@ -79,8 +79,8 @@ declare var CompanySettings;
                             <p-dropdown *ngIf="!field?.MultiSelect" [filter]="true" [options]="field.Items | dropdownItemToSelectItemPipe" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [style]="{width:'100%'}" ngDefaultControl></p-dropdown>
                             <p-multiSelect *ngIf="field?.MultiSelect" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
                         </div>
-                        <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;" type="text" step="1" (keyup)="numbersOnly($event)" (keypress)="numbersOnly($event)">   
-                        <input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" style="width: 100%;" type="text" step="any" (keyup)="decnumsOnly($event)" (keypress)="decnumsOnly($event)">   
+                        <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="1" (keyup)="numbersOnly($event)" (keypress)="numbersOnly($event)">   
+                        <input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="any" (keyup)="decnumsOnly($event)" (keypress)="decnumsOnly($event)">   
                         <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00" (keyup)="clamp($event, 0, 1, 3)">   
                         <div *ngSwitchCase = "'Color'">
                             <p-colorPicker [(ngModel)]="colorValue" [formControlName]="field.FieldName"></p-colorPicker>                            
