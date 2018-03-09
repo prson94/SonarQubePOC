@@ -108,7 +108,7 @@ namespace d360.web.Controllers
                             ResourceID = Company.CurrentResourceID,
                             OrganizationID = (int)c.Contract.OrganizationID,
                             Accepted = true,
-                            DateAccepted = DateTime.Now,
+                            DateAccepted = DateTime.UtcNow,
 
                         };
 
@@ -117,7 +117,7 @@ namespace d360.web.Controllers
                     else
                     {
                         orgRes.Accepted = true;
-                        orgRes.DateAccepted = DateTime.Now;
+                        orgRes.DateAccepted = DateTime.UtcNow;
                         Company.Update(orgRes);
                     }
 
@@ -128,7 +128,7 @@ namespace d360.web.Controllers
                         {
                             org.Accepted = true;
                             org.AcceptedBy = Company.CurrentResourceID;
-                            org.DateAccepted = DateTime.Now;
+                            org.DateAccepted = DateTime.UtcNow;
                             Company.Update(org);
                         }
                     }
@@ -141,7 +141,7 @@ namespace d360.web.Controllers
                 c.Acceptance.ContractID = c.Contract.ID;
                 c.Acceptance.OrganizationID = c.Contract.OrganizationID;
                 c.Acceptance.Accepted = true;
-                c.Acceptance.AcceptedOn = DateTime.Now;
+                c.Acceptance.AcceptedOn = DateTime.UtcNow;
                 c.Acceptance.ResourceID = Company.CurrentResourceID;
 
                 Company.Add(c.Acceptance);
@@ -159,7 +159,7 @@ namespace d360.web.Controllers
             var cache = new MemoryCachingProvider();
             var time = ContractValidationCacheModel.cacheDuration;
             var cacheRes = cache.GetItemInListByID<ContractValidationCacheModel.User, int>(key, Company.CurrentResourceID);
-            var contractCount = Company.Query<int>(@"select count(*) from dbo.GetContractValidations(@ResourceID) where accepted = 0", new { ResourceID = Company.CurrentResourceID }).FirstOrDefault();
+            var contractCount = Company.Query<int>(@"select count(*) from dbo.GetContractValidations(@ResourceID) where accepted = 0 and ((contractType = 1 and isFirstUser = 1) or contractType = 2 or organizationId is null)", new { ResourceID = Company.CurrentResourceID }).FirstOrDefault();
             var contractsAccepted = contractCount == 0;
 
             

@@ -21,7 +21,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         <p-column field="ContractTypeName" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="PublishedOn" header="Published On" [sortable]="true" [filter]="!showSimpleFilter">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                {{item.PublishedOn == null ? 'Never' : (item.PublishedOn | date : 'short')}}
+                                {{item.PublishedOn == null ? 'Never' : (item.PublishedOn | date : 'short' )}}
                             </ng-template>
                         </p-column>
                         <p-column [style]="{width:'40px'}">

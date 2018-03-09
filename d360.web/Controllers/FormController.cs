@@ -11580,6 +11580,10 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var contract = Company.GetById<Contract>(id);
+            if (contract.PublishedOn.HasValue)
+                contract.PublishedOn = new DateTime(contract.PublishedOn.Value.Ticks, DateTimeKind.Utc);
+            if (contract.UpdatedOn.HasValue)
+                contract.UpdatedOn = new DateTime(contract.UpdatedOn.Value.Ticks, DateTimeKind.Utc);
 
             return Json(new
             {
@@ -11589,8 +11593,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 contract.OrganizationID,
                 contract.ContractType,
                 contract.State,
-                PublishedOn = (contract.PublishedOn.HasValue ? ((DateTime)contract.PublishedOn).ToString() : "Never"),
-                UpdatedOn = (contract.UpdatedOn.HasValue ? ((DateTime)contract.UpdatedOn).ToString() : ""),
+                PublishedOn = (contract.PublishedOn.HasValue ? ((DateTime)contract.PublishedOn).ToString("o") : null),
+                UpdatedOn = (contract.UpdatedOn.HasValue ? ((DateTime)contract.UpdatedOn).ToString("o") : null),
                 contract.UpdatedBy,
                 contract.CreatedOn,
                 contract.CreatedBy
@@ -11621,7 +11625,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 contract.Body = model.Body;
                 contract.ContractType = model.ContractType;
                 if (publish)
-                    contract.PublishedOn = DateTime.Now;
+                    contract.PublishedOn = DateTime.UtcNow;
 
                 Company.SaveOrUpdate(contract);
 
@@ -11662,7 +11666,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 contract.Body = model.Body;
                 contract.ContractType = model.ContractType;
                 if (publish)
-                    contract.PublishedOn = DateTime.Now;
+                    contract.PublishedOn = DateTime.UtcNow;
 
                 Company.Add(contract);
 

@@ -51,7 +51,7 @@ namespace d360.web
                     try
                     {
                         cnn.Open();
-                        contractCount = (await cnn.QueryAsync<int>(@"select * from dbo.GetContractValidations(@resourceId) where accepted = 0", new { resourceId })).FirstOrDefault();
+                        contractCount = (await cnn.QueryAsync<int>(@"select count(*) from dbo.GetContractValidations(@ResourceID) where accepted = 0 and ((contractType = 1 and isFirstUser = 1) or contractType = 2 or organizationId is null)", new { resourceId })).FirstOrDefault();
                     }
                     catch (Exception ex)
                     {
