@@ -319,16 +319,20 @@ namespace d360.web.Controllers.Services
 
                 // Check that RuleType was found
                 if (type == null)
-                {
-                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
-                }
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule type with ID of ({id}) not found.");
 
                 // Check that the dimension was found.
+                if (string.IsNullOrEmpty(model.RuleDimension))
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Rule dimension not provided.");
+
+                // Check that the status was found.
+                if ((int)model.Status <= 0)
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Rule status not found.");
+
                 var dimension = Company.Filter<RuleDimension>(i => i.Name.ToLower() == model.RuleDimension.Trim().ToLower()).FirstOrDefault();
                 if (dimension == null)
-                {
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule dimension with name of ({model.RuleDimension}) not found.");
-                }
+
 
                 if (!string.IsNullOrEmpty(model.SourceID))
                 {
@@ -351,7 +355,8 @@ namespace d360.web.Controllers.Services
                     {
                         Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M,
                         RuleTypeID = id,
-                        Status = item.Status,
+                        Status = model.Status,
+                        SourceID = model.SourceID,
                         RuleDimensionID = dimension.ID
                     };
                 }
@@ -361,8 +366,8 @@ namespace d360.web.Controllers.Services
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
                 {
-                    if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Rule.ToString(), Value = model[f.Name].ToString(), UpdatedBy = Company.CurrentResourceID });
+                    if (model.Fields.ContainsKey(f.Name))
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Rule.ToString(), Value = model.Fields[f.Name].ToString(), UpdatedBy = Company.CurrentResourceID });
                     else
                     {
                         if (f.IsRequired)
@@ -434,8 +439,8 @@ namespace d360.web.Controllers.Services
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
                 {
-                    if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Rule.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString(), UpdatedBy = Company.CurrentResourceID });
+                    if (model.Fields.ContainsKey(f.Name))
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Rule.ToString(), ObjectID = item.ID, Value = model.Fields[f.Name].ToString(), UpdatedBy = Company.CurrentResourceID });
                 });
 
                 Company.SaveOrUpdate<Rule>(item, fields);
@@ -599,6 +604,8 @@ order by I.ID, QT.Name", new { id }).ToList();
                                 var ri = new RuleImplementation { RuleID = id, SourceID = model.SourceID };
                                 Company.Add(ri);
 
+
+
                                 model.RuleImplementationID = ri.ID;
 
                                 var position = 1;
@@ -613,6 +620,17 @@ order by I.ID, QT.Name", new { id }).ToList();
                                     //increment position.
                                     position++;
                                 });
+
+                                //Save this implementation in the hash comparison list.
+                                var qualNames = string.Join("|", model.Qualifiers.OrderBy(o => o.Name).Select(o => o.Name));
+                                byte[] hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(qualNames));
+                                var sb = new StringBuilder();
+                                foreach (byte bt in hashBytes)
+                                {
+                                    sb.Append(bt.ToString("x2"));
+                                }
+
+                                hashImplementations.Add(ri.ID, sb.ToString());
                             }
                         }
 
