@@ -94,7 +94,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                         this.buildBreadcrumb();
 
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
-                        this.setObjectInfo('Fusion', this.fusionId);
+                        this.setObjectInfo('Fusion', this.fusionId, undefined, this.fusion.AssetID);
                         this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
                     });
             }

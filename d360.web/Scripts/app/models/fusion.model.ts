@@ -84,6 +84,7 @@ export class FusionConfigurationDetails {
     Manual: boolean;
     FusionTypeID: number;
     HasDashboards: boolean;
+    AssetID: number;
 }
 
 export class FusionAgentExecutionStats {

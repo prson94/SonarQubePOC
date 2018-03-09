@@ -280,6 +280,13 @@ from    Fusion C
         {
             var model = Company.GetFusionAsDictionary(id);
             if (model == null) return Request.CreateResponse(HttpStatusCode.NotFound);
+
+            var asset = Company.Assets.Where(x => x.Object == "Fusion" && x.ObjectID == id).FirstOrDefault();
+
+            if(asset!= null)
+            {
+                model["AssetID"] = asset.ID;
+            }
             
             return Request.CreateResponse<Dictionary<string, object>>(HttpStatusCode.OK, model);
         }
