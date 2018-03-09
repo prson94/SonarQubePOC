@@ -14,9 +14,11 @@ namespace d360.web.Models.Attributes
                 return;
             try
             {
-                bool contractsAccepted = filterContext.HttpContext.GetOwinContext().Get<bool>("ContractsAccepted");
+                bool contractsAccepted = filterContext.HttpContext.GetOwinContext().Get<bool>("ContractsValidated");
+                bool isAuthenticated = filterContext.HttpContext.Request.IsAuthenticated;
+                bool isBeingRedirected = filterContext.HttpContext.Response.IsRequestBeingRedirected;
 
-                if (contractsAccepted == false)
+                if (isAuthenticated && !contractsAccepted && !isBeingRedirected)
                 {
                     filterContext.HttpContext.Response.Redirect("/terms");
                 }

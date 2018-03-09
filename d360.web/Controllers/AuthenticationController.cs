@@ -10,6 +10,7 @@ using d360.extensions.azuregraph;
 using d360.extensions.mail;
 using d360.model;
 using d360.web.Models;
+using d360.web.Models.Attributes;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using System;
@@ -29,7 +30,7 @@ using System.Xml;
 
 namespace d360.web.Controllers
 {
-    [RoutePrefix("")]
+    [RoutePrefix(""), ValidateContracts(Ignore = true)]
     public class AuthenticationController : BaseController
     {
         //const string APP_ID = "https://d3s.com/ui"; //saml testing id
@@ -808,11 +809,11 @@ namespace d360.web.Controllers
 
                                 if (org.Accepted.HasValue)
                                 {
-                                    if (!org.Accepted.Value)
-                                    {
-                                        ModelState.AddModelError("Invalid", "Your domain owner has not accepted the organisational terms of use.");
-                                        return View(model);
-                                    }
+                                    //if (!org.Accepted.Value)
+                                    //{
+                                    //    ModelState.AddModelError("Invalid", "Your domain owner has not accepted the organisational terms of use.");
+                                    //    return View(model);
+                                    //}
 
                                     //GOOD TO GO
                                     var registration = new OrganizationRegistration
@@ -856,12 +857,12 @@ namespace d360.web.Controllers
                                 if (invite != null)
                                 {
                                     //make sure org has been accepted
-                                    var org = Company.GetById<Organization>(invite.OrganizationID);
-                                    if (!org.Accepted ?? true)
-                                    {
-                                        ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organisational terms of use.");
-                                        return View(model);
-                                    }
+                                    //var org = Company.GetById<Organization>(invite.OrganizationID);
+                                    //if (!org.Accepted ?? true)
+                                    //{
+                                    //    ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organisational terms of use.");
+                                    //    return View(model);
+                                    //}
 
 
                                     //GOOD TO GO
@@ -916,19 +917,19 @@ namespace d360.web.Controllers
                             {
                                 model.Email = registration.Email;
 
-                                var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+                                //var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
 
-                                if (orgs.Any())
-                                {
-                                    if (!setOrgAndUserTermsOfUseText(registration, model))
-                                    {
-                                        return View(model);
-                                    }
-                                }
-                                else if (!setTermsOfUseText(registration, model))
-                                {
-                                    return View(model);
-                                }
+                                //if (orgs.Any())
+                                //{
+                                //    if (!setOrgAndUserTermsOfUseText(registration, model))
+                                //    {
+                                //        return View(model);
+                                //    }
+                                //}
+                                //else if (!setTermsOfUseText(registration, model))
+                                //{
+                                //    return View(model);
+                                //}
 
                                 model.Step = RegisterStep.ADTermsOfUse;
                             }
@@ -965,19 +966,19 @@ namespace d360.web.Controllers
                                 {
                                     model.Email = registration.Email;
 
-                                    var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
+                                    //var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
 
-                                    if (orgs.Any())
-                                    {
-                                        if (!setOrgAndUserTermsOfUseText(registration, model))
-                                        {
-                                            return View(model);
-                                        }
-                                    }
-                                    else if (!setTermsOfUseText(registration, model))
-                                    {
-                                        return View(model);
-                                    }
+                                    //if (orgs.Any())
+                                    //{
+                                    //    if (!setOrgAndUserTermsOfUseText(registration, model))
+                                    //    {
+                                    //        return View(model);
+                                    //    }
+                                    //}
+                                    //else if (!setTermsOfUseText(registration, model))
+                                    //{
+                                    //    return View(model);
+                                    //}
 
                                     #region Check/Create resource account in community
 

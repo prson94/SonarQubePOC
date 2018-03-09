@@ -7,6 +7,7 @@ using d360.core.enums;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using System;
+using d360.extensions.caching;
 
 namespace d360.web.Controllers
 {
@@ -25,9 +26,13 @@ namespace d360.web.Controllers
         /// Angular SPA
         /// </summary>
         /// <returns></returns>
-        [Authorize]
+        [ValidateContracts, Authorize]
         public ActionResult App()
         {
+
+            if (!updateContractValidationCache())
+                return RedirectToAction("terms");
+
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("ResourceID", Company.CurrentResourceID);
             ViewData.Add("ResourceHomePage", Company.GetUserHomePage());
@@ -45,6 +50,8 @@ namespace d360.web.Controllers
                 ViewData.Add("ResourceName", "");
                 ViewData.Add("ResourceEmail", "");
             }
+
+
             return View("App");
         }
 
@@ -54,20 +61,30 @@ namespace d360.web.Controllers
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", Community.GetCompanySettings());
             
-            var res = Company.GlobalReportingResources.Find(Company.CurrentResourceID);
-            var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == res.Email && (i.Accepted ?? false) == false && i.State == State.Active);
             var model = new TermsModel();
-            var sql = @"select C.* from [Contract] C
-                inner join dbo.GetContractValidations(@ResourceID) V on V.ContractID = C.ID
-                where V.Accepted = 0";
+            var validations = Company.Query<ContractValidation>(@"select * from dbo.GetContractValidations(@ResourceID)", new { ResourceID = Company.CurrentResourceID });
 
-            var contracts = Company.Query<Contract>(sql, new { ResourceID = Company.CurrentResourceID, res.Email }).ToList();
-            model.Contracts = contracts.Select(c => new ContractModel(c)).ToList();
+            validations = validations.Where(v => !v.Accepted && ((v.IsFirstUser && v.ContractType == ContractType.OrganizationTermsOfUse) || v.ContractType == ContractType.ResourceTermsOfUse || v.OrganizationID == null));
+
+            if (validations.Any())
+            {
+                model.Contracts = new System.Collections.Generic.List<ContractModel>();
+
+                validations.ToList().ForEach(v =>
+                {
+                    var contract = Company.GetById<Contract>(v.ContractID);
+                    if (contract != null)
+                        model.Contracts.Add(new ContractModel(contract));
+
+                });
+
+                model.Contracts.OrderBy(c => c.Contract.ContractType).ThenBy(c => !c.Contract.OrganizationID.HasValue ? 0 : 1);
+            }
 
             return View(model);
         }
 
-        [Authorize, Route("terms"), HttpPost]
+        [ValidateContracts(Ignore = true), Authorize, Route("terms"), HttpPost]
         public ActionResult Terms(TermsModel model)
         {
 
@@ -82,8 +99,6 @@ namespace d360.web.Controllers
 
                     var invite = invites.FirstOrDefault(i => i.OrganizationID == c.Contract.OrganizationID);
                     var orgRes = orgResources.FirstOrDefault(o => o.OrganizationID == c.Contract.OrganizationID);
-
-
 
                     if (orgRes == null && c.Contract.OrganizationID != null)
                     {
@@ -106,6 +121,18 @@ namespace d360.web.Controllers
                         Company.Update(orgRes);
                     }
 
+                    if (c.Contract.ContractType == ContractType.OrganizationTermsOfUse)
+                    {
+                        var org = Company.GetById<Organization>((int)c.Contract.OrganizationID);
+                        if (org != null)
+                        {
+                            org.Accepted = true;
+                            org.AcceptedBy = Company.CurrentResourceID;
+                            org.DateAccepted = DateTime.Now;
+                            Company.Update(org);
+                        }
+                    }
+
                     if (invite != null)
                         Company.Delete(invite); //remove the invite
                 }
@@ -120,7 +147,49 @@ namespace d360.web.Controllers
                 Company.Add(c.Acceptance);
             });
 
+            updateContractValidationCache();
+
             return RedirectToAction("App");
+        }
+
+
+        private bool updateContractValidationCache()
+        {
+            var key = ContractValidationCacheModel.cacheKey;
+            var cache = new MemoryCachingProvider();
+            var time = ContractValidationCacheModel.cacheDuration;
+            var cacheRes = cache.GetItemInListByID<ContractValidationCacheModel.User, int>(key, Company.CurrentResourceID);
+            var contractCount = Company.Query<int>(@"select count(*) from dbo.GetContractValidations(@ResourceID) where accepted = 0", new { ResourceID = Company.CurrentResourceID }).FirstOrDefault();
+            var contractsAccepted = contractCount == 0;
+
+            
+            if (cacheRes != null)
+            {
+                var com = cacheRes.Companies.FirstOrDefault(c => c.ID == Company.CurrentCompanyID);
+                if (com != null)
+                {
+                    if (!com.ContractsAccepted)
+                    {
+                        contractsAccepted = contractCount == 0;
+                        com.ContractsAccepted = contractCount == 0;
+                        cache.SetItemInListByID(key, Company.CurrentResourceID, cacheRes, true, time);
+                    }
+                }
+                else
+                {
+                    cacheRes.Companies.Add(new ContractValidationCacheModel.Company() { ID = Company.CurrentCompanyID, ContractsAccepted = contractCount == 0 });
+                    cache.SetItemInListByID(key, Company.CurrentResourceID, cacheRes, true, time);
+                }
+            }
+            else
+            {
+                cacheRes = new ContractValidationCacheModel.User();
+                cacheRes.Companies.Add(new ContractValidationCacheModel.Company() { ID = Company.CurrentCompanyID, ContractsAccepted = contractCount == 0 });
+                cache.SetItemInListByID(key, Company.CurrentResourceID, cacheRes, true, time);
+
+            }
+
+            return contractsAccepted;
         }
 
     }

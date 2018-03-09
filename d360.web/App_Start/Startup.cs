@@ -54,8 +54,9 @@ namespace d360.web
             if (!System.Web.HttpContext.Current.IsDebuggingEnabled)
             {
                 GlobalFilters.Filters.Add(new RequireHttpsAttribute());
+                GlobalFilters.Filters.Add(new ValidateContractsAttribute());
             }
-            
+
 
             ViewEngines.Engines.Clear();
             ViewEngines.Engines.Add(new RazorViewEngine());
@@ -80,6 +81,7 @@ namespace d360.web
             app.Use<IpRestrictionMiddleware>();
             app.Use<CompanyIDCheckMiddleware>();
             app.Use<UserIDCheckMiddleware>();
+            app.Use<ContractValidationMiddleware>();
             app.Use<CachingHeaderMiddleware>();
         }
     }

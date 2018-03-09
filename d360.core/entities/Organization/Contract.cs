@@ -2,7 +2,9 @@
 using d360.core.enums;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
+
 
 namespace d360.core.entities
 {
@@ -64,5 +66,44 @@ namespace d360.core.entities
         [DataMember]
         public int? UpdatedBy { get; set; }
     }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class ContractValidation : BaseObject
+    {
+        [DataMember]
+        public int ContractID { get; set; }
+
+        [DataMember]
+        public int? OrganizationID { get; set; }
+
+        [DataMember]
+        public ContractType ContractType { get; set; }
+
+        [DataMember]
+        public bool Accepted { get; set; }
+
+        [DataMember]
+        public bool IsFirstUser { get; set; }
+    }
+
+    public static class ContractValidationCacheModel
+    {
+
+        public const string cacheKey = "ContractValidations";
+        public const int cacheDuration = 15;
+
+        public class User
+        {
+            public List<Company> Companies = new List<Company>();
+        }
+
+        public class Company
+        {
+            public int ID { get; set; }
+            public bool ContractsAccepted { get; set; }
+        }
+
+    }
+
 
 }

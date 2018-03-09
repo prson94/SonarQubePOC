@@ -344,6 +344,7 @@
       <DependentUpon>Validation.resx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\CachingHeaderMiddleware.cs" />
+    <Compile Include="App_Start\ContractValidationMiddleware.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\UserIDCheckMiddleware.cs" />
     <Compile Include="App_Start\CompanyIDCheckMiddleware.cs" />
