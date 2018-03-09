@@ -1820,7 +1820,18 @@
             This service houses all endpoints handling custom API configurations.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.Services.CustomController.GetDataBasedOnRoute(System.String,System.String,System.String,System.String)">
+        <member name="M:d360.web.Controllers.Services.CustomController.GetSingletonBasedOnRoute(System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sends back data based on a custom route.
+            </summary>
+            <param name="service"></param>
+            <param name="endpoint"></param>
+            <param name="version"></param>
+            <param name="entityFormat"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.CustomController.GetCollectionBasedOnRoute(System.String,System.String,System.String,System.String)">
             <summary>
             Sends back data based on a custom route.
             </summary>

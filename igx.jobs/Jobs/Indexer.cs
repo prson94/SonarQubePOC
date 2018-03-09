@@ -1,4 +1,6 @@
 using d360.core;
+using d360.core.entities;
+using d360.core.enums;
 using d360.core.queue;
 using d360.extensions.search;
 using d360.utils.company;
@@ -24,8 +26,8 @@ namespace igx.jobs
     {
         private static int _defaultQueryCommandTimeout = 180;
         const string functionName = "Indexing_ReIndex";
-        const string timerSettings = "0 0 4 * * 6";
-        //const string timerSettings = "*/1 * * * * *";
+        //const string timerSettings = "0 0 4 * * 6";
+        const string timerSettings = "*/1 * * * * *";
 
         const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> ''";
 
@@ -46,6 +48,77 @@ namespace igx.jobs
                         IEnumerable<AddToIndexModel> models = null;
 
                         company.OpenWithRetry(RetryPolicy.DefaultFixed);
+
+                        #region Load Assets
+
+                        //var assetTypes = company.Query<AssetType>("select * from AssetType").ToList();
+                        //var assetSql = "select * from AssetDetail where AssetTypeID = @t State = 1";
+                        //var fieldSql = "select	F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.AssetTypeID = @t";
+                        //foreach (var at in assetTypes)
+                        //{
+                        //    var assets = company.Query<AssetDetail>(assetSql, new { t = at.ID });
+                        //    var fields = company.Query<FieldDetail>(fieldSql, new { t = at.ID });
+                        //    var adds = new List<AddToIndexModel>();
+                        //    var urlFormat = "";
+                        //    switch (at.Class)
+                        //    {
+                        //        case AssetTypeClass.FusionAttribute:
+                        //            urlFormat = "";
+                        //            break;
+                        //        case AssetTypeClass.Glossary:
+                        //            urlFormat = "/artifact/{0}/{1}";
+                        //            break;
+                        //        case AssetTypeClass.Group:
+                        //            urlFormat = "";
+                        //            break;
+                        //        case AssetTypeClass.Model:
+                        //            urlFormat = "/model/{0};hierarchyId={1}";
+                        //            break;
+                        //        case AssetTypeClass.Policy:
+                        //            urlFormat = "/policy/{0};hierarchyId={1}";
+                        //            break;
+                        //        case AssetTypeClass.Reference:
+                        //            urlFormat = "";
+                        //            break;
+                        //        case AssetTypeClass.Rule:
+                        //            urlFormat = "";
+                        //            break;
+                        //        default:
+                        //            urlFormat = "";
+                        //            break;
+                        //    }
+
+                        //    if (!string.IsNullOrEmpty(urlFormat))
+                        //    {
+                        //        foreach (var a in assets)
+                        //        {
+                        //            var theseFields = fields.Where(f => f.AssetID == a.ID).ToDictionary(k => k.Name, v => v.FormattedValue);
+                        //            if (!theseFields.ContainsKey("Name"))
+                        //            {
+                        //                theseFields.Add("Name", a.DisplayValue);
+                        //            }
+                        //            if (!theseFields.ContainsKey("Description"))
+                        //            {
+                        //                var description = string.Join("; ", theseFields.Values);
+                        //                theseFields.Add("Description", description);
+                        //            }
+                        //            adds.Add(new AddToIndexModel {
+                        //                Group = at.Class.ToString(),
+                        //                CompanyID = c.CompanyID,
+                        //                Type = a.TypeName,
+                        //                ID = a.ObjectID,
+                        //                ItemUniqueID = a.ID.ToString(),
+                        //                RelativeUrl = string.Format(urlFormat, a.TypeID, a.ObjectID),
+                        //                Fields = theseFields
+                        //            });
+                        //        }
+
+                        //        source.AddToIndex(models);
+                        //    }
+                        //}
+
+
+                        #endregion
 
 
                         source.ClearIndex(c.CompanyID);
@@ -436,7 +509,8 @@ from
         private static List<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
-select	ObjectID as ID,
+select	ID as ItemUniqueID,
+        ObjectID as ID,
 		TypeID,
 		DisplayValue,
 		TypeName
@@ -453,6 +527,7 @@ where	Type = 'ArtifactType'
                     Group = sType,
                     CompanyID = companyID,
                     ID = o.ID,
+                    ItemUniqueID = o.ItemUniqueID,
                     Type = o.TypeName,
                     RelativeUrl = $"/artifact/{o.TypeID}/{o.ID}",
                     Fields = new Dictionary<string, string>() {

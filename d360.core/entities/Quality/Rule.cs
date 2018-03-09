@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    public class RuleModel : Dictionary<string, string>
+    public class RuleModel
     {
         [DataMember]
         public int ID { get; set; }
@@ -22,7 +22,10 @@ namespace d360.core.entities
 
         [DataMember]
         public string SourceID { get; set; }
-        
+
+        [DataMember]
+        public Dictionary<string, string> Fields { get; set; }
+
     }
 
 
