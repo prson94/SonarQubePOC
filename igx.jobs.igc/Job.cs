@@ -11,8 +11,8 @@ namespace igx.jobs.igc
     public static class IgcIntegration
     {
         const string functionName = "IGC_Integration";
-        const string timerSettings = "0 */30 * * * *";
-        //const string timerSettings = "*/10 * * * * *";
+        //const string timerSettings = "0 */30 * * * *";
+        const string timerSettings = "*/10 * * * * *";
 
         #region State street Settings - NEED to Externalize
 
@@ -35,20 +35,22 @@ namespace igx.jobs.igc
             {
                 CoreFunction.AITrackJobStart(functionName);
 
-                LoadApplicationCatalog();
+                //LoadApplicationCatalog();
 
-                GetRrpFunctionalArea();
-                GetRrpLevel1();
-                GetRrpLevel2();
-                GetRrpLevel3();
+                //GetRrpFunctionalArea();
+                //GetRrpLevel1();
+                //GetRrpLevel2();
+                //GetRrpLevel3();
 
-                GetBuLevel1();
-                GetBuLevel2();
-                GetBuLevel3();
-                GetBuLevel4();
-                GetBuLevel5();
-                GetBuLevel6();
-                GetBuLevel7();
+                //GetBuLevel1();
+                //GetBuLevel2();
+                //GetBuLevel3();
+                //GetBuLevel4();
+                //GetBuLevel5();
+                //GetBuLevel6();
+                //GetBuLevel7();
+
+                GetHosts();
                 //var companies = CoreFunction.GetCompaniesByCurrentSlot();
                 //companies.ForEach(c =>
                 //{
@@ -292,6 +294,163 @@ namespace igx.jobs.igc
         #endregion
 
         #region Fusion
+
+        public static void GetHosts()
+        {
+            var url = buildSearchUri("host", new List<string> {
+                "short_description",
+                "long_description",
+                "labels",
+                "stewards",
+                //"assigned_to_terms",
+                //"implements_rules",
+                //"governed_by_rules",
+                //"databases",
+                //"data_files",
+                //"idoc_types",
+                //"transformation_projects"
+                //"data_connections",
+                //"amazon_s3_buckets",
+                //"data_file_folders",
+                //"location",
+                //"network_node",
+                //"imported_from",
+                //"in_colleections",
+                "notes"
+            });
+
+            var arr = new List<dynamic>();
+            //var d3sImpactRelationships = new List<D3sBusinesUnitApplicationCatalogRelationshipModel>();
+            //var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+
+            Func<IgcDynamicModels, IgcDynamicModels> parse = delegate (IgcDynamicModels root)
+            {
+                arr.AddRange(root.items.ConvertAll<dynamic>(i => new
+                {
+                    SourceID = i._id,
+                    Name = i._name,
+                    ShortDescription = i.short_description,
+                    LongDescription = i.long_description,
+                    Notes = i.notes
+                }));
+
+                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+                //{
+                //    SourceID = i.SourceID,
+                //    RoleName = "Business Owner",
+                //    UserId = i.BusinessOwnerId,
+                //    UserFullName = i.BusinessOwner
+                //}));
+
+                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+                //{
+                //    SourceID = i.SourceID,
+                //    RoleName = "Application Owner",
+                //    UserId = i.ApplicationOwnerId,
+                //    UserFullName = i.ApplicationOwner
+                //}));
+
+                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+                //{
+                //    SourceID = i.SourceID,
+                //    RoleName = "Data Owner",
+                //    UserId = string.Empty,
+                //    UserFullName = i.DataOwner
+                //}));
+
+                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+                //{
+                //    SourceID = i.SourceID,
+                //    RoleName = "Data Steward",
+                //    UserId = i.DataStewardId,
+                //    UserFullName = i.DataSteward
+                //}));
+
+                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+                //{
+                //    SourceID = i.SourceID,
+                //    RoleName = "EDGM Steward",
+                //    UserId = i.EDGMStewardId,
+                //    UserFullName = string.Empty
+                //}));
+
+                //foreach (var app in root.items)
+                //{
+                //    app.ImpactsOn.items.ForEach(bu =>
+                //    {
+                //        d3sImpactRelationships.Add(
+                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+                //        );
+                //    });
+                //}
+
+                return root;
+            };
+
+            while (!string.IsNullOrEmpty(url))
+            {
+                var cleanUri = new Uri(url);
+                if (cleanUri.Port != 80 && cleanUri.Port != 443)
+                {
+                    url = url.Replace($":{cleanUri.Port}", "");
+                }
+
+                var models = GetFromApi<IgcDynamicModels>(url, SourceAuthString);
+                if (models != null)
+                {
+                    parse(models);
+                    url = models.paging.next;
+                }
+            }
+
+            // If any items to send to server.
+            if (arr.Count > 0)
+            {
+                //var respString = PostJsonToApi(
+                //    $"{TargetUri}ArtifactType/2/bulk",
+                //    TargetAuthString,
+                //    JsonConvert.SerializeObject(arr)
+                //);
+            }
+
+            //// If any owners to send to server.
+            //if (ownershipTopModel.Items.Count > 0)
+            //{
+            //    var uniqueUsers = ownershipTopModel.Items
+            //        .Where(i => !string.IsNullOrEmpty(i.UserFullName) && !string.IsNullOrEmpty(i.UserId))
+            //        .Select(i => new { i.UserFullName, i.UserId })
+            //        .Distinct()
+            //        .ToList();
+
+            //    // Populate the UserIDs that are missing, based can be looked up by user's full name. TODO: Confirm this logic, as it may not be correct if two or more user's have the same name.
+            //    foreach (var item in ownershipTopModel.Items.Where(i => string.IsNullOrEmpty(i.UserId)))
+            //    {
+            //        var match = uniqueUsers.FirstOrDefault(i => i.UserFullName == item.UserFullName);
+            //        if (match != null)
+            //        {
+            //            item.UserId = match.UserId;
+            //        }
+            //    }
+
+            //    //Now, remove any users whose internal ID cannot be resolved.
+            //    ownershipTopModel.Items.RemoveAll(i => string.IsNullOrEmpty(i.UserId));
+
+            //    var respString = PostJsonToApi(
+            //        $"{TargetUri}ownership/bulk",
+            //        TargetAuthString,
+            //        JsonConvert.SerializeObject(ownershipTopModel)
+            //    );
+            //}
+
+            //if (d3sImpactRelationships.Count > 0)
+            //{
+            //    //var respString = PostJsonToApi(
+            //    //    $"{TargetUri}relationships/bulk",
+            //    //    TargetAuthString,
+            //    //    JsonConvert.SerializeObject(d3sImpactRelationships)
+            //    //);
+            //}
+        }
 
         //public static void GetDataFiles()
         //{

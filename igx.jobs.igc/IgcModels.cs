@@ -47,6 +47,11 @@ namespace igx.jobs.igc
         public GenericIgcPagingModel paging { get; set; }
     }
 
+    public class IgcDynamicModels : IgcModels
+    {
+        public List<dynamic> items { get; set; }
+    }
+
     #endregion
 
     #region Specific
