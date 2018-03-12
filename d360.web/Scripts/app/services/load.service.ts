@@ -12,7 +12,7 @@ declare var CompanySettings: any;
 @Injectable()
 export class LoadService extends BaseService {
 
-    lineageFlag: boolean = true;
+    lineageFlag: string = '';
     aOptions: any[] = [];
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
@@ -48,7 +48,7 @@ export class LoadService extends BaseService {
         if (CompanySettings != null && CompanySettings.UseLegacyLineage != null) {
             this.lineageFlag = CompanySettings.UseLegacyLineage;
         }
-        if (this.lineageFlag == true) {
+        if (this.lineageFlag == 'true') {
             this.aOptions.push({ label: 'Lineage : Business', value: 'BL' });
             this.aOptions.push({ label: 'Lineage : Technical', value: 'TL' });
         }
