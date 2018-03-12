@@ -55,8 +55,11 @@ namespace d360.web.Controllers.Services
         [DataContract]
         public class RuleImplementationModel
         {
+            [DataMember]
             public string SourceID { get; set; }
+            [DataMember]
             public string SourceUri { get; set; }
+            [DataMember]
             public string Name { get; set; }
         }
 
@@ -558,14 +561,17 @@ order by I.ID, QT.Name", new { id }).ToList();
 
             models.ForEach(m =>
             {
-                var qualNames = string.Join("|", m.Qualifiers.Select(o => o.Name).OrderBy(o => o));
-                byte[] hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(qualNames));
-                var sb = new StringBuilder();
-                foreach (byte bt in hashBytes)
+                if (m.Qualifiers != null)
                 {
-                    sb.Append(bt.ToString("x2"));
+                    var qualNames = string.Join("|", m.Qualifiers.Select(o => o.Name).OrderBy(o => o));
+                    byte[] hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(qualNames));
+                    var sb = new StringBuilder();
+                    foreach (byte bt in hashBytes)
+                    {
+                        sb.Append(bt.ToString("x2"));
+                    }
+                    m.QualifierHash = sb.ToString();
                 }
-                m.QualifierHash = sb.ToString();
             });
 
             #endregion
@@ -622,15 +628,17 @@ order by I.ID, QT.Name", new { id }).ToList();
                                 });
 
                                 //Save this implementation in the hash comparison list.
-                                var qualNames = string.Join("|", model.Qualifiers.OrderBy(o => o.Name).Select(o => o.Name));
-                                byte[] hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(qualNames));
-                                var sb = new StringBuilder();
-                                foreach (byte bt in hashBytes)
-                                {
-                                    sb.Append(bt.ToString("x2"));
-                                }
+                                if (model.Qualifiers != null) { 
+                                    var qualNames = string.Join("|", model.Qualifiers.OrderBy(o => o.Name).Select(o => o.Name));
+                                    byte[] hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(qualNames));
+                                    var sb = new StringBuilder();
+                                    foreach (byte bt in hashBytes)
+                                    {
+                                        sb.Append(bt.ToString("x2"));
+                                    }
 
-                                hashImplementations.Add(ri.ID, sb.ToString());
+                                    hashImplementations.Add(ri.ID, sb.ToString());
+                                }
                             }
                         }
 
