@@ -7,15 +7,10 @@ import { MessagesService } from '../../../../services/messages.service';
 //import { JsonResult } from '
 import {
     DiagramObjectType,
-    LinkModelV2,
-    NodeModelV2,
-    MapItem,
-    Responsibility,
-    TechnicalRelation,
+    LineageLink,
+    LineageNode,
     LineageView,
     LineageEditorModelV2,
-    LineageNodeModel,
-    LineageLinkModel,
     PredicateInfo,
 } from '../../../../models/lineage.model';
 
@@ -175,6 +170,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.diagram.addDiagramListener('BackgroundSingleClicked', e => this.BackgroundSingleClicked(e));
         this.diagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
+        this.diagram.addDiagramListener('SelectionDeleted', e => this.SelectionDeleted(e));
 
         this.diagram.toolManager.linkingTool.linkValidation = (a, b, c, d) => this.canLink(a, b, c, d);
 
@@ -186,7 +182,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.diagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.diagram.toolManager.linkingTool.isEnabled = !this.readonly;
-        this.diagram.toolManager.linkingTool.archetypeLinkData = new LinkModelV2();
+        this.diagram.toolManager.linkingTool.archetypeLinkData = new LineageLink();
         this.diagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelNone;
 
         this.diagram.allowDrop = true;
@@ -232,7 +228,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             for (var i = 0; i < data.nodes.length; i++) {
 
                 var d = data.nodes[i];
-                var model = new NodeModelV2();
+                var model = new LineageNode();
 
                 if (d.key != null) //if the key is not passed let gojs assign it and invalidate the placeholder node
                     model.key = d.key;
@@ -259,7 +255,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (data.links) {
             for (var i = 0; i < data.links.length; i++) {
                 var d = data.links[i];
-                var link = new LinkModelV2();
+                var link = new LineageLink();
                 link.intersectId = d.intersectId;
                 link.from = d.from;
                 link.to = d.to;
@@ -338,7 +334,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.loadMenuItems();
     }
 
-    private toggleTabs(data: NodeModelV2 | LinkModelV2) {
+    private toggleTabs(data: LineageNode | LineageLink) {
         //console.log(this.tab, data);
         if (data) {
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
@@ -576,7 +572,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 return;
             }
 
-            let m = new NodeModelV2();
+            let m = new LineageNode();
             m.assetId = s.assetId;
             m.backColor = s.backColor;
             m.foreColor = s.foreColor;
@@ -609,7 +605,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.initialLinks.forEach(l => {
             let la = <any>l;
-            let ln = new LinkModelV2();
+            let ln = new LineageLink();
             ln.intersectId = la.intersectId;
             ln.intersectTypeId = la.intersectTypeId;
             ln.from = la.from;
@@ -619,7 +615,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             //split back into multiple links
             if (ln.predicates.length >= 1) {
                 ln.predicates.forEach(p => {
-                    let lns = new LinkModelV2();
+                    let lns = new LineageLink();
                     lns.from = ln.from;
                     lns.to = ln.to;
                     lns.intersectId = p.intersectId;
@@ -635,7 +631,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.diagramModelAsGraph().linkDataArray.forEach(l => {
             let la = <any>l;
-            let ln = new LinkModelV2();
+            let ln = new LineageLink();
             ln.intersectId = la.intersectId;
             ln.intersectTypeId = la.intersectTypeId;
             ln.from = la.from;
@@ -645,7 +641,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             //split back into multiple links
             if (ln.predicates.length >= 1) {
                 ln.predicates.forEach(p => {
-                    let lns = new LinkModelV2();
+                    let lns = new LineageLink();
                     lns.from = ln.from;
                     lns.to = ln.to;
                     lns.intersectId = p.intersectId;
@@ -661,7 +657,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.diagram.model.nodeDataArray.forEach(n => {
             let na = <any>n;
-            let nn = new NodeModelV2();
+            let nn = new LineageNode();
             nn.key = na.key;
             nn.assetId = na.assetId;
             nn.assetTypeId = na.assetTypeId;
@@ -695,7 +691,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.tab = val;
     }
 
-    private validateNode(n: NodeModelV2) {
+    private validateNode(n: LineageNode) {
         let valid = true;
 
         let inCount = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<any>l).to == n.key).length;
@@ -710,7 +706,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     }
 
-    private validateLink(l: LinkModelV2) {
+    private validateLink(l: LineageLink) {
         let valid = true;
 
         if (l.intersectTypeId <= 0)
@@ -799,7 +795,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         }
 
         //this.selectedData.predicates = [...e];
-        let link: LinkModelV2 = <LinkModelV2>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).from == this.selectedData.from && (<any>l).to == this.selectedData.to);
+        let link: LineageLink = <LineageLink>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).from == this.selectedData.from && (<any>l).to == this.selectedData.to);
         //let intersectType = this.intersectTypes.find(i => i.intersectTypeId == +e);
         if (link != null) {
             if (e.length > 0) {
@@ -812,21 +808,21 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         }
 
         this.diagram.model.setDataProperty(link, 'predicates', [...e]);
-        (<LinkModelV2>this.selectedData).predicates = [...e];
+        (<LineageLink>this.selectedData).predicates = [...e];
         this.diagram.model.setDataProperty(link, 'text', null);
         this.diagram.model.setDataProperty(link, 'fullText', null);
-        this.validateLink(<LinkModelV2>link);
+        this.validateLink(<LineageLink>link);
 
-        this.selectedData = <LinkModelV2>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).from == this.selectedData.from && (<any>l).to == this.selectedData.to);
+        this.selectedData = <LineageLink>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).from == this.selectedData.from && (<any>l).to == this.selectedData.to);
 
         //console.log('changeIntersectType', this.selectedData, e, <LinkModelV2>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).from == this.selectedData.from && (<any>l).to == this.selectedData.to));
 
     }
 
 
-    private changeNode(e: NodeModelV2) {
+    private changeNode(e: LineageNode) {
 
-        let node: NodeModelV2 = this.diagram.model.findNodeDataForKey(e.key);
+        let node: LineageNode = this.diagram.model.findNodeDataForKey(e.key);
         //console.log('changeNode', e, node, this.myDiagram);
         if (node == null)
             return;
@@ -879,9 +875,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
             if (sel != null && sel.length != 0) {
                 if (sel[0].data.diagramObjectType == DiagramObjectType.Link) {
-                    this.selectedData = <LinkModelV2>sel[0].data;
+                    this.selectedData = <LineageLink>sel[0].data;
                 } else {
-                    this.selectedData = <NodeModelV2>sel[0].data;
+                    this.selectedData = <LineageNode>sel[0].data;
                 }
 
                 //console.log('ChangedSelection', _.cloneDeep(this.selectedData));
@@ -899,11 +895,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             if (obj.diagramObjectType == DiagramObjectType.Node) {
                 this.objectType = obj.object;
                 this.objectID = obj.objectId;
-                //this.history.push({
-                //    object: this.objectType,
-                //    objectId: this.objectID
-                //});
-                //this.loadMenuItems();
                 this.populateDiagram();
             }
         }
@@ -915,12 +906,14 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.refreshControls(null);
     }
 
+
     private SelectionDeleted(e: any) {
-
-    }
-
-    private ExternalObjectsDropped(e: any) {
-        //console.log(e, this.myDiagram.selection);
+        let sel: go.Part[] = e.subject.toArray();
+        let ix = sel.findIndex(s => s.data.diagramObjectType == DiagramObjectType.Node && s.data.object == this.objectType && s.data.objectId == this.objectID)
+        //if the focal node was deleted, add it back
+        if (ix > -1) {
+            this.diagram.model.addNodeData(sel[ix].data);
+        }
     }
 
     private LinkDrawn(e: any) {
@@ -929,7 +922,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         let fromNode = this.diagram.model.findNodeDataForKey(data.from);
         let toNode = this.diagram.model.findNodeDataForKey(data.to);
-        let link: LinkModelV2 = <LinkModelV2>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).to == data.to && (<any>l).from == data.from);
+        let link: LineageLink = <LineageLink>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).to == data.to && (<any>l).from == data.from);
 
         if (link == null || fromNode == null || toNode == null) {
             return;
@@ -962,8 +955,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         }
 
-        this.validateLink(<LinkModelV2>link);
-        this.selectedData = <LinkModelV2>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).to == data.to && (<any>l).from == data.from);
+        this.validateLink(<LineageLink>link);
+        this.selectedData = <LineageLink>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).to == data.to && (<any>l).from == data.from);
         this.refreshControls(this.selectedData);
         //console.log('linkdrawn', this.selectedData, link)
         this.diagram.commitTransaction('Link Drawn');
@@ -1010,62 +1003,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         }
     }
-
-    private ungroupSelection() {
-        let selection = this.diagram.selection;
-        let nodes = [];
-        let maps = [];
-
-        selection.each(s => {
-            let data = s.data;
-
-            if (data.category == 'map') {
-                maps.push(data);
-            }
-
-        });
-
-        maps.forEach(m => {
-            let mapNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).group == m.group);
-
-            mapNodes.forEach(n => {
-                this.diagram.model.setDataProperty(n, 'group', null);
-            });
-        });
-        this.reOrderLayout();
-    }
-
-    private groupSelection() {
-        let selection = this.diagram.selection;
-        let maps = [];
-
-        //console.log('groupSelection',selection);
-
-        //find all selected maps
-        selection.each(s => {
-            let data = s.data;
-
-            if (data.category == 'map') {
-                maps.push(data);
-            }
-        });
-
-
-        if (maps.length > 1) {
-            let group = new NodeModelV2();
-            group.category = 'transform';
-           // group.isGroup = true;
-            this.diagram.model.addNodeData(group);
-            this.diagram.model.setDataProperty(group, 'name', '');
-
-            maps.forEach(m => {
-                this.diagram.model.setDataProperty(m, 'group', group.key);
-            });
-        }
-
-        //console.log(maps);
-    }
-
     //#endregion
 
     //#region templates

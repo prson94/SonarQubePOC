@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, OnChanges, EventEmitter, Output, OnDestroy } from '@angular/core';
 import { LineageService } from '../../../../services/lineage.service';
-import { NodeModelV2 } from '../../../../models/lineage.model';
+import { LineageNode } from '../../../../models/lineage.model';
 import * as go from 'gojs';
 import * as _ from 'lodash';
 
@@ -110,7 +110,7 @@ import * as _ from 'lodash';
 
 export class LineageEditorComponent implements OnInit, OnChanges, OnDestroy {
     @Input() diagram: go.Diagram = null;
-    @Input() node: NodeModelV2 = null;
+    @Input() node: LineageNode = null;
     @Output() nodeChange = new EventEmitter();
 
 
@@ -148,14 +148,14 @@ export class LineageEditorComponent implements OnInit, OnChanges, OnDestroy {
         });
     }
 
-    selectObject(node: NodeModelV2) {
+    selectObject(node: LineageNode) {
         node.object = this.selected.Object;
         node.objectId = this.selected.ObjectID;
         node.name = this.selected.Name;
         this.nodeChange.emit(node);
     }
 
-    edit(node: NodeModelV2) {
+    edit(node: LineageNode) {
         node.object = null;
         node.objectId = null;
         this.nodeChange.emit(node);

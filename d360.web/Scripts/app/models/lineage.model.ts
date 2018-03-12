@@ -1,4 +1,114 @@
-﻿export class LinkModel {
+﻿
+export class LineageNode {
+    key: any;
+    assetId: any;
+    assetTypeId: any;
+    object: string;
+    objectId: number;
+    objectTypeName: string;
+    objectType: string;
+    objectTypeId: number;
+
+    name: string;
+    foreColor: string = '#000';
+    backColor: string = '#fff';
+    visible: boolean = true;
+
+
+    category: string;
+    diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
+    template: any = null;
+
+    valid: boolean = true;
+    errors = [];
+}
+
+export class LineageLink {
+    from: string;
+    to: string;
+    intersectId: number = -1;
+    intersectTypeId: number = -1;
+    state: number;
+    predicate: string;
+    predicates: PredicateInfo[] = [];
+
+    get text() {
+        return this.getText(22);
+    }
+
+    get fullText() {
+        return this.getText();
+    }
+
+    private getText(len: number = Infinity) {
+        let name = "";
+        if (this.predicates == null || this.predicates.length < 1)
+            name = this.predicate || "";
+        else {
+            this.predicates.forEach(p => {
+                name += p.name + ', ';
+            });
+            //remove trailing ,
+            name = name.substr(0, name.length - 2);
+        }
+
+        if (name != null && name.length > len)
+            name = name.substr(0, len) + '...';
+
+        return name;
+    }
+
+    valid: boolean = true;
+    errors = [];
+
+    category: string;
+    diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
+}
+
+export class PredicateInfo {
+    intersectTypeId: number;
+    name: string;
+    intersectId: number;
+}
+
+export class LineageEditorModelV2 {
+    Object: string;
+    ObjectID: number;
+    Nodes: LineageNode[] = [];
+    Links: LineageLink[] = [];
+    OriginalNodes: LineageNode[] = [];
+    OriginalLinks: LineageLink[] = [];
+}
+
+
+//#region enumerations
+
+export enum DiagramObjectType {
+    Link,
+    Node
+}
+
+export enum LineageView {
+    MapItemList = 0,
+    MapRuleItemList = 4,
+    SystemFlow = 1,
+    DataFlow = 2,
+    Technical = 3
+}
+
+export enum LineageEditorMode {
+    Default,
+    Preview,
+    Summary
+}
+
+//#endregion
+
+
+
+//#region legacy
+
+export class LinkModel {
     id: number = null;
     key = null;
     Category: string = '';
@@ -48,116 +158,6 @@ export class NodeModel {
     other = null;
 }
 
-
-
-export class NodeModelV2 {
-    key: any;
-    assetId: any;
-    assetTypeId: any;
-    object: string;
-    objectId: number;
-    objectTypeName: string;
-    objectType: string;
-    objectTypeId: number;
-
-    name: string;
-    foreColor: string = '#000';
-    backColor: string = '#fff';
-    visible: boolean = true;
-
-
-    category: string;
-    diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
-    template: any = null;
-
-    valid: boolean = true;
-    errors = [];
-}
-
-export class LinkModelV2 {
-    from: string;
-    to: string;
-    intersectId: number = -1;
-    intersectTypeId: number = -1;
-    state: number;
-    predicate: string;
-    predicates: PredicateInfo[] = [];
-
-    get text() {
-        return this.getText(22);
-    }
-
-    get fullText() {
-        return this.getText();
-    }
-
-    private getText(len: number = Infinity) {
-        let name = "";
-        if (this.predicates == null || this.predicates.length < 1)
-            name = this.predicate || "";
-        else {
-            this.predicates.forEach(p => {
-                name += p.name + ', ';
-            });
-            //remove trailing ,
-            name = name.substr(0, name.length - 2);
-        }
-
-        if (name != null && name.length > len)
-            name = name.substr(0, len) + '...';
-
-        return name;
-    }
-
-    valid: boolean = true;
-    errors = [];
-
-    category: string;
-    diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
-}
-
-export class PredicateInfo {
-    intersectTypeId: number;
-    name: string;
-    intersectId: number;
-}
-
-
-export class LineageEditorModelV2 {
-    Object: string;
-    ObjectID: number;
-    Nodes: NodeModelV2[] = [];
-    Links: LinkModelV2[] = [];
-    OriginalNodes: NodeModelV2[] = [];
-    OriginalLinks: LinkModelV2[] = [];
-}
-
-export class LineageNodeModel {
-    Key: string;
-    Object: string;
-    ObjectID: number;
-    ObjectType: string;
-    ObjectTypeID: number;
-    Group: string;
-    IsGroup: boolean;
-    Category: string;
-    BusinessTransformation: string;
-    TechnicalTransformation: string;
-    Order: number;
-    IntersectTypeID: number;
-    MapTypeTemplateID: number;
-}
-
-export class LineageLinkModel {
-    IntersectID: number;
-    From: string;
-    To: string;
-}
-
-
-
-
-
 export class MapItem {
     MapItemID;
     SourceType;
@@ -181,6 +181,14 @@ export class MapItem {
     searchableTargetFusion: string;
 }
 
+export class TechnicalRelation {
+    Object;
+    ObjectID;
+    ObjectName;
+    ObjectUrl;
+    ObjectTypeName;
+}
+
 export class Responsibility {
     ResponsibilityID;
     AssigningItemType;
@@ -197,14 +205,6 @@ export class Responsibility {
     ObjectID;
     Role;
     ResponsibleObjectUrl;
-}
-
-export class TechnicalRelation {
-    Object;
-    ObjectID;
-    ObjectName;
-    ObjectUrl;
-    ObjectTypeName;
 }
 
 export class SourceRule {
@@ -377,36 +377,6 @@ export class LineageEditorTechnicalModel {
     Existing: LineageEditorTechnicalRow[] = [];
 }
 
-export class IntersectDetail {
-    ID: number;
-    IntersectTypeID: number;
-    Classification: number;
-    Description: string;
-    Subject: string;
-    SubjectID: number;
-    SubjectName: string;
-    SubjectUrl: string;
-    SubjectType: string;
-    SubjectTypeID: number;
-    SubjectTypeName: string;
-    SubjectIconBackColor: string;
-    SubjectIconForeColor: string;
-    SubjectIconText: string;
-    Object: string;
-    ObjectID: number;
-    ObjectName: string;
-    ObjectUrl: string;
-    ObjectType: string;
-    ObjectTypeID: number;
-    ObjectTypeName: string;
-    ObjectIconBackColor: string;
-    ObjectIconForeColor: string;
-    ObjectIconText: string;
-    PredicateID: number;
-    PredicateName: string;
-    PredicateType: number;
-}
-
 export class LineagePreviewModel {
     BusinessModel: LineageEditorModel;
     TechnicalModel: LineageEditorTechnicalModel;
@@ -436,27 +406,10 @@ export class SourceRuleSource {
     SourceIntersectID: number;
 }
 
-//#region enumerations
-
-export enum DiagramObjectType {
-    Link,
-    Node
-}
-
-export enum LineageView {
-    MapItemList = 0,
-    MapRuleItemList = 4,
-    SystemFlow = 1,
-    DataFlow = 2,
-    Technical = 3
-}
-
-export enum LineageEditorMode {
-    Default,
-    Preview,
-    Summary
-}
-
 //#endregion
+
+
+
+
 
 

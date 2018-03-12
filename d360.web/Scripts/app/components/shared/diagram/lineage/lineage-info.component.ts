@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
 import { ToolTipService } from '../../../../services/tooltip.service';
-import { NodeModelV2 } from '../../../../models/lineage.model';
+import { LineageNode } from '../../../../models/lineage.model';
 import * as go from 'gojs';
 
 @Component({
@@ -18,7 +18,7 @@ import * as go from 'gojs';
 })
 
 export class LineageInfoComponent implements OnInit, OnChanges {
-    @Input() node: NodeModelV2;
+    @Input() node: LineageNode;
     @Input() diagram: go.Diagram;
     @Output() selectionChange = new EventEmitter();
     data: any = null;
