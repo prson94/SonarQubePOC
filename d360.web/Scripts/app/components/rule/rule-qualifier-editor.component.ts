@@ -13,13 +13,13 @@ import { QualifierType, ResolutionObjectType } from '../../models/qualifier.mode
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <form *ngIf="!isLoading" #qualifierForm="ngForm" (ngSubmit)="save()">
                         <div class="row">
-                            <div class="col s4 offset-s4">
+                            <div class="col s12 m6 l4">
                                 <div class="FieldName" style="display:block;">Name</div>
                                 <input type="text" [(ngModel)]="qualifier.Name" name="name" required style="width: 95%" (keyup)="updateQualifierName($event)"/>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col s4 offset-s4">
+                            <div class="col s12 m6 l4">
                                 <div class="FieldName" style="display:block;">Resolution Object</div>
                                 <select name="resObject" [(ngModel)]="resolutionObject" style="width:95%" (ngModelChange)="changeResolutionObject()">
                                     <option value="">Please choose...</option>
@@ -28,7 +28,7 @@ import { QualifierType, ResolutionObjectType } from '../../models/qualifier.mode
                             </div>
                         </div>
                         <div class="row" *ngIf="resolutionObject != ''">
-                            <div class="col s4 offset-s4">
+                            <div class="col s12 m6 l4">
                                 <div class="FieldName" style="display:block;">Resolution Field</div>
                                 <select name="resType" [(ngModel)]="qualifier.ResolutionFieldTypeID" style="width:95%" required>
                                     <option></option>
@@ -37,7 +37,7 @@ import { QualifierType, ResolutionObjectType } from '../../models/qualifier.mode
                             </div>
                         </div>
                         <div class="row" style="margin-top: 10px">
-                            <div class="col s12">
+                            <div class="col s12 m6 l4">
                                 <button pButton type="submit" [disabled]="isLoading || !qualifierForm.form.valid" label="Save"></button>
                                 <button pButton type="button" label="Close" (click)="onClose.emit()"></button>
                             </div>
