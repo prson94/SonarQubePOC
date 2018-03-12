@@ -4699,6 +4699,20 @@ where    A.RuleID = @id", new { id });
             return Company.GetObjectDetail(type.ToString(), id);
         }
 
+        [Route("{type}/{id:int}/status")]
+        public string GetObjectStatus(SystemObjects type, int id)
+        {
+            var objectDetail = Company.GetObjectDetail(type.ToString(), id);
+            //check if there is a status field for this type
+            var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && string.Compare(x.FriendlyName, "Status", true) == 0).FirstOrDefault();
+
+            if (fieldType == null) return null;
+
+            var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
+
+            return Company.Query<string>(sql, new { obj = type.ToString(), id = id, fieldId = fieldType.ID }).FirstOrDefault();
+        }
+
         /// <summary>
         /// Used mainly by the client-side search tool.
         /// </summary>

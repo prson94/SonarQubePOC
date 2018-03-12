@@ -20,6 +20,7 @@ import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../../workflow/workflow.module';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 
+import { ArtifactStatusComponent } from './artifact-status.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectGovernanceComponent } from './object-governance.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
@@ -57,7 +58,8 @@ export function highchartsFactory() {
         //charts        
         ChartModule,
     ],
-    declarations: [        
+    declarations: [    
+        ArtifactStatusComponent,
         ObjectBoardComponent,
         ObjectGovernanceComponent,
         ObjectHealthDetailsComponent,

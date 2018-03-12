@@ -15,4 +15,11 @@ export class ObjectStatisticsService extends BaseService {
             .then(response => <ObjectStatistics>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getObjectStatus(objectID: number, objectType: string): Promise<string> {
+        return this.http.get(`api/${objectType}/${objectID}/status`)
+            .toPromise()
+            .then(response => <string>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

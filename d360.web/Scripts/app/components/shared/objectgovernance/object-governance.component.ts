@@ -18,6 +18,9 @@ import { ArtifactService } from '../../../services/artifacts.service';
                         <div class="col s12" [ngClass]="{'inactive': (hasActiveTab() && !showBoardDetails), 'active-right':showBoardDetails && !showStatus, 'active':showBoardDetails && showStatus, 'l3':showStatus, 'l4':!showStatus}">
                             <d3s-object-board [commentCount]="statistics?.CommentCount" [lastCommentDate]="statistics?.CommentLast" [showDetails]="showBoardDetails" (showDetailsChange)="showBoardDetails=$event;showIssueDetails=false;showHealthDetails=false;"></d3s-object-board>                            
                         </div>
+                        <div class="col s12" *ngIf="showStatus"  [ngClass]="{'inactive': (hasActiveTab() && !showStatusDetails), 'active-right':showStatusDetails, 'l3':showStatus}">
+                            <d3s-artifact-status (statusChanged)="updateStatus()" [objectID]="objectID" [status]="status" [isWorkflowEnabled]="isWorkflowEnabled"></d3s-artifact-status>
+                        </div>
                     </div>
                     <div style="padding:20px;" *ngIf="showHealthDetails || showIssueDetails || showBoardDetails">
                         <d3s-object-health-details *ngIf="showHealthDetails" [objectType]="objectType" [objectID]="objectID" [objectName]="objectName"></d3s-object-health-details>                    
@@ -82,14 +85,13 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
 
     load() {
         this.isLoading = true;
-        switch (this.objectType.toUpperCase())
-        {
-            case "ARTIFACT":
-            case "RULE":
-            case "POLICY":
-                //this.showStatus = true;
-                break;
-        }
+        this.objectStatisticsService.getObjectStatus(this.objectID, this.objectType)
+            .then(result => {
+                this.status = result;
+                if (this.status != undefined && this.status != null && this.status.length > 0) {
+                    this.showStatus = true;
+                }
+            })
         this.objectStatisticsService.getObjectStatistics(this.objectID, this.objectType)
             .then(result => {
                 this.statistics = result;
@@ -104,12 +106,15 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
 
     private updateStatus() {
         if (this.objectType.toUpperCase() == "ARTIFACT") {
-            //window.setTimeout(x => {
-            //    this.artifactService.getArtifact(this.objectID)
-            //        .then(res => {
-            //            if (res) this.status = res.Status;
-            //        });
-            //}, 3000);
+            window.setTimeout(x => {
+                this.objectStatisticsService.getObjectStatus(this.objectID, this.objectType)
+                    .then(result => {
+                        this.status = result;
+                        if (this.status != undefined && this.status != null && this.status.length > 0) {
+                            this.showStatus = true;
+                        }
+                    });
+            }, 3000);
         }
     }
 

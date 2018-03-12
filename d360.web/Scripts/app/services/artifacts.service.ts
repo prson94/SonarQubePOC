@@ -234,6 +234,18 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    requestCertification(objectId: number): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
+        });
+                
+        return this.http
+            .post('form/RequestCertification', `ID=${objectId}`, { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+    }
+
     getArtifactsCustomXls(templateId: number, listableOnly: boolean, artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression[], attributes?: GridAttributeFilterExpression[], simpleFilter?: string, owner?: GridOwnerFilter) {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/download/customexcel/${templateId}/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}&listableOnly=${listableOnly}`;
