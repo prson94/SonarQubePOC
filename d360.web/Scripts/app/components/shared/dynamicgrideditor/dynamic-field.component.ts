@@ -17,7 +17,7 @@ declare var CompanySettings;
                   <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'" >
                         <div class="FieldName">                            
                             <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
-                            <span *ngIf="!fieldTooltip">{{currentFieldName}}</span>
+                            <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
                         </div>
                         <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" type="string" [(ngModel)]="field.Value">  
                         <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>                                  
