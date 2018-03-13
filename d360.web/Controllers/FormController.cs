@@ -11672,7 +11672,17 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 contract.Body = model.Body;
                 contract.ContractType = model.ContractType;
                 if (publish)
+                {
                     contract.PublishedOn = DateTime.UtcNow;
+                    if (contract.ContractType == ContractType.OrganizationTermsOfUse && contract.OrganizationID.HasValue)
+                    {
+                        var org = Company.GetById<Organization>((int)contract.OrganizationID);
+                        org.Accepted = false;
+                        org.AcceptedBy = null;
+                        org.DateAccepted = null;
+                        Company.SaveOrUpdate(org);
+                    }
+                }
 
                 Company.SaveOrUpdate(contract);
 
@@ -11713,7 +11723,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 contract.Body = model.Body;
                 contract.ContractType = model.ContractType;
                 if (publish)
+                {
                     contract.PublishedOn = DateTime.UtcNow;
+                    if (contract.ContractType == ContractType.OrganizationTermsOfUse && contract.OrganizationID.HasValue)
+                    {
+                        var org = Company.GetById<Organization>((int)contract.OrganizationID);
+                        org.Accepted = false;
+                        org.AcceptedBy = null;
+                        org.DateAccepted = null;
+                        Company.SaveOrUpdate(org);
+                    }
+                }
+                    
 
                 Company.Add(contract);
 

@@ -1,13 +1,21 @@
 ﻿@using d360.core.enums;
+@using d360.web.Models;
 @model d360.web.Models.TermsModel
 @{
     ViewBag.Title = "Terms of Use";
     Layout = "../Shared/Anonymous.cshtml";
 }
+@functions{
+    public string GetAntiForgeryToken()
+    {
+        string cookieToken, formToken;
+        AntiForgery.GetTokens(null, out cookieToken, out formToken);
+        return cookieToken + ":" + formToken;
+    }
+}
 @section TopJs {
     <script type="text/javascript">
         $(document).ready(function () {
-
         });
     </script>
 }
@@ -33,9 +41,15 @@
     </style>
 }
 <body class="loginBody">
+
     <span class="loginlogo"></span>
     <div id="loginForm">
-        @if (Model == null || Model.Contracts == null)
+        @{
+            var hasContract = !(Model == null || Model.Contract == null);
+        }
+
+
+        @if (!hasContract)
         {
             <div>
                 You do not currently have any terms of use to accept.
@@ -46,124 +60,75 @@
         }
         else
         {
-            var contractCount = Model.Contracts.Count;
-            for (int i = 0; i < contractCount; i++)
+
+            var contract = Model.Contract;
+            var acceptance = Model.Acceptance;
+
+            using (Html.BeginForm("Terms", "Home", FormMethod.Post))
             {
-                var contract = Model.Contracts[i].Contract;
-                var acceptance = Model.Contracts[i].Acceptance;
-                var isOrg = contract.ContractType == ContractType.OrganizationTermsOfUse;
-                var isLastContract = (i == contractCount - 1);
+                <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
+                @Html.HiddenFor(m => m.Contract.ID);
+                @Html.HiddenFor(m => m.Contract.OrganizationID);
+                @Html.HiddenFor(m => m.Contract.ContractType);
+                @Html.HiddenFor(m => m.Acceptance.ID);
+                <div id="contract">
+                    <div style="padding-top:10px">Please read the terms of use below, then click Accept.</div>
+                    <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
+                        @Html.Raw(contract.Body)
+                    </div>
+                    <div id="inputs">
+                        @if (contract.ContractType == ContractType.OrganizationTermsOfUse)
+                        {
+                            <div style="margin-bottom: 10px">
+                                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(true)", id = "cb1" }) I am an employee of the Firm;
+                            </div>
+                            <div style="margin-bottom: 10px">
+                                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(true)", id = "cb2" }) I have authority to agree to the Terms of Use on behalf of the firm and to commit to the Firm to be bound by thereby; and
+                            </div>
+                            <div style="margin-bottom: 10px">
+                                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(true)", id = "cb3" }) I accept the Terms of use and agree to comply with and be bound thereby.
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="margin-bottom: 10px">
+                                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(false)", id = "cb1" }) Accept?
+                            </div>
+                        }
+                        <div class="form-tools">
+                            @Html.HiddenFor(m => acceptance.AcceptedOn)
 
-                if (!isLastContract)
-                {
-            <div id="contract@(i)" style="display:@(i == 0 ? "block" : "none")">
-                <div style="padding-top:10px">Please read the terms of use below, then click Accept.</div>
-                <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
-                    @Html.Raw(contract.Body)
+                            <a href="/slo">Decline and logout</a>&nbsp;
+                            <input id="accept" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" onclick="acceptContract()" />
+                        </div>
+                    </div>
+                    <div id="loading" style="display: none">
+                        Please wait...
+                    </div>
                 </div>
-
-
-                @if (isOrg)
-    {
-            <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(" + i + ",true)", id = "cb1_" + i }) I am an employee of the Firm;
-            </div>
-            <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(" + i + ",true)", id = "cb2_" + i }) I have authority to agree to the Terms of Use on behalf of the firm and to commit to the Firm to be bound by thereby; and
-            </div>
-            <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(" + i + ", true)", id = "cb3_" + i }) I accept the Terms of use and agree to comply with and be bound thereby.
-            </div>
-}
-else
-{
-            <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(" + i + ", false)", id = "cb1_" + i }) Accept?
-            </div>
-}
-                <div class="form-tools">
-                    @Html.HiddenFor(m => m.Contracts[i].Acceptance.AcceptedOn, new { id = "accepted" + i })
-                    <input type="button" value="Decline" style="width:25%; min-width: 100px" onclick="window.location='/slo'" />
-                    <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" onclick="acceptContract(@(i))" />
-
-                </div>
-            </div>
-                }
-                else
-                {
-                    using (Html.BeginForm())
-                    {
-            <div id="contract@(i)" style="display:@(i == 0 ? "block" : "none")">
-                @for (int j = 0; j < Model.Contracts.Count; j++)
-    {
-            @Html.HiddenFor(m => m.Contracts[j].Contract.ID);
-            @Html.HiddenFor(m => m.Contracts[j].Contract.OrganizationID);
-            @Html.HiddenFor(m => m.Contracts[j].Acceptance.ID);
-
-}
-                <div style="padding-top:10px">Please read the terms of use below, then click Accept.</div>
-                <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
-                    @Html.Raw(contract.Body)
-                </div>
-
-                @if (isOrg)
-    {
-            <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(" + i + ",true)", id = "cb1_" + i }) I am an employee of the Firm;
-            </div>
-            <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(" + i + ",true)", id = "cb2_" + i }) I have authority to agree to the Terms of Use on behalf of the firm and to commit to the Firm to be bound by thereby; and
-            </div>
-            <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(" + i + ", true)", id = "cb3_" + i }) I accept the Terms of use and agree to comply with and be bound thereby.
-            </div>
-}
-else
-{
-            <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(" + i + ", false)", id = "cb1_" + i }) Accept?
-            </div>
-}
-            <div class="form-tools">
-                @Html.HiddenFor(m => m.Contracts[i].Acceptance.AcceptedOn, new { id = "accepted" + i })
-                <input type="button" value="Decline" style="width:25%; min-width: 100px" onclick="window.location='/slo'" />
-                <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" onclick="acceptContract(@(i))" />
-            </div>
-            </div>
-
-                    }
-                }
             }
-            <div id="contract@(contractCount)" style="display: none; padding-top: 10px">
-                Please wait...
-            </div>
-
         }
     </div>
 </body>
 <script>
-    function clickCheckbox(ix, isOrg) {
-        var el = document.getElementById('accept' + ix);
-        var cb = document.getElementById('cb1_' + ix);
+    function clickCheckbox(isOrg) {
+        let el = document.getElementById('accept');
+        let cb = document.getElementById('cb1');
 
         if (isOrg == true) {
-            var cb2 = document.getElementById('cb2_' + ix);
-            var cb3 = document.getElementById('cb3_' + ix);
-            console.log('c', cb, cb2, cb3, el);
+            let cb2 = document.getElementById('cb2');
+            let cb3 = document.getElementById('cb3');
+
             el.disabled = (!cb.checked || !cb2.checked || !cb3.checked);
         } else {
             el.disabled = !cb.checked;
         }
     };
 
-    function acceptContract(ix) {
-        var el = document.getElementById('contract' + ix);
-        var next = document.getElementById('contract' + (ix + 1));
-        var acc = document.getElementById('accepted' + ix);
-
-        acc.value = new Date();
-
-        el.style.display = 'none';
-        next.style.display = 'block';
+    function acceptContract() {
+        let inputs = document.getElementById('inputs');
+        let loading = document.getElementById('loading');
+        inputs.style.display = 'none';
+        loading.style.display = 'block';
     }
 </script>

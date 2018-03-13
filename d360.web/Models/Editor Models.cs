@@ -699,23 +699,13 @@ namespace d360.web.Models
         [Display(Name = "Title")]
         public string Title { get; set; }
     }
+
+
     public class TermsModel
     {
-        public int OrganizationID { get; set; }
-        public int ResourceID { get; set; }
+        public TermsModel() { }
 
-        public bool OrganizationAccepted { get; set; }
-
-        public bool IsFirstUser { get; set; }
-
-        public List<ContractModel> Contracts { get; set; }
-    }
-
-    public class ContractModel
-    {
-        public ContractModel() { }
-
-        public ContractModel(Contract contract)
+        public TermsModel(Contract contract)
         {
             this.Contract = contract;
             this.Acceptance = new ContractAcceptance();

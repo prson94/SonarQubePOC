@@ -8,6 +8,7 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using System;
 using d360.extensions.caching;
+using System.Collections.Generic;
 
 namespace d360.web.Controllers
 {
@@ -17,7 +18,7 @@ namespace d360.web.Controllers
         #region DI
 
         public HomeController(CommunityContext community, CompanyContext company)
-            : base(community, company) 
+            : base(community, company)
         { }
 
         #endregion
@@ -56,100 +57,103 @@ namespace d360.web.Controllers
         }
 
         [ValidateContracts(Ignore = true), Authorize, Route("terms")]
-        public ViewResult Terms()
+        public ActionResult Terms()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", Community.GetCompanySettings());
-            
+
             var model = new TermsModel();
+
             var validations = Company.Query<ContractValidation>(@"select * from dbo.GetContractValidations(@ResourceID)", new { ResourceID = Company.CurrentResourceID });
 
             validations = validations.Where(v => !v.Accepted && ((v.IsFirstUser && v.ContractType == ContractType.OrganizationTermsOfUse) || v.ContractType == ContractType.ResourceTermsOfUse || v.OrganizationID == null));
 
             if (validations.Any())
             {
-                model.Contracts = new System.Collections.Generic.List<ContractModel>();
+                ContractValidation contractValidation = validations.OrderBy(v => (int)v.ContractType).ThenBy(v => v.OrganizationID.HasValue ? 1 : 0).First();
+                var contract = Company.GetById<Contract>(contractValidation.ContractID);
+                return View(new TermsModel(contract));
 
-                validations.ToList().ForEach(v =>
-                {
-                    var contract = Company.GetById<Contract>(v.ContractID);
-                    if (contract != null)
-                        model.Contracts.Add(new ContractModel(contract));
-
-                });
-
-                model.Contracts.OrderBy(c => c.Contract.ContractType).ThenBy(c => !c.Contract.OrganizationID.HasValue ? 0 : 1);
             }
-
-            return View(model);
+            else
+            {
+                return RedirectToAction("App");
+            }
         }
 
-        [ValidateContracts(Ignore = true), Authorize, Route("terms"), HttpPost]
+        [ValidateContracts(Ignore = true), Authorize, Route("terms"), HttpPost, ValidateHttpAntiForgeryToken, ValidateInput(false)]
         public ActionResult Terms(TermsModel model)
         {
+            if (model == null)
+                return RedirectToAction("terms");
 
             var resource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == Company.CurrentResourceID);
-            var invites = Company.OrganizationInvitations.Where(i => i.Email == resource.Email).ToList();
-            var orgResources = Company.OrganizationResources.Where(o => o.ResourceID == Company.CurrentResourceID).ToList();
+            List<OrganizationInvitation> invites = new List<OrganizationInvitation>(); // 
+            List<OrganizationResource> orgResources = new List<OrganizationResource>();
 
-            model.Contracts.ForEach(c =>
+
+            if (resource != null)
             {
-                if (c.Contract.OrganizationID.HasValue)
+                invites = Company.OrganizationInvitations.Where(i => i.Email == resource.Email).ToList();
+                orgResources = Company.OrganizationResources.Where(o => o.ResourceID == Company.CurrentResourceID).ToList();
+            }
+
+            var contract = model.Contract;
+            var acceptance = model.Acceptance;
+
+
+            if (contract.OrganizationID.HasValue)
+            {
+
+                var invite = invites.FirstOrDefault(i => i.OrganizationID == contract.OrganizationID);
+                var orgRes = orgResources.FirstOrDefault(o => o.OrganizationID == contract.OrganizationID);
+
+                if (orgRes == null && contract.OrganizationID != null)
                 {
-
-                    var invite = invites.FirstOrDefault(i => i.OrganizationID == c.Contract.OrganizationID);
-                    var orgRes = orgResources.FirstOrDefault(o => o.OrganizationID == c.Contract.OrganizationID);
-
-                    if (orgRes == null && c.Contract.OrganizationID != null)
+                    //add org resource record
+                    orgRes = new OrganizationResource
                     {
-                        //add org resource record
-                        orgRes = new OrganizationResource
-                        {
-                            ResourceID = Company.CurrentResourceID,
-                            OrganizationID = (int)c.Contract.OrganizationID,
-                            Accepted = true,
-                            DateAccepted = DateTime.UtcNow,
+                        ResourceID = Company.CurrentResourceID,
+                        OrganizationID = (int)contract.OrganizationID,
+                        Accepted = true,
+                        DateAccepted = DateTime.UtcNow,
 
-                        };
+                    };
 
-                        Company.Add(orgRes);
-                    }
-                    else
-                    {
-                        orgRes.Accepted = true;
-                        orgRes.DateAccepted = DateTime.UtcNow;
-                        Company.Update(orgRes);
-                    }
-
-                    if (c.Contract.ContractType == ContractType.OrganizationTermsOfUse)
-                    {
-                        var org = Company.GetById<Organization>((int)c.Contract.OrganizationID);
-                        if (org != null)
-                        {
-                            org.Accepted = true;
-                            org.AcceptedBy = Company.CurrentResourceID;
-                            org.DateAccepted = DateTime.UtcNow;
-                            Company.Update(org);
-                        }
-                    }
-
-                    if (invite != null)
-                        Company.Delete(invite); //remove the invite
+                    Company.Add(orgRes);
+                }
+                else
+                {
+                    orgRes.Accepted = true;
+                    orgRes.DateAccepted = DateTime.UtcNow;
+                    Company.Update(orgRes);
                 }
 
+                if (contract.ContractType == ContractType.OrganizationTermsOfUse)
+                {
+                    var org = Company.GetById<Organization>((int)contract.OrganizationID);
+                    if (org != null)
+                    {
+                        org.Accepted = true;
+                        org.AcceptedBy = Company.CurrentResourceID;
+                        org.DateAccepted = DateTime.UtcNow;
+                        Company.Update(org);
+                    }
+                }
 
-                c.Acceptance.ContractID = c.Contract.ID;
-                c.Acceptance.OrganizationID = c.Contract.OrganizationID;
-                c.Acceptance.Accepted = true;
-                c.Acceptance.AcceptedOn = DateTime.UtcNow;
-                c.Acceptance.ResourceID = Company.CurrentResourceID;
+                if (invite != null)
+                    Company.Delete(invite); //remove the invite
+            }
 
-                Company.Add(c.Acceptance);
-            });
+            acceptance.ContractID = contract.ID;
+            acceptance.OrganizationID = contract.OrganizationID;
+            acceptance.Accepted = true;
+            acceptance.AcceptedOn = DateTime.UtcNow;
+            acceptance.ResourceID = Company.CurrentResourceID;
 
-            updateContractValidationCache();
+            Company.Add(acceptance);
 
-            return RedirectToAction("App");
+            return RedirectToAction("Terms");
         }
 
 
@@ -162,7 +166,7 @@ namespace d360.web.Controllers
             var contractCount = Company.Query<int>(@"select count(*) from dbo.GetContractValidations(@ResourceID) where accepted = 0 and ((contractType = 1 and isFirstUser = 1) or contractType = 2 or organizationId is null)", new { ResourceID = Company.CurrentResourceID }).FirstOrDefault();
             var contractsAccepted = contractCount == 0;
 
-            
+
             if (cacheRes != null)
             {
                 var com = cacheRes.Companies.FirstOrDefault(c => c.ID == Company.CurrentCompanyID);
