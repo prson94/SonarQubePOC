@@ -283,7 +283,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
     //          Author:        hoell
     //  ===========================================================================================
     numbersOnly(event: KeyboardEvent) {
-        let chkforOne = new RegExp("^([+-]?(\\d+(\\d*)?)|(\\d+))$");
+        let chkforOne = new RegExp("^([-]?(\\d+(\\d*)?))$");
         this.numStr += String.fromCharCode(event.charCode);
 
         if (event.keyCode == 8) {
@@ -296,12 +296,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
         if (this.numStr != null && this.numStr != "") {
             this.nTest = (chkforOne.test(this.numStr)) ? 'Success' : 'Fail';
             if (this.nTest == "Fail") {
-                if (this.numStr.length == 1 && this.numStr == "-") return (event.charCode === 45);
+                if (this.numStr.length <= 1 && this.numStr == "-") return (event.charCode === 45);
                 this.numStr = this.numStr.substr(0, this.numStr.length - 1);
                 event.preventDefault();
                 return;
             }
-            else return (event.charCode >= 45 && event.charCode <= 57 && event.charCode != 47);
+            else return (event.charCode >= 48 && event.charCode <= 57);
         }
     }
 
@@ -313,7 +313,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
     //          Author:        hoell
     //  ===========================================================================================
     decnumsOnly(event: KeyboardEvent) {
-        let chkforOne = new RegExp("^([+-]?(\\d+(\\.\\d*)?)|(\\.\\d+))$");
+        let chkforOne = new RegExp("^([-]?(\\d+(\\.\\d*)?)|(\\.\\d+))$");
         this.inStr += String.fromCharCode(event.charCode);
 
         if (event.keyCode == 8) {
@@ -326,12 +326,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
         if (this.inStr != null && this.inStr != "") {
             this.dTest = (chkforOne.test(this.inStr)) ? 'Success' : 'Fail';
             if (this.dTest == "Fail") {
-                if (this.inStr.length == 1 && this.inStr == "-") return (event.charCode === 45);
+                if (this.inStr.length <= 1 && this.inStr == "-") return (event.charCode === 45);
                 this.inStr = this.inStr.substr(0, this.inStr.length - 1);
                 event.preventDefault();
                 return;
             }
-            else return (event.charCode >= 45 && event.charCode <= 57 && event.charCode != 47);
+            else return (event.charCode >= 46 && event.charCode <= 57 && event.charCode != 47);
         }
     }
 }
