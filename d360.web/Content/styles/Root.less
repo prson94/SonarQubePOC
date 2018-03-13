@@ -49,7 +49,7 @@ fieldset legend {
 }
 
 #loginForm {
-    font-family:Tahoma,Helvetica,Verdana,sans-serif;
+    font-family: Tahoma,Helvetica,Verdana,sans-serif;
     position: relative;
     top: 100px;
     width: 350px;
@@ -69,20 +69,32 @@ fieldset legend {
         }
     }
 
-    input{
-        padding:5px;
-        border-radius:5px;
-        box-sizing:border-box;        
-        border-style:solid;
+    input {
+        padding: 5px;
+        border-radius: 5px;
+        box-sizing: border-box;
+        border-style: solid;
         border-color: #ccc;
+
+        &[type="submit"], &[type="button"] {
+            border: none;
+            border-radius: 0;
+            background-color: @rgba-primary-0; 
+            color: white;
+
+            &[disabled] {
+                background-color: #ccc;
+                color: #777;
+            }
+        }
     }
 
-    #loginButton{        
-        color:white;        
-        padding:15px;
-        border:none;
-        background-color: @rgba-primary-0;  
-        font-weight:bold;
+    #loginButton {
+        color: white;
+        padding: 15px;
+        border: none;
+        background-color: @rgba-primary-0; 
+        font-weight: bold;
     }
 }
 

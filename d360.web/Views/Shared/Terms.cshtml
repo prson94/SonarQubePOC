@@ -83,7 +83,7 @@ else
 }
                 <div class="form-tools">
                     @Html.HiddenFor(m => m.Contracts[i].Acceptance.AcceptedOn, new { id = "accepted" + i })
-                    <a href="/slo">Decline and logout</a>
+                    <input type="button" value="Decline" style="width:25%; min-width: 100px" onclick="window.location='/slo'" />
                     <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" onclick="acceptContract(@(i))" />
 
                 </div>
@@ -126,8 +126,7 @@ else
 }
             <div class="form-tools">
                 @Html.HiddenFor(m => m.Contracts[i].Acceptance.AcceptedOn, new { id = "accepted" + i })
-                <a href="/slo">Decline and logout</a>
-
+                <input type="button" value="Decline" style="width:25%; min-width: 100px" onclick="window.location='/slo'" />
                 <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" onclick="acceptContract(@(i))" />
             </div>
             </div>
