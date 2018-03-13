@@ -4980,6 +4980,7 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
                 var id = parseIntField(form, "ID");
+                Company.Delete<FusionRuleItem>(i => i.RuleID == id);
                 Company.Delete<FusionRule>(i => i.ID == id);
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
