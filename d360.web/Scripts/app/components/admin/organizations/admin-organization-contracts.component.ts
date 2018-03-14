@@ -9,11 +9,11 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-admin-organization-contracts',
     providers: [OrganizationsService],
     template: `
-               <header *ngIf="!showEditor && !showDelete">Contracts for this organization
+               <header *ngIf="!showEditor && !showDelete && !showHistory">Contracts for this organization
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading && !showDelete && !showEditor">
+                <div *ngIf="!isLoading && !showDelete && !showEditor && !showHistory">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                     <p-dataTable #dt [globalFilter]="gb" [value]="contracts" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
@@ -38,8 +38,15 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 </div>
                             </ng-template>
                         </p-column>
+                        <p-column [style]="{width:'40px'}">
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selected=item;showHistory=true"><i class="fa fa-history"></i></a>                                        
+                                </div>
+                            </ng-template>
+                        </p-column>
                     </p-dataTable>  
-                </span>
+                </div>
                 <div *ngIf="showEditor">
                     <d3s-admin-organization-contract-editor 
                         [contractId]="selected?.ID" 
@@ -55,7 +62,9 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     [prompt]="'Are you sure you want to delete the contract [' + [selected?.Title] + ']?'"                                         
                     (onCancel)="showDelete=false;"
                 ></d3s-delete-form>   
-
+                <div *ngIf="showHistory">
+                    <d3s-admin-organization-contract-history type="contract" [id]="selected?.ID" [objectName]="(selected?.Title || 'Contract')" (onClose)="showHistory = false"></d3s-admin-organization-contract-history>
+                </div>
                 `
 })
 
@@ -66,6 +75,7 @@ export class AdminOrganizationContractsComponent extends BaseComponent implement
     
     showEditor: boolean = false;
     showDelete: boolean = false;
+    showHistory: boolean = false;
     isLoading: boolean = false;
 
     contracts: ContractDetail[] = [];

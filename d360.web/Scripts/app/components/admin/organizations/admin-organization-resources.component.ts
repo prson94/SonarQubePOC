@@ -36,7 +36,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 <span>{{item.DateLastLoggedIn | date : 'short'}}</span>
                             </ng-template>
                         </p-column>
-                        <p-column>
+                        <p-column [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showHistory=true"><i class="fa fa-history"></i></a>                                        
@@ -46,7 +46,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     </p-dataTable>  
                 </div>
                 <div *ngIf="!isLoading && showHistory">
-                    <d3s-admin-organization-contract-history [resourceId]="selected?.ResourceID" [resourceName]="(selected?.FirstName || '') + ' ' + (selected?.LastName || '')" (onClose)="showHistory = false"></d3s-admin-organization-contract-history>
+                    <d3s-admin-organization-contract-history type="resource" [id]="selected?.ResourceID" [objectName]="(selected?.FirstName || '') + ' ' + (selected?.LastName || '')" (onClose)="showHistory = false"></d3s-admin-organization-contract-history>
                 </div>
                 `
 })

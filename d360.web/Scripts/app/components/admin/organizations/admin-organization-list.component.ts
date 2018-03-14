@@ -11,12 +11,12 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
     providers: [OrganizationsService],
     template: `        
     <div class="tile tile-detail">
-        <header *ngIf="!showEditor && !showDelete">
+        <header *ngIf="!showEditor && !showDelete && !showHistory">
             Organizations
             <d3s-tile-actions [hasAdd]="true" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" (addClick)="add()"></d3s-tile-actions>
         </header>
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <span *ngIf="!isLoading && !showEditor && !showDelete">
+        <div *ngIf="!isLoading && !showEditor && !showDelete && !showHistory">
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
             <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="organization" (selectionChange)="organization=$event;organizationChange.emit($event);" (onRowSelect)="organization=$event.data;organizationChange.emit(organization);" (onRowDblclick)="organization=$event.data;showEditor=true;organizationChange.emit(organization);">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
@@ -46,8 +46,15 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
                         </div>
                     </ng-template>
                 </p-column>
+                <p-column [style]="{width:'40px'}">
+                    <ng-template let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">
+                            <a style="cursor:pointer;" (click)="organization=item;showHistory=true"><i class="fa fa-history"></i></a>                                        
+                        </div>
+                    </ng-template>
+                </p-column>
             </p-dataTable>
-        </span>
+        </div>
         <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organizationType?.ID" [objectType]="'Organization'" [title]="'Organization'" [selection]="organization" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
         <d3s-delete-form *ngIf="showDelete"
             [callback]="theDeleteCallback"
@@ -56,6 +63,9 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
             [prompt]="'Are you sure you want to delete the organization [' + [organization?.Name] + ']?'"                                         
             (onCancel)="showDelete=false;"
         ></d3s-delete-form>
+        <div *ngIf="showHistory">
+            <d3s-admin-organization-contract-history type="organization" [id]="organization?.ID" [objectName]="(organization?.Name || 'Organization')" (onClose)="showHistory = false"></d3s-admin-organization-contract-history>
+        </div>
     </div>
     `
 })
@@ -68,6 +78,7 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
     organizations: Organization[] = [];
     showEditor: boolean = false;
     showDelete: boolean = false;
+    showHistory: boolean = false;
     theDeleteCallback: Function;
 
     constructor(

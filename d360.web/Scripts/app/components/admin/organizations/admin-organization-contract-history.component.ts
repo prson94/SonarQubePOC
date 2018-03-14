@@ -10,7 +10,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-admin-organization-contract-history',
     providers: [OrganizationsService],
     template: `
-               <header>Contract History for {{resourceName}}
+               <header>Contract History for {{objectName}}
                 <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasClose]="true" (closeClick)="onClose.emit()"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -20,7 +20,12 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="ResourceName" header="Resource Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="ContractName" header="Contract Name" [sortable]="true" [filter]="!showSimpleFilter" ></p-column>
-                        <p-column field="Accepted" header="Accepted" [sortable]="true" [filter]="!showSimpleFilter" ></p-column>
+                        <p-column field="Accepted" header="Accepted" [sortable]="true" [filter]="!showSimpleFilter">
+                            <ng-template let-col let-item="rowData" pTemplate type="body">
+                                <i *ngIf="item.Accepted == true" class="fa fa-check enabled" title="True"></i>
+                                <i *ngIf="item.Accepted == false" class="fa fa-times disabled" title="False"></i>
+                            </ng-template>
+                        </p-column>
                         <p-column field="AcceptedOn" header="Accepted On" [sortable]="true">
                             <ng-template let-col let-item="rowData" pTemplate type="body">
                                 <span>{{item.AcceptedOn | date : 'short'}}</span>
@@ -33,8 +38,9 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 })
 
 export class AdminOrganizationContractHistoryComponent extends BaseComponent implements OnInit {
-    @Input() resourceId: number = null;
-    @Input() resourceName: string = '';
+    @Input() id: number = null;
+    @Input() type: string = null;
+    @Input() objectName: string = '';
     @Output() onClose = new EventEmitter();
 
     error: any;
@@ -50,17 +56,39 @@ export class AdminOrganizationContractHistoryComponent extends BaseComponent imp
     }
 
     ngOnInit() {
+        if (this.type != 'contract' && this.type != 'resource' && this.type != 'organization')
+            console.warn(`Invalid type ${this.type}`);
         this.load();
     }
 
 
     load() {
         this.isLoading = true;
-        this.organizationsService.getContractHistoryForResource(this.resourceId)
-            .then(r => {
-                this.contracts = r;
-                this.isLoading = false;
-            })
+
+        switch (this.type.toLowerCase()) {
+            case 'contract':
+                this.organizationsService.getContractHistoryForContract(this.id)
+                    .then(r => {
+                        this.contracts = r;
+                        this.isLoading = false;
+                    })
+                break;
+            case 'resource':
+                this.organizationsService.getContractHistoryForResource(this.id)
+                    .then(r => {
+                        this.contracts = r;
+                        this.isLoading = false;
+                    })
+                break;
+            case 'organization':
+                this.organizationsService.getContractHistoryForOrganization(this.id)
+                    .then(r => {
+                        this.contracts = r;
+                        this.isLoading = false;
+                    })
+                break;
+        }
+
     }
 }
 

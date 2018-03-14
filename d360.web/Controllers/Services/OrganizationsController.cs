@@ -217,7 +217,7 @@ namespace d360.web.Controllers.Services
         /// </summary>
         /// <param name="id">The ID of the resource you want to retrieve history for.</param>
         /// <returns></returns>
-        [HttpGet, Route("acceptance/{id:int}")]
+        [HttpGet, Route("history/resource/{id:int}")]
         public IQueryable<ContractAcceptanceDetail> GetContractHistoryForResource(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -225,7 +225,42 @@ namespace d360.web.Controllers.Services
 
             return Company.Query<ContractAcceptanceDetail>(@"select h.*, r.FirstName + ' ' + r.LastName as ResourceName, c.Title as ContractName from contractacceptance h
                 inner join reporting.Global_resource r on r.ResourceID = h.ResourceID
-                inner join [Contract] c on c.id = h.ContractID", new { id }).AsQueryable();
+                inner join [Contract] c on c.id = h.ContractID
+                where h.ResourceID = @id", new { id }).AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets a history of contract acceptance for the contract
+        /// </summary>
+        /// <param name="id">The ID of the contract you want to retrieve history for.</param>
+        /// <returns></returns>
+        [HttpGet, Route("history/contract/{id:int}")]
+        public IQueryable<ContractAcceptanceDetail> GetContractHistoryForContract(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
+
+            return Company.Query<ContractAcceptanceDetail>(@"select h.*, r.FirstName + ' ' + r.LastName as ResourceName, c.Title as ContractName from contractacceptance h
+                inner join reporting.Global_resource r on r.ResourceID = h.ResourceID
+                inner join [Contract] c on c.id = h.ContractID
+                where h.ContractID = @id", new { id }).AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets a history of contract acceptance for the organization
+        /// </summary>
+        /// <param name="id">The ID of the organization you want to retrieve history for.</param>
+        /// <returns></returns>
+        [HttpGet, Route("history/organization/{id:int}")]
+        public IQueryable<ContractAcceptanceDetail> GetContractHistoryForOrganization(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
+
+            return Company.Query<ContractAcceptanceDetail>(@"select h.*, r.FirstName + ' ' + r.LastName as ResourceName, c.Title as ContractName from contractacceptance h
+                inner join reporting.Global_resource r on r.ResourceID = h.ResourceID
+                inner join [Contract] c on c.id = h.ContractID
+                where h.OrganizationID = @id", new { id }).AsQueryable();
         }
 
     }

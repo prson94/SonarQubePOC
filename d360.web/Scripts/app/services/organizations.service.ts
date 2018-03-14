@@ -145,7 +145,21 @@ export class OrganizationsService extends BaseService {
     }
 
     getContractHistoryForResource(id: number): Promise<ContractAcceptanceDetail[]> {
-        return this.http.get(`services/organizations/acceptance/${id}`)
+        return this.http.get(`services/organizations/history/resource/${id}`)
+            .toPromise()
+            .then(res => <ContractAcceptanceDetail[]>res.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getContractHistoryForContract(id: number): Promise<ContractAcceptanceDetail[]> {
+        return this.http.get(`services/organizations/history/contract/${id}`)
+            .toPromise()
+            .then(res => <ContractAcceptanceDetail[]>res.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getContractHistoryForOrganization(id: number): Promise<ContractAcceptanceDetail[]> {
+        return this.http.get(`services/organizations/history/organization/${id}`)
             .toPromise()
             .then(res => <ContractAcceptanceDetail[]>res.json())
             .catch(err => this.handleError(err));
