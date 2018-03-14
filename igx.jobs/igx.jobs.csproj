@@ -369,8 +369,6 @@
     <Compile Include="Jobs\Fusion\rules\promote\FusionTaxonomyItemPromotionAction.cs" />
     <Compile Include="Jobs\Fusion\rules\relate\FusionRuleRelate.cs" />
     <Compile Include="Jobs\Fusion\rules\update\FusionRuleUpdate.cs" />
-    <Compile Include="Jobs\Indexer.cs" />
-    <Compile Include="Jobs\ReportLayerGenerator.cs" />
     <Compile Include="Jobs\ResourceCache.cs" />
     <Compile Include="Jobs\ResponsibilityRuleProcessor.cs" />
     <Compile Include="Jobs\RuleResultProcessor.cs" />
