@@ -20,11 +20,11 @@ export class SearchService extends BaseService {
         let url = '';
 
         if (category && category.Categories)
-            url = `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : term}&group=&type=${category.Name}&adv=${advancedSearchFilter ? JSON.stringify(advancedSearchFilter) : ''}`;
+            url = `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : encodeURIComponent(term)}&group=&type=${category.Name}&adv=${advancedSearchFilter ? encodeURIComponent(JSON.stringify(advancedSearchFilter)) : ''}`;
         else
-            url = `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : term}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes ? searchTypes.join(',') : ''}&adv=${advancedSearchFilter ? JSON.stringify(advancedSearchFilter) : ''}`;
+            url = `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : encodeURIComponent(term)}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes ? searchTypes.join(',') : ''}&adv=${advancedSearchFilter ? encodeURIComponent(JSON.stringify(advancedSearchFilter)) : ''}`;
 
-        return this.http
+       return this.http
             .post('search/results', url, { headers: headers })
             .toPromise()
             .then(res => <SearchResultsObject>res.json())

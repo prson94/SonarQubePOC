@@ -348,7 +348,8 @@ namespace d360.extensions.search
 
         private bool isElasticSearchSpecialChar(char ch)
         {
-            if (ch == '\\' || ch == '/' || ch == ':' || ch == '^' || ch == '~' || ch == ')' || ch == '(') return true;
+            if (ch == '\\' || ch == '/' || ch == ':' || ch == '^' || ch == '~' || ch == ')' || ch == '(' ||
+               ch == '!' || ch == '[' || ch == ']' || ch == '{' || ch == '}' || ch == '-' ) return true;
 
             return false;
         }
@@ -385,11 +386,23 @@ namespace d360.extensions.search
 
                 phrase = phrase.Replace("~", "\\\\~"); // escape carat
 
+                phrase = phrase.Replace("!", "\\\\!"); //  escape exclamation
+
+                phrase = phrase.Replace("[", "\\\\["); //  escape square bracket
+
+                phrase = phrase.Replace("]", "\\\\]"); //  escape square bracket
+
+                phrase = phrase.Replace("{", "\\\\{"); //  escape curyly bracket
+
+                phrase = phrase.Replace("}", "\\\\}"); //  escape curyly bracket
+
+                phrase = phrase.Replace("-", "\\\\-"); // escape hyphen
+
                 phrase = phrase.Replace("/", "\\\\/"); // replace / with escaped slash                
 
                 phrase = phrase.Replace("(", "\\\\("); // replace / with escaped slash       
 
-                phrase = phrase.Replace(")", "\\\\)"); // replace / with escaped slash       
+                phrase = phrase.Replace(")", "\\\\)"); // replace / with escaped slash   
             }
 
             if(padWithQuotes)
