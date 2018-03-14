@@ -31,7 +31,11 @@ import { ObjectDetailService } from '../../services/object-detail.service';
                     </div>
                     <div class="col s12" *ngIf="showGridSimpleFilter">                                                
                         <input type="text" *ngIf="topLevelFilters.length ==0" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
-                        <d3s-artifact-top-level-filter *ngIf="topLevelFilters.length > 0" [(filters)]="stateService.artifactTypeFilters.filters" [fields]="topLevelFilters" (filterChanged)="filterGridData()"></d3s-artifact-top-level-filter>
+                        <d3s-artifact-top-level-filter *ngIf="topLevelFilters.length > 0" 
+                            [(filters)]="stateService.artifactTypeFilters.filters" 
+                            [fields]="topLevelFilters"                             
+                            (filterChanged)="filterGridData()">
+                    </d3s-artifact-top-level-filter>
                     </div>
                     <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>                    
                     <d3s-artifact-custom-export *ngIf="showCustomExport" (closeClick)="showCustomExport=false" 
@@ -52,8 +56,7 @@ import { ObjectDetailService } from '../../services/object-detail.service';
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)" style="display:block; word-wrap:break-word"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>                                         
                                 </ng-template>
-                            </p-column>
-                            <!--p-column [style]="{width:'75px'}" field="AssetID" header="Asset ID"></p-column-->
+                            </p-column>                            
                             <p-column [style]="{width:'30px'}" *ngIf="showEditButton">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" *ngIf="item.P_CanEdit">

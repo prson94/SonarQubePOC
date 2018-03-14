@@ -436,6 +436,9 @@ namespace d360.web.Models
 
         [DataMember]
         public int? columnWidth { get; set; }
+
+        [DataMember]
+        public int parentFieldTypeID { get; set; }
     }
 
     [DataContract]
@@ -456,6 +459,7 @@ namespace d360.web.Models
             columntype = val.columntype;
             filtertype = val.filtertype;
             filteritems = val.filteritems;
+            parentFieldTypeID = val.parentFieldTypeID;
         }
         [DataMember]
         public bool relatedfield { get; set; }

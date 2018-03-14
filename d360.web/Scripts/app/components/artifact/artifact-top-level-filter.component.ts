@@ -1,6 +1,7 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../../models/grid-definition.model';
+import { FieldsService } from '../../services/fields.service';
 
 @Component({
     selector: 'd3s-artifact-top-level-filter',    
@@ -13,12 +14,12 @@ import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../
                                     <div class="col s12 FieldName">{{field.text}}</div>
                                     <div class="col s12">
                                         <span *ngSwitchCase="'dropdownlist'">                                            
-                                            <p-multiSelect [name]="'FilterValue_' + index" [options]="field.filteritems | arraySelectItemPipe" [(ngModel)]="field.value" [style]="{width:'100%'}"></p-multiSelect>
+                                            <p-multiSelect [name]="field.datafield" [options]="field.filteritems | arraySelectItemPipe" [ngModel]="field.value" (ngModelChange)="field.value=$event;enableParentFilters(field);" [style]="{width:'100%'}" [disabled]="field.disabled"></p-multiSelect>
                                         </span>           
                                         <span *ngSwitchCase="'datetimeinput'">                            
-                                            <p-calendar [(ngModel)]="field.value" [name]="'FilterValue_' + index" [dateFormat]="getLocaleDateString()"></p-calendar>
+                                            <p-calendar [(ngModel)]="field.value" [name]="field.datafield" [dateFormat]="getLocaleDateString()"></p-calendar>
                                         </span>
-                                        <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" [ngModel]="field.value" (ngModelChange)="field.value = $event" placeholder="Enter a value" style="width:100%;">                                 
+                                        <input *ngSwitchDefault [name]="field.datafield" type="text" [ngModel]="field.value" (ngModelChange)="field.value = $event" placeholder="Enter a value" style="width:100%;">                                 
                                     </div>
                                 </div>
                             </div>
@@ -36,11 +37,13 @@ import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../
                     </div>                    
                     <br/>
                 </form>
-                `
+                `,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [FieldsService]
 })
 
 
-export class ArtifactTopLevelFilterComponent extends BaseComponent {
+export class ArtifactTopLevelFilterComponent extends BaseComponent implements OnInit {
     @Input() fields: GridFilterColumn[];
     
     @Output() filterChanged = new EventEmitter();
@@ -48,8 +51,16 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent {
     @Input() filters: GridFilterExpression[] = [];
     @Output() filtersChange = new EventEmitter();
 
-    constructor() {
+    constructor(protected ref: ChangeDetectorRef, protected fieldService: FieldsService) {
         super();        
+    }
+
+    ngOnInit() {
+        for (let field of this.fields) {
+            if (field.parentFieldTypeID > 0) field.disabled = true;
+            else field.disabled = false;
+        }        
+        this.ref.markForCheck();
     }
     
     private resetFilters(): void {
@@ -102,4 +113,31 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent {
         this.filtersChange.emit(this.filters);
         this.filterChanged.emit();        
     }    
+
+    public enableParentFilters(givenfield: GridFilterColumn): void {
+        for (let field of this.fields) {
+            if (`Field${field.parentFieldTypeID}` == givenfield.datafield)
+            {
+                this.loadFieldItems(givenfield, field);                
+            }
+        }
+    }
+
+    public loadFieldItems(givenparentfield: GridFilterColumn, givenfield: GridFilterColumn): void {
+        var fieldId = +givenfield.datafield.replace('Field', '');
+        if (givenparentfield.value.length > 0) {
+            this.fieldService.getCascadingListFieldValues(fieldId, undefined, givenparentfield.value).then(res => {
+                givenfield.disabled = false;
+                givenfield.filteritems = res.map(r => r.Text);
+
+                this.ref.markForCheck();
+            })
+        }
+        else {
+            givenfield.disabled = true;
+            givenfield.filteritems = [];
+            this.ref.markForCheck();
+        }        
+    }
+
 };

@@ -56,6 +56,8 @@ export class GridFilterColumn {
     type: string;
     description: string;
     value: string;
+    disabled: boolean;
+    parentFieldTypeID: number;
 }
 
 export class GridDefinition {

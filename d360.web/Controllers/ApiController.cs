@@ -483,7 +483,7 @@ namespace d360.web.Controllers
             {
                 width = (int)dynamicFieldWidth;
             }
-            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -551,6 +551,7 @@ namespace d360.web.Controllers
                 col.id = i.ID.ToString();
                 col.relatedfield = relatedField;
                 col.hiddenfield = hiddenField;
+                col.parentFieldTypeID = i.ParentFieldTypeID;
 
                 columns.Add(col);
 
@@ -7838,16 +7839,28 @@ from	    TaxonomyType FAT
         #region Cascading dropdown values
 
         [Route("FieldType_CascadingListValues/{fieldTypeID:int}")]
-        public List<System.Web.Mvc.SelectListItem> GetCascadingDropdownFieldValues(int fieldTypeID, string parentItemId)
+        public List<System.Web.Mvc.SelectListItem> GetCascadingDropdownFieldValues(int fieldTypeID, string parentItemId, string parentValues)
         {
             var predicateTypeId = 3;
-            var parents = parentItemId.Split(',');
+            string[] parents = null;
+
             List<System.Web.Mvc.SelectListItem> items = new List<System.Web.Mvc.SelectListItem>();
 
             var fieldType = Company.FieldTypes.Where(x => x.ID == fieldTypeID).FirstOrDefault();
 
-            if(fieldType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            if (fieldType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
+            if (!string.IsNullOrEmpty(parentItemId))
+            {
+                parents = parentItemId.Split(',');
+            }
+            else if(!string.IsNullOrEmpty(parentValues))
+            {
+                
+                var sqlParent = "select value from fieldlookupvalue where fieldtypeid = @id and text in @vals";
+                parents = Company.Query<string>(sqlParent, new { id = fieldType.ParentFieldTypeID, vals = parentValues.Split(',')}).ToArray();
+            }
+            
             if((fieldType.LookupObjectType ?? "").ToUpper() != "REFERENCEITEM") throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
             var referenceListType = Company.ReferenceItemTypes.Where(x => x.ID == fieldType.LookupObjectID).FirstOrDefault();
