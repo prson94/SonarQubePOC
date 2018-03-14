@@ -4,6 +4,7 @@ import { SelectItem  } from 'primeng/components/common/api';
 export class GridField {
     name: string;
     type: string;
+    apiName: string;
 }
 
 export class GridColumn {

@@ -525,7 +525,7 @@ namespace d360.web.Controllers
 
         GridField getGridFieldForColumn(FieldType item, bool useNameAsDataField = false)
         {
-            return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item) };
+            return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item), apiName = item.Name };
         }
 
         void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, List<GridColumnGroup> groups, decimal dynamicFieldWidth, bool serverPaged = false)

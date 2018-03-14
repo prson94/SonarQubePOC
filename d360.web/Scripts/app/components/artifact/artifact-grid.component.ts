@@ -56,7 +56,17 @@ import { ObjectDetailService } from '../../services/object-detail.service';
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)" style="display:block; word-wrap:break-word"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>                                         
                                 </ng-template>
-                            </p-column>                            
+                            </p-column>   
+                          <p-column [style]="{width:'30px'}" *ngIf="showCertificationStatus">
+                                    <ng-template let-item="rowData" pTemplate type="body">
+                                        <div class="RowTools" *ngIf="item[certificationStatusIndex] != null && item[certificationStatusIndex] != ''">
+                                           <i [pTooltip]="'Status: ' + item[certificationStatusIndex]" 
+                                                [style.color]="getCertificationStatusColor(item[certificationStatusIndex])" 
+                                                class="fa fa-certificate"
+                                                style="margin: 0 10px 0 5px"></i>                                   
+                                        </div>
+                                    </ng-template>
+                            </p-column> 
                             <p-column [style]="{width:'30px'}" *ngIf="showEditButton">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" *ngIf="item.P_CanEdit">
@@ -108,6 +118,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showCustomExport: boolean = false;    
     isMenuOpen: boolean = false;
     showArtifactDetails: boolean = false;
+    showCertificationStatus: boolean = false;
+    certificationStatusIndex: string = null;
 
     totalRecords: number;
 
@@ -201,7 +213,14 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
-                this.topLevelFilters = result.TopLevelFilterColumns;                
+                this.topLevelFilters = result.TopLevelFilterColumns;  
+
+                let statusField = this.fields.find(x => x.apiName.toLowerCase() == "status");
+                if (statusField != null) {
+                    this.showCertificationStatus = true;
+                    this.certificationStatusIndex = statusField.name;
+                }
+
                 this.changeDetectorRef.markForCheck();
             });
     }    
@@ -216,6 +235,27 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
             });
+    }
+
+    getCertificationStatusColor(status: string) {
+        status = status.toLowerCase().trim();
+
+        switch (status) {
+            case 'draft':
+                return '#ebebeb';
+            case 'certified':
+                return '#3f9d40';
+            case 'under review':
+                return '#e2792a';
+            default:
+                //custom status, we need to generate a color
+                let hash = 0;
+                for (let i = 0; i < status.length; i++) {
+                    hash = status.charCodeAt(i) + ((hash << 5) - hash);
+                    hash = hash & hash;
+                }
+                return `hsl(${hash % 360}, 70%, 70%)`;
+        }
     }
 
     closeEditor() {
