@@ -13435,7 +13435,8 @@ order by D.TextPath";
 
                 var items = rawItems.Split(',').ToList();
 
-                if((targetCardinality == Cardinality.One && items.Count > 1) || (targetCardinality == Cardinality.Zero && items.Count > 1))
+                //if((targetCardinality == Cardinality.One && items.Count > 1) || (targetCardinality == Cardinality.Zero && items.Count > 1))
+                if ((targetCardinality == Cardinality.One && items.Count > 1))
                     return jsonException("Invalid relationship cardinality for multiple items.", HttpStatusCode.BadRequest);
 
                 items.ForEach(item =>
