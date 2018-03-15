@@ -89,6 +89,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private history = [];
     private showPredicateNames = true;
 
+    private canAdd: boolean = false;
+    private canEdit: boolean = false;
+    private canDelete: boolean = false;
+
     constructor(
         private myElement: ElementRef,
         protected permissionsService: PermissionsService,
@@ -115,7 +119,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             object: this.objectType,
             objectId: this.objectID
         });
+
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
+
 
     }
 
@@ -128,6 +134,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.palette.div = null;
             
             this.selectedData = null;
+
             this.initializeDiagram();
             this.resizeDiagram();
 
@@ -150,7 +157,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     //#region helper methods
 
-    private initializeDiagram(): Promise<any> {
+    private initializeDiagram(): Promise<any> {    
+
         if (this.diagram != null) {
             this.reOrderLayout();
             return Promise.resolve();
@@ -170,9 +178,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.diagram.addDiagramListener('BackgroundSingleClicked', e => this.BackgroundSingleClicked(e));
         this.diagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
-        this.diagram.addDiagramListener('SelectionDeleted', e => this.SelectionDeleted(e));
 
         this.diagram.toolManager.linkingTool.linkValidation = (a, b, c, d) => this.canLink(a, b, c, d);
+        this.diagram.commandHandler.deleteSelection = () => this.deleteSelection();
 
         this.diagram.grid.visible = false;
         this.diagram.grid.gridCellSize = new go.Size(8, 8);
@@ -329,6 +337,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private refreshControls(data: any) {
+        this.canAdd = this.hasRelationshipCreatePermissions();
+        this.canEdit = this.hasRelationshipUpdatePermissions();
+        this.canDelete = this.hasRelationshipDeletePermissions();
+
         this.setSourceValues(data);
         this.toggleTabs(data);
         this.loadMenuItems();
@@ -341,6 +353,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
             this.showInfoTab = this.showLinkTabs || this.showNodeTabs;
 
+
             if (this.tab != 'info' && this.tab != 'add')
                 this.tab = 'info';
 
@@ -349,14 +362,25 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 return;
             }
 
-            if ((this.tab == 'add' || this.tab == 'edit') && this.readonly) {
+            if ((this.tab == 'add' || this.tab == 'edit')) {
+                if (this.readonly)
+                    this.tab = 'info';
+                if (this.tab == 'add' && !this.canAdd )
+                    this.tab = 'info';
+                if (this.tab == 'edit' && (!this.canEdit || !(this.canAdd && data.isNew)))
                     this.tab = 'info';
             } else if (this.tab == 'info' && !this.showInfoTab) {
                 if (!this.readonly) {
                     if (this.showLinkTabs)
-                        this.tab = 'edit';
+                        if (this.canEdit || (this.canAdd && data.isNew))
+                            this.tab = 'edit';
+                        else
+                            this.tab = 'info';
                     else
-                        this.tab = 'add';
+                        if (this.canAdd)
+                            this.tab = 'add';
+                        else
+                            this.tab = 'info';
                 }
                 else {
                     this.tab = '';
@@ -374,12 +398,15 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
 
             if (this.showNodeTabs && !this.readonly) {
-                this.tab = 'add';
+                if (this.canAdd || (this.canEdit && data.isNew))
+                    this.tab = 'add';
+                else
+                    this.tab = 'info';
                 this.isWindowVisible = true;
             }
 
             if (this.showLinkTabs && !this.readonly) {
-                this.tab = 'edit';
+                    this.tab = 'edit';
                 this.isWindowVisible = true;
             }
 
@@ -418,12 +445,16 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private loadMenuItems() {
         this.menuItems = [];
 
-        if (this.readonly)
+        //console.log(this.permissions, this.hasRelationshipCreatePermissions());
+
+        if (this.readonly && (this.canAdd || this.canEdit || this.canDelete)) {
             this.menuItems.push({
                 icon: 'fa-pencil',
                 items: null,
                 title: 'Edit Lineage'
             });
+        }
+
         if (!this.readonly)
             this.menuItems.push({
                 icon: 'fa-floppy-o',
@@ -906,16 +937,37 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.refreshControls(null);
     }
 
+    private deleteSelection() {
+        //console.log('delete', this.diagram.selection);
 
-    private SelectionDeleted(e: any) {
-        let sel: go.Part[] = e.subject.toArray();
-        let ix = sel.findIndex(s => s.data.diagramObjectType == DiagramObjectType.Node && s.data.object == this.objectType && s.data.objectId == this.objectID)
-        //if the focal node was deleted, add it back
-        if (ix > -1) {
-            this.diagram.model.addNodeData(sel[ix].data);
-        }
+        this.diagram.startTransaction("Delete");
+
+        let sel = this.diagram.selection.toArray();
+        let deleteParts: go.Part[] = [];
+        
+        sel.forEach(n => {
+            if (n.data.diagramObjectType == DiagramObjectType.Node) {
+                //focal node cannot be deleted
+                if (n.data.object == this.objectType && n.data.objectId == this.objectID)
+                    return;
+
+                //user doesn't have permission to delete existing nodes
+                if (!this.canDelete && !n.data.isNew)
+                    return;
+
+                deleteParts.push(n);
+            }
+            else if (n.data.diagramObjectType == DiagramObjectType.Link) {
+                if (!this.canDelete && !n.data.isNew)
+                        return;
+                deleteParts.push(n);
+            }
+        });
+
+        this.diagram.removeParts(deleteParts, false);
+        this.diagram.commitTransaction("Delete");
     }
-
+    
     private LinkDrawn(e: any) {
         //console.log('LinkDrawn', e);
         let data = e.subject.data;

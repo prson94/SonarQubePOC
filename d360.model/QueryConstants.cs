@@ -1154,6 +1154,27 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 				left join ObjectStyle S on S.ObjectType = DT.Object and S.ObjectID = DT.ObjectID
 		where	D.Object = @type and D.ObjectID = @id
 
+		insert into @nodes
+		select	
+                D.ID,
+                D.Object + cast(D.ObjectID as varchar),
+				D.Object,
+				D.ObjectID,
+				null as ObjectTypeName,
+				null as ObjectTypeName,
+				null as ObjectType,
+				null as ObjectTypeID,
+			    D.[Name] as TextPath,
+				coalesce(S.IconBackColor, '#000') as IconBackColor,
+				coalesce(S.IconForeColor, '#fff') as IconForeColor,
+				null,
+				null,
+				null,
+				1 as isLeaf
+		from	AssetType D
+				left join ObjectStyle S on S.ObjectType = D.[Object] and S.ObjectID = D.ObjectID
+		where	D.Object = @type and D.ObjectID = @id
+
 		--check for downstream relationships to pre-emptively show/hide expander button
 		update n
 		set isLeaf = 0

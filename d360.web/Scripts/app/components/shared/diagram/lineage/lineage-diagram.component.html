@@ -5,10 +5,10 @@
             <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'" *ngIf="showInfoTab">
                 <i class="fa fa-info-circle fa-2x"></i>
             </li>
-            <li (click)="selectTab('add')" class="tab-item" [class.selected]="tab == 'add'" *ngIf="!readonly">
+            <li (click)="selectTab('add')" class="tab-item" [class.selected]="tab == 'add'" *ngIf="!readonly && canAdd">
                 <i class="fa fa-plus fa-2x"></i>
             </li>
-            <li (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'" *ngIf="!readonly && showLinkTabs">
+            <li (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'" *ngIf="!readonly && showLinkTabs && (canEdit || canAdd)">
                 <i class="fa fa-pencil fa-2x"></i>
             </li>
         </ul>
@@ -91,7 +91,7 @@
                             {{addObjectsWarning}}
                         </div>
                         <div class="col s12" *ngIf="selectedAssetTypeId != null">
-                            <button pButton label="Add Selected Objects" type="button" (click)="add()" [disabled]="selectedAssetTypeId == null || selectedObjects == null || selectedObjects.length < 1"></button>
+                            <button pButton label="Add Selected Objects" type="button" (click)="add()" [disabled]="selectedAssetTypeId == null || selectedObjects == null || selectedObjects.length < 1 || !canAdd"></button>
                         </div>
                     </div>
                 </div>
@@ -109,6 +109,7 @@
                                                [style]="{'width' : '95%' }"
                                                dataKey="intersectTypeId"
                                                optionLabel="name"
+                                               [disabled]="!(canEdit || (canAdd && selectedData.isNew))"
                                                checkbox="true"
                                                multiple="true">
                                     </p-listbox>

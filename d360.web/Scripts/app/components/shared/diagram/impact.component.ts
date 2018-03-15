@@ -142,7 +142,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         this.diagramService.getImpactDiagram(this.objectType, this.objectID)
             .then(data => {
                 this.model = data;
-                //console.log(data);
+                console.log(data);
                 if (this.model.nodes != null && this.model.nodes.length > 0) {
                     this.model.nodes.forEach(n => {
                         let isFocal = (n.obj == this.objectType && n.objid == this.objectID);

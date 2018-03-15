@@ -14,6 +14,10 @@ export class LineageNode {
     backColor: string = '#fff';
     visible: boolean = true;
 
+    get isNew(): boolean {
+        return isNaN(+this.key) ? false : +this.key >= 0;
+    }
+
 
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
@@ -40,6 +44,9 @@ export class LineageLink {
         return this.getText();
     }
 
+    get isNew(): boolean {
+        return (isNaN(+this.from) ? false : +this.from >= 0) || (isNaN(+this.to) ? false : +this.to >= 0)
+    }
     private getText(len: number = Infinity) {
         let name = "";
         if (this.predicates == null || this.predicates.length < 1)
