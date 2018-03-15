@@ -1,4 +1,4 @@
-﻿<header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="add(null);"></d3s-tile-actions></header>
+﻿<header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="selectedRow = null;add(null);"></d3s-tile-actions></header>
 <div class="directions">
     Below is a list of attribute types for {{fusionType?.Name}}.  You can add fields to an attribute type by clicking the add field icon below.
 </div>
@@ -7,6 +7,7 @@
         <d3s-asset-type-editor *ngIf="formMode == FormMode.Adding" 
             [assetTypeClass]="'FA'" 
             [topTypeID]="fusionType.ID" 
+            [showParentPredicates]="selectedRow!=null"
             [parentID]="selectedRow?.data.ID" 
             [title]="'Edit Type'" 
             (onCancel)="formMode = FormMode.Default;" 

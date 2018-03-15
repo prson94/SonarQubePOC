@@ -68,7 +68,7 @@ export class FusionAttributesTile implements OnChanges {
         this.formMode = FormMode.Editing;
     }
 
-    add() {
+    add() {        
         this.formMode = FormMode.Adding;
     }
 
