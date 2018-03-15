@@ -29,7 +29,7 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
         private route: ActivatedRoute,
         private router: Router,
         private objectDetailService: ObjectDetailService,
-        private fusionStuff: FusionService
+        private fusionservice: FusionService
     ) {
         super();
     }
@@ -39,7 +39,7 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
             this.assetID = +params['assetID'];
             this.objectDetailService.getAsset(this.assetID).then(res => {
                 if (res.Type == "FusionType") {
-                    this.fusionStuff.getFusionConfigurationsByType(res.TypeID).then(fus => {
+                    this.fusionservice.getFusionConfigurationsByType(res.TypeID).then(fus => {
                         this.objectName = fus[0].Name;
                     })
                 }
