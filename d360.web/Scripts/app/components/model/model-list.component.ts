@@ -29,7 +29,7 @@ import * as _ from 'lodash';
                                             <a (click)="showModel(item)">{{item.Name}}</a>
                                     </ng-template>
                                 </p-column>                                                                                                                                                        
-                                <p-column field="Description" header="Description" sortable="true" [style]="{width:'500px'}"  [filter]="!showSimpleFilter">
+                                <p-column field="Description" header="Description" sortable="true" [style]="{width:'500px'}" filterMatchMode="contains" [filter]="!showSimpleFilter">
                                     <ng-template let-col let-data="rowData" pTemplate type="body">
                                         <span [innerHtml]="data?.Description"></span>
                                     </ng-template>                                                        
