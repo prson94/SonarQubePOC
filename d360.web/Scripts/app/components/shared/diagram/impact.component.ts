@@ -142,28 +142,29 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         this.diagramService.getImpactDiagram(this.objectType, this.objectID)
             .then(data => {
                 this.model = data;
-                console.log(data);
-                this.model.nodes.forEach(n => {
-                    let isFocal = (n.obj == this.objectType && n.objid == this.objectID);
-                    if (isFocal) focal = n;
+                //console.log(data);
+                if (this.model.nodes != null && this.model.nodes.length > 0) {
+                    this.model.nodes.forEach(n => {
+                        let isFocal = (n.obj == this.objectType && n.objid == this.objectID);
+                        if (isFocal) focal = n;
 
-                    n.everExpanded = isFocal;
-                    n.isTreeExpanded = isFocal;
-                    n.category = isFocal ? "" : "NonFocal";
+                        n.everExpanded = isFocal;
+                        n.isTreeExpanded = isFocal;
+                        n.category = isFocal ? "" : "NonFocal";
 
-                    let predicate = this.filters.find(p => p.type == FilterType.Predicate && p.key == (n.predicateid || '').toString());
-                    if (predicate == null && n.predicateid != null) {
-                        this.filters.push({
-                            key: n.predicateid.toString(),
-                            name: n.predicate,
-                            type: FilterType.Predicate,
-                            selected: true
-                        });
-                    }
-                });
+                        let predicate = this.filters.find(p => p.type == FilterType.Predicate && p.key == (n.predicateid || '').toString());
+                        if (predicate == null && n.predicateid != null) {
+                            this.filters.push({
+                                key: n.predicateid.toString(),
+                                name: n.predicate,
+                                type: FilterType.Predicate,
+                                selected: true
+                            });
+                        }
+                    });
+                }
 
-
-                if (this.model.links) {
+                if (this.model.links != null && this.model.links.length > 0) {
                     this.model.links.forEach(l => {
                         l.isTreeLink = true;
                     });
@@ -174,7 +175,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
                 this.diagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
 
-                if (this.model.nodes.length == 1) {
+                if (this.model.nodes != null  && this.model.nodes.length == 1) {
                     //there are no relationships, hide the expand/collapse
                     this.diagram.nodes.first().findObject('TREEBUTTON').visible = false;
                 }
@@ -629,7 +630,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         let data = (node != null) ? node.data : null;
 
         if (data && data.obj && data.objid) {
-            console.log('c', data);
+            //console.log('c', data);
             this.selectedObject = data.obj;
             this.selectedObjectID = data.objid;
             this.selectedAssetID = data.assetId;
