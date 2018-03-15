@@ -60,7 +60,7 @@
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="gudusoft.gsqlparser">
-      <HintPath>..\..\..\..\Users\mike\Box Sync\Engineering\Software\External Dlls\gudusoft.gsqlparser.dll</HintPath>
+      <HintPath>..\..\gudusoft.gsqlparser.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.KeyVault.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.2.0.4\lib\net45\Microsoft.Azure.KeyVault.Core.dll</HintPath>
