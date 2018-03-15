@@ -787,6 +787,12 @@ namespace d360.web.Controllers
                                             selected = f.Value.Split(',').ToList();
                                         else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
                                             selected = ft.DefaultValue.Split(',').ToList();
+
+                                        if(ft.AllowAllValue && selected.Contains("0"))
+                                        {
+                                            var all = fld.Items.Where(x => x.Value == "0").FirstOrDefault();
+                                            all.Selected = true;
+                                        }
                                                                                 
                                         foreach (var item in items)
                                         {
