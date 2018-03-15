@@ -407,6 +407,10 @@ namespace d360.web.Controllers.Services
             if (model.Links == null)
                 return Json<dynamic>(new { type = "error", title = "Error", message = "Model is missing link data." });
 
+            bool canCreate = Company.HasPermission(model.Object, model.ObjectID, Claim.Create, ClaimObject.Relationship);
+            bool canUpdate = Company.HasPermission(model.Object, model.ObjectID, Claim.Update, ClaimObject.Relationship);
+            bool canDelete = Company.HasPermission(model.Object, model.ObjectID, Claim.Delete, ClaimObject.Relationship);
+
             try
             {
                 model.OriginalLinks.ForEach(l =>
@@ -416,7 +420,7 @@ namespace d360.web.Controllers.Services
 
                     var link = model.Links.FirstOrDefault(k => k.intersectId == l.intersectId);
 
-                    if (link == null)
+                    if (link == null && canDelete)
                     {
                         var intersect = Company.GetById<Intersect>(l.intersectId);
                         if (intersect != null)
@@ -458,7 +462,7 @@ namespace d360.web.Controllers.Services
 
                             if (existing != null)
                             {
-                                if (existing.State == State.Deleted)
+                                if (existing.State == State.Deleted && canCreate)
                                 {
                                     //this intersect was soft deleted
                                     //need to hard delete and re-add to trigger any potential workflows on relationships
@@ -477,16 +481,17 @@ namespace d360.web.Controllers.Services
                                 return;
                             }
                                 
-
-                            Company.Add(intersect);
-                            Company.SaveChanges();
-
+                            if (canCreate)
+                            {
+                                Company.Add(intersect);
+                                Company.SaveChanges();
+                            }
                         }
                     }
                     else
                     {
                         var intersect = Company.GetById<Intersect>(l.intersectId);
-                        if (intersect != null && intersect.IntersectTypeID != l.intersectTypeId && l.intersectTypeId > 0)
+                        if (intersect != null && intersect.IntersectTypeID != l.intersectTypeId && l.intersectTypeId > 0 && canUpdate)
                         {
                             intersect.IntersectTypeID = l.intersectTypeId;
                             Company.SaveOrUpdate(intersect);
