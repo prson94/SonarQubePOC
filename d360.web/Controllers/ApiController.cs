@@ -6659,6 +6659,17 @@ where    A.RuleID = @id", new { id });
             return Company.Filter<ResponsibilityDetail>(i => i.AssetID == assetID);
         }
 
+        [Route("{id:int}/permissionsbyid")]
+        public List<PermissionModel> GetPermissionsObObject(int id)
+        {
+            var asset = Company.GetAssetDetail(id);
+
+            if (asset == null) throw new NotFoundException("Asset Not found");
+
+            return GetPermissionsObObject((SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object), asset.ObjectID);
+        }
+        
+
         [Route("{type}/{id:int}/permissions")]
         public List<PermissionModel> GetPermissionsObObject(SystemObjects type, int id)
         {

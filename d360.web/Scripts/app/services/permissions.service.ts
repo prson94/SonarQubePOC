@@ -15,4 +15,11 @@ export class PermissionsService extends BaseService {
             .then(response => <Permission[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getPermissionsById(assetID: number): Promise<Permission[]> {
+        return this.http.get(`api/${assetID}/permissionsbyid`)
+            .toPromise()
+            .then(response => <Permission[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

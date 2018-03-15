@@ -2,6 +2,7 @@
 import { ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService } from '../../../models/responsibility.model';
 import { FormMessage } from '../../../models/form.model';
 import { ResponsibilityService } from '../../../services/responsibility.service';
+import { PermissionsService } from '../../../services/permissions.service';
 import { BaseComponent } from '../../shared/base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -10,7 +11,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-people-responsibilities-tile',
     templateUrl: './people-responsibilities.tile.html',
-    providers: [ResponsibilityService],
+    providers: [ResponsibilityService, PermissionsService],
 })
 
 export class PeopleResponsibilitiesTile extends BaseComponent implements OnChanges {
@@ -25,7 +26,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     private isDeleting = false;
     private isAdding = false;
 
-    constructor(private responsibilityService: ResponsibilityService, private router: Router) {
+    constructor(private responsibilityService: ResponsibilityService, private permissionsService: PermissionsService,private router: Router) {
         super();
     }
 
@@ -45,13 +46,14 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
             return;
 
         this.isLoading = true;
+        
         this.responsibilityService.getResponsibilityDetail(this.assetID)
             .then(data => {                                
                 this.responsibilities = data;
                 this.selectedRow = this.responsibilities[0];
-                this.isLoading = false;
-                console.log(this.responsibilities);
+                this.isLoading = false;                
             });
+        this.loadPermissionsById(this.permissionsService, this.assetID);
     }
 
     edit(id: number): void {        

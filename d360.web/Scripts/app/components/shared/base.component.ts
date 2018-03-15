@@ -77,6 +77,13 @@ export class BaseComponent {
             });
     }
 
+    loadPermissionsById(permissionsService: PermissionsService, assetID: number) {
+        permissionsService.getPermissionsById(assetID)
+            .then(result => {
+                this.permissions = result;
+            });
+    }
+
     hasPermission(object: string, claim: string) {return Permission.hasPermission(this.permissions, object, claim);}
 
     hasCreatePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimCreate);}
