@@ -959,6 +959,16 @@ where   ID = @id", new { id }).SingleOrDefault();
             return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id }).Any();
         }
 
+        public bool TypeHasChildren(SystemObjects type, int id)
+        {
+
+            var sql = @"select 1 from IntersectType I
+                    inner join [Predicate] P on P.ID = I.PredicateID
+                    where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
+
+            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id }).Any();
+        }
+
         public bool ObjectHasParent(SystemObjects type, int id)
         {
             var sql = @"select 1 from PredicateIntersect I

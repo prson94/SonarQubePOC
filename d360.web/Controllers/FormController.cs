@@ -13086,6 +13086,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = Company.GetById<ReferenceItemType>(id);
                 if (model == null) throw new NotFoundException("ReferenceItemType");
 
+                //check if the reference list is the parent of any other reference item types
+                if (Company.TypeHasChildren(SystemObjects.ReferenceItemType, id)) throw new Exception("The selected Reference List Is the parent to one or more Reference List(s).  Please delete those first.");
+
                 if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 

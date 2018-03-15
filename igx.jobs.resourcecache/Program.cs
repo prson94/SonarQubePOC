@@ -40,8 +40,8 @@ namespace igx.jobs.resourcecache
     public class ResourceCache
     {
         const string functionName = "ResourceCache_Generate";
-        //const string timerSettings = "0 */1 * * * *";
-        const string timerSettings = "*/10 * * * * *";
+        const string timerSettings = "0 */1 * * * *";
+        //const string timerSettings = "*/10 * * * * *";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
