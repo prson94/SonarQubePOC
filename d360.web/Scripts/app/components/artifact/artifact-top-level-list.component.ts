@@ -19,7 +19,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <div class="tile tile-detail" *ngIf="!isLoading">                            
                         <header>Glossary</header>                              
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;">  
-                        <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selectedRow" [style]="{ 'width': '100%' }">
+                        <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selectedRow" (selectionChange)="navigate($event.data)" [style]="{ 'width': '100%' }">
                             <p-column field="Name" header="Name" [style]="{ 'width': '85%' }"></p-column>
                             <p-column [style]="{ 'width': '15%','overflow':'visible' }" header="Select Item">
                                 <ng-template let-col let-item="rowData" pTemplate="body">
@@ -69,6 +69,7 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
                 this.isLoading = false;
             }); 
     }
+
 
     navigate(item: any) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', item.ID));
