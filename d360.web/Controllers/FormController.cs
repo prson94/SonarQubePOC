@@ -1389,6 +1389,8 @@ namespace d360.web.Controllers
         {
             try
             {
+                var isNamePartOfKey = true;
+                var nameFriendlyName = "Name";
                 SystemObjects ot;
                 var parentType = SystemObjects.ArtifactType;
 
@@ -1496,6 +1498,8 @@ namespace d360.web.Controllers
                             Description = model.AssetType.Description,     
                             SourceNotes = model.AssetType.Notes
                         };
+                        isNamePartOfKey = false;
+                        nameFriendlyName = "Long Description";
                         Company.Add(rt);
                         parentType = SystemObjects.ReferenceItemType;
                         model.AssetType.ObjectID = rt.ID;
@@ -1538,14 +1542,14 @@ namespace d360.web.Controllers
                             IsListable = true,
                             IsRequired = true,
                             IsEditable = true,
-                            FriendlyName = "Name",
+                            FriendlyName = nameFriendlyName,
                             Name = "Name",
                             MaximumLength = 500,
                             MinimumLength = 1,
                             SortOrder = 1,
                             Type = DataType.Text.ToString(),
                             IsDisplayable = true,
-                            IsPartOfKey = true
+                            IsPartOfKey = isNamePartOfKey
                         });
                     }
                 }
