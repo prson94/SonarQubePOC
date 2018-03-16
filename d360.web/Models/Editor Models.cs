@@ -711,8 +711,14 @@ namespace d360.web.Models
             this.Acceptance = new ContractAcceptance();
             this.Acceptance.ContractID = contract.ID;
         }
+
+        public TermsModel(Contract contract, string redirectUri) : this(contract)
+        {
+            this.RedirectUri = redirectUri;
+        }
         public Contract Contract { get; set; }
         public ContractAcceptance Acceptance { get; set; }
+        public string RedirectUri { get; set; } = null;
     }
 
     public class ContractRegisterModel

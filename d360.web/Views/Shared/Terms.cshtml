@@ -67,6 +67,7 @@
             using (Html.BeginForm("Terms", "Home", FormMethod.Post))
             {
                 <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
+                @Html.HiddenFor(m => m.RedirectUri);
                 @Html.HiddenFor(m => m.Contract.ID);
                 @Html.HiddenFor(m => m.Contract.OrganizationID);
                 @Html.HiddenFor(m => m.Contract.ContractType);

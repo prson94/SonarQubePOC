@@ -30,9 +30,8 @@ namespace d360.web.Controllers
         [ValidateContracts, Authorize]
         public ActionResult App()
         {
-
             if (!updateContractValidationCache())
-                return RedirectToAction("terms");
+                return RedirectToAction("terms", new { redirectUri = HttpContext.Request.Path });
 
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("ResourceID", Company.CurrentResourceID);
@@ -57,12 +56,13 @@ namespace d360.web.Controllers
         }
 
         [ValidateContracts(Ignore = true), Authorize, Route("terms")]
-        public ActionResult Terms()
+        public ActionResult Terms(string redirectUri = null)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", Community.GetCompanySettings());
 
             var model = new TermsModel();
+
 
             var validations = Company.Query<ContractValidation>(@"select * from dbo.GetContractValidations(@ResourceID)", new { ResourceID = Company.CurrentResourceID });
 
@@ -72,12 +72,15 @@ namespace d360.web.Controllers
             {
                 ContractValidation contractValidation = validations.OrderBy(v => (int)v.ContractType).ThenBy(v => v.OrganizationID.HasValue ? 1 : 0).First();
                 var contract = Company.GetById<Contract>(contractValidation.ContractID);
-                return View(new TermsModel(contract));
+                return View(new TermsModel(contract, redirectUri));
 
             }
             else
             {
-                return RedirectToAction("App");
+                if (!string.IsNullOrEmpty(redirectUri) && !redirectUri.StartsWith("//") && Uri.IsWellFormedUriString(redirectUri, UriKind.Relative))
+                    return Redirect(redirectUri);
+                else
+                    return RedirectToAction("App");
             }
         }
 
@@ -153,7 +156,7 @@ namespace d360.web.Controllers
 
             Company.Add(acceptance);
 
-            return RedirectToAction("Terms");
+            return RedirectToAction("terms", new { redirectUri = model.RedirectUri });
         }
 
 
