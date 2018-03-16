@@ -411,6 +411,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         let id = parseInt(value.split('|')[1]);
         let type = value.split('|')[0];
 
+        this.model.FieldType.LookupDisplayFormat = "";
+
         this.model.FieldType.LookupObjectID = id;
         this.model.FieldType.LookupObjectType = type;
         
