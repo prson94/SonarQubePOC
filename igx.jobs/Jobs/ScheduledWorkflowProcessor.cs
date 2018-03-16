@@ -24,6 +24,8 @@ namespace igx.jobs
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
+                companies = companies.Where(x => x.CompanyID == 4).ToList();
+
                 companies.ForEach(c =>
                 {
                     try
@@ -45,7 +47,7 @@ namespace igx.jobs
                         #endregion
 
                         // Load all workflows of type schedule.
-                        var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == d360.core.enums.Workflow.ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type);
+                        var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == d360.core.enums.Workflow.ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
 
                         foreach (var registration in scheduledWorkflows)
                         {

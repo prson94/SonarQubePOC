@@ -225,7 +225,7 @@ namespace d360.model
                 switch ((registration.Object ?? "").ToUpper())
                 {
                     case "ARTIFACTTYPE":
-                        var artifacts = Artifacts.Where(x => x.ArtifactTypeID == registration.ObjectID);
+                        var artifacts = Artifacts.Where(x => x.ArtifactTypeID == registration.ObjectID).ToList();
                         foreach (var artifact in artifacts)
                         {
                             if (await CreateWorkflowItem(registration.TypeID,
@@ -244,7 +244,7 @@ namespace d360.model
                         }
                         break;
                     case "TAXONOMYTYPE":
-                        var taxonomies = Taxonomies.Where(x => x.TaxonomyTypeID == registration.ObjectID);
+                        var taxonomies = Taxonomies.Where(x => x.TaxonomyTypeID == registration.ObjectID).ToList();
                         foreach (var taxonomy in taxonomies)
                         {
                             if (await CreateWorkflowItem(registration.TypeID,
