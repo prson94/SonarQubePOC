@@ -5,6 +5,7 @@ import { ReferenceService } from '../../services/reference.service';
 import { MessagesService } from '../../services/messages.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ReferenceItemType } from '../../models/reference.model';
+import { FormMode } from '../../models/form.model';
 
 
 @Component({
@@ -61,8 +62,34 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     @Input() initialSelectedListId: number;
 
     private referenceTypes: ReferenceItemType[];
-    private showEditor: boolean = false;
-    private showDelete: boolean = false;
+    private _showEditor: boolean = false;
+    private _showDelete: boolean = false;
+
+    @Output() formModeChange = new EventEmitter<FormMode>();
+    private get showEditor(): boolean {
+        return this._showEditor;
+    }
+
+    private set showEditor(value: boolean) {
+        if (value != this._showEditor && value) this.formModeChange.emit(FormMode.Editing | FormMode.Adding);
+            
+        this._showEditor = value;
+
+        if (!this._showDelete && !this._showEditor) this.formModeChange.emit(FormMode.Default);
+    }
+
+    private get showDelete(): boolean {
+        return this._showDelete;
+    }
+
+
+    private set showDelete(value: boolean) {
+        if (value != this._showDelete && value) this.formModeChange.emit(FormMode.Deleting);
+
+        this._showDelete = value;
+
+        if (!this._showDelete && !this._showEditor) this.formModeChange.emit(FormMode.Default);
+    }
 
     theDeleteCallback: Function;
     
@@ -70,7 +97,8 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         private permissionsService: PermissionsService,
         private messagesService: MessagesService) {
         super();
-
+        this.showDelete = false;
+        this.showEditor = false;
         this.theDeleteCallback = this.deleteReferenceItemType.bind(this);
     }
 

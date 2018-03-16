@@ -12,6 +12,7 @@ import { ReferenceService } from '../../services/reference.service';
 import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AuthenticationService } from '../../services/authentication.service';
+import { FormMode } from '../../models/form.model';
 
 @Component({
     selector: 'd3s-reference-list',
@@ -19,10 +20,10 @@ import { AuthenticationService } from '../../services/authentication.service';
     template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
-                    <div class="col s12 l3">
-                        <d3s-reference-item-type-list [initialSelectedListId]="selectedReferenceListId" [selected]="selectedReferenceItemType" (selectedChange)="changeType($event)"></d3s-reference-item-type-list>
+                    <div [ngClass]="showDefault ? 'col s12 l3' : 'col s12 l8'">
+                        <d3s-reference-item-type-list [initialSelectedListId]="selectedReferenceListId" [selected]="selectedReferenceItemType" (formModeChange)="changeFormMode($event)"  (selectedChange)="changeType($event)"></d3s-reference-item-type-list>
                     </div>
-                    <div class="col s12 l9" *ngIf="selectedReferenceItemType">
+                    <div class="col s12 l9" *ngIf="selectedReferenceItemType && showDefault">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
@@ -48,6 +49,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     private selectedReferenceItemType: ReferenceItemType;
     private selectedReferenceListId: number = 0;
     private canReadSelectedType = true;
+
+    private showDefault: boolean = true;
 
     constructor(
         rightSidebarService: RightSidebarService,
@@ -168,6 +171,13 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
     private refreshItems(itemsGrid) {
         itemsGrid.load();
+    }
+
+    private changeFormMode(formMode:FormMode) {
+        if (formMode == FormMode.Default)
+            this.showDefault = true;
+        else
+            this.showDefault = false;
     }
 
     changeType(e: any) {
