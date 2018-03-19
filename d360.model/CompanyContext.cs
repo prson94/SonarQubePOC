@@ -2445,6 +2445,26 @@ select @err";
                 }
                 #endregion
 
+                #region Business logic : PolicyType
+                if (entry.Entity is PolicyType)
+                {
+                    var o = entry.Entity as PolicyType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Any<PolicyType>(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (Any<PolicyType>(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
                 #region Business logic : QuestionType
                 if (entry.Entity is QuestionType)
                 {
