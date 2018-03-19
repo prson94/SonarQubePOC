@@ -121,6 +121,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                         this.isSaving = false;
                         this.onSuccess.emit(data);
                         this.onComplete.emit(data);
+                    } else {
+                        this.isSaving = false; 
                     }
                 });
         else
@@ -131,6 +133,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                         this.isSaving = false;
                         this.onSuccess.emit(data);
                         this.onComplete.emit(data);
+                    } else {
+                        this.isSaving = false;
                     }
                 });
     }
