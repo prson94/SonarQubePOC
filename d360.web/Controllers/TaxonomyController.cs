@@ -80,7 +80,7 @@ from	AssetDetail A
 					) P
 where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID)";
 
-            var models = Company.Query<dynamic>(sql, new { type = SystemObjects.TaxonomyType.ToString(), id, pt = PredicateType.IntraTypeHierarchy });
+            var models = Company.Query<dynamic>(sql, new { id });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }

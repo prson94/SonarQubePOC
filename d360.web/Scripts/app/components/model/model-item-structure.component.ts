@@ -132,10 +132,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);
 
             this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', this.modelId);
-            this.isLoading = true;
+            
             this.modelsService.getModel(this.modelId)
-                    .then(result => {
-                        this.isLoading = false;
+                    .then(result => {                        
                         this.model = result;
 
                         this.headerBreadcrumbService.clearBreadcrumbs();
@@ -161,11 +160,13 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private loadModelHierarchy(modelId: number) {
+        this.isLoading = true;
         this.modelsService.getModelHierarchy(modelId, true, true)
             .then(result => {                
                 this.modelHierarchy = result;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
+                this.isLoading = false;
             });
     }
 
