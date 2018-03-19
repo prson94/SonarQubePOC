@@ -226,7 +226,7 @@ namespace d360.web.Controllers.Services
             return Company.Query<ContractAcceptanceDetail>(@"select h.*, r.FirstName + ' ' + r.LastName as ResourceName, c.Title as ContractName from contractacceptance h
                 inner join reporting.Global_resource r on r.ResourceID = h.ResourceID
                 inner join [Contract] c on c.id = h.ContractID
-                where h.ResourceID = @id", new { id }).AsQueryable();
+                where h.ResourceID = @id", new { id }).AsQueryable().OrderByDescending(c => c.AcceptedOn);
         }
 
         /// <summary>
@@ -243,7 +243,7 @@ namespace d360.web.Controllers.Services
             return Company.Query<ContractAcceptanceDetail>(@"select h.*, r.FirstName + ' ' + r.LastName as ResourceName, c.Title as ContractName from contractacceptance h
                 inner join reporting.Global_resource r on r.ResourceID = h.ResourceID
                 inner join [Contract] c on c.id = h.ContractID
-                where h.ContractID = @id", new { id }).AsQueryable();
+                where h.ContractID = @id", new { id }).AsQueryable().OrderByDescending(c => c.AcceptedOn);
         }
 
         /// <summary>
@@ -260,7 +260,7 @@ namespace d360.web.Controllers.Services
             return Company.Query<ContractAcceptanceDetail>(@"select h.*, r.FirstName + ' ' + r.LastName as ResourceName, c.Title as ContractName from contractacceptance h
                 inner join reporting.Global_resource r on r.ResourceID = h.ResourceID
                 inner join [Contract] c on c.id = h.ContractID
-                where h.OrganizationID = @id", new { id }).AsQueryable();
+                where h.OrganizationID = @id", new { id }).AsQueryable().OrderByDescending(c => c.AcceptedOn);
         }
 
     }

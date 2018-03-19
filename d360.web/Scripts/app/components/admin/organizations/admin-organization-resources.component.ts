@@ -25,7 +25,12 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         </p-column>
                         <p-column field="Email" header="Email" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="Status" header="Status" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'max-width':'100px'}"></p-column>
-                        <p-column field="Accepted" header="Accepted" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'max-width':'100px'}"></p-column>
+                        <p-column field="Accepted" header="Accepted" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'max-width':'100px'}">
+                            <ng-template let-col let-item="rowData" pTemplate type="body">
+                                <i *ngIf="item.Accepted == true" class="fa fa-check enabled" title="True"></i>
+                                <i *ngIf="item.Accepted == false" class="fa fa-times disabled" title="False"></i>
+                            </ng-template>
+                        </p-column>
                         <p-column field="DateAccepted" header="Accepted On" [sortable]="true" [style]="{'max-width':'150px'}">
                             <ng-template let-col let-item="rowData" pTemplate type="body">
                                 <span>{{item.DateAccepted | date : 'short'}}</span>

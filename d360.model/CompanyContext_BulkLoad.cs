@@ -682,16 +682,23 @@ order by	ColumnIndex", new { id });
                 if (fusionAttributeType == null)
                     throw new Exception($"BULK LOAD INTERSECT CANNOT COMPLETE AS SUBJECT REFERENCES INVALID FUSION ATTRIBUTE TYPE ID {objectId}");
 
-                var col = columns.Where(x => string.Compare(x.Name, fusionAttributeType.TextPath, true) == 0).First();
+                var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare(x.Name, fusionAttributeType.TextPath, true) == 0).First();
+                var index = col.ColumnIndex;
 
-                return col.ColumnIndex;
+                columns.Remove(col);
+
+                return index;
             }
             else
             {
-                var col = columns.Where(x => string.Compare($"{objectName} Asset ID", x.Name, true) == 0).FirstOrDefault();
+                var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName} Asset ID", x.Name, true) == 0).FirstOrDefault();
 
                 if (col == null)
                     throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName} Asset ID]");
+
+                var index = col.ColumnIndex;
+
+                columns.Remove(col);
 
                 return col.ColumnIndex;
             }
@@ -728,8 +735,9 @@ order by	ColumnIndex", new { id });
             //loop throw rows until there are no more indexes start at 2
             int currentRowIndex = 2;
 
-            var subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Subject, intersectType.SubjectName, intersectType.SubjectID, columns);
-            var objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Object, intersectType.ObjectName, intersectType.ObjectID, columns);
+            var fieldColumns = columns.ToList();
+            var subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Subject, intersectType.SubjectName, intersectType.SubjectID, fieldColumns);
+            var objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Object, intersectType.ObjectName, intersectType.ObjectID, fieldColumns);
                         
             //load any custom field types for this relationship type
             var customFieldTypes = FieldTypes.Where(x => x.Object == "IntersectType" && x.ObjectID == intersectType.ID);
@@ -754,9 +762,8 @@ order by	ColumnIndex", new { id });
             {
                 BulkLoadStatusMsg = "";
 
-                int objectId = getItemIdFromKeyFields(rowData, objectAssetIDFieldIndex, intersectType.Object.Replace("Type", ""), intersectType.ObjectID);
-
                 int subjectId = getItemIdFromKeyFields(rowData, subjectAssetIDFieldIndex, intersectType.Subject.Replace("Type", ""), intersectType.SubjectID);
+                int objectId = getItemIdFromKeyFields(rowData, objectAssetIDFieldIndex, intersectType.Object.Replace("Type", ""), intersectType.ObjectID);
 
                 int intersectId = (operation == BulkRelationshipOperation.Relate) ?
                     RelateObjects(rowData, objectId, subjectId, intersectType.Object.Replace("Type", ""), intersectType.Subject.Replace("Type", ""), intersectType.ID, customFieldTypes, customFieldTypeMap) :
