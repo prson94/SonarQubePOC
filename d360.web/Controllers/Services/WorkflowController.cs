@@ -1705,11 +1705,12 @@ order by wi.StartedOn desc";
         [Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId)
         {
-            var sql = @"select ft.ID as value, coalesce( ri.Name, lt.Name) as [label] from 
+            var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, lt.Name) + ')' as [label] from 
                  FieldType ft
                  left join ReferenceItemType ri on ri.id = lookupobjectid and ft.lookupobjecttype = 'ReferenceItem'
                  left join LookupType lt on lt.id = lookupobjectid and ft.lookupobjecttype = 'Lookup'
-                 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
+                 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
+                 order by ft.FriendlyName";
 
             var results = Company.Query<dynamic>(sql, new { objectType = objectType, objectId = objectId });
 
