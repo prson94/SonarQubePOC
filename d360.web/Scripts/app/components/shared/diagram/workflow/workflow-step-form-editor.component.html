@@ -27,6 +27,7 @@
             </div>
             <div>
                 <select [ngModel]="step.settings.FormResponseType" (ngModelChange)="step.settings.FormResponseType = $event; stepChange.emit(step);" style="width: 95%">
+                    <option></option>
                     <option *ngFor="let r of responseTypes" [value]="r.value">{{r.label}}</option>
                 </select>
             </div>
@@ -39,6 +40,7 @@
             </div>
             <div>
                 <select [ngModel]="step.settings.MessageRecipientType" (ngModelChange)="step.settings.MessageRecipientType = $event; stepChange.emit(step)" style="width: 95%">
+                    <option></option>
                     <option *ngFor="let d of destination" [value]="d.value">{{d.label}}</option>
                 </select>
             </div>
@@ -149,6 +151,7 @@
                 </div>
                 <div>
                     <select [ngModel]="newField['@type']" (ngModelChange)="changeType($event)" style="width:95%">
+                        <option></option>
                         <option *ngFor="let t of types" [value]="t.label">{{t.label}}</option>
                     </select>
                 </div>

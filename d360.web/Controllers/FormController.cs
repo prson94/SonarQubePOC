@@ -10776,7 +10776,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             var list = new List<EditableField>();
 
-            var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
             var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
                     (
                     select 
@@ -10814,7 +10814,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             var list = new List<EditableField>();
 
-            var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
             var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
                     (
                     select 
@@ -10874,16 +10874,20 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [HttpGet, ValidateInput(false), Route("MetricMap/{id:int}")]
         public JsonNetResult GetMetricMap(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
             var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
 
-            var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            if (map == null)
+                return jsonNetException($"The metric map for id {id} could not be found", HttpStatusCode.BadRequest);
+
+            var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
             var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
 	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
 	                    {0} + T.[Name] as [Text] 
                     from 
-	                    AssetType T 
-                    order by 
-	                    [Name]", QueryConstants.HighLevelTypeCaseStatement)).ToList();
+	                    AssetType T", QueryConstants.HighLevelTypeCaseStatement)).OrderBy(i => i.Text).ToList();
             var conditions = Company.Query<dynamic>(@"select 
 	                                    c.*,
 	                                    t.FriendlyName as fieldName

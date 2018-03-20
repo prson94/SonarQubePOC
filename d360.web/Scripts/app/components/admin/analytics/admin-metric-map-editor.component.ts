@@ -29,10 +29,15 @@ import { FormHelpers } from '../../../static/form-helpers';
                                 Metric Item
                             </div>
                             <div>
-                                <select [(ngModel)]="model.Map.ItemID" style="width: 95%">
-                                    <option></option>
-                                    <option *ngFor="let i of model.Items" [value]="i.Value">{{i.Text}}</option>
-                                </select>
+                                <p-dropdown 
+                                    [filter]="true" 
+                                    filterBy="label,value.Text"  
+                                    optionLabel="Text" 
+                                    [options]="model.Items" 
+                                    [ngModel]="metricItem"
+                                    (ngModelChange)="changeMetricItem($event)"
+                                    [style]="{ 'width' : '95%' }">
+                                </p-dropdown>
                             </div>
                         </div>
                         <div class="col s6">
@@ -40,10 +45,16 @@ import { FormHelpers } from '../../../static/form-helpers';
                                 Object Type
                             </div>
                             <div>
-                                <select [ngModel]="objectTypeString" (ngModelChange)="changeObjectType($event)" style="width: 95%">
-                                    <option></option>
-                                    <option *ngFor="let i of model.ObjectTypes" [value]="i.Value">{{i.Text}}</option>
-                                </select>
+                                <p-dropdown 
+                                    [filter]="true" 
+                                    filterBy="label,value.Text"  
+                                    optionLabel="Text" 
+                                    dataKey="Value"
+                                    [options]="model.ObjectTypes" 
+                                    [ngModel]="objectType" 
+                                    (ngModelChange)="changeObjectType($event)" 
+                                    [style]="{ 'width' : '95%' }">
+                                </p-dropdown>
                             </div>
                         </div>   
                         <div class="col s6">
@@ -92,7 +103,8 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
     verb = "Add";
 
     model: MapForm = null;
-    objectTypeString: string = "";
+    objectType: any = null;
+    metricItem: any = null;
     conditionFormMode = FormMode.Default;
     FormMode = FormMode;
 
@@ -111,7 +123,8 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
             this.metricsService.getMapFormModel(this.mapId)
                 .then(r => {
                     this.model = r;
-                    this.objectTypeString = r.Map.Object + '|' + r.Map.ObjectID.toString();
+                    this.objectType = this.model.ObjectTypes.find(o => o.Value == r.Map.Object + '|' + r.Map.ObjectID.toString());
+                    this.metricItem = this.model.Items.find(i => i['Value'] == this.model.Map.ItemID);
 
                     //add timezone offset
                     if (this.model.Map.EffectiveStartDate != null) {
@@ -124,7 +137,6 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
                         this.model.Map.EffectiveEndDate.setMinutes(this.model.Map.EffectiveEndDate.getMinutes() + this.model.Map.EffectiveEndDate.getTimezoneOffset());
                     }
 
-                    console.log('load after', (<Date>this.model.Map.EffectiveEndDate || new Date()).getTime(), (<Date>this.model.Map.EffectiveStartDate || new Date()).getTime());
                     this.isLoading = false;
                     //console.log(this.model);
                 });
@@ -186,10 +198,20 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
     }
 
     changeObjectType(e: any) {
-        this.objectTypeString = e;
-        if (this.objectTypeString != null && this.objectTypeString.indexOf('|') > -1) {
-            this.model.Map.Object = this.objectTypeString.split('|')[0];
-            this.model.Map.ObjectID = +this.objectTypeString.split('|')[1];
+        this.objectType = e;
+        if (this.objectType != null && this.objectType.Value != null && this.objectType.Value.indexOf('|') > -1) {
+            this.model.Map.Object = this.objectType.Value.split('|')[0];
+            this.model.Map.ObjectID = +this.objectType.Value.split('|')[1];
+        }
+    }
+
+    changeMetricItem(e: any) {
+        this.metricItem = e;
+        console.log(e);
+        if (e != null) {
+            this.model.Map.ItemID = isNaN(+e.Value) ? null : +e.Value;
+        } else {
+            this.model.Map.ItemID = null;
         }
     }
 

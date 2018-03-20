@@ -870,7 +870,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     return false;
                 if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
                     return false;
-                if (n.settings.MessageRecipientType == null)
+                if (n.settings.MessageRecipientType == null || n.settings.MessageRecipientType == '')
                     return false;
 
                 switch (n.settings.MessageRecipientType) {
@@ -887,9 +887,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             case WorkflowActivityType.Form:
                 if (n.settings == null || _.isEmpty(n.settings))
                     return false;
-                if (n.settings.FormResponseType == null)
+                if (n.settings.FormResponseType == null || n.settings.FormResponseType == '')
                     return false;
-                if (n.settings.MessageRecipientType == null)
+                if (n.settings.MessageRecipientType == null || n.settings.MessageRecipientType == '')
                     return false;
                 switch (n.settings.MessageRecipientType) {
                     case 'SpecificUser':
@@ -908,7 +908,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             if (n.settings.ResponsibilityTypeID.length < 1)
                                 return false;
 
-                            let x = n.settings.ResponsibilityTypeID.findIndex(r => r == null || r == "" || r < 0);
+                            let x = n.settings.ResponsibilityTypeID.findIndex(r => r == null || r == '' || r < 0);
                             if (x > -1)
                                 return false;
                         }
@@ -947,7 +947,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             case WorkflowActivityType.RelationshipUpdate:
                 if (n.settings == null || n.settings.RelationshipUpdate == null || n.settings.RelationshipUpdate.Relationship == null || _.isEmpty(n.settings.RelationshipUpdate.Relationship))
                     return false;
-                if (n.settings.RelationshipUpdate.Relationship['@ClearValue'] != null && n.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() == "false") {
+                if (n.settings.RelationshipUpdate.Relationship['@ClearValue'] == null || n.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() == "false") {
                     if (n.settings.RelationshipUpdate.Relationship['@FormStepId'] == null || n.settings.RelationshipUpdate.Relationship['@FormFieldId'] == null)
                         return false;
                 }

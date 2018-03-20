@@ -396,13 +396,13 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     validateField() {
-        if (this.newField['@label'] == null || this.newField['@label'].length < 1 || this.newField['@type'] == null)
+        if (this.newField['@label'] == null || this.newField['@label'].length < 1 || this.newField['@type'] == null || this.newField['@type'] == '')
            return false;
 
         if (this.newField['@type'] == 'list' && this.newField['@referenceFieldId'] == null)
             return false;
 
-        if (this.newField['@type'] == 'relationshipType' && this.newField['@intersectTypeId'] == null)
+        if (this.newField['@type'] == 'relationshipType' && (this.newField['@intersectTypeId'] == null || this.newField['@intersectTypeId'] == ''))
             return false;
 
         return true;

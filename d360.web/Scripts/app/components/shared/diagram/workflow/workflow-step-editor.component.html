@@ -13,6 +13,7 @@
                 </div>
                 <div>
                     <select [ngModel]="step.settings.MessageRecipientType" (ngModelChange)="step.settings.MessageRecipientType = $event; stepChange.emit(step)" style="width: 95%">
+                        <option></option>
                         <option *ngFor="let d of destination" [value]="d.value">{{d.label}}</option>
                     </select>
                 </div>
@@ -89,6 +90,7 @@
                 <div class="FieldName">Procedure</div>
                 <div>
                     <select style="width: 95%" [ngModel]="step.settings.ProcedureID" (ngModelChange)="step.settings.ProcedureID = $event; stepChange.emit(step);">
+                        <option></option>
                         <option *ngFor="let p of procedures" [value]="p.ID">{{p.Name}} ({{p.Procedure}})</option>
                     </select>
                 </div>
@@ -107,6 +109,7 @@
                 <div class="FieldName">Relationship Form Field</div>
                 <div>
                     <select [ngModel]="formRelationship" (ngModelChange)="changeRelationship($event)" style="width:95%">
+                        <option></option>
                         <option *ngFor="let f of formRelationshipFields" [value]="f['@FormFieldId']">
                             Form :: {{f['@label']}}
                         </option>
