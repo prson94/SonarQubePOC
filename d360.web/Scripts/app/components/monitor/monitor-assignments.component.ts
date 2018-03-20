@@ -20,7 +20,8 @@ import { Router } from '@angular/router';
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer> 
             <p-column header="Workflow Name" field="WorkflowName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
                 <ng-template let-item="rowData" type="body" pTemplate>
-                    <a style="cursor:pointer;" (click)="openItem(item)" title="Complete Form">{{item.WorkflowName}}</a>                                                        
+                    <a *ngIf="item.Deleted == false" style="cursor:pointer;" (click)="openItem(item)" title="Complete Form">{{item.WorkflowName}}</a> 
+                    <span *ngIf="item.Deleted == true">{{item.WorkflowName}}</span>
                 </ng-template>
             </p-column>  
             <p-column header="Item" field="ObjectName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
@@ -32,7 +33,7 @@ import { Router } from '@angular/router';
             </p-column>
             <p-column header="">
                 <ng-template let-item="rowData" type="body" pTemplate>
-                    <a style="cursor:pointer;" (click)="openItem(item)" title="Complete Form"><i class="fa fa-check-square-o"></i></a>                                                        
+                    <a *ngIf="item.Deleted == false" style="cursor:pointer;" (click)="openItem(item)" title="Complete Form"><i class="fa fa-check-square-o"></i></a>                                                        
                 </ng-template>
             </p-column>
         </p-dataTable>

@@ -1634,7 +1634,7 @@ select
 									end as 'TypeName'
 	                                ,AD.[Type] as 'ObjectType'
 	                                ,AD.TypeID as 'ObjectTypeID'
-	                                ,coalesce(CAD.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName, AD.DisplayValue, IT.[Name], '(unknown)') as 'ObjectName'
+	                                ,coalesce(CAD.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName, AD.DisplayValue, IT.[Name], '(item deleted)') as 'ObjectName'
 	                                ,WIS.ID as 'ItemStepID'
 	                                ,WVS.[Name] as 'StepName'
 	                                ,WVS.StepType as 'StepType'
@@ -1642,6 +1642,11 @@ select
                                     ,ISS.[Object] as 'IssueObject'
 									,ISS.[ObjectID] as 'IssueObjectID'
                                     ,CAD.DisplayValue as 'IssueObjectName'
+                                    ,case when coalesce(CAD.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName, AD.DisplayValue, IT.[Name]) is null then
+                                        cast(1 as bit)
+                                    else
+                                        cast(0 as bit)       
+                                    end as Deleted
                                 from
 	                                [workflow].[Type] WT
 	                                inner join workflow.[Version] WV on WT.ID = WV.TypeID
