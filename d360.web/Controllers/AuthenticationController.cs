@@ -807,47 +807,40 @@ namespace d360.web.Controllers
                             {
                                 var org = Company.GetById<Organization>(domain.OrganizationID);
 
-                                if (org.Accepted.HasValue)
+                                //if (!org.Accepted.Value)
+                                //{
+                                //    ModelState.AddModelError("Invalid", "Your domain owner has not accepted the organisational terms of use.");
+                                //    return View(model);
+                                //}
+
+                                //GOOD TO GO
+                                var registration = new OrganizationRegistration
                                 {
-                                    //if (!org.Accepted.Value)
-                                    //{
-                                    //    ModelState.AddModelError("Invalid", "Your domain owner has not accepted the organisational terms of use.");
-                                    //    return View(model);
-                                    //}
+                                    Email = model.Email,
+                                    ID = Guid.NewGuid(),
+                                    OrganizationID = domain.OrganizationID,
+                                    RegisteredStartedOn = DateTime.UtcNow,
+                                    Step = RegisterStep.Registration
+                                };
+                                Company.Add(registration);
 
-                                    //GOOD TO GO
-                                    var registration = new OrganizationRegistration
-                                    {
-                                        Email = model.Email,
-                                        ID = Guid.NewGuid(),
-                                        OrganizationID = domain.OrganizationID,
-                                        RegisteredStartedOn = DateTime.UtcNow,
-                                        Step = RegisterStep.Registration
-                                    };
-                                    Company.Add(registration);
-
-                                    if (model.IsUsingActiveDirectory)
-                                    {
-                                        model.Step = RegisterStep.ADRegistration;
-                                        model.RegistrationID = registration.ID;
-                                    }
-                                    else
-                                    {
-
-                                        var content = $@"Please complete registration to {org.Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                        await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
-
-                                        model.Step = RegisterStep.Email;
-                                        model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
-                                    }
-                                    
-                                    return View(model);
+                                if (model.IsUsingActiveDirectory)
+                                {
+                                    model.Step = RegisterStep.ADRegistration;
+                                    model.RegistrationID = registration.ID;
                                 }
                                 else
                                 {
-                                    ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organisational terms of use.");
-                                    return View(model);
+
+                                    var content = $@"Please complete registration to {org.Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
+                                    await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+
+                                    model.Step = RegisterStep.Email;
+                                    model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
                                 }
+                                    
+                                return View(model);
+                                
                             }
                             else
                             {
@@ -931,7 +924,7 @@ namespace d360.web.Controllers
                                 //    return View(model);
                                 //}
 
-                                model.Step = RegisterStep.ADTermsOfUse;
+                                model.Step = RegisterStep.TermsOfUseValidated;
                             }
                         }
                         return View(model);                        
@@ -1024,7 +1017,7 @@ namespace d360.web.Controllers
                                 #endregion
 
                                 // Save current place in the process.
-                                registration.Step = RegisterStep.TermsOfUse;
+                                registration.Step = RegisterStep.TermsOfUseValidated;
                                 Company.Update(registration);
 
                                 return View(model);
@@ -1105,6 +1098,7 @@ namespace d360.web.Controllers
                                         Company.Add(orgResource);
                                     }
                                 }
+                                
 
                                 if(resource == null)
                                 {
@@ -1116,32 +1110,32 @@ namespace d360.web.Controllers
 
                                 #region Check if organization resource account exists
 
-                                var org = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
+                                //var org = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
 
-                                if (org.Any())
-                                {
-                                    foreach (var o in org)
-                                    {
-                                        o.Accepted = true;
-                                        o.AcceptedBy = resource.ID;
-                                        o.DateAccepted = DateTime.UtcNow;
-                                    }
-                                    Company.SaveChanges();
-                                }
-                                else
-                                {
-                                    var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
+                                //if (org.Any())
+                                //{
+                                //    foreach (var o in org)
+                                //    {
+                                //        o.Accepted = true;
+                                //        o.AcceptedBy = resource.ID;
+                                //        o.DateAccepted = DateTime.UtcNow;
+                                //    }
+                                //    Company.SaveChanges();
+                                //}
+                                //else
+                                //{
+                                //    var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
 
-                                    if (orgResource == null)
-                                    {
-                                        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
-                                        return View(model);
-                                    }
+                                //    if (orgResource == null)
+                                //    {
+                                //        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                //        return View(model);
+                                //    }
 
-                                    orgResource.Accepted = true;
-                                    orgResource.DateAccepted = DateTime.UtcNow;
-                                    Company.Update(orgResource);
-                                }
+                                //    orgResource.Accepted = true;
+                                //    orgResource.DateAccepted = DateTime.UtcNow;
+                                //    Company.Update(orgResource);
+                                //}
 
                                 #endregion
 

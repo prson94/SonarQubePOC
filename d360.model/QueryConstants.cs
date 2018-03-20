@@ -10,6 +10,12 @@
 				when T.Object = 'ReferenceItemType' then 'Reference: ' 
 				when T.Object = 'RuleType' then 'Rule: ' 
 				when T.Object = 'TaxonomyType' then 'Model: '
+				when T.Object = 'AttributeType' then 'Attribute: '
+				when T.Object = 'FusionQueryAttributeType' then 'Fusion Query Attribute: '
+				when T.Object = 'GroupType' then 'Group: '
+				when T.Object = 'MapType' then 'Map: '
+				when T.Object = 'OrganizationType' then 'Organization: '
+				when T.Object = 'ResourceType' then 'Resource: '
 				else ''
 			end ";
         public static string AgentErrorList = @"
