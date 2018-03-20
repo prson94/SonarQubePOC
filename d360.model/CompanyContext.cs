@@ -2502,6 +2502,27 @@ select @err";
 
                 #endregion
 
+                #region Business logic : ReferenceItemTyoe
+
+                if (entry.Entity is ReferenceItemType)
+                {
+                    var o = entry.Entity as ReferenceItemType;
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Any<ReferenceItemType>(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (Any<ReferenceItemType>(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+
+                #endregion
+
                 #region Business logic : Report
                 if (entry.Entity is Report)
                 {
