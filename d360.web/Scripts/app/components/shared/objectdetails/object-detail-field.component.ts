@@ -24,7 +24,7 @@ import { Router } from '@angular/router';
                     <i *ngIf="(field.Value || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
                     <i *ngIf="(field.Value || '').toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>                
                 </div>
-                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date' && field.DataType != 'text' && field.DataType != 'bool'" class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(field.Name == 'Name' ? 'bold':'')}"></div>
+                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date' && field.DataType != 'text' && field.DataType != 'bool'" class="FieldDisplayContent" [innerHtml]="field.Value | safeHtml" [ngStyle]="{'font-weight':(field.Name == 'Name' ? 'bold':'')}"></div>
                 <div *ngIf="field.Type == DetailFieldType.Tooltip" class="FieldDisplayContent">                    
                     <d3s-lookup-tooltip *ngIf="field.TooltipUrl;else noLinkTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
                         <a (click)="navigate(field.TooltipUrl)" [innerHtml]="field.Value"></a>                        

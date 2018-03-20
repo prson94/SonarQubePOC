@@ -22,6 +22,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { ObjectDetailComponent } from './object-detail.component';
 import { ObjectDetailFieldComponent } from './object-detail-field.component';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -34,6 +35,7 @@ import { ObjectDetailFieldComponent } from './object-detail-field.component';
         SimpleAccordionModule,
         TilesModule,
         SharedDynamicGridEditorModule,
+        PipesModule,
         //prime
         ButtonModule,
         DataTableModule,

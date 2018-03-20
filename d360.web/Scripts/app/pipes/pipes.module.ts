@@ -7,6 +7,7 @@ import { ScoreDisplayPipe } from './score-display.pipe';
 import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
 import { TreeSearchPipe } from './tree-search.pipe';
 import { ArrayToSelectItemPipe } from './array-to-selectitem.pipe';
+import { SafeHtmlPipe } from './safe-html.pipe';
 
 @NgModule({
     imports: [CommonModule],
@@ -17,6 +18,7 @@ import { ArrayToSelectItemPipe } from './array-to-selectitem.pipe';
         ModelTypePipe,
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
+        SafeHtmlPipe
     ],
     exports: [
         ArrayToSelectItemPipe,
@@ -25,6 +27,7 @@ import { ArrayToSelectItemPipe } from './array-to-selectitem.pipe';
         ModelTypePipe,
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
+        SafeHtmlPipe
     ]
 })
 export class PipesModule { }

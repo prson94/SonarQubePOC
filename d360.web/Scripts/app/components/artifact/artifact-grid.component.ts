@@ -23,7 +23,7 @@ import { ObjectDetailService } from '../../services/object-detail.service';
                     {{artifactType?.Name}}
                     {{titlePostfix}}
                     <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="!artifactType.HasCustomExportTemplates" [hasCustomExport]="artifactType.HasCustomExportTemplates" (addClick)="add()" (customExportClick)="customExport()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
-                    <div (click)="toggleArtifactDetail()" *ngIf="showArtifactDetails && artifactType && artifactType.Description" [innerHtml]="artifactType.Description" style="text-transform:none;font-size:12px;font-weight:normal;margin-left:20px"></div>
+                    <div (click)="toggleArtifactDetail()" *ngIf="showArtifactDetails && artifactType && artifactType.Description" [innerHtml]="artifactType.Description | safeHtml" style="text-transform:none;font-size:12px;font-weight:normal;margin-left:20px"></div>
                 </header>                    
                 <div class="row" *ngIf="!showDelete && !showEditor">                    
                     <div #rightMenu [ngClass]="{'artifact-context-menu':isMenuOpen,'artifact-context-menu-closed':!isMenuOpen}">
@@ -215,7 +215,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;  
 
-                let statusField = this.fields.find(x => x.apiName.toLowerCase() == "status");
+                let statusField = this.fields.find(x => x.apiName != null && x.apiName.toLowerCase() == "status");
                 if (statusField != null) {
                     this.showCertificationStatus = true;
                     this.certificationStatusIndex = statusField.name;

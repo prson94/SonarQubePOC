@@ -111,12 +111,22 @@ button.WhiteButton {
 }
 
 .FieldDisplayContent {
-    p:first-child {
-        display: inline;
+    display: block;
+    margin: auto;
+    width: 85%;
+
+    p {
+        display:inline;
+        margin:0px;
+        margin-left:5px;
     }
+   
     /* override materialize list formatting */
     ul {
         list-style-type: disc;
+        margin-bottom:0px;
+        margin-top:0px;
+
         li {
             list-style-type: disc;
         }
