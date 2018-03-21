@@ -82,7 +82,8 @@ import { MessagesService } from '../../services/messages.service';
                                                             [suggestions]="terms" 
                                                             (completeMethod)="search($event)"                                                 
                                                             placeholder="Select an item"
-                                                            field="TextPath"                                                             
+                                                            field="TextPath"           
+                                                            [forceSelection]="true"
                                                             (onSelect)="selectItem()">     
                                                         <ng-template let-item>
                                                             <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
@@ -97,7 +98,7 @@ import { MessagesService } from '../../services/messages.service';
                                                 </div>
                                                 <div class="col l1 s4" *ngIf="reassignType">
                                                     <div class="FieldName">&nbsp;</div>
-                                                    <button pButton type="button" (click)="reassign()" [disabled]="selectedReassignResource == null && term == null" style="width: 150px;" label="Assign"></button>                                    
+                                                    <button pButton type="button" (click)="reassign()" [disabled]="selectedReassignResource == null && (term == null || term.ObjectID == null)" style="width: 150px;" label="Assign"></button>                                    
                                                 </div>
                                             </div>                                            
                                         </div>
