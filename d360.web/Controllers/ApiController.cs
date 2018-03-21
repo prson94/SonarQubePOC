@@ -7676,6 +7676,7 @@ from	    TaxonomyType FAT
 
             var colIndex = 0;
 
+            document.SetCellValue(1, ++colIndex, "Asset ID");
             document.SetCellValue(1, ++colIndex, "Code");
 
             //add parents for this ref list
@@ -7699,6 +7700,7 @@ from	    TaxonomyType FAT
                 var dataColIndex = 0;
                 rowIndex++;
 
+                document.SetCellValue(rowIndex, ++dataColIndex, row.AssetID ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Code ?? "");
                 
                 var rowDict = ((IDictionary<string, object>)row);
