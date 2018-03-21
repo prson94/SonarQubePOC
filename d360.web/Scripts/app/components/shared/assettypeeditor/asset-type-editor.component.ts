@@ -158,4 +158,10 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             return "col l8 m12 s12";
         return "col s12";
     }
+
+    public updateParent(predicateId: string) {
+        if (predicateId == null || predicateId.length == 0) {
+            this.model.ParentID = null;
+        }
+    }
 }

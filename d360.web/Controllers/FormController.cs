@@ -1574,6 +1574,7 @@ namespace d360.web.Controllers
             {
                 SystemObjects ot;
                 var parentType = SystemObjects.ArtifactType;
+                bool shouldRemoveOldRelationshipType = false;
 
                 if (!Enum.TryParse<SystemObjects>(model.AssetType.Object, out ot))
                     throw new GenericException(HttpStatusCode.BadRequest, "Missing Object Type", "No valid type provided. Please check your request and try again.");
@@ -1643,6 +1644,7 @@ namespace d360.web.Controllers
 
                         Company.Update(rt);
 
+                        shouldRemoveOldRelationshipType = true;
                         parentType = SystemObjects.ReferenceItemType;
                         break;
                     case SystemObjects.TaxonomyType:
@@ -1715,6 +1717,21 @@ namespace d360.web.Controllers
                             };
                             Company.Add(intersectType);
                         }
+                    }
+                }
+                else if(shouldRemoveOldRelationshipType)
+                {
+                    var parentPredicateType = PredicateType.InterTypeHierarchy;
+
+                    var intersectType = Company.Filter<IntersectType>(i =>                        
+                        i.Object == model.AssetType.Object &&
+                        i.ObjectID == model.AssetType.ObjectID &&
+                        i.Predicate.Type == parentPredicateType
+                    ).FirstOrDefault();
+
+                    if(intersectType != null)
+                    {
+                        Company.Delete(SystemObjects.IntersectType, intersectType.ID);
                     }
                 }
 
