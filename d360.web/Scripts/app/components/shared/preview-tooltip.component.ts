@@ -6,17 +6,17 @@ import { TooltipInfo, TooltipFieldValue } from '../../models/tooltip-info.model'
 @Component({
     selector: 'd3s-preview-tooltip',
     template: ` 
-                <span #item style="overflow:visible;" class="d3s-tooltip" [ngClass]="{'d3s-tooltip-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" (click)="click.emit()">
+                <span #item class="d3s-tooltip" [ngClass]="{'d3s-tooltip-active':active}" (mouseenter)="show(item,tip)" (mouseleave)="hide(item)" (click)="click.emit()">
                     <i *ngIf="icon && icon !=''" class="fa" [ngClass]="['fa-' + this.icon, class ? class: '']"  [ngStyle]="{'color': iconColor}"></i>                    
-                    <ng-content></ng-content>                    
-                    <div class="tooltip-child tooltip-panel">
+                    <ng-content></ng-content>                                        
+                    <div class="tooltip-child tooltip-panel" #tip>
                         <h3 style="positon: relative"><a [routerLink]="data?.Url">{{data?.DisplayName}}</a> <small *ngIf="data && data.TypeName" style="background-color: #fff; float:right;font-size:65%;">{{data.TypeName}}</small></h3>
                         <div>&nbsp;</div>
                         <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
                         <div *ngIf="data?.AssetID && data?.AssetID >0"><b>Asset ID</b>: <span [innerHtml]="data.AssetID"></span></div>
-                        <div *ngFor="let field of data?.FieldValues"><span *ngIf="field.Value"><b>{{field.Name}}</b>: <span [innerHtml]="field.Value"></span></span></div>                        
+                        <div *ngFor="let field of data?.FieldValues"><span *ngIf="field.Value"><b>{{field.Name}}</b>: <span [innerHtml]="field.Value"></span></span></div>                                            
                     </div>
-                </span>
+                </span>                
               `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [ToolTipService]
@@ -43,7 +43,7 @@ export class PreviewTooltipComponent  {
     }
     
 
-    private load(item) {
+    private load(item,tip) {
         if (!this.data) {
             //get object properties for the tooltip
             this.toolTipService.getTooltipInfo(this.objectType, this.objectId).then(res => {
@@ -52,32 +52,55 @@ export class PreviewTooltipComponent  {
                     return;
                 }
                 this.data = res;
-                this.showPanel(item.children[0].nextElementSibling, item);
+                this.showPanel(tip, item);
                 this.ref.markForCheck();
             });
         }
         else {
-            this.showPanel(item.children[0].nextElementSibling, item);
+            this.showPanel(tip, item);
         }
     }
 
-    show(item) {
+    show(item,tip) {
         // check for any pending hides and cancel them
         if (this.hideHandle > 0) {
             window.clearTimeout(this.hideHandle);
             this.hideHandle = 0;
         }
         
-        this.load(item);
+        this.load(item,tip);
         
     }
 
-    showPanel(panel,item) {
-        if (panel) {
+    repositionMenuToFit(windowHeight, windowWidth, element) {
+        var dims = element.getBoundingClientRect();
+        
+        if (dims) {
+            var maxHeight = dims.top + dims.height;
+            var maxWidth = dims.left + dims.width;
+
+            if (maxHeight > windowHeight) { //case where bottom is below page
+                var topOffset = windowHeight - dims.height - 10;
+                element.style.top = topOffset + 'px';
+            }
+
+            if (maxWidth > windowWidth) {
+                var leftOffset = windowWidth - dims.width - 30;                
+                element.style.left = leftOffset + 'px';
+            }
+        }
+    }
+
+    showPanel(panel, item) {
+        if (panel && !this.active) {
             this.active = true;
             panel.style.zIndex = 1000;
-            panel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
-            panel.style.right = '0px';
+            panel.style.top = item.getBoundingClientRect().bottom + 'px';
+            panel.style.left = item.getBoundingClientRect().left + 'px';;
+            
+            window.setTimeout(() => {
+                this.repositionMenuToFit(window.innerHeight, window.innerWidth, panel);
+            }, 50);
         }
     }
 
@@ -88,7 +111,7 @@ export class PreviewTooltipComponent  {
             this.active = false;
             this.ref.markForCheck();
         },
-            500);
+            200);
     }
 
 };
