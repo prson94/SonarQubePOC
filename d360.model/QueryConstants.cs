@@ -987,7 +987,7 @@ from	[Intersect] I
 		cross apply dbo.GetAssetDisplayValueById(S.ID) D
 		outer apply (
 			select I.* from [Intersect] I
-			inner join IntersectTypeDetail D on D.[Object] = ST.[Object] and D.ObjectID = ST.ObjectID
+			inner join IntersectTypeDetail D on D.[Object] = ST.[Object] and D.ObjectID = ST.ObjectID and PredicateType = 3
 			where I.IntersectTypeID = D.ID and I.ObjectID = S.ObjectID and I.[Object] = S.[Object]
 		) P
 		left join Asset SP on SP.[Object] = P.[Subject] and SP.ObjectID = P.SubjectID
