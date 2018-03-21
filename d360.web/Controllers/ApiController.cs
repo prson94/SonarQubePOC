@@ -1471,7 +1471,7 @@ where   h.ID <> @t order by h.[Level] desc;
 			                c.ArtifactTypeID,
 			                d.DisplayValue
 	                from	Artifact c
-			                cross apply (
+			                outer apply (
 				                select I.* from [Intersect] I
 				                inner join IntersectTypeDetail ITD on ITD.PredicateType = 3 and ITD.[Object] = 'ArtifactType' 
 					                and ITD.ObjectID = c.ArtifactTypeID and ITD.[Subject] = 'ArtifactType'

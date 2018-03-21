@@ -962,42 +962,51 @@ order by	D.ObjectTypeName,
 
         public static string SynonymsByObjectList = @"
 select	I.ID as IntersectID,
-		D.Object,
-		D.ObjectID,
-		AP.ID as ParentID,
-        dbo.GenerateObjectUrl('Artifact', AP.ArtifactTypeID, AP.ID) as ParentUrl,
-        AP.DisplayValue as ParentName,
-		D.Name,
-        D.ObjectTypeName,
-		D.Description,
-		D.Url        
-        ,null as 'CustomID'
+		S.[Object],
+		S.ObjectID,
+		P.SubjectID as ParentID,
+		dbo.GenerateObjectUrl(SP.[Object], SPT.[ObjectID], SP.ObjectID) as ParentUrl,
+		DP.DisplayValue as ParentName,
+		D.DisplayValue as [Name],
+        ST.[Name] as ObjectTypeName,
+		null as [Description],
+		dbo.GenerateObjectUrl(S.[Object], ST.[ObjectID], S.ObjectID) as [Url]       
+        ,null as [CustomID]
 from	[Intersect] I
-		inner join IntersectType T on T.ID = I.IntersectTypeID  and T.PredicateID = @predicateId		
-        inner join cache.ObjectDetails D on D.Object = case 
-															when I.Subject = @type and I.SubjectID = @id then I.Object 
-															else I.Subject
-														end
-											and D.ObjectID = case 
-																when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
-																else I.SubjectID 
-															 end
-        left join Artifact A on A.ID = D.ObjectID
-        left join Artifact AP on AP.ID = A.ParentID
-where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id) and I.visible = 1
+		inner join IntersectType T on T.ID = I.IntersectTypeID  and T.PredicateID = @predicateId	
+		inner join Asset S on 
+			S.[Object] = case 
+				when I.[Subject] = @type and I.SubjectID = @id then I.[Object] 
+				else I.[Subject]
+			end
+			and S.ObjectID = case 
+				when I.[Subject] = @type and I.SubjectID = @id then I.ObjectID 
+				else I.SubjectID 
+			end	
+		inner join AssetType ST on ST.ID = S.AssetTypeID
+		cross apply dbo.GetAssetDisplayValueById(S.ID) D
+		outer apply (
+			select I.* from [Intersect] I
+			inner join IntersectTypeDetail D on D.[Object] = ST.[Object] and D.ObjectID = ST.ObjectID
+			where I.IntersectTypeID = D.ID and I.ObjectID = S.ObjectID and I.[Object] = S.[Object]
+		) P
+		left join Asset SP on SP.[Object] = P.[Subject] and SP.ObjectID = P.SubjectID
+		left join AssetType SPT on SPT.ID = SP.AssetTypeID
+		cross apply dbo.GetAssetDisplayValueById(SP.ID) DP
+where	(I.Subject = @type and I.SubjectID = @id) or (I.[Object] = @type and I.ObjectID = @id) and I.visible = 1
 union
 select 
 	null as IntersectID
-	,null as 'Object'
-	,-1 as 'ObjectID'
+	,null as [Object]
+	,-1 as ObjectID
 	,null as ParentID
 	,null as ParentUrl
 	,null as ParentName
-	,S.Name
+	,S.[Name]
 	,'Custom' as ObjectTypeName
-	,null as Description
-	,null as Url	
-    ,S.ID as 'CustomID'
+	,null as [Description]
+	,null as [Url]	
+    ,S.ID as CustomID
 from 
 	[dbo].[nym] s	
 where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId and s.Visible = 1
