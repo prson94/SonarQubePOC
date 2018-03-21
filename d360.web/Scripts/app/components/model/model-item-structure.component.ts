@@ -24,10 +24,10 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
     template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail" *ngIf="!isLoading">                            
-                    <header *ngIf="!showDelete && !showEditor">{{model.DisplayValue}}
+                    <header *ngIf="!showDelete && !showEditor">{{model?.DisplayValue}}
                         &nbsp; <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                                                
-                    <div *ngIf="!showDelete && !showEditor && model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
+                    <div *ngIf="!showDelete && !showEditor && model && model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="displayValue" header="Item">
