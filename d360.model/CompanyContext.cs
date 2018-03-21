@@ -105,9 +105,7 @@ namespace d360.model
         public DbSet<AttributeTypeRelation> AttributeTypeRelations { get; set; }
 
         public DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }    /* VIEW */
-
-        public DbSet<CacheObject> CacheObjects { get; set; }
-
+                
         public DbSet<Comment> Comments { get; set; }
 
         public DbSet<CommentRelation> CommentRelations { get; set; }

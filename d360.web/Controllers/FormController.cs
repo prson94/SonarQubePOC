@@ -18269,16 +18269,16 @@ from    [IntersectType] RT
 
                 var sSubject = subject.ToString();
                 var sObject = @object.ToString();
-
-                var subjectDetail = Company.CacheObjects.SingleOrDefault(i => i.Object == sSubject && i.ObjectID == subjectID);
-                var objectDetail = Company.CacheObjects.SingleOrDefault(i => i.Object == sObject && i.ObjectID == objectID);
+                
+                var subjectDetail = Company.GetObjectDetail(sSubject, subjectID);
+                var objectDetail = Company.GetObjectDetail(sObject, objectID);
 
                 if (subjectDetail != null && objectDetail != null)
                 {
                     var intersectType = Company.Filter<IntersectType>(i =>
                         (
-                        (i.Subject == subjectDetail.ObjectType && i.SubjectID == subjectDetail.ObjectTypeID && i.Object == objectDetail.ObjectType && i.ObjectID == objectDetail.ObjectTypeID) ||
-                        (i.Subject == objectDetail.ObjectType && i.SubjectID == objectDetail.ObjectTypeID && i.Object == subjectDetail.ObjectType && i.ObjectID == subjectDetail.ObjectTypeID)
+                        (i.Subject == subjectDetail.Type && i.SubjectID == subjectDetail.TypeID && i.Object == objectDetail.Type && i.ObjectID == objectDetail.TypeID) ||
+                        (i.Subject == objectDetail.Type && i.SubjectID == objectDetail.TypeID && i.Object == subjectDetail.Type && i.ObjectID == subjectDetail.TypeID)
                         )
                         && i.PredicateID == model.PredicateID
                     ).SingleOrDefault();
