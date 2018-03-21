@@ -2649,6 +2649,26 @@ select @err";
                 }
                 #endregion
 
+                #region Business logic : RuleType
+
+                if (entry.Entity is RuleType)
+                {
+                    var o = entry.Entity as RuleType;
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Any<RuleType>(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (Any<RuleType>(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+
+                #endregion
                 #region Business logic : SurveyType
                 if (entry.Entity is SurveyType)
                 {

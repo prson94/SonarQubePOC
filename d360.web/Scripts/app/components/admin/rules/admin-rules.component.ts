@@ -138,9 +138,9 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
                     this.getRuleTypes();
+                    this.showEditor = false;
+                    this.stateService.reloadLeftNavMenu();
                 }
-                this.showEditor = false;
-                this.stateService.reloadLeftNavMenu();
             });
     }
 
