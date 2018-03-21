@@ -103,7 +103,7 @@ import { MessagesService } from '../../services/messages.service';
                                         </div>
                                         <div class="col s12">&nbsp;</div>                                                                                        
                                         <div class="col s12">
-                                                <button pButton type="submit" [disabled]="!workflowForm.valid" style="width: 150px;" label="Submit"></button>                                    
+                                                <button pButton type="submit" [disabled]="!workflowForm.valid || isReassignEnabled" style="width: 150px;" label="Submit"></button>                                    
                                                 <button pButton *ngIf="hasCloseButton" type="button" (click)="close();" label="Cancel" style="width: 150px;"></button>
                                         </div>
                                     </div>                                       
