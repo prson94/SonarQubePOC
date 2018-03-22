@@ -183,4 +183,7 @@
   <data name="TaxonomyType_Assigned" xml:space="preserve">
     <value>This model type is assigned as a subject area to one or more artifacts and may not be removed.</value>
   </data>
+  <data name="Error_Name_Required" xml:space="preserve">
+    <value>The name is required.</value>
+  </data>
 </root>

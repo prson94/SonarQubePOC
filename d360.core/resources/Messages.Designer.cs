@@ -151,6 +151,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The name is required..
+        /// </summary>
+        public static string Error_Name_Required {
+            get {
+                return ResourceManager.GetString("Error_Name_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The name is taken. Please try another name..
         /// </summary>
         public static string Error_NameTaken {

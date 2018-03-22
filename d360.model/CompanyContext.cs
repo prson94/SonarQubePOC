@@ -2448,6 +2448,9 @@ select @err";
                 {
                     var o = entry.Entity as PolicyType;
                     var id = o.ID.ToString();
+                    if (string.IsNullOrEmpty(o.Name.Trim()))   throw new ArgumentException(Messages.Error_Name_Required);
+
+
 
                     switch (entry.State)
                     {

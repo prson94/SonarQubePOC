@@ -1,4 +1,5 @@
 ﻿using d360.core;
+using d360.core.resources;
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.entities.Views;
@@ -12284,6 +12285,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("Policy");
+
+                string Name = parseNameField(form, "Name");
+                if (string.IsNullOrEmpty(Name.Trim())) throw new ArgumentException(Messages.Error_Name_Required);
 
                 int typeID = parseIntField(form, "PolicyTypeID");
                 var type = Company.GetById<PolicyType>(typeID);

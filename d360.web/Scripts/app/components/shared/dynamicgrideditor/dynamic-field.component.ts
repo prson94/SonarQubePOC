@@ -7,6 +7,7 @@ import { BaseComponent } from '../base.component';
 import { FormHelpers } from '../../../static/form-helpers';
 import { CascadeService } from '../../../services/cascade.service';
 import { FieldsService } from '../../../services/fields.service';
+import { concat } from 'rxjs/observable/concat';
 
 declare var CompanySettings;
 
@@ -19,7 +20,7 @@ declare var CompanySettings;
                             <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
                             <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
                         </div>
-                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" type="string" [(ngModel)]="field.Value">  
+                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="string" [(ngModel)]="field.Value">  
                         <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>                                  
                         <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" class="FieldDisplayContent" [style]="{'height':'150px'}" [(ngModel)]="field.Value">
                             <header style="padding-bottom:0px !important">                                 
@@ -274,6 +275,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0)
             return `Select a ${this.field.ParentFieldTypeName}`;
         return "Choose";
+    }
+
+    OnBlurTrim() {
+        let value: string = this.form.controls[this.field.FieldName].value;
+        this.form.controls[this.field.FieldName].setValue(value.trim());
+
     }
 
     //  ===========================================================================================
