@@ -50,6 +50,7 @@ namespace d360.extensions.queue
                 items.ForEach(item =>
                 {
                     var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
+                                        
                     queue.AddMessage(msg);
                 });
 
@@ -136,6 +137,9 @@ namespace d360.extensions.queue
                 if (e.Object != null) messageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
                 bm.Properties["topic"] = topicName;
                 bm.MessageId = messageId;
+
+                if(e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
+                    bm.ScheduledEnqueueTimeUtc = DateTime.UtcNow.AddSeconds(15);
                 list.Add(bm);
             }
 
