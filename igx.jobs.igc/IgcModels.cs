@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 namespace igx.jobs.igc
@@ -52,7 +53,50 @@ namespace igx.jobs.igc
         public List<dynamic> items { get; set; }
     }
 
+    public class IgcDynamicArrayModels : IgcModels
+    {
+        public JArray items { get; set; }
+    }
+
     #endregion
+
+    public class MappingType
+    {
+        public int Id { get; set; }
+        public string IgcType { get; set; }
+        public string GovernType { get; set; }
+        public int GovernTypeID { get; set; }
+        public bool ToGovern { get; set; } = true;
+        public bool Active { get; set; } = true;
+    }
+
+    public class MappingItem
+    {
+        public int MappingTypeId { get; set; }
+    }
+
+    public class MappingFieldItem: MappingItem
+    {
+        public string IgcField { get; set; }
+        public string GovernField { get; set; }
+        public int? ParentContextPosition { get; set; } = null; // If this is populated, then we need to grab the value of the _id from the _context collection, based on the position.
+        public bool IsArray { get; set; } = false;
+    }
+
+    public class MappingRelationItem : MappingItem
+    {
+        public string IgcField { get; set; }
+        public int GovernPredicateType { get; set; }
+        public bool IsSubject { get; set; } = false;
+    }
+
+    public class MappingRoleItem : MappingItem
+    {
+        public string IgcIdField { get; set; } = string.Empty;
+        public string IgcNameField { get; set; } = string.Empty;
+        public string GovernRoleName { get; set; }
+    }
+    
 
     #region Specific
 
@@ -217,8 +261,14 @@ namespace igx.jobs.igc
         [JsonProperty(PropertyName = "custom_Classification")]
         public string Classification { get; set; }
 
+        [JsonProperty(PropertyName = "location")]
+        public string Location { get; set; }
+
         [JsonProperty(PropertyName = "long_description")]
         public string LongDescription { get; set; }
+
+        [JsonProperty(PropertyName = "notes")]
+        public string Notes { get; set; }
 
         [JsonProperty(PropertyName = "impacts_on")]
         public IgcRelationshipModel ImpactsOn { get; set; }
@@ -471,7 +521,7 @@ namespace igx.jobs.igc
         public IgcRelationshipModel ImpactsOn { get; set; }
     }
 
-    public class D3sBusinesUnitApplicationCatalogRelationshipModel
+    public class D3sRelationshipModel
     {
         public string SubjectSourceID { get; set; }
 
