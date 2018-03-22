@@ -170,9 +170,10 @@ export class BaseComponent {
         }
     }
 
-    showMessageForResult(messagesService: MessagesService, result: JsonResult) {
+    showMessageForResult(messagesService: MessagesService, result: JsonResult, defaultMessage?: string) {
+        if (defaultMessage == undefined) defaultMessage = 'Success';
         if (result.type == 'error') messagesService.showError(result.title, result.message);
-        else messagesService.showInfoMessage(result.title, result.message);
+        else messagesService.showInfoMessage(result.title, result.message != null ? result.message : defaultMessage);
     }    
 
     public getLocaleDateString(): string {
