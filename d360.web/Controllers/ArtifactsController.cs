@@ -708,16 +708,8 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1 and not exi
 
                 if (parentIntersectType != null)
                 {
-                    parentSqlColumn = @"P.ParentID, P.DisplayValue as Parent, P.ParentUrl, ";
-                    parentSqlJoin = @" outer apply (
-				    select	I.SubjectID as ParentID,
-                            ID.DisplayValue,
-                            dbo.GenerateObjectUrl('Artifact', IAT.ObjectID, I.SubjectID) as ParentUrl
-				    from	[PredicateIntersect] I
-                            inner join Asset IA on I.Object = A.Object and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
-                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID
-                            cross apply dbo.GetAssetDisplayValueById(IA.ID) ID
-				    ) P";
+                    parentSqlColumn = @"PID.ParentID, PID.ParentDisplayValue as Parent, PID.ParentUrl, ";
+                    parentSqlJoin = @" cross apply [dbo].[GetArtifactParentByAssetID](A.ID) PID";
                 }
 
                 var dcToken = "{0}";
