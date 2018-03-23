@@ -425,7 +425,8 @@ namespace d360.web.Controllers.Services
                         var intersect = Company.GetById<Intersect>(l.intersectId);
                         if (intersect != null)
                         {
-                            Company.Delete(intersect);
+                            intersect.State = State.Deleted;
+                            Company.Update(intersect);
                         }
 
                     }
