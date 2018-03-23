@@ -28,8 +28,8 @@ declare var SingleSignOn;
 
 export class ResourceItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    public resourceId = -1;
-    public resource: Resource;
+    private resourceId = -1;
+    private resource: Resource;
     private isMe = false;
     private totNumber: number = 0;
     private days: number = 90;
@@ -44,6 +44,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     itemsFollow: RightSidebarItem;
     memberGroups: RightSidebarItem;
     resourceComments: RightSidebarItem;
+    hasRelations: RightSidebarItem;
 
     constructor(
         protected router: Router,
@@ -92,7 +93,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.isLoading = false;
 
                     this.clearSidebar();
-                    this.setCommonRightSideBar(false, false, false, false, false, true, false);
+                    this.setCommonRightSideBar(false, false, false, false, false, false, false, false);
                     this.itemsOwn = new RightSidebarItem('Items Own', 'itemOwn', ['fa-tasks'], `/sidebar/itemown/${resourceId}`);
                     this.rightSidebarService.showItem(this.itemsOwn);
                     this.memberGroups = new RightSidebarItem('Member Groups', 'memberGroup', ['fa-user-circle'], `/sidebar/membergroup/${resourceId}`);
@@ -101,6 +102,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.rightSidebarService.showItem(this.itemsFollow);
                     this.resourceComments = new RightSidebarItem( this.resource.FirstName+"'s Comments", 'resourceComments', ['fa-comments'], `/sidebar/resourcecomments/${resourceId}`);
                     this.rightSidebarService.showItem(this.resourceComments);
+                    this.hasRelations = new RightSidebarItem('Relations', 'hasRelations', ['fa-retweet'], `/sidebar/relationships/resource/${resourceId}`);
+                    this.rightSidebarService.showItem(this.hasRelations);
                 });
 
             this.pageMode = PageMode.Default;            
