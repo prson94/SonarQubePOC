@@ -2373,21 +2373,22 @@ where   [Subject] <> 'FusionAttributeType'
             query = sanitizeQueryString(query);
 
             var sql = $@"
-select  top {maxResults} 
-        [Object] + '|' + cast(ObjectID as varchar) as ID,
-        [Object],
-	    ObjectID,
-	    DisplayValue as [Name],
-        DisplayValue as TextPath,
-	    TypeName as ObjectTypeName,
-	    BackColor as IconBackColor,
-	    ForeColor as IconForeColor,
-        case when [DisplayValue] like @query + '%' then
+select  top {maxResults}
+        A.[Object] + '|' + cast(A.ObjectID as varchar) as ID,
+        A.[Object],
+	    A.ObjectID,
+	    A.DisplayValue as [Name],
+		T.TextPath,
+	    A.TypeName as ObjectTypeName,
+	    A.BackColor as IconBackColor,
+	    A.ForeColor as IconForeColor,
+        case when A.[DisplayValue] like @query + '%' then
             1
         else
             10
         end as rnk
-from        AssetDetail 
+from        AssetDetail A
+			cross apply dbo.GetAssetTextPathById(A.ID, '/') T
 where       Type = @type 
             and TypeID = @id
             and DisplayValue like '%' + @query + '%'
