@@ -7510,8 +7510,14 @@ from	    TaxonomyType FAT
                 case "ASSIGNMENTS":
                     return LoadWorkflowAssignmentsCount(resourceId);
             }
-
             return null;
+        }
+
+        [Route("Counts/{id}/{days}")]
+        public IEnumerable<CountModel> GetTheCounts(int days, int id = -1)
+        {
+            var resourceId = id > 0 ? id : Company.CurrentResourceID;
+            return LoadSocialActivityCount(days, resourceId);
         }
 
         private IEnumerable<CountModel> LoadArtifactActivityCount(int days)

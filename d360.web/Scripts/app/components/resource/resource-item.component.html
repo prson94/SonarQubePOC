@@ -12,6 +12,8 @@
                     <div class="col l9 m9 s12">
                         <div style="padding-bottom:0">
                             <object-detail [objectType]="'Resource'" [objectID]="resourceId"></object-detail>
+                            <span *ngIf="totNumber != 0" class="FieldName FieldDisplayName" style="padding-left: 10px;">Total of <font color="forestgreen"><b>{{totNumber}}</b></font> Comments Posted for the Past <font color="forestgreen"><b>{{days}}</b></font> Days</span>
+                            <span *ngIf="totNumber == 0" class="FieldName FieldDisplayName" style="padding-left: 10px;">No Comments were Posted for the Past <font color="forestgreen"><b>{{days}}</b></font> Days</span>
                         </div>
                     </div>
                 </div>

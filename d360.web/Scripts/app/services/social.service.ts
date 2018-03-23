@@ -63,6 +63,13 @@ export class SocialService extends BaseService {
             .toPromise()
             .then(response => <Count[]>response.json())
             .catch(err => this.handleError(err));
-        
     }
+
+    getTheCounts(resourceID: number, daysToLookBack: number): Promise<Count[]> {
+        return this.http.get(`api/counts/${resourceID}/${daysToLookBack}`)
+            .toPromise()
+            .then(response => <Count[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

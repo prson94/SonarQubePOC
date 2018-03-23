@@ -36,6 +36,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ITEM_FOLLOW_ROOT = 'sidebar/itemfollow';
     static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
     static SITE_URL_MEMBER_GROUP_ROOT = 'sidebar/membergroup';
+    static SITE_URL_RESOURCE_COMMENTS_ROOT = 'sidebar/resourcecomments';
 
 
     //model child routes

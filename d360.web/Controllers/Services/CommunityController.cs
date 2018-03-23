@@ -190,7 +190,7 @@ namespace d360.web.Controllers.Services
             else
             {
                 comments = Company.GetCommentDetailsByFollower(
-                    Company.CurrentResourceID,
+                    pageData.ObjectID ?? Company.CurrentResourceID,
                     pageData.Skip,
                     pageData.Take,
                     pageData.DateFilter,
@@ -235,7 +235,6 @@ namespace d360.web.Controllers.Services
                     }
                 });
             }
-
             return listToLoad;
         }
     }

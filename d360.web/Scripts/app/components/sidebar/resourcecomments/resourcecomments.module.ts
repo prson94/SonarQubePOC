@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+﻿import { NgModule, Component } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
@@ -12,12 +12,10 @@ import {
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
-
-import { ResourceMessagesRoutingModule } from './resourcemessages.routes';
-
-import { ResourceMessagesComponent } from './resourcemessages.component';
+import { ResourceCommentsRoutingModule } from './resourcecomments.routes';
+import { ResourceCommentsComponent } from './resourcecomments.component';
 import { ResourceModule } from '../../resource/resource.module';
-
+import { SocialModule } from '../../shared/social/social.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -25,9 +23,10 @@ import { ResourceModule } from '../../resource/resource.module';
         FormsModule,
         HttpModule,
         RouterModule,
+        SocialModule,
 
         //routing 
-        ResourceMessagesRoutingModule,
+        ResourceCommentsRoutingModule,
 
         //prime
         ButtonModule,
@@ -36,13 +35,12 @@ import { ResourceModule } from '../../resource/resource.module';
         CoreModule,
         TilesModule,
         ResourceModule
-
     ],
     declarations: [
-        ResourceMessagesComponent
+        ResourceCommentsComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
-export class ResourceMessagesModule { }
+export class ResourceCommentsModule { }

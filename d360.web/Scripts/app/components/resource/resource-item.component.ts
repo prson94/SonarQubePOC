@@ -6,6 +6,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { ResourcesService } from '../../services/resources.service';
 import { ObjectStatisticsService } from '../../services/object-statistics.service';
 import { UriBasedService } from '../../services/uri-based.service';
+import { SocialService } from '../../services/social.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Resource } from '../../models/resource.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
@@ -22,14 +23,17 @@ declare var SingleSignOn;
 @Component({
     selector: 'd3s-resource-item',
     templateUrl: './resource-item.component.html',
-    providers: [ResourcesService, ObjectStatisticsService, UriBasedService ]
+    providers: [ResourcesService, ObjectStatisticsService, UriBasedService, SocialService ]
 })
 
 export class ResourceItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    private resourceId = -1;
-    private resource: Resource;
+    public resourceId = -1;
+    public resource: Resource;
     private isMe = false;
+    private totNumber: number = 0;
+    private days: number = 90;
+
     private statistics: ObjectStatistics;
     private selectedWorkflow: WorkflowType;
     private pageMode: PageMode = PageMode.Default;
@@ -39,6 +43,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     itemsOwn: RightSidebarItem;
     itemsFollow: RightSidebarItem;
     memberGroups: RightSidebarItem;
+    resourceComments: RightSidebarItem;
 
     constructor(
         protected router: Router,
@@ -48,6 +53,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         private resourcesService: ResourcesService,
         private statisticsService: ObjectStatisticsService,
         private uriBasedService: UriBasedService,
+        private socialService: SocialService,
         rightSideBarService: RightSidebarService,
         protected messagesService: MessagesService) {
         super();
@@ -75,6 +81,14 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         this.isMe = true;
                     else
                         this.isMe = false;
+
+                    this.socialService.getTheCounts(this.resourceId, this.days)
+                        .then(k => {
+                            for (var i = 0; i < k.length; i++) {
+                                this.totNumber += k[i].Total;
+                            }
+                        });
+
                     this.isLoading = false;
 
                     this.clearSidebar();
@@ -85,7 +99,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.rightSidebarService.showItem(this.memberGroups);
                     this.itemsFollow = new RightSidebarItem('Items Follow', 'itemFollow', ['fa-user-plus'], `/sidebar/itemfollow/${resourceId}`);
                     this.rightSidebarService.showItem(this.itemsFollow);
-
+                    this.resourceComments = new RightSidebarItem( this.resource.FirstName+"'s Comments", 'resourceComments', ['fa-comments'], `/sidebar/resourcecomments/${resourceId}`);
+                    this.rightSidebarService.showItem(this.resourceComments);
                 });
 
             this.pageMode = PageMode.Default;            
