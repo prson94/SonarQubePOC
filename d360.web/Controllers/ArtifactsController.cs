@@ -754,6 +754,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
 select	    T.ID,
 		    IT.SubjectID as ParentID,
 		    T.Name,
+            AT.Description,
 			T.AutoDisplayDescription,
 			T.CanOwnFusion,
 			T.DisplayFormat,
@@ -773,7 +774,7 @@ order by    T.Name").AsQueryable();
 
             return new JsonNetResult
             {
-                Data = models.ToList().Select(i => new { i.ID, i.Name, i.ParentID, i.AssetTypeID, expanded = true }),
+                Data = models.ToList().Select(i => new { i.ID, i.Name, i.Description, i.ParentID, i.AssetTypeID, expanded = true }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
