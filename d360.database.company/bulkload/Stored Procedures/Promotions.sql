@@ -6,7 +6,7 @@ as
 begin
 	set nocount on;
 
-	declare @levels table (rowIndex int, [level] int);
+	declare @levels table (rowIndex int, [level] int, processed bit);
 
 	declare @Object varchar(50),
 			@ObjectID int,
@@ -64,11 +64,7 @@ begin
 	end
 	else if @Object = 'TaxonomyType'
 	begin
-		declare 
-			@currRow int, 
-			@maxRow int, 
-			@currLevel int;
-
+		declare @currRow int, @maxRow int, @currLevel int;
 		set @currRow = 1;
 		set @currLevel = 0;
 		set @maxRow = (select max(RowIndex) from LoadItem where LoadID = @id);	
@@ -78,14 +74,15 @@ begin
 			set @currRow = @currRow + 1;
 
 			--get level for current row
-			select  @currLevel = coalesce(max(L.[Level]), 1) from TaxonomyTypeLevel L
-			inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-			inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @currRow and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
-			where L.TaxonomyTypeID = @ObjectID
+			select		@currLevel = coalesce(max(L.[Level]), 1) 
+			from		TaxonomyTypeLevel L
+						inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+						inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @currRow and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+			where		L.TaxonomyTypeID = @ObjectID
 
-			insert into @levels  (rowIndex, level) values (@currRow, @currLevel);
+			insert into @levels (rowIndex, level, processed) values (@currRow, @currLevel, 0);
 
-			--update the key hash based on the indices of key columns on the current level
+			--update the key hash based on the current level
 			update	T
 			set		T.KeyHash = K.KeyHash,
 					T.FieldHash = V.FieldHash
@@ -97,20 +94,20 @@ begin
 												SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
 												2) as KeyHash
 								from		(
-											select		top 100 percent
-														IC.RowIndex, 
-														FT.ID as FieldTypeID, 
-														coalesce(IC.[Value],'') as [Value] 
-											from		LoadColumn LC
-														inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @currRow and IC.ColumnIndex = LC.ColumnIndex
-														inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
-											where		LC.LoadID = @id and LC.ColumnIndex in (
-			 												select		LC.ColumnIndex 
-															from		TaxonomyTypeLevel L
-																		inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-																		inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @currRow and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
-															where		L.TaxonomyTypeID = @ObjectID and L.[Level] = @currLevel
-												)
+												select top 100 percent
+													IC.RowIndex, 
+													FT.ID as FieldTypeID, 
+													coalesce(IC.[Value],'') as [Value] 
+												from LoadColumn LC
+												inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @currRow and IC.ColumnIndex = LC.ColumnIndex
+												inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
+												where LC.LoadID = @id and LC.ColumnIndex in (
+			 										select		LC.ColumnIndex 
+													from		TaxonomyTypeLevel L
+																inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+																inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @currRow and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+													where		L.TaxonomyTypeID = @ObjectID and L.[Level] = @currLevel
+													)
 											) A
 								group by	A.RowIndex
 								) K on K.RowIndex = T.RowIndex
@@ -190,15 +187,6 @@ begin
 	-- Resolve Single-value LOOKUP fields
 	exec [bulkload].[UpdateDynamicLookupFieldColumns] @id
 
-	/*update	IC
-	set		IC.LookupObject = 'ReferenceItem',
-			IC.LookupObjectID = L.ID
-	from	LoadItemColumn IC
-			inner join LoadColumn C on C.ColumnIndex = IC.ColumnIndex and C.LoadID = IC.LoadID and C.LoadID = @id
-			inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.Type = 'Lookup' and FT.AllowMultipleValues = 0
-			inner join ReferenceItem L ON FT.LookupObjectType = 'ReferenceItem' AND FT.LookupObjectID = L.ReferenceItemTypeID and L.Visible = 1 and IC.Value = utility.GetFormattedFieldLookupValue(FT.Type, coalesce(FT.LookupEditFormat, FT.LookupDisplayFormat), FT.LookupObjectType, FT.LookupObjectID, L.ID);
-			*/
-
 	-- Resolve Multi-value LOOKUP fields
 	update	IC
 	set		IC.LookupObject = MV.LookupObject,
@@ -270,7 +258,6 @@ begin
 			T.LookupObjectID = S.ObjectID
 	from	LoadItemColumn T
 			inner join @relFieldLookups S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex;
-
 
 
 	-- Capture changes for logging purposes.
@@ -362,6 +349,165 @@ begin
 				inner join #tbl S on T.LoadID = @id and S.RowIndex = T.RowIndex and S.[Action] = 'A';
 	end
 	-------------------------
+
+	-- MODEL ----------------
+   if @Object = 'TaxonomyType'
+   begin
+		declare 
+			@row int, 
+			@level int, 
+			@rows int, 
+			@rowObject varchar(50), 
+			@rowObjectId int, 
+			@parentKeyHash varchar(50),
+			@intersectTypeid int,
+			@parentObjectId int;
+
+		declare @ids table (id int);
+
+		set @row = 0;
+		set @level = 0;
+
+		while (select count(*) from @levels where processed = 0) > 0
+		begin
+			set @parentKeyHash = null;
+			set @parentObjectId = null;
+			delete from @ids;
+
+			--need to process rows in order of level (low to high) to make sure parent items are added or exist
+			select		top 1
+						@row = L.RowIndex, 
+						@level = L.[Level], 
+						@rowObject = LC.[Object], 
+						@rowObjectId = LC.ObjectID 
+			from		@levels L
+						inner join LoadItem LC on LC.RowIndex = L.RowIndex and LC.LoadID = @id
+			where		L.processed = 0
+			order by	L.[Level] asc;
+			
+			if @rowObjectId is not null
+			begin
+				update	Taxonomy
+				set		UpdatedOn = @UpdatedOn,
+						UpdatedBy = @UpdatedBy
+				where	ID = @rowObjectId;
+			end
+			else
+			begin
+				if @level > 1
+				begin
+					--hash key fields at (level - 1) and check against asset or LoadItem
+					select @parentKeyHash = CONVERT(
+									varchar(32), 
+									SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+									2)
+					from		(
+									select		top 100 percent
+												FT.ID as FieldTypeID, 
+												coalesce(IC.[Value],'') as [Value] 
+									from		LoadColumn LC
+												inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @row and IC.ColumnIndex = LC.ColumnIndex
+												inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 
+													and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
+									where		LC.LoadID = @id and LC.ColumnIndex in (
+			 										select	LC.ColumnIndex 
+													from	TaxonomyTypeLevel L
+															inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+															inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @row and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+													where	L.TaxonomyTypeID = @ObjectID and L.[Level] = (@level-1)
+													)
+								) A;
+
+					select @parentObjectId = coalesce(
+							(
+							select		top 1 
+										a.ObjectID 
+							from		Asset A
+										inner join AssetType T on T.Object = @Object and T.ObjectID = @ObjectID and A.AssetTypeID = T.ID
+										inner join GetAssetKeyHash() H on H.ID = A.ID
+							where		H.KeyHash = @parentKeyHash
+							),
+							(
+							select		top 1 
+										a.ObjectID 
+							from		LoadItem L
+										inner join Asset A on A.[Object] = L.[Object] and A.ObjectID = L.ObjectID
+							where		LoadID = @id and L.KeyHash = @parentKeyHash
+							)
+						);
+					
+					if @parentObjectId is not null
+					begin
+						insert Taxonomy (TaxonomyTypeID, UpdatedOn, UpdatedBy)
+						output inserted.ID into @ids
+							select	@ObjectID, 
+									@UpdatedOn, 
+									@UpdatedBy;
+
+						insert into #tbl
+						select	id,
+								@row,
+								'A', null, null
+						from	@ids
+					
+						select  @intersectTypeId = id 
+						from	intersecttypedetail 
+						where	[subject] = @Object and subjectid = @ObjectID 
+								and [object] = @Object and objectid = @objectID
+								and predicatetype = 4;
+						
+						if @intersectTypeId is not null 
+							and not exists (
+								select		1 
+								from		[Intersect] 
+								where		IntersectTypeID = @intersectTypeId 
+											and ObjectID = (select id from @ids) 
+											and SubjectID = @parentObjectId)
+						begin						
+							insert into [Intersect] (IntersectTypeId, [Subject], [Object], SubjectID, ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+							select	@intersectTypeId as IntersectTypeId,
+									'Taxonomy' as [Subject],
+									'Taxonomy' as [Object],
+									@parentObjectId as SubjectID,
+									(select id from @ids) as ObjectID,
+									@UpdatedBy as CreatedBy,
+									@UpdatedOn as CreatedOn,
+									@UpdatedBy as UpdatedBy,
+									@UpdatedOn as UpdatedOn,
+									'BulkLoad' as [Owner];
+						end
+					end
+				end
+				else --root item
+				begin			
+					insert Taxonomy (TaxonomyTypeID, UpdatedOn, UpdatedBy)
+					output inserted.ID into @ids
+						select	@ObjectID, 
+								@UpdatedOn, 
+								@UpdatedBy;
+
+					insert into #tbl
+					select	id,
+							@row,
+							'A', null, null
+					from	@ids;									
+				end
+			end
+
+			update	@levels 
+			set		processed = 1 
+			where	rowIndex = @row 
+					and [level] = @level;
+
+			update	T
+			set		T.Object = 'Taxonomy',
+					T.ObjectID = S.ObjectID
+			from	LoadItem T
+					inner join #tbl S on T.LoadID = @id and S.RowIndex = T.RowIndex and S.[Action] = 'A';
+		end
+	
+	end
+	--------------------------
 
 	-- REFERENCE ------------
 	if @Object = 'ReferenceItemType'
@@ -462,7 +608,20 @@ begin
 								inner join LoadItemColumn C on C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and I.LoadID = @id
 								inner join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
 								inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID 
-														and FT.Name = LC.Name and FT.Type <> 'Relationship' 
+														and  (
+															FT.Name = LC.Name or
+																(
+																	@Object = 'TaxonomyType'
+																	 and LC.ColumnIndex in (
+																		select LC2.ColumnIndex from TaxonomyTypeLevel L2
+																		inner join LoadColumn LC2 on LC2.LoadID = @id and L2.[Name] = substring(LC2.[Name], 1, len(LC2.[Name]) - charindex(' ', reverse(LC2.[Name])))
+																		inner join LoadItemColumn LI2 on LI2.LoadID = @id and LI2.RowIndex = C.RowIndex and LI2.ColumnIndex = LC2.ColumnIndex and LI2.[Value] is not null
+																		where L2.TaxonomyTypeID = @ObjectID and L2.[Level] = (select [level] from @levels where rowIndex = C.RowIndex)
+																	 )
+																	 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name])))) 
+																)
+															)
+														and FT.Type <> 'Relationship' 
 														and ( 
 																(FT.Type <> 'Lookup' and C.Value is not null) OR 
 																(FT.Type = 'Lookup' and FT.AllowMultipleValues = 0 and C.LookupObjectID is not null) OR
