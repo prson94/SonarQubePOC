@@ -9927,7 +9927,7 @@ select 'ReferenceItemType|0' as value, 'Reference' as title
 select * from (
 select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title from AttributeType where ParentID is null
 union
-select 'ArtifactType|' + cast(ID as varchar(10)) as value, 'Glossary: ' + Name as title from ArtifactType
+select 'ArtifactType|' + cast(ID as varchar(10)) as value, 'Artifact: ' + Name as title from ArtifactType
 union
 select 'TaxonomyType|' + cast(ID as varchar(10)) as value, 'Model: ' + Name as title from TaxonomyType
 union
