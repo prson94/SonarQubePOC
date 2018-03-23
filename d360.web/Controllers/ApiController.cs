@@ -6827,10 +6827,43 @@ where    A.RuleID = @id", new { id });
             if (intersectType == null) throw new NotFoundException("intersect type id");
 
             var isTargetObject = intersectType.Object == targetType.ToString() && intersectType.ObjectID == targetID;
+            var isTargetSubjectSame = intersectType.Object == intersectType.Subject && intersectType.ObjectID == intersectType.SubjectID;
 
             var innerSql = "";
 
-            if (isTargetObject)
+            if (isTargetSubjectSame)
+            {
+                innerSql = $@"select	I.ID,
+                                IntersectTypeID,
+                                case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
+		                        case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
+		                        P.TextPath as Name,
+                                --case when I.Subject = @type and I.SubjectID = @id then ObjectUrl else SubjectUrl end as Url,
+		                        case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
+		                        case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
+		                        AST.Name as TypeName,
+		                        T.HasTechnicalRelationships
+                        from	[Intersect] I
+		                        inner join IntersectType IT on IT.ID = I.IntersectTypeID
+		                        inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
+									                        and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end
+		                        inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
+								                        and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
+		                        cross apply dbo.GetAssetTextPathById(IA.ID, '/') P
+		                        cross apply (
+					                        select	case 
+								                        when count(1) > 0 then cast(1 as bit)
+								                        else cast(0 as bit)
+							                        end as HasTechnicalRelationships
+					                        from	[Intersect]
+					                        where	Subject = 'Intersect' and SubjectID = I.ID					) T
+                        where	(
+                                (I.Subject = @type  and I.SubjectID = @id) or
+                                (I.Object = @type and I.ObjectID = @id)
+                                )
+                                and IntersectTypeID = {intersectTypeID} ";
+            }
+            else if (isTargetObject)
             {
                 innerSql = $@"select	I.ID,
                         IntersectTypeID,
