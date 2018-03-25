@@ -1,17 +1,17 @@
+using ApplicationInsights.Helpers.WebJobs;
+using d360.core;
 using d360.core.entities;
 using d360.utils.company;
-using ApplicationInsights.Helpers.WebJobs;
+using Dapper;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Azure.WebJobs;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
-using System.Linq;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 using System.Data.SqlClient;
-using Dapper;
-using d360.core;
 using System.IO;
+using System.Linq;
 
 namespace igx.jobs
 {
@@ -189,6 +189,26 @@ namespace igx.jobs
             {
                 throw;
             }
+        }
+
+        public static JobHostConfiguration GetJobHostConfiguration()
+        {
+            var config = new JobHostConfiguration
+            {
+                DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
+                StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
+                NameResolver = new QueueNameResolver()
+            };
+
+            if (config.IsDevelopment)
+            {
+                config.UseDevelopmentSettings();
+            }
+
+            config.UseApplicationInsights();
+            config.UseCore();
+
+            return config;
         }
     }
 }

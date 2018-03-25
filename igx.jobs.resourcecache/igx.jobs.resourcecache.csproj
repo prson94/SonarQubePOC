@@ -291,11 +291,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\CoreFunction.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Common\QueueNameResolver.cs" />
-    <Compile Include="Common\SimpleTypeModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -311,10 +308,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\d3s-uk-processor - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\US - Client Development.pubxml" />
     <None Include="Properties\PublishProfiles\US - Nightly.pubxml" />
-    <None Include="Properties\PublishProfiles\US - UAT.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
@@ -329,6 +323,10 @@
     <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj">
       <Project>{88BBA351-DA2A-4551-AF28-5F1568952F7E}</Project>
       <Name>d360.utils.company</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\igx.jobs\igx.jobs.csproj">
+      <Project>{cafac467-d243-4cc4-bc7f-9f1da0fbfffe}</Project>
+      <Name>igx.jobs</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

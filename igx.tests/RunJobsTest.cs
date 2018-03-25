@@ -41,7 +41,7 @@ namespace igx.tests
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 62; //10
+            var companyID = 110; //10
             var fusionTypeID = 26;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 

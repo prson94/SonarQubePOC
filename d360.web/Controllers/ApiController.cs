@@ -835,27 +835,33 @@ namespace d360.web.Controllers
 
                     var parentSql = @"
 with h as	(
-			select	ID,
-					ParentID,
-                    Name,
+			select	I.ID as IntersectTypeID,
+					I.SubjectID,
+					I.ObjectID,
+                    A.Name,
 					0 as [Level]
-			from	FusionAttributeType
-			where	ID = @t
+			from	AssetType A
+					left join IntersectTypeDetail I on I.Object = 'FusionAttributeType' and I.ObjectID = @t and I.PredicateType = 3
+			where	A.Object = 'FusionAttributeType' and A.ObjectID = @t
+
 			union all
-			select	P.ID,
-					P.ParentID,
-                    P.Name,
+
+			select	I.ID as IntersectTypeID,
+					I.SubjectID,
+					I.ObjectID,
+                    A.Name,
 					C.[Level] + 1 as [Level]
-			from	FusionAttributeType P
-					inner join h as C on C.ParentID = P.ID
+			from	AssetType A
+					inner join h as C on A.Object = 'FusionAttributeType' and A.ObjectID = C.SubjectID 
+					outer apply (
+						select	ID, SubjectID, ObjectID
+						from	IntersectTypeDetail 
+						where	Object = 'FusionAttributeType' and ObjectID = A.ObjectID and PredicateType = 3
+					) I
 			)
 
-select  T.* 
-from    h
-        inner join FusionAttributeType T on T.ID = h.ID 
-where   h.ID <> @t order by h.[Level] desc;
-";
-                    var parents = Company.Query<FusionAttributeType>(parentSql, new { t = id }).ToList();
+select * from h order by h.[Level] desc;";
+                    var parents = Company.Query<dynamic>(parentSql, new { t = id }).ToList();
 
                     int fusionID = 0;
                     bool fusionIDPresent = false;
@@ -865,20 +871,30 @@ where   h.ID <> @t order by h.[Level] desc;
                     }
 
                     //Parent columns have be listed in DESC order by Level.
-                    parents.ForEach(i =>
+                    for (var i = 0; i < parents.Count; i++)
                     {
-                        if (fusionIDPresent)
+                        var intersectTypeID = (int?)parents[i].IntersectTypeID;
+                        var level = (int)parents[i].Level;
+
+                        if (level > 0)
                         {
-                            var parentFilterValues = Company.Query<string>(@"select Name from FusionAttribute where FusionID = @f and FusionAttributeTypeID = @t group by Name order by Name", new { f = fusionID, t = i.ID }).ToList();
-                            filterColumns.Add(new GridFilterColumn { text = i.Name, datafield = $"Parent{i.ID}", filtertype = GridColumn.COLUMN_TYPE_DROPDOWN, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filteritems = parentFilterValues });
-                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", filteritems = new List<string>() });
+                            var columnName = parents[i].Name;
+                            var fusionAttributeTypeID = (int?)parents[i + 1].SubjectID;
+
+                            if (fusionIDPresent)
+                            {
+                                var parentFilterValues = Company.Query<string>(@"select Name from FusionAttribute where FusionID = @f and FusionAttributeTypeID = @t group by Name order by Name", new { f = fusionID, t = fusionAttributeTypeID }).ToList();
+                                filterColumns.Add(new GridFilterColumn { text = columnName, datafield = $"Parent{fusionAttributeTypeID}", filtertype = GridColumn.COLUMN_TYPE_DROPDOWN, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filteritems = parentFilterValues });
+                                columns.Add(new GridColumn { text = columnName, datafield = $"Parent{fusionAttributeTypeID}", filteritems = new List<string>() });
+                            }
+                            else
+                            {
+                                columns.Add(new GridColumn { text = columnName, datafield = $"Parent{fusionAttributeTypeID}", filteritems = new List<string>() });
+                            }
+                            fields.Add(new GridField { name = $"Parent{fusionAttributeTypeID}", type = "string" });
+
                         }
-                        else
-                        {
-                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", filteritems = new List<string>() });
-                        }
-                        fields.Add(new GridField { name = $"Parent{i.ID}", type = "string" });
-                    });
+                    }
 
                     #endregion
 
@@ -886,7 +902,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
                     filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
                     filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                    columns.Add(new GridColumn { text = "Asset ID", datafield = "AssetID", filteritems = new List<string>() });
+                    //columns.Add(new GridColumn { text = "Asset ID", datafield = "AssetID", filteritems = new List<string>() });
                     columns.Add(new GridColumn { text = detail.Name, datafield = "Name", filteritems = new List<string>() });
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });

@@ -1,4 +1,5 @@
 ﻿using ApplicationInsights.Helpers.WebJobs;
+using d360.core.entities;
 using igx.jobs.igc;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
@@ -15,19 +16,7 @@ namespace igx.jobs
     {
         static void Main()
         {
-            var config = new JobHostConfiguration {
-                DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                NameResolver = new QueueNameResolver()
-            };
-
-            if (config.IsDevelopment)
-            {
-                config.UseDevelopmentSettings();
-            }
-
-            config.UseApplicationInsights();
-            config.UseCore();
+            var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
 
             var host = new JobHost(config);
@@ -39,7 +28,7 @@ namespace igx.jobs
     {
         const string functionName = "IGC_Integration";
         //const string timerSettings = "0 */30 * * * *";
-        const string timerSettings = "*/10 * * * * *";
+        const string timerSettings = "*/5 * * * * *";
 
         #region State street Settings - NEED to Externalize
 
@@ -51,244 +40,243 @@ namespace igx.jobs
         //const string SourceAuthString = "Basic aXNhZG1pbjppc2FkbWlu";   //Local
         const string SourceUri = "https://edgm-catalog-uat.statestreet.com/ibm/iis/igc-rest/v1/";
         const string SourceAuthString = "Basic dGVzdDM2MDpkYXRhMzYw";   //State Street UAT
-                                                                        //const string SourceUri = "https://edgm-catalog.statestreet.com/ibm/iis/igc-rest/v1/";
-                                                                        //const string SourceAuthString = "Basic c3BsRFRTV0VCMjg2MjM6cChMWlsxfF1bYkl1";   //State Street PROD //UID: splDTSWEB28623    PWD: p(LZ[1|][bIu
+        //const string SourceUri = "https://edgm-catalog.statestreet.com/ibm/iis/igc-rest/v1/";
+        //const string SourceAuthString = "Basic c3BsRFRTV0VCMjg2MjM6cChMWlsxfF1bYkl1";   //State Street PROD //UID: splDTSWEB28623    PWD: p(LZ[1|][bIu
 
         #region SSB Mappings
 
-        static List<MappingType> InputMappingTypes = new List<MappingType> {
-            new MappingType { Id = 1, IgcType = "$ApplicationCatalog-ApplicationCatalog", GovernType = "ArtifactType", GovernTypeID = 2 },
+        static List<IntegrationAssetType> InputMappingTypes = new List<IntegrationAssetType> {
+            new IntegrationAssetType { ID = 1, SourceAssetTypeName = "$ApplicationCatalog-ApplicationCatalog", Object = "ArtifactType", ObjectID = 2, Active = true },
 
-            new MappingType { Id = 2, IgcType = "$RRP-RRPFunctionalArea", GovernType = "TaxonomyType", GovernTypeID = 3 },
-            new MappingType { Id = 3, IgcType = "$RRP-RRPLevel1Service", GovernType = "TaxonomyType", GovernTypeID = 3 },
-            new MappingType { Id = 4, IgcType = "$RRP-RRPLevel2Service", GovernType = "TaxonomyType", GovernTypeID = 3 },
-            new MappingType { Id = 5, IgcType = "$RRP-RRPLevel3Service", GovernType = "TaxonomyType", GovernTypeID = 3 },
+            new IntegrationAssetType { ID = 2, SourceAssetTypeName = "$RRP-RRPFunctionalArea", Object = "TaxonomyType", ObjectID = 3 },
+            new IntegrationAssetType { ID = 3, SourceAssetTypeName = "$RRP-RRPLevel1Service", Object = "TaxonomyType", ObjectID = 3 },
+            new IntegrationAssetType { ID = 4, SourceAssetTypeName = "$RRP-RRPLevel2Service", Object = "TaxonomyType", ObjectID = 3 },
+            new IntegrationAssetType { ID = 5, SourceAssetTypeName = "$RRP-RRPLevel3Service", Object = "TaxonomyType", ObjectID = 3 },
 
-            new MappingType { Id = 6, IgcType = "$BUOrg-BusinessUnitLevel1", GovernType = "TaxonomyType", GovernTypeID = 7 },
-            new MappingType { Id = 7, IgcType = "$BUOrg-BusinessUnitLevel2", GovernType = "TaxonomyType", GovernTypeID = 7 },
-            new MappingType { Id = 8, IgcType = "$BUOrg-BusinessUnitLevel3", GovernType = "TaxonomyType", GovernTypeID = 7 },
-            new MappingType { Id = 9, IgcType = "$BUOrg-BusinessUnitLevel4", GovernType = "TaxonomyType", GovernTypeID = 7 },
-            new MappingType { Id = 10, IgcType = "$BUOrg-BusinessUnitLevel5", GovernType = "TaxonomyType", GovernTypeID = 7 },
-            new MappingType { Id = 11, IgcType = "$BUOrg-BusinessUnitLevel6", GovernType = "TaxonomyType", GovernTypeID = 7 },
-            new MappingType { Id = 12, IgcType = "$BUOrg-BusinessUnitLevel7", GovernType = "TaxonomyType", GovernTypeID = 7 },
+            new IntegrationAssetType { ID = 6, SourceAssetTypeName = "$BUOrg-BusinessUnitLevel1", Object = "TaxonomyType", ObjectID = 7 },
+            new IntegrationAssetType { ID = 7, SourceAssetTypeName = "$BUOrg-BusinessUnitLevel2", Object = "TaxonomyType", ObjectID = 7 },
+            new IntegrationAssetType { ID = 8, SourceAssetTypeName = "$BUOrg-BusinessUnitLevel3", Object = "TaxonomyType", ObjectID = 7 },
+            new IntegrationAssetType { ID = 9, SourceAssetTypeName = "$BUOrg-BusinessUnitLevel4", Object = "TaxonomyType", ObjectID = 7 },
+            new IntegrationAssetType { ID = 10, SourceAssetTypeName = "$BUOrg-BusinessUnitLevel5", Object = "TaxonomyType", ObjectID = 7 },
+            new IntegrationAssetType { ID = 11, SourceAssetTypeName = "$BUOrg-BusinessUnitLevel6", Object = "TaxonomyType", ObjectID = 7 },
+            new IntegrationAssetType { ID = 12, SourceAssetTypeName = "$BUOrg-BusinessUnitLevel7", Object = "TaxonomyType", ObjectID = 7 },
 
-            new MappingType { Id = 13, IgcType = "host", GovernType = "FusionAttributeType", GovernTypeID = 2 },
-            new MappingType { Id = 14, IgcType = "data_file", GovernType = "FusionAttributeType", GovernTypeID = 2 },
-            new MappingType { Id = 15, IgcType = "data_file_field", GovernType = "FusionAttributeType", GovernTypeID = 2 },
-            new MappingType { Id = 16, IgcType = "database", GovernType = "FusionAttributeType", GovernTypeID = 2 },
-            new MappingType { Id = 17, IgcType = "database_schema", GovernType = "FusionAttributeType", GovernTypeID = 2 },
-            new MappingType { Id = 18, IgcType = "database_table", GovernType = "FusionAttributeType", GovernTypeID = 2 },
-            new MappingType { Id = 19, IgcType = "database_view", GovernType = "FusionAttributeType", GovernTypeID = 2 },
-            new MappingType { Id = 20, IgcType = "data_element", GovernType = "FusionAttributeType", GovernTypeID = 2 }
+            new IntegrationAssetType { ID = 13, SourceAssetTypeName = "host", Object = "FusionAttributeType", ObjectID = 2 },
+            new IntegrationAssetType { ID = 14, SourceAssetTypeName = "data_file", Object = "FusionAttributeType", ObjectID = 2 },
+            new IntegrationAssetType { ID = 15, SourceAssetTypeName = "data_file_field", Object = "FusionAttributeType", ObjectID = 2 },
+            new IntegrationAssetType { ID = 16, SourceAssetTypeName = "database", Object = "FusionAttributeType", ObjectID = 2 },
+            new IntegrationAssetType { ID = 17, SourceAssetTypeName = "database_schema", Object = "FusionAttributeType", ObjectID = 2 },
+            new IntegrationAssetType { ID = 18, SourceAssetTypeName = "database_table", Object = "FusionAttributeType", ObjectID = 2 },
+            new IntegrationAssetType { ID = 19, SourceAssetTypeName = "database_view", Object = "FusionAttributeType", ObjectID = 2 },
+            new IntegrationAssetType { ID = 20, SourceAssetTypeName = "data_element", Object = "FusionAttributeType", ObjectID = 2 }
         };
 
-        static List<MappingFieldItem> InputMappingFieldItems = new List<MappingFieldItem> {
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "long_description,", GovernField = "LongDescription" },
-            //new MappingFieldItem { MappingTypeId = 1, IgcField = "labels", GovernField = "" },
-            //new MappingFieldItem { MappingTypeId = 1, IgcField = "stewards", GovernField = "" },
-            //new MappingFieldItem { MappingTypeId = 1, IgcField = "assigned_to_terms", GovernField = "" },
-            //new MappingFieldItem { MappingTypeId = 1, IgcField = "implements_rules", GovernField = "" },
-            //new MappingFieldItem { MappingTypeId = 1, IgcField = "governed_by_rules", GovernField = "" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$CMDBAppCode", GovernField = "CMDBAppCode" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$ApplicationAlias", GovernField = "ApplicationAlias" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$Comments", GovernField = "Comments" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$SSID,", GovernField = "SSID" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$KeyApplicationType", GovernField = "KeyApplicationType", IsArray = true },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$Status", GovernField = "Status" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$DataLocation", GovernField = "DataLocation" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$PersonalData", GovernField = "PersonalData" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$ComponentType", GovernField = "ComponentType" },
-            //new MappingFieldItem { MappingTypeId = 1, IgcField = "$ComponentCode", GovernField = "" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$ComponentSAID", GovernField = "ComponentSAID" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$AuthoritativeSource", GovernField = "AuthoritativeSource" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$MaturityLevel", GovernField = "MaturityLevel" },
-            new MappingFieldItem { MappingTypeId = 1, IgcField = "$BookOfRecord", GovernField = "BookOfRecord" },
+        static List<IntegrationAssetTypeFieldItem> InputMappingFieldItems = new List<IntegrationAssetTypeFieldItem> {
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "long_description", TargetField = "LongDescription" },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 1, IgcField = "labels", GovernField = "" },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 1, IgcField = "stewards", GovernField = "" },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 1, IgcField = "assigned_to_terms", GovernField = "" },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 1, IgcField = "implements_rules", GovernField = "" },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 1, IgcField = "governed_by_rules", GovernField = "" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$CMDBAppCode", TargetField = "CMDBAppCode" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$ApplicationAlias", TargetField = "ApplicationAlias" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$Comments", TargetField = "Comments" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$SSID", TargetField = "SSID" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$KeyApplicationType", TargetField = "KeyApplicationType", IsArray = true },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$Status", TargetField = "Status" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$DataLocation", TargetField = "DataLocation" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$PersonalData", TargetField = "PersonalData" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$ComponentType", TargetField = "ComponentType" },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 1, IgcField = "$ComponentCode", GovernField = "" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$ComponentSAID", TargetField = "ComponentSAID" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$AuthoritativeSource", TargetField = "AuthoritativeSource" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$MaturityLevel", TargetField = "MaturityLevel" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 1, SourceField = "$BookOfRecord", TargetField = "BookOfRecord" },
 
-            new MappingFieldItem { MappingTypeId = 2, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 2, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 2, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 2, IgcField = "long_description,", GovernField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 2, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 2, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 2, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 2, SourceField = "long_description", TargetField = "LongDescription" },
 
-            new MappingFieldItem { MappingTypeId = 3, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 3, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 0 },
-            new MappingFieldItem { MappingTypeId = 3, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 3, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 3, IgcField = "long_description,", GovernField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 3, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 3, SourceField = "_context", TargetField = "ParentSourceID", ParentContextPosition = 0 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 3, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 3, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 3, SourceField = "long_description", TargetField = "LongDescription" },
 
-            new MappingFieldItem { MappingTypeId = 4, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 4, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 1 },
-            new MappingFieldItem { MappingTypeId = 4, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 4, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 4, IgcField = "long_description,", GovernField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 4, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 4, SourceField = "_context", TargetField = "ParentSourceID", ParentContextPosition = 1 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 4, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 4, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 4, SourceField = "long_description", TargetField = "LongDescription" },
 
-            new MappingFieldItem { MappingTypeId = 5, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 5, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 2 },
-            new MappingFieldItem { MappingTypeId = 5, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 5, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 5, IgcField = "long_description,", GovernField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 5, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 5, SourceField = "_context", TargetField = "ParentSourceID", ParentContextPosition = 2 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 5, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 5, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 5, SourceField = "long_description", TargetField = "LongDescription" },
 
-            new MappingFieldItem { MappingTypeId = 6, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 6, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 6, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 6, IgcField = "long_description,", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 6, IgcField = "$BusinessUnitId", GovernField = "BusinessUnitID" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 6, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 6, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 6, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 6, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 6, SourceField = "$BusinessUnitId", TargetField = "BusinessUnitID" },
 
-            new MappingFieldItem { MappingTypeId = 7, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 7, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 0 },
-            new MappingFieldItem { MappingTypeId = 7, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 7, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 7, IgcField = "long_description,", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 7, IgcField = "$BusinessUnitId", GovernField = "BusinessUnitID" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 7, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 7, SourceField = "_context", TargetField = "ParentSourceID", ParentContextPosition = 0 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 7, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 7, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 7, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 7, SourceField = "$BusinessUnitId", TargetField = "BusinessUnitID" },
 
-            new MappingFieldItem { MappingTypeId = 8, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 8, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 1 },
-            new MappingFieldItem { MappingTypeId = 8, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 8, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 8, IgcField = "long_description,", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 8, IgcField = "$BusinessUnitId", GovernField = "BusinessUnitID" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 8, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 8, SourceField = "_context", TargetField = "ParentSourceID", ParentContextPosition = 1 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 8, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 8, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 8, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 8, SourceField = "$BusinessUnitId", TargetField = "BusinessUnitID" },
 
-            new MappingFieldItem { MappingTypeId = 9, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 9, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 2 },
-            new MappingFieldItem { MappingTypeId = 9, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 9, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 9, IgcField = "long_description,", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 9, IgcField = "$BusinessUnitId", GovernField = "BusinessUnitID" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 9, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 9, SourceField = "_context", TargetField = "ParentSourceID", ParentContextPosition = 2 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 9, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 9, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 9, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 9, SourceField = "$BusinessUnitId", TargetField = "BusinessUnitID" },
 
-            new MappingFieldItem { MappingTypeId = 10, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 10, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 3 },
-            new MappingFieldItem { MappingTypeId = 10, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 10, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 10, IgcField = "long_description,", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 10, IgcField = "$BusinessUnitId", GovernField = "BusinessUnitID" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 10, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 10, SourceField = "_context", TargetField = "ParentSourceID", ParentContextPosition = 3 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 10, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 10, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 10, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 10, SourceField = "$BusinessUnitId", TargetField = "BusinessUnitID" },
 
-            new MappingFieldItem { MappingTypeId = 11, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 11, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 4 },
-            new MappingFieldItem { MappingTypeId = 11, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 11, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 11, IgcField = "long_description,", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 11, IgcField = "$BusinessUnitId", GovernField = "BusinessUnitID" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 11, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 11, SourceField = "_context", TargetField = "ParentSourceID", ParentContextPosition = 4 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 11, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 11, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 11, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 11, SourceField = "$BusinessUnitId", TargetField = "BusinessUnitID" },
 
-            new MappingFieldItem { MappingTypeId = 12, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 12, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 5 },
-            new MappingFieldItem { MappingTypeId = 12, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 12, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 12, IgcField = "long_description,", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 12, IgcField = "$BusinessUnitId", GovernField = "BusinessUnitID" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 12, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 12, SourceField = "_context", TargetField = "ParentSourceID", ParentContextPosition = 5 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 12, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 12, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 12, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 12, SourceField = "$BusinessUnitId", TargetField = "BusinessUnitID" },
 
-            new MappingFieldItem { MappingTypeId = 13, IgcField = "_id", GovernField = "SourceID" },
-            new MappingFieldItem { MappingTypeId = 13, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 13, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 13, IgcField = "long_description,", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 13, IgcField = "location", GovernField = "Location" },
-            new MappingFieldItem { MappingTypeId = 13, IgcField = "network_node", GovernField = "NetworkNode" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 13, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 13, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 13, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 13, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 13, SourceField = "location", TargetField = "Location" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 13, SourceField = "network_node", TargetField = "NetworkNode" },
 
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "_id", GovernField = "SourceID" },
-            //new MappingFieldItem { MappingTypeId = 14, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 0 },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "long_description,", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "custom_Catalog Status", GovernField = "CatalogStatus" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "custom_Classification", GovernField = "Classification" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "custom_Classification", GovernField = "Classification" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "custom_Comments", GovernField = "Comments" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "custom_Frequency", GovernField = "Frequency" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "custom_Information Classification", GovernField = "InformationClassification" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "custom_Output Format", GovernField = "OutputFormat" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "custom_Status", GovernField = "Status" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "alias_(business_name)", GovernField = "Alias" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "path", GovernField = "Path" },
-            new MappingFieldItem { MappingTypeId = 14, IgcField = "store_type", GovernField = "StoreType" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 14, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 0 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "custom_Catalog Status", TargetField = "CatalogStatus" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "custom_Classification", TargetField = "Classification" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "custom_Comments", TargetField = "Comments" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "custom_Frequency", TargetField = "Frequency" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "custom_Information Classification", TargetField = "InformationClassification" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "custom_Output Format", TargetField = "OutputFormat" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "custom_Status", TargetField = "Status" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "alias_(business_name)", TargetField = "Alias" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "path", TargetField = "Path" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 14, SourceField = "store_type", TargetField = "StoreType" },
 
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "_id", GovernField = "SourceID" },
-            //new MappingFieldItem { MappingTypeId = 15, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 1 },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "long_description", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "qualityScore", GovernField = "QualityScore" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "custom_Catalog Status", GovernField = "CatalogStatus" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "custom_CDE", GovernField = "CDE" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "custom_Data Element Definition", GovernField = "DataElementDefinition" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "custom_Data Origin Type", GovernField = "DataOriginType" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "custom_Information Classification", GovernField = "InformationClassification" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "custom_Privacy Treatment", GovernField = "PrivacyTreatment" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "custom_Trusted Source", GovernField = "TrustedSource" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "data_type", GovernField = "DataType" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "selected_classification", GovernField = "SelectedClassification" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "detected_classification", GovernField = "DetectedClassification" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "odbc_type", GovernField = "OdbcType" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "length", GovernField = "Length" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "minimum_length", GovernField = "MinimumLength" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "fraction", GovernField = "Fraction" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "position", GovernField = "Position" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "level", GovernField = "Level" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "allows_null_values", GovernField = "AllowNullValues" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "unique", GovernField = "Unique" },
-            new MappingFieldItem { MappingTypeId = 15, IgcField = "same_as_data_sources", GovernField = "SameAsDataSources" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 15, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 1 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "qualityScore", TargetField = "QualityScore" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "custom_Catalog Status", TargetField = "CatalogStatus" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "custom_CDE", TargetField = "CDE" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "custom_Data Element Definition", TargetField = "DataElementDefinition" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "custom_Data Origin Type", TargetField = "DataOriginType" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "custom_Information Classification", TargetField = "InformationClassification" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "custom_Privacy Treatment", TargetField = "PrivacyTreatment" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "custom_Trusted Source", TargetField = "TrustedSource" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "data_type", TargetField = "DataType" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "selected_classification", TargetField = "SelectedClassification" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "detected_classification", TargetField = "DetectedClassification" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "odbc_type", TargetField = "OdbcType" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "length", TargetField = "Length" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "minimum_length", TargetField = "MinimumLength" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "fraction", TargetField = "Fraction" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "position", TargetField = "Position" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "level", TargetField = "Level" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "allows_null_values", TargetField = "AllowNullValues" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "unique", TargetField = "Unique" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 15, SourceField = "same_as_data_sources", TargetField = "SameAsDataSources" },
 
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "_id", GovernField = "SourceID" },
-            //new MappingFieldItem { MappingTypeId = 16, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 0 },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "long_description", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "custom_Catalog Status", GovernField = "CatalogStatus" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "alias_(business_name)", GovernField = "Alias" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "location", GovernField = "Location" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "dbms", GovernField = "Dbms" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "dms_server_instance", GovernField = "ServerInstance" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "dbms_vendor", GovernField = "Vendor" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "dbms_version", GovernField = "Version" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "database_type", GovernField = "DatabaseType" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "mapped_to_mdm_models", GovernField = "MappedToMdmModels" },
-            new MappingFieldItem { MappingTypeId = 16, IgcField = "Notes", GovernField = "Notes" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 16, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 0 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "custom_Catalog Status", TargetField = "CatalogStatus" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "alias_(business_name)", TargetField = "Alias" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "location", TargetField = "Location" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "dbms", TargetField = "Dbms" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "dms_server_instance", TargetField = "ServerInstance" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "dbms_vendor", TargetField = "Vendor" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "dbms_version", TargetField = "Version" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "database_type", TargetField = "DatabaseType" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "mapped_to_mdm_models", TargetField = "MappedToMdmModels" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 16, SourceField = "Notes", TargetField = "Notes" },
 
 
-            new MappingFieldItem { MappingTypeId = 17, IgcField = "_id", GovernField = "SourceID" },
-            //new MappingFieldItem { MappingTypeId = 17, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 1 },
-            new MappingFieldItem { MappingTypeId = 17, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 17, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 17, IgcField = "long_description", GovernField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 17, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 17, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 1 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 17, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 17, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 17, SourceField = "long_description", TargetField = "LongDescription" },
 
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "_id", GovernField = "SourceID" },
-            //new MappingFieldItem { MappingTypeId = 18, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 2 },
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "long_description", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "qualityScore", GovernField = "QualityScore" },
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "custom_Catalog Status", GovernField = "CatalogStatus" },
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "custom_Data Element Location", GovernField = "DataElementLocation" },
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "alias_(business_name)", GovernField = "Alias" },
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "reviewDate", GovernField = "ReviewDate" },
-            new MappingFieldItem { MappingTypeId = 18, IgcField = "Notes", GovernField = "Notes" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 18, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 2 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "qualityScore", TargetField = "QualityScore" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "custom_Catalog Status", TargetField = "CatalogStatus" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "custom_Data Element Location", TargetField = "DataElementLocation" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "alias_(business_name)", TargetField = "Alias" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "reviewDate", TargetField = "ReviewDate" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 18, SourceField = "Notes", TargetField = "Notes" },
 
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "_id", GovernField = "SourceID" },
-            //new MappingFieldItem { MappingTypeId = 19, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 2 },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "long_description", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "qualityScore", GovernField = "QualityScore" },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "custom_Catalog Status", GovernField = "CatalogStatus" },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "custom_Data Element Location", GovernField = "DataElementLocation" },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "alias_(business_name)", GovernField = "Alias" },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "reviewDate", GovernField = "ReviewDate" },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "fieldCount", GovernField = "FieldCount" },
-            new MappingFieldItem { MappingTypeId = 19, IgcField = "notes", GovernField = "Notes" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 19, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 2 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "qualityScore", TargetField = "QualityScore" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "custom_Catalog Status", TargetField = "CatalogStatus" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "custom_Data Element Location", TargetField = "DataElementLocation" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "alias_(business_name)", TargetField = "Alias" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "reviewDate", TargetField = "ReviewDate" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "fieldCount", TargetField = "FieldCount" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 19, SourceField = "notes", TargetField = "Notes" },
 
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "_id", GovernField = "SourceID" },
-            //new MappingFieldItem { MappingTypeId = 20, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 2 },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "_name", GovernField = "Name" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "short_description", GovernField = "ShortDescription" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "long_description", GovernField = "LongDescription" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "qualityScore", GovernField = "QualityScore" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "custom_Catalog Status", GovernField = "CatalogStatus" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "custom_CDE", GovernField = "CDE" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "custom_Data Element Definition", GovernField = "DataElementDefinition" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "alias_(business_name)", GovernField = "Alias" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "reviewDate", GovernField = "ReviewDate" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "fieldCount", GovernField = "FieldCount" },
-            new MappingFieldItem { MappingTypeId = 20, IgcField = "notes", GovernField = "Notes" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "_id", TargetField = "SourceID", IncludeInPropertyRequest = false },
+            //new AssetTypeIntegrationFieldItem { MappingTypeId = 20, IgcField = "_context", GovernField = "ParentSourceID", ParentContextPosition = 2 },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "_name", TargetField = "Name", IncludeInPropertyRequest = false },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "short_description", TargetField = "ShortDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "long_description", TargetField = "LongDescription" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "qualityScore", TargetField = "QualityScore" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "custom_Catalog Status", TargetField = "CatalogStatus" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "custom_CDE", TargetField = "CDE" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "custom_Data Element Definition", TargetField = "DataElementDefinition" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "alias_(business_name)", TargetField = "Alias" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "reviewDate", TargetField = "ReviewDate" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "fieldCount", TargetField = "FieldCount" },
+            new IntegrationAssetTypeFieldItem { SynchedAssetTypeID = 20, SourceField = "notes", TargetField = "Notes" },
 
 /*
 custom_Data Origin Type
@@ -354,60 +342,60 @@ notes
 */
         };
 
-        /*
-            new MappingType { Id = 20, IgcType = "data_element", GovernType = "FusionAttributeType", GovernTypeID = 2 }         
-             */
+/*
+new MappingType { Id = 20, IgcType = "data_element", GovernType = "FusionAttributeType", GovernTypeID = 2 }         
+*/
 
-        static List<MappingRelationItem> InputMappingRelationItems = new List<MappingRelationItem> {
+        static List<IntegrationAssetTypeRelationItem> InputMappingRelationItems = new List<IntegrationAssetTypeRelationItem> {
             //new MappingRelationItem { MappingTypeId = 1, IgcField = "assigned_to_terms", GovernField = "" },
             //new MappingRelationItem { MappingTypeId = 1, IgcField = "implements_rules", GovernField = "" },
             //new MappingRelationItem { MappingTypeId = 1, IgcField = "governed_by_rules", GovernField = "" },
-            new MappingRelationItem { MappingTypeId = 1, IgcField = "impacts_on", GovernPredicateType = 7 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 1, SourceField = "impacts_on", PredicateType = 7 },
 
-            new MappingRelationItem { MappingTypeId = 15, IgcField = "impacts_on", GovernPredicateType = 7 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 15, SourceField = "impacts_on", PredicateType = 7 },
             
-            new MappingRelationItem { MappingTypeId = 16, IgcField = "impacts_on", GovernPredicateType = 7 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 16, SourceField = "impacts_on", PredicateType = 7 },
 
-            new MappingRelationItem { MappingTypeId = 17, IgcField = "impacts_on", GovernPredicateType = 7 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 17, SourceField = "impacts_on", PredicateType = 7 },
 
-            new MappingRelationItem { MappingTypeId = 18, IgcField = "referenced_by_views", IsSubject = true, GovernPredicateType = 1 }
-            new MappingRelationItem { MappingTypeId = 18, IgcField = "impacts_on", GovernPredicateType = 7 },
-            new MappingRelationItem { MappingTypeId = 18, IgcField = "governed_by_rules", GovernPredicateType = 1 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 18, SourceField = "referenced_by_views", IsSubject = true, PredicateType = 1 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 18, SourceField = "impacts_on", PredicateType = 7 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 18, SourceField = "governed_by_rules", PredicateType = 1 },
 
-            new MappingRelationItem { MappingTypeId = 19, IgcField = "referenced_by_views", IsSubject = true, GovernPredicateType = 1 }
-            new MappingRelationItem { MappingTypeId = 19, IgcField = "impacts_on", GovernPredicateType = 7 },
-            new MappingRelationItem { MappingTypeId = 19, IgcField = "governed_by_rules", GovernPredicateType = 1 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 19, SourceField = "referenced_by_views", IsSubject = true, PredicateType = 1 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 19, SourceField = "impacts_on", PredicateType = 7 },
+            new IntegrationAssetTypeRelationItem { SynchedAssetTypeID = 19, SourceField = "governed_by_rules", PredicateType = 1 }
 
         };
 
-        static List<MappingRoleItem> InputMappingRoleItems = new List<MappingRoleItem> {
-            new MappingRoleItem { MappingTypeId = 1, GovernRoleName = "Business Owner", IgcIdField = "$BusinessOwnerId", IgcNameField = "$BusinessOwner" },
-            new MappingRoleItem { MappingTypeId = 1, GovernRoleName = "Application Owner", IgcIdField = "$ApplicationOwnerId", IgcNameField = "$ApplicationOwner" },
-            new MappingRoleItem { MappingTypeId = 1, GovernRoleName = "Data Steward", IgcIdField = "$DataStewardId", IgcNameField = "$DataSteward" },
+        static List<IntegrationAssetTypeRoleItem> InputMappingRoleItems = new List<IntegrationAssetTypeRoleItem> {
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 1, RoleName = "Business Owner", SourceIdField = "$BusinessOwnerId", SourceNameField = "$BusinessOwner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 1, RoleName = "Application Owner", SourceIdField = "$ApplicationOwnerId", SourceNameField = "$ApplicationOwner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 1, RoleName = "Data Steward", SourceIdField = "$DataStewardId", SourceNameField = "$DataSteward" },
             //new MappingRoleItem { MappingTypeId = 1, GovernRoleName = "", IgcNameField = "$DataOwner" },
-            new MappingRoleItem { MappingTypeId = 1, GovernRoleName = "EDGM Steward", IgcIdField = "$EDGMStewardId" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 1, RoleName = "EDGM Steward", SourceIdField = "$EDGMStewardId" },
 
-            new MappingRoleItem { MappingTypeId = 6, GovernRoleName = "Business Owner", IgcIdField = "$BusinessOwnerId", IgcNameField = "$BusinessOwner" },
-            new MappingRoleItem { MappingTypeId = 7, GovernRoleName = "Business Owner", IgcIdField = "$BusinessOwnerId", IgcNameField = "$BusinessOwner" },
-            new MappingRoleItem { MappingTypeId = 8, GovernRoleName = "Business Owner", IgcIdField = "$BusinessOwnerId", IgcNameField = "$BusinessOwner" },
-            new MappingRoleItem { MappingTypeId = 9, GovernRoleName = "Business Owner", IgcIdField = "$BusinessOwnerId", IgcNameField = "$BusinessOwner" },
-            new MappingRoleItem { MappingTypeId = 10, GovernRoleName = "Business Owner", IgcIdField = "$BusinessOwnerId", IgcNameField = "$BusinessOwner" },
-            new MappingRoleItem { MappingTypeId = 11, GovernRoleName = "Business Owner", IgcIdField = "$BusinessOwnerId", IgcNameField = "$BusinessOwner" },
-            new MappingRoleItem { MappingTypeId = 12, GovernRoleName = "Business Owner", IgcIdField = "$BusinessOwnerId", IgcNameField = "$BusinessOwner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 6, RoleName = "Business Owner", SourceIdField = "$BusinessOwnerId", SourceNameField = "$BusinessOwner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 7, RoleName = "Business Owner", SourceIdField = "$BusinessOwnerId", SourceNameField = "$BusinessOwner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 8, RoleName = "Business Owner", SourceIdField = "$BusinessOwnerId", SourceNameField = "$BusinessOwner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 9, RoleName = "Business Owner", SourceIdField = "$BusinessOwnerId", SourceNameField = "$BusinessOwner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 10, RoleName = "Business Owner", SourceIdField = "$BusinessOwnerId", SourceNameField = "$BusinessOwner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 11, RoleName = "Business Owner", SourceIdField = "$BusinessOwnerId", SourceNameField = "$BusinessOwner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 12, RoleName = "Business Owner", SourceIdField = "$BusinessOwnerId", SourceNameField = "$BusinessOwner" },
 
-            new MappingRoleItem { MappingTypeId = 14, GovernRoleName = "Data Steward", IgcIdField = "$DataStewardId", IgcNameField = "$DataSteward" },
-            new MappingRoleItem { MappingTypeId = 14, GovernRoleName = "Owner", IgcIdField = "custom_Owner Id", IgcNameField = "custom_Owner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 14, RoleName = "Data Steward", SourceIdField = "$DataStewardId", SourceNameField = "$DataSteward" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 14, RoleName = "Owner", SourceIdField = "custom_Owner Id", SourceNameField = "custom_Owner" },
 
-            new MappingRoleItem { MappingTypeId = 14, GovernRoleName = "Data Steward", IgcIdField = "custom_Data Steward Id", IgcNameField = "custom_Data Steward" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 14, RoleName = "Data Steward", SourceIdField = "custom_Data Steward Id", SourceNameField = "custom_Data Steward" },
 
-            new MappingRoleItem { MappingTypeId = 16, GovernRoleName = "Data Steward", IgcIdField = "custom_Data Steward Id", IgcNameField = "custom_Data Steward" },
-            new MappingRoleItem { MappingTypeId = 16, GovernRoleName = "Owner", IgcIdField = "custom_Owner Id", IgcNameField = "custom_Owner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 16, RoleName = "Data Steward", SourceIdField = "custom_Data Steward Id", SourceNameField = "custom_Data Steward" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 16, RoleName = "Owner", SourceIdField = "custom_Owner Id", SourceNameField = "custom_Owner" },
 
-            new MappingRoleItem { MappingTypeId = 17, GovernRoleName = "Business Owner", IgcIdField = "custom_Business Owner Id", IgcNameField = "custom_Business Owner" },
-            new MappingRoleItem { MappingTypeId = 17, GovernRoleName = "Data Steward", IgcIdField = "custom_Data Steward Id", IgcNameField = "custom_Data Steward" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 17, RoleName = "Business Owner", SourceIdField = "custom_Business Owner Id", SourceNameField = "custom_Business Owner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 17, RoleName = "Data Steward", SourceIdField = "custom_Data Steward Id", SourceNameField = "custom_Data Steward" },
 
-            new MappingRoleItem { MappingTypeId = 18, GovernRoleName = "Data Steward", IgcIdField = "custom_Data Steward Id", IgcNameField = "custom_Data Steward" },
-            new MappingRoleItem { MappingTypeId = 18, GovernRoleName = "Owner", IgcIdField = "custom_Owner Id", IgcNameField = "custom_Owner" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 18, RoleName = "Data Steward", SourceIdField = "custom_Data Steward Id", SourceNameField = "custom_Data Steward" },
+            new IntegrationAssetTypeRoleItem { SynchedAssetTypeID = 18, RoleName = "Owner", SourceIdField = "custom_Owner Id", SourceNameField = "custom_Owner" },
 
         };
 
@@ -425,23 +413,6 @@ notes
                 {
                     LoadAssetsByMappingType(item);
                 }
-
-                //LoadApplicationCatalog();
-
-                //GetRrpFunctionalArea();
-                //GetRrpLevel1();
-                //GetRrpLevel2();
-                //GetRrpLevel3();
-
-                //GetBuLevel1();
-                //GetBuLevel2();
-                //GetBuLevel3();
-                //GetBuLevel4();
-                //GetBuLevel5();
-                //GetBuLevel6();
-                //GetBuLevel7();
-
-                ////GetHosts();
 
                 //var companies = CoreFunction.GetCompaniesByCurrentSlot();
                 //companies.ForEach(c =>
@@ -528,18 +499,18 @@ notes
 
         #region NEW WAY - GENERIC
 
-        public static void LoadAssetsByMappingType(MappingType mappingType)
+        public static void LoadAssetsByMappingType(IntegrationAssetType mappingType)
         {
-            var fieldMappings = InputMappingFieldItems.Where(i => i.MappingTypeId == mappingType.Id).ToList();
-            var relationMappings = InputMappingRelationItems.Where(i => i.MappingTypeId == mappingType.Id).ToList();
-            var roleMappings = InputMappingRoleItems.Where(i => i.MappingTypeId == mappingType.Id).ToList();
-            var url = $"{SourceUri}search/?pageSize=75&types={mappingType.IgcType}";
+            var fieldMappings = InputMappingFieldItems.Where(i => i.SynchedAssetTypeID == mappingType.ID).ToList();
+            var relationMappings = InputMappingRelationItems.Where(i => i.SynchedAssetTypeID == mappingType.ID).ToList();
+            var roleMappings = InputMappingRoleItems.Where(i => i.SynchedAssetTypeID == mappingType.ID).ToList();
+            var url = $"{SourceUri}search/?pageSize=75&types={mappingType.SourceAssetTypeName}";
 
             // Add the properties we are after for this IGC type.
-            url += string.Concat(fieldMappings.Select(i => $"&properties={i.IgcField}"));
-            url += string.Concat(relationMappings.Select(i => $"&properties={i.IgcField}"));
-            url += string.Concat(roleMappings.Where(i => !string.IsNullOrEmpty(i.IgcIdField)).Select(i => $"&properties={i.IgcIdField}"));
-            url += string.Concat(roleMappings.Where(i => !string.IsNullOrEmpty(i.IgcNameField)).Select(i => $"&properties={i.IgcNameField}"));
+            url += string.Concat(fieldMappings.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={i.SourceField}"));
+            url += string.Concat(relationMappings.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={i.SourceField}"));
+            url += string.Concat(roleMappings.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={i.SourceIdField}"));
+            url += string.Concat(roleMappings.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceNameField)).Select(i => $"&properties={i.SourceNameField}"));
 
 
             var igcData = new IgcDynamicArrayModels();
@@ -549,7 +520,7 @@ notes
 
             Func<JArray, JArray> parse = delegate (JArray root)
             {
-                foreach (var obj in igcData.items.AsQueryable())
+                foreach (var obj in root.Children())
                 {
                     var igcObjectSourceID = obj["_id"].Value<string>();
 
@@ -560,21 +531,21 @@ notes
                         if (f.ParentContextPosition.HasValue)
                         {
                             // There is a hierarchy here, and we need to resolve it.
-                            var context = obj[f.IgcField].Cast<List<GenericIgcContextModel>>().FirstOrDefault();
+                            var context = obj[f.SourceField].Cast<List<GenericIgcContextModel>>().FirstOrDefault();
                             if (context != null)
                             {
-                                d3s.Add(f.GovernField, context[f.ParentContextPosition.Value]._id);
+                                d3s.Add(f.TargetField, context[f.ParentContextPosition.Value]._id);
                             }
                         }
                         else
                         {
                             if (f.IsArray)
                             {
-                                d3s.Add(f.GovernField, (obj[f.IgcField] != null) ? string.Join(", ", obj[f.IgcField]) : "");
+                                d3s.Add(f.TargetField, (obj[f.SourceField] != null) ? string.Join(", ", obj[f.SourceField]) : "");
                             }
                             else
                             {
-                                d3s.Add(f.GovernField, obj[f.IgcField].Value<string>());
+                                d3s.Add(f.TargetField, obj[f.SourceField].Value<string>());
                             }
                         }
 
@@ -584,28 +555,51 @@ notes
                     // Relation Load Logic.
                     relationMappings.ForEach(r =>
                     {
-                        var items = (
-                                    from rm in obj[r.IgcField].AsQueryable().Cast<IgcRelationshipModel>()
-                                    from i in rm.items
-                                    select i
-                                    ).ToList();
+                        try
+                        {
+                            var rm = obj[r.SourceField].ToObject<IgcRelationshipModel>();
+                            var items = (
+                                        from i in rm.items
+                                        select i
+                                        ).ToList();
 
-                        relationships.AddRange(
-                            items.Select(i => new D3sRelationshipModel {
-                                SubjectSourceID = r.IsSubject ? igcObjectSourceID : i.SourceID,
-                                ObjectSourceID = r.IsSubject ? i.SourceID : igcObjectSourceID,
-                                PredicateType = r.GovernPredicateType
-                            })
-                        );
+                            relationships.AddRange(
+                                items.Select(i => new D3sRelationshipModel
+                                {
+                                    SubjectSourceID = r.IsSubject ? igcObjectSourceID : i.SourceID,
+                                    ObjectSourceID = r.IsSubject ? i.SourceID : igcObjectSourceID,
+                                    PredicateType = r.PredicateType
+                                })
+                            );
+                        }
+                        catch (Exception)
+                        {
+                        }
                     });
 
                     // Role Load Logic.
                     roleMappings.ForEach(r => {
+                        var userFullName = "";
+                        var userId = "";
+                        if (!string.IsNullOrEmpty(r.SourceNameField))
+                        {
+                            if (obj[r.SourceNameField] != null)
+                            {
+                                userFullName = obj[r.SourceNameField].Value<string>();
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(r.SourceIdField))
+                        {
+                            if (obj[r.SourceIdField] != null)
+                            {
+                                userId = obj[r.SourceIdField].Value<string>();
+                            }
+                        }
                         ownershipTopModel.Items.Add(new D3sOwnershipModel {
-                            RoleName = r.GovernRoleName,
+                            RoleName = r.RoleName,
                             SourceID = igcObjectSourceID,
-                            UserFullName = obj[r.IgcNameField].Value<string>(),
-                            UserId = obj[r.IgcIdField].Value<string>()
+                            UserFullName = userFullName,
+                            UserId = userId
                         });
                     });
                 }
@@ -637,7 +631,7 @@ notes
                 try
                 {
                     var respString = PostJsonToApi(
-                        $"{TargetUri}{mappingType.GovernType}/{mappingType.GovernTypeID}/bulk",
+                        $"{TargetUri}{mappingType.Object}/{mappingType.ObjectID}/bulk",
                         TargetAuthString,
                         JsonConvert.SerializeObject(arr)
                     );
@@ -672,11 +666,14 @@ notes
 
                 try
                 {
-                    var respString = PostJsonToApi(
-                        $"{TargetUri}ownership/bulk",
-                        TargetAuthString,
-                        JsonConvert.SerializeObject(ownershipTopModel)
-                    );
+                    if (ownershipTopModel.Items.Count > 0)
+                    {
+                        var respString = PostJsonToApi(
+                            $"{TargetUri}ownership/bulk",
+                            TargetAuthString,
+                            JsonConvert.SerializeObject(ownershipTopModel)
+                        );
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -725,431 +722,65 @@ notes
 
         #region Application
 
-        public static void LoadApplicationCatalog()
-        {
-            var properties = "short_description,long_description,labels,stewards,assigned_to_terms,implements_rules,governed_by_rules,$CMDBAppCode,$ApplicationAlias,$BusinessOwner,$BusinessOwnerId,$ApplicationOwner,$ApplicationOwnerId,$DataSteward,$DataStewardId,$DataOwner,$EDGMStewardId,$Comments,$SSID,$KeyApplicationType,$Status,$DataLocation,$PersonalData,$ComponentType,$ComponentCode,$ComponentSAID,$AuthoritativeSource,$MaturityLevel,$BookOfRecord,impacts_on".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$ApplicationCatalog-ApplicationCatalog";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
-
-            var arr = new List<D3sApplicationCatalogModel>();
-            var d3sImpactRelationships = new List<D3sRelationshipModel>();
-            var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-
-            Func<IgcApplicationCatalogModels, IgcApplicationCatalogModels> parse = delegate (IgcApplicationCatalogModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sApplicationCatalogModel>(i => new D3sApplicationCatalogModel
-                {
-                    SourceID = i.SourceID,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    ApplicationAlias = i.ApplicationAlias,
-                    AuthoritativeSource = i.AuthoritativeSource,
-                    Host = i.BookOfRecord,
-                    CMDBAppCode = i.CMDBAppCode,
-                    Comments = i.Comments,
-                    KeyApplicationTypeText = (i.KeyApplicationType != null) ? string.Join(", ", i.KeyApplicationType) : "",
-                    ComponentSAID = i.ComponentSAID,
-                    ComponentType = i.ComponentType,
-                    DataLocation = i.DataLocation,
-                    LongDescription = i.LongDescription,
-                    MaturityLevel = i.MaturityLevel,
-                    PersonalData = i.PersonalData ?? "No",
-                    SSID = i.SSID,
-                    Status = i.Status
-                }));
-
-                ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                {
-                    SourceID = i.SourceID,
-                    RoleName = "Business Owner",
-                    UserId = i.BusinessOwnerId,
-                    UserFullName = i.BusinessOwner
-                }));
-
-                ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                {
-                    SourceID = i.SourceID,
-                    RoleName = "Application Owner",
-                    UserId = i.ApplicationOwnerId,
-                    UserFullName = i.ApplicationOwner
-                }));
-
-                ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                {
-                    SourceID = i.SourceID,
-                    RoleName = "Data Owner",
-                    UserId = string.Empty,
-                    UserFullName = i.DataOwner
-                }));
-
-                ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                {
-                    SourceID = i.SourceID,
-                    RoleName = "Data Steward",
-                    UserId = i.DataStewardId,
-                    UserFullName = i.DataSteward
-                }));
-
-                ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                {
-                    SourceID = i.SourceID,
-                    RoleName = "EDGM Steward",
-                    UserId = i.EDGMStewardId,
-                    UserFullName = string.Empty
-                }));
-
-                foreach (var app in root.items)
-                {
-                    app.ImpactsOn.items.ForEach(bu =>
-                    {
-                        d3sImpactRelationships.Add(
-                            new D3sRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                        );
-                    });
-                }
-
-                return root;
-            };
-
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcApplicationCatalogModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
-
-            // If any items to send to server.
-            if (arr.Count > 0)
-            {
-                try
-                {
-                    var respString = PostJsonToApi(
-                        $"{TargetUri}ArtifactType/2/bulk",
-                        TargetAuthString,
-                        JsonConvert.SerializeObject(arr)
-                    );
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                }
-            }
-
-            // If any owners to send to server.
-            if (ownershipTopModel.Items.Count > 0)
-            {
-                var uniqueUsers = ownershipTopModel.Items
-                    .Where(i => !string.IsNullOrEmpty(i.UserFullName) && !string.IsNullOrEmpty(i.UserId))
-                    .Select(i => new { i.UserFullName, i.UserId })
-                    .Distinct()
-                    .ToList();
-
-                // Populate the UserIDs that are missing, based can be looked up by user's full name. TODO: Confirm this logic, as it may not be correct if two or more user's have the same name.
-                foreach (var item in ownershipTopModel.Items.Where(i => string.IsNullOrEmpty(i.UserId)))
-                {
-                    var match = uniqueUsers.FirstOrDefault(i => i.UserFullName == item.UserFullName);
-                    if (match != null)
-                    {
-                        item.UserId = match.UserId;
-                    }
-                }
-
-                //Now, remove any users whose internal ID cannot be resolved.
-                ownershipTopModel.Items.RemoveAll(i => string.IsNullOrEmpty(i.UserId));
-
-                try
-                {
-                    var respString = PostJsonToApi(
-                        $"{TargetUri}ownership/bulk",
-                        TargetAuthString,
-                        JsonConvert.SerializeObject(ownershipTopModel)
-                    );
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                }
-            }
-
-            if (d3sImpactRelationships.Count > 0)
-            {
-                try
-                {
-                    var respString = PostJsonToApi(
-                        $"{TargetUri}relationships/bulk",
-                        TargetAuthString,
-                        JsonConvert.SerializeObject(d3sImpactRelationships)
-                    );
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                }
-            }
-        }
-
-        #endregion
-
-        #region Fusion
-
-        //public static void GetHosts()
+        //public static void LoadApplicationCatalog()
         //{
-        //    var url = buildSearchUri("host", new List<string> {
-        //        "short_description",
-        //        "long_description",
-        //        "labels",
-        //        "stewards",
-        //        //"assigned_to_terms",
-        //        //"implements_rules",
-        //        //"governed_by_rules",
-        //        //"databases",
-        //        //"data_files",
-        //        //"idoc_types",
-        //        //"transformation_projects"
-        //        //"data_connections",
-        //        //"amazon_s3_buckets",
-        //        //"data_file_folders",
-        //        "location",
-        //        "network_node",
-        //        //"imported_from",
-        //        //"in_colleections",
-        //        "notes"
-        //    });
-
-        //    var arr = new List<dynamic>();
-        //    //var d3sImpactRelationships = new List<D3sBusinesUnitApplicationCatalogRelationshipModel>();
-        //    //var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-
-        //    Func<IgcDynamicModels, IgcDynamicModels> parse = delegate (IgcDynamicModels root)
+        //    var properties = "short_description,long_description,labels,stewards,assigned_to_terms,implements_rules,governed_by_rules,$CMDBAppCode,$ApplicationAlias,$BusinessOwner,$BusinessOwnerId,$ApplicationOwner,$ApplicationOwnerId,$DataSteward,$DataStewardId,$DataOwner,$EDGMStewardId,$Comments,$SSID,$KeyApplicationType,$Status,$DataLocation,$PersonalData,$ComponentType,$ComponentCode,$ComponentSAID,$AuthoritativeSource,$MaturityLevel,$BookOfRecord,impacts_on".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$ApplicationCatalog-ApplicationCatalog";
+        //    foreach (var p in properties)
         //    {
-        //        arr.AddRange(root.items.ConvertAll<dynamic>(i => new
-        //        {
-        //            SourceID = i._id,
-        //            Name = i._name,
-        //            ShortDescription = i.short_description,
-        //            LongDescription = i.long_description,
-        //            Location = i.location,
-        //            NetworkNode = i.network_node,
-        //            Notes = i.notes
-        //        }));
-
-        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-        //        //{
-        //        //    SourceID = i.SourceID,
-        //        //    RoleName = "Business Owner",
-        //        //    UserId = i.BusinessOwnerId,
-        //        //    UserFullName = i.BusinessOwner
-        //        //}));
-
-        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-        //        //{
-        //        //    SourceID = i.SourceID,
-        //        //    RoleName = "Application Owner",
-        //        //    UserId = i.ApplicationOwnerId,
-        //        //    UserFullName = i.ApplicationOwner
-        //        //}));
-
-        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-        //        //{
-        //        //    SourceID = i.SourceID,
-        //        //    RoleName = "Data Owner",
-        //        //    UserId = string.Empty,
-        //        //    UserFullName = i.DataOwner
-        //        //}));
-
-        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-        //        //{
-        //        //    SourceID = i.SourceID,
-        //        //    RoleName = "Data Steward",
-        //        //    UserId = i.DataStewardId,
-        //        //    UserFullName = i.DataSteward
-        //        //}));
-
-        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-        //        //{
-        //        //    SourceID = i.SourceID,
-        //        //    RoleName = "EDGM Steward",
-        //        //    UserId = i.EDGMStewardId,
-        //        //    UserFullName = string.Empty
-        //        //}));
-
-        //        //foreach (var app in root.items)
-        //        //{
-        //        //    app.ImpactsOn.items.ForEach(bu =>
-        //        //    {
-        //        //        d3sImpactRelationships.Add(
-        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-        //        //        );
-        //        //    });
-        //        //}
-
-        //        return root;
-        //    };
-
-        //    while (!string.IsNullOrEmpty(url))
-        //    {
-        //        try
-        //        {
-        //            var models = GetFromApi<IgcDynamicModels>(url, SourceAuthString);
-        //            if (models != null)
-        //            {
-        //                parse(models);
-        //                url = models.paging.next;
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            CoreFunction.AITrackException(functionName, ex);
-        //            url = null;
-        //        }
+        //        url += $"&properties={p}";
         //    }
 
-        //    // If any items to send to server.
-        //    if (arr.Count > 0)
-        //    {
-        //        //var respString = PostJsonToApi(
-        //        //    $"{TargetUri}ArtifactType/2/bulk",
-        //        //    TargetAuthString,
-        //        //    JsonConvert.SerializeObject(arr)
-        //        //);
-        //    }
-
-        //    //// If any owners to send to server.
-        //    //if (ownershipTopModel.Items.Count > 0)
-        //    //{
-        //    //    var uniqueUsers = ownershipTopModel.Items
-        //    //        .Where(i => !string.IsNullOrEmpty(i.UserFullName) && !string.IsNullOrEmpty(i.UserId))
-        //    //        .Select(i => new { i.UserFullName, i.UserId })
-        //    //        .Distinct()
-        //    //        .ToList();
-
-        //    //    // Populate the UserIDs that are missing, based can be looked up by user's full name. TODO: Confirm this logic, as it may not be correct if two or more user's have the same name.
-        //    //    foreach (var item in ownershipTopModel.Items.Where(i => string.IsNullOrEmpty(i.UserId)))
-        //    //    {
-        //    //        var match = uniqueUsers.FirstOrDefault(i => i.UserFullName == item.UserFullName);
-        //    //        if (match != null)
-        //    //        {
-        //    //            item.UserId = match.UserId;
-        //    //        }
-        //    //    }
-
-        //    //    //Now, remove any users whose internal ID cannot be resolved.
-        //    //    ownershipTopModel.Items.RemoveAll(i => string.IsNullOrEmpty(i.UserId));
-
-        //    //    var respString = PostJsonToApi(
-        //    //        $"{TargetUri}ownership/bulk",
-        //    //        TargetAuthString,
-        //    //        JsonConvert.SerializeObject(ownershipTopModel)
-        //    //    );
-        //    //}
-
-        //    //if (d3sImpactRelationships.Count > 0)
-        //    //{
-        //    //    //var respString = PostJsonToApi(
-        //    //    //    $"{TargetUri}relationships/bulk",
-        //    //    //    TargetAuthString,
-        //    //    //    JsonConvert.SerializeObject(d3sImpactRelationships)
-        //    //    //);
-        //    //}
-        //}
-
-
-        //public static void GetDataFiles()
-        //{
-        //    var url = buildSearchUri("data_file", new List<string> {
-        //            "short_description",
-        //            "long_description",
-        //            "parent_folder",
-        //            "host",
-        //            "labels",
-        //            "stewards",
-        //            //"assigned_to_terms",
-        //            //"implements_rules",
-        //            "governed_by_rules",
-        //            "data_file_records",
-        //            //"implements_data_file_definition",
-        //            //"implements_physical_models",
-        //            "custom_Catalog Status",
-        //            "custom_Classification",
-        //            //"custom_Comments",
-        //            //"custom_Created By",
-        //            //"custom_Data Steward",
-        //            //"custom_Data Steward Id",
-        //            //"custom_Frequency",
-        //            "custom_Classification",//"custom_Information Classification",
-        //            //"custom_Modified By",
-        //            "custom_Output Format",
-        //            //"custom_Owner",
-        //            //"custom_Owner Id",
-        //            "custom_Status",
-        //            "alias_(business_name)",
-        //            "path",
-        //            //"store_type",
-        //            "imported_from",
-        //            //"impacted_by",
-        //            //"impacts_on",
-        //            "include_for_business_lineage",
-        //            "suggested_term_assignments",
-        //            "notes",
-        //            "amazon_s3_data_files",
-        //            "implements_data_file_definition",
-        //            "implements_physical_models"
-        //        });
-
-        //    var arr = new List<dynamic>();
-        //    //var d3sImpactRelationships = new List<D3sBusinesUnitApplicationCatalogRelationshipModel>();
+        //    var arr = new List<D3sApplicationCatalogModel>();
+        //    var d3sImpactRelationships = new List<D3sRelationshipModel>();
         //    var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
 
-        //    Func<IgcDataFileModels, IgcDataFileModels> parse = delegate (IgcDataFileModels root)
+        //    Func<IgcApplicationCatalogModels, IgcApplicationCatalogModels> parse = delegate (IgcApplicationCatalogModels root)
         //    {
-        //        arr.AddRange(root.items.ConvertAll<dynamic>(i => new
+        //        arr.AddRange(root.items.ConvertAll<D3sApplicationCatalogModel>(i => new D3sApplicationCatalogModel
         //        {
         //            SourceID = i.SourceID,
         //            Name = i.Name,
         //            ShortDescription = i.ShortDescription,
+        //            ApplicationAlias = i.ApplicationAlias,
+        //            AuthoritativeSource = i.AuthoritativeSource,
+        //            Host = i.BookOfRecord,
+        //            CMDBAppCode = i.CMDBAppCode,
+        //            Comments = i.Comments,
+        //            KeyApplicationTypeText = (i.KeyApplicationType != null) ? string.Join(", ", i.KeyApplicationType) : "",
+        //            ComponentSAID = i.ComponentSAID,
+        //            ComponentType = i.ComponentType,
+        //            DataLocation = i.DataLocation,
         //            LongDescription = i.LongDescription,
-        //            Classification = i.Classification,
-        //            Location = i.Location,
-        //            Notes = i.Notes
+        //            MaturityLevel = i.MaturityLevel,
+        //            PersonalData = i.PersonalData ?? "No",
+        //            SSID = i.SSID,
+        //            Status = i.Status
         //        }));
 
-        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-        //        //{
-        //        //    SourceID = i.SourceID,
-        //        //    RoleName = "Business Owner",
-        //        //    UserId = i.BusinessOwnerId,
-        //        //    UserFullName = i.BusinessOwner
-        //        //}));
+        //        ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            RoleName = "Business Owner",
+        //            UserId = i.BusinessOwnerId,
+        //            UserFullName = i.BusinessOwner
+        //        }));
 
-        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-        //        //{
-        //        //    SourceID = i.SourceID,
-        //        //    RoleName = "Application Owner",
-        //        //    UserId = i.ApplicationOwnerId,
-        //        //    UserFullName = i.ApplicationOwner
-        //        //}));
+        //        ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            RoleName = "Application Owner",
+        //            UserId = i.ApplicationOwnerId,
+        //            UserFullName = i.ApplicationOwner
+        //        }));
 
-        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-        //        //{
-        //        //    SourceID = i.SourceID,
-        //        //    RoleName = "Data Owner",
-        //        //    UserId = string.Empty,
-        //        //    UserFullName = i.DataOwner
-        //        //}));
+        //        ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            RoleName = "Data Owner",
+        //            UserId = string.Empty,
+        //            UserFullName = i.DataOwner
+        //        }));
 
         //        ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
         //        {
@@ -1159,12 +790,548 @@ notes
         //            UserFullName = i.DataSteward
         //        }));
 
+        //        ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            RoleName = "EDGM Steward",
+        //            UserId = i.EDGMStewardId,
+        //            UserFullName = string.Empty
+        //        }));
+
+        //        foreach (var app in root.items)
+        //        {
+        //            app.ImpactsOn.items.ForEach(bu =>
+        //            {
+        //                d3sImpactRelationships.Add(
+        //                    new D3sRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //                );
+        //            });
+        //        }
+
+        //        return root;
+        //    };
+
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcApplicationCatalogModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
+
+        //    // If any items to send to server.
+        //    if (arr.Count > 0)
+        //    {
+        //        try
+        //        {
+        //            var respString = PostJsonToApi(
+        //                $"{TargetUri}ArtifactType/2/bulk",
+        //                TargetAuthString,
+        //                JsonConvert.SerializeObject(arr)
+        //            );
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //        }
+        //    }
+
+        //    // If any owners to send to server.
+        //    if (ownershipTopModel.Items.Count > 0)
+        //    {
+        //        var uniqueUsers = ownershipTopModel.Items
+        //            .Where(i => !string.IsNullOrEmpty(i.UserFullName) && !string.IsNullOrEmpty(i.UserId))
+        //            .Select(i => new { i.UserFullName, i.UserId })
+        //            .Distinct()
+        //            .ToList();
+
+        //        // Populate the UserIDs that are missing, based can be looked up by user's full name. TODO: Confirm this logic, as it may not be correct if two or more user's have the same name.
+        //        foreach (var item in ownershipTopModel.Items.Where(i => string.IsNullOrEmpty(i.UserId)))
+        //        {
+        //            var match = uniqueUsers.FirstOrDefault(i => i.UserFullName == item.UserFullName);
+        //            if (match != null)
+        //            {
+        //                item.UserId = match.UserId;
+        //            }
+        //        }
+
+        //        //Now, remove any users whose internal ID cannot be resolved.
+        //        ownershipTopModel.Items.RemoveAll(i => string.IsNullOrEmpty(i.UserId));
+
+        //        try
+        //        {
+        //            var respString = PostJsonToApi(
+        //                $"{TargetUri}ownership/bulk",
+        //                TargetAuthString,
+        //                JsonConvert.SerializeObject(ownershipTopModel)
+        //            );
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //        }
+        //    }
+
+        //    if (d3sImpactRelationships.Count > 0)
+        //    {
+        //        try
+        //        {
+        //            var respString = PostJsonToApi(
+        //                $"{TargetUri}relationships/bulk",
+        //                TargetAuthString,
+        //                JsonConvert.SerializeObject(d3sImpactRelationships)
+        //            );
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //        }
+        //    }
+        //}
+
+        #endregion
+
+        #region Fusion
+
+        ////public static void GetHosts()
+        ////{
+        ////    var url = buildSearchUri("host", new List<string> {
+        ////        "short_description",
+        ////        "long_description",
+        ////        "labels",
+        ////        "stewards",
+        ////        //"assigned_to_terms",
+        ////        //"implements_rules",
+        ////        //"governed_by_rules",
+        ////        //"databases",
+        ////        //"data_files",
+        ////        //"idoc_types",
+        ////        //"transformation_projects"
+        ////        //"data_connections",
+        ////        //"amazon_s3_buckets",
+        ////        //"data_file_folders",
+        ////        "location",
+        ////        "network_node",
+        ////        //"imported_from",
+        ////        //"in_colleections",
+        ////        "notes"
+        ////    });
+
+        ////    var arr = new List<dynamic>();
+        ////    //var d3sImpactRelationships = new List<D3sBusinesUnitApplicationCatalogRelationshipModel>();
+        ////    //var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+
+        ////    Func<IgcDynamicModels, IgcDynamicModels> parse = delegate (IgcDynamicModels root)
+        ////    {
+        ////        arr.AddRange(root.items.ConvertAll<dynamic>(i => new
+        ////        {
+        ////            SourceID = i._id,
+        ////            Name = i._name,
+        ////            ShortDescription = i.short_description,
+        ////            LongDescription = i.long_description,
+        ////            Location = i.location,
+        ////            NetworkNode = i.network_node,
+        ////            Notes = i.notes
+        ////        }));
+
+        ////        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        //{
+        ////        //    SourceID = i.SourceID,
+        ////        //    RoleName = "Business Owner",
+        ////        //    UserId = i.BusinessOwnerId,
+        ////        //    UserFullName = i.BusinessOwner
+        ////        //}));
+
+        ////        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        //{
+        ////        //    SourceID = i.SourceID,
+        ////        //    RoleName = "Application Owner",
+        ////        //    UserId = i.ApplicationOwnerId,
+        ////        //    UserFullName = i.ApplicationOwner
+        ////        //}));
+
+        ////        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        //{
+        ////        //    SourceID = i.SourceID,
+        ////        //    RoleName = "Data Owner",
+        ////        //    UserId = string.Empty,
+        ////        //    UserFullName = i.DataOwner
+        ////        //}));
+
+        ////        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        //{
+        ////        //    SourceID = i.SourceID,
+        ////        //    RoleName = "Data Steward",
+        ////        //    UserId = i.DataStewardId,
+        ////        //    UserFullName = i.DataSteward
+        ////        //}));
+
+        ////        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        //{
+        ////        //    SourceID = i.SourceID,
+        ////        //    RoleName = "EDGM Steward",
+        ////        //    UserId = i.EDGMStewardId,
+        ////        //    UserFullName = string.Empty
+        ////        //}));
+
+        ////        //foreach (var app in root.items)
+        ////        //{
+        ////        //    app.ImpactsOn.items.ForEach(bu =>
+        ////        //    {
+        ////        //        d3sImpactRelationships.Add(
+        ////        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        ////        //        );
+        ////        //    });
+        ////        //}
+
+        ////        return root;
+        ////    };
+
+        ////    while (!string.IsNullOrEmpty(url))
+        ////    {
+        ////        try
+        ////        {
+        ////            var models = GetFromApi<IgcDynamicModels>(url, SourceAuthString);
+        ////            if (models != null)
+        ////            {
+        ////                parse(models);
+        ////                url = models.paging.next;
+        ////            }
+        ////        }
+        ////        catch (Exception ex)
+        ////        {
+        ////            CoreFunction.AITrackException(functionName, ex);
+        ////            url = null;
+        ////        }
+        ////    }
+
+        ////    // If any items to send to server.
+        ////    if (arr.Count > 0)
+        ////    {
+        ////        //var respString = PostJsonToApi(
+        ////        //    $"{TargetUri}ArtifactType/2/bulk",
+        ////        //    TargetAuthString,
+        ////        //    JsonConvert.SerializeObject(arr)
+        ////        //);
+        ////    }
+
+        ////    //// If any owners to send to server.
+        ////    //if (ownershipTopModel.Items.Count > 0)
+        ////    //{
+        ////    //    var uniqueUsers = ownershipTopModel.Items
+        ////    //        .Where(i => !string.IsNullOrEmpty(i.UserFullName) && !string.IsNullOrEmpty(i.UserId))
+        ////    //        .Select(i => new { i.UserFullName, i.UserId })
+        ////    //        .Distinct()
+        ////    //        .ToList();
+
+        ////    //    // Populate the UserIDs that are missing, based can be looked up by user's full name. TODO: Confirm this logic, as it may not be correct if two or more user's have the same name.
+        ////    //    foreach (var item in ownershipTopModel.Items.Where(i => string.IsNullOrEmpty(i.UserId)))
+        ////    //    {
+        ////    //        var match = uniqueUsers.FirstOrDefault(i => i.UserFullName == item.UserFullName);
+        ////    //        if (match != null)
+        ////    //        {
+        ////    //            item.UserId = match.UserId;
+        ////    //        }
+        ////    //    }
+
+        ////    //    //Now, remove any users whose internal ID cannot be resolved.
+        ////    //    ownershipTopModel.Items.RemoveAll(i => string.IsNullOrEmpty(i.UserId));
+
+        ////    //    var respString = PostJsonToApi(
+        ////    //        $"{TargetUri}ownership/bulk",
+        ////    //        TargetAuthString,
+        ////    //        JsonConvert.SerializeObject(ownershipTopModel)
+        ////    //    );
+        ////    //}
+
+        ////    //if (d3sImpactRelationships.Count > 0)
+        ////    //{
+        ////    //    //var respString = PostJsonToApi(
+        ////    //    //    $"{TargetUri}relationships/bulk",
+        ////    //    //    TargetAuthString,
+        ////    //    //    JsonConvert.SerializeObject(d3sImpactRelationships)
+        ////    //    //);
+        ////    //}
+        ////}
+
+
+        ////public static void GetDataFiles()
+        ////{
+        ////    var url = buildSearchUri("data_file", new List<string> {
+        ////            "short_description",
+        ////            "long_description",
+        ////            "parent_folder",
+        ////            "host",
+        ////            "labels",
+        ////            "stewards",
+        ////            //"assigned_to_terms",
+        ////            //"implements_rules",
+        ////            "governed_by_rules",
+        ////            "data_file_records",
+        ////            //"implements_data_file_definition",
+        ////            //"implements_physical_models",
+        ////            "custom_Catalog Status",
+        ////            "custom_Classification",
+        ////            //"custom_Comments",
+        ////            //"custom_Created By",
+        ////            //"custom_Data Steward",
+        ////            //"custom_Data Steward Id",
+        ////            //"custom_Frequency",
+        ////            "custom_Classification",//"custom_Information Classification",
+        ////            //"custom_Modified By",
+        ////            "custom_Output Format",
+        ////            //"custom_Owner",
+        ////            //"custom_Owner Id",
+        ////            "custom_Status",
+        ////            "alias_(business_name)",
+        ////            "path",
+        ////            //"store_type",
+        ////            "imported_from",
+        ////            //"impacted_by",
+        ////            //"impacts_on",
+        ////            "include_for_business_lineage",
+        ////            "suggested_term_assignments",
+        ////            "notes",
+        ////            "amazon_s3_data_files",
+        ////            "implements_data_file_definition",
+        ////            "implements_physical_models"
+        ////        });
+
+        ////    var arr = new List<dynamic>();
+        ////    //var d3sImpactRelationships = new List<D3sBusinesUnitApplicationCatalogRelationshipModel>();
+        ////    var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+
+        ////    Func<IgcDataFileModels, IgcDataFileModels> parse = delegate (IgcDataFileModels root)
+        ////    {
+        ////        arr.AddRange(root.items.ConvertAll<dynamic>(i => new
+        ////        {
+        ////            SourceID = i.SourceID,
+        ////            Name = i.Name,
+        ////            ShortDescription = i.ShortDescription,
+        ////            LongDescription = i.LongDescription,
+        ////            Classification = i.Classification,
+        ////            Location = i.Location,
+        ////            Notes = i.Notes
+        ////        }));
+
+        ////        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        //{
+        ////        //    SourceID = i.SourceID,
+        ////        //    RoleName = "Business Owner",
+        ////        //    UserId = i.BusinessOwnerId,
+        ////        //    UserFullName = i.BusinessOwner
+        ////        //}));
+
+        ////        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        //{
+        ////        //    SourceID = i.SourceID,
+        ////        //    RoleName = "Application Owner",
+        ////        //    UserId = i.ApplicationOwnerId,
+        ////        //    UserFullName = i.ApplicationOwner
+        ////        //}));
+
+        ////        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        //{
+        ////        //    SourceID = i.SourceID,
+        ////        //    RoleName = "Data Owner",
+        ////        //    UserId = string.Empty,
+        ////        //    UserFullName = i.DataOwner
+        ////        //}));
+
+        ////        ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        {
+        ////            SourceID = i.SourceID,
+        ////            RoleName = "Data Steward",
+        ////            UserId = i.DataStewardId,
+        ////            UserFullName = i.DataSteward
+        ////        }));
+
+        ////        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        ////        //{
+        ////        //    SourceID = i.SourceID,
+        ////        //    RoleName = "EDGM Steward",
+        ////        //    UserId = i.EDGMStewardId,
+        ////        //    UserFullName = string.Empty
+        ////        //}));
+
+        ////        //foreach (var app in root.items)
+        ////        //{
+        ////        //    app.ImpactsOn.items.ForEach(bu =>
+        ////        //    {
+        ////        //        d3sImpactRelationships.Add(
+        ////        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        ////        //        );
+        ////        //    });
+        ////        //}
+
+        ////        return root;
+        ////    };
+
+        ////    while (!string.IsNullOrEmpty(url))
+        ////    {
+        ////        try
+        ////        {
+        ////            var models = GetFromApi<IgcDataFileModels>(url, SourceAuthString);
+        ////            if (models != null)
+        ////            {
+        ////                parse(models);
+        ////                url = models.paging.next;
+        ////            }
+        ////        }
+        ////        catch (Exception ex)
+        ////        {
+        ////            CoreFunction.AITrackException(functionName, ex);
+        ////            url = null;
+        ////        }
+        ////    }
+
+        ////    // If any items to send to server.
+        ////    if (arr.Count > 0)
+        ////    {
+        ////        //var respString = PostJsonToApi(
+        ////        //    $"{TargetUri}ArtifactType/2/bulk",
+        ////        //    TargetAuthString,
+        ////        //    JsonConvert.SerializeObject(arr)
+        ////        //);
+        ////    }
+
+        ////    //// If any owners to send to server.
+        ////    //if (ownershipTopModel.Items.Count > 0)
+        ////    //{
+        ////    //    var uniqueUsers = ownershipTopModel.Items
+        ////    //        .Where(i => !string.IsNullOrEmpty(i.UserFullName) && !string.IsNullOrEmpty(i.UserId))
+        ////    //        .Select(i => new { i.UserFullName, i.UserId })
+        ////    //        .Distinct()
+        ////    //        .ToList();
+
+        ////    //    // Populate the UserIDs that are missing, based can be looked up by user's full name. TODO: Confirm this logic, as it may not be correct if two or more user's have the same name.
+        ////    //    foreach (var item in ownershipTopModel.Items.Where(i => string.IsNullOrEmpty(i.UserId)))
+        ////    //    {
+        ////    //        var match = uniqueUsers.FirstOrDefault(i => i.UserFullName == item.UserFullName);
+        ////    //        if (match != null)
+        ////    //        {
+        ////    //            item.UserId = match.UserId;
+        ////    //        }
+        ////    //    }
+
+        ////    //    //Now, remove any users whose internal ID cannot be resolved.
+        ////    //    ownershipTopModel.Items.RemoveAll(i => string.IsNullOrEmpty(i.UserId));
+
+        ////    //    var respString = PostJsonToApi(
+        ////    //        $"{TargetUri}ownership/bulk",
+        ////    //        TargetAuthString,
+        ////    //        JsonConvert.SerializeObject(ownershipTopModel)
+        ////    //    );
+        ////    //}
+
+        ////    //if (d3sImpactRelationships.Count > 0)
+        ////    //{
+        ////    //    //var respString = PostJsonToApi(
+        ////    //    //    $"{TargetUri}relationships/bulk",
+        ////    //    //    TargetAuthString,
+        ////    //    //    JsonConvert.SerializeObject(d3sImpactRelationships)
+        ////    //    //);
+        ////    //}
+        ////}
+        
+        #endregion
+
+        #region RRP
+
+        //public static void GetRrpFunctionalArea()
+        //{
+        //    var properties = "short_description,long_description".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$RRP-RRPFunctionalArea";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
+
+        //    var arr = new List<D3sRrpFunctionalAreaModel>();
+
+        //    Func<IgcRrpFunctionalAreaModels, IgcRrpFunctionalAreaModels> parse = delegate (IgcRrpFunctionalAreaModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sRrpFunctionalAreaModel>(i => new D3sRrpFunctionalAreaModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription
+        //        }));
+
+        //        return root;
+        //    };
+
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcRrpFunctionalAreaModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
+
+        //    try
+        //    {
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/3/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
+        //}
+
+        //public static void GetRrpLevel1()
+        //{
+        //    var properties = "short_description,long_description".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$RRP-RRPLevel1Service";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
+
+        //    var arr = new List<D3sRrpLevelOneModel>();
+
+        //    Func<IgcRrpLevelOneModels, IgcRrpLevelOneModels> parse = delegate (IgcRrpLevelOneModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sRrpLevelOneModel>(i => new D3sRrpLevelOneModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            ParentSourceID = i._context[0]._id,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription
+        //        }));
+
         //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
         //        //{
         //        //    SourceID = i.SourceID,
-        //        //    RoleName = "EDGM Steward",
-        //        //    UserId = i.EDGMStewardId,
-        //        //    UserFullName = string.Empty
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
         //        //}));
 
         //        //foreach (var app in root.items)
@@ -1184,7 +1351,7 @@ notes
         //    {
         //        try
         //        {
-        //            var models = GetFromApi<IgcDataFileModels>(url, SourceAuthString);
+        //            var models = GetFromApi<IgcRrpLevelOneModels>(url, SourceAuthString);
         //            if (models != null)
         //            {
         //                parse(models);
@@ -1198,889 +1365,719 @@ notes
         //        }
         //    }
 
-        //    // If any items to send to server.
-        //    if (arr.Count > 0)
+        //    try
         //    {
-        //        //var respString = PostJsonToApi(
-        //        //    $"{TargetUri}ArtifactType/2/bulk",
-        //        //    TargetAuthString,
-        //        //    JsonConvert.SerializeObject(arr)
-        //        //);
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/3/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
+        //}
+
+        //public static void GetRrpLevel2()
+        //{
+        //    var properties = "short_description,long_description".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$RRP-RRPLevel2Service";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
         //    }
 
-        //    //// If any owners to send to server.
-        //    //if (ownershipTopModel.Items.Count > 0)
-        //    //{
-        //    //    var uniqueUsers = ownershipTopModel.Items
-        //    //        .Where(i => !string.IsNullOrEmpty(i.UserFullName) && !string.IsNullOrEmpty(i.UserId))
-        //    //        .Select(i => new { i.UserFullName, i.UserId })
-        //    //        .Distinct()
-        //    //        .ToList();
+        //    var arr = new List<D3sRrpLevelTwoModel>();
 
-        //    //    // Populate the UserIDs that are missing, based can be looked up by user's full name. TODO: Confirm this logic, as it may not be correct if two or more user's have the same name.
-        //    //    foreach (var item in ownershipTopModel.Items.Where(i => string.IsNullOrEmpty(i.UserId)))
-        //    //    {
-        //    //        var match = uniqueUsers.FirstOrDefault(i => i.UserFullName == item.UserFullName);
-        //    //        if (match != null)
-        //    //        {
-        //    //            item.UserId = match.UserId;
-        //    //        }
-        //    //    }
+        //    Func<IgcRrpLevelTwoModels, IgcRrpLevelTwoModels> parse = delegate (IgcRrpLevelTwoModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sRrpLevelTwoModel>(i => new D3sRrpLevelTwoModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            ParentSourceID = i._context[1]._id,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription
+        //        }));
 
-        //    //    //Now, remove any users whose internal ID cannot be resolved.
-        //    //    ownershipTopModel.Items.RemoveAll(i => string.IsNullOrEmpty(i.UserId));
+        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        //{
+        //        //    SourceID = i.SourceID,
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
+        //        //}));
 
-        //    //    var respString = PostJsonToApi(
-        //    //        $"{TargetUri}ownership/bulk",
-        //    //        TargetAuthString,
-        //    //        JsonConvert.SerializeObject(ownershipTopModel)
-        //    //    );
-        //    //}
+        //        //foreach (var app in root.items)
+        //        //{
+        //        //    app.ImpactsOn.items.ForEach(bu =>
+        //        //    {
+        //        //        d3sImpactRelationships.Add(
+        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //        //        );
+        //        //    });
+        //        //}
 
-        //    //if (d3sImpactRelationships.Count > 0)
-        //    //{
-        //    //    //var respString = PostJsonToApi(
-        //    //    //    $"{TargetUri}relationships/bulk",
-        //    //    //    TargetAuthString,
-        //    //    //    JsonConvert.SerializeObject(d3sImpactRelationships)
-        //    //    //);
-        //    //}
+        //        return root;
+        //    };
+
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcRrpLevelTwoModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
+
+        //    try
+        //    {
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/3/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
         //}
-        
-        #endregion
 
-        #region RRP
+        //public static void GetRrpLevel3()
+        //{
+        //    var properties = "short_description,long_description".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$RRP-RRPLevel3Service";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
 
-        public static void GetRrpFunctionalArea()
-        {
-            var properties = "short_description,long_description".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$RRP-RRPFunctionalArea";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
+        //    var arr = new List<D3sRrpLevelThreeModel>();
 
-            var arr = new List<D3sRrpFunctionalAreaModel>();
+        //    Func<IgcRrpLevelThreeModels, IgcRrpLevelThreeModels> parse = delegate (IgcRrpLevelThreeModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sRrpLevelThreeModel>(i => new D3sRrpLevelThreeModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            ParentSourceID = i._context[2]._id,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription
+        //        }));
 
-            Func<IgcRrpFunctionalAreaModels, IgcRrpFunctionalAreaModels> parse = delegate (IgcRrpFunctionalAreaModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sRrpFunctionalAreaModel>(i => new D3sRrpFunctionalAreaModel
-                {
-                    SourceID = i.SourceID,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription
-                }));
+        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        //{
+        //        //    SourceID = i.SourceID,
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
+        //        //}));
 
-                return root;
-            };
+        //        //foreach (var app in root.items)
+        //        //{
+        //        //    app.ImpactsOn.items.ForEach(bu =>
+        //        //    {
+        //        //        d3sImpactRelationships.Add(
+        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //        //        );
+        //        //    });
+        //        //}
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcRrpFunctionalAreaModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
+        //        return root;
+        //    };
 
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/3/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcRrpLevelThreeModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
 
-        public static void GetRrpLevel1()
-        {
-            var properties = "short_description,long_description".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$RRP-RRPLevel1Service";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
-
-            var arr = new List<D3sRrpLevelOneModel>();
-
-            Func<IgcRrpLevelOneModels, IgcRrpLevelOneModels> parse = delegate (IgcRrpLevelOneModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sRrpLevelOneModel>(i => new D3sRrpLevelOneModel
-                {
-                    SourceID = i.SourceID,
-                    ParentSourceID = i._context[0]._id,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription
-                }));
-
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
-
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
-
-                return root;
-            };
-
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcRrpLevelOneModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
-
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/3/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
-
-        public static void GetRrpLevel2()
-        {
-            var properties = "short_description,long_description".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$RRP-RRPLevel2Service";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
-
-            var arr = new List<D3sRrpLevelTwoModel>();
-
-            Func<IgcRrpLevelTwoModels, IgcRrpLevelTwoModels> parse = delegate (IgcRrpLevelTwoModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sRrpLevelTwoModel>(i => new D3sRrpLevelTwoModel
-                {
-                    SourceID = i.SourceID,
-                    ParentSourceID = i._context[1]._id,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription
-                }));
-
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
-
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
-
-                return root;
-            };
-
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcRrpLevelTwoModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
-
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/3/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
-
-        public static void GetRrpLevel3()
-        {
-            var properties = "short_description,long_description".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$RRP-RRPLevel3Service";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
-
-            var arr = new List<D3sRrpLevelThreeModel>();
-
-            Func<IgcRrpLevelThreeModels, IgcRrpLevelThreeModels> parse = delegate (IgcRrpLevelThreeModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sRrpLevelThreeModel>(i => new D3sRrpLevelThreeModel
-                {
-                    SourceID = i.SourceID,
-                    ParentSourceID = i._context[2]._id,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription
-                }));
-
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
-
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
-
-                return root;
-            };
-
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcRrpLevelThreeModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
-
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/3/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
+        //    try
+        //    {
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/3/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
+        //}
 
         #endregion
 
         #region Business Unit
 
-        public static void GetBuLevel1()
-        {
-            var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel1";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
+        //public static void GetBuLevel1()
+        //{
+        //    var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel1";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
 
-            var arr = new List<D3sBuTopModel>();
+        //    var arr = new List<D3sBuTopModel>();
 
-            Func<IgcBuTopModels, IgcBuTopModels> parse = delegate (IgcBuTopModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sBuTopModel>(i => new D3sBuTopModel
-                {
-                    SourceID = i.SourceID,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription,
-                    BusinessOwner = i.BusinessOwner,
-                    BusinessOwnerId = i.BusinessOwnerId,
-                    BusinessUnitID = i.BusinessUnitId
-                }));
+        //    Func<IgcBuTopModels, IgcBuTopModels> parse = delegate (IgcBuTopModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sBuTopModel>(i => new D3sBuTopModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription,
+        //            BusinessOwner = i.BusinessOwner,
+        //            BusinessOwnerId = i.BusinessOwnerId,
+        //            BusinessUnitID = i.BusinessUnitId
+        //        }));
 
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
+        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        //{
+        //        //    SourceID = i.SourceID,
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
+        //        //}));
 
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
+        //        //foreach (var app in root.items)
+        //        //{
+        //        //    app.ImpactsOn.items.ForEach(bu =>
+        //        //    {
+        //        //        d3sImpactRelationships.Add(
+        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //        //        );
+        //        //    });
+        //        //}
 
-                return root;
-            };
+        //        return root;
+        //    };
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcBuTopModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcBuTopModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
 
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/7/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
+        //    try
+        //    {
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/7/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
 
-        }
+        //}
 
-        public static void GetBuLevel2()
-        {
-            var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel2";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
+        //public static void GetBuLevel2()
+        //{
+        //    var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel2";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
 
-            var arr = new List<D3sBuChildModel>();
+        //    var arr = new List<D3sBuChildModel>();
 
-            Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
-                {
-                    SourceID = i.SourceID,
-                    ParentSourceID = i._context[0]._id,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription,
-                    BusinessOwner = i.BusinessOwner,
-                    BusinessOwnerId = i.BusinessOwnerId,
-                    BusinessUnitID = i.BusinessUnitId
-                }));
+        //    Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            ParentSourceID = i._context[0]._id,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription,
+        //            BusinessOwner = i.BusinessOwner,
+        //            BusinessOwnerId = i.BusinessOwnerId,
+        //            BusinessUnitID = i.BusinessUnitId
+        //        }));
 
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
+        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        //{
+        //        //    SourceID = i.SourceID,
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
+        //        //}));
 
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
+        //        //foreach (var app in root.items)
+        //        //{
+        //        //    app.ImpactsOn.items.ForEach(bu =>
+        //        //    {
+        //        //        d3sImpactRelationships.Add(
+        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //        //        );
+        //        //    });
+        //        //}
 
-                return root;
-            };
+        //        return root;
+        //    };
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
 
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/7/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
+        //    try
+        //    {
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/7/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
+        //}
 
-        public static void GetBuLevel3()
-        {
-            var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel3";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
+        //public static void GetBuLevel3()
+        //{
+        //    var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel3";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
 
-            var arr = new List<D3sBuChildModel>();
+        //    var arr = new List<D3sBuChildModel>();
 
-            Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
-                {
-                    SourceID = i.SourceID,
-                    ParentSourceID = i._context[1]._id,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription,
-                    BusinessOwner = i.BusinessOwner,
-                    BusinessOwnerId = i.BusinessOwnerId,
-                    BusinessUnitID = i.BusinessUnitId
-                }));
+        //    Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            ParentSourceID = i._context[1]._id,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription,
+        //            BusinessOwner = i.BusinessOwner,
+        //            BusinessOwnerId = i.BusinessOwnerId,
+        //            BusinessUnitID = i.BusinessUnitId
+        //        }));
 
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
+        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        //{
+        //        //    SourceID = i.SourceID,
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
+        //        //}));
 
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
+        //        //foreach (var app in root.items)
+        //        //{
+        //        //    app.ImpactsOn.items.ForEach(bu =>
+        //        //    {
+        //        //        d3sImpactRelationships.Add(
+        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //        //        );
+        //        //    });
+        //        //}
 
-                return root;
-            };
+        //        return root;
+        //    };
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
 
-            try
-            {
-            var respString = PostJsonToApi(
-                $"{TargetUri}TaxonomyType/7/bulk",
-                TargetAuthString,
-                JsonConvert.SerializeObject(arr)
-            );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
+        //    try
+        //    {
+        //    var respString = PostJsonToApi(
+        //        $"{TargetUri}TaxonomyType/7/bulk",
+        //        TargetAuthString,
+        //        JsonConvert.SerializeObject(arr)
+        //    );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
+        //}
 
-        public static void GetBuLevel4()
-        {
-            var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel4";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
+        //public static void GetBuLevel4()
+        //{
+        //    var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel4";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
 
-            var arr = new List<D3sBuChildModel>();
+        //    var arr = new List<D3sBuChildModel>();
 
-            Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
-                {
-                    SourceID = i.SourceID,
-                    ParentSourceID = i._context[2]._id,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription,
-                    BusinessOwner = i.BusinessOwner,
-                    BusinessOwnerId = i.BusinessOwnerId,
-                    BusinessUnitID = i.BusinessUnitId
-                }));
+        //    Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            ParentSourceID = i._context[2]._id,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription,
+        //            BusinessOwner = i.BusinessOwner,
+        //            BusinessOwnerId = i.BusinessOwnerId,
+        //            BusinessUnitID = i.BusinessUnitId
+        //        }));
 
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
+        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        //{
+        //        //    SourceID = i.SourceID,
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
+        //        //}));
 
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
+        //        //foreach (var app in root.items)
+        //        //{
+        //        //    app.ImpactsOn.items.ForEach(bu =>
+        //        //    {
+        //        //        d3sImpactRelationships.Add(
+        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //        //        );
+        //        //    });
+        //        //}
 
-                return root;
-            };
+        //        return root;
+        //    };
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
 
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/7/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
+        //    try
+        //    {
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/7/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
+        //}
 
-        public static void GetBuLevel5()
-        {
-            var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel5";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
+        //public static void GetBuLevel5()
+        //{
+        //    var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel5";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
 
-            var arr = new List<D3sBuChildModel>();
+        //    var arr = new List<D3sBuChildModel>();
 
-            Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
-                {
-                    SourceID = i.SourceID,
-                    ParentSourceID = i._context[3]._id,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription,
-                    BusinessOwner = i.BusinessOwner,
-                    BusinessOwnerId = i.BusinessOwnerId,
-                    BusinessUnitID = i.BusinessUnitId
-                }));
+        //    Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            ParentSourceID = i._context[3]._id,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription,
+        //            BusinessOwner = i.BusinessOwner,
+        //            BusinessOwnerId = i.BusinessOwnerId,
+        //            BusinessUnitID = i.BusinessUnitId
+        //        }));
 
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
+        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        //{
+        //        //    SourceID = i.SourceID,
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
+        //        //}));
 
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
+        //        //foreach (var app in root.items)
+        //        //{
+        //        //    app.ImpactsOn.items.ForEach(bu =>
+        //        //    {
+        //        //        d3sImpactRelationships.Add(
+        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //        //        );
+        //        //    });
+        //        //}
 
-                return root;
-            };
+        //        return root;
+        //    };
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
 
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/7/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
+        //    try
+        //    {
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/7/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
+        //}
 
-        public static void GetBuLevel6()
-        {
-            var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel6";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
+        //public static void GetBuLevel6()
+        //{
+        //    var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel6";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
 
-            var arr = new List<D3sBuChildModel>();
+        //    var arr = new List<D3sBuChildModel>();
 
-            Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
-                {
-                    SourceID = i.SourceID,
-                    ParentSourceID = i._context[4]._id,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription,
-                    BusinessOwner = i.BusinessOwner,
-                    BusinessOwnerId = i.BusinessOwnerId,
-                    BusinessUnitID = i.BusinessUnitId
-                }));
+        //    Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            ParentSourceID = i._context[4]._id,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription,
+        //            BusinessOwner = i.BusinessOwner,
+        //            BusinessOwnerId = i.BusinessOwnerId,
+        //            BusinessUnitID = i.BusinessUnitId
+        //        }));
 
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
+        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        //{
+        //        //    SourceID = i.SourceID,
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
+        //        //}));
 
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
+        //        //foreach (var app in root.items)
+        //        //{
+        //        //    app.ImpactsOn.items.ForEach(bu =>
+        //        //    {
+        //        //        d3sImpactRelationships.Add(
+        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //        //        );
+        //        //    });
+        //        //}
 
-                return root;
-            };
+        //        return root;
+        //    };
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
 
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/7/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
+        //    try
+        //    {
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/7/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
+        //}
 
-        public static void GetBuLevel7()
-        {
-            var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
-            var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel7";
-            foreach (var p in properties)
-            {
-                url += $"&properties={p}";
-            }
+        //public static void GetBuLevel7()
+        //{
+        //    var properties = "short_description,long_description,$BusinessUnitId,$BusinessOwnerId,$BusinessOwner".Split(',');
+        //    var url = $"{SourceUri}search/?pageSize=75&types=$BUOrg-BusinessUnitLevel7";
+        //    foreach (var p in properties)
+        //    {
+        //        url += $"&properties={p}";
+        //    }
 
-            var arr = new List<D3sBuChildModel>();
+        //    var arr = new List<D3sBuChildModel>();
 
-            Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
-            {
-                arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
-                {
-                    SourceID = i.SourceID,
-                    ParentSourceID = i._context[5]._id,
-                    Name = i.Name,
-                    ShortDescription = i.ShortDescription,
-                    LongDescription = i.LongDescription,
-                    BusinessOwner = i.BusinessOwner,
-                    BusinessOwnerId = i.BusinessOwnerId,
-                    BusinessUnitID = i.BusinessUnitId
-                }));
+        //    Func<IgcBuChildModels, IgcBuChildModels> parse = delegate (IgcBuChildModels root)
+        //    {
+        //        arr.AddRange(root.items.ConvertAll<D3sBuChildModel>(i => new D3sBuChildModel
+        //        {
+        //            SourceID = i.SourceID,
+        //            ParentSourceID = i._context[5]._id,
+        //            Name = i.Name,
+        //            ShortDescription = i.ShortDescription,
+        //            LongDescription = i.LongDescription,
+        //            BusinessOwner = i.BusinessOwner,
+        //            BusinessOwnerId = i.BusinessOwnerId,
+        //            BusinessUnitID = i.BusinessUnitId
+        //        }));
 
-                //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
-                //{
-                //    SourceID = i.SourceID,
-                //    RoleName = "Business Owner",
-                //    UserId = i.BusinessOwnerId,
-                //    UserFullName = i.BusinessOwner
-                //}));
+        //        //ownershipTopModel.Items.AddRange(root.items.ConvertAll<D3sOwnershipModel>(i => new D3sOwnershipModel
+        //        //{
+        //        //    SourceID = i.SourceID,
+        //        //    RoleName = "Business Owner",
+        //        //    UserId = i.BusinessOwnerId,
+        //        //    UserFullName = i.BusinessOwner
+        //        //}));
 
-                //foreach (var app in root.items)
-                //{
-                //    app.ImpactsOn.items.ForEach(bu =>
-                //    {
-                //        d3sImpactRelationships.Add(
-                //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
-                //        );
-                //    });
-                //}
+        //        //foreach (var app in root.items)
+        //        //{
+        //        //    app.ImpactsOn.items.ForEach(bu =>
+        //        //    {
+        //        //        d3sImpactRelationships.Add(
+        //        //            new D3sBusinesUnitApplicationCatalogRelationshipModel { SubjectSourceID = bu.SourceID, ObjectSourceID = app.SourceID, PredicateType = 7 }
+        //        //        );
+        //        //    });
+        //        //}
 
-                return root;
-            };
+        //        return root;
+        //    };
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
-                    if (models != null)
-                    {
-                        parse(models);
-                        url = models.paging.next;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
-                }
-            }
+        //    while (!string.IsNullOrEmpty(url))
+        //    {
+        //        try
+        //        {
+        //            var models = GetFromApi<IgcBuChildModels>(url, SourceAuthString);
+        //            if (models != null)
+        //            {
+        //                parse(models);
+        //                url = models.paging.next;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            CoreFunction.AITrackException(functionName, ex);
+        //            url = null;
+        //        }
+        //    }
 
-            try
-            {
-                var respString = PostJsonToApi(
-                    $"{TargetUri}TaxonomyType/7/bulk",
-                    TargetAuthString,
-                    JsonConvert.SerializeObject(arr)
-                );
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-        }
+        //    try
+        //    {
+        //        var respString = PostJsonToApi(
+        //            $"{TargetUri}TaxonomyType/7/bulk",
+        //            TargetAuthString,
+        //            JsonConvert.SerializeObject(arr)
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CoreFunction.AITrackException(functionName, ex);
+        //    }
+        //}
 
         #endregion
     }

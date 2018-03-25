@@ -1,5 +1,4 @@
-﻿using ApplicationInsights.Helpers.WebJobs;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.utils.company;
 using Dapper;
@@ -16,20 +15,7 @@ namespace igx.jobs.resourcecache
     {
         static void Main()
         {
-            var config = new JobHostConfiguration
-            {
-                DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                NameResolver = new QueueNameResolver()
-            };
-
-            if (config.IsDevelopment)
-            {
-                config.UseDevelopmentSettings();
-            }
-
-            config.UseApplicationInsights();
-            config.UseCore();
+            var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
 
             var host = new JobHost(config);

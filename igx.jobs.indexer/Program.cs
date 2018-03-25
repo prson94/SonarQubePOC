@@ -18,20 +18,7 @@ namespace igx.jobs.indexer
     {
         static void Main()
         {
-            var config = new JobHostConfiguration {
-                DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                NameResolver = new QueueNameResolver()
-            };
-
-            if (config.IsDevelopment)
-            {
-                config.UseDevelopmentSettings();
-            }
-
-            config.UseApplicationInsights();
-            config.UseCore();
-            //config.UseServiceBus();
+            var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
 
             var host = new JobHost(config);

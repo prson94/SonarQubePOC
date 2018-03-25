@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using d360.core.enums;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
@@ -28,6 +29,9 @@ namespace d360.core.entities
 
         [DataMember]
         public List<string> Errors { get; set; }
+
+        [DataMember]
+        public bool ForceRefresh { get; set; } = false;
     }
 
     [CollectionDataContract(Name = "items")]
@@ -44,5 +48,8 @@ namespace d360.core.entities
 
         [DataMember]
         public string Action { get; set; }
+
+        [DataMember]
+        public PredicateType PredicateType { get; set; } = PredicateType.Simple;
     }
 }

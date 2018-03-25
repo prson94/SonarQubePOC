@@ -37,6 +37,32 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.reportlayer", "igx
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.resourcecache", "igx.jobs.resourcecache\igx.jobs.resourcecache.csproj", "{FF774B2C-787A-4694-BF07-B4A641D15E4F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.databasetaskprocessor", "igx.jobs.databasetaskprocessor\igx.jobs.databasetaskprocessor.csproj", "{BE8136FF-C54D-4C40-B563-CB13C08C84CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.bulkloadprocessor", "igx.jobs.bulkloadprocessor\igx.jobs.bulkloadprocessor.csproj", "{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.databasecleaner", "igx.jobs.databasecleaner\igx.jobs.databasecleaner.csproj", "{BB4B3F08-534C-45F8-808A-67E911A20311}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.dataqualitychecker", "igx.jobs.dataqualitychecker\igx.jobs.dataqualitychecker.csproj", "{CF4CA05C-5DF2-4DA1-9F34-37D9DF3F8B66}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.eaglemessagestreamprocessor", "igx.jobs.eaglemessagestreamprocessor\igx.jobs.eaglemessagestreamprocessor.csproj", "{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.fusionruleprocessor", "igx.jobs.fusionruleprocessor\igx.jobs.fusionruleprocessor.csproj", "{3514F594-C5D3-447B-A9D4-735F886C9B2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.fusionscheduleprocessor", "igx.jobs.fusionscheduleprocessor\igx.jobs.fusionscheduleprocessor.csproj", "{D47484B5-50F6-4EDA-A47B-51CA86D40164}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.responsibilityruleprocessor", "igx.jobs.responsibilityruleprocessor\igx.jobs.responsibilityruleprocessor.csproj", "{F202BF6D-6727-4DEF-B2DC-CD63FED71F3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.ruleresultprocessor", "igx.jobs.ruleresultprocessor\igx.jobs.ruleresultprocessor.csproj", "{89FB621B-F772-488C-8F15-74094649C71F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.scheduledworkflowprocessor", "igx.jobs.scheduledworkflowprocessor\igx.jobs.scheduledworkflowprocessor.csproj", "{56EF60B9-DEB0-4F27-B734-1989B180788E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.scoreprocessor", "igx.jobs.scoreprocessor\igx.jobs.scoreprocessor.csproj", "{795C450D-34F3-441C-BE8C-EC391D374FD9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.workflowsubscriber", "igx.jobs.workflowsubscriber\igx.jobs.workflowsubscriber.csproj", "{C36A8BA3-5979-4087-8CC9-7EDE903F6EC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.fusionloadprocessor", "igx.jobs.fusionloadprocessor\igx.jobs.fusionloadprocessor.csproj", "{09735143-0F52-4A88-9DF2-CD0B6E19D34D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +121,58 @@ Global
 		{FF774B2C-787A-4694-BF07-B4A641D15E4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF774B2C-787A-4694-BF07-B4A641D15E4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF774B2C-787A-4694-BF07-B4A641D15E4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE8136FF-C54D-4C40-B563-CB13C08C84CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE8136FF-C54D-4C40-B563-CB13C08C84CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE8136FF-C54D-4C40-B563-CB13C08C84CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE8136FF-C54D-4C40-B563-CB13C08C84CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB4B3F08-534C-45F8-808A-67E911A20311}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB4B3F08-534C-45F8-808A-67E911A20311}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB4B3F08-534C-45F8-808A-67E911A20311}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB4B3F08-534C-45F8-808A-67E911A20311}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF4CA05C-5DF2-4DA1-9F34-37D9DF3F8B66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF4CA05C-5DF2-4DA1-9F34-37D9DF3F8B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF4CA05C-5DF2-4DA1-9F34-37D9DF3F8B66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF4CA05C-5DF2-4DA1-9F34-37D9DF3F8B66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3514F594-C5D3-447B-A9D4-735F886C9B2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3514F594-C5D3-447B-A9D4-735F886C9B2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3514F594-C5D3-447B-A9D4-735F886C9B2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3514F594-C5D3-447B-A9D4-735F886C9B2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D47484B5-50F6-4EDA-A47B-51CA86D40164}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D47484B5-50F6-4EDA-A47B-51CA86D40164}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D47484B5-50F6-4EDA-A47B-51CA86D40164}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D47484B5-50F6-4EDA-A47B-51CA86D40164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F202BF6D-6727-4DEF-B2DC-CD63FED71F3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F202BF6D-6727-4DEF-B2DC-CD63FED71F3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F202BF6D-6727-4DEF-B2DC-CD63FED71F3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F202BF6D-6727-4DEF-B2DC-CD63FED71F3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89FB621B-F772-488C-8F15-74094649C71F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89FB621B-F772-488C-8F15-74094649C71F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89FB621B-F772-488C-8F15-74094649C71F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89FB621B-F772-488C-8F15-74094649C71F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56EF60B9-DEB0-4F27-B734-1989B180788E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56EF60B9-DEB0-4F27-B734-1989B180788E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56EF60B9-DEB0-4F27-B734-1989B180788E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56EF60B9-DEB0-4F27-B734-1989B180788E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{795C450D-34F3-441C-BE8C-EC391D374FD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{795C450D-34F3-441C-BE8C-EC391D374FD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{795C450D-34F3-441C-BE8C-EC391D374FD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{795C450D-34F3-441C-BE8C-EC391D374FD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C36A8BA3-5979-4087-8CC9-7EDE903F6EC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C36A8BA3-5979-4087-8CC9-7EDE903F6EC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C36A8BA3-5979-4087-8CC9-7EDE903F6EC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C36A8BA3-5979-4087-8CC9-7EDE903F6EC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09735143-0F52-4A88-9DF2-CD0B6E19D34D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09735143-0F52-4A88-9DF2-CD0B6E19D34D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09735143-0F52-4A88-9DF2-CD0B6E19D34D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09735143-0F52-4A88-9DF2-CD0B6E19D34D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,13 +192,26 @@ Global
 		{757CF48D-6728-4702-AC12-754629196548} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 		{9902BB38-7BC7-4CA9-8C35-C23E8F50CD47} = {757CF48D-6728-4702-AC12-754629196548}
 		{FF774B2C-787A-4694-BF07-B4A641D15E4F} = {757CF48D-6728-4702-AC12-754629196548}
+		{BE8136FF-C54D-4C40-B563-CB13C08C84CF} = {757CF48D-6728-4702-AC12-754629196548}
+		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1} = {757CF48D-6728-4702-AC12-754629196548}
+		{BB4B3F08-534C-45F8-808A-67E911A20311} = {757CF48D-6728-4702-AC12-754629196548}
+		{CF4CA05C-5DF2-4DA1-9F34-37D9DF3F8B66} = {757CF48D-6728-4702-AC12-754629196548}
+		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C} = {757CF48D-6728-4702-AC12-754629196548}
+		{3514F594-C5D3-447B-A9D4-735F886C9B2C} = {757CF48D-6728-4702-AC12-754629196548}
+		{D47484B5-50F6-4EDA-A47B-51CA86D40164} = {757CF48D-6728-4702-AC12-754629196548}
+		{F202BF6D-6727-4DEF-B2DC-CD63FED71F3F} = {757CF48D-6728-4702-AC12-754629196548}
+		{89FB621B-F772-488C-8F15-74094649C71F} = {757CF48D-6728-4702-AC12-754629196548}
+		{56EF60B9-DEB0-4F27-B734-1989B180788E} = {757CF48D-6728-4702-AC12-754629196548}
+		{795C450D-34F3-441C-BE8C-EC391D374FD9} = {757CF48D-6728-4702-AC12-754629196548}
+		{C36A8BA3-5979-4087-8CC9-7EDE903F6EC8} = {757CF48D-6728-4702-AC12-754629196548}
+		{09735143-0F52-4A88-9DF2-CD0B6E19D34D} = {757CF48D-6728-4702-AC12-754629196548}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 14
+		SccNumberOfProjects = 27
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/
 		SccLocalPath0 = .
@@ -176,5 +267,57 @@ Global
 		SccProjectTopLevelParentUniqueName13 = D360.sln
 		SccProjectName13 = igx.jobs.resourcecache
 		SccLocalPath13 = igx.jobs.resourcecache
+		SccProjectUniqueName14 = igx.jobs.databasetaskprocessor\\igx.jobs.databasetaskprocessor.csproj
+		SccProjectTopLevelParentUniqueName14 = D360.sln
+		SccProjectName14 = igx.jobs.databasetaskprocessor
+		SccLocalPath14 = igx.jobs.databasetaskprocessor
+		SccProjectUniqueName15 = igx.jobs.bulkloadprocessor\\igx.jobs.bulkloadprocessor.csproj
+		SccProjectTopLevelParentUniqueName15 = D360.sln
+		SccProjectName15 = igx.jobs.bulkloadprocessor
+		SccLocalPath15 = igx.jobs.bulkloadprocessor
+		SccProjectUniqueName16 = igx.jobs.databasecleaner\\igx.jobs.databasecleaner.csproj
+		SccProjectTopLevelParentUniqueName16 = D360.sln
+		SccProjectName16 = igx.jobs.databasecleaner
+		SccLocalPath16 = igx.jobs.databasecleaner
+		SccProjectUniqueName17 = igx.jobs.dataqualitychecker\\igx.jobs.dataqualitychecker.csproj
+		SccProjectTopLevelParentUniqueName17 = D360.sln
+		SccProjectName17 = igx.jobs.dataqualitychecker
+		SccLocalPath17 = igx.jobs.dataqualitychecker
+		SccProjectUniqueName18 = igx.jobs.eaglemessagestreamprocessor\\igx.jobs.eaglemessagestreamprocessor.csproj
+		SccProjectTopLevelParentUniqueName18 = D360.sln
+		SccProjectName18 = igx.jobs.eaglemessagestreamprocessor
+		SccLocalPath18 = igx.jobs.eaglemessagestreamprocessor
+		SccProjectUniqueName19 = igx.jobs.fusionruleprocessor\\igx.jobs.fusionruleprocessor.csproj
+		SccProjectTopLevelParentUniqueName19 = D360.sln
+		SccProjectName19 = igx.jobs.fusionruleprocessor
+		SccLocalPath19 = igx.jobs.fusionruleprocessor
+		SccProjectUniqueName20 = igx.jobs.fusionscheduleprocessor\\igx.jobs.fusionscheduleprocessor.csproj
+		SccProjectTopLevelParentUniqueName20 = D360.sln
+		SccProjectName20 = igx.jobs.fusionscheduleprocessor
+		SccLocalPath20 = igx.jobs.fusionscheduleprocessor
+		SccProjectUniqueName21 = igx.jobs.responsibilityruleprocessor\\igx.jobs.responsibilityruleprocessor.csproj
+		SccProjectTopLevelParentUniqueName21 = D360.sln
+		SccProjectName21 = igx.jobs.responsibilityruleprocessor
+		SccLocalPath21 = igx.jobs.responsibilityruleprocessor
+		SccProjectUniqueName22 = igx.jobs.ruleresultprocessor\\igx.jobs.ruleresultprocessor.csproj
+		SccProjectTopLevelParentUniqueName22 = D360.sln
+		SccProjectName22 = igx.jobs.ruleresultprocessor
+		SccLocalPath22 = igx.jobs.ruleresultprocessor
+		SccProjectUniqueName23 = igx.jobs.scheduledworkflowprocessor\\igx.jobs.scheduledworkflowprocessor.csproj
+		SccProjectTopLevelParentUniqueName23 = D360.sln
+		SccProjectName23 = igx.jobs.scheduledworkflowprocessor
+		SccLocalPath23 = igx.jobs.scheduledworkflowprocessor
+		SccProjectUniqueName24 = igx.jobs.scoreprocessor\\igx.jobs.scoreprocessor.csproj
+		SccProjectTopLevelParentUniqueName24 = D360.sln
+		SccProjectName24 = igx.jobs.scoreprocessor
+		SccLocalPath24 = igx.jobs.scoreprocessor
+		SccProjectUniqueName25 = igx.jobs.workflowsubscriber\\igx.jobs.workflowsubscriber.csproj
+		SccProjectTopLevelParentUniqueName25 = D360.sln
+		SccProjectName25 = igx.jobs.workflowsubscriber
+		SccLocalPath25 = igx.jobs.workflowsubscriber
+		SccProjectUniqueName26 = igx.jobs.fusionloadprocessor\\igx.jobs.fusionloadprocessor.csproj
+		SccProjectTopLevelParentUniqueName26 = D360.sln
+		SccProjectName26 = igx.jobs.fusionloadprocessor
+		SccLocalPath26 = igx.jobs.fusionloadprocessor
 	EndGlobalSection
 EndGlobal

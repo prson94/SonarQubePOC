@@ -20,19 +20,7 @@ namespace igx.jobs.reportlayer
     {
         static void Main()
         {
-            var config = new JobHostConfiguration {
-                DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                NameResolver = new QueueNameResolver()
-            };
-
-            if (config.IsDevelopment)
-            {
-                config.UseDevelopmentSettings();
-            }
-
-            config.UseApplicationInsights();
-            config.UseCore();
+            var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
 
             var host = new JobHost(config);
