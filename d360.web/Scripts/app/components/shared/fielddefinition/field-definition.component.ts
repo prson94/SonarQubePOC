@@ -120,6 +120,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     moveUp(field: FieldDefinition) {
+        this.isLoading = true;
         this.fieldsService.moveUp(field.ObjectType, parseInt(field.ObjectID), field.ID)
             .then(r => {                
                 this.load();
@@ -128,6 +129,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     moveDown(field: FieldDefinition) {
+        this.isLoading = true;
         this.fieldsService.moveDown(field.ObjectType, parseInt(field.ObjectID), field.ID)
             .then(r => {                
                 this.load();
