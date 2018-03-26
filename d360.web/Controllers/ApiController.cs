@@ -2941,6 +2941,33 @@ end",
                         setColumnTypeInfo(ft, i, oc);
                         columnModels.Add(oc);
                     }
+                    else if (i.FieldTypeName.ToLower() == "displayvalue")
+                    {
+                        var oc = new ComplexColumnModel
+                        {
+                            DisplayColumn = $@"(select D.DisplayValue from Asset a
+                                cross apply dbo.GetAssetDisplayValueById(a.ID) D
+                                where a.[Object] = '{join.Object.Replace("Type", "")}' and a.[ObjectID] = A{pos}.ID)",
+                            SortColumn = i.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"A{pos}DisplayValue") : string.Empty,
+                            datafield = $"{dataField}",
+                            text = i.OverrideDisplayName ?? i.FieldTypeName,
+                            OutputColumn = true,
+                            Width = i.Width,
+                            contextfield = $"{dataField}_Context",
+                            objectfield = $"{dataField}_Object",
+                            objectidfield = $"{dataField}_ObjectID",
+                            urlfield = $"{dataField}_Url"
+                        };
+                        setColumnTypeInfo(ft, i, oc);
+                        oc.datafieldtype = "lookup"; //must be done after function call above.
+                        columnModels.Add(oc);
+
+                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{join.Object.Replace("Type", "")}'", datafield = $"{dataField}_Object" });
+                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('{join.Object.Replace("Type", "")}', A{pos}.ArtifactTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+
+                    }
                     else if (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID)
                     {
                         #region IntersectType field
