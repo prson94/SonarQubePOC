@@ -3218,6 +3218,157 @@ end",
             });
         }
 
+        private void loadComplexLookupJoin(string type, int id, List<FieldTypeComplexLookupDefinitionRelation> joins, int i, out string objectCol, out string idCol)
+        {
+            var join = joins[i];
+            var currentObj = join.Object;
+
+            if (join.ObjectID > 0)
+                currentObj = currentObj.Replace("Type", "");
+
+            var currentObjTable = currentObj;
+            var currentObjIdColumn = "ID";
+            if (currentObj == "Resource")
+            {
+                currentObjTable = "reporting.Global_Resource";
+                currentObjIdColumn = "ResourceID";
+            }
+            else
+            {
+                currentObjTable = "[" + currentObj + "]";
+            }
+
+            var addDeletedCheck = currentObj.Equals("FusionAttribute", StringComparison.CurrentCultureIgnoreCase) ||
+                                                      currentObj.Equals("FusionQueryAttribute", StringComparison.CurrentCultureIgnoreCase);
+            var previousObj = (i > 0) ? joins[i - 1].Object.Replace("Type", "") : "";
+            var objColumn = "";
+            var objIDColumn = "";
+            var joinType = "inner"; //the SQL join.
+
+            var permissionJoin = $@"
+                inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID 
+                left join AssetWithoutReadPermission RP{i} on RP{i}.ResourceID = {Company.CurrentResourceID} and RP{i}.AssetID = O{i}.ID ";
+            var permissionsWhere = $" and RP{i}.AssetID is null ";
+            switch (currentObj.ToLower())
+            {
+                case "artifact":
+                case "policy":
+                case "taxonomy":
+                    break;
+                default:
+                    permissionJoin = "";
+                    permissionsWhere = "";
+                    break;
+            }
+
+            switch (join.RelationType)
+            {
+                case ComplexLookupRelationType.StandardRelationhip:
+                    #region
+                    join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{currentObjIdColumn} ) )";
+                    if (i == 0)
+                    {
+                        join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                        join.JoinStatement += permissionJoin;
+                        join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                        join.WhereStatement += permissionsWhere;
+                        objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
+                        objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                    }
+                    else
+                    {
+                        join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                        join.JoinStatement += permissionJoin;
+                        join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+
+                        objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
+                        objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                    }
+                    if (addDeletedCheck)
+                    {
+                        join.JoinStatement += $" and (A{i}.Deleted = 0 OR A{i}.Deleted is null)";
+                    }
+                    break;
+                #endregion
+                case ComplexLookupRelationType.ChildRelationship:
+                    #region
+                    join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null)";
+                    join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
+                    join.JoinStatement += permissionJoin;
+                    objColumn = $"'{join.Object.Replace("Type", "")}'";
+                    objIDColumn = $"I{i}.ObjectID";
+                    if (i == 0)
+                    {
+                        join.WhereStatement = $"( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) ) and (I{i}.Deleted = 0 or I{i}.Deleted is null)";
+                    }
+                    if (addDeletedCheck)
+                    {
+                        join.JoinStatement += $" and A{i}.Deleted = 0";
+                    }
+                    join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                    break;
+                #endregion
+                case ComplexLookupRelationType.ChildItem:
+                    #region
+                    switch (join.Object)
+                    {
+                        case "ArtifactType":
+                            join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',A{i - 1}.ID))";
+                            if (i == 0)
+                            {
+                                join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',{id}))";
+                            }
+                            break;
+                        case "FusionAttributeType":
+                            join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.Deleted = 0";
+                            if (i == 0)
+                            {
+                                join.WhereStatement = $"A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.ParentID = {id} and A{i}.Deleted = 0";
+                            }
+                            break;
+                    }
+
+                    join.JoinStatement += permissionJoin;
+                    join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+
+                    objColumn = $"'{currentObj}'";
+                    objIDColumn = $"A{i}.ID";
+                    break;
+                #endregion
+                case ComplexLookupRelationType.ParentItem:
+                    #region
+                    switch (join.Object)
+                    {
+                        case "ArtifactType":
+                            join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = dbo.GetParentObjectId('Artifact', A{i - 1}.ID) and A{i}.ArtifactTypeID = {join.ObjectID}";
+                            if (i == 0)
+                            {
+                                join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID = dbo.GetParentObjectId('Artifact', {id})";
+                            }
+                            break;
+                        case "FusionAttributeType":
+                            join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.Deleted = 0";
+                            if (i == 0)
+                            {
+                                join.WhereStatement = $"A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.ID in (select ParentID from FusionAttribute where ID = {id}) and A{i}.Deleted = 0";
+                            }
+                            break;
+                    }
+
+                    join.JoinStatement += permissionJoin;
+                    join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+
+                    objColumn = $"'{currentObj}'";
+                    objIDColumn = $"A{i}.ID";
+                    break;
+                #endregion
+                default:
+                    break;
+            }
+            objectCol = objColumn;
+            idCol = objIDColumn;
+        }
+
         private bool AnyComplexLookupGridValues(string type, int id, FieldTypeLookup lookup)
         {
             var def = lookup.ParseComplexLookupDefinition();
@@ -3227,136 +3378,8 @@ end",
 
             for (var i = 0; i < def.Relations.Count; i++)
             {
-                var join = def.Relations[i];
-                var currentObj = join.Object;
-
-                if (join.ObjectID > 0)
-                    currentObj = currentObj.Replace("Type", "");
-
-                var currentObjTable = currentObj;
-                var currentObjIdColumn = "ID";
-                if (currentObj == "Resource")
-                {
-                    currentObjTable = "reporting.Global_Resource";
-                    currentObjIdColumn = "ResourceID";
-                }
-                else
-                {
-                    currentObjTable = "[" + currentObj + "]";
-                }
-
-                var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
-                var objColumn = "";
-                var objIDColumn = "";
-                var joinType = "left"; //the SQL join.
-
-                var addDeletedCheck = currentObj.Equals("FusionAttribute", StringComparison.CurrentCultureIgnoreCase);
-
-
-                switch (join.RelationType)
-                {
-                    case ComplexLookupRelationType.StandardRelationhip:
-                        #region
-                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{currentObjIdColumn} ) )";
-                        if (i == 0)
-                        {
-                            join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
-                            join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
-                            objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
-                            objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
-                        }
-                        else
-                        {
-                            join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
-                            objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
-                            objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
-                        }
-
-                        if (addDeletedCheck)
-                        {
-                            join.JoinStatement += $" and A{i}.Deleted = 0";
-                        }
-                        break;
-                    #endregion
-                    case ComplexLookupRelationType.ChildRelationship:
-                        #region
-                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) ";
-                        join.JoinStatement += $" inner join {currentObjTable} A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.{currentObjIdColumn} = I{i}.ObjectID";
-                        objColumn = $"'{join.Object.Replace("Type", "")}'";
-                        objIDColumn = $"I{i}.ObjectID";
-                        if (i == 0)
-                        {
-                            join.WhereStatement = $"( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) ) and ( I{i}.Deleted = 0 or I{i}.Deleted is null ) ";
-                        }
-                        if (addDeletedCheck)
-                        {
-                            join.JoinStatement += $" and A{i}.Deleted = 0";
-                        }
-                        break;
-                    #endregion
-                    case ComplexLookupRelationType.ChildItem:
-                        #region
-                        switch (join.Object)
-                        {
-                            case "ArtifactType":
-                                join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
-                                break;
-                            case "FusionAttributeType":
-                                join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
-                                break;
-                        }
-                        objColumn = $"'{currentObj}'";
-                        objIDColumn = $"A{i}.ID";
-                        if (i == 0)
-                        {
-                            join.WhereStatement = $"A{i}.ID = {id}";
-                            if (addDeletedCheck)
-                            {
-                                join.WhereStatement += $" and A{i}.Deleted = 0";
-                            }
-                        }
-                        else
-                        {
-                            if (addDeletedCheck)
-                            {
-                                join.JoinStatement += $" and A{i}.Deleted = 0";
-                            }
-                        }
-                        break;
-                    #endregion
-                    case ComplexLookupRelationType.ParentItem:
-                        #region
-                        switch (join.Object)
-                        {
-                            case "ArtifactType":
-                                join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.ArtifactTypeID = {join.ObjectID}";
-                                break;
-                            case "FusionAttributeType":
-                                join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
-                                break;
-                        }
-                        objColumn = $"'{currentObj}'";
-                        objIDColumn = $"A{i}.ID";
-                        if (i == 0)
-                        {
-                            join.WhereStatement = $"A{i}.ID = {id}";
-                            if (addDeletedCheck)
-                            {
-                                join.WhereStatement += $" and A{i}.Deleted = 0";
-                            }
-                        }
-                        else
-                        {
-                            if (addDeletedCheck)
-                            {
-                                join.JoinStatement += $" and A{i}.Deleted = 0";
-                            }
-                        }
-                        break;
-                    #endregion
-                    default:
-                        continue;
-                }
+                string objColumn, objIDColumn;
+                loadComplexLookupJoin(type, id, def.Relations, i, out objColumn, out objIDColumn);
             }
 
             #endregion
@@ -3402,150 +3425,9 @@ end",
                 for (var i = 0; i < def.Relations.Count; i++)
                 {
                     var join = def.Relations[i];
-                    var currentObj = join.Object;
-                    if (join.ObjectID > 0)
-                        currentObj = currentObj.Replace("Type", "");
+                    string objColumn, objIDColumn;
 
-                    var currentObjTable = currentObj;
-                    var currentObjIdColumn = "ID";
-                    if (currentObj == "Resource")
-                    {
-                        currentObjTable = "reporting.Global_Resource";
-                        currentObjIdColumn = "ResourceID";
-                    }
-                    else
-                    {
-                        currentObjTable = "[" + currentObj + "]";
-                    }
-
-                    var addDeletedCheck = currentObj.Equals("FusionAttribute", StringComparison.CurrentCultureIgnoreCase) || 
-                                            currentObj.Equals("FusionQueryAttribute", StringComparison.CurrentCultureIgnoreCase);
-                    var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
-                    var objColumn = "";
-                    var objIDColumn = "";
-                    var joinType = "inner"; //the SQL join.
-
-                    var permissionJoin = $@"
- inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID 
-left join AssetWithoutReadPermission RP{i} on RP{i}.ResourceID = {Company.CurrentResourceID} and RP{i}.AssetID = O{i}.ID ";
-                    var permissionsWhere = $" and RP{i}.AssetID is null ";
-                    switch (currentObj.ToLower())
-                    {
-                        case "artifact":
-                        case "policy":
-                        case "taxonomy":
-                            break;
-                        default:
-                            permissionJoin = "";
-                            permissionsWhere = "";
-                            break;
-                    }
-
-                    switch (join.RelationType)
-                    {
-                        case ComplexLookupRelationType.StandardRelationhip:
-                            #region
-                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{currentObjIdColumn} ) )";
-                            if (i == 0)
-                            {
-                                join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
-                                join.JoinStatement += permissionJoin;
-                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
-                                join.WhereStatement += permissionsWhere;
-                                objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
-                                objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
-                            }
-                            else
-                            {
-                                join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
-                                join.JoinStatement += permissionJoin;
-                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
-
-                                objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
-                                objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
-                            }
-                            if (addDeletedCheck)
-                            {
-                                join.JoinStatement += $" and (A{i}.Deleted = 0 OR A{i}.Deleted is null)";
-                            }
-                            break;
-                        #endregion
-                        case ComplexLookupRelationType.ChildRelationship:
-                            #region
-                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null)";
-                            join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
-                            join.JoinStatement += permissionJoin;
-                            objColumn = $"'{join.Object.Replace("Type", "")}'";
-                            objIDColumn = $"I{i}.ObjectID";
-                            if (i == 0)
-                            {
-                                join.WhereStatement = $"( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) ) and (I{i}.Deleted = 0 or I{i}.Deleted is null)";
-                            }
-                            if (addDeletedCheck)
-                            {
-                                join.JoinStatement += $" and A{i}.Deleted = 0";
-                            }
-                            join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
-                            break;
-                        #endregion
-                        case ComplexLookupRelationType.ChildItem:
-                            #region
-                            switch (join.Object)
-                            {
-                                case "ArtifactType":
-                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',A{i-1}.ID))";
-                                    if (i == 0)
-                                    {
-                                        join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',{id}))";
-                                    }
-                                    break;
-                                case "FusionAttributeType":
-                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.Deleted = 0";
-                                    if (i == 0)
-                                    {
-                                        join.WhereStatement = $"A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.ParentID = {id} and A{i}.Deleted = 0";
-                                    }
-                                    break;
-                            }
-
-                            join.JoinStatement += permissionJoin;
-                            join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
-
-                            objColumn = $"'{currentObj}'";
-                            objIDColumn = $"A{i}.ID";
-                            break;
-                        #endregion
-                        case ComplexLookupRelationType.ParentItem:
-                            #region
-                            switch (join.Object)
-                            {
-                                case "ArtifactType":
-                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = dbo.GetParentObjectId('Artifact', A{i-1}.ID) and A{i}.ArtifactTypeID = {join.ObjectID}";
-                                    if (i == 0)
-                                    {
-                                        join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID = dbo.GetParentObjectId('Artifact', {id})";
-                                    }
-                                    break;
-                                case "FusionAttributeType":
-                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.Deleted = 0";
-                                    if (i == 0)
-                                    {
-                                        join.WhereStatement = $"A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.ID in (select ParentID from FusionAttribute where ID = {id}) and A{i}.Deleted = 0";
-                                    }
-                                    break;
-                            }
-
-                            join.JoinStatement += permissionJoin;
-                            join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
-
-                            objColumn = $"'{currentObj}'";
-                            objIDColumn = $"A{i}.ID";
-                            break;
-                        #endregion
-                        default:
-                            continue;
-                    }
-
+                    loadComplexLookupJoin(type, id, def.Relations, i, out objColumn, out objIDColumn);
                     loadComplexLookupColumns(fieldTypes, fields, columnModels, join, $"I{i}.ID", objColumn, objIDColumn, "left", i);
                 }
 
