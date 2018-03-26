@@ -30,12 +30,6 @@ const Highcharts = require('highcharts/highstock.src');
                         </div>
                     </div>
                     <div class="row">&nbsp;</div>
-                    <div class="row">
-                        <div class="col s12">
-                            <header>Score</header>
-                            <chart [options]="scorePie"></chart>
-                        </div>                        
-                    </div>
                 </div>
             </div>
             
@@ -49,7 +43,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     @Input() objectName: string;
 
     scoreHistory: Object;
-    scorePie: Object;
+    averageScore: number;
     
     private pointBreakdown: PointBreakdown[] = [];
     private pointBreakdownTree: TreeNode[] = [];
@@ -72,13 +66,16 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         if (requiresLoad) {
             this.loadPoints();
             this.loadSeriesData();
-            this.loadScores();
         }
     }
 
     private loadSeriesData() {
-        this.scoreService.getScoreHistory(this.objectID, this.objectType).
-            then(res => {
+        this.scoreService.getAverageScore(this.objectID, this.objectType)
+            .then(res => {
+                this.averageScore = (res == null || res.AverageScore == null) ? 0 : res.AverageScore;
+            })
+            .then(() => this.scoreService.getScoreHistory(this.objectID, this.objectType))
+            .then(res => {
                 let data = res.map(val => {
                     return [Date.parse(val.Date), val.Score];
                 });
@@ -99,6 +96,16 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             text: 'Governance Score'
                         },
                         min: 0,
+                        plotLines: [{
+                            value: this.averageScore,
+                            color: '#6b5a51',
+                            dashStyle: 'solid',
+                            width: 2,
+                            label: {
+                                text: 'Average Score'
+                                }
+                            }
+                        ]
                     },
                     credits: {
                         enabled: false
@@ -107,22 +114,21 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         enabled: false
                     },
                     plotOptions: {
-                        area: {                           
+                        line: {                           
                             marker: {
                                 radius: 1
                             },
-                            lineWidth: 1,
+                            lineWidth: 2,
                             states: {
                                 hover: {
-                                    lineWidth: 1
+                                    lineWidth: 3
                                 }
                             },
                             threshold: null
                         }
                     },
-
                     series: [{
-                        type: 'area',
+                        type: 'line',
                         name: 'Governance Score',
                         data: data,
                         color: '#426A84'
@@ -130,14 +136,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 };
             });        
     }
-
-    private loadScores() {
-        this.scoreService.getAverageScore(this.objectID, this.objectType)
-            .then(res => {
-                this.scorePie = this.getKpi((+res.ObjectScore), 100 - (+res.ObjectScore), res.AverageScore, 100 - res.AverageScore, true);               
-            });
-    }
-
 
     private loadPoints() {
         this.isLoading = true;
@@ -201,51 +199,5 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 //console.log(this.pointBreakdownTree);
                 this.isLoading = false;
             });
-    }
-
-
-    private getKpi(score: number, remaining: number, average: number, remainingAvg: number, isPercent?: boolean) {        
-        return {
-            chart: {
-                type: 'pie',
-                backgroundColor: 'transparent',
-                height: 300,
-                width: 500
-            },
-            title: {
-                text: null
-            },         
-            credits: {
-                enabled: false
-            },
-            yAxis: {                
-                max: 1.0                
-            },
-            plotOptions: {
-                pie: {
-                    shadow: false
-                }
-            },
-            tooltip: {
-                formatter: function () {
-                    if (!this.point.name) return null;
-                    return '<b>' + this.point.name + '</b>: ' + this.y + ' %';
-                }
-            },
-            series: [{
-                    name: 'Score',
-                    data: [{ name: "Current Score", y: score, color: '#84745C' }, { name: "", y: remaining, color: "white" }],
-                    showInLegend: false,
-                    innerSize: '55%',
-                    size: '80%',
-                },
-                {                    
-                    size: '55%',
-                    name: 'Average',
-                    showInLegend: false,
-                    data: [{ name: "Average Score", y: average, color: '#C4AC89' }, { name: "", y: remainingAvg, color: "white" }],
-                }
-            ]
-        };
     }
 }
