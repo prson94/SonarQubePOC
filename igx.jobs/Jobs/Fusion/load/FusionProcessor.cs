@@ -1668,7 +1668,7 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                 from 
 	                fusionattribute f	
                 where 	                
-	                f.fusionid = @inFusionID and f.deleted != 1
+	                f.fusionid = @inFusionID and f.deleted != 1 and f.sourceid is not null
             ", new { inFusionID = FusionID }, commandTimeout: ReadQueryTimeout);
 
             IsFirstRun = true;
