@@ -666,7 +666,7 @@ namespace d360.web.Controllers
                     filterColumns = filterColumns.OrderBy(x => x.text).ToList();
 
                     //Load any field types that are top level filter fields
-                    var topFiltersHidden = totalItems.Where(i => i.IsPrimaryFilter).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    var topFiltersHidden = totalItems.Where(i => i.IsPrimaryFilter).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
                     topFiltersHidden.ForEach(i =>
                     {
@@ -1007,7 +1007,7 @@ select * from h order by h.[Level] desc;";
                     break;
                     #endregion
             }
-
+            
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
                 Title = (detail != null) ? detail.PluralizedName : "Child Items",
