@@ -1324,7 +1324,7 @@ namespace d360.web.Controllers
                             i.Object == assetType.Object &&
                             i.ObjectID == assetType.ObjectID &&
                             i.Predicate.Type == parentPredicateType
-                        ).SingleOrDefault();
+                        ).FirstOrDefault();
 
 
                         if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType) //If model or policy you must always have a predicate to load.
@@ -1576,6 +1576,7 @@ namespace d360.web.Controllers
                 SystemObjects ot;
                 var parentType = SystemObjects.ArtifactType;
                 bool shouldRemoveOldRelationshipType = false;
+                bool shouldRemoveExistingParentChildRelationshipType = false;
 
                 if (!Enum.TryParse<SystemObjects>(model.AssetType.Object, out ot))
                     throw new GenericException(HttpStatusCode.BadRequest, "Missing Object Type", "No valid type provided. Please check your request and try again.");
@@ -1646,6 +1647,7 @@ namespace d360.web.Controllers
                         Company.Update(rt);
 
                         shouldRemoveOldRelationshipType = true;
+                        shouldRemoveExistingParentChildRelationshipType = true;
                         parentType = SystemObjects.ReferenceItemType;
                         break;
                     case SystemObjects.TaxonomyType:
@@ -1688,13 +1690,27 @@ namespace d360.web.Controllers
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                     }
 
-                    var intersectType = Company.Filter<IntersectType>(i =>
-                        i.Subject == parentType.ToString() &&
-                        i.SubjectID == (model.ParentID.HasValue ? model.ParentID : model.AssetType.ObjectID) &&
-                        i.Object == model.AssetType.Object &&
-                        i.ObjectID == model.AssetType.ObjectID &&
-                        i.Predicate.Type == parentPredicateType
-                    ).SingleOrDefault();
+                    IntersectType intersectType = null;
+
+                    if (shouldRemoveExistingParentChildRelationshipType)
+                    {
+                        intersectType = Company.Filter<IntersectType>(i =>
+                            i.Subject == parentType.ToString() &&                            
+                            i.Object == model.AssetType.Object &&
+                            i.ObjectID == model.AssetType.ObjectID &&
+                            i.Predicate.Type == parentPredicateType
+                        ).SingleOrDefault();
+                    }
+                    else
+                    {
+                        intersectType = Company.Filter<IntersectType>(i =>
+                            i.Subject == parentType.ToString() &&
+                            i.SubjectID == (model.ParentID.HasValue ? model.ParentID : model.AssetType.ObjectID) &&
+                            i.Object == model.AssetType.Object &&
+                            i.ObjectID == model.AssetType.ObjectID &&
+                            i.Predicate.Type == parentPredicateType
+                        ).SingleOrDefault();
+                    }
 
                     if (model.SelectedPredicateID.HasValue)
                     {
@@ -1702,7 +1718,15 @@ namespace d360.web.Controllers
                         {
                             if (intersectType.PredicateID != model.SelectedPredicateID)
                             {
-                                intersectType.PredicateID = model.SelectedPredicateID.Value;
+                                intersectType.PredicateID = model.SelectedPredicateID.Value;                                
+                                Company.Update(intersectType);
+                            }
+
+                            var parentID = (model.ParentID.HasValue ? model.ParentID.Value : model.AssetType.ObjectID);
+
+                            if (intersectType.SubjectID != parentID)
+                            {
+                                intersectType.SubjectID = parentID;
                                 Company.Update(intersectType);
                             }
                         }
