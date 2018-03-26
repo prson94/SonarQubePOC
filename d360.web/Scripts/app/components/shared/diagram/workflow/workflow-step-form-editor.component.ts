@@ -280,8 +280,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     appendField(e: string) {
         //console.log(this.step.settings.MessageBodyTemplate, this.quill);
 
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
+
         if (this.quill != null) {
-            let len = this.quill.getLength();
+            let pos = this.quill.getSelection(true);
+            let len = pos.index || this.quill.getLength();
             this.quill.insertText(len > 0 ? len - 1 : 0, e, 'api');
 
         } else {
@@ -384,7 +388,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     changeResponsibility(e: any, i: number) {
-        console.log('changeResponsibility', e, i, this.responsibilities);
+        //console.log('changeResponsibility', e, i, this.responsibilities);
         this.step.settings.ResponsibilityTypeID[i] = e;
         this.step.settings.ResponsibilityTypeID = this.step.settings.ResponsibilityTypeID.slice();
         this.stepChange.emit(this.step)

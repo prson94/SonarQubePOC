@@ -155,10 +155,16 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     appendField(e: string) {
-        //console.log(this.step.settings.MessageBodyTemplate, this.quill, e);
+
+
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
+
+        //console.log(this.quill == null, this.step.settings.MessageBodyTemplate, e);
 
         if (this.quill != null) {
-            let len = this.quill.getLength();
+            let pos = this.quill.getSelection(true);
+            let len = pos.index || this.quill.getLength();
             this.quill.insertText(len > 0 ? len - 1 : 0, e, 'api');
              
         } else {

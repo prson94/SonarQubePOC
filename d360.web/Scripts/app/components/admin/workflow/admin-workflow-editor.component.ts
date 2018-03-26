@@ -437,8 +437,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     appendField(e: string) {
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
+
         if (this.quill != null) {
-            let len = this.quill.getLength();
+            let pos = this.quill.getSelection(true);
+            let len = pos.index || this.quill.getLength();
             this.quill.insertText(len < 1 ? 0 : len - 1, e, 'api');
         } else { //fallback in case quill API is null for whatever reason
             this.model.Event.SettingsObject.Settings.MessageBodyTemplate =
