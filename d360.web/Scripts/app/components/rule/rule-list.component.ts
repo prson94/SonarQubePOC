@@ -32,11 +32,19 @@ import * as _ from 'lodash';
                                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                                     
                                     <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowClick)="selected=$event.data;showRule(selected);" >                                        
                                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                        <p-column field="ID" header="ID" sortable="true" [style]="{width:'5%'}" [filter]="!showSimpleFilter"></p-column>
-                                        <p-column field="Dimension" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>                                        
+                                        <p-column field="ID" header="ID" sortable="true" [style]="{width:'5%'}" [filter]="!showSimpleFilter">
+                                            <ng-template    let-col let-item="rowData" pTemplate type="body">
+	                                            <a (click)="selected=item;showRule(selected);">{{item[col.field]}}</a>                                 
+                                            </ng-template>
+                                        </p-column>
+                                        <p-column field="Dimension" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
+                                            <ng-template    let-col let-item="rowData" pTemplate type="body">
+	                                            <a (click)="selected=item;showRule(selected);">{{item[col.field]}}</a>                                 
+                                            </ng-template>
+                                        </p-column>                                        
                                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">                                                                
                                             <ng-template let-item="rowData" pTemplate type="body">
-                                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
+                                                <a><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>                                 
                                             </ng-template>
                                         </p-column>
                                         <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()">
