@@ -33,6 +33,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private isMe = false;
     private totNumber: number = 0;
     private days: number = 90;
+    private resourceType: string = " ";
 
     private statistics: ObjectStatistics;
     private selectedWorkflow: WorkflowType;
@@ -43,7 +44,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     itemsOwn: RightSidebarItem;
     itemsFollow: RightSidebarItem;
     memberGroups: RightSidebarItem;
-    resourceComments: RightSidebarItem;
+    comments: RightSidebarItem;
     hasRelations: RightSidebarItem;
 
     constructor(
@@ -100,10 +101,10 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.rightSidebarService.showItem(this.memberGroups);
                     this.itemsFollow = new RightSidebarItem('Items Follow', 'itemFollow', ['fa-user-plus'], `/sidebar/itemfollow/${resourceId}`);
                     this.rightSidebarService.showItem(this.itemsFollow);
-                    this.resourceComments = new RightSidebarItem( this.resource.FirstName+"'s Comments", 'resourceComments', ['fa-comments'], `/sidebar/resourcecomments/${resourceId}`);
-                    this.rightSidebarService.showItem(this.resourceComments);
                     this.hasRelations = new RightSidebarItem('Relations', 'hasRelations', ['fa-retweet'], `/sidebar/relationships/resource/${resourceId}`);
                     this.rightSidebarService.showItem(this.hasRelations);
+                    this.comments = new RightSidebarItem(this.resource.FirstName + "'s Comments", 'comments', ['fa-comments'], `/sidebar/comments/${this.resourceType}/${resourceId}/${this.resource.FirstName}`); 
+                    this.rightSidebarService.showItem(this.comments);
                 });
 
             this.pageMode = PageMode.Default;            

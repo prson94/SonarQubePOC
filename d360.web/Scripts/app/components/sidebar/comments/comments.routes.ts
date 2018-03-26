@@ -1,13 +1,13 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { ResourceCommentsComponent } from './resourcecomments.component';
+import { CommentsComponent } from './comments.component';
 
 const routes: Routes = [
-    { path: ':resourceID', component: ResourceCommentsComponent},
+    { path: ':objectType/:objectId/:objectName', component: CommentsComponent},
 ];
 
 @NgModule({
     imports: [RouterModule.forChild(routes)],
     exports: [RouterModule],
 })
-export class ResourceCommentsRoutingModule { }
+export class CommentsRoutingModule { }

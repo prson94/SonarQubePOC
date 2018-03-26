@@ -51,7 +51,7 @@
       <HintPath>..\packages\Autofac.WebApi2.4.1.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="ComponentSpace.SAML2">
-      <HintPath>.\ComponentSpace.SAML2.dll</HintPath>
+      <HintPath>..\..\..\External Dlls\ComponentSpace.SAML2.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=1.50.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.50.4\lib\net451\Dapper.dll</HintPath>
@@ -65,6 +65,9 @@
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="gudusoft.gsqlparser">
+      <HintPath>..\..\..\External Dlls\gudusoft.gsqlparser.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.6.5.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.6.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
@@ -1304,6 +1307,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\permissions\permissions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\permissions\permissions.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\permissions\permissions.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\impact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\lineage.component.ts" />

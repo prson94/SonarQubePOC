@@ -36,7 +36,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ITEM_FOLLOW_ROOT = 'sidebar/itemfollow';
     static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
     static SITE_URL_MEMBER_GROUP_ROOT = 'sidebar/membergroup';
-    static SITE_URL_RESOURCE_COMMENTS_ROOT = 'sidebar/resourcecomments';
+    static SITE_URL_COMMENTS_ROOT = 'sidebar/comments';
 
 
     //model child routes
@@ -101,6 +101,8 @@ export class SiteUrlHelpers {
                 return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${objectId}`;
             case 'ARTIFACT':
                 return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;
+            case 'COMMENTS':
+                return `${SiteUrlHelpers.SITE_URL_COMMENTS_ROOT}/${objectId}/${objectName}`;
             case 'FUSIONTYPE':
                 return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${objectId}`;
             case 'FUSIONATTRIBUTE':

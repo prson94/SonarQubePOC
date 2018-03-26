@@ -12,8 +12,8 @@ import {
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
-import { ResourceCommentsRoutingModule } from './resourcecomments.routes';
-import { ResourceCommentsComponent } from './resourcecomments.component';
+import { CommentsRoutingModule } from './comments.routes';
+import { CommentsComponent } from './comments.component';
 import { ResourceModule } from '../../resource/resource.module';
 import { SocialModule } from '../../shared/social/social.module';
 
@@ -26,7 +26,7 @@ import { SocialModule } from '../../shared/social/social.module';
         SocialModule,
 
         //routing 
-        ResourceCommentsRoutingModule,
+        CommentsRoutingModule,
 
         //prime
         ButtonModule,
@@ -37,10 +37,10 @@ import { SocialModule } from '../../shared/social/social.module';
         ResourceModule
     ],
     declarations: [
-        ResourceCommentsComponent
+        CommentsComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
-export class ResourceCommentsModule { }
+export class CommentsModule { }
