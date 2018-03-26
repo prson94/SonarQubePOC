@@ -73,7 +73,7 @@ namespace d360.web.Controllers
 	                select cast((s.Title + ' :: ' + v.name) as varchar(500)) as Title, v.* from sitenavavailable v join s on s.objectid = v.parentid and 
 	                v.object = s.object
                 )
-                select * from s where object not like '%Class'").ToList();
+                select * from s where object not like '%Class' order by 1 asc").ToList();
 
             return new JsonNetResult
             {
