@@ -20,9 +20,10 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <header>Glossary</header>                              
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;">  
                         <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selectedRow" (selectionChange)="navigate($event.data)" [style]="{ 'width': '100%' }">
-                            <p-column field="Name" header="Name" [style]="{ 'width': '30%' }"></p-column>
-                            <p-column field="Description" header="Description" [style]="{ 'width': '60%' }"></p-column>
-                            <p-column [style]="{ 'width': '10%','overflow':'hidden', 'padding-left':'15px' }" header="Select Item">
+                            <p-column field="Name" header="Name" [style]="{ 'width': '20%' }"></p-column>
+                            <p-column field="Description" header="Description" [style]="{ 'width': '70%' }"></p-column>
+                            <p-column field="kount" header="Item Count" [style]="{ 'width': '5%','overflow':'automatic', 'padding-left':'15px' }"></p-column>
+                            <p-column [style]="{ 'width': '5%','overflow':'automatic', 'padding-left':'15px' }" header="Select Item">
                                 <ng-template let-col let-item="rowData" pTemplate="body">
                                     <d3s-preview-tooltip objectType="ArtifactType" [objectId]="item.data.ID" icon="info" (click)="navigate(item.data)"></d3s-preview-tooltip>
                                 </ng-template>

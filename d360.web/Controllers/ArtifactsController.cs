@@ -762,9 +762,15 @@ select	    T.ID,
 			AT.CreatedOn,
 			T.UpdatedBy,
 		    T.UpdatedOn,
-            AT.ID as AssetTypeID		
+            AT.ID as AssetTypeID,
+			K.kount
 from	    ArtifactType T
 			left join AssetType AT on AT.Object = 'ArtifactType' and AT.ObjectID = T.ID
+			left join (SELECT count(a.ArtifactTypeID) kount,a.ArtifactTypeID
+							FROM [dbo].[Artifact] a
+							inner join ArtifactType b on a.ArtifactTypeID = b.ID
+							group by ArtifactTypeID
+						) K on K.ArtifactTypeID = t.ID
 		    outer apply (
 					    select	IT.SubjectID
 					    from	IntersectType IT 
@@ -774,7 +780,7 @@ order by    T.Name").AsQueryable();
 
             return new JsonNetResult
             {
-                Data = models.ToList().Select(i => new { i.ID, i.Name, i.Description, i.ParentID, i.AssetTypeID, expanded = true }),
+                Data = models.ToList().Select(i => new { i.ID, i.Name, i.Description, i.kount, i.ParentID, i.AssetTypeID, expanded = true }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
