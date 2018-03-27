@@ -7,7 +7,7 @@
             case "FUSIONATTRIBUTES":
                 return "Fusion";
             case "ARTIFACT":
-                return "Glossary";
+                return "Artifact";
             case "TAXONOMY":
                 return "Model";
             case "DOMAIN":
