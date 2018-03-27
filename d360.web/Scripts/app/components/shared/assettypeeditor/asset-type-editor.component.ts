@@ -53,6 +53,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         switch (this.assetTypeClass) {
             case 'FA':
                 this.theAssetTypeClass = AssetTypeClass.FusionAttribute;
+                this.showParentPredicates = false;
                 break;
             case 'G':
                 this.theAssetTypeClass = AssetTypeClass.Glossary;

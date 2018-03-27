@@ -1428,6 +1428,7 @@ namespace d360.web.Controllers
                         {
                             Name = model.AssetType.Name,
                             ScanEnabled = model.ScanEnabled ?? true,
+                            ParentID = model.ParentID,
                             FusionTypeID = model.TopLevelTypeID.Value
                         };
                         Company.Add(f);
