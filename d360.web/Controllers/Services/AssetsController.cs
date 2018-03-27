@@ -87,6 +87,8 @@ namespace d360.web.Controllers.Services
                 assetTable.Columns.Add("ParentID", typeof(int));
                 assetTable.Columns.Add("Object", typeof(string));
                 assetTable.Columns.Add("ObjectID", typeof(int));
+                assetTable.Columns.Add("Name", typeof(string));     // For Fusion Data
+                assetTable.Columns.Add("OptionalID", typeof(int));  // For Fusion Data (FusionID)
                 assetTable.Columns.Add("IsNew", typeof(bool));
 
                 assetFieldTable.Columns.Add("ItemNumber", typeof(int));
@@ -209,6 +211,11 @@ namespace d360.web.Controllers.Services
                     {
                         result.SourceID = model["SourceID"].ToString();
                     }
+                    else
+                    {
+                        result.Success = false;
+                        result.Message = "No SourceID specified for this asset. A SourceID must be present.";
+                    }
 
                     if (result.Success)
                     {
@@ -221,19 +228,29 @@ namespace d360.web.Controllers.Services
                             row["ParentID"] = int.Parse(model["ParentID"].ToString());
                         }
 
+                        if (model.ContainsKey("Name"))
+                        {
+                            row["Name"] = model["Name"].ToString();
+                        }
+
+                        if (model.ContainsKey("FusionID"))
+                        {
+                            row["OptionalID"] = int.Parse(model["FusionID"].ToString());
+                        }
+
                         assetTable.Rows.Add(row);
 
                         foreach (var k in model.Keys)
                         {
                             if (k != "ParentID" && k != "ParentSourceID" && k != "SourceID")
                             {
-                                if (!string.IsNullOrEmpty(model[k].ToString()))
+                                if (!string.IsNullOrEmpty(model[k]))
                                 {
                                     var fieldRow = assetFieldTable.NewRow();
 
                                     fieldRow["ItemNumber"] = result.ItemNumber;
                                     fieldRow["FieldName"] = k.Trim();
-                                    fieldRow["FieldValue"] = model[k].ToString().Trim();
+                                    fieldRow["FieldValue"] = (model[k] + "").Trim();
 
                                     assetFieldTable.Rows.Add(fieldRow);
                                 }
@@ -248,7 +265,7 @@ namespace d360.web.Controllers.Services
 
                 #region
 
-                List<dynamic> retResults = null;
+                List<DatabaseBulkAssetResult> retResults = null;
 
                 if ((Company.Database.Connection as SqlConnection).State != System.Data.ConnectionState.Open)
                     (Company.Database.Connection as SqlConnection).Open();
@@ -266,6 +283,8 @@ create table #AssetTable (
     ParentID int null,
     Object varchar(50) null,
     ObjectID int null,
+    Name nvarchar(250) null,
+    OptionalID int null,
     IsNew bit null
 )", transaction: trans);
 
@@ -285,6 +304,8 @@ create table #AssetTable (
                     assetBulkCopy.ColumnMappings.Add("ParentID", "ParentID");
                     assetBulkCopy.ColumnMappings.Add("Object", "Object");
                     assetBulkCopy.ColumnMappings.Add("ObjectID", "ObjectID");
+                    assetBulkCopy.ColumnMappings.Add("Name", "Name");               // For Fusion Data
+                    assetBulkCopy.ColumnMappings.Add("OptionalID", "OptionalID");   // For Fusion Data
                     assetBulkCopy.ColumnMappings.Add("IsNew", "IsNew");
 
                     assetBulkCopy.WriteToServer(assetTable);
@@ -349,7 +370,36 @@ when not matched by target then
 output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 ", new { id = otid, @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
                             break;
-                            #endregion
+                        #endregion
+                        case SystemObjects.FusionAttributeType:
+                            #region
+                            Company.Database.Connection.Execute($@"
+merge into  FusionAttribute T
+using       (
+            select      min(ItemNumber) as ItemNumber,
+                        OptionalID, 
+                        Name, 
+                        SourceID
+            from        #AssetTable
+            group by    OptionalID, Name, SourceID
+            ) S
+on          (
+                T.FusionAttributeTypeID = @id and 
+                T.FusionID = S.OptionalID and
+                S.SourceID is not null and 
+                S.SourceID <> '' and 
+                S.SourceID = T.SourceID
+            )
+when matched then
+    update set
+            T.Deleted = 0
+when not matched by target then
+    insert  (FusionAttributeTypeID, FusionID, Name, SourceID)
+    values  (@id, S.OptionalID, S.Name, S.SourceID)
+output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
+", new { id = otid }, transaction: trans, commandTimeout: 1200);
+                            break;
+                        #endregion
                         case SystemObjects.PolicyType:
                             #region
                             Company.Database.Connection.Execute($@"
@@ -431,16 +481,11 @@ output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 update  T
 set     T.Object = @o,
         T.ObjectID = S.ID,
-        T.IsNew = case when S.[Action] = 'INSERT' then 1 else 0 end
+        T.IsNew = case when S.[Action] = 'INSERT' then 1 else 0 end,
+        T.Success = case when S.ID is not null then 1 else 0 end
 from    #AssetTable T
-        inner join #ObjectMergeTableResult S on S.ItemNumber = T.ItemNumber;
+        left join #ObjectMergeTableResult S on S.ItemNumber = T.ItemNumber;
 ", new { id = otid, @r = Company.CurrentResourceID, o }, transaction: trans, commandTimeout: 1200);
-
-                    #region Merge into Artifact table
-
-
-
-                    #endregion
 
                     #region Deal with parent relationship if required
 
@@ -490,7 +535,12 @@ merge into  Field T
 using       (
             select  A.Object,
                     A.ObjectID,
-                    F.*
+                    F.*,
+                    FT.Type, 
+                    FT.LookupDisplayFormat, 
+                    FT.LookupObjectType, 
+                    FT.LookupObjectID, 
+                    FT.AllowMultipleValues
             from    #AssetFieldTable F
                     inner join #AssetTable A on A.ItemNumber = F.ItemNumber 
                         and A.ObjectID is not null 
@@ -506,10 +556,11 @@ on          (
             )
 when matched then
     update set
-            T.Value = S.FieldValue
+            T.Value = S.FieldValue,
+            T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.FieldValue, S.AllowMultipleValues)
 when not matched by target then
-    insert  (FieldTypeID, ObjectType, ObjectID, Value)
-    values  (S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue);
+    insert  (FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
+    values  (S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue, utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.FieldValue, S.AllowMultipleValues));
 ", new { id = otid }, transaction: trans, commandTimeout: 1200);
 
                     Company.Database.Connection.Execute(@"
@@ -519,7 +570,12 @@ using       (
                     A.Object, 
                     A.ObjectID, 
                     F.FieldTypeID,
-                    LV.Value
+                    LV.Value,
+                    FT.Type, 
+                    FT.LookupDisplayFormat, 
+                    FT.LookupObjectType, 
+                    FT.LookupObjectID, 
+                    FT.AllowMultipleValues
             from    #AssetFieldTable F
                     inner join #AssetTable A on A.ItemNumber = F.ItemNumber 
                         and A.ObjectID is not null 
@@ -534,20 +590,37 @@ on          (
             )
 when matched then
     update set
-            T.Value = S.Value
+            T.Value = S.Value,
+            T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.Value, S.AllowMultipleValues)
 when not matched by target then
-    insert  (FieldTypeID, ObjectType, ObjectID, Value)
-    values  (S.FieldTypeID, S.Object, S.ObjectID, S.Value);
+    insert  (FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
+    values  (S.FieldTypeID, S.Object, S.ObjectID, S.Value, utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.Value, S.AllowMultipleValues));
 ", new { id = otid }, transaction: trans, commandTimeout: 1200);
 
                     #endregion
 
-                    retResults = Company.Database.Connection.Query<dynamic>("select * from #AssetTable", transaction: trans).ToList();
-
+                    retResults = Company.Database.Connection.Query<DatabaseBulkAssetResult>("select ItemNumber, SourceID, Message, Success, IsNew from #AssetTable", transaction: trans).ToList();
                     trans.Commit();
                 }
 
-                return Request.CreateResponse(HttpStatusCode.OK, retResults);
+                #region Cycle through the return results form the database, and update the results collection to send back to the caller.
+
+                retResults.ForEach(d =>
+                {
+                    var cr = results.SingleOrDefault(i => i.ItemNumber == d.ItemNumber);
+                    if (cr != null)
+                    {
+                        if (string.IsNullOrEmpty(cr.Message))
+                        {
+                            cr.Success = d.Success;
+                            cr.Message = d.Success ? (d.IsNew ? "Created" : "Updated") : "Failed";
+                        }
+                    }
+                });
+
+                #endregion
+
+                return Request.CreateResponse(HttpStatusCode.OK, results);
 
                 #endregion
 

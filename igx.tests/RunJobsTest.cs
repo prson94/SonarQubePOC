@@ -41,8 +41,8 @@ namespace igx.tests
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 110; //10
-            var fusionTypeID = 26;//13;
+            var companyID = 54; //10
+            var fusionTypeID = 113;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);

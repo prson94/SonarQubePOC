@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -28,6 +29,15 @@ namespace d360.core.entities
 
         [DataMember]
         public bool Active { get; set; } = false;
+
+        [DataMember]
+        public string OptionalIDName { get; set; } = null;
+
+        [DataMember]
+        public int? OptionalID { get; set; } = null;
+
+        [DataMember]
+        public DateTime? LastSynchOn { get; set; } = null;
 
 
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
