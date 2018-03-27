@@ -18,10 +18,7 @@ namespace d360.core.entities
 
         [DataMember]
         public int? ParentID { get; set; }
-
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string DisplayValue { get; set; }
-
+                
         [DataMember, ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
         public string TextPath { get; set; }
 

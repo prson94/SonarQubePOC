@@ -12363,8 +12363,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 Company.AddOrUpdateFields(fields);
 
                 dynamic custom = new
-                {
-                    Name = model.DisplayValue,
+                {                    
                     action = "add",
                     Context = form["_context"]
                 };                
@@ -12399,8 +12398,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 Company.Delete(SystemObjects.Policy, id);
 
                 dynamic custom = new
-                {
-                    Name = model.DisplayValue,
+                {                    
                     action = "delete",
                     Context = form["_context"]
                 };                
@@ -12465,8 +12463,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 }
 
                 dynamic custom = new
-                {
-                    Name = model.DisplayValue,
+                {                    
                     action = "edit",
                     Context = form["_context"]
                 };

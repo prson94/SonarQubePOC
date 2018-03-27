@@ -221,11 +221,18 @@ namespace d360.model
 
             if(!registration.LastExecuted.HasValue || (registration.LastExecuted.HasValue && registration.LastExecuted.GetValueOrDefault().AddDays(settings.ScheduleInterval) <= DateTime.UtcNow ))
             {
+                var sql = @"select 
+                                        ad.ObjectID as ID,
+	                                    ad.DisplayValue
+                                    from
+                                        assetdetail ad
+                                    where
+                                        ad.object = @obj and ad.Typeid = @id";
                 //evaluate objects that are part of this workflow
                 switch ((registration.Object ?? "").ToUpper())
                 {
                     case "ARTIFACTTYPE":
-                        var artifacts = Artifacts.Where(x => x.ArtifactTypeID == registration.ObjectID).ToList();
+                        var artifacts = Query<dynamic>(sql, new { obj = "Artifact", id = registration.ObjectID });                        
                         foreach (var artifact in artifacts)
                         {
                             if (await CreateWorkflowItem(registration.TypeID,
@@ -244,7 +251,9 @@ namespace d360.model
                         }
                         break;
                     case "TAXONOMYTYPE":
-                        var taxonomies = Taxonomies.Where(x => x.TaxonomyTypeID == registration.ObjectID).ToList();
+                        
+                        var taxonomies = Query<dynamic>(sql, new { obj = "Taxonomy", id = registration.ObjectID });
+                                                
                         foreach (var taxonomy in taxonomies)
                         {
                             if (await CreateWorkflowItem(registration.TypeID,

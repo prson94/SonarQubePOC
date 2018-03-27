@@ -31,9 +31,6 @@ namespace d360.core.entities
         }
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string DisplayValue { get; set; }
-
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string KeyHash { get; set; }
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]

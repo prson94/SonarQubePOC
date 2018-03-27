@@ -1536,23 +1536,7 @@ select * from h order by h.[Level] desc;";
             return Company.GetIntersectTypeOptions()
                 .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
         }
-
-        [Route("fusion/rule/directitems/{type}/{id:int}")]
-        public IEnumerable<dynamic> GetFusionRuleDirectOptions(SystemObjects type, int id)
-        {
-            switch (type)
-            {
-                case SystemObjects.ArtifactType:
-                    return Company.Filter<Artifact>(x => x.ArtifactTypeID == id).Select(x => new { Name = x.DisplayValue, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });
-                case SystemObjects.FusionAttributeType:
-                    return Company.Filter<FusionAttribute>(x => x.FusionAttributeTypeID == id).Select(x => new { Name = x.Name, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });
-                case SystemObjects.TaxonomyType:
-                    return Company.Filter<Taxonomy>(x => x.TaxonomyTypeID == id).Select(x => new { Name = x.DisplayValue, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });
-                default:
-                    return null;
-            }
-        }
-
+        
         [Route("fusion/technicalmapping")]
         public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings() //async System.Threading.Tasks.Task<IEnumerable<MapRuleItemDetail>>
         {
