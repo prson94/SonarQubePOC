@@ -30,7 +30,7 @@ namespace d360.core.entities
 
 
     [DataContract(Namespace = NAMESPACE)]
-    public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata, IDisplayValueObject
+    public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         public Rule()
         {

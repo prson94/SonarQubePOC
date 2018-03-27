@@ -10,12 +10,12 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 @Component({
     selector: 'd3s-admin-relationships-component',
     template: `<div class="row">
-                    <div class="col l6 s12">                    
+                    <div class="col l6 m12 s12">                    
                         <div class="tile tile-detail">
                             <d3s-admin-relationships-list [(selected)]="selected"></d3s-admin-relationships-list>
                         </div>
                     </div>                    
-                    <div class="col l6 s12" *ngIf="selected">                        
+                    <div class="col l6 m12 s12" *ngIf="selected">                        
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              

@@ -2056,12 +2056,6 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 AddOrUpdateFields(fields);
             }
 
-            if (entity is IFieldsObject && entity is IDisplayValueObject)
-            {
-                (entity as IDisplayValueObject).DisplayValue = getObjectDisplayValue((entity as IFieldsObject), entity.ID);
-                SaveChanges();
-            }
-
             return returnValue;
         }
 

@@ -10,7 +10,7 @@ using d360.core.queue;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Artifact : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, ICreatedMetadata, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity, IDisplayValueObject
+    public class Artifact : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, ICreatedMetadata, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         public Artifact()
         {
