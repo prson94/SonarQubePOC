@@ -92,6 +92,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['objectID'] && changes['objectID'].previousValue != changes['objectID'].currentValue) {
             this.showEditor = false;
+            this.showDelete = false;
         }
         if (this.objectID != null && this.objectType != null) this.load(); 
     }

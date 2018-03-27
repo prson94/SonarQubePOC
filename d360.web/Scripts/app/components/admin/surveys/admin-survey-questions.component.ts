@@ -61,6 +61,11 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (changes['survey'] && changes['survey'].previousValue != changes['survey'].currentValue) {
+            this.showEditor = false;
+            this.showDelete = false;
+        }
+
         if (this.survey != null) this.getQuestions();
     }
 
