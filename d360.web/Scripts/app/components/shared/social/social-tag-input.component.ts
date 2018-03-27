@@ -2,6 +2,7 @@
 import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { Tag } from '../../../models/tag.model';
+import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
 
 @Component({
     selector: 'd3s-social-tag-input',
@@ -13,7 +14,10 @@ import { Tag } from '../../../models/tag.model';
                             (completeMethod)="search($event)" 
                             field="TextPath"  
                             placeholder="Tag an item"
-                            (onSelect)="selectItem()">                       
+                            (onSelect)="selectItem()">   
+                            <ng-template let-item pTemplate="item">
+                                   <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
+                            </ng-template>  
                     </p-autoComplete>
         `,
     providers: [TagService],
@@ -40,5 +44,8 @@ export class SocialTagInputComponent extends BaseComponent {
             tag: this.tag
         });
         this.tag = null;
+    }
+    private userFriendlyObjectName(objectType: string) {
+        return D3SObjectHelpers.getObjectTypeFriendlyName(objectType);
     }
 }
