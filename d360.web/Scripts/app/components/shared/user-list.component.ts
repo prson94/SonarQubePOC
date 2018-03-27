@@ -25,7 +25,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                     <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="FirstName" header="First Name" sortable="true">
+                        <p-column field="FirstName" header="First Name" sortable="true"  [filter]="!showSimpleFilter">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <a (click)="openResource(item)">{{item.FirstName}}</a>
                             </ng-template>
