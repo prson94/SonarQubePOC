@@ -336,9 +336,9 @@ begin
 					+ cast(I.TargetObjectID as varchar) as [targetkey],
 					I.*,
 					SI.IntersectTypeID as SourceIntersectTypeID,
-					SIT.[Name] as SourceIntersectTypeName,
+					utility.DeriveIntersectTypeName(SIT.ID) as SourceIntersectTypeName,
 					TI.IntersectTypeID as TargetIntersectTypeID,
-					TIT.[Name] as TargetIntersectTypeName
+					utility.DeriveIntersectTypeName(TIT.ID) as TargetIntersectTypeName
 				from @items I
 				inner join [Intersect] SI on SI.ID = I.SourceIntersectID
 				inner join IntersectType SIT on SIT.ID = SI.IntersectTypeID
