@@ -18,14 +18,15 @@ import { ObjectDetailService } from '../../services/object-detail.service';
 @Component({
     selector: 'd3s-artifact-grid',
     providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService],
-    template: ` <header *ngIf="!showEditor && !showDelete">
+    template: ` <d3s-loading [isLoading]="isEditing"></d3s-loading>                                                
+                <header *ngIf="!showEditor && !showDelete && !isEditing">
                     <i *ngIf="artifactType && artifactType.Description" class="fa" [ngClass]="{'fa-plus-square-o':!showArtifactDetails,'fa-minus-square-o':showArtifactDetails}" aria-hidden="true" style="padding-right:5px;cursor:pointer;font-size:12px" title="Details" (click)="toggleArtifactDetail()" (mouseenter)="showArtifactDetails=true"></i>
                     {{artifactType?.Name}}
                     {{titlePostfix}}
                     <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="!artifactType.HasCustomExportTemplates" [hasCustomExport]="artifactType.HasCustomExportTemplates" (addClick)="add()" (customExportClick)="customExport()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
                     <div (click)="toggleArtifactDetail()" *ngIf="showArtifactDetails && artifactType && artifactType.Description" [innerHtml]="artifactType.Description | safeHtml" style="text-transform:none;font-size:12px;font-weight:normal;margin-left:20px"></div>
                 </header>                    
-                <div class="row" *ngIf="!showDelete && !showEditor">                    
+                <div class="row" *ngIf="!showDelete && !showEditor && !isEditing">                    
                     <div #rightMenu [ngClass]="{'artifact-context-menu':isMenuOpen,'artifact-context-menu-closed':!isMenuOpen}">
                         <a [href]="itemUrl" target="_blank">Open in new window</a>
                     </div>
@@ -115,7 +116,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
-    showCustomExport: boolean = false;    
+    showCustomExport: boolean = false;
+    isEditing: boolean = false;
     isMenuOpen: boolean = false;
     showArtifactDetails: boolean = false;
     showCertificationStatus: boolean = false;
@@ -277,8 +279,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     saveItem(event) {
+        this.isEditing = true;
         this.isLoading = true;
         this.showEditor = false;
+
         let values: any = {};
 
         //takes the form and convert any array values to , separated string values
@@ -294,13 +298,12 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         }
 
         this.artifactService.saveArtifact(values)
-            .then(result => {
-                this.showMessageForResult(this.messagesService, result);
-                //reload grid for now as the name / id of the field differs in display mode / edit mode
-                if(event.item.ID) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited
-                this.getData();
-                this.isLoading = false;
-                this.changeDetectorRef.markForCheck();
+            .then(result => {     
+                this.isEditing = false;
+                this.showMessageForResult(this.messagesService, result);                
+                if(event.item.ID) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
+                this.isLoading = false;                
+                this.changeDetectorRef.markForCheck();                
             });
     }
 
