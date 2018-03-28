@@ -388,8 +388,8 @@ namespace igx.jobs
                 else urlPrefix = urlPrefix + "-igx";
             }
 
-            targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
-            //targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
+            //targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
+            targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
             targetBaseUri += $"/services/assets/";
 
             while (!string.IsNullOrEmpty(url))
