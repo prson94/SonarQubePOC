@@ -59,19 +59,11 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1", new { id 
 select	A.ObjectID as ID, P.SubjectID as ParentID, A.TypeID as TaxonomyTypeID, A.DisplayValue,
         A.ID as AssetID,  
         {columns} 
-        case 
-            when DC.ItemsCount > 0 then cast(1 as bit) 
-            else cast(0 as bit) 
-        end as HasChildren,
-        L.Level 
-from	AssetDetail A
-        cross apply dbo.GetAssetLevelById(A.ID) L
+        hch.HasChildren,
+        dbo.GetAssetLevelScalar(A.ID,4) as [Level]
+from	AssetDetail A        
         {joins} 
-        CROSS APPLY (
-            		select	count(1) as [ItemsCount]
-            		from	[Intersect]
-            		where	([Subject] = A.Object and SubjectID = A.ObjectID) OR ([Object] = A.Object and ObjectID = A.ObjectID)
-            		) DC 
+        cross apply [dbo].[GetAssetHasChildrenByAssetID](a.id,4) hch
 		outer apply (
 					select	I.SubjectID
 					from	[Intersect] I
