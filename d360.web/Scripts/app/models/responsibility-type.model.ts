@@ -80,6 +80,7 @@ export class ResponsibilityTypeRelationRuleDefinitionWhenItem {
     Value: string;
     ValueOptions: SelectItem[] = [];
     IsLookup: boolean = false;
+    IsBool: boolean = false;
 }
 
 export class ResponsibilityTypeRelationRuleDefinitionWhenTestRow {

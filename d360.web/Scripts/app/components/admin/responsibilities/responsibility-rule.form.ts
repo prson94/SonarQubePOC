@@ -65,6 +65,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         { label: "Field", value: "F" },
         { label: "Relationship", value: "R" }
     ];
+    private whenBoolTypes: SelectItem[] = [
+        { label: "Choose...", value: null },
+        { label: "True", value: 'true' },
+        { label: "False", value: 'false' },
+    ];
     private whenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
     private whenIntersectTypes: SelectItem[] = [];
     private WhenTestRows: ResponsibilityTypeRelationRuleDefinitionWhenTestRow[] = [];
@@ -187,11 +192,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     private addWhen(): void {
         let whenItem: ResponsibilityTypeRelationRuleDefinitionWhenItem = new ResponsibilityTypeRelationRuleDefinitionWhenItem();
         whenItem.CheckType = "F";
+        whenItem.IsBool = false;
         if (!this.model.StructuredDefinition.When) this.model.StructuredDefinition.When = [];
         this.model.StructuredDefinition.When.push(whenItem);
     }
 
     private loadWhenValuesForFieldType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
+        item.IsBool = false;
         let selectedFieldType = this.whenFieldTypes.find(f => f.value == item.FieldTypeID.toString());        
         if (selectedFieldType) {
             item.FieldTypeName = selectedFieldType.label;
@@ -199,6 +206,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 selectedFieldType.values.unshift({ label: 'Choose...', value: null });
                 item.ValueOptions = selectedFieldType.values;
                 item.IsLookup = selectedFieldType.isLookup;
+            }
+            else if (selectedFieldType.type == 'Boolean') {
+                item.IsBool = true;
+                item.ValueOptions = this.whenBoolTypes;
+                item.IsLookup = selectedFieldType.isLookup;
+                console.log("value: " + item.Value);
             }
             else {
                 item.ValueOptions = [];
