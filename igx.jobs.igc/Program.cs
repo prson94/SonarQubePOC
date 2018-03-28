@@ -67,14 +67,22 @@ namespace igx.jobs
 
                             var settings = company.Query<IntegrationSetting>("select * from integration.Setting").ToList();
 
+                            List<IntegrationAssetType> mappings = null;
+                            List<IntegrationAssetTypeFieldItem> mappingFields = null;
+                            List<IntegrationAssetTypeRelationItem> mappingRelations = null;
+                            List<IntegrationAssetTypeRoleItem> mappingRoles = null;
+
+                            // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
+                            if (settings.Count > 0)
+                            {
+                                mappings = company.Query<IntegrationAssetType>("select * from integration.SynchedAssetType").ToList();
+                                mappingFields = company.Query<IntegrationAssetTypeFieldItem>("select * from integration.SynchedAssetTypeFieldItem").ToList();
+                                mappingRelations = company.Query<IntegrationAssetTypeRelationItem>("select * from integration.SynchedAssetTypeRelationItem").ToList();
+                                mappingRoles = company.Query<IntegrationAssetTypeRoleItem>("select * from integration.SynchedAssetTypeRoleItem").ToList();
+                            }
+
                             foreach (var setting in settings)
                             {
-                                //Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
-                                var mappings = company.Query<IntegrationAssetType>("select * from integration.SynchedAssetType where IntegrationSettingID = @s", new { s = setting.ID }).ToList();
-                                var mappingFields = company.Query<IntegrationAssetTypeFieldItem>("select * from integration.SynchedAssetTypeFieldItem where IntegrationSettingID = @s", new { s = setting.ID }).ToList();
-                                var mappingRelations = company.Query<IntegrationAssetTypeRelationItem>("select * from integration.SynchedAssetTypeRelationItem where IntegrationSettingID = @s", new { s = setting.ID }).ToList();
-                                var mappingRoles = company.Query<IntegrationAssetTypeRoleItem>("select * from integration.SynchedAssetTypeRoleItem where IntegrationSettingID = @s", new { s = setting.ID }).ToList();
-
                                 #region Get the resource for this setting.
 
                                 var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
@@ -87,7 +95,7 @@ namespace igx.jobs
 
                                 if (setting.IntegrationSystem == d360.core.enums.IntegrationSystem.IGC)
                                 {
-                                    foreach (var item in mappings.Where(i => i.Active && i.ToGovern))
+                                    foreach (var item in mappings.Where(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID))
                                     {
                                         var fields = mappingFields.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
                                         var relations = mappingRelations.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
@@ -102,8 +110,7 @@ namespace igx.jobs
                                             epoch = ConvertDateToUnixTimeMilliseconds(item.LastSynchOn.Value);
                                         }
 
-                                        success = await IGC_LoadAssetsByMappingTypeAsync(c.CompanyID, setting, epoch, c.UrlPrefix, resource, item, fields, relations, roles);
-
+                                        success = IGC_LoadAssetsByMappingTypeAsync(c.CompanyID, setting, epoch, c.UrlPrefix, resource, item, fields, relations, roles);
                                         if (success)
                                         {
                                             company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt where ID = @id", new { id = item.ID, dt = DateTime.UtcNow });
@@ -224,7 +231,7 @@ namespace igx.jobs
         /// <param name="relations">The asset relationship mappings.</param>
         /// <param name="roles">The asset role mappings.</param>
         /// <returns>An asynchronous boolean to indicate whether the process was successful or not.</returns>
-        public static async Task<bool> IGC_LoadAssetsByMappingTypeAsync(int companyID, IntegrationSetting setting, long? lastSynchEpoch, string urlPrefix, Resource resource, IntegrationAssetType mapping, List<IntegrationAssetTypeFieldItem> fields, List<IntegrationAssetTypeRelationItem> relations, List<IntegrationAssetTypeRoleItem> roles)
+        public static bool IGC_LoadAssetsByMappingTypeAsync(int companyID, IntegrationSetting setting, long? lastSynchEpoch, string urlPrefix, Resource resource, IntegrationAssetType mapping, List<IntegrationAssetTypeFieldItem> fields, List<IntegrationAssetTypeRelationItem> relations, List<IntegrationAssetTypeRoleItem> roles)
         {
             var success = true;
 
@@ -274,12 +281,23 @@ namespace igx.jobs
                                 try
                                 {
                                     d3s.Add(f.TargetField, obj[f.SourceField].Value<string>());
+
+                                    // Set default value if empty and there is a default value to be used.
+                                    if (!d3s[f.TargetField].HasValues && !string.IsNullOrEmpty(f.DefaultValue))
+                                    {
+                                        d3s[f.TargetField] = f.DefaultValue;
+                                    }
                                 }
                                 catch (Exception ex)
                                 {
                                     if (!fieldErrors.ContainsKey(f.TargetField))
                                     {
                                         fieldErrors.Add(f.TargetField, ex.GetFullExceptionData());
+                                    }
+                                    // Set default value.
+                                    if (!string.IsNullOrEmpty(f.DefaultValue))
+                                    {
+                                        d3s[f.TargetField] = f.DefaultValue;
                                     }
                                 }
                             }
@@ -293,7 +311,10 @@ namespace igx.jobs
                         d3s.Add(mapping.OptionalIDName, mapping.OptionalID.Value.ToString());
                     }
 
+                    // Add object to collection.
                     arr.Add(d3s);
+
+
 
                     // Relation Load Logic.
                     relations.ForEach(r =>
@@ -395,11 +416,11 @@ namespace igx.jobs
             {
                 try
                 {
-                    var respString = await PostJsonToApiAsync(
+                    var respString = PostJsonToApiAsync(
                         $"{targetBaseUri}{mapping.Object}/{mapping.ObjectID}/bulk",
                         targetAuthString,
                         JsonConvert.SerializeObject(arr)
-                    );
+                    ).Result;
 
                     var assetResults = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(respString);
                     string assetErrorMessage = string.Empty;
@@ -450,11 +471,11 @@ namespace igx.jobs
                 {
                     if (ownershipTopModel.Items.Count > 0)
                     {
-                        var respString = await PostJsonToApiAsync(
+                        var respString = PostJsonToApiAsync(
                             $"{targetBaseUri}ownership/bulk",
                             targetAuthString,
                             JsonConvert.SerializeObject(ownershipTopModel)
-                        );
+                        ).Result;
                     }
                 }
                 catch (Exception ex)
@@ -467,11 +488,11 @@ namespace igx.jobs
             {
                 try
                 {
-                    var respString = await PostJsonToApiAsync(
+                    var respString = PostJsonToApiAsync(
                         $"{targetBaseUri}relationships/bulk",
                         targetAuthString,
                         JsonConvert.SerializeObject(relationships)
-                    );
+                    ).Result;
                 }
                 catch (Exception ex)
                 {

@@ -1216,12 +1216,12 @@ using   (
             insert (IntersectTypeID, Subject, SubjectID, Object, ObjectID, State, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Owner, Deleted, Visible)
             values (S.IntersectTypeID, S.Subject, S.SubjectID, S.Object, S.ObjectID, 1, 0, getutcdate(), 0, getutcdate(), 'Fusion Load', 0, 1);", commandTimeout: ExecuteQueryTimeout);
 
-            //     await companyConnection.ExecuteAsync(@"
-            //         update	T
-            //set		T.ParentID = S.ParentID
-            //from	FusionAttribute T
-            //  inner join #tempParentID S on T.ID = S.ID;
-            //     ", commandTimeout: ExecuteQueryTimeout);
+            await companyConnection.ExecuteAsync(@"
+            update	T
+            set		T.ParentID = S.SubjectID
+            from	FusionAttribute T
+                    inner join #tempParentID S on T.ID = S.ObjectID;
+                 ", commandTimeout: ExecuteQueryTimeout);
         }
 
         private void UpdateAttributesWithParentIDValues()

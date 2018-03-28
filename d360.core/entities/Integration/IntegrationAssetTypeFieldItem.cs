@@ -26,6 +26,9 @@ namespace d360.core.entities
         [DataMember]
         public bool IsArray { get; set; } = false;
 
+        [DataMember]
+        public string DefaultValue { get; set; }
+
         [IgnoreDataMember, ForeignKey("SynchedAssetTypeID")]
         public virtual ICollection<IntegrationAssetType> IntegrationAssetType { get; set; }
     }

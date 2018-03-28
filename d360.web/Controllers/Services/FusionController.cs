@@ -907,16 +907,26 @@ from    Fusion C
             var prefix = "Fusion.PostBulkAttributesAsync => ";
             var errorMessage = "";
 
-            if (!Request.Content.IsMimeMultipartContent())
+            //if (!Request.Content.IsMimeMultipartContent())
+            //{
+            //    Trace.TraceWarning("{0}{1}", prefix, "Payload must be multipart content.");
+            //    throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
+            //}
+
+            string json = "{}";
+
+            if (Request.Content.IsMimeMultipartContent())
             {
-                Trace.TraceWarning("{0}{1}", prefix, "Payload must be multipart content.");
-                throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
+                var streamProvider = new MultipartMemoryStreamProvider();
+                await Request.Content.ReadAsMultipartAsync(streamProvider);
+
+                json = await streamProvider.Contents.Single().ReadAsStringAsync();
+            }
+            else
+            {
+                json = await Request.Content.ReadAsStringAsync();
             }
 
-            var streamProvider = new MultipartMemoryStreamProvider();
-            await Request.Content.ReadAsMultipartAsync(streamProvider);
-
-            string json = await streamProvider.Contents.Single().ReadAsStringAsync();
             var import = JsonConvert.DeserializeObject<BulkFusionImport>(json);
 
             var date = DateTime.UtcNow;

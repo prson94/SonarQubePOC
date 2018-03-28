@@ -377,11 +377,12 @@ output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 merge into  FusionAttribute T
 using       (
             select      min(ItemNumber) as ItemNumber,
+                        ParentID,
                         OptionalID, 
                         Name, 
                         SourceID
             from        #AssetTable
-            group by    OptionalID, Name, SourceID
+            group by    ParentID, OptionalID, Name, SourceID
             ) S
 on          (
                 T.FusionAttributeTypeID = @id and 
@@ -394,8 +395,8 @@ when matched then
     update set
             T.Deleted = 0
 when not matched by target then
-    insert  (FusionAttributeTypeID, FusionID, Name, SourceID)
-    values  (@id, S.OptionalID, S.Name, S.SourceID)
+    insert  (FusionAttributeTypeID, FusionID, ParentID, Name, SourceID)
+    values  (@id, S.OptionalID, S.ParentID, S.Name, S.SourceID)
 output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 ", new { id = otid }, transaction: trans, commandTimeout: 1200);
                             break;
