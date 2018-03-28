@@ -1,4 +1,4 @@
-﻿CREATE procedure [dbo].[GetLineage]
+﻿create procedure [dbo].[GetLineage]
 --declare 
 	@type varchar(50),
 	@id int,
@@ -176,35 +176,35 @@ begin
 		insert into @items
 			select	O.ID,				
 					O.SourceIntersectID,
-					SI.SubjectTypeName,
-					SI.SubjectName,
-					SI.SubjectShortName,
-					SI.Subject,
+					SS.TypeName as SubjectTypeName,
+					SS.DisplayValue as SubjectName,
+					SS.DisplayValue as SubjectShortName,
+					SI.[Subject],
 					SI.SubjectID,
-					SI.SubjectIconBackColor,
-					SI.SubjectIconForeColor,
-					SI.ObjectTypeName,
-					SI.ObjectName,
-					SI.ObjectShortName,
-					SI.Object,
+					SS.BackColor as SubjectIconBackColor,
+					SS.ForeColor as SubjectIconForeColor,
+					SO.TypeName as ObjectTypeName,
+					SO.DisplayValue as ObjectName,
+					SO.DisplayValue as ObjectShortName,
+					SI.[Object],
 					SI.ObjectID,
-					SI.ObjectIconBackColor,
-					SI.ObjectIconForeColor,
+					SO.BackColor as ObjectIconBackColor,
+					SO.ForeColor as ObjectIconForeColor,
 					O.TargetIntersectID,
-					TI.SubjectTypeName,
-					TI.SubjectName,
-					TI.SubjectShortName,
+					TS.TypeName as SubjectTypeName,
+					TS.DisplayValue as SubjectName,
+					TS.DisplayValue as SubjectShortName,
 					TI.Subject,
 					TI.SubjectID,
-					TI.SubjectIconBackColor,
-					TI.SubjectIconForeColor,
-					TI.ObjectTypeName,
-					TI.ObjectName,
-					TI.ObjectShortName,
+					TS.BackColor,
+					TS.ForeColor,
+					TB.TypeName as ObjectTypeName,
+					TB.DisplayValue as ObjectName,
+					TB.DisplayValue as ObjectShortName,
 					TI.Object,
 					TI.ObjectID,
-					TI.ObjectIconBackColor,
-					TI.ObjectIconForeColor,
+					TB.BackColor,
+					TB.ForeColor,
 					case 
 						when SHSR.C > 0 then cast(1 as bit)
 						else cast(0 as bit)
@@ -214,8 +214,12 @@ begin
 						else cast(0 as bit)
 					end as TargetHasSourceRules
 			from	#points O
-					inner join IntersectDetail SI on SI.ID = O.SourceIntersectID
-					inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID
+				inner join PredicateIntersect SI on SI.IntersectID = O.SourceIntersectID
+				inner join PredicateIntersect TI on TI.IntersectID = O.TargetIntersectID
+				inner join AssetDetail SS on SS.[Object] = SI.[Subject] and SS.ObjectID = SI.SubjectID
+				inner join AssetDetail SO on SO.[Object] = SI.[Object] and SO.ObjectID = SI.ObjectID
+				inner join AssetDetail TS on TS.[Object] = TI.[Subject] and TS.ObjectID = TI.SubjectID
+				inner join AssetDetail TB on TB.[Object] = TI.[Object] and TB.ObjectID = TI.ObjectID
 					cross apply (
 								select	count(1) as C
 								from	MapItem MI 
@@ -274,8 +278,8 @@ begin
 			--remove deleting items
 			delete I
 			from @items I
-			inner join @rows R on R.Deleting = 1  
-				AND R.SourceSubjectID = I.SourceSubjectID 
+			inner join @rows R on
+				R.SourceSubjectID = I.SourceSubjectID 
 				AND R.SourceObjectID = I.SourceObjectID
 				AND R.TargetSubjectID = I.TargetSubjectID
 				AND R.TargetObjectID = I.TargetObjectID;
@@ -321,7 +325,8 @@ begin
 			inner join cache.ObjectDetails SO on SO.[Object] = R.SourceObject AND SO.ObjectID = R.SourceObjectID
 			inner join cache.ObjectDetails TS on TS.[Object] = R.TargetSubject AND TS.ObjectID = R.TargetSubjectID
 			inner join cache.ObjectDetails TB on TB.[Object] = R.TargetObject AND TB.ObjectID = R.TargetObjectID
-			where R.Adding = 1;
+			where R.Adding = 1
+			and not exists (select 1 from @items i where i.SourceIntersectID = r.SourceIntersectID and i.TargetIntersectID = r.TargetIntersectID);
 		end
 		
 		if @view = 0
