@@ -53,6 +53,7 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
     @Input() hasClose: boolean = false;
 
     @Output() close = new EventEmitter();
+    @Output() assetIdChange = new EventEmitter();
 
     private fusionAttributeValueDetails: FusionAttributeValueDetails;
 
@@ -72,6 +73,7 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
             .then(res => {
                 this.isLoading = false;
                 this.fusionAttributeValueDetails = res;
+                this.assetIdChange.emit(this.fusionAttributeValueDetails.AssetID);
                 this.ref.markForCheck();
             });
     }

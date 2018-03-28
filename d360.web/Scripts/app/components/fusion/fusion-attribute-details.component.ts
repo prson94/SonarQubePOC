@@ -15,7 +15,7 @@ import { StringConstants } from '../../static/string-constants';
                  <div class="row" *ngIf="!isLoading">    
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-fusion-attribute-item-details [fusionAttributeId]="id" [name]="name" [objectType]="type" (close)="close()" [hasClose]="true"></d3s-fusion-attribute-item-details>                            
+                            <d3s-fusion-attribute-item-details [fusionAttributeId]="id" [name]="name" [objectType]="type" (close)="close()" (assetIdChange)="assetIdChange($event)" [hasClose]="true"></d3s-fusion-attribute-item-details>                            
                         </div>           
                     </div>
                  </div>
@@ -48,15 +48,18 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
             this.type = params['type'];
             this.id = +params['id'];
             this.name = params['name'] ? params['name'] : 'Details';
-
+            
             this.setBrowserTitle(this.titleService, this.name);        
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.name));
-            this.setObjectInfo(this.type, this.id);
-            this.setCommonRightSideBar(true, true, false, true, true, true, false);
+            
             this.loadPermissions(this.permissionsService, StringConstants.ObjectFusionAttribute, this.id);
         });
     }
 
+    assetIdChange(assetID) {
+        this.setObjectInfo(this.type, this.id, undefined, assetID);
+        this.setCommonRightSideBar(true, true, false, true, true, true, false);
+    }
 
     ngOnDestroy() {
         this.sub.unsubscribe();

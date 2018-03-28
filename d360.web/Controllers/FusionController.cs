@@ -809,7 +809,13 @@ where   A.FusionQueryAttributeTypeID = @t
                         model["Name"] = fusionAttribute.Name;
                         model["TextPath"] = fusionAttribute.TextPath;
                         model["FusionID"] = fusionAttribute.FusionID;
-                        model["FusionAttributeTypeID"] = fusionAttribute.FusionAttributeTypeID;                        
+                        model["FusionAttributeTypeID"] = fusionAttribute.FusionAttributeTypeID;
+
+                        var asset = Company.Assets.Where(x => x.Object == "FusionAttribute" && x.ObjectID == id).FirstOrDefault();
+                        if (asset != null)
+                        {
+                            model["AssetID"] = asset.ID;
+                        }
                     }
                     break;
                 case SystemObjects.FusionQueryAttribute:
