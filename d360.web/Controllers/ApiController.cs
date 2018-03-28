@@ -1221,7 +1221,13 @@ select * from h order by h.[Level] desc;";
             var sql = @"select distinct 
 	            cast(ResponsibilityTypeID as varchar) + '|' + cast(SecurityAssetID as varchar) as 'ID', 
 	            '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
-	            [Type]
+	            case when SecurityAsset = 'R' or SecurityAsset = 'O' then
+					'Resource'
+					when SecurityAsset = 'G' then
+					'Group'
+				else
+					[Type]
+				end as [Type]
             from 
 	            [dbo].[ResponsibilityDetails] 
             where 
