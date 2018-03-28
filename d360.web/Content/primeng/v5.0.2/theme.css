@@ -986,3 +986,20 @@ p-togglebutton.ng-dirty.ng-invalid .ui-button {
     color: white;
     font-weight: bold;
 }
+
+p-editor  P {
+    display: block;
+    margin: 0px;
+}
+
+p-editor ul {
+    list-style-type: disc;
+    margin: 0px;
+    padding: 5px 5%;
+}
+   
+p-editor  ul  li {
+        list-style-type: disc;
+ }
+
+   
