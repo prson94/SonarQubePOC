@@ -180,6 +180,7 @@ order by	SubjectName,
         {
             var models = Company.Query<dynamic>(
                 @"select 
+                    ID,
                     [Subject], 
                     SubjectID, 
                     SubjectName, 
@@ -201,6 +202,7 @@ order by	SubjectName,
             #region Header
 
             int index = 1;
+            document.SetCellValue(1, index++, "Intersect ID");
             document.SetCellValue(1, index++, "Subject Type");
             document.SetCellValue(1, index++, "Subject ID");
             document.SetCellValue(1, index++, "Subject Name");
@@ -218,6 +220,7 @@ order by	SubjectName,
             {
                 index = 1;
                 rowNumber++;
+                document.SetCellValue(rowNumber, index++, (int)row.ID);
                 document.SetCellValue(rowNumber, index++, (string)row.Subject);
                 document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectName);

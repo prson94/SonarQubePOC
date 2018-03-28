@@ -688,6 +688,19 @@ order by	ColumnIndex", new { id });
                 columns.Remove(col);
 
                 return index;
+            }  
+            else if(objectType == "IntersectType")
+            {
+                var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName}", x.Name, true) == 0).FirstOrDefault();
+
+                if (col == null)
+                    throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName}]");
+
+                var index = col.ColumnIndex;
+
+                columns.Remove(col);
+
+                return col.ColumnIndex;
             }
             else
             {
@@ -929,6 +942,17 @@ order by	ColumnIndex", new { id });
                 if (fusionItem == null) return -1;
 
                 return fusionItem.ID;
+            }
+            else if(@object == "Intersect")
+            {
+                if (!int.TryParse(valItem.Value, out int intersectId))
+                {
+                    BulkLoadStatusMsg = $"Error intersect id is not a number {valItem.Value}";
+
+                    return -1;
+                }
+
+                return intersectId;
             }
             else
             {
