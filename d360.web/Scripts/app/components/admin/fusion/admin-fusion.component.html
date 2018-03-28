@@ -29,12 +29,14 @@
 
     <div class="col l9 m12 s12" *ngIf="formMode == FormMode.Default && selectedRow">
         <div class="row">
-            <div class="col hide-on-small-and-down m12 l6">
+            <div class="col s12 m12 l12">
                 <div class="tile tile-detail">
                     <object-detail [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></object-detail>
                 </div>
             </div>
-            <div class="col s12 m12 l6">
+        </div>
+        <div class="row">
+            <div class="col s12 m12 l12">
                 <div class="tile tile-detail">
                     <d3s-fusion-configuration-tile [fusionType]="selectedRow"></d3s-fusion-configuration-tile>
                 </div>
