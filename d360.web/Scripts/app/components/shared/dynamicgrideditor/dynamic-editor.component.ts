@@ -74,6 +74,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     categories: EditorCategory[] = [];
     editedItem: any;
 
+    numPattern: string = "^([-]?(\\d+(\\d*)?))$";
+    decPattern: string = "^([-]?(\\d+(\\.\\d*)?)|(\\.\\d+))$";
+
     hasIconFields = false;
     fore: EditorField;
     back: EditorField;
@@ -227,7 +230,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     private getFieldValidators(field: EditorField) {        
         var validators = [];
-        
+
         if (field.Validations) {
             for (let validation of field.Validations) {
                 if (validation.rule && validation.rule.startsWith('length=')) {
@@ -250,6 +253,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 else if (validation.regex) {
                     validators.push(Validators.pattern(validation.regex));
                 }
+                else if (field.FieldType == 'Number') {
+                    validators.push(Validators.pattern(this.numPattern));
+                }
+                else if (field.FieldType == 'Decimal') {
+                    validators.push(Validators.pattern(this.decPattern));
+                }
+
             }
         }
                        

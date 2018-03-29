@@ -80,8 +80,10 @@ declare var CompanySettings;
                             <p-dropdown *ngIf="!field?.MultiSelect" [filter]="true" [options]="field.Items | dropdownItemToSelectItemPipe" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [style]="{width:'100%'}" ngDefaultControl></p-dropdown>
                             <p-multiSelect *ngIf="field?.MultiSelect" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
                         </div>
-                        <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="1" (keyup)="numbersOnly($event)" (keypress)="numbersOnly($event)">   
-                        <input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="any" (keyup)="decnumsOnly($event)" (keypress)="decnumsOnly($event)">   
+
+                        <input *ngSwitchCase="'Number'" [(ngModel)]="field.Value" [formControlName]="field.FieldName" style="width: 100%;" type="string">              
+                        <input *ngSwitchCase="'Decimal'" [(ngModel)]="field.Value" [formControlName]="field.FieldName" style="width: 100%;" type="string">   
+
                         <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00" (keyup)="clamp($event, 0, 1, 3)">   
                         <div *ngSwitchCase = "'Color'">
                             <p-colorPicker [(ngModel)]="colorValue" [formControlName]="field.FieldName"></p-colorPicker>                            
@@ -108,7 +110,6 @@ declare var CompanySettings;
                         </div>
                         <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field" [(ngModel)]="field.Value" ></d3s-multiselect-grid>
                     <div class="errorMessage" *ngIf="!isValid">* {{errorMessage}}</div>
-                    
                   </div>                   
                 </div>
                 `,
@@ -126,10 +127,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
     private sub: any;
 
     private colorValue: string = '#000';
-    private inStr: string;
-    private numStr: string;
-    private dTest: string;
-    private nTest: string;
+    private numPattern: string = "^([-]?(\\d+(\\d*)?))$";
+    private numPatternError: string = "You have not Input a Valid 'Simple' Number!";
+    private decPattern: string = "^([-]?(\\d+(\\.\\d*)?)|(\\.\\d+))$";
+    private decPatternError: string = "You have not Input a Valid Decimal Number!";
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
 
@@ -158,6 +159,14 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
                 }
             });
 
+        if (this.field.FieldType == 'Number') {
+            this.field.Validations.push({ message: this.numPatternError, regex: this.numPattern, rule: null });
+        }
+
+        if (this.field.FieldType == 'Decimal') {
+            this.field.Validations.push({ message: this.decPatternError, regex: this.decPattern, rule: null });
+        }
+
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
@@ -183,10 +192,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
             }, 250);            
         }
-        this.inStr = "";
-        this.numStr = "";
-        this.dTest = "";
-        this.nTest = "";
     }
 
     ngOnDestroy() {
@@ -233,6 +238,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
 
         if (!errors) return '';
         var message = ""
+        if (errors["pattern"]) {
+            message += this.regexErrorMessage;
+        }
         if (errors["maxlength"]) {
             message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}]`;
         }
@@ -243,10 +251,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
 
         if (errors["required"]) {
             message += `${this.currentFieldName} is required.  `;
-        }
-
-        if (errors["pattern"]) {
-            message += this.regexErrorMessage;
         }
 
         return message;
@@ -280,65 +284,5 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
     OnBlurTrim() {
         let value: string = this.form.controls[this.field.FieldName].value;
         this.form.controls[this.field.FieldName].setValue(value.trim());
-
-    }
-
-    //  ===========================================================================================
-    //          Changes to Fix Errors for multiple and ill-placed minus signs, and the use of the backspace key.
-    //  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-    //          Date:           March 2018
-    //          Author:        hoell
-    //  ===========================================================================================
-    numbersOnly(event: KeyboardEvent) {
-        let chkforOne = new RegExp("^([-]?(\\d+(\\d*)?))$");
-        this.numStr += String.fromCharCode(event.charCode);
-
-        if (event.keyCode == 8) {
-            if (this.numStr != null && this.numStr != "") {
-                this.numStr = this.numStr.substr(0, this.numStr.length - 2);
-            }
-            return;
-        }
-
-        if (this.numStr != null && this.numStr != "") {
-            this.nTest = (chkforOne.test(this.numStr)) ? 'Success' : 'Fail';
-            if (this.nTest == "Fail") {
-                if (this.numStr.length <= 1 && this.numStr == "-") return (event.charCode === 45);
-                this.numStr = this.numStr.substr(0, this.numStr.length - 1);
-                event.preventDefault();
-                return;
-            }
-            else return (event.charCode >= 48 && event.charCode <= 57);
-        }
-    }
-
-    //  ===========================================================================================
-    //          Changes to Fix Errors for multiple and ill-placed decimal points, multiple and ill-placed minus signs, and the use of the 
-    //          backspace key.
-    //  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-    //          Date:           March 2018
-    //          Author:        hoell
-    //  ===========================================================================================
-    decnumsOnly(event: KeyboardEvent) {
-        let chkforOne = new RegExp("^([-]?(\\d+(\\.\\d*)?)|(\\.\\d+))$");
-        this.inStr += String.fromCharCode(event.charCode);
-
-        if (event.keyCode == 8) {
-            if (this.inStr != null && this.inStr != "") {
-                this.inStr = this.inStr.substr(0, this.inStr.length - 2);
-            }
-            return;
-        }
-
-        if (this.inStr != null && this.inStr != "") {
-            this.dTest = (chkforOne.test(this.inStr)) ? 'Success' : 'Fail';
-            if (this.dTest == "Fail") {
-                if (this.inStr.length <= 1 && this.inStr == "-") return (event.charCode === 45);
-                this.inStr = this.inStr.substr(0, this.inStr.length - 1);
-                event.preventDefault();
-                return;
-            }
-            else return (event.charCode >= 46 && event.charCode <= 57 && event.charCode != 47);
-        }
     }
 }
