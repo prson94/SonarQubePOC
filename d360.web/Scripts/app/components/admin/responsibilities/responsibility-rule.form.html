@@ -64,6 +64,9 @@
                     </table>
                 </div>
                 <div class="col l4 m5 s12">
+                    <div *ngIf="whenIsloading" style="text-align:center;">
+                        <i class="fa fa-spinner fa-spin fa-2x"></i>
+                    </div>
                     <button pButton type="button" label="Test filter" (click)="testWhen()"></button>
                     <p-dataTable #dt [value]="WhenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px">
                         <p-column field="Name" header="Name" sortable="true"></p-column>
@@ -112,6 +115,9 @@
                     </table>
                 </div>
                 <div class="col l4 m5 s12">
+                    <div *ngIf="thenIsloading" style="text-align:center;">
+                        <i class="fa fa-spinner fa-spin fa-2x"></i>
+                    </div>
                     <button pButton type="button" label="Test filters" (click)="testThen()"></button>
                     <p-dataTable #dt [value]="ThenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px">
                         <p-column field="Name" header="Security Asset" sortable="true"></p-column>

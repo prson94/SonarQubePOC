@@ -59,6 +59,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     private model: ResponsibilityTypeRelationRule = new ResponsibilityTypeRelationRule();
 
     private actionName: string = "Add";
+    private whenIsloading: boolean = false;
+    private thenIsloading: boolean = false;
 
     private objectTypes: SelectItem[] = [];
     private whenCheckTypes: SelectItem[] = [
@@ -230,12 +232,17 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     private testWhen(): Promise<void> {
+
+        this.whenIsloading = true;
+
         let promises = [];
 
         this.responsibilityTypeService.testWhen(this.model)
             .then(d => {
                 this.WhenTestRows = d;
             });
+
+        this.whenIsloading = false;
 
         return Promise.all(promises).then(() => { });
     }
@@ -268,12 +275,17 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     private testThen(): Promise<void> {
+
+        this.thenIsloading = true;
+
         let promises = [];
 
         this.responsibilityTypeService.testThen(this.model)
             .then(d => {
                 this.ThenTestRows = d;
             });
+
+        this.thenIsloading = false;
 
         return Promise.all(promises).then(() => { });
     }
