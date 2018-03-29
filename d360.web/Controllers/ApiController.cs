@@ -2914,7 +2914,7 @@ end",
                         setColumnTypeInfo(ft, i, oc);
                         columnModels.Add(oc);
                     }
-                    else if (i.FieldTypeName.ToLower() == "displayvalue")
+                    else if (i.FieldTypeName.ToLower() == "displayvalue" || i.FieldTypeName.ToLower() == "name")
                     {
                         var oc = new ComplexColumnModel
                         {
@@ -2938,7 +2938,7 @@ end",
                         columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                         columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{join.Object.Replace("Type", "")}'", datafield = $"{dataField}_Object" });
                         columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('{join.Object.Replace("Type", "")}', A{pos}.ArtifactTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('{join.Object.Replace("Type", "")}',{(join.Object.Contains("Type") ? "A" + pos + '.' + join.Object + "ID" : "null")} , A{pos}.ID)", datafield = $"{dataField}_Url" });
 
                     }
                     else if (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID)
