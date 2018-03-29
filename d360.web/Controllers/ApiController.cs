@@ -3228,6 +3228,7 @@ end",
 
             var currentObjTable = currentObj;
             var currentObjIdColumn = "ID";
+
             if (currentObj == "Resource")
             {
                 currentObjTable = "reporting.Global_Resource";
@@ -3241,6 +3242,7 @@ end",
             var addDeletedCheck = currentObj.Equals("FusionAttribute", StringComparison.CurrentCultureIgnoreCase) ||
                                                       currentObj.Equals("FusionQueryAttribute", StringComparison.CurrentCultureIgnoreCase);
             var previousObj = (i > 0) ? joins[i - 1].Object.Replace("Type", "") : "";
+            var previousObjIdColumn = previousObj == "Resource" ? "ResourceID" : "ID";
             var objColumn = "";
             var objIDColumn = "";
             var joinType = "inner"; //the SQL join.
@@ -3265,7 +3267,7 @@ end",
             {
                 case ComplexLookupRelationType.StandardRelationhip:
                     #region
-                    join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{currentObjIdColumn} ) )";
+                    join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn} ) )";
                     if (i == 0)
                     {
                         join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
@@ -3277,7 +3279,7 @@ end",
                     }
                     else
                     {
-                        join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                        join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                         join.JoinStatement += permissionJoin;
                         join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
 
