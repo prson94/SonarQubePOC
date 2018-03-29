@@ -29,7 +29,8 @@ import {MenuItem} from 'primeng/primeng';
                             <li class="left" *ngIf="hasAuthenticate"><a class="Action" (click)="authenticateClick.emit()" [pTooltip]="hideTooltip ? null : 'Authentication'"><i class="fa fa-sign-in fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasApi"><a class="Action" (click)="apiClick.emit()" [pTooltip]="hideTooltip ? null : 'API Key'"><i class="fa fa-key fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasPassword"><a class="Action" (click)="passwordClick.emit()" [pTooltip]="hideTooltip ? null : 'Password'"><i class="fa fa-asterisk fa-fw"></i></a></li>                        
-                            <li class="left" *ngIf="hasFullScreen"><a class="Action" (click)="fullScreenClick.emit()" [pTooltip]="hideTooltip ? null : 'Fullscreen'"><i class="fa fa-arrows-alt fa-fw"></i></a></li>                        
+                            <li class="left" *ngIf="hasFullScreen"><a class="Action" (click)="fullScreenClick.emit()" [pTooltip]="hideTooltip ? null : 'Fullscreen'"><i class="fa fa-arrows-alt fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasNewWindow"><a class="Action" (click)="newWindowClick.emit()" [pTooltip]="hideTooltip ? null : 'New Window'"><i class="fa fa-windows fa-fw"></i></a></li>                            
                             <li class="left" *ngIf="hasUser"><a class="Action" (click)="userClick()" [pTooltip]="hideTooltip ? null : 'Show my items only'">
                                 <i class="fa fa-user fa-fw" [ngClass]="{'red-text darken-2':userMode}"></i>                                
                             </a></li>
@@ -58,6 +59,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() suggestClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
     @Output() viewClick = new EventEmitter();
+    @Output() newWindowClick = new EventEmitter();
 
     @Input() userMode: boolean = false;
     @Output() userModeChange = new EventEmitter();
@@ -83,6 +85,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasSave: boolean = false;
     @Input() hasUser: boolean = false;
     @Input() hasView: boolean = false;
+    @Input() hasNewWindow: boolean = false;
 
     @Input() hasMenu: boolean = false;
     @Input() menuItems: MenuItem[] = [];

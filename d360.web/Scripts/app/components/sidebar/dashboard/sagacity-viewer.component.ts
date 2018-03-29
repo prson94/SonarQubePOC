@@ -6,7 +6,7 @@ import { Dashboard, DashboardTokens } from '../../../models/dashboard.model'
 @Component({
     selector: 'd3s-sagacity-viewer',
     template: ` 
-                <header>{{dashboard?.Name}}<d3s-tile-actions [hasFullScreen]="false"></d3s-tile-actions></header>
+                <header>{{dashboard?.Name}}<d3s-tile-actions [hasNewWindow]="true"  (newWindowClick)="openWindow()" ></d3s-tile-actions></header>
                 <div class="row">
                     <div class="col s12">
                         <iframe style="width:100%;height:700px;border:0;" [src]="sagacityUrl" frameborder="0"></iframe>
@@ -26,5 +26,9 @@ export class SagacityViewerComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.sagacityUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.dashboard.Url);
+    }
+
+    openWindow() {
+       window.open(this.dashboard.Url, "_blank");
     }
 }
