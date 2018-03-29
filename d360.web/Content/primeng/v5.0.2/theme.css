@@ -653,13 +653,17 @@ button.ui-button:disabled {
     height: 25px;
     word-wrap:break-word;
 }
+
+.ui-datatable .ui-datatable-thead > tr > th {
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
 /*.ui-datatable tbody td {
     border:none;
     border-radius: 0;
     padding: 0 10px;
     height:25px;    
 }*/
-
 .ui-datatable .ui-paginator {
     border-top: 1px solid #999 !important;
 }
