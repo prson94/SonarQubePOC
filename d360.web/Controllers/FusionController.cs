@@ -321,6 +321,26 @@ namespace d360.web.Controllers
 
         string parentSql = @"
 with h as	(
+			select	ID,
+					ParentID,
+                    Name,
+					0 as [Level]
+			from	FusionAttributeType
+			where	ID = @t
+			union all
+			select	P.ID,
+					P.ParentID,
+                    P.Name,
+					C.[Level] + 1 as [Level]
+			from	FusionAttributeType P
+					inner join h as C on C.ParentID = P.ID
+			)
+
+select * from h where ID <> @t order by h.[Level] desc;
+";
+        /*
+        string parentSql = @"
+with h as	(
 			select	A.ObjectID as ID,
 					P.ParentID,
                     A.Name,
@@ -348,7 +368,7 @@ with h as	(
 					) P
 			)
 
-select * from h where ID <> @t order by h.[Level] desc;";
+select * from h where ID <> @t order by h.[Level] desc;";*/
 
         //THIS IS LOOKING AT NEW INTERSECT LOGIC. TO BE ADDED IN LATER RELEASE.
         //        string parentSql = @"
