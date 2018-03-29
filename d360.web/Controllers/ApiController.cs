@@ -4588,8 +4588,8 @@ where    A.RuleID = @id", new { id });
                 return new List<TagSuggestionModel>();
 
             Dapper.DynamicParameters dbParams = new DynamicParameters();
-                        
-            var sql = @"select 
+
+            /*var sql = @"select 
 	                                c.[Object], 
 	                                c.ObjectID, 
 	                                c.TextPath, 
@@ -4598,7 +4598,18 @@ where    A.RuleID = @id", new { id });
 	                                c.IconForeColor, 
 	                                c.IconBackColor
                                 from cache.ObjectDetails c                                 
-                                where c.[Object] not in ('Intersect','FusionAttribute') and (c.Name like @beginsWith or (len(@val) > 2 and c.Name like @contains))";
+                                where c.[Object] not in ('Intersect','FusionAttribute') and (c.Name like @beginsWith or (len(@val) > 2 and c.Name like @contains))";*/
+            var sql = @"select 
+										c.[Object], 
+										c.ObjectID, 
+										c.DisplayValue as TextPath, 
+										cU.Url, 
+										c.TypeName as ObjectTypeName, 
+										c.ForeColor as IconForeColor, 
+										c.BackColor as IconBackColor
+									from [dbo].assetdetail c   
+									cross apply [dbo].getAssetUrl(c.[object],c.ObjectID, c.TypeID) cU                              
+									where c.[Object] != 'FusionAttribute' and (c.DisplayValue like @beginsWith or (len(@val) > 2 and c.DisplayValue like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
             dbParams.Add("val", $"{phrase}%");
