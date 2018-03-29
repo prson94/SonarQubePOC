@@ -15005,6 +15005,8 @@ order by TP.TextPath";
         {
             try
             {
+                if (claims == null) claims = new List<ResponsibilityTypeObjectClaim>();
+
                 claims.ForEach(c =>
                 {
                     c.ObjectID = objectID;
