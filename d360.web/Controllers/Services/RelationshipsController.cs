@@ -425,7 +425,7 @@ namespace d360.web.Controllers.Services
                         var intersect = Company.GetById<Intersect>(l.intersectId);
                         if (intersect != null)
                         {
-                            Company.DeleteRelationship(intersect.ID);
+                            Company.Delete(intersect);
                         }
 
                     }
@@ -475,7 +475,7 @@ namespace d360.web.Controllers.Services
                                         ObjectID = existing.ObjectID,
                                     };
 
-                                    Company.Delete(existing);
+                                    Company.Delete(SystemObjects.Intersect, existing.ID); 
                                     Company.Add(copy);
                                 }
                                 return;
