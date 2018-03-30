@@ -44,6 +44,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     scoreHistory: Object;
     averageScore: number;
+    scoreDate: string = null;
     
     private pointBreakdown: PointBreakdown[] = [];
     private pointBreakdownTree: TreeNode[] = [];
@@ -125,6 +126,17 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 }
                             },
                             threshold: null
+                        },
+                        series: {
+                            cursor: 'pointer',
+                            point: {
+                                events: {
+                                    click: e => {
+                                        this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
+                                        this.loadPoints();
+                                    }
+                                }
+                            }
                         }
                     },
                     series: [{
@@ -139,7 +151,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     private loadPoints() {
         this.isLoading = true;
-        this.scoreService.getPointBreakdown(this.objectID, this.objectType)
+        this.scoreService.getPointBreakdown(this.objectID, this.objectType, this.scoreDate)
             .then(res => {
 
                 this.pointBreakdown = res;

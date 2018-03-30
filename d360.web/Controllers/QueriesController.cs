@@ -2,6 +2,7 @@
 using d360.model;
 using d360.web.Models.Attributes;
 using Dapper;
+using System;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -157,7 +158,7 @@ order by	R.LastName, R.FirstName", new { id = id }).ToList();
         }
 
         [Route("{type}/{id:int}/PointBreakdownByObject")]
-        public JsonNetResult GetPointBreakdownByObject(SystemObjects type, int id)
+        public JsonNetResult GetPointBreakdownByObject(SystemObjects type, int id, string date = null)
         {
             //           var query = Company.Query<dynamic>(@"
             //select	M.ID,
@@ -218,9 +219,9 @@ union all
 	inner join metrics.[Group] g on g.ID = m.GroupID
 	where 
 		s.[Object] = @type and s.ObjectID = @id
-        and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate";
+        and @date between S.EffectiveStartDate and S.EffectiveEndDate";
 
-            var results = Company.Query<dynamic>(query, new { type = type.ToString(), id });
+            var results = Company.Query<dynamic>(query, new { type = type.ToString(), id, date = date ?? DateTime.UtcNow.ToString() });
 
             return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }

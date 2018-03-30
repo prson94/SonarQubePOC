@@ -9,8 +9,10 @@ export class ScoreService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getPointBreakdown(objectID: number, objectType: string): Promise<PointBreakdown[]> {
-        return this.http.get(`queries/${objectType}/${objectID}/PointBreakdownByObject`)
+    getPointBreakdown(objectID: number, objectType: string, date: string = null): Promise<PointBreakdown[]> {
+        let uri = `queries/${objectType}/${objectID}/PointBreakdownByObject` + (date == null ? '' : `?date=${date}`);
+
+        return this.http.get(uri)
             .toPromise()
             .then(response => <PointBreakdown[]>response.json())
             .catch(err => this.handleError(err));
