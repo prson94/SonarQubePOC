@@ -1006,4 +1006,6 @@ p-editor  ul  li {
         list-style-type: disc;
  }
 
-   
+p-editor ol {
+    margin: 0px;
+}
