@@ -17,6 +17,8 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Ganss.XSS;
+using System.Text.RegularExpressions;
 
 namespace igx.jobs.bulkloadprocessor
 {
@@ -116,7 +118,15 @@ namespace igx.jobs.bulkloadprocessor
                                 else
                                 {
                                     loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+
+                                    Regex tagRegex = new Regex(@"<[^>]+>");
+                                    if (tagRegex.IsMatch(loadValue))
+                                    {
+                                        var sanitizer = new HtmlSanitizer();
+                                        loadValue = sanitizer.Sanitize(loadValue);
+                                    }
                                 }
+
 
                                 loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue });
                             }

@@ -10,6 +10,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
 using Dapper;
+using Ganss.XSS;
 using gudusoft.gsqlparser;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -2220,6 +2221,13 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 {
 
                     var field = (Field)entry.Entity;
+
+                    if (field.FieldType != null && field.FieldType.Type == "Html")
+                    {
+                        var sanitizer = new HtmlSanitizer();
+                        field.Value = sanitizer.Sanitize(field.Value);
+                    }
+
                     var existing = Fields.AsNoTracking().FirstOrDefault<Field>(f => f.FieldTypeID == field.FieldTypeID && f.ObjectID == field.ObjectID && f.ObjectType == field.ObjectType);
                     if (existing != null)
                     {
