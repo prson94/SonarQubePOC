@@ -39,10 +39,13 @@ declare var CompanySettings;
                                         <a style="cursor:pointer;" (click)="selected=item;showTechnical=true;" title="Technical Relationships"><i class="fa fa-bolt"></i></a>                                                                           
                                     </div>
                                 </ng-template>
-                        </p-column>   
+                        </p-column>                           
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  [filter]="!simpleFilter">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
+                                    <d3s-dynamic-field-value *ngIf="column.text != 'Name';else nameField" [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
+                                    <ng-template #nameField>
+                                        <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="selectObject(item)">{{item.Name}}</d3s-preview-tooltip>                                        
+                                    </ng-template>                                    
                             </ng-template>
                         </p-column>        
                         <p-column></p-column>
