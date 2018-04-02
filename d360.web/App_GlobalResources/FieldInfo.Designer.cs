@@ -367,6 +367,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The owner for this item..
+        /// </summary>
+        public static string Parent_Description {
+            get {
+                return ResourceManager.GetString("Parent_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner/Parent.
+        /// </summary>
+        public static string Parent_Name {
+            get {
+                return ResourceManager.GetString("Parent_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to For text fields you can validate user entries using advanced regular expression.  You will find some common regular expressions below to the right..
         /// </summary>
         public static string Pattern_Description {

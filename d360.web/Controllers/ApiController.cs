@@ -4794,18 +4794,19 @@ where    A.RuleID = @id", new { id });
                     #region Fields
 
                     var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-                    var parent = Company.GetParentObject<Artifact>(id);
+                    var parent = Company.GetParentObject<Artifact>(id);                    
                     if (artifact != null)
                     {
                         if (parent != null)
                         {
                             var parentUrl = Company.Query<string>($"select dbo.GenerateObjectUrl('Artifact', {parent.ArtifactTypeID}, {parent.ID})").First();
+                            var parentAsset = Company.GetAssetDetail("Artifact", parent.ID);
 
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = parent.GetName(i => i.ID) , FieldName = "ArtifactParentName", FieldDescription = parent.GetDescription(i => i.ID), Value = parent.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ID}
+                                    new ReadOnlyField { Name = Resources.FieldInfo.Parent_Name , FieldName = "ArtifactParentName", FieldDescription = Resources.FieldInfo.Parent_Description, Value = parentAsset.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ID}
                                 }
                             });
                         }
@@ -6493,7 +6494,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.Artifact:
                     //var aItems = Company.Filter<Artifact>(i => i.ArtifactTypeID == id);
                     var sql = "select a.*,d.DisplayValue  from artifact a inner join asset ast on (a.id = ast.objectid and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where a.ArtifactTypeID = @id";
-                    var aItems = Company.Query<Artifact>(sql, new { id = id });
+                    var aItems = Company.Query<dynamic>(sql, new { id = id });
 
                     if (!string.IsNullOrEmpty(prefix))
                     {

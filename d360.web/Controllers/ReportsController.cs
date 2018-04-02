@@ -196,12 +196,13 @@ namespace d360.web.Controllers
         [Route("instances/{type}/{id:int}")]
         public JsonNetResult GetInstanceOptionsForType(string type, int id)
         {
+            var artifactSql = "select a.*,d.DisplayValue  from artifact a inner join asset ast on (a.id = ast.objectid and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where a.ArtifactTypeID = @id";
             switch (type)
             {
                 case "ArtifactType":
                     return new JsonNetResult
-                    {
-                        Data = Company.Filter<Artifact>(i => i.ArtifactTypeID == id).OrderBy(i => i.DisplayValue).ToList().Select(i => new { Name = i.DisplayValue, i.ID }),
+                    {                                            
+                        Data = Company.Query<dynamic>(artifactSql, new { id = id }),
                         Formatting = Newtonsoft.Json.Formatting.None
                     };
                 case "TaxonomyType":

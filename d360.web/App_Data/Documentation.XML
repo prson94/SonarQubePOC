@@ -562,6 +562,16 @@
               Looks up a localized string similar to Name.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.Parent_Description">
+            <summary>
+              Looks up a localized string similar to The owner for this item..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Parent_Name">
+            <summary>
+              Looks up a localized string similar to Owner/Parent.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.Pattern_Description">
             <summary>
               Looks up a localized string similar to For text fields you can validate user entries using advanced regular expression.  You will find some common regular expressions below to the right..

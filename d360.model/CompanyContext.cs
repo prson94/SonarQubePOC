@@ -789,6 +789,24 @@ where   ID = @id", new { id }).SingleOrDefault();
             return model;
         }
 
+        public AssetDetail GetAssetDetail(string objectType, long objectId)
+        {
+            var model = Query<AssetDetail>(@"
+select	ID,
+		DisplayValue,
+		AssetTypeID,
+		State,
+		Object,
+		ObjectID,
+		TypeName as AssetTypeName,
+		Type,
+	    TypeID
+from	AssetDetail
+where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = objectType }).SingleOrDefault();
+
+            return model;
+        }
+
         public ObjectDetail GetObjectDetail(string type, long id)
         {
             string query = string.Format("SELECT * FROM utility.ObjectDetail('{0}', {1})", type, id);

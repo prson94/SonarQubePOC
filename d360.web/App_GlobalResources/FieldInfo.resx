@@ -219,6 +219,12 @@
   <data name="Name_Name" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="Parent_Description" xml:space="preserve">
+    <value>The owner for this item.</value>
+  </data>
+  <data name="Parent_Name" xml:space="preserve">
+    <value>Owner/Parent</value>
+  </data>
   <data name="Pattern_Description" xml:space="preserve">
     <value>For text fields you can validate user entries using advanced regular expression.  You will find some common regular expressions below to the right.</value>
   </data>
