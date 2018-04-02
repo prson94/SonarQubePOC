@@ -223,6 +223,13 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
+    getRelationshipFieldIsListable(type: string, id: number, intersectTypeId): Promise<boolean> {
+        return this.http.get(`form/FieldType_Relationship_IsListable?type=${type}&id=${id}&intersectTypeId=${intersectTypeId}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }
 
 

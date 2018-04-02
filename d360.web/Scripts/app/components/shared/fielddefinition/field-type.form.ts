@@ -84,6 +84,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public listParentFields: SelectItem[] = [];
 
     private errorMessage: string = "";
+    private isListableRelationship: boolean = false;
 
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
         super();
@@ -427,6 +428,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             console.log("[ERROR] - Intersect TYPE IS UNDEFINED", value);
             return Promise.resolve();
         }
+        this.isListableRelationship = false;
+
+        this.fieldsService.getRelationshipFieldIsListable(this.objectType, this.objectID, value).then(res => {
+            this.isListableRelationship = res;
+            if (!this.isListableRelationship)
+                this.model.FieldType.IsListable = false;
+        })
+        
 
         //update the model to have correct lookuptype object and id
         this.model.FieldType.LookupObjectID = value;
@@ -982,5 +991,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             });
         });
+    }
+
+    public isRelationshipWithMultipleCardinality(): boolean {
+        
+        return true;
     }
 }

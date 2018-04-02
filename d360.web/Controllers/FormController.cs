@@ -3414,6 +3414,27 @@ namespace d360.web.Controllers
             };            
         }
 
+        [Route("FieldType_Relationship_IsListable"), NonNullableParameters]
+        public JsonNetResult FieldType_Relationship_IsListable(SystemObjects type, int id, int intersectTypeId)
+        {
+            bool isListable = false;
+            var sType = type.ToString();
+            
+            var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == intersectTypeId).FirstOrDefault();
+
+            if(intersectType != null)
+            {
+                if (intersectType.Subject == sType && intersectType.SubjectID == id && intersectType.ObjectCardinality == Cardinality.One) isListable = true;
+                else if (intersectType.Object == sType && intersectType.ObjectID == id && intersectType.SubjectCardinality == Cardinality.One) isListable = true;
+            }
+
+            return new JsonNetResult
+            {
+                Data = isListable,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         [Route("FieldType_Lookup_DefaultValueOptions"), NonNullableParameters]
         public JsonNetResult FieldType_Lookup_DefaultValueOptions(SystemObjects type, int id)
         {
@@ -3474,6 +3495,8 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+
+
 
         [Route("FieldType_Lookups"), NonNullableParameters]
         public JsonNetResult FieldType_Lookups(SystemObjects type, int id, bool isNg = false)
