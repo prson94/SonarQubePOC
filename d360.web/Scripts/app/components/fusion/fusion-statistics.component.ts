@@ -89,9 +89,9 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private calculateSuccess(total, errors): number {        
-        if (total == 0) return 100;
-        if (errors == undefined) return 0;        
+    private calculateSuccess(total, errors): number { 
+       if (total == 0) return 100;
+        if (errors == undefined || (errors >= total)) return 0;        
         return ((total - errors) / total) * 100;
     }
 
