@@ -276,7 +276,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
     }   
 
     multiselectLabel(): string {
-        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0)
+        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items == null || this.field.Items.length == 0))
             return `Select a ${this.field.ParentFieldTypeName}`;
         return "Choose";
     }
