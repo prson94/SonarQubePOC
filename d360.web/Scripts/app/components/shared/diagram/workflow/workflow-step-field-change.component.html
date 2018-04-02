@@ -131,7 +131,7 @@
         <div class="row" style="padding-top:10px">
             <div class="col s12">
                 <button pButton type="button" label="Cancel" (click)="cancel()"></button>
-                <button pButton type="button" [label]="(formMode == FormMode.Adding) ? 'Add' : 'Edit'" (click)="save()" [disabled]="!valid()"></button>
+                <button pButton type="button" [label]="(formMode == FormMode.Adding) ? 'Add' : 'Update'" (click)="save()" [disabled]="!valid()"></button>
             </div>
         </div>
     </div>
