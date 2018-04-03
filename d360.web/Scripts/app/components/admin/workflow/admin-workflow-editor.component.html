@@ -94,7 +94,7 @@
     <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule" style="padding-top: 8px;">
         <div class="col s12">
             <div>
-                <input type="checkbox" [(ngModel)]="model.Event.SettingsObject.Settings.SendAggregateEmail" /> Send aggregated email?
+                <input type="checkbox" [ngModel]="model.Event.SettingsObject.Settings.SendAggregateEmail" (ngModelChange)="model.Event.SettingsObject.Settings.SendAggregateEmail = $event; validate();" /> Send aggregated email?
             </div>
         </div>
     </div>
@@ -104,7 +104,7 @@
                 Subject
             </div>
             <div>
-                <input type="text" style="width:100%" [(ngModel)]="model.Event.SettingsObject.Settings.MessageSubjectTemplate" />
+                <input type="text" style="width:100%" [ngModel]="model.Event.SettingsObject.Settings.MessageSubjectTemplate" (ngModelChange)="model.Event.SettingsObject.Settings.MessageSubjectTemplate = $event; validate();" />
             </div>
         </div>
         <div class="col s12 m4">
@@ -133,7 +133,7 @@
                     Recipient
                 </div>
                 <div>
-                    <input type="text" [(ngModel)]="model.Event.SettingsObject.Settings.MessageToUser" style="width: 100%" />
+                    <input type="text" [ngModel]="model.Event.SettingsObject.Settings.MessageToUser" (ngModelChange)="model.Event.SettingsObject.Settings.MessageToUser = $event; validate();" style="width: 100%" />
                 </div>
             </div>
         </div>
@@ -144,7 +144,7 @@
                 Body
             </div>
             <div style="width: 100%">
-                <p-editor [(ngModel)]="model.Event.SettingsObject.Settings.MessageBodyTemplate" [style]="{'height':'150px'}" #ed2>
+                <p-editor [ngModel]="model.Event.SettingsObject.Settings.MessageBodyTemplate" (ngModelChange)="model.Event.SettingsObject.Settings.MessageBodyTemplate = $event; validate();" [style]="{'height':'150px'}" #ed2>
                     <p-header>
                         <d3s-editor-header></d3s-editor-header>
                         <d3s-workflow-template-tool (onItemClick)="appendField($event)"></d3s-workflow-template-tool>

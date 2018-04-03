@@ -371,6 +371,18 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         });
 
         if (this.model.Event.ChangeType == WorkflowChangeType.Schedule && this.selectedObjectType != '' && this.selectedObjectType != null) {
+            //console.log(this.model.Event.SettingsObject);
+
+            if (this.model.Event.SettingsObject.Settings.ScheduleInterval == null) {
+                this.errorMessage = "Please enter a run interval";
+                this.isValid = false;
+                return;
+            } else if (+this.model.Event.SettingsObject.Settings.ScheduleInterval < 1) {
+                this.errorMessage = "Run interval must be greater than or equal to 1";
+                this.isValid = false;
+                return;
+            }
+
             if (this.conditions.length < 1) {
                 this.errorMessage = "At least 1 condition is required when using change type Schedule.";
                 this.isValid = false;
@@ -385,6 +397,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 return;
             }
         }
+
+
 
         if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null
             && this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString() == 'true') {
