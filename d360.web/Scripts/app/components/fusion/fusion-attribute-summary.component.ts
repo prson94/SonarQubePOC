@@ -154,7 +154,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     private doFilterResults(event) {        
         this.stateService.fusionFilters.filters = event;
-        this.stateService.fusionFilters.currentPageNumber = 0;        
+        this.stateService.fusionFilters.currentPageNumber = 0;     
+        this.fusionAttribute = null; //reseting the selected row
         this.getData();
     }
 
@@ -181,9 +182,10 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                     this.isFiltering = false;
                     if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
                         this.fusionAttribute = this.results.results[0];
-                        
-                        this.fusionAttributeChange.emit(this.fusionAttribute);                        
+                    } else {
+                        this.fusionAttribute = null;
                     }
+                    this.fusionAttributeChange.emit(this.fusionAttribute);
                     this.changeDetectorRef.markForCheck();
                 });
         }
@@ -194,9 +196,10 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                     this.isFiltering = false;
                     if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
                         this.fusionAttribute = this.results.results[0];
-                       
-                        this.fusionAttributeChange.emit(this.fusionAttribute);                        
+                    } else {
+                        this.fusionAttribute = null;
                     }
+                    this.fusionAttributeChange.emit(this.fusionAttribute);
                     this.changeDetectorRef.markForCheck();
                 });
         }
@@ -208,7 +211,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
-
+        this.fusionAttribute = null; //reseting the selected row
         this.stateService.fusionFilters.sortOrder = event.sortOrder;
         this.stateService.fusionFilters.sortField = event.sortField == undefined ? "" : event.sortField;
         this.stateService.fusionFilters.rowsPerPage = event.rows;
