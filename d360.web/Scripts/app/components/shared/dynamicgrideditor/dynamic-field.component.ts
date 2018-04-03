@@ -158,16 +158,16 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
                     }
                 }
             });
-
-        if (this.field.FieldType == 'Number') {
-            this.field.Validations.push({ message: this.numPatternError, regex: this.numPattern, rule: null });
-        }
-
-        if (this.field.FieldType == 'Decimal') {
-            this.field.Validations.push({ message: this.decPatternError, regex: this.decPattern, rule: null });
-        }
-
+                
         if (this.field && this.field.Validations) {
+            if (this.field.FieldType == 'Number') {
+                this.field.Validations.push({ message: this.numPatternError, regex: this.numPattern, rule: null });
+            }
+
+            if (this.field.FieldType == 'Decimal') {
+                this.field.Validations.push({ message: this.decPatternError, regex: this.decPattern, rule: null });
+            }
+
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
                     this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : '';
