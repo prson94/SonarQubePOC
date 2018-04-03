@@ -13168,7 +13168,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete(model);
+                Company.Delete(SystemObjects.ReferenceItemType, model.ID);
 
                 dynamic custom = new
                 {
