@@ -4,6 +4,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
+import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-admin-analytics-component',
@@ -21,13 +22,6 @@ import { Title } from '@angular/platform-browser';
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">  
-                                    <d3s-admin-metric-item-list></d3s-admin-metric-item-list>
-                                </div>
-                            </div>
-                        </div> 
                     </div>
                 <div>
  
@@ -46,8 +40,8 @@ export class AdminAnalyticsComponent extends AdminBaseComponent implements OnIni
         this.areaName = "Scoring";
         this.setCommonItems();
         this.setCommonRightSideBar(false);
+        this.rightSidebarService.showItem(new RightSidebarItem('Measures', 'measures',['fa-balance-scale'], '/admin/analytics/measures' ))
 
-        
     }
 
     ngOnInit() {

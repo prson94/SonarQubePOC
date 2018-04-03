@@ -21,7 +21,7 @@ import { AdminMetricMapListComponent } from './admin-metric-map-list.component';
 import { AdminMetricConditionListComponent } from './admin-metric-condition-list.component';
 import { AdminMetricMapEditorComponent } from './admin-metric-map-editor.component';
 import { AdminMetricConditionEditorComponent } from './admin-metric-condition-editor.component';
-
+import { AdminMeasuresComponent } from './admin-measures.component';
 
 import { AdminAnalyticsRoutingModule } from './admin-analytics.routes';
 
@@ -73,6 +73,7 @@ import {
         AdminMetricConditionListComponent,
         AdminMetricMapEditorComponent,
         AdminMetricConditionEditorComponent,
+        AdminMeasuresComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

@@ -105,6 +105,11 @@ export class AdminMetricGroupListComponent extends BaseComponent implements OnIn
                     this.groupTree.push(n);
                     this.addChildren(n);
                 });
+                if (this.groupTree != null && this.groupTree.length > 0) {
+                    this.selection = this.groupTree[0].data;
+                    this.selectionChange.emit(this.selection);
+                }
+
                 this.isLoading = false;
             });
     }
