@@ -31,8 +31,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     private fieldDefinitions = new Array<FieldDefinition>();
     private selectedRow = new FieldDefinition();
-
+    
     private theDeleteCallback: Function;
+    public hasKeyFields: boolean = false;
 
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService) {
         super();
@@ -61,6 +62,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         if (this.objectType == null || this.objectID == null)
             return;
         this.isLoading = true;
+        this.hasKeyFields = false
         this.fieldsService.getFields(this.objectID, this.objectType)
             .then(data => {
                 this.fieldDefinitions = data;
@@ -70,6 +72,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     if (d.Type == 'FusionLookup') d.Type = 'Fusion Lookup';
                     if (d.Type == 'DateTime') d.Type = 'Date Time';
                     if (d.Type == 'FilteredLookup') d.Type = 'Filtered Lookup';
+                    if (d.IsPartOfKey) this.hasKeyFields = true;
                 });
                 this.selectedRow = null;
                 this.isLoading = false;

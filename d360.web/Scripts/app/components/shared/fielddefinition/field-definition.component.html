@@ -15,6 +15,7 @@
                      [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>            
     <div *ngIf="!isEditing && !isDeleting">
+        <div *ngIf="!isLoading && !hasKeyFields && objectType != 'ReferenceItemType'" class="error">Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                             
         <p-dataTable #dt [globalFilter]="gb" [value]="fieldDefinitions" [loading]="isLoading" loadingIcon="fa-spinner" selectionMode="single" [(selection)]="selectedRow" (onRowDblclick)="isEditing=showEditButton;" scrollable="true"  scrollHeight="200px">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
