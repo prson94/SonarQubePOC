@@ -72,7 +72,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit {
     }
 
     private isChangableItem() {
-        return (this.breadcrumb.objectType && this.breadcrumb.objectId && !this.isTreeItem());
+        return (this.lastItem && this.breadcrumb.objectType && this.breadcrumb.objectId && !this.isTreeItem());
     }
 
     private isTreeItem(): boolean {
