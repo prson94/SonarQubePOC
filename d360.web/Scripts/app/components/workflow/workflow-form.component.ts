@@ -246,7 +246,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private close() {        
-        this.location.back();
+        if (window.history.length > 1) {
+            this.location.back();
+        }
+        else {
+            window.close();
+        }
     }
     
     private reassign() {
