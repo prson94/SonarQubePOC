@@ -609,17 +609,22 @@ namespace d360.web.Controllers
                             {
                                 fld.Items = new List<SelectListItem>();
 
-                                if (!f.IsRequired) fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
-                                if (f.AllowAllValue) fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
-
                                 var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
                                 if (intersectType != null)
                                 {
                                     var obj = "";
                                     var objID = 0;
 
+                                    var isSubject = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID);
+                                    obj = isSubject ? intersectType.Object : intersectType.Subject;
+                                    objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+                                    var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
+
                                     obj = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID) ? intersectType.Object : intersectType.Subject;
                                     objID = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID) ? intersectType.ObjectID : intersectType.SubjectID;
+
+                                    if ((isSubject && intersectType.ObjectCardinality != Cardinality.One) || (!isSubject && intersectType.SubjectCardinality != Cardinality.One))
+                                        fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
 
                                     var sql = $"select ObjectID as Value, DisplayValue as Text from AssetDetail where [Type] = '{obj}' and TypeID = {objID} order by DisplayValue";
 
@@ -630,7 +635,7 @@ namespace d360.web.Controllers
                                         case "ReferenceItemType":
                                         case "RuleType":
                                         case "TaxonomyType":
-                                            sql = $"select A.ID as Value, P.TextPath as Text from AssetWithType A cross apply GetAssetTextPathById(A.ID, '.') P where A.[Type] = '{obj}' and A.TypeID = {objID} order by P.TextPath";
+                                            sql = $"select A.ObjectID as Value, P.TextPath as Text from AssetWithType A cross apply GetAssetTextPathById(A.ID, '.') P where A.[Type] = '{obj}' and A.TypeID = {objID} order by P.TextPath";
                                             break;
                                         case "FusionAttributeType":
                                             sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";
@@ -638,6 +643,44 @@ namespace d360.web.Controllers
                                         case "ResourceType":
                                             sql = $"select ID as Value, LastName + ', ' + FirstName as Text from reporting.[Global_Resource] order by LastName + ', ' + FirstName";
                                             break;
+                                    }
+
+                                    var items = Company.Query<SelectListItem>(sql);
+
+                                    if (cardinality != Cardinality.Many)
+                                    {
+                                        fld.MultiSelect = false;
+
+                                        var intersect = Company.Filter<Intersect>(i =>
+                                        i.IntersectTypeID == intersectType.ID &&
+                                        ((isSubject && i.Subject == obj && i.SubjectID == objID) || (!isSubject && i.Object == obj && i.ObjectID == objID))
+                                        ).FirstOrDefault();
+
+                                        if (intersect != null)
+                                        {
+                                            fld.Value = isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        fld.MultiSelect = true;
+
+                                        var intersects = Company.Filter<Intersect>(i =>
+                                        i.IntersectTypeID == intersectType.ID &&
+                                        ((isSubject && i.Subject == obj && i.SubjectID == objID) || (!isSubject && i.Object == obj && i.ObjectID == objID))
+                                        );
+
+                                        var selected = new List<string>();
+                                        foreach (var intersect in intersects)
+                                        {
+                                            selected.Add(isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}");
+                                        }
+
+                                        foreach (var item in items)
+                                        {
+                                            if (selected.Contains(item.Value))
+                                                item.Selected = true;
+                                        }
                                     }
 
                                     fld.Items.AddRange(
