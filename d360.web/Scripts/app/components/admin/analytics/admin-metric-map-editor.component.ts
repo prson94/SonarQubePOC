@@ -26,7 +26,7 @@ import { FormHelpers } from '../../../static/form-helpers';
                     <div class="row">
                         <div class="col s6">
                             <div class="FieldName">
-                                Metric Item
+                                Measure
                             </div>
                             <div>
                                 <p-dropdown 

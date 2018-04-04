@@ -10947,9 +10947,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
 
-            if (map == null)
-                return jsonNetException($"The metric map for id {id} could not be found", HttpStatusCode.BadRequest);
-
             var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
             var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
 	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
