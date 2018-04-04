@@ -647,6 +647,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                 ObjectDetail det = null;
                 List<FieldTooltipValueModel> res = new List<FieldTooltipValueModel>();
                 string desc = "";
+                string dispName = "";
 
                 if (accessCount <= 0)
                 {
@@ -674,9 +675,19 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
                     desc = Company.Query<string>(descSql, new { ty = objectType, obj = objectID }).FirstOrDefault();
 
+                     dispName = det != null ? det.Name : "";
+
+                    if (objectType == "Fusion")
+                    {
+                        var fusionSql = @"select f.name from fusion f 
+                                            where f.id=@id";
+                        var fusionName = Company.Query<string>(fusionSql, new { id = objectID }).FirstOrDefault();
+                        dispName = fusionName;
+                    }
+
                 }
 
-                return Json(new { ShowTooltip = show, AssetID = (det != null ? det.AssetID : -1), DisplayName = (det != null ? det.Name : ""), TypeName = (det != null ? det.TypeName : ""), Url = (det != null ? $"/{det.Url}" : ""), FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
+                return Json(new { ShowTooltip = show, AssetID = (det != null ? det.AssetID : -1), DisplayName = dispName, TypeName = (det != null ? det.TypeName : ""), Url = (det != null ? $"/{det.Url}" : ""), FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
