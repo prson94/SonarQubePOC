@@ -66,6 +66,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ATTRIBUTES = `attributes`;
     static SITE_URL_ADMIN_ARTIFACTS = `artifacts`;
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
+    static SITE_URL_ADMIN_CUSTOM_API = 'customapi';
     static SITE_URL_ADMIN_LOOKUPS = 'lookups';
     static SITE_URL_ADMIN_MODELS = 'taxonomies';
     static SITE_URL_ADMIN_POLICIES = 'policies';

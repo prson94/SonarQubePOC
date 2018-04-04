@@ -33,6 +33,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES, loadChildren: './predicates/admin-predicates.module#AdminPredicatesModule?chunkName=adminPredicatesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS, loadChildren: './organizations/admin-organizations.module#AdminOrganizationsModule?chunkName=adminOrganizationsChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS, loadChildren: './customizations/admin-customizations.module#AdminCustomizationsModule?chunkName=adminCustomizationsChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API, loadChildren: './customapi/admin-customapi.module#AdminCustomAPIModule?chunkName=adminCustomAPIChunk' },
 
             //static load
             { path: 'classification/:objectType', component: AdminClassificationsComponent }
