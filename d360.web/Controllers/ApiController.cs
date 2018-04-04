@@ -6740,11 +6740,30 @@ where    A.RuleID = @id", new { id });
 
             var isTargetObject = intersectType.Object == targetType.ToString() && intersectType.ObjectID == targetID;
             var isTargetSubjectSame = intersectType.Object == intersectType.Subject && intersectType.ObjectID == intersectType.SubjectID;
+            var isTargetReferenceItemType = targetType.ToString() == "ReferenceItemType" && targetID == 0;
 
             var innerSql = "";
+            var assetJoin = "";
+
 
             if (isTargetSubjectSame)
             {
+                if (isTargetReferenceItemType)
+                {
+                    assetJoin = @"inner join (select 'Reference List' as Name) AST on 1 = 1
+		                        inner join AssetType IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
+								    and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
+                                inner join (select ID, Name  as TextPath from AssetType) P on P.ID = IA.ID";
+                }
+                else
+                {
+                    assetJoin = @"inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
+							        and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end
+		                        inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
+								    and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
+                                cross apply dbo.GetAssetTextPathById(IA.ID, '/') P";
+                }
+
                 innerSql = $@"select	I.ID,
                                 IntersectTypeID,
                                 case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
@@ -6756,12 +6775,7 @@ where    A.RuleID = @id", new { id });
 		                        AST.Name as TypeName,
 		                        T.HasTechnicalRelationships
                         from	[Intersect] I
-		                        inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		                        inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
-									                        and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end
-		                        inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
-								                        and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
-		                        cross apply dbo.GetAssetTextPathById(IA.ID, '/') P
+		                        {assetJoin}
 		                        cross apply (
 					                        select	case 
 								                        when count(1) > 0 then cast(1 as bit)
@@ -6777,6 +6791,22 @@ where    A.RuleID = @id", new { id });
             }
             else if (isTargetObject)
             {
+                if (isTargetReferenceItemType)
+                {
+                    assetJoin = @"inner join (select 'Reference List' as Name) AST on 1 = 1
+		                        inner join AssetType IA on	IA.Object = I.Object
+								                        and IA.ObjectID = I.ObjectID
+		                        inner join (select ID, Name  as TextPath from AssetType) P on P.ID = IA.ID";
+                }
+                else
+                {
+                    assetJoin = @"inner join AssetType AST on AST.Object = IT.Object
+									                        and AST.ObjectID = IT.ObjectID
+		                        inner join Asset IA on	IA.Object = I.Object
+								                        and IA.ObjectID = I.ObjectID
+		                        cross apply dbo.GetAssetTextPathById(IA.ID, '/') P";
+                }
+
                 innerSql = $@"select	I.ID,
                         IntersectTypeID,
                         I.Object,
@@ -6788,11 +6818,7 @@ where    A.RuleID = @id", new { id });
 		                T.HasTechnicalRelationships
                 from	[Intersect] I
 		                inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		                inner join AssetType AST on AST.Object = IT.Object
-									                and AST.ObjectID = IT.ObjectID
-		                inner join Asset IA on	IA.Object = I.Object
-								                and IA.ObjectID = I.ObjectID
-		                cross apply dbo.GetAssetTextPathById(IA.ID, '/') P
+		                {assetJoin}
 		                cross apply (
 					                select	case 
 								                when count(1) > 0 then cast(1 as bit)
@@ -6806,6 +6832,22 @@ where    A.RuleID = @id", new { id });
             }
             else
             {
+                if (isTargetReferenceItemType)
+                {
+                    assetJoin = @"inner join (select 'Reference List' as Name) AST on 1 = 1
+                                inner join AssetType IA on IA.Object = I.Subject
+                                                        and IA.ObjectID = I.SubjectID
+                                inner join (select ID, Name as TextPath from AssetType) P on P.ID = IA.ID";
+                }
+                else
+                {
+                    assetJoin = @"inner join AssetType AST on AST.Object = IT.Subject
+                                                            and AST.ObjectID = IT.SubjectID
+                                inner join Asset IA on IA.Object = I.Subject
+                                                        and IA.ObjectID = I.SubjectID
+                                cross apply dbo.GetAssetTextPathById(IA.ID, '/') P";
+                }
+
                 innerSql = $@"select	I.ID,
                     IntersectTypeID,
                     I.Subject as Object,
@@ -6817,11 +6859,7 @@ where    A.RuleID = @id", new { id });
 		            T.HasTechnicalRelationships
             from[Intersect] I
                 inner join IntersectType IT on IT.ID = I.IntersectTypeID
-                    inner join AssetType AST on AST.Object = IT.Subject
-                                                and AST.ObjectID = IT.SubjectID
-                    inner join Asset IA on IA.Object = I.Subject
-                                            and IA.ObjectID = I.SubjectID
-                    cross apply dbo.GetAssetTextPathById(IA.ID, '/') P
+                    {assetJoin}
                     cross apply(
                                 select	case 
                                             when count(1) > 0 then cast(1 as bit)

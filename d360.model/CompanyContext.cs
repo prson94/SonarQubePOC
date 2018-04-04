@@ -1171,6 +1171,12 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             if (objectDetail == null)
                 throw new NotFoundException("Object");
 
+            if (subject == "ReferenceItemType")
+                subjectDetail.TypeID = 0;
+
+            if (@object == "ReferenceItemType")
+                objectDetail.TypeID = 0;
+
             var intersectType = GetById<IntersectType>(intersectTypeID);
 
             if (intersectType == null)
@@ -1377,7 +1383,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
                     Object = SystemObjects.Intersect,
                     ObjectID = id,
                     ObjectType = SystemObjects.IntersectType,
-                    ObjectTypeID = -1
+                    ObjectTypeID = item.IntersectTypeID
                 },
                 DomainPrefix = CurrentCompanyDomain
             });
