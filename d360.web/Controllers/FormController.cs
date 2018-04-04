@@ -390,6 +390,8 @@ namespace d360.web.Controllers
                     return RuleDimension_EditFields(oid);
                 case "RULETYPE":
                     return RuleType_EditFields(oid);
+                case "SERVICE":
+                    return CustomAPIService_EditFields(oid);
                 case "SURVEYTYPE":
                     return SurveyType_EditFields(oid);
                 case "TAXONOMY":
@@ -402,7 +404,7 @@ namespace d360.web.Controllers
         public JsonResult DynamicEditorAddFields(string objectType, int? objectID, int? parentID, int? typeID)
         {
             switch ((objectType ?? "").ToUpper())
-            {
+            {                
                 case "ARTIFACT":
                     return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "ATTRIBUTEALLOCATION":
@@ -447,6 +449,8 @@ namespace d360.web.Controllers
                     return RuleImplementation_AddFields(objectID.GetValueOrDefault());
                 case "RULETYPE":
                     return RuleType_AddFields();
+                case "SERVICE":
+                    return CustomAPIService_AddFields();
                 case "SURVEYTYPE":
                     return SurveyType_AddFields();
                 case "TAXONOMY":
@@ -546,6 +550,8 @@ namespace d360.web.Controllers
                     return EditScoreType(form);
                 case "SCORETYPEMETRIC":
                     return EditScoreTypeMetric(form);
+                case "SERVICE":
+                    return EditService(form);
                 case "SURVEYTYPE":
                     return EditSurveyType(form);
                 case "TAXONOMY":
@@ -715,6 +721,8 @@ namespace d360.web.Controllers
                     return AddScoreType(form);
                 case "SCORETYPEMETRIC":
                     return AddScoreTypeMetric(form);
+                case "SERVICE":
+                    return AddService(form);
                 case "RULE":
                     return AddRule(form);                
                 case "SURVEYTYPE":
@@ -18993,5 +19001,116 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         #endregion
 
         #endregion
+
+        #region Custom API Service
+                
+        public JsonResult CustomAPIService_AddFields()
+        {
+            if(!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();            
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
+                        
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult CustomAPIService_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                        
+            var list = new List<EditableField>();
+            var a = Company.ApiServices.Where(x => x.ID == id).FirstOrDefault();
+
+            if(a == null) return jsonException("Cannot find the specified service to edit", HttpStatusCode.NotFound);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddService")]
+        public JsonResult AddService(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("service");
+                                
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var name = parseTextField(form, "Name");
+                var prefix = parseTextField(form, "URIPrefix");
+
+                if(string.IsNullOrEmpty(name))
+                    return jsonException("API Service Name is null", HttpStatusCode.NotFound);
+
+                if (string.IsNullOrEmpty(prefix))
+                    return jsonException("API Service Prefix is null", HttpStatusCode.NotFound);
+
+                var service = new ApiService
+                {
+                    Name = name,
+                    Description = parseTextField(form, "Description"),
+                    UriPrefix = prefix
+                };
+
+                Company.Add<ApiService>(service);
+                
+
+                return jsonSuccess("Service successfully created.", service.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        [HttpPut, ValidateInput(false), Route("EditService")]
+        public JsonResult EditService(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("service");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ApiService>(id);
+                if (model == null) throw new NotFoundException("api service");
+
+                model.Name = parseTextField(form, "Name");
+                model.UriPrefix = parseTextField(form, "Name");
+                model.Description = parseTextField(form, "Description");
+
+                Company.Update<ApiService>(model);
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
     }
 }

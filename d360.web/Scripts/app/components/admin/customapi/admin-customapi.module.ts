@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import { CoreModule } from '../../shared/core.module';
+import { TilesModule } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
@@ -39,7 +40,8 @@ import {
         CoreModule,
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,        
-        SharedGridPagingInfoModule,        
+        SharedGridPagingInfoModule,    
+        TilesModule,
     ],
     declarations: [
         AdminCustomAPIComponent,        

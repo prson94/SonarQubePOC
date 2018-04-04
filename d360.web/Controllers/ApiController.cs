@@ -7912,5 +7912,15 @@ from	    TaxonomyType FAT
 
         #endregion
 
+        #region Custom API
+
+        [Route("custom/services")]
+        public List<ApiService> GetCustomAPIServices()
+        {
+            return Company.ApiServices.ToList();
+        }
+
+
+        #endregion
     }
 } 
