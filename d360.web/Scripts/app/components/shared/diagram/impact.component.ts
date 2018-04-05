@@ -49,6 +49,10 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     public canApplyFilter = false;
     public menuItems: MenuItem[] = [];
 
+    private showDetail = true;
+    private overlayWidth = 700;
+    private overlayMaxHeight = 700;
+
     public filters: ImpactFilter[] = [];
     FilterType = FilterType;
 
@@ -189,6 +193,18 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
                 this.isLoading = false;
             });
+    }
+
+    private toggleDetail() {
+        this.showDetail = !this.showDetail;
+
+        if (this.showDetail) {
+            this.overlayWidth = 1000;
+            this.overlayMaxHeight = 700;
+        } else {
+            this.overlayWidth = 500;
+            this.overlayMaxHeight = 700;
+        }
     }
 
     private refreshFilters() {

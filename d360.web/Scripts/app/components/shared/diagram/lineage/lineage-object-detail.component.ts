@@ -6,7 +6,7 @@ import { ToolTipService } from '../../../../services/tooltip.service';
     selector: 'd3s-lineage-object-detail',
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div class="tooltip-child tooltip-panel" [hidden]="isLoading">
+        <div class="tooltip-panel" [hidden]="isLoading">
             <h3 style="positon: relative"><a [routerLink]="data?.Url">{{data?.DisplayName}}</a> <small *ngIf="data && data.TypeName" style="background-color: #fff; float:right;font-size:65%;">{{data.TypeName}}</small></h3>
             <div>&nbsp;</div>
             <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>

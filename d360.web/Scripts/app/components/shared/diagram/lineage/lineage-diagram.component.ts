@@ -77,7 +77,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private showLinkTabs = false;
     private showEditTab = false;
     private showInfoTab = false;
-    private showDetail = false;
+    private showDetail = true;
     public menuItems: MenuItem[] = [];
     private editorMenuItems: MenuItem[] = [];
     private tab: string = 'info';
@@ -85,7 +85,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private diagramOffset = 291;
     private overlayOffset = 391;
     private overlayMaxHeight = 700;
-    private overlayWidth = 500;
+    private overlayWidth = 700;
     private history = [];
     private showPredicateNames = true;
 
@@ -434,7 +434,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.showDetail = !this.showDetail;
 
         if (this.showDetail) {
-            this.overlayWidth = 1000;
+            this.overlayWidth = 700;
             this.overlayMaxHeight = 700;
         } else {
             this.overlayWidth = 500;
