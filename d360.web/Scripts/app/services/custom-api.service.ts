@@ -72,4 +72,11 @@ export class CustomAPIService extends BaseService {
         }
         return this.putDynamic(this.http, 'endpoint', endpoint);
     }
+
+    saveVersion(version: ApiVersion): Promise<JsonResult> {
+        if (version.ID == undefined || !version.ID) {
+            return this.postDynamic(this.http, 'version', version);
+        }
+        return this.putDynamic(this.http, 'version', version);
+    }
 }

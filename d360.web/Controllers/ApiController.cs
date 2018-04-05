@@ -7950,7 +7950,7 @@ from	    TaxonomyType FAT
         {
             var entity = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == versionId);
 
-            if(entity == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            if (entity == null) return null;
             
             return Company.Query<dynamic>(@"select 
 	                                    eft.*,
@@ -7966,7 +7966,7 @@ from	    TaxonomyType FAT
         {
             var entity = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == versionId);
 
-            if (entity == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            if (entity == null) return null;
 
             return Company.ApiEntityUris.Where(x => x.EntityID == entity.ID).ToList();
         }

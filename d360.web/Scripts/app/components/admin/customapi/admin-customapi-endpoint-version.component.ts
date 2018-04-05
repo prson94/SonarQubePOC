@@ -33,7 +33,7 @@ import { Router, ActivatedRoute } from '@angular/router';
                                     </p-column>                                                                                    
                                 </p-dataTable>                                  
                             </span>             
-                            <d3s-dynamic-editor *ngIf="showEditor" [parentID]="service?.ID" [objectID]="selected?.ID" [objectType]="'Version'" [title]="'Version'" [selection]="selected" (saveClick)="saveVersion($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                            <d3s-dynamic-editor *ngIf="showEditor" [parentID]="endpoint?.ID" [objectID]="selected?.ID" [objectType]="'Version'" [title]="'Version'" [selection]="selected" (saveClick)="saveVersion($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
                     </div>
                 
                 `
@@ -77,7 +77,7 @@ export class AdminCustomAPIEndpointVersionsComponent extends BaseComponent imple
     }
 
     private saveVersion(data): void {
-        this.customAPIService.saveEndpoint(data.item).then(res => {
+        this.customAPIService.saveVersion(data.item).then(res => {
             this.showMessageForResult(this.messagesService, res);
             this.load();
             this.showEditor = false;
