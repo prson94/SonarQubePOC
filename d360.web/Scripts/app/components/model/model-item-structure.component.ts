@@ -165,7 +165,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             .then(result => {                
                 this.modelHierarchy = result;
 
-                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
+                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy, 1);
                 this.isLoading = false;
             });
     }
@@ -194,7 +194,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         return `(Level ${this.selected.data.Level + 1}) Item`;       
     }
     
-    private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number): TreeNode[] {
+    private buildTreeNodeArray(models: ModelHierarchy[], levelNumber: number, Parent?: number): TreeNode[] {
         //find the root items then 
         
         let rootNodes = models.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
@@ -204,11 +204,12 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         let res: TreeNode[] = [];
 
         for (let root of rootNodes) {
+            root.Level = levelNumber;
             res.push({
                 label: root.DisplayValue,
                 expanded: false,
                 data: root,
-                children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
+                children: (this.buildTreeNodeArray(models, levelNumber+1, root.ID)) //recursively find its children
             });
         }
 

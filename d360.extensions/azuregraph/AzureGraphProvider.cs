@@ -1,6 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using d360.core.entities;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -158,7 +161,7 @@ namespace d360.extensions.azuregraph
             }
         }
 
-        private static async Task GetUsers(string token)
+        private static async Task getUsers(string token)
         {
             var baseAddress = new Uri("https://graph.windows.net/");
 
@@ -172,6 +175,60 @@ namespace d360.extensions.azuregraph
 
                 }
             }
+        }
+
+        public static MicrosoftGraphUserListModel GetUsers(string tenantId, string clientId, string clientSecret, string filter = "", string select = "surname,givenName,jobTitle,mail")
+        {
+            var token = GetAuthCode(tenantId, clientId, clientSecret).Result;
+            var users = new MicrosoftGraphUserListModel { value = new System.Collections.Generic.List<Newtonsoft.Json.Linq.JObject>() };
+
+            var url = "https://graph.microsoft.com/v1.0/users";
+
+            if (!string.IsNullOrEmpty(filter) || !string.IsNullOrEmpty(select))
+            {
+                url += "?";
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    url += $"$filter={filter}";
+                }
+
+                if (!string.IsNullOrEmpty(select))
+                {
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        url += "&";
+                    }
+                    url += $"$select={select}";
+                }
+            }
+
+            var jsonRaw = "";
+            MicrosoftGraphUserListModel tempModel = null;
+
+            while (!string.IsNullOrEmpty(url))
+            {
+                var req = HttpWebRequest.CreateHttp(url);
+                req.Accept = "application/json";
+                req.Headers.Set(HttpRequestHeader.Authorization, $"Bearer {token}");
+
+                var response = req.GetResponse();
+                using (var responseStream = response.GetResponseStream())
+                {
+                    using (var rdr = new StreamReader(responseStream))
+                    {
+                        jsonRaw = rdr.ReadToEnd();
+                    }
+                }
+
+                tempModel = JsonConvert.DeserializeObject<MicrosoftGraphUserListModel>(jsonRaw, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
+
+                tempModel.value.RemoveAll(o => string.IsNullOrEmpty(o.Value<string>("mail")) || string.IsNullOrEmpty(o.Value<string>("surname")) || string.IsNullOrEmpty(o.Value<string>("givenName")));
+
+                users.value.AddRange(tempModel.value);
+                url = tempModel.next;
+            }
+
+            return users;
         }
     }
 }

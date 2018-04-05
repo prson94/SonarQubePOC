@@ -37,8 +37,6 @@ namespace igx.jobs.scheduledworkflowprocessor
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-                companies = companies.Where(x => x.CompanyID == 4).ToList();
-
                 companies.ForEach(c =>
                 {
                     try

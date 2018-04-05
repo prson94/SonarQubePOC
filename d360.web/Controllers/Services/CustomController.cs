@@ -1,21 +1,12 @@
-﻿using d360.core.entities;
+﻿using d360.core.enums;
 using d360.model;
-using d360.core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using d360.core.exceptions;
-using d360.core.enums;
-using System.Collections;
-using System.Text;
-using Newtonsoft.Json.Linq;
 using System.Xml.Linq;
-using System.Xml;
-using System.Reflection;
-using Newtonsoft.Json;
 
 namespace d360.web.Controllers.Services
 {
@@ -42,6 +33,80 @@ namespace d360.web.Controllers.Services
         public IEnumerable<dynamic> items { get; set; }
         public List<JsonResultLinkModel> _links { get; set; }
     }
+
+    internal interface IFilterModel
+    {
+        string FieldName { get; set; }
+        bool Negated { get; set; }
+    }
+    internal class BaseFilterModel
+    {
+        public string FieldName { get; set; }
+        public bool Negated { get; set; }
+    }
+    internal class SingleValueFilterModel : BaseFilterModel, IFilterModel
+    {
+        public string Value { get; set; }
+    }
+    internal class MultiValueFilterModel : BaseFilterModel, IFilterModel
+    {
+        public List<string> Values { get; set; }
+    }
+    /// <summary>
+    /// Should support the following filter functions:
+    /// 
+    /// range(adatetime,incl,bdatetime,excl)
+    /// range(anumber,incl,bnumber,incl), 
+    /// adatetime..bdatetime
+    /// anumber..bnumber
+    /// ...adatetime
+    /// ...anumber
+    /// adatetime...
+    /// anumber...
+    /// </summary>
+    internal class RangeValueFilterModel : BaseFilterModel, IFilterModel
+    {
+        public string StartValue { get; set; }
+        public bool StartInclusive { get; set; }
+        public string EndValue { get; set; }
+        public bool EndInclusive { get; set; }
+    }
+    internal enum SearchFilterType
+    {
+        Contains,
+        Match,
+        Prefix,
+        Suffix
+    }
+    /// <summary>
+    /// Should support the following filter functions:
+    /// 
+    /// match_casesens(astring)
+    /// match_casesens(astring,bstring,cstring)
+    /// match(astring)
+    /// match(astring,bstring,cstring)
+    /// contains_casesens(astring)
+    /// contains_casesens(astring,bstring,cstring)
+    /// contains(astring)
+    /// contains(astring,bstring,cstring)
+    /// prefix_casesens(astring)
+    /// prefix_casesens(astring,bstring,cstring)
+    /// prefix(astring)
+    /// prefix(astring,bstring,cstring)
+    /// suffix_casesens(astring)
+    /// suffix_casesens(astring,bstring,cstring)
+    /// suffix(astring)
+    /// suffix(astring,bstring,cstring)
+    /// </summary>
+    internal class SearchFilterModel : BaseFilterModel, IFilterModel
+    {
+        public SearchFilterType Type { get; set; }
+
+        public bool CaseSensitive { get; set; }
+
+        public List<string> Values { get; set; }
+    }
+
 
     /// <summary>
     /// This service houses all endpoints handling custom API configurations.
@@ -197,6 +262,8 @@ where   A.AssetTypeID = @id
         {
             var queryParams = Request.GetQueryNameValuePairs();
 
+            #region config
+
             var config = (
                          from s in Company.ApiServices
                          from e in s.Endpoints
@@ -222,6 +289,8 @@ where   A.AssetTypeID = @id
                              f.FieldType,
                              EntityUri = u
                          });
+
+            #endregion
 
             if (config.Count() <= 0)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Endpoint not found.");
@@ -315,6 +384,222 @@ where   A.AssetTypeID = @id
 
             #endregion
 
+            #region Field Filter Processing
+
+            var filterErrors = new List<string>();
+
+            var filters = new List<IFilterModel>();
+            foreach (var qp in queryParams.Where(i => i.Key != "_pageNum" && i.Key != "_pageSize" && i.Key != "_order" && i.Key != "_select"))
+            {
+                var fieldToFilter = qp.Key;
+                var fieldValueToFilterBy = qp.Value;
+
+                // 1. check to see if the value is negated (has a ! at the first character of the filter query string value. This negates all comma-delimited values.)
+                var isNegated = fieldValueToFilterBy.StartsWith("!");
+                if (isNegated) fieldValueToFilterBy.Remove(0); //Now, remove this c=! so it does not interfere with further processing.
+
+                // 2. Check for functions in the value. This requires special processing, based on the function name passed.
+                var continueChecking = true;
+
+                if (continueChecking)
+                {
+                    // range(adatetime,incl,bdatetime,excl)     range(anumber,incl,bnumber,incl), 
+                    // adatetime..bdatetime                     anumber..bnumber
+                    // ...adatetime                             ...anumber
+                    // adatetime...                             anumber...
+                    if (fieldValueToFilterBy.StartsWith("range(") || fieldValueToFilterBy.Contains("..") || fieldValueToFilterBy.StartsWith("...") || fieldValueToFilterBy.EndsWith("..."))
+                    {
+                        var filter = new RangeValueFilterModel { Negated = isNegated, FieldName = fieldToFilter };
+
+                        if (fieldValueToFilterBy.StartsWith("range("))
+                        {
+                            fieldValueToFilterBy = fieldValueToFilterBy.Replace("range(", "").Replace(")", "");
+                            var rangeValues = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                            if (rangeValues.Count == 4)
+                            {
+                                filter.StartValue = rangeValues[0];
+                                filter.StartInclusive = rangeValues[1].Equals("incl");
+                                filter.EndValue = rangeValues[2];
+                                filter.EndInclusive = rangeValues[3].Equals("incl");
+                            }
+                            else
+                            {
+                                filterErrors.Add($"{filter.FieldName} filter must have exactly four comma-delimited values within the range function.");
+                            }
+                        }
+                        else if (fieldValueToFilterBy.Contains(".."))
+                        {
+                            var rangeValues = fieldValueToFilterBy.Split(new string[1]{ ".." }, StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()).ToList();
+                            if (rangeValues.Count == 2)
+                            {
+                                filter.StartValue = rangeValues[0];
+                                filter.StartInclusive = true;
+                                filter.EndValue = rangeValues[1];
+                                filter.EndInclusive = true;
+                            }
+                            else
+                            {
+                                filterErrors.Add($"{filter.FieldName} filter must have exactly two values when using the dot-range function.");
+                            }
+                        }
+                        else if (fieldValueToFilterBy.StartsWith("..."))
+                        {
+                            fieldValueToFilterBy = fieldValueToFilterBy.Remove(0, 3).Trim();
+                            filter.StartValue = null;
+                            filter.StartInclusive = true;
+                            filter.EndValue = fieldValueToFilterBy;
+                            filter.EndInclusive = true;
+                        }
+                        else if (fieldValueToFilterBy.EndsWith("..."))
+                        {
+                            fieldValueToFilterBy = fieldValueToFilterBy.Remove(fieldValueToFilterBy.Length-1-3, 3).Trim();
+                            filter.StartValue = fieldValueToFilterBy;
+                            filter.StartInclusive = true;
+                            filter.EndValue = null;
+                            filter.EndInclusive = true;
+                        }
+
+                        if (!string.IsNullOrEmpty(filter.StartValue) || !string.IsNullOrEmpty(filter.EndValue))
+                        {
+                            filters.Add(filter);
+                        }
+
+                        continueChecking = false;
+                    }
+                }
+
+                if (continueChecking)
+                {
+                    // contains_casesens(astring)                  contains_casesens(astring,bstring,cstring)
+                    // contains(astring)                           contains(astring,bstring,cstring)
+                    if (fieldValueToFilterBy.StartsWith("contains(") || fieldValueToFilterBy.StartsWith("contains_casesens("))
+                    {
+                        var filter = new SearchFilterModel { Negated = isNegated, FieldName = fieldToFilter, Type = SearchFilterType.Contains };
+
+                        if (fieldValueToFilterBy.StartsWith("contains("))
+                        {
+                            filter.CaseSensitive = false;
+                            fieldValueToFilterBy = fieldValueToFilterBy.Replace("contains(", "").Replace(")", "");
+                            filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                        }
+                        else if (fieldValueToFilterBy.StartsWith("contains_casesens("))
+                        {
+                            filter.CaseSensitive = true;
+                            fieldValueToFilterBy = fieldValueToFilterBy.Replace("contains_casesens(", "").Replace(")", "");
+                            filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                        }
+
+                        filters.Add(filter);
+                        continueChecking = false;
+                    }
+                }
+
+                if (continueChecking)
+                {
+                    // match_casesens(astring)                  match_casesens(astring,bstring,cstring)
+                    // match(astring)                           match(astring,bstring,cstring)
+                    if (fieldValueToFilterBy.StartsWith("match(") || fieldValueToFilterBy.StartsWith("match_casesens("))
+                    {
+                        var filter = new SearchFilterModel { Negated = isNegated, FieldName = fieldToFilter, Type = SearchFilterType.Match };
+
+                        if (fieldValueToFilterBy.StartsWith("match("))
+                        {
+                            filter.CaseSensitive = false;
+                            fieldValueToFilterBy = fieldValueToFilterBy.Replace("match(", "").Replace(")", "");
+                            filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                        }
+                        else if (fieldValueToFilterBy.StartsWith("match_casesens("))
+                        {
+                            filter.CaseSensitive = true;
+                            fieldValueToFilterBy = fieldValueToFilterBy.Replace("match_casesens(", "").Replace(")", "");
+                            filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                        }
+
+                        filters.Add(filter);
+                        continueChecking = false;
+                    }
+                }
+
+                if (continueChecking)
+                {
+                    // prefix_casesens(astring)                  prefix_casesens(astring,bstring,cstring)
+                    // prefix(astring)                           prefix(astring,bstring,cstring)
+                    if (fieldValueToFilterBy.StartsWith("prefix(") || fieldValueToFilterBy.StartsWith("prefix_casesens("))
+                    {
+                        var filter = new SearchFilterModel { Negated = isNegated, FieldName = fieldToFilter, Type = SearchFilterType.Prefix };
+
+                        if (fieldValueToFilterBy.StartsWith("prefix("))
+                        {
+                            filter.CaseSensitive = false;
+                            fieldValueToFilterBy = fieldValueToFilterBy.Replace("prefix(", "").Replace(")", "");
+                            filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                        }
+                        else if (fieldValueToFilterBy.StartsWith("prefix_casesens("))
+                        {
+                            filter.CaseSensitive = true;
+                            fieldValueToFilterBy = fieldValueToFilterBy.Replace("prefix_casesens(", "").Replace(")", "");
+                            filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                        }
+
+                        filters.Add(filter);
+                        continueChecking = false;
+                    }
+                }
+
+                if (continueChecking)
+                {
+                    // suffix_casesens(astring)                  suffix_casesens(astring,bstring,cstring)
+                    // suffix(astring)                           suffix(astring,bstring,cstring)
+                    if (fieldValueToFilterBy.StartsWith("suffix(") || fieldValueToFilterBy.StartsWith("suffix_casesens("))
+                    {
+                        var filter = new SearchFilterModel { Negated = isNegated, FieldName = fieldToFilter, Type = SearchFilterType.Suffix };
+
+                        if (fieldValueToFilterBy.StartsWith("suffix("))
+                        {
+                            filter.CaseSensitive = false;
+                            fieldValueToFilterBy = fieldValueToFilterBy.Replace("suffix(", "").Replace(")", "");
+                            filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                        }
+                        else if (fieldValueToFilterBy.StartsWith("suffix_casesens("))
+                        {
+                            filter.CaseSensitive = true;
+                            fieldValueToFilterBy = fieldValueToFilterBy.Replace("suffix_casesens(", "").Replace(")", "");
+                            filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                        }
+
+                        filters.Add(filter);
+                        continueChecking = false;
+                    }
+                }
+
+                if (continueChecking)
+                {
+                    // astring          astring,bstring,cstring
+                    if (fieldValueToFilterBy.Contains(","))
+                    {
+                        var filter = new MultiValueFilterModel { Negated = isNegated, FieldName = fieldToFilter, Values = fieldValueToFilterBy.Split(',').ToList() };
+                        filters.Add(filter);
+                    }
+                    else
+                    {
+                        var filter = new SingleValueFilterModel { Negated = isNegated, FieldName = fieldToFilter, Value = fieldValueToFilterBy };
+                        filters.Add(filter);
+                    }
+
+                    continueChecking = false;
+                }
+
+                // NOTE: If implementations cannot correctly implement either exact matching or case insensitive matching then the implementation MUST return a 501 error code.
+            }
+
+            #endregion
+
+            if (filterErrors.Count > 0)
+            {
+                //There are errors parsing the filters. Return an error HTTP status to the caller.
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Filter expressions contained the following errors: {string.Join("; ", filterErrors)}.");
+            }
+
             var columnSql = "";
             var fieldSql = "";
             var orderSql = "";
@@ -372,7 +657,40 @@ where   A.AssetTypeID = @id
                     columnSql += $", F{fID}.FormattedValue as [{fieldName}]";
 
                 if (includeJoin)
-                    fieldSql += $" left join Field F{fID} on F{fID}.AssetID = A.ID and F{fID}.FieldTypeID = {f.FieldType.ID}";
+                {
+                    var filter = filters.FirstOrDefault(i => i.FieldName == fieldName);
+                    if (filter != null)
+                    {
+                        fieldSql += $" inner join Field F{fID} on F{fID}.AssetID = A.ID and F{fID}.FieldTypeID = {f.FieldType.ID}";
+                        var fieldFilterSql = "";
+                        var @operator = filter.Negated ? "<>" : "=";
+                        if (filter is SingleValueFilterModel)
+                        {
+                            var singleValueFilter = filter as SingleValueFilterModel;
+
+                            fieldFilterSql += $"(F{fID}.FormattedValue {@operator} '{singleValueFilter.Value}')";
+                        }
+                        else if (filter is MultiValueFilterModel)
+                        {
+                            var multiValueFilter = filter as MultiValueFilterModel;
+                            foreach (var v in multiValueFilter.Values)
+                            {
+                                if (!string.IsNullOrEmpty(fieldFilterSql)) fieldFilterSql += " or ";
+                                fieldFilterSql += $"F{fID}.FormattedValue {@operator} '{v}'";
+                            }
+                            fieldFilterSql = $"({fieldFilterSql})";
+                        }
+
+                        if (!string.IsNullOrEmpty(fieldFilterSql))
+                        {
+                            fieldSql += $" and {fieldFilterSql}";
+                        }
+                    }
+                    else
+                    {
+                        fieldSql += $" left join Field F{fID} on F{fID}.AssetID = A.ID and F{fID}.FieldTypeID = {f.FieldType.ID}";
+                    }
+                }
 
                 //Now process the order by string.
                 if (f.AllowSort && arrSort != null && includeJoin)
@@ -493,9 +811,6 @@ where   A.AssetTypeID = @id
             }
 
             #endregion End: Collection endpoint processing
-
-            // Temporary catch-all
-            return Request.CreateResponse<string>($"Service: {service}, Endpoint: {endpoint}, Version: {version}, Entity: {entityFormat}");
         }
 
     }

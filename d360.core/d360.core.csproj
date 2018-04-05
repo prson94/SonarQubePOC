@@ -196,6 +196,7 @@
     <Compile Include="entities\Score\ScoreType.cs" />
     <Compile Include="entities\Score\ScoreMetric.cs" />
     <Compile Include="entities\Score\ScoreTypeMetric.cs" />
+    <Compile Include="entities\Transitive\AzureGraphModels.cs" />
     <Compile Include="entities\Transitive\AssetWithoutReadPermission.cs" />
     <Compile Include="entities\Transitive\GenerateAssetTypeSqlModel.cs" />
     <Compile Include="entities\Transitive\BulkAssetImport.cs" />

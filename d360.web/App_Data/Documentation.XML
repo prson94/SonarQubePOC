@@ -1825,6 +1825,42 @@
             </summary>
             <returns>An HTTP status code and message.</returns>
         </member>
+        <member name="T:d360.web.Controllers.Services.RangeValueFilterModel">
+            <summary>
+            Should support the following filter functions:
+            
+            range(adatetime,incl,bdatetime,excl)
+            range(anumber,incl,bnumber,incl), 
+            adatetime..bdatetime
+            anumber..bnumber
+            ...adatetime
+            ...anumber
+            adatetime...
+            anumber...
+            </summary>
+        </member>
+        <member name="T:d360.web.Controllers.Services.SearchFilterModel">
+            <summary>
+            Should support the following filter functions:
+            
+            match_casesens(astring)
+            match_casesens(astring,bstring,cstring)
+            match(astring)
+            match(astring,bstring,cstring)
+            contains_casesens(astring)
+            contains_casesens(astring,bstring,cstring)
+            contains(astring)
+            contains(astring,bstring,cstring)
+            prefix_casesens(astring)
+            prefix_casesens(astring,bstring,cstring)
+            prefix(astring)
+            prefix(astring,bstring,cstring)
+            suffix_casesens(astring)
+            suffix_casesens(astring,bstring,cstring)
+            suffix(astring)
+            suffix(astring,bstring,cstring)
+            </summary>
+        </member>
         <member name="T:d360.web.Controllers.Services.CustomController">
             <summary>
             This service houses all endpoints handling custom API configurations.

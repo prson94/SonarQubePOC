@@ -351,8 +351,10 @@ create table #AssetFieldTable (
                             Company.Database.Connection.Execute($@"
 merge into  Artifact T
 using       (
-            select  *
-            from    #AssetTable
+            select      min(ItemNumber) as ItemNumber,
+                        SourceID
+            from        #AssetTable
+            group by    SourceID
             ) S
 on          (
                 T.ArtifactTypeID = @id and 
@@ -406,8 +408,10 @@ output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
                             Company.Database.Connection.Execute($@"
 merge into  [Policy] T
 using       (
-            select  *
-            from    #AssetTable
+            select      min(ItemNumber) as ItemNumber,
+                        SourceID
+            from        #AssetTable
+            group by    SourceID
             ) S
 on          (
                 T.PolicyTypeID = @id and 
@@ -431,8 +435,10 @@ output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
                             Company.Database.Connection.Execute($@"
 merge into  [Rule] T
 using       (
-            select  *
-            from    #AssetTable
+            select      min(ItemNumber) as ItemNumber,
+                        SourceID
+            from        #AssetTable
+            group by    SourceID
             ) S
 on          (
                 T.RuleTypeID = @id and 
@@ -456,8 +462,10 @@ output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
                             Company.Database.Connection.Execute($@"
 merge into  Taxonomy T
 using       (
-            select  *
-            from    #AssetTable
+            select      min(ItemNumber) as ItemNumber,
+                        SourceID
+            from        #AssetTable
+            group by    SourceID
             ) S
 on          (
                 T.TaxonomyTypeID = @id and 

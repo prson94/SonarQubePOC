@@ -6,6 +6,6 @@
     <div class="row">
         <form-message [message]="message"></form-message>
         <button pButton (click)="delete()" label="Delete" [disabled]="isLoading"></button>
-        <button pButton (click)="cancel()" label="Cancel"></button>
+        <button pButton (click)="cancel()" label="Cancel" [disabled]="isLoading"></button>
     </div>
 </div>

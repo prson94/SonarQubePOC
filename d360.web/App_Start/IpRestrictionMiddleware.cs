@@ -84,10 +84,10 @@ from	Company C
             {
                 host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
             }
-            else
-            {
-                host = "demo.dev";
-            }
+            //else
+            //{
+            //    host = "demo.dev";
+            //}
             Trace.TraceInformation("Host is : {0}", host);
 
             var dict = await loadCache();

@@ -71,23 +71,21 @@ namespace igx.jobs.reportlayer
             }
             catch (Exception ex)
             {
-                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                Console.WriteLine(msg);
-                Console.WriteLine("Attempted SQL: " + viewSql);
+                CoreFunction.AITrackException(functionName, ex, null, new Dictionary<string, string>() { { "Attempted SQL: ", viewSql } });
             }
         }
 
         #endregion
 
         const string functionName = "ReportingLayer_Generate";
-        const string timerSettings = "0 */10 * * * *";
+        const string timerSettings = "0 */5 * * * *";
         //const string timerSettings = "*/5 * * * * *";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
         {
             try
             {
-                CoreFunction.AITrackJobStart(functionName);
+                //CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
                 companies.ForEach(c =>
@@ -519,43 +517,23 @@ where	O.AssetTypeClass = 1";
                         viewNames.Add(objectName);
 
                         selectSql = @"
-with h as (
-	select	T.ID,
-			T.TaxonomyTypeID,
-			null as ParentID,
-			D.DisplayValue as TextPath,
-			1 as [Level]
-	from	Taxonomy T
-			inner join dbo.GetAssetDisplayValue() D on D.Object = 'Taxonomy' and D.ObjectID = T.ID
-			left join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ID and I.PredicateType = 4
-	where	I.IntersectID is null
-	union all
-	select	T.ID,
-			T.TaxonomyTypeID,
-			P.ID as ParentID,
-			P.TextPath + '/' + D.DisplayValue as TextPath,
-			P.[Level] + 1 as [Level]
-	from	Taxonomy T
-			inner join dbo.GetAssetDisplayValue() D on D.Object = 'Taxonomy' and D.ObjectID = T.ID
-			inner join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ID and I.PredicateType = 4
-			inner join h as P on I.Subject = 'Taxonomy' and I.SubjectID = P.ID
-)
-
-SELECT  T.[ID] as [Taxonomy ID],
-        T.[ParentID],
-        T.[TaxonomyTypeID] as [Taxonomy Type id],
-        T.DisplayValue,
-        h.[TextPath],
-        T.[Level] as [Taxonomy Level],
-        T.[UpdatedOn],
-        T.[UpdatedBy], 
-        CONVERT(VARCHAR(10), t.UpdatedOn, 112) as UpdatedOnKey,
-        TY.Name as [Taxonomy Type Name],
-        coalesce(TL.Name, 'Level ' + cast(h.[Level] as varchar)) as [Level Name]
-FROM    Taxonomy T
-        inner join h on h.ID = T.ID
-        inner join TaxonomyType Ty on TY.ID = t.TaxonomyTypeID
-        left join TaxonomyTypeLevel TL on TL.[TaxonomyTypeID] = TY.ID and TL.[Level] = h.[Level]";
+select	A.ObjectID as [Taxonomy ID],
+		I.SubjectID as ParentID,
+        A.TypeID as [Taxonomy Type id],
+		A.DisplayValue,
+		TP.TextPath,
+		LV.[Level] as [Taxonomy Level],
+		A.UpdatedOn,
+		A.UpdatedBy,
+		CONVERT(VARCHAR(10), A.UpdatedOn, 112) as UpdatedOnKey,
+		A.TypeName as [Taxonomy Type Name],
+		coalesce(TL.Name, 'Level ' + cast(LV.[Level] as varchar)) as [Level Name]
+from	AssetDetail A
+		cross apply dbo.GetAssetTextPathById(A.ID, '/') TP
+		cross apply dbo.GetAssetLevelById(A.ID) LV
+		left join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 4
+		left join TaxonomyTypeLevel TL on TL.[TaxonomyTypeID] = A.TypeID and TL.[Level] = LV.[Level]
+where	A.AssetTypeClass = 2";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -572,16 +550,19 @@ FROM    Taxonomy T
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select  O.ID, 
-	    O.TaxonomyTypeID, 
-	    O.DisplayValue, 
-	    O.TextPath, 
+select  O.ObjectID as ID, 
+	    T.ObjectID as TaxonomyTypeID, 
+	    D.DisplayValue, 
+	    null as TextPath, --TP.TextPath, 
 	    F.FieldTypeID, 
         FT.Name as FieldName, 
         FT.FriendlyName as FieldFriendlyName, 
 	    F.FormattedValue as FieldValue 
-from	Taxonomy O 
-	    inner join Field F on F.ObjectType = 'Taxonomy' and F.ObjectID = O.ID
+from	Asset O 
+        inner join AssetType T on T.ID = O.AssetTypeID and T.Class = 2 and O.State = 1
+		cross apply dbo.GetAssetDisplayValueById(O.ID) as D
+		--cross apply dbo.GetAssetTextPathById(O.ID, '/') TP
+        inner join Field F on F.ObjectType = O.Object and F.ObjectID = O.ObjectID
 	    inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -599,17 +580,17 @@ from	Taxonomy O
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select		T.Name as ReferenceItemType,
-			I.ReferenceItemTypeID,
-			I.ID as ReferenceItemID,
-			I.Code,
-			I.DisplayValue,
-			I.CreatedBy,
-			I.CreatedOn,
-			I.UpdatedBy,
-			I.UpdatedOn
-from		ReferenceItem I
-			inner join ReferenceItemType T on T.ID = I.ReferenceItemTypeID and I.Visible = 1";
+select		A.TypeName as ReferenceItemType,
+			A.TypeID as ReferenceItemTypeID,
+			A.ObjectID as ReferenceItemID,
+			R.Code,
+			A.DisplayValue,
+			A.CreatedBy,
+			A.CreatedOn,
+			A.UpdatedBy,
+			A.UpdatedOn
+from		AssetDetail A
+			inner join ReferenceItem R on R.ID = A.ObjectID and A.AssetTypeClass = 9 and A.State = 1";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -765,7 +746,7 @@ FROM [dbo].[Group]";
 
                         selectSql = @"
 SELECT  * 
-FROM    ResponsibilityDetail";
+FROM    ResponsibilityDetails";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -831,21 +812,20 @@ from	IntersectDetail O
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select	R.ID,
-	    D.DisplayValue as Name,
-	    R.RuleTypeID,
-        RT.Name as RuleType,
+select	A.ObjectID as ID,
+	    A.DisplayValue as Name,
+	    A.TypeID as RuleTypeID,
+        A.TypeName as RuleType,
         R.RuleDimensionID,
 	    RD.Name as RuleDimensionName,
 	    R.Threshold,
 	    R.Status,
-	    R.CreatedOn,
-	    R.CreatedBy,
-	    R.UpdatedOn,
-	    R.UpdatedBy
-from	[Rule] R
-        inner join dbo.GetAssetDisplayValue() D on D.Object = 'Rule' and D.ObjectID = R.ID 
-        inner join RuleType RT on RT.ID = R.RuleTypeID 
+	    A.CreatedOn,
+	    A.CreatedBy,
+	    A.UpdatedOn,
+	    A.UpdatedBy
+from	AssetDetail A
+		inner join [Rule] R on R.ID = A.ObjectID and A.AssetTypeClass = 7 and A.State = 1
         left join RuleDimension RD on RD.ID = R.RuleDimensionID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -863,15 +843,14 @@ from	[Rule] R
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select 	O.ID as RuleID, 
-	    D.DisplayValue as RuleName, 
+select 	O.ObjectID as RuleID, 
+	    O.DisplayValue as RuleName, 
 	    F.FieldTypeID, 
         FT.Name as FieldName, 
         FT.FriendlyName as FieldFriendlyName, 
 	    F.FormattedValue as FieldValue 
-from	[Rule] O 
-	    inner join dbo.GetAssetDisplayValue() D on D.Object = 'Rule' and D.ObjectID = O.ID 
-        inner join Field F on F.ObjectType = 'Rule' and F.ObjectID = O.ID
+from	AssetDetail O 
+        inner join Field F on F.ObjectType = O.Object and F.ObjectID = O.ObjectID and O.AssetTypeClass = 7 and O.State = 1
 	    inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -1046,22 +1025,92 @@ from	workflow.ItemStep S
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select	R.ID as IntersectID,
-		S.ID as SourceID,
-		SD.DisplayValue as SourceName,
-		ST.Name as SourceType,
-		dbo.GenerateObjectUrl('Taxonomy', S.TaxonomyTypeID, S.ID) as SourceUrl,
-		T.ID as TargetID,
-		TD.DisplayValue as TargetName,
-		TT.Name as TargetType,
-		dbo.GenerateObjectUrl('Taxonomy', T.TaxonomyTypeID, T.ID) as TargetUrl 
-from	[Intersect] R
-		inner join Taxonomy S on R.Subject = 'Taxonomy' and S.ID = R.SubjectID
-        inner join dbo.GetAssetDisplayValue() SD on SD.Object = R.Subject and SD.ObjectID = R.SubjectID 
-        inner join TaxonomyType ST on ST.ID = S.TaxonomyTypeID 
-        inner join Taxonomy T on R.Object = 'Taxonomy' and T.ID = R.ObjectID 
-        inner join dbo.GetAssetDisplayValue() TD on TD.Object = R.Object and TD.ObjectID = R.ObjectID 
-        inner join TaxonomyType TT on TT.ID = T.TaxonomyTypeID";
+select	I.ID as IntersectID,
+
+		S.ObjectID as SourceID,
+		S.DisplayValue as SourceName,
+		S.TypeName as SourceType,
+		dbo.GenerateObjectUrl(S.Object, S.TypeID, S.ObjectID) as SourceUrl,
+
+		O.ObjectID as TargetID,
+		O.DisplayValue as TargetName,
+		O.TypeName as TargetType,
+		dbo.GenerateObjectUrl(O.Object, O.TypeID, O.ObjectID) as TargetUrl 
+
+from	[Intersect] I
+		inner join IntersectType T on T.ID = I.IntersectTypeID
+		inner join [Predicate] P on P.ID = T.PredicateID and P.Type <> 4
+		inner join AssetDetail S on S.Object = I.Subject and S.ObjectID = I.SubjectID and S.AssetTypeClass = 2 and S.State = 1
+		inner join AssetDetail O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.AssetTypeClass = 2 and O.State = 1";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region All Integration Mappings
+
+                        objectName = $"{SCHEMA}.[Integration_Mappings]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	case SE.IntegrationSystem
+			when 1 then 'IGC'
+			else cast(SE.IntegrationSystem as varchar)
+		end IntegrationSystem,
+		O.Active,
+		O.MappingType,
+		O.SourceAssetTypeName,
+		O.SourceField,
+		O.TargetType,
+		O.TargetAssetTypeName,
+		O.TargetField,
+		O.DefaultValue
+from	(
+		select	ST.IntegrationSettingID,
+				ST.Active,
+				'Field' as MappingType,
+				ST.SourceAssetTypeName,
+				F.SourceField,
+				ST.Object as TargetType,
+				T.Name as TargetAssetTypeName,
+				F.TargetField,
+				F.DefaultValue
+		from	[integration].[SynchedAssetType] ST
+				inner join AssetType T on T.ID = ST.AssetTypeID
+				inner join [integration].[SynchedAssetTypeFieldItem] F on F.SynchedAssetTypeID = ST.ID
+		union
+		select	ST.IntegrationSettingID,
+				ST.Active,
+				'Relation' as MappingType,
+				ST.SourceAssetTypeName,
+				F.SourceField,
+				ST.Object as TargetType,
+				T.Name as TargetAssetTypeName,
+				cast(F.PredicateType as nvarchar) as TargetField,
+				null as DefaultValue
+		from	[integration].[SynchedAssetType] ST
+				inner join AssetType T on T.ID = ST.AssetTypeID
+				inner join [integration].[SynchedAssetTypeRelationItem] F on F.SynchedAssetTypeID = ST.ID
+		union
+		select	ST.IntegrationSettingID,
+				ST.Active,
+				'Role' as MappingType,
+				ST.SourceAssetTypeName,
+				F.SourceIdField + ' : ' + F.SourceNameField as SourceField,
+				ST.Object as TargetType,
+				T.Name as TargetAssetTypeName,
+				F.RoleName as TargetField,
+				null as DefaultValue
+		from	[integration].[SynchedAssetType] ST
+				inner join AssetType T on T.ID = ST.AssetTypeID
+				inner join [integration].[SynchedAssetTypeRoleItem] F on F.SynchedAssetTypeID = ST.ID
+		) O 
+		inner join [integration].Setting SE on SE.ID = O.IntegrationSettingID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1111,7 +1160,7 @@ from	[Intersect] R
             }
             finally
             {
-                CoreFunction.AITrackJobCompletedNoErrors(functionName);
+                //CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
         }
     }

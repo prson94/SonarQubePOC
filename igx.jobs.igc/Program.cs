@@ -1,5 +1,4 @@
-﻿using ApplicationInsights.Helpers.WebJobs;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.utils.company;
 using Dapper;
@@ -34,8 +33,8 @@ namespace igx.jobs
     public static class IgcIntegration
     {
         const string functionName = "IGC_Integration";
-        //const string timerSettings = "0 */30 * * * *";
-        const string timerSettings = "*/5 * * * * *";
+        const string timerSettings = "0 */10 * * * *";
+        //const string timerSettings = "*/5 * * * * *";
 
         #region State street Settings - NEED to Externalize
 
@@ -51,7 +50,7 @@ namespace igx.jobs
             var available = false;
             try
             {
-                available = CoreFunction.LockWebJobIfAvailable(functionName);
+                available = true;// CoreFunction.LockWebJobIfAvailable(functionName);
 
                 if (available)
                 {
@@ -93,9 +92,21 @@ namespace igx.jobs
 
                                 #endregion
 
+                                bool checkForChangesOnly = true; // TRUE = POST to IGC API
+                                var now = DateTime.UtcNow;
+                                if (setting.LastRefreshOn.HasValue)
+                                {
+                                    checkForChangesOnly = (setting.LastRefreshOn.Value > DateTime.UtcNow.AddHours(-setting.RefreshInterval));
+                                }
+                                else
+                                {
+                                    checkForChangesOnly = false;
+                                }
+
+
                                 if (setting.IntegrationSystem == d360.core.enums.IntegrationSystem.IGC)
                                 {
-                                    foreach (var item in mappings.Where(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID))
+                                    foreach (var item in mappings.Where(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID)) // && i.ID == 20
                                     {
                                         var fields = mappingFields.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
                                         var relations = mappingRelations.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
@@ -103,18 +114,17 @@ namespace igx.jobs
 
                                         var success = false;
 
-                                        long? epoch = null;
-
-                                        if (item.LastSynchOn.HasValue)
-                                        {
-                                            epoch = ConvertDateToUnixTimeMilliseconds(item.LastSynchOn.Value);
-                                        }
-
-                                        success = IGC_LoadAssetsByMappingTypeAsync(c.CompanyID, setting, epoch, c.UrlPrefix, resource, item, fields, relations, roles);
+                                        success = IGC_LoadAssetsByMappingType(c.CompanyID, setting, checkForChangesOnly, now, c.UrlPrefix, resource, item, fields, relations, roles);
                                         if (success)
                                         {
-                                            company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt where ID = @id", new { id = item.ID, dt = DateTime.UtcNow });
+                                            company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt where ID = @id", new { id = item.ID, dt = now });
                                         }
+                                    }
+
+                                    if (!checkForChangesOnly)
+                                    {
+                                        //Update the RefreshedOn property on the setting record, as we just did a full refresh.
+                                        company.Execute("update integration.Setting set LastRefreshOn = @dt where ID = @id", new { id = setting.ID, dt = now });
                                     }
                                 }
                             }
@@ -152,7 +162,7 @@ namespace igx.jobs
             if (!date.HasValue)
                 date = DateTime.UtcNow;
 
-            epoch = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
+            epoch = (long)(date.Value.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
 
             return epoch;
         }
@@ -184,36 +194,63 @@ namespace igx.jobs
             return JsonConvert.DeserializeObject<T>(jsonRaw, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
         }
 
-        static async System.Threading.Tasks.Task<string> PostJsonToApiAsync(string uri, string authorization, string requestBody)
+        static async Task<T> PostJsonToApiAsync<T>(string uri, string authorization, string requestBody)
         {
             var jsonToReturn = "";
 
-            using (var client = new HttpClient()) //WebClient()
+            try
             {
-                client.Timeout = new TimeSpan(1, 0, 0);
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
-                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
-                var response = await client.PostAsync(uri, new StringContent(requestBody));
-                response.EnsureSuccessStatusCode();
-                jsonToReturn = await response.Content.ReadAsStringAsync();
-                //client.Headers.Set(HttpRequestHeader.Accept, "application/json");
-                //client.Headers.Set(HttpRequestHeader.ContentType, "application/json");
-                //client.Headers.Set(HttpRequestHeader.Authorization, authorization);
-                //jsonToReturn = client.UploadString(uri, requestBody);
-            }
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = new TimeSpan(1, 0, 0);
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                    //client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+                    client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
+                    var response = await client.PostAsync(uri, new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json"));
+                    response.EnsureSuccessStatusCode();
+                    jsonToReturn = await response.Content.ReadAsStringAsync();
+                }
 
-            return jsonToReturn;
+                return JsonConvert.DeserializeObject<T>(jsonToReturn, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
+            }
+            catch (Exception ex)
+            {
+                var properties = new Dictionary<string, string>();
+                properties.Add("Uri", uri);
+                properties.Add("Request Body", requestBody);
+                CoreFunction.AITrackException(functionName, ex, null, properties);
+                throw ex;
+            }
         }
 
-        static string buildSearchUri(string type, List<string> properties)
+        static async Task<string> PostJsonToApiAsync(string uri, string authorization, string requestBody)
         {
-            var url = $"{SourceUri}search/?pageSize=75&types={type}";
-            foreach (var p in properties)
+            var jsonToReturn = "";
+
+            try
             {
-                url += $"&properties={p}";
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = new TimeSpan(1, 0, 0);
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                    client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+                    client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
+                    var response = await client.PostAsync(uri, new StringContent(requestBody));
+                    response.EnsureSuccessStatusCode();
+                    jsonToReturn = await response.Content.ReadAsStringAsync();
+                }
+
+                return jsonToReturn;
             }
-            return url;
+
+            catch (Exception ex)
+            {
+                var properties = new Dictionary<string, string>();
+                properties.Add("Uri", uri);
+                properties.Add("Request Body", requestBody);
+                CoreFunction.AITrackException(functionName, ex, null, properties);
+                throw ex;
+            }
         }
 
         #endregion
@@ -223,7 +260,8 @@ namespace igx.jobs
         /// </summary>
         /// <param name="companyID">The ID of the customer's environment.</param>
         /// <param name="setting">The high-level setting that define the type of system we are connecting to and synchronizing.</param>
-        /// <param name="lastSynchEpoch">The last time, in milliseconds (UNIX time), that the asset type was synchronized. This value is used to get only changes from IGC.</param>
+        /// <param name="checkForChangesOnly">Determine if this is a DELTA check, checking for changes only, or if this is a full refresh of the content.</param>
+        /// <param name="now">The current date in UTC.</param>
         /// <param name="urlPrefix">the Govern environment prefix URL.</param>
         /// <param name="resource">The user account whose API key and secret we will use to post data into Govern.</param>
         /// <param name="mapping">The high-level asset-to-asset mapping.</param>
@@ -231,23 +269,30 @@ namespace igx.jobs
         /// <param name="relations">The asset relationship mappings.</param>
         /// <param name="roles">The asset role mappings.</param>
         /// <returns>An asynchronous boolean to indicate whether the process was successful or not.</returns>
-        public static bool IGC_LoadAssetsByMappingTypeAsync(int companyID, IntegrationSetting setting, long? lastSynchEpoch, string urlPrefix, Resource resource, IntegrationAssetType mapping, List<IntegrationAssetTypeFieldItem> fields, List<IntegrationAssetTypeRelationItem> relations, List<IntegrationAssetTypeRoleItem> roles)
+        public static bool IGC_LoadAssetsByMappingType(int companyID, IntegrationSetting setting, bool checkForChangesOnly, DateTime now, string urlPrefix, Resource resource, IntegrationAssetType mapping, List<IntegrationAssetTypeFieldItem> fields, List<IntegrationAssetTypeRelationItem> relations, List<IntegrationAssetTypeRoleItem> roles)
         {
             var success = true;
-
-            var url = $"{setting.SourceUri}search/?pageSize=500&types={mapping.SourceAssetTypeName}";
-
-            // Add the properties we are after for this IGC type.
-            url += string.Concat(fields.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
-            url += string.Concat(relations.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
-            url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceIdField)}"));
-            url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceNameField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceNameField)}"));
-
 
             var igcData = new IgcDynamicArrayModels();
             var arr = new JArray();
             var relationships = new List<D3sRelationshipModel>();
             var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+
+            var sourceAuthString = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
+            var targetAuthString = $"{resource.APIPublicKey};{resource.APIPrivateKey}";
+            var targetBaseUri = "";
+
+            if (!urlPrefix.Contains("-igx"))
+            {
+                if (urlPrefix.Contains(".preview")) urlPrefix = urlPrefix.Replace(".preview", "-igx.preview");
+                else if (urlPrefix.Contains(".dev")) urlPrefix = urlPrefix.Replace(".dev", "-igx.dev");
+                else if (urlPrefix.Contains(".uat")) urlPrefix = urlPrefix.Replace(".uat", "-igx.uat");
+                else urlPrefix = urlPrefix + "-igx";
+            }
+
+            //targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
+            targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
+            targetBaseUri += $"/services/assets/";
 
             Func<JArray, JArray> parse = delegate (JArray root)
             {
@@ -267,7 +312,15 @@ namespace igx.jobs
                             var context = (obj[f.SourceField] as JArray); // obj[f.SourceField].Cast<List<GenericIgcContextModel>>().FirstOrDefault();
                             if (context != null)
                             {
-                                d3s.Add(f.TargetField, context[f.ParentContextPosition.Value]["_id"].Value<string>());
+                                if (f.ParentContextPosition.Value == 99)
+                                {
+                                    d3s.Add(f.TargetField, context.Last["_id"].Value<string>());
+                                }
+                                else
+                                {
+                                    d3s.Add(f.TargetField, context[f.ParentContextPosition.Value]["_id"].Value<string>());
+                                }
+                                
                             }
                         }
                         else
@@ -376,42 +429,104 @@ namespace igx.jobs
                 return root;
             };
 
-            var sourceAuthString = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
-            var targetAuthString = $"{resource.APIPublicKey};{resource.APIPrivateKey}";
-            var targetBaseUri = "";
+            var url = $"{setting.SourceUri}search/";
 
-            if (!urlPrefix.Contains("-igx"))
+            if (checkForChangesOnly)
             {
-                if (urlPrefix.Contains(".preview")) urlPrefix = urlPrefix.Replace(".preview", "-igx.preview");
-                else if (urlPrefix.Contains(".dev")) urlPrefix = urlPrefix.Replace(".dev", "-igx.dev");
-                else if (urlPrefix.Contains(".uat")) urlPrefix = urlPrefix.Replace(".uat", "-igx.uat");
-                else urlPrefix = urlPrefix + "-igx";
-            }
+                //Perform search using POST method.
+                var postModel = new IgcPostSearchRequestModel();
+                postModel.begin = 0;
+                postModel.pageSize = 250;
 
-            //targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
-            targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
-            targetBaseUri += $"/services/assets/";
+                postModel.types.Add(mapping.SourceAssetTypeName);
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                try
+                postModel.properties.AddRange(fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
+                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
+
+                var min = ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0));
+                var max = ConvertDateToUnixTimeMilliseconds(now);
+                
+                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
+                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
+
+                var shouldContinue = true;
+                while (shouldContinue)
                 {
-                    var models = GetFromApi<IgcDynamicArrayModels>(url, sourceAuthString);
-                    if (models != null)
+                    try
                     {
-                        parse(models.items);
-                        url = models.paging.next;
+                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, sourceAuthString, JsonConvert.SerializeObject(postModel)).Result;
+                        if (models != null)
+                        {
+                            parse(models.items);
+                            shouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                            postModel.begin = models.paging.end + 1;
+
+                            if (arr.Count > 9999)
+                            {
+                                SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
+                                arr = new JArray();
+                                relationships = new List<D3sRelationshipModel>();
+                                ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex);
+                        shouldContinue = false;
+                        success = false;
                     }
                 }
-                catch (Exception ex)
+            }
+            else
+            {
+                //Perform search using GET method.
+
+                // Add the properties we are after for this IGC type.
+                url += $"?pageSize=250&types={mapping.SourceAssetTypeName}";
+                url += string.Concat(fields.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
+                url += string.Concat(relations.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
+                url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceIdField)}"));
+                url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceNameField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceNameField)}"));
+
+                while (!string.IsNullOrEmpty(url))
                 {
-                    CoreFunction.AITrackException(functionName, ex);
-                    url = null;
+                    try
+                    {
+                        var models = GetFromApi<IgcDynamicArrayModels>(url, sourceAuthString);
+                        if (models != null)
+                        {
+                            parse(models.items);
+                            url = models.paging.next;
+
+                            if (arr.Count > 9999)
+                            {
+                                SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
+                                arr = new JArray();
+                                relationships = new List<D3sRelationshipModel>();
+                                ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex);
+                        url = null;
+                        success = false;
+                    }
                 }
             }
 
-            // If any items to send to server.
+            SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
 
+            return success;
+        }
+
+        public static void SendIncrementalSetToGovern(int companyID, IntegrationAssetType mapping, JArray arr, List<D3sRelationshipModel> relationships, D3sOwnershipItemsModel ownershipTopModel, string targetBaseUri, string targetAuthString)
+        {
+            // If any items to send to server.
             if (arr.Count > 0)
             {
                 try
@@ -437,7 +552,7 @@ namespace igx.jobs
                     {
                         CoreFunction.AITrackEvent(functionName, "Bulk Import Assets", new Dictionary<string, string>() { { "Error", assetErrorMessage } }, companyID);
                     }
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -499,8 +614,6 @@ namespace igx.jobs
                     CoreFunction.AITrackException(functionName, ex);
                 }
             }
-
-            return success;
         }
 
         public static void GetTypes()

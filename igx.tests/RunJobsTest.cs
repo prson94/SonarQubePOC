@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -42,7 +43,7 @@ namespace igx.tests
         public void DeployFusionConnector()
         {
             var companyID = 54; //10
-            var fusionTypeID = 113;//13;
+            var fusionTypeID = 1;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -162,6 +163,53 @@ END",
 
             var storage = new AzureStorageProvider();
             Assert.IsTrue(storage.ReleaseLockOnBlobFile(folder, file));
+        }
+
+        [TestMethod]
+        public void CallIgcAsync()
+        {
+            var jsonToReturn = "";
+
+            var requestBody = @"{
+  types: [
+    $ApplicationCatalog-ApplicationCatalog
+  ],
+  where: {
+                conditions: [
+                  {
+        min: 1511308800000,
+                    max: 1522189789000,
+                    property: 'modified_on',
+                    operator: 'between'
+      }
+    ],
+    operator: 'or'
+  },
+  sorts: [
+    {
+      property: 'name',
+      ascending: true
+    }
+  ],
+  properties: [
+    '$PersonalData',
+    'modified_on'
+  ]}";
+            using (var client = new HttpClient()) //WebClient()
+            {
+                client.Timeout = new TimeSpan(1, 0, 0);
+                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", "Basic c3BsRFRTV0VCMjg2MjM6cChMWlsxfF1bYkl1");
+                var response = client.PostAsync("https://edgm-catalog.statestreet.com/ibm/iis/igc-rest/v1/search/", new StringContent(requestBody)).Result;
+                response.EnsureSuccessStatusCode();
+                jsonToReturn = response.Content.ReadAsStringAsync().Result;
+                //client.Headers.Set(HttpRequestHeader.Accept, "application/json");
+                //client.Headers.Set(HttpRequestHeader.ContentType, "application/json");
+                //client.Headers.Set(HttpRequestHeader.Authorization, authorization);
+                //jsonToReturn = client.UploadString(uri, requestBody);
+            }
+
         }
 
         [TestMethod]

@@ -56,11 +56,12 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1", new { id 
             getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns, false, false, true, fields, "A.ObjectID");
 
             var sql = $@"
-select	A.ObjectID as ID, P.SubjectID as ParentID, A.TypeID as TaxonomyTypeID, A.DisplayValue,
+select	A.ObjectID as ID, P.SubjectID as ParentID, A.TypeID as TaxonomyTypeID,
         A.ID as AssetID,  
         {columns} 
-        hch.HasChildren,
-        dbo.GetAssetLevelScalar(A.ID,4) as [Level]
+        A.DisplayValue, 
+hch.HasChildren--,
+        --dbo.GetAssetLevelScalar(A.ID,4) as [Level]
 from	AssetDetail A        
         {joins} 
         cross apply [dbo].[GetAssetHasChildrenByAssetID](a.id,4) hch

@@ -18502,9 +18502,9 @@ from    [IntersectType] RT
             var parents = Company.Query<dynamic>(@"
 select	A.ObjectID as ID,
 		P.TextPath as Name
-from	AssetDetail A
-		cross apply dbo.GetAssetTextPathById(A.ID, '/') P
-where	Type = 'TaxonomyType' and TypeID = @t",
+from	Asset A
+        inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'TaxonomyType' and T.ObjectID = @t
+		cross apply dbo.GetAssetTextPathById(A.ID, '/') P",
 new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
             var thisEntry = parents.FirstOrDefault(i => i.ID == id);
@@ -18519,7 +18519,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "0", Selected = (parent == null) });
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = Resources.FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((Company.ObjectHasParent(SystemObjects.Taxonomy, a.ID)) ? Company.GetParentObject<Taxonomy>(a.ID)?.ID.ToString() : "0") });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = Resources.FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.ID.ToString() : "0") });
             list =(
                 loadDynamicFields(
                     SystemObjects.Taxonomy.ToString(),

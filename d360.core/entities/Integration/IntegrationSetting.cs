@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -23,6 +24,11 @@ namespace d360.core.entities
         [DataMember]
         public int TargetResourceID { get; set; }
 
+        [DataMember]
+        public DateTime? LastRefreshOn { get; set; }
+
+        [DataMember]
+        public int RefreshInterval { get; set; }
 
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationAssetType> IntegrationAssetTypes { get; set; }

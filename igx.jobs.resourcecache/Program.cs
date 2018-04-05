@@ -26,8 +26,8 @@ namespace igx.jobs.resourcecache
     public class ResourceCache
     {
         const string functionName = "ResourceCache_Generate";
-        const string timerSettings = "0 */1 * * * *";
-        //const string timerSettings = "*/10 * * * * *";
+        //const string timerSettings = "0 */1 * * * *";
+        const string timerSettings = "*/10 * * * * *";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -87,6 +87,8 @@ when	not matched by target then
                             resources.ToArray()
                             );
 
+                        log.WriteLine("Upserted {0} users for company {1}.", resources.Count, c.CompanyID);
+
                         #endregion
 
                         #region Delete Logic
@@ -95,13 +97,18 @@ when	not matched by target then
                         {
                             var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
                             var updatedResourceIDs = resources.Select(i => i.ResourceID).ToList();
+                            var deletedCount = 0;
                             currentResourceIDs.ForEach(cr =>
                             {
                                 if (!updatedResourceIDs.Contains(cr))
                                 {
                                     companyConnection.Execute("delete reporting.Global_Resource where ResourceID = @r", new { r = cr });
+                                    deletedCount++;
                                 }
                             });
+
+                            if (deletedCount > 0)
+                                log.WriteLine("Removed {0} users for company {1}.", deletedCount, c.CompanyID);
                         }
                         catch (Exception ex)
                         {

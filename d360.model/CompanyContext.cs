@@ -1007,15 +1007,31 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
         public T GetParentObject<T>(int id) where T : BaseIntObject
         {
             string type = "";
+            var predicateType = PredicateType.InterTypeHierarchy;
 
             if (typeof(T) == typeof(Artifact))
+            {
                 type = SystemObjects.Artifact.ToString();
+            }
+            else if (typeof(T) == typeof(Policy))
+            {
+                type = SystemObjects.Policy.ToString();
+                predicateType = PredicateType.IntraTypeHierarchy;
+            }
             else if (typeof(T) == typeof(Taxonomy))
+            {
                 type = SystemObjects.Taxonomy.ToString();
+                predicateType = PredicateType.IntraTypeHierarchy;
+            }
             else if (typeof(T) == typeof(FusionAttribute))
+            {
                 type = SystemObjects.FusionAttribute.ToString();
+            }
             else if (typeof(T) == typeof(ReferenceItem))
+            {
                 type = SystemObjects.ReferenceItem.ToString();
+            }
+                
 
             if (string.IsNullOrEmpty(type) || id < 0)
                 return default(T);
@@ -1023,7 +1039,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             var sql = @"select I.SubjectID from PredicateIntersect I
                     inner join IntersectType T on T.ID = I.IntersectTypeID
                     where I.PredicateType = @type and I.[Object] = @object and I.ObjectID = @objectId";
-            var parentId = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id }).FirstOrDefault();
+            var parentId = Query<int>(sql, new { type = (int)predicateType, @object = type.ToString(), objectId = id }).FirstOrDefault();
             if (parentId < 1)
                 return default(T);
 
@@ -2002,7 +2018,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
         {
             try
             {
-                Database.Connection.Execute("DeleteObject @Obj, @ObjectID, @ResourceID", new { Obj = type.ToString(), ObjectID = id, ResourceID = CurrentResourceID }, null, 120);
+                Database.Connection.Execute("exec [DeleteObject] @Obj, @ObjectID, @ResourceID", new { Obj = type.ToString(), ObjectID = id, ResourceID = CurrentResourceID }, null, 120);
                 return true;
             }
             catch (Exception ex)

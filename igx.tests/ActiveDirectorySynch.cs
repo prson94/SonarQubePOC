@@ -1,9 +1,12 @@
-﻿using Dapper;
+﻿using d360.extensions.azuregraph;
+using Dapper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace igx.tests
 {
@@ -353,6 +356,13 @@ commandTimeout: 3600, transaction: transM);
 
                 transM.Commit();
             }
+        }
+
+        [TestMethod]
+        public void GetUsersFromAadGraph()
+        {
+            var users = AzureGraphProvider.GetUsers("02292cae-2fe6-4371-8da1-b03d14808575", "da53c11a-c52a-4f3e-8cde-d284e2c2073d", "KNeGZgbfQWZ1lW0ea1/TCbOzB9BpYvO3U624xM82nAo=");// "OeW4y2bIqwSvUgs2NisrCoXjXfd33D8c5HxGITd5W0U=");
+
         }
     }
 }

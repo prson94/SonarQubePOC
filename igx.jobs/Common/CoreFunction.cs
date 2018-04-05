@@ -116,9 +116,10 @@ namespace igx.jobs
             AITelemetryClient.TrackEvent(eventName, properties);
         }
 
-        public static void AITrackException(string jobName, Exception e, int? companyId = null)
+        public static void AITrackException(string jobName, Exception e, int? companyId = null, IDictionary<string, string> properties = null)
         {
-            Dictionary<string, string> properties = new Dictionary<string, string>();
+            if (properties == null)
+                properties = new Dictionary<string, string>();
             properties["Function"] = jobName;
             properties["Environment"] = ConfigurationManager.AppSettings["Environment"];
 
