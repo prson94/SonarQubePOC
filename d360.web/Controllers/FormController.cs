@@ -400,6 +400,8 @@ namespace d360.web.Controllers
                     return Taxonomy_EditFields(oid);
                 case "VERSION":
                     return CustomAPIServiceEndpointVersion_EditFields(oid);
+                case "URI":
+                    return CustomAPIVersionUri_EditFields(oid);                        
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -463,6 +465,8 @@ namespace d360.web.Controllers
                     return Taxonomy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "VERSION":
                     return CustomAPIServiceEndpointVersion_AddFields(parentID.GetValueOrDefault());
+                case "URI":
+                    return CustomAPIVersionUri_AddFields(parentID.GetValueOrDefault());
 
             }
             throw new Exception("Invalid or non implemented editor type");
@@ -570,6 +574,8 @@ namespace d360.web.Controllers
                     return EditTaxonomyTypeLevel(form);
                 case "VERSION":
                     return EditServiceEndpointVersion(form);
+                case "URI":
+                    return EditServiceEndpointVersionUri(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -747,6 +753,8 @@ namespace d360.web.Controllers
                     return AddTaxonomyTypeLevel(form);
                 case "VERSION":
                     return AddServiceEndpointVersion(form);
+                case "URI":
+                    return AddServiceEndpointVersionUri(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -19387,6 +19395,124 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
                 Company.Update<ApiEntity>(entity);
 
+                return jsonSuccess("Version successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region Custom API Service Endpoint Version Uri
+
+        public JsonResult CustomAPIVersionUri_AddFields(int versionId)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var entity = Company.ApiEntities.First(x=>x.EndpointVersionID == versionId);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "EntityID", FieldType = DataType.Hidden.ToString(), Value = entity.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "UriType", Name = "Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items=
+            new List<SelectListItem>{
+                new SelectListItem{Text = "Singleton", Value = "0"},
+                new SelectListItem{Text = "Collection", Value = "1"},
+            }
+            });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Format", Name = "Segment", FieldDescription = "", FieldType = DataType.Number.ToString() });
+            
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult CustomAPIVersionUri_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.ApiEntityUris.Where(x => x.ID == id).FirstOrDefault();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "UriType", Name = "Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Value = a.UriType.ToString(), Items = new List<SelectListItem>()
+            {
+                new SelectListItem{Text = "Singleton", Value = "0", Selected = (a.UriType == ApiUriType.Singleton)},
+                new SelectListItem{Text = "Collection", Value = "1", Selected = (a.UriType == ApiUriType.Collection)},
+            }
+            });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Format", Name = "Segment", FieldDescription = "", FieldType = DataType.Number.ToString(), Value = a.Format });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddServiceEndpointVersionUri")]
+        public JsonResult AddServiceEndpointVersionUri(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("uri");
+
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var entityId = parseIntField(form, "EntityID");
+                var format = parseTextField(form, "Format");
+                var uriType = (ApiUriType)parseIntField(form, "UriType");
+                
+
+
+                if (string.IsNullOrEmpty(format))
+                    return jsonException("API Service Endpoint Version URI format is null", HttpStatusCode.NotFound);
+
+                var uri = new ApiEntityUri
+                {
+                    Format = format,
+                    EntityID = entityId,
+                    UriType = uriType
+                };
+
+                Company.Add<ApiEntityUri>(uri);
+                
+                return jsonSuccess("Uri successfully created.", uri.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        [HttpPut, ValidateInput(false), Route("EditServiceEndpointVersionUri")]
+        public JsonResult EditServiceEndpointVersionUri(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("version");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ApiEntityUri>(id);
+                if (model == null) throw new NotFoundException("api service version uri");
+
+                model.Format = parseTextField(form, "Format");
+                model.UriType = (ApiUriType)parseIntField(form, "UriType");                
+
+                Company.Update<ApiEntityUri>(model);
+                
                 return jsonSuccess("Version successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)

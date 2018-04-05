@@ -32,7 +32,7 @@ import { Router, ActivatedRoute } from '@angular/router';
                                     </p-column>                                                                                    
                                 </p-dataTable>                                  
                             </span>             
-                            <d3s-dynamic-editor *ngIf="showEditor" [parentID]="service?.ID" [objectID]="selected?.ID" [objectType]="'ApiUri'" [title]="'Uri'" [selection]="selected" (saveClick)="saveUri($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                            <d3s-dynamic-editor *ngIf="showEditor" [parentID]="version?.ID" [objectID]="selected?.ID" [objectType]="'Uri'" [title]="'Uri'" [selection]="selected" (saveClick)="saveUri($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
                     </div>                
                 `
 })
@@ -65,7 +65,7 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
     }
 
     private saveUri(data): void {
-        this.customAPIService.saveEndpoint(data.item).then(res => {
+        this.customAPIService.saveEndpointUri(data.item).then(res => {
             this.showMessageForResult(this.messagesService, res);
             this.load();
             this.showEditor = false;

@@ -79,4 +79,11 @@ export class CustomAPIService extends BaseService {
         }
         return this.putDynamic(this.http, 'version', version);
     }
+
+    saveEndpointUri(uri: ApiUri): Promise<JsonResult> {
+        if (uri.ID == undefined || !uri.ID) {
+            return this.postDynamic(this.http, 'uri', uri);
+        }
+        return this.putDynamic(this.http, 'uri', uri);
+    }
 }

@@ -34,6 +34,7 @@ export class ApiField {
 }
 
 export class ApiUri {
+    ID: number;
     UriType: string;
     Format: string;
     EntityID: number;
