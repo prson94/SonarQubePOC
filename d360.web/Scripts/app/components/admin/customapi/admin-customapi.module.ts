@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
 import { RouterModule } from '@angular/router';
 
+
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import { CoreModule } from '../../shared/core.module';
@@ -13,6 +14,8 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 import { AdminCustomAPIComponent } from './admin-customapi.component';
+import { AdminCustomAPIEndpointsComponent } from './admin-customapi-endpoint.component';
+import { AdminCustomAPIServiceDetailComponent } from './admin-customapi-service-detail.component';
 
 import { AdminCustomAPIRoutingModule } from './admin-customapi.routes';
 
@@ -44,7 +47,9 @@ import {
         TilesModule,
     ],
     declarations: [
-        AdminCustomAPIComponent,        
+        AdminCustomAPIComponent,   
+        AdminCustomAPIEndpointsComponent,    
+        AdminCustomAPIServiceDetailComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

@@ -348,6 +348,8 @@ namespace d360.web.Controllers
                     return Attribute_EditFields(oid);
                 case "CONTRACT":
                     return Contract_EditFields(oid);
+                case "ENDPOINT":
+                    return CustomAPIServiceEndpoint_EditFields(oid);
                 case "FUSION":
                     return Fusion_EditFields(oid);
                 case "FUSIONATTRIBUTE":
@@ -411,6 +413,8 @@ namespace d360.web.Controllers
                     return AttributeTypeRelation_AddFields(parentID.GetValueOrDefault());
                 case "CONTRACT":
                     return Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
+                case "ENDPOINT":
+                    return CustomAPIServiceEndpoint_AddFields(parentID.GetValueOrDefault());
                 case "FUSION":
                     return Fusion_AddFields(objectID.GetValueOrDefault());
                 case "FUSIONATTRIBUTE":
@@ -490,6 +494,8 @@ namespace d360.web.Controllers
                     return EditAttribute(form);
                 case "ATTRIBUTETYPE":
                     return EditAttributeType(form);
+                case "ENDPOINT":
+                    return EditServiceEndpoint(form);
                 case "FUSION":
                     return EditFusion(form);
                 case "FUSIONATTRIBUTE":
@@ -667,6 +673,8 @@ namespace d360.web.Controllers
                     return AddAttributeType(form);
                 case "CUSTOMSYNONYM":
                     return AddCustomSynonym(form);
+                case "ENDPOINT":
+                    return AddServiceEndpoint(form);
                 case "FUSION":
                     return AddFusion(form);
                 case "FUSIONQUERYATTRIBUTE":
@@ -19092,10 +19100,123 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 if (model == null) throw new NotFoundException("api service");
 
                 model.Name = parseTextField(form, "Name");
-                model.UriPrefix = parseTextField(form, "Name");
+                model.UriPrefix = parseTextField(form, "URIPrefix");
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<ApiService>(model);
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region Custom API Service
+
+        public JsonResult CustomAPIServiceEndpoint_AddFields(int serviceId)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ServiceID", FieldType = DataType.Hidden.ToString(), Value = serviceId.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult CustomAPIServiceEndpoint_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.ApiEndpoints.Where(x => x.ID == id).FirstOrDefault();
+
+            if (a == null) return jsonException("Cannot find the specified service endpoint to edit", HttpStatusCode.NotFound);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddServiceEndpoint")]
+        public JsonResult AddServiceEndpoint(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("endpoint");
+
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var serviceId = parseIntField(form, "ServiceID");
+                var name = parseTextField(form, "Name");
+                var prefix = parseTextField(form, "URIPrefix");
+
+                if (string.IsNullOrEmpty(name))
+                    return jsonException("API Service Endpoint Name is null", HttpStatusCode.NotFound);
+
+                if (string.IsNullOrEmpty(prefix))
+                    return jsonException("API Service Endpoint Prefix is null", HttpStatusCode.NotFound);
+
+                var endpoint = new ApiEndpoint
+                {
+                    Name = name,
+                    Description = parseTextField(form, "Description"),
+                    UriPrefix = prefix,
+                    ServiceID = serviceId
+                };
+
+                Company.Add<ApiEndpoint>(endpoint);
+
+
+                return jsonSuccess("Service successfully created.", endpoint.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        [HttpPut, ValidateInput(false), Route("EditServiceEndpoint")]
+        public JsonResult EditServiceEndpoint(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("endpoint");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ApiEndpoint>(id);
+                if (model == null) throw new NotFoundException("api service endpoint");
+
+                model.Name = parseTextField(form, "Name");
+                model.UriPrefix = parseTextField(form, "URIPrefix");
+                model.Description = parseTextField(form, "Description");
+
+                Company.Update<ApiEndpoint>(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }

@@ -7920,6 +7920,18 @@ from	    TaxonomyType FAT
             return Company.ApiServices.ToList();
         }
 
+        [Route("custom/service/{id:int}")]
+        public ApiService GetCustomAPIService(int id)
+        {
+            return Company.ApiServices.FirstOrDefault(x=>x.ID==id);
+        }
+
+
+        [Route("custom/service/{serviceId:int}/endpoints")]
+        public List<ApiEndpoint> GetCustomAPIServiceEndpoints(int serviceId)
+        {
+            return Company.ApiEndpoints.Where(x=>x.ServiceID == serviceId).ToList();
+        }
 
         #endregion
     }

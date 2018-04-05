@@ -1043,6 +1043,8 @@
     <TypeScriptCompile Include="Scripts\app\authentication-connection-backend.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-measures.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.module.ts" />

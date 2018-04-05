@@ -6,7 +6,8 @@ import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { CustomAPIService } from '../../../services/custom-api.service';
-import { APIService } from '../../../models/custom-api.model';
+import { ApiService } from '../../../models/custom-api.model';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'd3s-admin-customapi',
@@ -22,8 +23,12 @@ import { APIService } from '../../../models/custom-api.model';
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
                                 <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="services" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                                                        
+                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                                    
+                                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
+                                            <ng-template let-col let-item="rowData" pTemplate type="body">
+	                                            <a (click)="showService(item);">{{item.Name}}</a>                                 
+                                            </ng-template>
+                                    </p-column>
                                     <p-column field="UriPrefix" header="Uri Segment" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                                     <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
                                         <ng-template pTemplate type="body" let-item="rowData">
@@ -40,6 +45,7 @@ import { APIService } from '../../../models/custom-api.model';
                                 </p-dataTable>                                  
                             </span>             
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Service'" [title]="'APIService'" [selection]="selected" (saveClick)="saveService($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                        </div>
                     </div>
                 </div>  
                 `
@@ -47,11 +53,11 @@ import { APIService } from '../../../models/custom-api.model';
 
 export class AdminCustomAPIComponent extends AdminBaseComponent implements OnInit {
 
-    public selected: APIService = null;
-    public services: APIService[] = [];
+    public selected: ApiService = null;
+    public services: ApiService[] = [];
     public showEditor: boolean = false;
 
-    constructor(protected customAPIService: CustomAPIService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title) {
+    constructor(protected customAPIService: CustomAPIService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title, private router: Router) {
         super(headerBreadcrumbService, titleService);
         this.areaName = "Custom API";
         this.setCommonItems();
@@ -69,11 +75,15 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
         });
     }
 
-    private saveService(data): void {
+    public saveService(data): void {
         this.showEditor = false;                
         this.customAPIService.saveService(data.item).then(res => {
             this.showMessageForResult(this.messagesService, res);
             this.load();            
         })
+    }
+
+    public showService(item: ApiService): void {
+        this.router.navigateByUrl(`admin/customapi/${item.ID}/details`);
     }
 }
