@@ -7933,6 +7933,44 @@ from	    TaxonomyType FAT
             return Company.ApiEndpoints.Where(x=>x.ServiceID == serviceId).ToList();
         }
 
+        [Route("custom/endpoint/{endpointId:int}")]
+        public ApiEndpoint GetCustomAPIServiceEndpoint(int endpointId)
+        {
+            return Company.ApiEndpoints.FirstOrDefault(x => x.ID == endpointId);
+        }
+
+        [Route("custom/endpoint/{endpointId:int}/versions")]
+        public List<ApiEndpointVersion> GetCustomAPIEndpointVersions(int endpointId)
+        {
+            return Company.ApiEndpointVersions.Where(x => x.EndpointID == endpointId).ToList();
+        }
+
+        [Route("custom/version/{versionId:int}/fields")]
+        public List<dynamic> GetCustomAPIVersionFields(int versionId)
+        {
+            var entity = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == versionId);
+
+            if(entity == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            
+            return Company.Query<dynamic>(@"select 
+	                                    eft.*,
+                                        ft.Name,
+                                        ft.Type
+                                    from api.entityfieldtype eft
+                                    inner join fieldtype ft on ft.id = eft.fieldtypeid                                    
+                                    where eft.entityid = @id", new { id = entity.ID }).ToList();
+        }
+
+        [Route("custom/version/{versionId:int}/uritypes")]
+        public List<ApiEntityUri> GetCustomAPIVersionUriTypes(int versionId)
+        {
+            var entity = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == versionId);
+
+            if (entity == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
+            return Company.ApiEntityUris.Where(x => x.EntityID == entity.ID).ToList();
+        }
+
         #endregion
     }
 } 

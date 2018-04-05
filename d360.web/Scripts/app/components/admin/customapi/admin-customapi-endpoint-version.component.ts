@@ -5,33 +5,25 @@ import { SurveysService } from '../../../services/surveys.service';
 import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
 import { CustomAPIService } from '../../../services/custom-api.service';
-import { ApiService, ApiEndpoint } from '../../../models/custom-api.model';
+import { ApiService, ApiEndpoint, ApiVersion } from '../../../models/custom-api.model';
 import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
-    selector: 'd3s-admin-api-endpoints',
+    selector: 'd3s-admin-api-endpoint-versions',
     providers: [CustomAPIService],
     template: `                                 
                         <div class="tile tile-detail">
-                            <header *ngIf="!showEditor && !showDelete">Endpoints
+                            <header *ngIf="!showEditor && !showDelete">Versions
                             <d3s-tile-actions [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
                                 <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="endpoints" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
-                                            <ng-template let-col let-item="rowData" pTemplate type="body">
-	                                            <a (click)="showEndpoint(item);">{{item.Name}}</a>                                 
-                                            </ng-template>
-                                    </p-column>
+                                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="versions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" >                                                                        
+                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                                    
                                     <p-column field="UriPrefix" header="Uri Segment" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
-                                        <ng-template pTemplate type="body" let-item="rowData">
-                                            <div [innerHtml]="item.Description"></div>
-                                        </ng-template>
-                                    </p-column>
+                                    <p-column field="MajorVersion" header="Major Version" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                                    <p-column field="MinorVersion" header="Minor Version" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'40px'}">
                                         <ng-template let-service="rowData" pTemplate type="body">
                                             <div class="RowTools">
@@ -41,28 +33,29 @@ import { Router, ActivatedRoute } from '@angular/router';
                                     </p-column>                                                                                    
                                 </p-dataTable>                                  
                             </span>             
-                            <d3s-dynamic-editor *ngIf="showEditor" [parentID]="service?.ID" [objectID]="selected?.ID" [objectType]="'Endpoint'" [title]="'Endpoint'" [selection]="selected" (saveClick)="saveEndpoint($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                            <d3s-dynamic-editor *ngIf="showEditor" [parentID]="service?.ID" [objectID]="selected?.ID" [objectType]="'Version'" [title]="'Version'" [selection]="selected" (saveClick)="saveVersion($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
                     </div>
                 
                 `
 })
 
-export class AdminCustomAPIEndpointsComponent extends BaseComponent implements OnInit {
-    @Input() service: ApiService;    
+export class AdminCustomAPIEndpointVersionsComponent extends BaseComponent implements OnInit {
+    @Input() endpoint: ApiEndpoint;
     public showEditor: boolean = false;
-    public endpoints: ApiEndpoint[] = [];
-    public selected: ApiEndpoint = null;
+    public versions: ApiVersion[] = [];
+    @Input() selected: ApiVersion = null;
+    @Output() selectedChange = new EventEmitter();
 
-    @Input() numberOfEndpoints: number = 0;
-    @Output() numberOfEndpointsChange = new EventEmitter();
-
+    @Input() numberOfVersions: number = 0;
+    @Output() numberOfVersionsChange = new EventEmitter();
+        
     constructor(
         protected customAPIService: CustomAPIService,
         protected messagesService: MessagesService,
         private route: ActivatedRoute,
         private router: Router,
     ) {
-        super();                
+        super();
     }
 
     ngOnInit(): void {
@@ -71,23 +64,23 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
 
     private load(): void {
         this.isLoading = true;
-        this.customAPIService.getEndpoints(this.service.ID).then(res => {
+        this.customAPIService.getEndpointVersions(this.endpoint.ID).then(res => {
+            this.versions = res;
+            if (this.versions && this.versions.length > 0) {
+                this.selected = this.versions[0];
+                this.selectedChange.emit(this.selected);
+            }
+            this.numberOfVersions = (res != null && res.length > 0) ? res.length : 0;
+            this.numberOfVersionsChange.emit(this.numberOfVersions);
             this.isLoading = false;
-            this.endpoints = res;
-            this.numberOfEndpoints = this.endpoints.length;
-            this.numberOfEndpointsChange.emit(this.numberOfEndpoints);
         });
     }
 
-    private saveEndpoint(data): void {
+    private saveVersion(data): void {
         this.customAPIService.saveEndpoint(data.item).then(res => {
             this.showMessageForResult(this.messagesService, res);
             this.load();
             this.showEditor = false;
-        })   
-    }
-
-    public showEndpoint(item: ApiEndpoint): void {
-        this.router.navigateByUrl(`admin/customapi/${this.service.ID}/details/${item.ID}/details`);
-    }
+        })
+    }        
 }

@@ -1043,6 +1043,10 @@
     <TypeScriptCompile Include="Scripts\app\authentication-connection-backend.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-measures.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-uris.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.component.ts" />

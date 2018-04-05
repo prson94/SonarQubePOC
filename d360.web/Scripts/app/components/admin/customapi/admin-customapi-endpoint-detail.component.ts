@@ -6,7 +6,7 @@ import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { CustomAPIService } from '../../../services/custom-api.service';
-import { ApiService } from '../../../models/custom-api.model';
+import { ApiService, ApiEndpoint, ApiVersion } from '../../../models/custom-api.model';
 import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -16,19 +16,27 @@ import { Router, ActivatedRoute } from '@angular/router';
                 <div class="row">
                     <div class="col s12">                    
                         <div class="tile tile-detail">
-                            <header>Service: {{service?.Name}}</header>
+                            <header>Endpoint: {{endpoint?.Name}}</header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <div class="row" *ngIf="!isLoading">
                                 <div class="col l6 s12">
                                     <div class="row">
                                         <div class="col l6 s12">
                                             <div class="FieldName">URI Segment</div>
-                                            <div>{{service?.UriPrefix}}</div>
+                                            <div>{{endpoint?.UriPrefix}}</div>
                                         </div>
                                         <div class="col l6 s12">
-                                            <div class="FieldName"># Endpoints</div>
-                                            <div>{{numberOfEndpoints}}</div>
+                                            <div class="FieldName"># Versions</div>
+                                            <div>{{numberOfVersions}}</div>
                                         </div>
+                                        <div class="col l6 s12">
+                                            <div class="FieldName">Service</div>
+                                            <div>{{service?.Name}}</div>
+                                        </div>
+                                        <div class="col l6 s12">
+                                            <div class="FieldName">Path so far</div>
+                                            <div>{{service?.UriPrefix}}/{{endpoint?.UriPrefix}}</div>
+                                        </div>                                        
                                         <div class="col s12">
                                             <div class="FieldName">Description</div>
                                             <div [innerHtml]="service.Description"></div>
@@ -36,28 +44,40 @@ import { Router, ActivatedRoute } from '@angular/router';
                                     </div>
                                 </div>
                                 <div class="col l6 s12">
-                                    &nbsp;<!-- service metrics chart goes here-->
+                                    &nbsp;<!-- endpoint service metrics chart goes here-->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>  
                 <div class="row" *ngIf="!isLoading">
-                    <div class="col s12">     
-                        <d3s-admin-api-endpoints [service]="service" [(numberOfEndpoints)]="numberOfEndpoints"></d3s-admin-api-endpoints>
+                    <div class="col l4 s12">     
+                        <d3s-admin-api-endpoint-versions [endpoint]="endpoint" [(selected)]="version" [(numberOfVersions)]="numberOfVersions"></d3s-admin-api-endpoint-versions>
+                    </div>
+                    <div class="col l8 s12" *ngIf="version!=null">
+                        <div class="row">
+                            <div class="col s12">
+                                <d3s-admin-api-endpoint-version-fields [version]="version"></d3s-admin-api-endpoint-version-fields>
+                            </div>
+                            <div class="col s12">
+                                <d3s-admin-api-endpoint-version-uritypes [version]="version"></d3s-admin-api-endpoint-version-uritypes>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 `
 })
 
-export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent implements OnInit, OnDestroy {
+export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent implements OnInit, OnDestroy {
 
     public service: ApiService = null;
+    public endpoint: ApiEndpoint = null;
     private sub: any;
     private serviceId: number;
+    private endpointId: number;
+    public numberOfVersions: number = 0;
+    public version: ApiVersion = null;    
 
-    public numberOfEndpoints: number = 0;
-    
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -68,25 +88,31 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
     ) {
         super(headerBreadcrumbService, titleService);
         this.areaName = "Custom API";
-        this.setCommonItems();        
+        this.setCommonItems();
     }
 
     ngOnInit(): void {
         this.sub = this.route.params.subscribe(params => {
             this.serviceId = +params['serviceId']; // (+) converts string 'id' to a number            
+            this.endpointId = +params['endpointId']; // (+) converts string 'id' to a number            
             this.isLoading = true;
             this.customAPIService.getService(this.serviceId).then(res => {
                 this.service = res;
-                this.isLoading = false;           
+                
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Administration'));
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Custom API', '/admin/customapi'));
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`));
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`, `/admin/customapi/${this.service.ID}/details`));
+                this.customAPIService.getEndpoint(this.endpointId).then(res => {
+                    this.endpoint = res;
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.endpoint.Name}`));
+                    this.isLoading = false;
+                });
             });
         });
     }
 
     ngOnDestroy() {
         this.sub.unsubscribe();
-    }    
+    }
 }

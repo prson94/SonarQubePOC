@@ -16,6 +16,10 @@ import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/sh
 import { AdminCustomAPIComponent } from './admin-customapi.component';
 import { AdminCustomAPIEndpointsComponent } from './admin-customapi-endpoint.component';
 import { AdminCustomAPIServiceDetailComponent } from './admin-customapi-service-detail.component';
+import { AdminCustomAPIEndpointDetailComponent } from './admin-customapi-endpoint-detail.component';
+import { AdminCustomAPIEndpointVersionsComponent } from './admin-customapi-endpoint-version.component';
+import { AdminCustomAPIEndpointVersionFieldsComponent } from './admin-customapi-endpoint-version-fields.component';
+import { AdminCustomAPIEndpointVersionUriTypesComponent } from './admin-customapi-endpoint-version-uris.component';
 
 import { AdminCustomAPIRoutingModule } from './admin-customapi.routes';
 
@@ -50,6 +54,10 @@ import {
         AdminCustomAPIComponent,   
         AdminCustomAPIEndpointsComponent,    
         AdminCustomAPIServiceDetailComponent,
+        AdminCustomAPIEndpointDetailComponent,
+        AdminCustomAPIEndpointVersionsComponent,
+        AdminCustomAPIEndpointVersionFieldsComponent,
+        AdminCustomAPIEndpointVersionUriTypesComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

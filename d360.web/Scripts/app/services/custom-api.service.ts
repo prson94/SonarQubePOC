@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { ApiService, ApiEndpoint } from '../models/custom-api.model';
+import { ApiService, ApiEndpoint, ApiVersion, ApiField, ApiUri } from '../models/custom-api.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -28,6 +28,34 @@ export class CustomAPIService extends BaseService {
         return this.http.get(`api/custom/service/${id}/endpoints`)
             .toPromise()
             .then(response => <ApiEndpoint[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getEndpoint(id: number): Promise<ApiEndpoint> {
+        return this.http.get(`api/custom/endpoint/${id}`)
+            .toPromise()
+            .then(response => <ApiEndpoint>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getEndpointVersions(id: number): Promise<ApiVersion[]> {
+        return this.http.get(`api/custom/endpoint/${id}/versions`)
+            .toPromise()
+            .then(response => <ApiVersion[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getEndpointVersionFields(id: number): Promise<ApiField[]> {
+        return this.http.get(`api/custom/version/${id}/fields`)
+            .toPromise()
+            .then(response => <ApiField[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getEndpointVersionUris(id: number): Promise<ApiUri[]> {
+        return this.http.get(`api/custom/version/${id}/uritypes`)
+            .toPromise()
+            .then(response => <ApiUri[]>response.json())
             .catch(err => this.handleError(err));
     }
     
