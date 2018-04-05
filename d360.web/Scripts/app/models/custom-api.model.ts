@@ -19,6 +19,7 @@ export class ApiVersion {
     UriPrefix: string;
     MajorVersion: number;
     MinorVersion: number;
+    EntityID: number;
 }
 
 export class ApiField {

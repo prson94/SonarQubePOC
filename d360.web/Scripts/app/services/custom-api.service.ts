@@ -66,6 +66,14 @@ export class CustomAPIService extends BaseService {
         return this.putDynamic(this.http, 'service', service);
     }
 
+    saveField(field: ApiField): Promise<JsonResult> {
+        return this.postDynamic(this.http, 'apifield', field);        
+    }
+
+    deleteField(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'apifield', id);
+    }
+
     saveEndpoint(endpoint: ApiEndpoint): Promise<JsonResult> {
         if (endpoint.ID == undefined || !endpoint.ID) {
             return this.postDynamic(this.http, 'endpoint', endpoint);

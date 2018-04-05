@@ -7940,9 +7940,15 @@ from	    TaxonomyType FAT
         }
 
         [Route("custom/endpoint/{endpointId:int}/versions")]
-        public List<ApiEndpointVersion> GetCustomAPIEndpointVersions(int endpointId)
+        public List<dynamic> GetCustomAPIEndpointVersions(int endpointId)
         {
-            return Company.ApiEndpointVersions.Where(x => x.EndpointID == endpointId).ToList();
+            return Company.Query<dynamic>(@"select 
+	                                    v.*,
+                                        e.ID as EntityID
+                                    from api.EndpointVersion v
+                                    inner join api.Entity e on v.id = e.endpointversionid
+                                    where v.endpointid = @id", new { id = endpointId }).ToList();
+            //return Company.ApiEndpointVersions.Where(x => x.EndpointID == endpointId).ToList();
         }
 
         [Route("custom/version/{versionId:int}/fields")]

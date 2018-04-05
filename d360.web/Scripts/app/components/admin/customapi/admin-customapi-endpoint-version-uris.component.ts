@@ -22,7 +22,12 @@ import { Router, ActivatedRoute } from '@angular/router';
                                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="uris" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected">                                                                        
                                     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                                    
                                     <p-column field="Format" header="Segment" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                                    <p-column field="UriType" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                    
+                                    <p-column field="UriType" header="Type" [sortable]="true" [filter]="!showSimpleFilter">
+                                        <ng-template let-row="rowData" pTemplate type="body">
+                                            <span *ngIf="row.UriType == 1">Collection</span>
+                                            <span *ngIf="row.UriType == 2">Singleton</span>                                            
+                                        </ng-template>
+                                    </p-column>                                    
                                     <p-column [style]="{width:'40px'}">
                                         <ng-template let-service="rowData" pTemplate type="body">
                                             <div class="RowTools">

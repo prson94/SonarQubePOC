@@ -13,7 +13,7 @@ import { Router, ActivatedRoute } from '@angular/router';
     providers: [CustomAPIService],
     template: `                                 
                         <div class="tile tile-detail">
-                            <header *ngIf="!showEditor && !showDelete">Fields for v{{version?.MajorVersion}}.{{version?.MinorVersion}}
+                            <header *ngIf="!showEditor && !showDelete && !showDelete">Fields for v{{version?.MajorVersion}}.{{version?.MinorVersion}}
                             <d3s-tile-actions [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -41,16 +41,23 @@ import { Router, ActivatedRoute } from '@angular/router';
                                                 <i *ngIf="!row.AllowSort" class="fa fa-times disabled" title="False"></i>                                            
                                         </ng-template>
                                     </p-column>            
-                                    <p-column [style]="{width:'40px'}">
-                                        <ng-template let-service="rowData" pTemplate type="body">
+                                 <!--   <p-column  [style]="{width:'35px'}">
+                                        <ng-template let-item="rowData" pTemplate type="body">
                                             <div class="RowTools">
-                                                <a style="cursor:pointer;" (click)="selected=service;showEditor=true"><i class="fa fa-pencil"></i></a>                                                                                        
+                                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
                                         </ng-template>
-                                    </p-column>                                                                                    
+                                </p-column>        -->
                                 </p-dataTable>                                  
                             </span>             
-                            <d3s-dynamic-editor *ngIf="showEditor" [parentID]="service?.ID" [objectID]="selected?.ID" [objectType]="'ApiField'" [title]="'Version Field'" [selection]="selected" (saveClick)="saveVersion($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                            <d3s-dynamic-editor *ngIf="showEditor" [parentID]="version?.ID" [objectID]="selected?.ID" [objectType]="'ApiField'" [title]="'Version Field'" [selection]="selected" (saveClick)="saveField($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                            <d3s-delete-form *ngIf="showDelete"
+                                                        [callback]="theDeleteCallback"
+                                                        [itemId]="selected?.FieldTypeID"
+                                                        method="callback"
+                                                        [prompt]="'Are you sure you want to delete the selected field?'"                                         
+                                                        (onCancel)="showDelete=false;"
+                                            ></d3s-delete-form>  
                     </div>                
                 `
 })
@@ -58,10 +65,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent implements OnInit {
     @Input() version: ApiVersion;
     public showEditor: boolean = false;
+    public showDelete: boolean = false;
     public fields: ApiField[] = [];
     public selected: ApiField = null;
-    
-        
+    theDeleteCallback: Function;
+            
     constructor(
         protected customAPIService: CustomAPIService,
         protected messagesService: MessagesService,
@@ -69,6 +77,7 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
         private router: Router,
     ) {
         super();
+        this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
     ngOnInit(): void {
@@ -84,10 +93,20 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
     }
 
     private saveField(data): void {
-        this.customAPIService.saveEndpoint(data.item).then(res => {
+        data.item.EntityID = this.version.EntityID;
+        this.customAPIService.saveField(data.item).then(res => {
             this.showMessageForResult(this.messagesService, res);
             this.load();
             this.showEditor = false;
         })
-    }        
+    }   
+
+    deleteItem(id: number) {
+        this.customAPIService.deleteField(id).
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);                
+                this.showDelete = false;
+                this.load();                
+            });
+    }
 }
