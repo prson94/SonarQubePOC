@@ -933,13 +933,14 @@ where   A.FusionQueryAttributeTypeID = @t
             }
                     
             var sql = @"
-                select 
-	                F.FormattedValue as FormattedValue,
-	                FT.FriendlyName as FriendlyName
-                from
-	                [dbo].field F
-	                inner join [dbo].fieldtype FT on (F.FieldTypeID = FT.ID)
-                where
+            select 
+                F.FormattedValue as FormattedValue,
+	            FT.FriendlyName as FriendlyName,  
+                FT.Type as DataType
+            from
+            [dbo].field F
+            inner join [dbo].fieldtype FT on (F.FieldTypeID = FT.ID)
+            where
 	                F.[objectType] = @objectType
 		                and
 	                F.[objectId] = @objectId;    
@@ -955,7 +956,9 @@ where   A.FusionQueryAttributeTypeID = @t
                 res.Add(new
                 {
                     Name = item.FriendlyName,
-                    Value = item.FormattedValue
+                    Value = item.FormattedValue,
+                    DataType =item.DataType,
+                    Type=0
                 });
             }
                         

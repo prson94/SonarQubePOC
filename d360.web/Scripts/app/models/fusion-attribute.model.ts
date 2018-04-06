@@ -1,4 +1,6 @@
-﻿
+﻿import { DetailField } from "./object-detail.model";
+
+
 export class FusionAttributePagedResults {
     total: number;
     results: any[];
@@ -12,7 +14,7 @@ export class FusionAttributeFieldValue {
 export class FusionAttributeValueDetails {
     Name: string;
     TextPath: string;
-    Fields: FusionAttributeFieldValue[];
+    Fields: DetailField[];
     FusionID: number;
     FusionAttributeTypeID: number;
     AssetID: number;

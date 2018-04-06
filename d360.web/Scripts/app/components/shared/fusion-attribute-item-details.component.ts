@@ -7,6 +7,7 @@ import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CoreModule } from './core.module';
 import { ButtonModule } from 'primeng/primeng';
+import { SharedObjectDetailsModule } from './objectdetails/shared-object-details.module';
 
 @Component({
     selector: 'd3s-fusion-attribute-item-details',
@@ -24,7 +25,10 @@ import { ButtonModule } from 'primeng/primeng';
                     </div>
                     <div *ngFor="let field of fusionAttributeValueDetails?.Fields" class="col l6 m6">
                         <div class="FieldName">{{field.Name}}</div>
-                        <div class="FieldContent scrollLargeText" [title]="field?.Value">{{field?.Value}}</div>
+                        <div class="FieldContent scrollLargeText">
+                             <object-detail-field [field]="field"></object-detail-field>
+                        </div>
+                        
                     </div>                    
                 </div>    
                 <div *ngIf="hasClose" class="row">
@@ -97,7 +101,7 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
         RouterModule,
 
         CoreModule,
-
+        SharedObjectDetailsModule,
         //prime
         ButtonModule,
     ]

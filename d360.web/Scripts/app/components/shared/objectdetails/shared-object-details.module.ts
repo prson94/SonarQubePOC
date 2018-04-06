@@ -49,7 +49,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
         ObjectDetailFieldComponent,
     ],
     exports: [
-        ObjectDetailComponent
+        ObjectDetailComponent,
+        ObjectDetailFieldComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
