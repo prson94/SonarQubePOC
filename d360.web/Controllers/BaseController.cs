@@ -880,43 +880,24 @@ namespace d360.web.Controllers
                                     if ( (isSubject && intersectType.ObjectCardinality != Cardinality.One) || (!isSubject && intersectType.SubjectCardinality != Cardinality.One))
                                         fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
 
-                                    var sql = "";
-
-                                    #region sql
+                                    var sql = $"select ObjectID as Value, DisplayValue as Text from AssetDetail where [Type] = '{obj}' and TypeID = {objID} order by DisplayValue";
 
                                     switch (obj)
                                     {
                                         case "ArtifactType":
-                                            sql = $"select ASS.ObjectID as Value, D.DisplayValue as Text from Asset ASS inner join AssetType ASST on ASS.AssetTypeID = ASST.ID and ASS.[Object] = 'Artifact' and ASST.ObjectID = {objID} cross apply GetAssetDisplayValueByID(ASS.ID) D order by D.DisplayValue";
+                                        case "PolicyType":
+                                        case "ReferenceItemType":
+                                        case "RuleType":
+                                        case "TaxonomyType":
+                                            sql = $"select A.ObjectID as Value, P.TextPath as Text from AssetWithType A cross apply GetAssetTextPathById(A.ID, '.') P where A.[Type] = '{obj}' and A.TypeID = {objID} order by P.TextPath";
                                             break;
                                         case "FusionAttributeType":
                                             sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";
                                             break;
-                                        case "PolicyType":
-                                            sql = $"select ID as Value, TextPath as Text from [Policy] where PolicyTypeID = {objID} order by TextPath";
-                                            break;
-                                        case "ReferenceItemType":
-                                            if (objID == 0)
-                                            {
-                                                sql = $"select ID as Value, Name as Text from [ReferenceItemType] order by Name";
-                                            }
-                                            else
-                                            {
-                                                sql = $"select ID as Value, DisplayValue as Text from [ReferenceItem] where ReferenceItemTypeID = {objID} order by DisplayValue";
-                                            }
-                                            break;
                                         case "ResourceType":
                                             sql = $"select ID as Value, LastName + ', ' + FirstName as Text from reporting.[Global_Resource] order by LastName + ', ' + FirstName";
                                             break;
-                                        case "RuleType":
-                                            sql = $"select ID as Value, DisplayValue as Text from [Rule] where RuleTypeID = {objID} order by DisplayValue";
-                                            break;
-                                        case "TaxonomyType":
-                                            sql = $"select ID as Value, TextPath as Text from Taxonomy where TaxonomyTypeID = {objID} order by TextPath";
-                                            break;
                                     }
-
-                                    #endregion sql
 
                                     var items = Company.Query<SelectListItem>(sql);
 
