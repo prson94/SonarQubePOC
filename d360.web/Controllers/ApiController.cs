@@ -3734,7 +3734,8 @@ SELECT  R.ResponsibilityTypeName,
         U.ResourceID, 
         'Resource' as ResourceObject, 
         'Preview' as ResourceItemContext, 
-        '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl 
+        '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
+        R.Context
 from    ResponsibilityDetails R
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.Status = 'Active' 
 where   R.Object = @type and R.ObjectID = @id";
@@ -3749,6 +3750,7 @@ where   R.Object = @type and R.ObjectID = @id";
                 gridFields.Add(new GridField { name = "SecurityAssetID", type = "number" });
                 gridFields.Add(new GridField { name = "SecurityAssetName", type = "lookup" });
                 gridFields.Add(new GridField { name = "SecurityAssetContext", type = "string" });
+                gridFields.Add(new GridField { name = "Context", type = "string" });
 
                 columns.Add(new GridColumn
                 {
@@ -4016,7 +4018,8 @@ select	RD.SecurityAsset,
 			when 'G' then 'Via Group'
 			when 'O' then 'Via Organization'
 			else ''
-		end as Via
+		end as Via,
+        RD.Context
 from	ResponsibilityDetails RD
 		inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @o and T.ObjectID = @id", new { resourceID, o = type.ToString(), id });
         }
@@ -4042,7 +4045,8 @@ select	RD.SecurityAsset,
 			when 'G' then 'Via Group'
 			when 'O' then 'Via Organization'
 			else ''
-		end as Via
+		end as Via,
+        RD.Context
 from	ResponsibilityDetails RD
 		inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID and T.Object = @o and T.ObjectID = @id", new { groupID, o = type.ToString(), id });
         }
@@ -4109,6 +4113,7 @@ from	ResponsibilityDetails RD
 select  R.ID, 
         R.ResponsibilityTypeID, 
         R.Name, 
+        R.Context,
         D.Name as ObjectName, 
         O.Name as ResponsibilityType 
 from    ResponsibilityTypeRelationRule R 

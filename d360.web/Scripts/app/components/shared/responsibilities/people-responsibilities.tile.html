@@ -16,7 +16,7 @@
                 <p-column field="ResponsibilityTypeName" header="Responsibility" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'200px'}" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="LastName" header="Resource" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter" [style]="{'min-width':'200px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID" >{{item.FirstName}} {{item.LastName}}</d3s-preview-tooltip>                        
+                        <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.FirstName}} {{item.LastName}}</d3s-preview-tooltip>
                     </ng-template>
                 </p-column>
                 <p-column field="SecurityAssetName" header="Via Group" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'200px'}" [filter]="!showSimpleFilter">
@@ -24,16 +24,26 @@
                         <div *ngIf="item.SecurityAsset != 'R'">{{item.SecurityAssetName}}</div>
                     </ng-template>
                 </p-column>
-                <p-column [style]="{'width':'28px'}">
+                <p-column field="Context" header="Context" [style]="{'min-width':'300px'}">
+                    <ng-template let-item="rowData" pTemplate type="body">
+                        <div>{{this.htmlDecode(item.Context)}}</div>
+                    </ng-template>
+                </p-column>
+                <p-column field="OverrideItemID" [hidden]="true">
+                    <ng-template let-item="rowData" pTemplate type="body">
+                        <div>{{item.OverrideItemID}}</div>
+                    </ng-template>
+                </p-column>
+                <p-column [style]="{'width':'40px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
                         <div *ngIf="!item.RuleName && hasRootUpdatePermissions()" class="RowTools">
-                            <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                            
+                            <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                         </div>
                     </ng-template>
                 </p-column>
-                <p-column [style]="{'width':'28px'}">
+                <p-column [style]="{'width':'40px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <div *ngIf="!item.RuleName && hasRootDeletePermissions()"  class="RowTools">                            
+                        <div *ngIf="!item.RuleName && hasRootDeletePermissions()" class="RowTools">
                             <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </ng-template>

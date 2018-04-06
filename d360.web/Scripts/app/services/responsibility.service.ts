@@ -48,5 +48,15 @@ export class ResponsibilityService extends BaseService implements IResponsibilit
             .toPromise()
             .then(response => <JsonResult>response.json())
             .catch(err=>this.handleError(err));
-    }    
+    }  
+
+    putResponsibility(responsibility: ResponsibilityItem): Promise<JsonResult> {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+        return this.http.put('form/responsibility', JSON.stringify(responsibility), { headers: headers })
+            .toPromise()
+            .then(response => <JsonResult>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

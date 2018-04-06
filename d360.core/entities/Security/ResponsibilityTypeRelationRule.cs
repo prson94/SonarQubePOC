@@ -25,6 +25,9 @@ namespace d360.core.entities
         [DataMember]
         public string Name { get; set; }
 
+        [DataMember]
+        public string Context { get; set; }
+
         private string _rawDefinition = "";
         [IgnoreDataMember]
         public string Definition

@@ -17,6 +17,8 @@ namespace d360.core.entities
         [DataMember]
         public int SecurityAssetID { get; set; }
 
+        [DataMember]
+        public string Context { get; set; }
 
         [IgnoreDataMember]
         public virtual ResponsibilityType ResponsibilityType { get; set; }

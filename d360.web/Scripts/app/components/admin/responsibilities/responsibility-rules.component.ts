@@ -109,4 +109,8 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
             }
         });        
     }
+
+    private htmlDecode(val: string): string {
+        return val ? String(val).replace(/<[^>]+>/gm, '') : '';
+    }
 }

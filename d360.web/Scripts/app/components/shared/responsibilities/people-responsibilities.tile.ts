@@ -16,6 +16,7 @@ import * as _ from 'lodash';
 
 export class PeopleResponsibilitiesTile extends BaseComponent implements OnChanges {
     @Input() assetID: number;
+    @Input() overrideItemID: number;
     @Input() title: string = "Responsibilities";
 
     responsibilities = new Array<ResponsibilityItemDetail>();
@@ -35,6 +36,9 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
             if (p == 'assetID') {
                 this.assetID = changes['assetID'].currentValue;
             }            
+            if (p == 'overrideItemID') {
+                this.overrideItemID = changes['overrideItemID'].currentValue;
+            }            
         }
 
         this.load();
@@ -48,7 +52,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         this.isLoading = true;
         
         this.responsibilityService.getResponsibilityDetail(this.assetID)
-            .then(data => {                                
+            .then(data => {  
                 this.responsibilities = data;
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;                
@@ -67,6 +71,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     add(): void {
         this.addingRow = new ResponsibilityItemDetail();
         this.addingRow.AssetID = this.assetID;
+        this.addingRow.OverrideItemID = this.overrideItemID;
         this.isAdding = true;
     }
 
@@ -92,4 +97,9 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         //event.order = Sort order, 1 ascending , -1 descending                        
         this.responsibilities = _.orderBy(this.responsibilities, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
+
+    private htmlDecode(val: string): string {
+        return val ? String(val).replace(/<[^>]+>/gm, '') : '';
+    }
+
 }

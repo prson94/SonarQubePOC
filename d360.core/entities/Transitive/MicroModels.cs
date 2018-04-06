@@ -205,6 +205,7 @@ namespace d360.core.entities
         public long AssetID { get; set; }
 
         public string SecurityAsset { get; set; }
+
         public int SecurityAssetID { get; set; }
     }
 

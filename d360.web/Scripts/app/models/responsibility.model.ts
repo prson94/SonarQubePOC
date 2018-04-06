@@ -21,6 +21,7 @@ export class ResponsibilityItem {
     AssetID: number;
     SecurityAsset: string;
     SecurityAssetID: number;
+    Context: string;
 }
 
 export class ResponsibilityItemDetail {
@@ -39,4 +40,5 @@ export class ResponsibilityItemDetail {
     SecurityAsset: string;
     SecurityAssetID: number;
     SecurityAssetName: string;
+    Context: string;
 }

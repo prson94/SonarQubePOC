@@ -14710,6 +14710,7 @@ order by TP.TextPath";
                     model.ResponsibilityTypeID = r.ResponsibilityTypeID;
                     model.SecurityAsset = r.SecurityAsset;
                     model.SecurityAssetID = r.SecurityAssetID;
+                    model.Context = r.Context;
 
                     Company.Update(model);
 
@@ -14726,6 +14727,37 @@ order by TP.TextPath";
 
                 return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { AssetID = model.AssetID });
             }
+        }
+
+        [HttpPut, Route("Responsibility")]
+        public JsonResult OverrideResponsibility(ResponsibilityTypeRelationOverrideItem r)
+        {
+            ResponsibilityTypeRelationOverrideItem model;
+
+            try
+            {
+                model = Company.GetById<ResponsibilityTypeRelationOverrideItem>(r.ID);
+                if (model == null) throw new NotFoundException("responsibility");
+
+                model.ResponsibilityTypeID = r.ResponsibilityTypeID;
+                model.SecurityAsset = r.SecurityAsset;
+                model.SecurityAssetID = r.SecurityAssetID;
+                model.Context = r.Context;
+
+                Company.Update(model);
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { AssetID = model.AssetID });
         }
 
         #endregion
@@ -15417,6 +15449,7 @@ order by DN.DisplayValue");
                 existing.Object = model.Object;
                 existing.ObjectID = model.ObjectID;
                 existing.ResponsibilityTypeID = model.ResponsibilityTypeID;
+                existing.Context = model.Context;
 
                 existing.SetRawFromDefinition();
 
