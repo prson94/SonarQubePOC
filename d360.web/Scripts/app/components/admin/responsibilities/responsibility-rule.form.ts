@@ -54,6 +54,9 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
+    public isThenTestLoading: boolean = false;
+    public isWhenTestLoading: boolean = false;
+
     private relations: ResponsibilityTypeRelation[] = [];
     private relation: ResponsibilityTypeRelation = new ResponsibilityTypeRelation();
     private model: ResponsibilityTypeRelationRule = new ResponsibilityTypeRelationRule();
@@ -231,14 +234,14 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     private testWhen(): Promise<void> {
 
-        this.isLoading = true;
+        this.isWhenTestLoading = true;
 
         let promises = [];
 
         this.responsibilityTypeService.testWhen(this.model)
             .then(d => {
                 this.WhenTestRows = d;
-                this.isLoading = false;
+                this.isWhenTestLoading = false;
             });
 
         return Promise.all(promises).then(() => { });
@@ -273,14 +276,14 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     private testThen(): Promise<void> {
 
-        this.isLoading = true;
+        this.isThenTestLoading = true;
 
         let promises = [];
 
         this.responsibilityTypeService.testThen(this.model)
             .then(d => {
                 this.ThenTestRows = d;
-                this.isLoading = false;
+                this.isThenTestLoading = false;
             });
 
         return Promise.all(promises).then(() => { });

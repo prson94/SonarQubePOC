@@ -118,7 +118,7 @@
                 </div>                
                 <div class="col l4 m5 s12">
                     <button pButton type="button" label="Test Filters" (click)="testWhen()"></button>
-                    <p-dataTable #dt [value]="WhenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px">
+                    <p-dataTable #dt [value]="WhenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px" loadingIcon="fa-spinner" [loading]="isWhenTestLoading">
                         <p-column field="Name" header="Name" sortable="true"></p-column>
                     </p-dataTable>
                 </div>
@@ -166,7 +166,7 @@
                 </div>
                 <div class="col l4 m5 s12">
                     <button pButton type="button" label="Test Filters" (click)="testThen()"></button>
-                    <p-dataTable #dt [value]="ThenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px">
+                    <p-dataTable #dt [value]="ThenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px" loadingIcon="fa-spinner" [loading]="isThenTestLoading">
                         <p-column field="Name" header="Security Asset" sortable="true"></p-column>
                     </p-dataTable>
                 </div>
