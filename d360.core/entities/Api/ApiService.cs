@@ -17,6 +17,10 @@ namespace d360.core.entities
         [DataMember]
         public string Description { get; set; }
 
+
+        [DataMember]
+        public int MaximumCacheAge { get; set; }
+
         [ForeignKey("ServiceID"), IgnoreDataMember]
         public virtual ICollection<ApiEndpoint> Endpoints { get; set; }
     }

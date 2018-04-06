@@ -19088,8 +19088,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             var list = new List<EditableField>();            
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
-                        
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "MaxAge", Name = "Cache Max-Age (seconds)", FieldDescription = "", FieldType = DataType.Number.ToString(), Validations = checkAndAddValidation("Number", "MaxAge", true, "(3[2-8][0-9]{2}|39[0-8][0-9]|399[0-9]|[4-9][0-9]{3}|[1-7][0-9]{4}|8[0-3][0-9]{3}|84000)",null,null, "Please enter a cache max-age value between 3,200-84,000 seconds") });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });            
+
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -19106,7 +19107,8 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "MaxAge", Name = "Cache Max-Age (seconds)", FieldDescription = "", FieldType = DataType.Number.ToString(), Value = a.MaximumCacheAge.ToString(), Validations = checkAndAddValidation("Number", "MaxAge", true, "(3[2-8][0-9]{2}|39[0-8][0-9]|399[0-9]|[4-9][0-9]{3}|[1-7][0-9]{4}|8[0-3][0-9]{3}|84000)", null,null, "Please enter a cache max-age value between 3,200-84,000 seconds") });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -19136,7 +19138,8 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 {
                     Name = name,
                     Description = parseTextField(form, "Description"),
-                    UriPrefix = prefix
+                    UriPrefix = prefix,
+                    MaximumCacheAge = parseIntField(form, "MaxAge")
                 };
 
                 Company.Add<ApiService>(service);
@@ -19170,6 +19173,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 model.Name = parseTextField(form, "Name");
                 model.UriPrefix = parseTextField(form, "URIPrefix");
                 model.Description = parseTextField(form, "Description");
+                model.MaximumCacheAge = parseIntField(form, "MaxAge");
 
                 Company.Update<ApiService>(model);
 

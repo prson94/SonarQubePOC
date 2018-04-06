@@ -27,11 +27,11 @@ import { Router, ActivatedRoute } from '@angular/router';
                                             </ng-template>
                                     </p-column>
                                     <p-column field="UriPrefix" header="Uri Segment" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
+                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">                                    
                                         <ng-template pTemplate type="body" let-item="rowData">
                                             <div [innerHtml]="item.Description"></div>
                                         </ng-template>
-                                    </p-column>
+                                    </p-column>                                    
                                     <p-column [style]="{width:'40px'}">
                                         <ng-template let-service="rowData" pTemplate type="body">
                                             <div class="RowTools">

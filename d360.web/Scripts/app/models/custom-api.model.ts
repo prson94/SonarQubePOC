@@ -3,6 +3,7 @@
     UriPrefix: string;
     Name: string;
     Description: string;
+    MaximumCacheAge: number;
 }
 
 export class ApiEndpoint {
@@ -10,7 +11,7 @@ export class ApiEndpoint {
     ServiceID: number;
     UriPrefix: string;
     Name: string;
-    Description: string;
+    Description: string;    
 }
 
 export class ApiVersion {

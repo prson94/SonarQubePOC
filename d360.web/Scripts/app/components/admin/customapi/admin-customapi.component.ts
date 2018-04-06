@@ -35,6 +35,7 @@ import { Router } from '@angular/router';
                                             <div [innerHtml]="item.Description"></div>
                                         </ng-template>
                                     </p-column>
+                                    <p-column field="MaximumCacheAge" header="Cache Max-Age" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'40px'}">
                                         <ng-template let-service="rowData" pTemplate type="body">
                                             <div class="RowTools">
