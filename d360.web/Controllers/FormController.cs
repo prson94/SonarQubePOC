@@ -7851,10 +7851,7 @@ namespace d360.web.Controllers
 
                 if (!Company.HasPermission(SystemObjects.FusionQueryAttributeType, model.ID, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (Company.Filter<FusionQueryAttribute>(i => i.FusionQueryAttributeTypeID == model.ID).Count() > 0)
-                    return jsonException(FormInfo.FusionAttributeType_Remove, HttpStatusCode.Conflict);
-
+                
                 Company.Delete<FusionQueryAttributeType>(model);
                 return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
