@@ -103,7 +103,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.rightSidebarService.showItem(this.itemsFollow);
                     this.hasRelations = new RightSidebarItem('Relations', 'hasRelations', ['fa-retweet'], `/sidebar/relationships/resource/${resourceId}`);
                     this.rightSidebarService.showItem(this.hasRelations);
-                    this.comments = new RightSidebarItem(this.resource.FirstName + "'s Comments", 'comments', ['fa-comments'], `/sidebar/comments/${this.resourceType}/${resourceId}/${this.resource.FirstName}`); 
+                    this.comments = new RightSidebarItem(this.resource.FirstName + "'s Comments", 'comments', ['fa-comments'], `/sidebar/comments/Resource/${resourceId}/${this.resource.FirstName}`); 
                     this.rightSidebarService.showItem(this.comments);
                 });
 
