@@ -963,13 +963,11 @@ on          (
                 T.ResponsibilityTypeID = S.ResponsibilityTypeID and 
                 T.AssetID = S.AssetID and 
                 T.SecurityAsset = 'R' and 
-                T.SecurityAssetID = S.ResourceID and
-                T.Context = S.Context 
-
+                T.SecurityAssetID = S.ResourceID
             )
 when not matched by target then
-    insert  (ResponsibilityTypeID, AssetID, SecurityAsset, SecurityAssetID, Context)
-    values  (S.ResponsibilityTypeID, S.AssetID, 'R', S.ResourceID, S.Context)
+    insert  (ResponsibilityTypeID, AssetID, SecurityAsset, SecurityAssetID)
+    values  (S.ResponsibilityTypeID, S.AssetID, 'R', S.ResourceID)
 output inserted.ID, S.ItemNumber, $action into #OwnershipMergeTableResult;
 
 update  T
