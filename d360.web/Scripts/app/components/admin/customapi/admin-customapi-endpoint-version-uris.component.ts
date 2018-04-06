@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SurveysService } from '../../../services/surveys.service';
@@ -59,6 +59,12 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
 
     ngOnInit(): void {
         this.load();
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if ((changes['version'] || this.version != null)) {
+            this.load();            
+        }
     }
 
     private load(): void {

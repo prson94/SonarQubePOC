@@ -331,9 +331,7 @@ namespace d360.web.Controllers
             switch ((objectType ?? "").ToUpper())
             {
                 case "ATTRIBUTEALLOCATION":
-                    return AttributeTypeRelation_EditFields((int)param[0], param[1].ToString(), (int)param[2]);
-                case "APIFIELD":
-                    return CustomAPIVersionField_EditFields((int)param[0], (int)param[1]);
+                    return AttributeTypeRelation_EditFields((int)param[0], param[1].ToString(), (int)param[2]);                
                 default: break;
             }
             throw new Exception("Invalid or non implemented editor type");
@@ -344,6 +342,8 @@ namespace d360.web.Controllers
         {
             switch ((o ?? "").ToUpper())
             {
+                case "APIFIELD":
+                    return CustomAPIVersionField_EditFields(oid);
                 case "ARTIFACT":
                     return Artifact_EditFields(oid);
                 case "ATTRIBUTE":
@@ -499,7 +499,9 @@ namespace d360.web.Controllers
             }
 
             switch ((objectType ?? "" ).ToUpper())
-            {                
+            {
+                case "APIFIELD":
+                    return EditApiField(form);
                 case "ARTIFACT":
                     return EditArtifact(form);
                 case "ATTRIBUTE":
@@ -19409,7 +19411,6 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             }
         }
 
-
         [HttpPut, ValidateInput(false), Route("EditServiceEndpointVersion")]
         public JsonResult EditServiceEndpointVersion(FormCollection form)
         {
@@ -19607,17 +19608,17 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        public JsonResult CustomAPIVersionField_EditFields(int id, int versionId)
+        public JsonResult CustomAPIVersionField_EditFields(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var entity = Company.ApiEntities.First(x => x.EndpointVersionID == versionId);
-
+                        
             var list = new List<EditableField>();
-            var a = Company.ApiEntityFieldTypes.Where(x => x.FieldTypeID == id && x.EntityID == entity.ID).FirstOrDefault();
+            var a = Company.ApiEntityFieldTypes.Where(x => x.ID == id).FirstOrDefault();
 
-            list.Add(new EditableField { FieldName = "EntityID", FieldType = DataType.Hidden.ToString(), Value = entity.ID.ToString() });
+            var entity = Company.ApiEntities.First(x => x.ID == a.EntityID);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             
             list.Add(new EditableField
             {
@@ -19628,17 +19629,18 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 Name = "Field",
                 FieldDescription = "",
                 FieldType = DataType.Lookup.ToString(),
-                Items = Company.FieldTypes.Where(x => x.ID == entity.ID).ToList()
+                Items = Company.FieldTypes.Where(x => x.AssetTypeID == entity.AssetTypeID).ToList()
                     .Select(i => new SelectListItem
                     {
                         Value = i.ID.ToString(),
-                        Text = i.FriendlyName
+                        Text = i.FriendlyName,
+                        Selected = a.FieldTypeID == i.ID
                     }).OrderBy(x => x.Text).ToList()
                 .ToList()
             });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "AllowSort", Name = "Allow Sort", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AllowSelect", Name = "Allow Select", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AllowFilter", Name = "Allow Filter", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "AllowSort", Name = "Allow Sort", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = a.AllowSort.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AllowSelect", Name = "Allow Select", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = a.AllowSelect.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AllowFilter", Name = "Allow Filter", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = a.AllowFilter.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -19689,25 +19691,19 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         
         public JsonResult DeleteApiField(FormCollection form)
         {
-            return null;
-           /* try
+            
+            try
             {
+                var id = parseIntField(form, "ID");
                 var o = Company.GetById<ApiEntityFieldType>(id);
                 if (o == null) throw new NotFoundException("api field");
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                o.State = State.Deleted;
-                Company.SaveOrUpdate(o);
-
-                dynamic custom = new
-                {
-                    title = o.Title,
-                    action = "delete"
-                };
-
-                return jsonSuccess($"api field successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+                                
+                Company.Delete<ApiEntityFieldType>(o);
+                
+                return jsonSuccess("api field successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -19717,8 +19713,40 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             {
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
-            }*/
+            }
         }
+                
+        public JsonResult EditApiField(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("field");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ApiEntityFieldType>(id);
+                if (model == null) throw new NotFoundException("api field");
+
+                model.FieldTypeID = parseIntField(form, "FieldTypeID");
+                model.AllowFilter = parseBooleanField(form, "AllowFilter");
+                model.AllowSelect = parseBooleanField(form, "AllowSelect");
+                model.AllowSort = parseBooleanField(form, "AllowSort");
+
+                Company.Update<ApiEntityFieldType>(model);
+                                
+                return jsonSuccess("Api Field successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
 
 
         #endregion

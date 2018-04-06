@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SurveysService } from '../../../services/surveys.service';
@@ -40,20 +40,27 @@ import { Router, ActivatedRoute } from '@angular/router';
                                                 <i *ngIf="row.AllowSort" class="fa fa-check enabled" title="True"></i>
                                                 <i *ngIf="!row.AllowSort" class="fa fa-times disabled" title="False"></i>                                            
                                         </ng-template>
-                                    </p-column>            
-                                 <!--   <p-column  [style]="{width:'35px'}">
-                                        <ng-template let-item="rowData" pTemplate type="body">
-                                            <div class="RowTools">
-                                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                            </div>
-                                        </ng-template>
-                                </p-column>        -->
+                                    </p-column> 
+                                    <p-column  [style]="{width:'35px'}">
+                                            <ng-template let-item="rowData" pTemplate type="body">
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                    
+                                                </div>
+                                            </ng-template>
+                                    </p-column> 
+                                     <p-column  [style]="{width:'35px'}">
+                                            <ng-template let-item="rowData" pTemplate type="body">
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                                </div>
+                                            </ng-template>
+                                    </p-column> 
                                 </p-dataTable>                                  
                             </span>             
                             <d3s-dynamic-editor *ngIf="showEditor" [parentID]="version?.ID" [objectID]="selected?.ID" [objectType]="'ApiField'" [title]="'Version Field'" [selection]="selected" (saveClick)="saveField($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
                             <d3s-delete-form *ngIf="showDelete"
                                                         [callback]="theDeleteCallback"
-                                                        [itemId]="selected?.FieldTypeID"
+                                                        [itemId]="selected?.ID"
                                                         method="callback"
                                                         [prompt]="'Are you sure you want to delete the selected field?'"                                         
                                                         (onCancel)="showDelete=false;"
@@ -62,7 +69,7 @@ import { Router, ActivatedRoute } from '@angular/router';
                 `
 })
 
-export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent implements OnInit {
+export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() version: ApiVersion;
     public showEditor: boolean = false;
     public showDelete: boolean = false;
@@ -82,6 +89,12 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
 
     ngOnInit(): void {
         this.load();
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if ((changes['version'] && this.version != null)) {
+            this.load();            
+        }
     }
 
     private load(): void {

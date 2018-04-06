@@ -23,6 +23,7 @@ export class ApiVersion {
 }
 
 export class ApiField {
+    ID: number;
     Name: string;
     Type: string;
     AllowSelect: boolean;

@@ -6,12 +6,12 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), Table("EntityFieldType", Schema = "api")]
-    public class ApiEntityFieldType : BaseObject
+    public class ApiEntityFieldType : BaseIntObject, IIntObject
     {
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember]
         public int EntityID { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember]
         public int FieldTypeID { get; set; }
 
         [DataMember]

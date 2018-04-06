@@ -67,7 +67,10 @@ export class CustomAPIService extends BaseService {
     }
 
     saveField(field: ApiField): Promise<JsonResult> {
-        return this.postDynamic(this.http, 'apifield', field);        
+        if (field.ID == undefined || !field.ID) {
+            return this.postDynamic(this.http, 'apifield', field);
+        }
+        return this.putDynamic(this.http, 'apifield', field);        
     }
 
     deleteField(id: number): Promise<JsonResult> {
