@@ -23,11 +23,9 @@
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
             <p-column field="Name" header="Name" sortable="true" [style]="{ 'min-width': '15%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="ObjectName" header="Type" sortable="true" [style]="{ 'width': '15%' }" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="Context" header="Context" [style]="{ 'min-width': '60%' }">
-                <ng-template let-col let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">
-                        <a><i>{{ this.htmlDecode(item.Context) }}</i></a>
-                    </div>
+            <p-column field="Context" header="Context" [style]="{ 'min-width': '60%' }" sortable="false">
+                <ng-template let-col let-item="rowData" pTemplate type="body">                   
+                        <span [innerHtml]="item.Context"></span>                    
                 </ng-template>
             </p-column>
             <p-column [style]="{ 'width': '50px' }" *ngIf="showEditButton">
