@@ -701,7 +701,7 @@ namespace d360.web.Controllers
                         items.InsertRange(0, targetKeyFields);
                     }
 
-                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString())
+                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString() || targetType == SystemObjects.ResourceType.ToString())
                     {
                         columns.Add(
                             new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
@@ -2824,6 +2824,23 @@ end",
                             fc.objectidfield = $"{dataField}_ObjectID";
                             fc.urlfield = $"{dataField}_Url";
                         }
+                        else if (i.FieldTypeName.ToLower() == "name") //special case for name
+                        {
+                            fc.datafieldtype = "lookup";
+                            fc.datafieldtype = "lookup";
+                            fc.contextfield = $"{dataField}_Context";
+                            fc.objectfield = $"{dataField}_Object";
+                            fc.objectidfield = $"{dataField}_ObjectID";
+                            fc.urlfield = $"{dataField}_Url";
+                            // Add the fields that you need to create link in Angular component.
+
+                            var obj = i.Object.Replace("Type", "");
+
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{obj}'", datafield = $"{dataField}_Object" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('{obj}', A{pos}.{i.Object}ID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                        }
 
                         //Add here, only after you determine if this should be a link ABOVE.
                         columnModels.Add(fc);
@@ -2898,50 +2915,26 @@ end",
                 {
                     #region DEFAULT
 
-                    if (i.FieldTypeName.ToLower() == "textpath")
+                    string overrideDisplayColumn = "";
+
+                    if (i.FieldTypeID == 0)
                     {
-                        var oc = new ComplexColumnModel
+                        if (i.FieldTypeName.ToLower() == "textpath")
                         {
-                            DisplayColumn = $@"(select T.TextPath from Asset a
+                            overrideDisplayColumn = $@"(select T.TextPath from Asset a
                                 cross apply dbo.GetAssetTextPathById(a.ID, '/') T
-                                where a.[Object] = '{join.Object.Replace("Type","")}' and a.[ObjectID] = A{pos}.ID)",
-                            SortColumn = i.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"A{pos}TextPath") : string.Empty,
-                            datafield = $"{dataField}",
-                            text = i.OverrideDisplayName ?? i.FieldTypeName,
-                            OutputColumn = true,
-                            Width = i.Width
-                        };
-                        setColumnTypeInfo(ft, i, oc);
-                        columnModels.Add(oc);
-                    }
-                    else if (i.FieldTypeName.ToLower() == "displayvalue" || i.FieldTypeName.ToLower() == "name")
-                    {
-                        var oc = new ComplexColumnModel
+                                where a.[Object] = '{join.Object.Replace("Type", "")}' and a.[ObjectID] = A{pos}.ID)";
+                        }
+                        else if (i.FieldTypeName.ToLower() == "displayvalue" || i.FieldTypeName.ToLower() == "name")
                         {
-                            DisplayColumn = $@"(select D.DisplayValue from Asset a
+                            overrideDisplayColumn = $@"(select D.DisplayValue from Asset a
                                 cross apply dbo.GetAssetDisplayValueById(a.ID) D
-                                where a.[Object] = '{join.Object.Replace("Type", "")}' and a.[ObjectID] = A{pos}.ID)",
-                            SortColumn = i.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"A{pos}DisplayValue") : string.Empty,
-                            datafield = $"{dataField}",
-                            text = i.OverrideDisplayName ?? i.FieldTypeName,
-                            OutputColumn = true,
-                            Width = i.Width,
-                            contextfield = $"{dataField}_Context",
-                            objectfield = $"{dataField}_Object",
-                            objectidfield = $"{dataField}_ObjectID",
-                            urlfield = $"{dataField}_Url"
-                        };
-                        setColumnTypeInfo(ft, i, oc);
-                        oc.datafieldtype = "lookup"; //must be done after function call above.
-                        columnModels.Add(oc);
-
-                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
-                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{join.Object.Replace("Type", "")}'", datafield = $"{dataField}_Object" });
-                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                        columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('{join.Object.Replace("Type", "")}',{(join.Object.Contains("Type") ? "A" + pos + '.' + join.Object + "ID" : "null")} , A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                where a.[Object] = '{join.Object.Replace("Type", "")}' and a.[ObjectID] = A{pos}.ID)";
+                        }
 
                     }
-                    else if (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID)
+
+                    if (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID)
                     {
                         #region IntersectType field
 
@@ -2964,11 +2957,14 @@ end",
                         #region ObjectType field
 
                         string objectDisplayColumn = $"A{pos}.{i.FieldTypeName}";
+
                         if (ft != null)
                         {
                             if (ft.Type == "Boolean")
                                 objectDisplayColumn = $"lower(A{pos}.{i.FieldTypeName}) as {i.FieldTypeName}";
                         }
+                        else if (overrideDisplayColumn != null)
+                            objectDisplayColumn = overrideDisplayColumn;
 
                         var objectFriendlyName = i.OverrideDisplayName ?? i.FieldTypeName;
                         var objectSortColumn = (i.SortOrder > 0) ? getFieldTypeColumnString(ft?.Type ?? "", objectDisplayColumn) : string.Empty;
