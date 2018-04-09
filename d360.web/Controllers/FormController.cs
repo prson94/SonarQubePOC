@@ -4162,6 +4162,13 @@ namespace d360.web.Controllers
                     throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
 
+           
+                if (ft.Type == "Lookup" && ft.AllowMultipleValues && !model.FieldType.AllowMultipleValues &&
+                            Company.Fields.Where(x => x.FieldTypeID == ft.ID).Where(x => x.Value.Contains(",")).ToList().Count() > 0)
+                {
+                    throw new ConflictException("Error Occurred!", FormInfo.FieldType_List_Error_Multiple_Items_Used);
+                }
+
                 // Static fields
                 var oldType = ft.Type;
 

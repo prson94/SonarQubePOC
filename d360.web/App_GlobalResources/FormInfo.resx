@@ -360,6 +360,9 @@
   <data name="FieldType_Error_Used" xml:space="preserve">
     <value>This field type is in use and cannot be removed.</value>
   </data>
+  <data name="FieldType_List_Error_Multiple_Items_Used" xml:space="preserve">
+    <value>You cannot change the List to Single Item, there are existing attributes based on it.</value>
+  </data>
   <data name="FusionAttributeType" xml:space="preserve">
     <value>Fusion Attribute</value>
   </data>

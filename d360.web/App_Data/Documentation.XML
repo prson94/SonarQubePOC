@@ -1198,6 +1198,11 @@
               Looks up a localized string similar to This field type is in use and cannot be removed..
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.FieldType_List_Error_Multiple_Items_Used">
+            <summary>
+              Looks up a localized string similar to You cannot change the List to Single Item, there are existing attributes based on it..
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.FusionAttributeType">
             <summary>
               Looks up a localized string similar to Fusion Attribute.

@@ -790,6 +790,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You cannot change the List to Single Item, there are existing attributes based on it..
+        /// </summary>
+        public static string FieldType_List_Error_Multiple_Items_Used {
+            get {
+                return ResourceManager.GetString("FieldType_List_Error_Multiple_Items_Used", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fusion Attribute.
         /// </summary>
         public static string FusionAttributeType {
