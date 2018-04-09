@@ -429,9 +429,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         }
     }
 
-    private toggleDetail()
+    private toggleDetail(showDetail?: boolean)
     {
-        this.showDetail = !this.showDetail;
+        this.showDetail = showDetail == null ? !this.showDetail : showDetail;
 
         if (this.showDetail) {
             this.overlayWidth = 700;
@@ -523,6 +523,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private toggleReadOnly(readonly?: boolean) {
         if (readonly != null) this.readonly = readonly;
+        else this.readonly = !this.readonly;
         //console.log('toggelReadOnly', this.readonly);
         let dt = this.diagram.toolManager.diagram
         dt.allowDelete = !this.readonly;
@@ -538,9 +539,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.loadMenuItems();
 
-        if (this.readonly == false)
+        if (this.readonly == false) {
+            this.toggleDetail(false);
             this.loadIntersectTypes()
                 .then(() => this.loadObjectTypes());
+        } else {
+            this.toggleDetail(true);
+        }
 
     }
 

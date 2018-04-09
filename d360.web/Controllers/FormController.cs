@@ -10994,6 +10994,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
 
             var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
+            
             var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
 	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
 	                    {0} + T.[Name] as [Text] 
@@ -11007,7 +11008,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                                     inner join metrics.map m on m.id = c.mapid
                                     where c.mapid = @id", new { id }).ToList();
 
-            
+            items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+            objectTypes.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+
             return new JsonNetResult
             {
                 Data = new
