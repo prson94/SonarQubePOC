@@ -6776,6 +6776,7 @@ where    A.RuleID = @id", new { id });
 		                        AST.Name as TypeName,
 		                        T.HasTechnicalRelationships
                         from	[Intersect] I
+                                inner join IntersectType IT on IT.ID = I.IntersectTypeID
 		                        {assetJoin}
 		                        cross apply (
 					                        select	case 
