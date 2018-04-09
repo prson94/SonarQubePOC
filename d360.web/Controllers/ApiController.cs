@@ -2915,7 +2915,9 @@ end",
                 {
                     #region DEFAULT
 
-                    string overrideDisplayColumn = "";
+                    string overrideDisplayColumn = null;
+                    string @object = join.Object.Replace("Type", "");
+                    string idColumn = @object == "Resource" ? "ResourceID" : "ID";
 
                     if (i.FieldTypeID == 0)
                     {
@@ -2923,13 +2925,13 @@ end",
                         {
                             overrideDisplayColumn = $@"(select T.TextPath from Asset a
                                 cross apply dbo.GetAssetTextPathById(a.ID, '/') T
-                                where a.[Object] = '{join.Object.Replace("Type", "")}' and a.[ObjectID] = A{pos}.ID)";
+                                where a.[Object] = '{@object}' and a.[ObjectID] = A{pos}.{idColumn})";
                         }
                         else if (i.FieldTypeName.ToLower() == "displayvalue" || i.FieldTypeName.ToLower() == "name")
                         {
                             overrideDisplayColumn = $@"(select D.DisplayValue from Asset a
                                 cross apply dbo.GetAssetDisplayValueById(a.ID) D
-                                where a.[Object] = '{join.Object.Replace("Type", "")}' and a.[ObjectID] = A{pos}.ID)";
+                                where a.[Object] = '{@object}' and a.[ObjectID] = A{pos}.{idColumn})";
                         }
 
                     }

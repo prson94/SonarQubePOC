@@ -128,12 +128,12 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
 
                     //add timezone offset
                     if (this.model.Map.EffectiveStartDate != null) {
-                        this.model.Map.EffectiveStartDate = new Date(this.model.Map.EffectiveStartDate);
+                        this.model.Map.EffectiveStartDate = new Date(<string>this.model.Map.EffectiveStartDate);
                         this.model.Map.EffectiveStartDate.setMinutes(this.model.Map.EffectiveStartDate.getMinutes() + this.model.Map.EffectiveStartDate.getTimezoneOffset());
                     }
                         
                     if (this.model.Map.EffectiveEndDate != null) {
-                        this.model.Map.EffectiveEndDate = new Date(this.model.Map.EffectiveEndDate);
+                        this.model.Map.EffectiveEndDate = new Date(<string>this.model.Map.EffectiveEndDate);
                         this.model.Map.EffectiveEndDate.setMinutes(this.model.Map.EffectiveEndDate.getMinutes() + this.model.Map.EffectiveEndDate.getTimezoneOffset());
                     }
 
@@ -181,9 +181,9 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
         this.isLoading = true;
 
         if (this.model.Map.EffectiveEndDate != null)
-            this.model.Map.EffectiveEndDate = new Date(this.model.Map.EffectiveEndDate).toISOString();
+            this.model.Map.EffectiveEndDate = new Date(<string>this.model.Map.EffectiveEndDate).toISOString();
         if (this.model.Map.EffectiveStartDate != null)
-            this.model.Map.EffectiveStartDate = new Date(this.model.Map.EffectiveStartDate).toISOString();
+            this.model.Map.EffectiveStartDate = new Date(<string>this.model.Map.EffectiveStartDate).toISOString();
 
         this.metricsService.saveMap(this.model)
             .then(r => {
@@ -202,6 +202,9 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
         if (this.objectType != null && this.objectType.Value != null && this.objectType.Value.indexOf('|') > -1) {
             this.model.Map.Object = this.objectType.Value.split('|')[0];
             this.model.Map.ObjectID = +this.objectType.Value.split('|')[1];
+        } else {
+            this.model.Map.Object = null;
+            this.model.Map.ObjectID = null;
         }
     }
 
