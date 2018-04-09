@@ -885,7 +885,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
                     return false;
                 }
 
-                intersect.Subject = type.ToString();
+                intersect.Subject = type.ToString().Replace("Type","");
                 intersect.SubjectID = parentID;
 
                 return SaveOrUpdate<Intersect>(intersect) > 0;
