@@ -13931,10 +13931,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                             break;
                         case "LookupType":
                             sql = $@"select C.Object, C.ObjectID, O.Name from [LookupType] O inner join {sql} order by O.Name";
-                            break;
-                        case "PolicyType":
-                            sql = $@"select C.Object, C.ObjectID, O.TextPath as Name from [Policy] O inner join {sql} order by O.TextPath";
-                            break;
+                            break;                            
                         case "ReferenceItemType":
                             sql = $@"select C.Object, C.ObjectID, O.Name from [ReferenceItemType] O inner join {sql} order by O.Name";
                             break;
@@ -13944,6 +13941,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                         case "RuleType":
                             sql = $@"select C.Object, C.ObjectID, O.DisplayValue AS Name from [Rule] O inner join {sql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
+                        case "PolicyType":
                         case "TaxonomyType":
                             sql = $@"
 select	A.Object,
@@ -13956,7 +13954,7 @@ where   A.Type = @targetType
         and A.[State] = 1 
         and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID) 
 order by TP.TextPath"; 
-                            //select C.Object, C.ObjectID, O.TextPath as Name from Taxonomy O inner join {sql} order by O.TextPath
+                            
                             break;
                     }
                     break;
