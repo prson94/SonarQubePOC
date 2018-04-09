@@ -474,7 +474,8 @@ namespace d360.web.Controllers
                     break;
                 case "Boolean":
                     columnType = GridColumn.COLUMN_TYPE_CHECKBOX;
-                    filterType = GridColumn.FILTER_TYPE_CHECKBOX;
+                    filterType = GridColumn.FILTER_TYPE_LIST;
+                    filterItems = new List<string> { "True", "False" };
                     break;
             }
 

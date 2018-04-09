@@ -46,8 +46,8 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                                 <p-multiSelect name="owners" [options]="ownerValues" [style]="{width:'100%'}" [ngModel]="filter?.Data" (ngModelChange)="filter.Data = $event"></p-multiSelect>                                
                             </span>
                             <span *ngSwitchDefault>
-                                <span  [ngSwitch]="filter.Field?.Data?.columntype">
-                                    <span *ngSwitchCase="'dropdownlist'">
+                                <span  [ngSwitch]="filter.Field?.Data?.filtertype">
+                                    <span *ngSwitchCase="'list' || 'checkedlist'"   >
                                         <select [name]="'FilterValue_' + index" [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event" required style="width:100%;" placeholder="Choose a field">                                            
                                             <option *ngFor="let p of filter.Field?.Data?.filteritems" [value]="p">{{p}}</option>
                                         </select>
@@ -229,7 +229,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     }
 
     private changeFilterField(target, filter) {             
-        
+    
         if (target.Type == FilterFieldType.Field) {
             filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
