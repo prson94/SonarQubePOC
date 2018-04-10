@@ -2741,8 +2741,10 @@ order by    rnk, [Name]";
                 if (i.FieldTypeID > 0 && ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || (join.Object == i.Object && join.ObjectID == i.ObjectID)))
                 {
                     #region IF FieldTypeID has value
-
-                    ft = fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID);
+                    if (i.FieldTypeName.StartsWith("Related Item~")) //special case, these records use FieldTypeID to store an IntersectTypeID and there can be overlap
+                        ft = null;
+                    else
+                        ft = fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID);
 
                     if (ft != null)
                     {
