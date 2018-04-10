@@ -21,14 +21,14 @@ import { StateService } from '../../services/state.service';
                     <span *ngIf="!isLoading && !showEditor">
                         <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
                         <p-dataTable #dt resizableColumns="true" columnResizeMode="fit" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="stateService.fusionFilters.rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                        
-                           <p-column [style]="{width:'30px'}">
+                           <p-column [style]="{width:'30px',cursor:'default'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selectItem(item)" title="details"><i class="fa fa-info" aria-hidden="true"></i></a> 
                                         </div>
                                     </ng-template>
                             </p-column>                                                        
-                           <p-column [style]="{width:'30px'}">
+                           <p-column [style]="{width:'30px',cursor:'default'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" *ngIf="item.IsEditable">
                                             <a style="cursor:pointer;" (click)="fusionAttribute=item;showEditor=true;fusionAttributeChange.emit(fusionAttribute);"><i class="fa fa-pencil"></i></a>
@@ -47,10 +47,10 @@ import { StateService } from '../../services/state.service';
                                     </p-column>
                                 </ng-template>
                                 <ng-template #elseContent>
-                                    <p-column  [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
+                                    <p-column  [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px','cursor':'default'}">
                                         <ng-template let-item="rowData" pTemplate type="body">
-                                            <a *ngIf="first && item[column.datafield]" (click)="selectItem(item)">{{item[column.datafield]}}</a>
-                                            <span *ngIf="!first && item[column.datafield]" [innerHtml]="item[column.datafield]"></span>
+                                            <a *ngIf="item[column.datafield]" (click)="selectItem(item)">{{item[column.datafield]}}</a>
+                                           
                                         </ng-template>
                                     </p-column>
                                 </ng-template>
