@@ -133,6 +133,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
     private decPatternError: string = "You have not Input a Valid Decimal Number!";
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
+    private hasCascadeLoaded: boolean = false;
 
     constructor(
         private cascadeService: CascadeService,
@@ -146,15 +147,23 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
         this.sub = this.cascadeService.cascadeMessage$.subscribe(
             casc => {
                 if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
-
                     if (casc.parentListItemId != null && casc.parentListItemId.length > 0) {
                         //load the values for the list that is a child                    
-                        this.field.Items = [];
+                        this.field.Items = [];                        
                         return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).then(res => {
+                            
                             this.field.Items = res;
-
+                            if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
+                                this.field.Value = null;                                
+                            }                            
+                            this.hasCascadeLoaded = true;
+                            this.listItemChange.emit({ field: this.field, value: this.field.Value });                                
                             this.ref.markForCheck();
                         })
+                    }
+                    else {
+                        this.field.Value = null;
+                        this.listItemChange.emit({ field: this.field, value: null });    
                     }
                 }
             });
@@ -187,7 +196,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
             this.colorValue = this.field.Value;
         }
 
-        if (this.field.FieldType == 'Lookup') {
+        if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
             window.setTimeout(() => {                
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
             }, 250);            

@@ -324,8 +324,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         var value = event.value;
         if (Array.isArray(event.value)) {
             value = event.value.join();
-        }       
-
+        }
+        
         this.fields.forEach(editorField => {            
             if (editorField.ParentFieldTypeID == field.FieldTypeID) {                
                 this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);        
