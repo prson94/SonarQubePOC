@@ -1017,8 +1017,11 @@ namespace d360.web.Controllers
                                 #endregion
 
                                 // Save current place in the process.
+                                //TOU is handled after login now, so skip those steps
                                 registration.Step = RegisterStep.TermsOfUseValidated;
                                 Company.Update(registration);
+                                model.Step = registration.Step;
+                                model.Message = "Thank you for completing registration. You may now <a href='/'>sign into Data3Sixty</a>.";
 
                                 return View(model);
                             }
