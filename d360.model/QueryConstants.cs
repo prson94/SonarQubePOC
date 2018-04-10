@@ -1472,14 +1472,13 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 select 
 	                i.Object, 
 	                i.ObjectID, 
-	                coalesce(d.[Name],fa.[Name]) as [Name],
-	                coalesce(d.ObjectTypeName, fat.[Name], case when i.[Object] = 'ReferenceItemType' then 'Reference List' else null end) as ObjectTypeName,
-					d.Url  
+	                d.[DisplayValue] as [Name],
+	                coalesce(d.TypeName, case when i.[Object] = 'ReferenceItemType' then 'Reference List' else null end) as ObjectTypeName,
+					u.Url  
                 from
 	                Shoppingcartitem i
-                left join cache.ObjectDetails d on d.ObjectID = i.ObjectID and d.[Object] = i.[Object]
-                left join fusionattribute fa on fa.ID = i.ObjectID and i.[Object] = 'FusionAttribute'
-                left join fusionattributetype fat on fat.id = fa.FusionAttributeTypeID
+                left join assetdetail d on d.id = i.[Objectid]                
+				cross apply getasseturl(d.Type,d.TypeID,d.ObjectID) u
                 where 
 	                i.ShoppingCartID = @id";
 
