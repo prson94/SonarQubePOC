@@ -12,12 +12,12 @@
             </div>
             <div class="col l7 m7 s12">
                 <div id='NameTip' class="FieldNameRequired">Name</div>
-                <input [ngModelOptions]="{standalone: true}" required name="name" pInputText type="text" [(ngModel)]="model.Name" style="width: 98%; display: block;" #Name="ngModel" />
+                <input required name="name" pInputText type="text" [(ngModel)]="model.Name" style="width: 98%; display: block;" #Name="ngModel" />
                 <div [hidden]="Name.valid || Name.pristine">Friendly name is required</div>
             </div>
             <div class="col l5 m5 s12">
                 <div id='TypeTip' class="FieldNameRequired">Selected Type</div>
-                <p-dropdown [ngModelOptions]="{standalone: true}" required name="objecttype" [options]="objectTypes" [ngModel]="model.ObjectString" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadObjectType($event.value)" #objectType="ngModel"></p-dropdown>
+                <p-dropdown  required name="objecttype" [options]="objectTypes" [ngModel]="model.ObjectString" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadObjectType($event.value)" #objectType="ngModel"></p-dropdown>
                 <div [hidden]="objectType.valid || objectType.pristine">Object type is required</div>
             </div>
             <div class="row">
@@ -135,7 +135,8 @@
             <div class="row" *ngIf="model.Object">
                 <div class="col s12 FieldNameRequired">Security Object Type</div>
                 <div class="col l8 m7 s12">
-                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="thenObjectTypes" [(ngModel)]="model.StructuredDefinition.Then.Object" [style]="{ 'width' : '100%' }" (onChange)="loadThenFilterOptions($event.value)"></p-dropdown>
+                    <p-dropdown required name="thenObjectType" [options]="thenObjectTypes" [(ngModel)]="model.StructuredDefinition.Then.Object" [style]="{ 'width' : '100%' }" (onChange)="loadThenFilterOptions($event.value)" #thenObjectType="ngModel"></p-dropdown>
+                    <div [hidden]="thenObjectType.valid || thenObjectType.pristine">Security Object Type is required</div>
                 </div>
             </div>
             <div class="row" *ngIf="model.Object">
