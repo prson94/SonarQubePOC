@@ -4688,7 +4688,7 @@ namespace d360.web.Controllers
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
                         break;
                     #endregion
-                    case "ReferenceItemListFromRelationship":
+                    case "RefListRelationship": // "ReferenceItemListFromRelationship":
                         #region
                         ft.LookupObjectType = model.FieldType.LookupObjectType;
                         ft.LookupObjectID = model.FieldType.LookupObjectID;

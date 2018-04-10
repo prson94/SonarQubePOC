@@ -138,7 +138,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
                                 this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
                             break;
-                        case "ReferenceItemListFromRelationship":
+                        case "RefListRelationship":
                             if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
                                 this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
                             break;

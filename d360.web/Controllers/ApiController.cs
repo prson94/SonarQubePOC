@@ -3518,7 +3518,7 @@ end",
 
             if (ft != null)
             {
-                if (ft.LookupObjectType == SystemObjects.IntersectType.ToString() == ft.LookupObjectID.HasValue)
+                if (ft.LookupObjectType == SystemObjects.IntersectType.ToString() && ft.LookupObjectID.HasValue)
                 {
                     var intersect = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ( (i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id) ) ).FirstOrDefault();
                     if (intersect != null)
