@@ -1009,3 +1009,8 @@ p-editor  ul  li {
 p-editor ol {
     margin: 0px;
 }
+
+.ui-datatable tr.ui-state-highlight {
+    cursor: default !important;
+}
+
