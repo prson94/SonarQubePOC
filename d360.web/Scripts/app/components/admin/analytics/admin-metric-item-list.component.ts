@@ -17,7 +17,7 @@ import { MessagesService } from '../../../services/messages.service';
                     <div [ngSwitch]="formMode">
                         <div *ngSwitchCase="FormMode.Default">
                             <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                            <p-dataTable #dt [value]="items" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selection">
+                            <p-dataTable #dt  [globalFilter]="gb" [value]="items" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selection">
                                 <p-column field="Name" header="Name" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
                                 <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
                                     <ng-template pTemplate type="body" let-item="rowData">
