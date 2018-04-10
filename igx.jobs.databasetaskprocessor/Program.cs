@@ -69,12 +69,14 @@ namespace igx.jobs.databasetaskprocessor
 
         const string functionName = "DatabaseTask_ProcessScheduled";
         const string timerSettings = "*/10 * * * * *";
+        
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
+                //companies = companies.Where(x => x.CompanyID == 4).ToList();
 
                 companies.Shuffle(); //Randomize
 
@@ -255,6 +257,8 @@ from    [queue].[Task] T
                             {
                                 case "Add":
                                     #region
+                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Add", q.Custom);
+
                                     resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A");
                                     break;
                                 #endregion
@@ -419,6 +423,9 @@ from    [queue].[Task] T
                                 case "Update":
                                     #region
                                     resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
+
+                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom);
+                                                                        
                                     break;
                                     #endregion
                             }
@@ -483,6 +490,28 @@ from    [queue].[Task] T
             catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex);
+            }
+        }
+
+        private static void addAuditEntry(SqlConnection companyConnection, string @object, int objectID, string oper, string custom)
+        {
+            if (!string.IsNullOrEmpty(custom))
+            {
+                var customXml = XElement.Parse(custom);
+
+                companyConnection.Execute(
+                        "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, getutcdate, 'Updated', @Object, @ObjectID",
+                        new
+                        {
+                            Object = @object,
+                            ObjectID = objectID,
+                            ParentObject = customXml.Element("ActionObject").Value,
+                            date = DateTime.UtcNow,
+                            ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
+                            ResourceID = int.Parse(customXml.Element("ResourceID").Value)
+                        },
+                        null,
+                        600);    // 5 minute timeout.
             }
         }
     }
