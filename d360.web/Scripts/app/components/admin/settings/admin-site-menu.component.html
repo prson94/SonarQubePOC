@@ -111,7 +111,8 @@
             </div>
             <div class="row">
                 <div class="col s12 m6">
-                    <p-dataTable [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single" [immutable]="false">
+                    <p-dataTable #dt1 [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single" [immutable]="false">
+                        <p-footer *ngIf="dt1.totalRecords"><d3s-grid-paging-info [totalRecords]="dt1.totalRecords" [first]="dt1.first" [rows]="dt1.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Title" header="Available Folder Items"></p-column>
                         <p-column>
                             <ng-template let-item="rowData" pTemplate type="body">
@@ -124,7 +125,7 @@
                 </div>
                 <div class="col s12 m6">
                     <p-dataTable [value]="newFolderItems" [rows]="10" [paginator]="true" selectionMode="single" [immutable]="false">
-                        <p-column field="Name" header="Folder Items"></p-column>
+                        <p-column field="Name" header="Existing Folder Items"></p-column>
                         <p-column>
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" style="height: initial;">
