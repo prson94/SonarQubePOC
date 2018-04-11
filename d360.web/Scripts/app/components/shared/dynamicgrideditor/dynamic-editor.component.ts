@@ -7,6 +7,7 @@ import { FieldsService } from '../../../services/fields.service';
 import { CascadeService } from '../../../services/cascade.service';
 import { EditorField, EditorRow, FieldValidation, EditorDropDownItem, EditorCategory } from '../../../models/editor-field.model';
 import { BaseComponent } from '../base.component';
+import { FormHelpers } from '../../../static/form-helpers';
 
 import * as _ from 'lodash';
 
@@ -73,9 +74,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
    
     categories: EditorCategory[] = [];
     editedItem: any;
-
-    numPattern: string = "^([-]?(\\d+(\\d*)?))$";
-    decPattern: string = "^([-]?(\\d+(\\.\\d*)?)|(\\.\\d+))$";
 
     hasIconFields = false;
     fore: EditorField;
@@ -253,22 +251,20 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 else if (validation.regex) {
                     validators.push(Validators.pattern(validation.regex));
                 }
-                else if (field.FieldType == 'Number') {
-                    validators.push(Validators.pattern(this.numPattern));
-                }
-                else if (field.FieldType == 'Decimal') {
-                    validators.push(Validators.pattern(this.decPattern));
-                }
-
             }
         }
                        
         if (field.Required)
             validators.push(Validators.required);
 
+        if (field.FieldType == 'Number')
+            validators.push(FormHelpers.integerValidator);
+        if (field.FieldType == 'Decimal')
+            validators.push(FormHelpers.numberValidator);
+
         if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
             validators.push(Validators.max(9223372036854776));
-            validators.push(Validators.min(-9223372036854776));            
+            validators.push(Validators.min(-9223372036854776)); 
         }
 
         return validators.length > 0 ? validators : null;

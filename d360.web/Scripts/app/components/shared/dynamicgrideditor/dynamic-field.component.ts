@@ -76,7 +76,7 @@ declare var CompanySettings;
                                 </select>
                             </ng-template>                            
                         </div>
-                        <div *ngSwitchCase="'Relationship'">                           
+                        <div *ngSwitchCase="'Relationship'"> 
                             <p-dropdown *ngIf="!field?.MultiSelect" [filter]="true" [options]="field.Items | dropdownItemToSelectItemPipe" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [style]="{width:'100%'}" ngDefaultControl></p-dropdown>
                             <p-multiSelect *ngIf="field?.MultiSelect" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
                         </div>
@@ -127,10 +127,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
     private sub: any;
 
     private colorValue: string = '#000';
-    private numPattern: string = "^([-]?(\\d+(\\d*)?))$";
-    private numPatternError: string = "You have not Input a Valid 'Simple' Number!";
-    private decPattern: string = "^([-]?(\\d+(\\.\\d*)?)|(\\.\\d+))$";
-    private decPatternError: string = "You have not Input a Valid Decimal Number!";
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
     private hasCascadeLoaded: boolean = false;
@@ -169,14 +165,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
             });
                 
         if (this.field && this.field.Validations) {
-            if (this.field.FieldType == 'Number') {
-                this.field.Validations.push({ message: this.numPatternError, regex: this.numPattern, rule: null });
-            }
-
-            if (this.field.FieldType == 'Decimal') {
-                this.field.Validations.push({ message: this.decPatternError, regex: this.decPattern, rule: null });
-            }
-
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
                     this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : '';
@@ -247,8 +235,15 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
 
         if (!errors) return '';
         var message = ""
+
         if (errors["pattern"]) {
             message += this.regexErrorMessage;
+        }
+        if (errors["number"]) {
+            message += "Please enter a valid number";
+        }
+        if (errors["integer"]) {
+            message += "Please enter a valid integer";
         }
         if (errors["maxlength"]) {
             message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}]`;

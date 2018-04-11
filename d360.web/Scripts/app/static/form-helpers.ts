@@ -1,4 +1,31 @@
-﻿export class FormHelpers {
+﻿import { ValidatorFn, FormControl } from "@angular/forms";
+import { AbstractControl } from "@angular/forms/src/model";
+
+
+
+export class FormHelpers {
+
+    static numberValidator(f: AbstractControl) {
+        let valid = !isNaN(+f.value);
+        if (valid) {
+            return null;
+        } else {
+            return {
+                number: true
+            };
+        }
+    }
+
+    static integerValidator(f: AbstractControl) {
+        let valid = !isNaN(+f.value) && +f.value % 1 == 0;;
+        if (valid) {
+            return null;
+        } else {
+            return {
+                integer: true
+            };
+        }
+    }
 
     //clamp a numeric value between min and max inclusive, to precision decimal places
     static clamp(val: any, min: number, max: number, precision: number): any {
