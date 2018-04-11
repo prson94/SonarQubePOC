@@ -832,6 +832,11 @@ namespace d360.model
 
                         SaveChanges();
                     }
+
+                    //update asset table to trigger audit
+                    var sql = "update asset set updatedby = 0, updatedon = getutcdate() where[object] = @obj and[objectid] = @id";
+
+                    Query<int>(sql, new { obj = objectInfo.Object.ToString(), id = objectInfo.ObjectID });
                 }
 
             }
