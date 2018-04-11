@@ -111,6 +111,13 @@ export class FusionAttributeService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getFusionAttributeProfile(type: string, id: number): Promise<any> {
+        return this.http.get(`internal/fusion/profile/${type}/${id}`)
+            .toPromise()
+            .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     saveAttribute(attribute: any): Promise<JsonResult> {
         if (attribute.ID == undefined || !attribute.ID) {
             return this.postDynamic(this.http, 'fusionattribute', attribute);

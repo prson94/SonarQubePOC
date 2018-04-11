@@ -967,6 +967,15 @@ where   A.FusionQueryAttributeTypeID = @t
             return Json(model, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("profile/{type}/{id:int}")]
+        public JsonResult FusionitemProfile(SystemObjects type, int id)
+        {
+            var profiles = Company.Query<dynamic>(@"select P.* from Asset A
+                    inner join AssetProfile P on P.AssetID = A.ID
+                    where A.[Object] = @type and A.ObjectID = @id", new { type = type.ToString(), id });
+
+            return Json(profiles, JsonRequestBehavior.AllowGet);
+        }
 
         /// <summary>
         /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.

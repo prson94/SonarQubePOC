@@ -30,6 +30,9 @@ import { AuthenticationService } from '../../services/authentication.service';
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
                             <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'"></d3s-fusion-attribute-item-details>
                         </div> 
+                        <div *ngIf="selectedFusionAttribute">
+                            <d3s-fusion-attribute-profile-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'"></d3s-fusion-attribute-profile-details>
+                        </div>
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
                             <d3s-object-relationships [objectPermissions]="permissions" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
                         </div>                             
