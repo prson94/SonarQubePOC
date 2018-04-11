@@ -61,7 +61,7 @@
                 </div>
                 <div class="col s6">
                     <div class="FieldName">
-                        Subject
+                        Subject 
                     </div>
                     <div>
                         {{step.settings['MessageSubjectTemplate']}}
@@ -71,7 +71,7 @@
                     <div class="FieldName">
                         Body
                     </div>
-                    <div [innerHtml]="step.settings['MessageBodyTemplate']">
+                    <div class="FieldDisplayContent" [innerHtml]="step.settings['MessageBodyTemplate']">
 
                     </div>
                 </div>
@@ -172,7 +172,7 @@
                     <div class="FieldName">
                         Body
                     </div>
-                    <div [innerHTML]="step.settings['MessageBodyTemplate']">
+                    <div class="FieldDisplayContent" [innerHTML]="step.settings['MessageBodyTemplate']">
 
                     </div>
                 </div>
