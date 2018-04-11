@@ -257,7 +257,7 @@ from    [queue].[Task] T
                             {
                                 case "Add":
                                     #region
-                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Add", q.Custom);
+                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom);
 
                                     resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A");
                                     break;
@@ -500,7 +500,7 @@ from    [queue].[Task] T
                 var customXml = XElement.Parse(custom);
 
                 companyConnection.Execute(
-                        "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, getutcdate, 'Updated', @Object, @ObjectID",
+                        "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
                         new
                         {
                             Object = @object,
@@ -508,7 +508,8 @@ from    [queue].[Task] T
                             ParentObject = customXml.Element("ActionObject").Value,
                             date = DateTime.UtcNow,
                             ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                            ResourceID = int.Parse(customXml.Element("ResourceID").Value)
+                            ResourceID = int.Parse(customXml.Element("ResourceID").Value),
+                            op = oper
                         },
                         null,
                         600);    // 5 minute timeout.
