@@ -1112,7 +1112,12 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 				P.ID as PredicateID,
 				I.ID,
 				1 as isLeaf
-		from	[Intersect] I
+		from	(
+		         select ID, Subject, SubjectID, Object, ObjectID, IntersectTypeID from [Intersect]
+				 union all
+				 select 0 as ID, Subject, SubjectID, Object, ObjectID, ID as IntersectTypeID from [IntersectType] 
+				 where Subject = 'ReferenceItemType' and Object = 'ReferenceItemType'
+				) I
 				left join 
 				(
 					select ID as AssetID, AssetTypeID, [Object], ObjectID, utility.GetAssetDisplayValueWrapper(ID) as [Name] from Asset
@@ -1136,7 +1141,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 					(I.Subject = @type and I.SubjectID = @id) OR 
 					(I.Object = @type and I.ObjectID = @id)  
 				)
-                and coalesce(D.[Object],'') != 'Map';
+                and coalesce(D.[Object],'') != 'Map' and D.ObjectID is not null;
 	
 	insert into @links
 		select	@type + cast(@id as varchar),
