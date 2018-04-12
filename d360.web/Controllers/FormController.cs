@@ -12394,9 +12394,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var model = new Policy { PolicyTypeID = typeID };
-
-                Company.Add<Policy>(model);
-
+                                
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
+                Company.SaveOrUpdate<Policy>(model,fields);
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList();
+                processFormDynamicRelationshipFields(SystemObjects.PolicyType, model.PolicyTypeID, SystemObjects.Policy, model.ID, fieldTypes, form);
+                                
                 if (!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")
                 {
                     var intersectType = Company.Filter<IntersectTypeDetail>(i =>
@@ -12430,11 +12433,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                         Company.Add(intersect);
                     }
                 }
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
-                Company.AddOrUpdateFields(fields);
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList();
-                processFormDynamicRelationshipFields(SystemObjects.PolicyType, model.PolicyTypeID, SystemObjects.Policy, model.ID, fieldTypes, form);
 
                 dynamic custom = new
                 {                    
