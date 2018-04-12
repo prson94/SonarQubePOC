@@ -100,6 +100,6 @@ export class LookupTooltipComponent  {
             this.active = false;
             this.ref.markForCheck();
         },
-            200);
+            40);
     }
 };

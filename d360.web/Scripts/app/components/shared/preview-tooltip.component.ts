@@ -111,7 +111,7 @@ export class PreviewTooltipComponent  {
             this.active = false;
             this.ref.markForCheck();
         },
-            200);
+            40);
     }
 
 };
