@@ -834,9 +834,20 @@ namespace d360.model
                     }
 
                     //update asset table to trigger audit
-                    var sql = "update asset set updatedby = 0, updatedon = getutcdate() where[object] = @obj and[objectid] = @id";
+                    //var sql = "update asset set updatedby = 0, updatedon = getutcdate() where[object] = @obj and[objectid] = @id";
 
-                    Query<int>(sql, new { obj = objectInfo.Object.ToString(), id = objectInfo.ObjectID });
+                    Database.Connection.Execute(
+                        "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
+                        new
+                        {
+                            Object = objectInfo.Object.ToString(),
+                            ObjectID = objectInfo.ObjectID,
+                            ParentObject = objectInfo.Object.ToString(),
+                            date = DateTime.UtcNow,
+                            ParentObjectID = objectInfo.ObjectID,
+                            ResourceID = 0,
+                            op = "Update"
+                        });
                 }
 
             }
