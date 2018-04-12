@@ -4146,7 +4146,7 @@ from    ResponsibilityTypeRelationRule R
                     i.ObjectID,
                     i.ObjectType,
                     Name = i.ResponsibilityType.Name,
-                    Description = i.ResponsibilityType.Description
+                    Description = i.ResponsibilityType.Description ?? String.Empty
                 })
                 );
         }
