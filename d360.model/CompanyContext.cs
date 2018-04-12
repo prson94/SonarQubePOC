@@ -2069,7 +2069,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             return (SaveChanges() > 0);
         }
 
-        public bool SaveOrUpdate<T>(T entity, List<Field> fields) where T : BaseIntObject, IFieldsObject
+        public bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1) where T : BaseIntObject, IFieldsObject
         {
             var isUpdate = IsPersistent(entity);
             
@@ -2078,9 +2078,9 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             bool exists = false;
 
             if (isUpdate)
-                exists = Query<bool>("select dbo.CheckIfObjectExists(@t, @tid, @oid, @f) as Val", new { t = attr.Type.ToString(), tid = attr.TypeID, oid = entity.ID, f = fieldsJson }).First();
+                exists = Query<bool>("select dbo.CheckIfObjectExistsWithParent(@t, @tid, @oid, @f, 0) as Val", new { t = attr.Type.ToString(), tid = attr.TypeID, oid = entity.ID, f = fieldsJson }).First();
             else
-                exists = Query<bool>("select dbo.CheckIfObjectExists(@t, @tid, null, @f) as Val", new { t = attr.Type.ToString(), tid = attr.TypeID, f = fieldsJson }).First();
+                exists = Query<bool>("select dbo.CheckIfObjectExistsWithParent(@t, @tid, null, @f, @p) as Val", new { t = attr.Type.ToString(), tid = attr.TypeID, f = fieldsJson, p = parentId }).First();
 
             if (exists)
             {

@@ -12387,6 +12387,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 int typeID = parseIntField(form, "PolicyTypeID");
                 var type = Company.GetById<PolicyType>(typeID);
+                int? parentId = parseNullableIntField(form, "ParentID");
 
                 if (type == null) throw new NotFoundException("policy type");
 
@@ -12396,7 +12397,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = new Policy { PolicyTypeID = typeID };
                                 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
-                Company.SaveOrUpdate<Policy>(model,fields);
+                Company.SaveOrUpdate<Policy>(model,fields, parentId.GetValueOrDefault());
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList();
                 processFormDynamicRelationshipFields(SystemObjects.PolicyType, model.PolicyTypeID, SystemObjects.Policy, model.ID, fieldTypes, form);
                                 
@@ -18648,6 +18649,8 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 var type = Company.GetById<TaxonomyType>(typeID);
                 if (type == null) throw new NotFoundException("taxonomy type");
 
+                int? parentId = parseNullableIntField(form, "ParentID");
+
                 if (!Company.HasPermission(SystemObjects.TaxonomyType, typeID, Claim.Create))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
@@ -18655,7 +18658,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).ToList(), form, Server);
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.TaxonomyTypeID).ToList();
-                Company.SaveOrUpdate<Taxonomy>(model, fields);
+                Company.SaveOrUpdate<Taxonomy>(model, fields, parentId.GetValueOrDefault());
                 processFormDynamicRelationshipFields(SystemObjects.TaxonomyType, model.TaxonomyTypeID, SystemObjects.Taxonomy, model.ID, fieldTypes, form);
 
                 if (!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")

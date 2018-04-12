@@ -55,11 +55,22 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
         super();        
     }
 
-    ngOnInit() {
+    ngOnInit() {        
         for (let field of this.fields) {
+            if (this.filters) {
+                for (let filter of this.filters) {
+                    if (`Field${field.id}` == filter.field && filter.value != null) {
+                        if (field.columntype == 'dropdownlist') {
+                            field.value = filter.value.split("!~!");                            
+                        }
+                        else
+                            field.value = filter.value;
+                    }
+                }
+            }
             if (field.parentFieldTypeID > 0) field.disabled = true;
             else field.disabled = false;
-        }        
+        }          
         this.ref.markForCheck();
     }
     
