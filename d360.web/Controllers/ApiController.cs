@@ -6429,7 +6429,46 @@ where    A.RuleID = @id", new { id });
                     }
                     taxonomyType = null;
                     break;
-                #endregion                
+                #endregion
+                case SystemObjects.Monitor:
+                    #region Fields
+                    var workflowType = Company.GetById<d360.core.entities.Workflow.Type>(id);
+                    if (workflowType != null)
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Name", FieldName = " Name", FieldDescription = workflowType.GetDescription(i => i.Name), Value = workflowType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Updated On", FieldName = "UpdatedOn", FieldDescription = workflowType.GetDescription(i => i.UpdatedOn), Value = workflowType.UpdatedOn.ToString() }
+                            }
+
+                        });
+
+                        var ResourceName = Company.Query<dynamic>(string.Format("select r.FirstName + ' ' + r.LastName as label" +
+                            " from reporting.Global_Resource r where r.resourceID = {0}", workflowType.UpdatedBy)).FirstOrDefault();
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                
+                                new ReadOnlyField { Name = "Updated By", FieldName = "UpdatedBy", FieldDescription = workflowType.GetDescription(i => i.UpdatedBy), Value =  ResourceName != null && !string.IsNullOrEmpty(ResourceName.label) ? ResourceName.label : "Not Available"}
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Version", FieldName = " PublishedVersionID", FieldDescription = workflowType.GetDescription(i => i.PublishedVersionID), Value = workflowType.PublishedVersionID.ToString() }
+                            }
+                        });
+
+                    }
+                    workflowType = null;
+                    break;
+                    #endregion
 
             }
 
