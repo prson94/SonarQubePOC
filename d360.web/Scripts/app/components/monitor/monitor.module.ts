@@ -18,7 +18,7 @@ import { MonitorAssignmentsComponent } from './monitor-assignments.component';
 
 
 import { WorkflowDiagramModule } from '../shared/diagram/workflow/workflow-diagram.module';
-import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
+
 
 import {
     GrowlModule,
@@ -55,7 +55,6 @@ import {
         TilesModule,
         SharedGridPagingInfoModule,
         WorkflowDiagramModule,
-        SharedObjectDetailsModule
     ],
     declarations: [   
         MonitorComponent,
