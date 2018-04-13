@@ -68,7 +68,7 @@ namespace igx.jobs.databasetaskprocessor
         }
 
         const string functionName = "DatabaseTask_ProcessScheduled";
-        const string timerSettings = "*/10 * * * * *";
+        const string timerSettings = "*/1 * * * * *";
         
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
@@ -98,7 +98,7 @@ namespace igx.jobs.databasetaskprocessor
 
                     Func<SqlConnection, string, int, string, string> resolveIndexItem = (companyConnection, o, oid, a) => {
                         ObjectDetail detail = null;
-                        Dictionary<string, string> fields = null;
+                        Dictionary<string, string> fields = new Dictionary<string, string>();
 
                         if (string.IsNullOrEmpty(o)) return "";
 
@@ -117,10 +117,13 @@ namespace igx.jobs.databasetaskprocessor
                         #region Load Info for Object
 
                         detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
-                        fields = companyConnection.Query<FieldWithRelation>(
+                        var fldInfo = companyConnection.Query<FieldWithRelation>(
                             "SELECT * from FieldWithRelation where ObjectType = @t and ObjectID = @i order by SortOrder",
                             new { t = new Dapper.DbString { Value = o.ToString(), IsAnsi = true }, i = oid }
-                            ).ToDictionary(k => k.Name, v => v.FormattedValue);
+                            );
+                            
+                        if(fldInfo != null)
+                            fields = fldInfo.ToDictionary(k => k.Name, v => v.FormattedValue);
 
                         var itemUrl = detail != null ? detail.Url : "";
                         var itemTypeName = detail != null ? detail.TypeName : "";
@@ -128,8 +131,20 @@ namespace igx.jobs.databasetaskprocessor
                         var itemParentType = detail != null ? detail.ParentType : "";
                         var itemParentId = detail != null ? (detail.ParentID ?? 0) : 0;
 
+                        //if the item 
+                        var assetSql = "select id from asset where [object] = @obj and [objectID] = @i";
+
+                        long assetId = 0;
+
                         if (detail != null)
                         {
+                            if (o == "Artifact")
+                            {
+                                var assetIDResult = companyConnection.Query<long?>(assetSql, new { @obj = o, i = oid }).FirstOrDefault();
+                                if (assetIDResult.HasValue)
+                                    assetId = assetIDResult.Value;
+                            }
+
                             if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
                             else fields.Add("Name", detail.Name);
 
@@ -205,6 +220,10 @@ namespace igx.jobs.databasetaskprocessor
                                 {
                                     add.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
                                 }
+                                else if (o == "Artifact" && assetId > 0)
+                                {
+                                    add.ItemUniqueID = assetId.ToString();                                    
+                                }
                                 indexCollectionModel.Adds.Add(add);
                                 break;
                             case "U":   //Update
@@ -213,10 +232,15 @@ namespace igx.jobs.databasetaskprocessor
                                 {
                                     update.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
                                 }
+                                else if (o == "Artifact" && assetId > 0)
+                                {
+                                     update.ItemUniqueID = assetId.ToString();                                    
+                                }
                                 indexCollectionModel.Updates.Add(update);
                                 break;
                             case "D":   //Delete
-                                var delete = new RemoveFromIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName
+                                var delete = new RemoveFromIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName                                
+                                if (o == "Artifact" && assetId > 0) delete.ItemUniqueID = assetId.ToString();
                                 indexCollectionModel.Deletes.Add(delete);
                                 break;
                         }
