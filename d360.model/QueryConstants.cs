@@ -1120,7 +1120,8 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 				) I
 				left join 
 				(
-					select ID as AssetID, AssetTypeID, [Object], ObjectID, utility.GetAssetDisplayValueWrapper(ID) as [Name] from Asset
+					select A.ID as AssetID, A.AssetTypeID, A.[Object], A.ObjectID, D.DisplayValue as [Name] from Asset A
+					cross apply GetAssetDisplayValueById(A.ID) D
 					union all
 					select null as AssetID, ID as AssetTypeID, [Object], [ObjectID], [Name] from AssetType where [Object] = 'ReferenceItemType'
 				) D on 
