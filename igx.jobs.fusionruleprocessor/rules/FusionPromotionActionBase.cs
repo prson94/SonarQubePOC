@@ -68,6 +68,9 @@ namespace igx.jobs.fusionruleprocessor
 
             // log the items we promoted
             await MergePromotionResults(company, Step, Rule);
+
+            // update asset table updateon / updated by for existing items so it triggers audit
+            await UpdateModifiedAssets(company);
         }
 
         private async Task MergeFieldValues(SqlConnection company)
@@ -87,6 +90,21 @@ namespace igx.jobs.fusionruleprocessor
 					update set T.Value = S.Value
 			when	not matched then
 					insert (ObjectType, ObjectID, FieldTypeID, Value) values (S.ObjectType, S.ObjectID, S.FieldTypeID, S.Value);
+            ", commandTimeout: EXECUTION_TIMEOUT);
+        }
+
+        private async Task UpdateModifiedAssets(SqlConnection company)
+        {
+            await company.ExecuteAsync(@"
+                merge	Asset as T
+			using	(
+					select	distinct f.ObjectType as ObjectType,
+							f.ObjectID as ObjectID							
+					from	#fieldValues f 							
+					) as S
+			on		T.Object = S.ObjectType and T.ObjectID = S.ObjectID
+			when	matched then
+					update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0;
             ", commandTimeout: EXECUTION_TIMEOUT);
         }
 
