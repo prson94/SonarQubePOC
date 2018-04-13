@@ -948,5 +948,99 @@ order by A.RunDate desc, A.EffectiveDate desc";
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
             }
         }
+
+        /// <summary>
+        /// Add Qualifies against provided ruleImplementation ID
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [Route("ruleimplementation/qualifier"), HttpPost]
+        public HttpResponseMessage AddQualifier(RuleResultQualifierType model)
+        {
+            try
+            {
+                #region verify model and its value
+                // Check that model was found
+                if (model == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Model is null.");
+                }
+                // Check that ruleimplementatioID is present or not
+                if (model.RuleImplementationID <= 0 )
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Rule Implementation ID is not provided.");
+                }
+
+                if (string.IsNullOrEmpty(model.ResolutionObject)
+                    || string.IsNullOrEmpty(model.ResolutionFieldTypeName))
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, @"ResolutionObject and ResolutionFieldTypeName can not be blank.");
+                }
+                if (model.ResolutionObjectID <= 0
+                    || model.ResolutionFieldTypeID <= 0)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, @"ResolutionObjectID and ResolutionFieldTypeID should be greater than 0.");
+                }
+
+                if (!QualifierResolutionObjectsExits(model.ResolutionObjectID.Value, model.ResolutionObject))
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, @"Values of ResolutionObjectID and ResolutionObject are not valid");
+                }
+
+                if (!FieldTypesByObject((SystemObjects)Enum.Parse(typeof(SystemObjects), model.ResolutionObject), model.ResolutionObjectID.Value, model.ResolutionFieldTypeID.Value, model.ResolutionFieldTypeName))
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, @"Values of ResolutionFieldTypeID and ResolutionFieldTypeName are not valid");
+                }
+                #endregion
+
+                #region verify rule implementation exists
+                var ruleImplementation = Company.GetById<RuleImplementation>(model.RuleImplementationID);
+
+                // Check that rule implementation was found or not
+                if (ruleImplementation == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Rule Implementation is not found against provided ID :"+model.RuleImplementationID);
+                }
+                #endregion
+
+                #region save model to table
+                model.Order = Company.Count<RuleResultQualifierType>(r => r.RuleImplementationID == model.RuleImplementationID) + 1;
+
+                Company.RuleResultQualifierTypes.Add(model);
+                Company.SaveChanges();
+                #endregion
+
+                return Request.CreateResponse(HttpStatusCode.Created, model);
+            }
+            catch (BaseException ex)
+            {
+                return Request.CreateErrorResponse(ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
+            }
+        }
+
+        public bool QualifierResolutionObjectsExits(int id, string type)
+        {
+           return Company.Query<dynamic>(string.Format(@"select ID, [Type], [value], [label] from (
+                        select ID, 'ArtifactType' as [Type],  'ArtifactType|' + cast(ID as varchar(50)) as [value],  'Artifact :: ' + [Name] as [label] from ArtifactType
+                        union all
+                        select ID, 'TaxonomyType' as [Type], 'TaxonomyType|' + cast(ID as varchar(50)) as [value],  'Model :: ' + [Name] as [label] from TaxonomyType
+                        union all
+                        select ID, 'ReferenceItemType' as [Type], 'ReferenceItemType|' + cast(ID as varchar(50)) as [value], 'Reference :: ' + [Name] as [label] from ReferenceItemType
+				        ) as t
+				        where t.ID = {0} and  t.[Type] = '{1}'",id, type)).Count() > 0;
+        }
+
+        public bool FieldTypesByObject(SystemObjects type, int id, int fieldId, string fieldName)
+        {
+            return Company
+                .GetFieldTypesByObject(type, id)
+                .Where(i => i.ID == fieldId && i.FriendlyName == fieldName).Count() > 0;
+        }
+
+
     }
 }
