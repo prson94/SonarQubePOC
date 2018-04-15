@@ -773,6 +773,29 @@ FROM    ResponsibilityDetails";
 
                         #endregion
 
+                        #region All Relationship Slimmed Down
+
+                        objectName = $"{SCHEMA}.[Relationship_Asset]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select  i.ID as IntersectID,
+        s.ID as SubjectAssetID, 
+        o.ID as ObjectAssetID, 
+        i.IntersectTypeID 
+from    [intersect] i 
+        inner join asset s on (i.[subject] = s.[object] and i.[subjectid] = s.objectid) 
+        inner join asset o on (i.[object] = o.[object] and i.[objectid] = o.objectid)";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
                         #region Relationship_Fields
 
                         objectName = $"{SCHEMA}.[Relationship_Fields]";

@@ -308,7 +308,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\d3s-uk-processor - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\UK - Production.pubxml" />
     <None Include="Properties\PublishProfiles\US - Client Development.pubxml" />
     <None Include="Properties\PublishProfiles\US - Nightly.pubxml" />
     <None Include="Properties\PublishProfiles\US - UAT.pubxml" />

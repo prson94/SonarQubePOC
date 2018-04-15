@@ -172,7 +172,7 @@ namespace igx.jobs
             try
             {
                 var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
-                var environment = ConfigurationManager.AppSettings["Environment"];
+                var environment = GetConfigValueByKey("Environment");
 
                 switch (environment)
                 {

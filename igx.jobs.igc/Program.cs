@@ -69,6 +69,7 @@ namespace igx.jobs
                             List<IntegrationAssetType> mappings = null;
                             List<IntegrationAssetTypeFieldItem> mappingFields = null;
                             List<IntegrationAssetTypeRelationItem> mappingRelations = null;
+                            List<IntegrationAssetTypeRelationItemTarget> mappingRelationTargets = null;
                             List<IntegrationAssetTypeRoleItem> mappingRoles = null;
 
                             // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
@@ -77,6 +78,7 @@ namespace igx.jobs
                                 mappings = company.Query<IntegrationAssetType>("select * from integration.SynchedAssetType").ToList();
                                 mappingFields = company.Query<IntegrationAssetTypeFieldItem>("select * from integration.SynchedAssetTypeFieldItem").ToList();
                                 mappingRelations = company.Query<IntegrationAssetTypeRelationItem>("select * from integration.SynchedAssetTypeRelationItem").ToList();
+                                mappingRelationTargets = company.Query<IntegrationAssetTypeRelationItemTarget>("select * from integration.SynchedAssetTypeRelationItemTarget").ToList();
                                 mappingRoles = company.Query<IntegrationAssetTypeRoleItem>("select * from integration.SynchedAssetTypeRoleItem").ToList();
                             }
 
@@ -110,14 +112,16 @@ namespace igx.jobs
                                     {
                                         var fields = mappingFields.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
                                         var relations = mappingRelations.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
+                                        var relationIDs = relations.Select(i => i.ID).ToList();
+                                        var relationTargets = mappingRelationTargets.Where(i => relationIDs.Contains(i.SynchedAssetTypeRelationItemID)).ToList();
                                         var roles = mappingRoles.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
 
                                         var success = false;
-
-                                        success = IGC_LoadAssetsByMappingType(c.CompanyID, setting, checkForChangesOnly, now, c.UrlPrefix, resource, item, fields, relations, roles);
+                                        DateTime? lastDateCheckedSuccessfully = null;
+                                        success = IGC_LoadAssetsByMappingType(c.CompanyID, setting, checkForChangesOnly, now, c.UrlPrefix, resource, item, fields, relations, relationTargets, roles, out lastDateCheckedSuccessfully);
                                         if (success)
                                         {
-                                            company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt where ID = @id", new { id = item.ID, dt = now });
+                                            company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt where ID = @id", new { id = item.ID, dt = lastDateCheckedSuccessfully ?? now });
                                         }
                                     }
 
@@ -269,8 +273,16 @@ namespace igx.jobs
         /// <param name="relations">The asset relationship mappings.</param>
         /// <param name="roles">The asset role mappings.</param>
         /// <returns>An asynchronous boolean to indicate whether the process was successful or not.</returns>
-        public static bool IGC_LoadAssetsByMappingType(int companyID, IntegrationSetting setting, bool checkForChangesOnly, DateTime now, string urlPrefix, Resource resource, IntegrationAssetType mapping, List<IntegrationAssetTypeFieldItem> fields, List<IntegrationAssetTypeRelationItem> relations, List<IntegrationAssetTypeRoleItem> roles)
+        public static bool IGC_LoadAssetsByMappingType(int companyID, IntegrationSetting setting, bool checkForChangesOnly, DateTime now, string urlPrefix, Resource resource, 
+            IntegrationAssetType mapping, 
+            List<IntegrationAssetTypeFieldItem> fields, 
+            List<IntegrationAssetTypeRelationItem> relations,
+            List<IntegrationAssetTypeRelationItemTarget> relationTargets,
+            List<IntegrationAssetTypeRoleItem> roles, 
+            out DateTime? lastDateChecked)
         {
+            lastDateChecked = now;
+
             var success = true;
 
             var igcData = new IgcDynamicArrayModels();
@@ -294,9 +306,26 @@ namespace igx.jobs
             targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
             targetBaseUri += $"/services/assets/";
 
+            DateTime? currentParsedUnvalidatedDate = null;
+
             Func<JArray, JArray> parse = delegate (JArray root)
             {
                 var fieldErrors = new Dictionary<string, string>();
+
+                try
+                {
+                    if (root.Count > 0)
+                    {
+                        currentParsedUnvalidatedDate = root[root.Count - 1]["modified_on"].Value<DateTime?>();
+                        if (!currentParsedUnvalidatedDate.HasValue)
+                        {
+                            currentParsedUnvalidatedDate = root[root.Count - 1]["created_on"].Value<DateTime?>();
+                        }
+                    }
+                }
+                catch
+                {
+                }
 
                 foreach (var obj in root.Children())
                 {
@@ -367,8 +396,6 @@ namespace igx.jobs
                     // Add object to collection.
                     arr.Add(d3s);
 
-
-
                     // Relation Load Logic.
                     relations.ForEach(r =>
                     {
@@ -380,14 +407,47 @@ namespace igx.jobs
                                         select i
                                         ).ToList();
 
-                            relationships.AddRange(
-                                items.Select(i => new D3sRelationshipModel
+                            if (items.Count > 0)
+                            {
+                                var targets = relationTargets.Where(i => i.SynchedAssetTypeRelationItemID == r.ID).ToList();
+                                if (targets.Count == 1)
                                 {
-                                    SubjectSourceID = r.IsSubject ? igcObjectSourceID : i.SourceID,
-                                    ObjectSourceID = r.IsSubject ? i.SourceID : igcObjectSourceID,
-                                    PredicateType = r.PredicateType
-                                })
-                            );
+                                    // If there is ONLY 1 target (most cases), then there is no need to loop through 
+                                    // all the related items to find the appropriate target. 
+                                    // Treat them all as the same target.
+                                    var target = targets.First();
+                                    if (items[0].Type.StartsWith(target.SourceAssetType))
+                                    {
+                                        relationships.AddRange(
+                                            items.Select(i => new D3sRelationshipModel
+                                            {
+                                                SubjectSourceID = r.IsSubject ? igcObjectSourceID : i.SourceID,
+                                                ObjectSourceID = r.IsSubject ? i.SourceID : igcObjectSourceID,
+                                                PredicateType = r.PredicateType,
+                                                IntersectTypeID = target.IntersectTypeID
+                                            })
+                                        );
+                                    }
+                                }
+                                else if (targets.Count > 1)
+                                {
+                                    // If more than one target, loop through each related item to uncover its appropriate target.
+                                    items.ForEach(ri =>
+                                    {
+                                        var target = targets.FirstOrDefault(i => ri.Type.StartsWith(i.SourceAssetType));
+                                        if (target != null)
+                                        {
+                                            relationships.Add(new D3sRelationshipModel
+                                            {
+                                                SubjectSourceID = r.IsSubject ? igcObjectSourceID : ri.SourceID,
+                                                ObjectSourceID = r.IsSubject ? ri.SourceID : igcObjectSourceID,
+                                                PredicateType = r.PredicateType,
+                                                IntersectTypeID = target.IntersectTypeID
+                                            });
+                                        }
+                                    });
+                                }
+                            }
                         }
                         catch (Exception)
                         {
@@ -431,10 +491,17 @@ namespace igx.jobs
 
             var url = $"{setting.SourceUri}search/";
 
+            checkForChangesOnly = true;
+
             if (checkForChangesOnly)
             {
                 //Perform search using POST method.
-                var postModel = new IgcPostSearchRequestModel();
+                var postModel = new IgcPostSearchRequestModel {
+                    sorts = new List<IgcPostSearchRequestSortModel>() {
+                        new IgcPostSearchRequestSortModel { ascending = true, property = "modified_on" },
+                        new IgcPostSearchRequestSortModel { ascending = true, property = "created_on" }
+                    }
+                };
                 postModel.begin = 0;
                 postModel.pageSize = 250;
 
@@ -444,6 +511,9 @@ namespace igx.jobs
                 postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
                 postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
                 postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
+
+                if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
+                if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
 
                 var min = ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0));
                 var max = ConvertDateToUnixTimeMilliseconds(now);
@@ -463,9 +533,12 @@ namespace igx.jobs
                             shouldContinue = (models.paging.numTotal > models.paging.end + 1);
                             postModel.begin = models.paging.end + 1;
 
-                            if (arr.Count > 9999)
+                            if (arr.Count > 999)
                             {
-                                SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
+                                if (SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
+                                {
+                                    lastDateChecked = currentParsedUnvalidatedDate;
+                                }
                                 arr = new JArray();
                                 relationships = new List<D3sRelationshipModel>();
                                 ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
@@ -519,13 +592,20 @@ namespace igx.jobs
                 }
             }
 
-            SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
+            if (SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
+            {
+                lastDateChecked = currentParsedUnvalidatedDate;
+            }
+
+            if (!lastDateChecked.HasValue)
+                lastDateChecked = now;
 
             return success;
         }
 
-        public static void SendIncrementalSetToGovern(int companyID, IntegrationAssetType mapping, JArray arr, List<D3sRelationshipModel> relationships, D3sOwnershipItemsModel ownershipTopModel, string targetBaseUri, string targetAuthString)
+        public static bool SendIncrementalSetToGovern(int companyID, IntegrationAssetType mapping, JArray arr, List<D3sRelationshipModel> relationships, D3sOwnershipItemsModel ownershipTopModel, string targetBaseUri, string targetAuthString)
         {
+            bool successfulPost = true;
             // If any items to send to server.
             if (arr.Count > 0)
             {
@@ -552,10 +632,10 @@ namespace igx.jobs
                     {
                         CoreFunction.AITrackEvent(functionName, "Bulk Import Assets", new Dictionary<string, string>() { { "Error", assetErrorMessage } }, companyID);
                     }
-
                 }
                 catch (Exception ex)
                 {
+                    successfulPost = false;
                     CoreFunction.AITrackException(functionName, ex);
                 }
             }
@@ -614,6 +694,8 @@ namespace igx.jobs
                     CoreFunction.AITrackException(functionName, ex);
                 }
             }
+
+            return successfulPost;
         }
 
         public static void GetTypes()

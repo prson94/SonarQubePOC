@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DataComparison>
+  <Version>10</Version>
+  <ConnectionProperties1>
+    <ConnectionString>Data Source=d3suatus.database.windows.net;Initial Catalog=D3S_122;Persist Security Info=True;User ID=mpappas@infogix.com;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False;Authentication="Active Directory Password"</ConnectionString>
+    <FullDisplayName>d3suatus.database.windows.net.D3S_122 (mpappas@infogix.com)</FullDisplayName>
+  </ConnectionProperties1>
+  <ConnectionProperties2>
+    <ConnectionString>Data Source=d3sdev.database.windows.net;Initial Catalog=D3S_54;Persist Security Info=True;User ID=mpappas@infogix.com;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False;Authentication="Active Directory Password"</ConnectionString>
+    <FullDisplayName>d3sdev.database.windows.net.D3S_54 (mpappas@infogix.com)</FullDisplayName>
+  </ConnectionProperties2>
+  <SessionSettings>IncludeDifferentRecords, IncludeRecordsInOne, IncludeRecordsInTwo</SessionSettings>
+  <DeselectedTable>[dbo].[FieldType]</DeselectedTable>
+  <DeselectedTable>[dbo].[ReferenceItem]</DeselectedTable>
+  <DeselectedTable>[integration].[SynchedAssetType]</DeselectedTable>
+</DataComparison>

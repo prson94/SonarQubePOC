@@ -2198,6 +2198,13 @@
             <param name="model">A rule implemetation</param>
             <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new rule is also returned.</returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.AddQualifier(d360.core.entities.RuleResultQualifierType)">
+            <summary>
+            Add Qualifies against provided ruleImplementation ID
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="T:d360.web.Controllers.Services.GlossaryController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.

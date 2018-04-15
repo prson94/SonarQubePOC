@@ -18,6 +18,8 @@ namespace d360.model
 
         public DbSet<IntegrationAssetTypeRelationItem> IntegrationAssetTypeRelationItems { get; set; }
 
+        public DbSet<IntegrationAssetTypeRelationItemTarget> IntegrationAssetTypeRelationItemTargets { get; set; }
+
         public DbSet<IntegrationAssetTypeRoleItem> IntegrationAssetTypeRoleItems { get; set; }
 
         #endregion

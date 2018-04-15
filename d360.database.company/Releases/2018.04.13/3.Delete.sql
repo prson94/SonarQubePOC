@@ -106,6 +106,8 @@ drop TRIGGER [dbo].[IssueType_AfterUpdate]
 
 ALTER TABLE [dbo].[Policy] DROP CONSTRAINT [DF_Policy_Status]
 GO
+alter table [Policy] drop column [Name]
+alter table [Policy] drop column [Description]
 alter table [Policy] drop column [Status]
 go
 alter table [Rule] drop column Name

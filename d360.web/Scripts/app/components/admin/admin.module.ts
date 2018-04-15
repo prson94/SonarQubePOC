@@ -63,7 +63,7 @@ import { SimpleAccordionModule } from "../shared/simple-accordion.part";
 
         SimpleAccordionModule,
 
-        //primeng                
+        //primeng       
         InputTextModule,
         ColorPickerModule,
         SpinnerModule,

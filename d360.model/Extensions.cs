@@ -2358,7 +2358,8 @@ namespace d360.model
                     {
                         if (prop.Value.GetType().IsSimpleType())
                         {
-                            ret.Add(new XElement(name, prop.Value));
+                            if (!string.IsNullOrEmpty(Convert.ToString(prop.Value)))
+                                ret.Add(new XElement(name, prop.Value));
                         }
                         else
                         {

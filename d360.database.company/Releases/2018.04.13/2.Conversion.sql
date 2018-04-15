@@ -1683,7 +1683,7 @@ AS
 	SELECT	T.ID as FieldTypeID,
 			T.LookupObjectType,
 			T.LookupObjectID,
-			COALESCE(A.ID, R.ResourceID, L.ID, RI.ID, RIT.ID) as Value,	
+			COALESCE(A.ID, R.ResourceID, L.ID, RI.ID, RIT.ID,TAX.ID) as Value,	
 			utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, COALESCE(A.ID, R.ResourceID, L.ID, RI.ID, RIT.ID,TAX.ID)) as Text
 	FROM	FieldType T 
 			LEFT JOIN Artifact A ON T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.ArtifactTypeID
@@ -10486,6 +10486,33 @@ BEGIN
 	return @formattedValue
 END
 GO
+
+ALTER FUNCTION [utility].[GetIntersectTypesByType]
+(	
+	@type varchar(50),
+	@id int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select	'I' as type,
+			cast(I.ID as varchar) + '|' +
+			case 
+				when (Subject = @type and SubjectID = @id) then I.Object + '|' + cast(I.ObjectID as varchar)
+				else I.Subject + '|' + cast(I.SubjectID as varchar)
+			end as value,
+			case 
+				when (Subject = @type and SubjectID = @id) then I.SubjectName + ' [' + coalesce(P.Name, 'relates') + '] ' + I.ObjectName
+				else I.ObjectName + ' [' + coalesce(P.Inverse, 'related') + '] ' + I.SubjectName
+			end as title
+	from	IntersectTypeDetail I
+			left join [Predicate] P on P.ID = I.PredicateID
+	where	(Subject = @type and SubjectID = @id) or 
+			(Object = @type and ObjectID = @id)
+)
+GO
+
 
 update	T
 set		T.AssetTypeID = S.ID

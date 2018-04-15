@@ -689,6 +689,39 @@ CREATE TABLE [integration].[SynchedAssetTypeRoleItem] (
 );
 GO
 
+CREATE TABLE [integration].[SynchedAssetTypeRelationItemTarget](
+	ID int IDENTITY(1,1) NOT NULL,
+	SynchedAssetTypeRelationItemID int NOT NULL,
+	SourceAssetType varchar(250) NOT NULL,
+	IntersectTypeID [int] NOT NULL,
+	CONSTRAINT [PK_IntegrationSynchedAssetTypeRelationItemTarget] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget]  WITH CHECK ADD  CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetTypeRelationItem] FOREIGN KEY(SynchedAssetTypeRelationItemID) REFERENCES [integration].[SynchedAssetTypeRelationItem] ([ID])
+GO
+ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget] CHECK CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetTypeRelationItem]
+GO
+
+ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget]  WITH CHECK ADD  CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntersectType] FOREIGN KEY(IntersectTypeID) REFERENCES [dbo].[IntersectType] ([ID])
+GO
+ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget] CHECK CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntersectType]
+GO
+
+CREATE TABLE [integration].[UnresolvedRelationItem](
+	ID uniqueidentifier constraint DF_IntegrationUnresolvedRelationItem_ID default(newid()) NOT NULL,
+	SubjectSourceID nvarchar(250) NOT NULL,
+	ObjectSourceID nvarchar(250) NOT NULL,
+	IntersectTypeID int NOT NULL,
+	AttemptCount int NOT NULL,
+	MostRecentAttemptOn datetime NOT NULL,
+	CONSTRAINT [PK_IntegrationUnresolvedRelationItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+CREATE INDEX CIX_IntegrationUnresolvedRelationItem ON integration.UnresolvedRelationItem ( IntersectTypeID ASC, SubjectSourceID ASC, ObjectSourceID ASC )
+GO
+
 EXEC sp_rename 'dbo.FieldType', 'FieldTypeOld'; 
 
 EXEC sp_rename 'PK_FieldType', 'PK_FieldTypeOld'; 
@@ -1787,7 +1820,7 @@ select
 		end as IsFirstUser
 		from OrganizationInvitation i
 		inner join reporting.Global_resource r on r.Email = i.Email
-		union
+		union all
 		select o.ResourceID, o.OrganizationID,
 		case when (select count(*) from Organization where ID = o.OrganizationID and Accepted = 0) > 0 then
 			1
@@ -1795,7 +1828,7 @@ select
 			0
 		end as IsFirstUser 
 		from OrganizationResource o
-		union
+		union all
 		select r.ResourceID, d.OrganizationID,
 		case when (select count(*) from Organization where ID = o.ID and Accepted = 0) > 0 then
 			1
@@ -1837,10 +1870,10 @@ select
 			( 
 				select i.OrganizationID, r.ResourceID from OrganizationInvitation i
 				inner join reporting.Global_resource r on r.Email = i.Email
-				union
+				union all
 				select o.OrganizationID, o.ResourceID from OrganizationResource o
-				union
-				select r.ResourceID, d.OrganizationID from OrganizationDomain D
+				union all
+				select d.OrganizationID, r.ResourceID from OrganizationDomain D
 				inner join Organization O on O.ID = D.OrganizationID and O.[State] = 1
 				inner join reporting.Global_resource r on r.Email like '%@' + d.Domain
 			) z where z.OrganizationID in (--orgs this resource is a member of
@@ -1848,9 +1881,9 @@ select
 				(
 					select i.OrganizationID, r.ResourceID from OrganizationInvitation i
 					inner join reporting.Global_resource r on r.Email = i.Email
-					union
+					union all
 					select o.OrganizationID, o.ResourceID from OrganizationResource o
-					union
+					union all
 					select d.OrganizationID, r.ResourceID from OrganizationDomain D
 					inner join Organization O on O.ID = D.OrganizationID and O.[State] = 1
 					inner join reporting.Global_resource r on r.Email like '%@' + d.Domain
@@ -1864,9 +1897,9 @@ select
 		and @ResourceID in ( --if the user isn't in an org or invited, they don't need to accept the default contracts
 			select r.ResourceID from OrganizationInvitation i
 			inner join reporting.Global_resource r on r.Email = i.Email
-			union
+			union all
 			select o.ResourceID from OrganizationResource o
-			union 
+			union all
 			select r.ResourceID from OrganizationDomain D
 			inner join Organization O on O.ID = D.OrganizationID and O.[State] = 1
 			inner join reporting.Global_resource r on r.Email like '%@' + d.Domain
@@ -2191,12 +2224,13 @@ BEGIN
 END
 GO
 
-CREATE function [dbo].[CheckIfObjectExists]
+create function [dbo].[CheckIfObjectExistsWithParent]
 (
 	@ObjectType varchar(50), -- = 'ArtifactType'
 	@ObjectTypeID int, -- = 1
 	@ObjectID int, -- = 4651
-	@Fields nvarchar(max) -- = '[{"id": 53072, "value":"Country Of Risk"}, {"id": 53096, "value":"Description for Country Of Risk"}]'
+	@Fields nvarchar(max), -- = '[{"id": 53072, "value":"Country Of Risk"}, {"id": 53096, "value":"Description for Country Of Risk"}]'	
+	@ParentID int = -1
 )
 returns bit
 as
@@ -2204,7 +2238,7 @@ begin
 	declare @exists bit = 0;
 	declare @numberOfKeyFields int = 0;
 	declare @numberOfKeyMatches int = 0;
-
+	declare @parentIntersectType int = 0;	
 	declare @tbl table (ID int, Value nvarchar(max))
 
 	insert into @tbl
@@ -2213,11 +2247,80 @@ begin
 				inner join FieldType T on T.ID = F.ID and T.Object = @ObjectType and T.ObjectID = @ObjectTypeID and T.IsPartOfKey = 1
 
 	declare @results table (ID int, ObjectID int)
-	insert into @results
-		select	T.ID,
-				F.ObjectID 
-		from	@tbl T
-				left join Field F on F.FieldTypeID = T.ID and F.Value = T.Value and ( (@ObjectID is null) OR (@ObjectID is not null and F.ObjectID <> @ObjectID) )
+
+	-- do we only need to check items on the same level as the existing object?
+	if (@ObjectType = 'PolicyType' or @ObjectType = 'TaxonomyType')
+	begin
+		select @parentIntersectType = IT.id 
+			from 
+				IntersectType IT
+				inner join [Predicate] P on (IT.PredicateID = P.ID)
+			where 
+				[subject] = @ObjectType and [object] = @ObjectType and [subjectid] = @ObjectTypeID and [ObjectId] = @ObjectTypeID  and P.[Type] = 4;
+
+		if ( @ParentID is null or @ParentID <=0 ) and @ObjectID is not null
+		begin					
+			select @ParentId = [subjectid] 
+			from 
+				[Intersect] I 
+			where 
+				I.IntersectTypeId = @parentIntersectType and I.ObjectID = @ObjectID;
+		end;
+
+			-- if it doesnt have a parent only consider top level items
+			if ( @ParentId is not null and @ParentId > 0)
+			begin
+				if @ObjectID is not null -- edit existing item not top level
+				begin
+					insert into @results
+						select	T.ID,
+								F.ObjectID 
+						from	@tbl T										
+								inner join Field F on F.FieldTypeID = T.ID and F.Value = T.Value and (F.ObjectID <> @ObjectID)
+								inner join [Intersect] I on (I.IntersectTypeID = @parentIntersectType and I.ObjectID = F.ObjectID and I.SubjectID = @ParentId)
+				end
+				else-- new item item not top level
+				begin
+					insert into @results
+						select	T.ID,
+								F.ObjectID 
+						from	@tbl T										
+								inner join Field F on F.FieldTypeID = T.ID and F.Value = T.Value
+								inner join [Intersect] I on (I.IntersectTypeID = @parentIntersectType and I.ObjectID = F.ObjectID and I.SubjectID = @ParentId)
+				end
+			end
+			else
+			begin
+				if @ObjectID is not null -- edit existing item top level
+				begin
+					insert into @results
+						select	T.ID,
+								F.ObjectID 
+						from	@tbl T										
+								inner join Field F on F.FieldTypeID = T.ID and F.Value = T.Value and (F.ObjectID <> @ObjectID)
+						where 
+							not exists (select 1 from [Intersect] I where (I.IntersectTypeID = @parentIntersectType and I.ObjectID = F.ObjectID)	)					
+				end
+				else
+				begin -- new item item top level
+					insert into @results
+						select	T.ID,
+								F.ObjectID 
+						from	@tbl T										
+								inner join Field F on F.FieldTypeID = T.ID and F.Value = T.Value
+						where 
+							not exists (select 1 from [Intersect] I where (I.IntersectTypeID = @parentIntersectType and I.ObjectID = F.ObjectID)	)					
+				end
+			end				
+	end
+	else
+	begin
+		insert into @results
+			select	T.ID,
+					F.ObjectID 
+			from	@tbl T
+					left join Field F on F.FieldTypeID = T.ID and F.Value = T.Value and ( (@ObjectID is null) OR (@ObjectID is not null and F.ObjectID <> @ObjectID) )
+	end
 
 	if exists(select 1 from @results)
 		begin
@@ -2247,6 +2350,23 @@ begin
 		end
 
 	return @exists
+end
+GO
+
+CREATE function [dbo].[CheckIfObjectExists]
+(
+	@ObjectType varchar(50), -- = 'ArtifactType'
+	@ObjectTypeID int, -- = 1
+	@ObjectID int, -- = 4651
+	@Fields nvarchar(max) -- = '[{"id": 53072, "value":"Country Of Risk"}, {"id": 53096, "value":"Description for Country Of Risk"}]'
+)
+returns bit
+as
+begin
+	declare @result bit = 0;
+	select @result = [dbo].[CheckIfObjectExistsWithParent] (@ObjectType, @ObjectTypeID, @ObjectID, @Fields, default)
+
+	return @result;
 end
 GO
 

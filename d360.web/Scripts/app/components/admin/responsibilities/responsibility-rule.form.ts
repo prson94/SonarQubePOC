@@ -154,6 +154,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
             // Instantiate the object and its properties.
             this.model = new ResponsibilityTypeRelationRule();
+            this.model.IsVisible = true;
+            this.model.ApplyToType = false;
             this.model.ResponsibilityTypeID = this.ruleId;
             this.model.StructuredDefinition = new ResponsibilityTypeRelationRuleDefinition();
             this.model.StructuredDefinition.When = [];

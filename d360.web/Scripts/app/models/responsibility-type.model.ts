@@ -64,6 +64,8 @@ export class ResponsibilityTypeRelationRule {
     ObjectString: string;
     StructuredDefinition: ResponsibilityTypeRelationRuleDefinition;
     Context: string;
+    IsVisible: boolean;
+    ApplyToType: boolean;
 }
 
 export class ResponsibilityTypeRelationRuleDefinition {

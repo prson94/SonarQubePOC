@@ -84,24 +84,6 @@ END",
             });
         }
 
-        [TestMethod]
-        public void DeployDatabaseChanges()
-        {
-            #region SQL
-            var sql = @"";
-
-            #endregion
-            var list = getCompanies().ToList();
-            list.ForEach(id =>
-            {
-                var cnn = getCompanyConnection(id);
-                cnn.Open();
-                cnn.Execute(sql);
-                cnn.Close();
-                cnn.Dispose();
-            });
-        }
-
         void loadFusionAttributeTypes(SqlConnection company, int fusionTypeID, string type, int? parentID, List<d360.core.entities.Plugins.FusionAttributeType> types)
         {
             types.Where(i => i.ParentID == parentID).ToList().ForEach(t =>
@@ -130,6 +112,71 @@ END",
                 loadFusionAttributeTypes(company, fusionTypeID, type, t.ID, types);
             });
         }
+
+        [TestMethod]
+        public void DeployDatabaseChanges()
+        {
+            #region SQL
+            var sql = @"";
+
+            #endregion
+            var list = getCompanies().ToList();
+            list.ForEach(id =>
+            {
+                var cnn = getCompanyConnection(id);
+                cnn.Open();
+                cnn.Execute(sql);
+                cnn.Close();
+                cnn.Dispose();
+            });
+        }
+
+        [TestMethod]
+        public void GetFusionTypesByCompany()
+        {
+            var clientFusionTypes = new List<d360.core.entities.Plugins.ClientFusionType>();
+            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            cnn.Open();
+
+            var list = cnn.Query<Company>("select * from Company").ToList();
+
+            list.ForEach(c =>
+            {
+                var company = getCompanyConnection(c.ID);
+                company.Open();
+                var fusionTypeIDs = company.Query<int>("select ID from FusionType where ID < 50000").ToList();
+                company.Close();
+                company.Dispose();
+
+                clientFusionTypes.AddRange(
+                    fusionTypeIDs.Select(i => 
+                    new d360.core.entities.Plugins.ClientFusionType {
+                        ClientID = c.ClientID,
+                        FusionTypeID = i
+                    })
+                    .Except(clientFusionTypes)
+                );
+            });
+
+            clientFusionTypes.Distinct().ToList().ForEach(ft =>
+            {
+                cnn.Execute(@"
+MERGE
+	INTO    plugin.ClientFusionType T
+	USING   (
+			SELECT	@c as ClientID, 
+                    @f as FusionTypeID
+			) S
+	ON      (S.ClientID = T.ClientID and S.FusionTypeID = T.FusionTypeID) 
+WHEN NOT MATCHED THEN
+	INSERT  (ClientID, FusionTypeID)
+	VALUES  (S.ClientID, S.FusionTypeID);", new { c = ft.ClientID, f = ft.FusionTypeID });
+            });
+
+            cnn.Close();
+            cnn.Dispose();
+        }
+
 
         [TestMethod]
         public void SaveCertificate_Success()
@@ -163,53 +210,6 @@ END",
 
             var storage = new AzureStorageProvider();
             Assert.IsTrue(storage.ReleaseLockOnBlobFile(folder, file));
-        }
-
-        [TestMethod]
-        public void CallIgcAsync()
-        {
-            var jsonToReturn = "";
-
-            var requestBody = @"{
-  types: [
-    $ApplicationCatalog-ApplicationCatalog
-  ],
-  where: {
-                conditions: [
-                  {
-        min: 1511308800000,
-                    max: 1522189789000,
-                    property: 'modified_on',
-                    operator: 'between'
-      }
-    ],
-    operator: 'or'
-  },
-  sorts: [
-    {
-      property: 'name',
-      ascending: true
-    }
-  ],
-  properties: [
-    '$PersonalData',
-    'modified_on'
-  ]}";
-            using (var client = new HttpClient()) //WebClient()
-            {
-                client.Timeout = new TimeSpan(1, 0, 0);
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
-                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", "Basic c3BsRFRTV0VCMjg2MjM6cChMWlsxfF1bYkl1");
-                var response = client.PostAsync("https://edgm-catalog.statestreet.com/ibm/iis/igc-rest/v1/search/", new StringContent(requestBody)).Result;
-                response.EnsureSuccessStatusCode();
-                jsonToReturn = response.Content.ReadAsStringAsync().Result;
-                //client.Headers.Set(HttpRequestHeader.Accept, "application/json");
-                //client.Headers.Set(HttpRequestHeader.ContentType, "application/json");
-                //client.Headers.Set(HttpRequestHeader.Authorization, authorization);
-                //jsonToReturn = client.UploadString(uri, requestBody);
-            }
-
         }
 
         [TestMethod]

@@ -25,12 +25,14 @@ import { AdminResponsibilitiesRoutingModule } from './admin-responsibilities.rou
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 
 import {
-    ButtonModule,
+    ButtonModule, 
+    CheckboxModule,
     DropdownModule,
     EditorModule,
     InputTextModule,
     MultiSelectModule,
     SharedModule,
+    TooltipModule,
     DataTableModule,
 } from 'primeng/primeng';
 
@@ -44,12 +46,14 @@ import {
 
         //prime
         ButtonModule,
+        CheckboxModule,
         DropdownModule,
         EditorModule,
         InputTextModule,
         MultiSelectModule,
         SharedModule,
         DataTableModule,
+        TooltipModule,
 
         //d3s        
         CoreModule,

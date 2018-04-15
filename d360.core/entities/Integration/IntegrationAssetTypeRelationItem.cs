@@ -24,6 +24,9 @@ namespace d360.core.entities
         public bool IsSubject { get; set; } = false;
 
         [IgnoreDataMember, ForeignKey("SynchedAssetTypeID")]
-        public virtual ICollection<IntegrationAssetType> IntegrationAssetType { get; set; }
+        public virtual IntegrationAssetType IntegrationAssetType { get; set; }
+
+        [IgnoreDataMember, ForeignKey("SynchedAssetTypeRelationItemID")]
+        public virtual ICollection<IntegrationAssetTypeRelationItemTarget> Targets { get; set; }
     }
 }

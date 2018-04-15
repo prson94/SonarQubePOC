@@ -15425,7 +15425,7 @@ order by DN.DisplayValue");
 
             if (id < 1)
             {
-                model = new ResponsibilityTypeRelationRule();
+                model = new ResponsibilityTypeRelationRule();// { ApplyToType = false, IsVisible = true };
             }
             else
             {
@@ -15459,6 +15459,8 @@ order by DN.DisplayValue");
                 existing.ObjectID = model.ObjectID;
                 existing.ResponsibilityTypeID = model.ResponsibilityTypeID;
                 existing.Context = model.Context;
+                //existing.ApplyToType = model.ApplyToType;
+                //existing.IsVisible = model.IsVisible;
 
                 existing.SetRawFromDefinition();
 
@@ -19096,7 +19098,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
             var list = new List<EditableField>();            
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "MaxAge", Name = "Cache Max-Age (seconds)", FieldDescription = "", FieldType = DataType.Number.ToString(), Validations = checkAndAddValidation("Number", "MaxAge", true, "(3[2-8][0-9]{2}|39[0-8][0-9]|399[0-9]|[4-9][0-9]{3}|[1-7][0-9]{4}|8[0-3][0-9]{3}|84000)",null,null, "Please enter a cache max-age value between 3,200-84,000 seconds") });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });            
 
@@ -19115,7 +19117,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix, Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "MaxAge", Name = "Cache Max-Age (seconds)", FieldDescription = "", FieldType = DataType.Number.ToString(), Value = a.MaximumCacheAge.ToString(), Validations = checkAndAddValidation("Number", "MaxAge", true, "(3[2-8][0-9]{2}|39[0-8][0-9]|399[0-9]|[4-9][0-9]{3}|[1-7][0-9]{4}|8[0-3][0-9]{3}|84000)", null,null, "Please enter a cache max-age value between 3,200-84,000 seconds") });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
 
@@ -19211,7 +19213,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ServiceID", FieldType = DataType.Hidden.ToString(), Value = serviceId.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -19229,7 +19231,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix, Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -19323,7 +19325,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "EndpointID", FieldType = DataType.Hidden.ToString(), Value = endpointId.ToString() });            
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MajorVersion", Name ="Major Version", FieldDescription = "", FieldType = DataType.Number.ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "MinorVersion", Name = "Minor Version", FieldDescription = "", FieldType = DataType.Number.ToString() });
             list.Add(new EditableField
@@ -19362,7 +19364,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });            
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix, Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MajorVersion", Name = "Major Version", FieldDescription = "", FieldType = DataType.Number.ToString(), Value = a.MajorVersion.ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "MinorVersion", Name = "Minor Version", FieldDescription = "", FieldType = DataType.Number.ToString(), Value = a.MinorVersion.ToString() });
 
@@ -19491,8 +19493,8 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 new SelectListItem{Text = "Collection", Value = "1"},
             }
             });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Format", Name = "Segment", FieldDescription = "", FieldType = DataType.Number.ToString() });
-            
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Format", Name = "Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Format", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") }); 
+
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -19512,7 +19514,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 new SelectListItem{Text = "Collection", Value = "1", Selected = (a.UriType == ApiUriType.Collection)},
             }
             });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Format", Name = "Segment", FieldDescription = "", FieldType = DataType.Number.ToString(), Value = a.Format });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Format", Name = "Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.Format, Validations = checkAndAddValidation("Text", "Format", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

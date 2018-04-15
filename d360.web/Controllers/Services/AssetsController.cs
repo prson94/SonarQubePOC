@@ -17,6 +17,9 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Newtonsoft.Json;
 using System.Data.SqlClient;
+using d360.extensions;
+using d360.core.queue;
+using d360.core.enums.Workflow;
 
 namespace d360.web.Controllers.Services
 {
@@ -28,9 +31,12 @@ namespace d360.web.Controllers.Services
     {
         #region DI
 
-        public AssetsController(CommunityContext community, CompanyContext company)
+        IQueueSource QueueSource;
+
+        public AssetsController(CommunityContext community, CompanyContext company, IQueueSource queueSource)
             : base(community, company)
         {
+            QueueSource = queueSource;
         }
 
         #endregion
@@ -614,6 +620,8 @@ when not matched by target then
 
                 #region Cycle through the return results form the database, and update the results collection to send back to the caller.
 
+                //var events = new List<EventInfo>();
+
                 retResults.ForEach(d =>
                 {
                     var cr = results.SingleOrDefault(i => i.ItemNumber == d.ItemNumber);
@@ -623,9 +631,25 @@ when not matched by target then
                         {
                             cr.Success = d.Success;
                             cr.Message = d.Success ? (d.IsNew ? "Created" : "Updated") : "Failed";
+                            //if (d.Success)
+                            //{
+                            //    events.Add(new EventInfo
+                            //    {
+                            //        CompanyID = Company.CurrentCompanyID,
+                            //        DomainPrefix = Company.CurrentCompanyDomain,
+                            //        ResourceID = Company.CurrentResourceID,
+                            //        Action = d.IsNew ? ChangeType.Add : ChangeType.Update,
+                            //        Object = new EventObjectInfo { Object = , ObjectType = ot, ObjectID = cr., ObjectTypeID = otid }
+                            //    });
+                            //}
                         }
                     }
                 });
+
+                //if (events.Count > 0)
+                //{
+                //    QueueSource.CreateTopicMessages(events);
+                //}
 
                 #endregion
 
@@ -684,6 +708,7 @@ when not matched by target then
                 relationshipTable.Columns.Add("SubjectSourceID", typeof(string));
                 relationshipTable.Columns.Add("ObjectSourceID", typeof(string));
                 relationshipTable.Columns.Add("PredicateType", typeof(int));
+                relationshipTable.Columns.Add("IntersectTypeID", typeof(int));
                 relationshipTable.Columns.Add("Message", typeof(string));
                 relationshipTable.Columns.Add("Success", typeof(bool));
                 relationshipTable.Columns.Add("IntersectID", typeof(int));
@@ -702,6 +727,7 @@ when not matched by target then
                     row["SubjectSourceID"] = model.SubjectSourceID;
                     row["ObjectSourceID"] = model.ObjectSourceID;
                     row["PredicateType"] = model.PredicateType;
+                    row["IntersectTypeID"] = model.IntersectTypeID;
 
                     relationshipTable.Rows.Add(row);
                 }
@@ -725,6 +751,7 @@ create table #RelationshipTable (
     SubjectSourceID nvarchar(1000) null,
     ObjectSourceID nvarchar(1000) null,
     PredicateType int null,
+    IntersectTypeID int null,
     Message nvarchar(2500) null,
     Success bit null,
     IntersectID int null,
@@ -744,6 +771,7 @@ create table #RelationshipTable (
                     assetBulkCopy.ColumnMappings.Add("SubjectSourceID", "SubjectSourceID");
                     assetBulkCopy.ColumnMappings.Add("ObjectSourceID", "ObjectSourceID");
                     assetBulkCopy.ColumnMappings.Add("PredicateType", "PredicateType");
+                    assetBulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
                     assetBulkCopy.ColumnMappings.Add("Message", "Message");
                     assetBulkCopy.ColumnMappings.Add("Success", "Success");
                     assetBulkCopy.ColumnMappings.Add("IntersectID", "IntersectID");
@@ -773,7 +801,7 @@ using       (
 
 		            inner join IntersectTypeDetail	IT on IT.Subject = ST.Object and IT.SubjectID = ST.ObjectID and 
 										            IT.Object = TT.Object and IT.ObjectID = TT.ObjectID and
-										            IT.PredicateType = R.PredicateType
+										            IT.ID = R.IntersectTypeID
             ) S
 on          (
                 T.IntersectTypeID = S.IntersectTypeID and 
@@ -785,19 +813,77 @@ on          (
 when not matched by target then
     insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
     values  (S.IntersectTypeID, S.Subject, S.SubjectID, S.Object, S.ObjectID, @r, @r)
-output inserted.ID, S.ItemNumber, $action into #RelationshipMergeTableResult;
+output inserted.ID, S.ItemNumber, $action into #RelationshipMergeTableResult; 
 
 update  T
 set     T.IntersectID = S.IntersectID,
         T.IsNew = case when S.[Action] = 'INSERT' then 1 else 0 end
 from    #RelationshipTable T
-        inner join #RelationshipMergeTableResult S on S.ItemNumber = T.ItemNumber;
-", new { @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
+        inner join #RelationshipMergeTableResult S on S.ItemNumber = T.ItemNumber; 
 
+update  T
+set     T.IntersectID = I.ID
+from    #RelationshipTable T
+        left join Asset S on S.SourceID = T.SubjectSourceID
+        left join Asset O on O.SourceID = T.ObjectSourceID
+        left join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
+                and I.Subject = S.Object 
+                and I.SubjectID = S.ObjectID 
+                and I.Object = O.Object 
+                and I.ObjectID = O.ObjectID;", 
+                new { @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
+
+                    Company.Database.Connection.Execute($@"
+merge into  [integration].[UnresolvedRelationItem] T
+using       (
+            select  SubjectSourceID,
+                    ObjectSourceID,
+                    IntersectTypeID
+            from    #RelationshipTable
+            where   IntersectID is null
+            ) S
+on          (
+                T.IntersectTypeID = S.IntersectTypeID and 
+                T.SubjectSourceID = S.SubjectSourceID and 
+                T.ObjectSourceID = S.ObjectSourceID
+            )
+when matched then
+    update set
+        T.AttemptCount = T.AttemptCount + 1,
+        T.MostRecentAttemptOn = getutcdate()
+when not matched by target then
+    insert  (IntersectTypeID, SubjectSourceID, ObjectSourceID, AttemptCount, MostRecentAttemptOn)
+    values  (S.IntersectTypeID, S.SubjectSourceID, S.ObjectSourceID, 1, getutcdate());
+", new { @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
 
                     retResults = Company.Database.Connection.Query<dynamic>("select * from #RelationshipTable", transaction: trans).ToList();
 
                     trans.Commit();
+                }
+
+                try
+                {
+                    var events = new List<EventInfo>();
+                    retResults.ForEach(r => {
+                        if (r.IsNew == true && r.IntersectID != null)
+                        {
+                            events.Add(new EventInfo
+                            {
+                                CompanyID = Company.CurrentCompanyID,
+                                DomainPrefix = Company.CurrentCompanyDomain,
+                                ResourceID = Company.CurrentResourceID,
+                                Action = ChangeType.Add,
+                                Object = new EventObjectInfo { Object = SystemObjects.Intersect, ObjectType = SystemObjects.IntersectType, ObjectID = r.IntersectID, ObjectTypeID = r.IntersectTypeID }
+                            });
+                        }
+                    });
+                    if (events.Count > 0)
+                    {
+                        QueueSource.CreateTopicMessages(events);
+                    }
+                }
+                catch (Exception ex)
+                {
                 }
 
                 return Request.CreateResponse(HttpStatusCode.OK, retResults);
