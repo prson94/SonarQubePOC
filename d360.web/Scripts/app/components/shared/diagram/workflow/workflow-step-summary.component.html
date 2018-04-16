@@ -71,7 +71,7 @@
                     <div class="FieldName">
                         Body
                     </div>
-                    <div class="FieldDisplayContent" [innerHtml]="step.settings['MessageBodyTemplate']">
+                    <div class="FormFieldContent" [innerHtml]="step.settings['MessageBodyTemplate']">
 
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                         <div class="FieldName">
                             Description
                         </div>
-                        <div [innerHTML]="step.fields.form['@description']">
+                        <div class="FormFieldContent" [innerHTML]="step.fields.form['@description']">
 
                         </div>
                     </div>
@@ -172,7 +172,7 @@
                     <div class="FieldName">
                         Body
                     </div>
-                    <div class="FieldDisplayContent" [innerHTML]="step.settings['MessageBodyTemplate']">
+                    <div class="FormFieldContent"  [innerHTML]="step.settings['MessageBodyTemplate']">
 
                     </div>
                 </div>
