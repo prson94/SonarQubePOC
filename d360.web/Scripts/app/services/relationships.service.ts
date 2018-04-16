@@ -147,10 +147,10 @@ export class RelationshipsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, criticalOnly?: boolean){
+    exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, queryString: string, criticalOnly?: boolean){
         criticalOnly = (criticalOnly == undefined ? false : criticalOnly);
 
-        window.location.assign(`/api/export/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/excel.xls`);        
+        window.location.assign(`/api/export/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/excel.xls?${queryString}`);        
     }
 
     deleteRelationshipItem(id: number): Promise<any> {

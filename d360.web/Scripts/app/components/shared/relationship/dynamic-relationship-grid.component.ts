@@ -17,7 +17,7 @@ declare var CompanySettings;
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical && !showDelete">                    
                     <input #gb [hidden]="!simpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                    <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
+                    <p-dataTable #dt [globalFilter]="gb"  scrollable="true" (onFilter)=onFilter($event) scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column  [style]="{width:'28px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
@@ -40,7 +40,7 @@ declare var CompanySettings;
                                     </div>
                                 </ng-template>
                         </p-column>                           
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  [filter]="!simpleFilter">
+                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  filterMatchMode="startsWith"  [filter]="!simpleFilter">
                             <ng-template let-item="rowData" pTemplate type="body">
                                     <d3s-dynamic-field-value *ngIf="column.text != 'Name';else nameField" [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
                                     <ng-template #nameField>
@@ -88,11 +88,12 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Output() relationshipRemoved = new EventEmitter();
     @Output() deleteOn = new EventEmitter();
     @Output() deleteOff = new EventEmitter();
-
+    @Output() onFilterChange = new EventEmitter();
+   
     @Input() simpleFilter: boolean;
 
     private fields: GridField[] = [];
-    
+
 
     get taxonomyName() {
         return CompanySettings.ArtifactType_TaxonomyTypeID || '';
@@ -210,4 +211,19 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     selectObject(item) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
     }
+    onFilter(event:any) {
+
+        let count = 0;
+        let qstring: string="";
+        
+        for (var key in event.filters) {
+            var matchcondition: string = event.filters[key].matchMode == "startsWith" ? "STARTS_WITH" : event.filters[key].matchMode;
+            qstring += `&filterdatafield${count}=${key}&filtercondition${count}=${matchcondition}&filtervalue${count}=${event.filters[key].value}`;
+            count++;
+        } 
+        qstring += '&filterscount=' + count;
+        this.onFilterChange.emit(qstring);
+    
+    }
+  
 }

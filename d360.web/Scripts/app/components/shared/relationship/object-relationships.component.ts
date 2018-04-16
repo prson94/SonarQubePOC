@@ -28,7 +28,7 @@ import { Permission } from '../../../models/permission.model'
                         </ng-template>
                     </div>
                     <div class="col l9 s12">                        
-                        <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" [(readOnly)]="readOnly" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" (deleteOn)="hideforDelete()"  (deleteOff)="unhideforDelete()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetName]="selected?.Name" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID" [hasEdit]="hasRelationshipUpdatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-dynamic-relationship-grid>                        
+                        <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" (onFilterChange)="onFilterChange($event)" [(readOnly)]="readOnly" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" (deleteOn)="hideforDelete()"  (deleteOff)="unhideforDelete()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetName]="selected?.Name" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID" [hasEdit]="hasRelationshipUpdatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-dynamic-relationship-grid>                        
                     </div>                    
                 </div>
                 <div class="row" *ngIf="!isLoading && !hasRelationships  && hideDelete">
@@ -54,7 +54,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     showAddRelationship: boolean = false;
     showEmptyRelationshipTypes: boolean = true;
     hideDelete: boolean = true;
-
+    queryString: string = "";
     @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
 
     constructor(protected relationshipsService: RelationshipsService) {
@@ -99,7 +99,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     export() {
         if (!this.selected) return;
-        this.relationshipsService.exportObjectRelationshipsToExcel(this.objectType, this.objectID, this.selected.Object, this.selected.ObjectID, this.selected.IntersectTypeID, false);
+        this.relationshipsService.exportObjectRelationshipsToExcel(this.objectType, this.objectID, this.selected.Object, this.selected.ObjectID, this.selected.IntersectTypeID, this.queryString, false);
     }
 
     addRelationship(event) {
@@ -136,5 +136,9 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             return this.relationshipItems;
 
         return this.relationshipItems.filter(x => x.Count > 0);
+    }
+
+    onFilterChange(qstring) {
+        this.queryString = qstring;
     }
 }

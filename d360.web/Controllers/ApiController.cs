@@ -6927,109 +6927,23 @@ from	(
             {innerSql}
         ) A 
 {joins} 
-order by A.Name";
+";
 
-            return Company.Query<dynamic>(querySql, new { it = intersectTypeID, type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 20 }, id });
+
+            var sql = string.Format(@"select * from ({0}) AA", querySql);
+            sql = applyFilteringSuffix(sql, Request);
+           
+            sql += " order by AA.Name";
+
+            return Company.Query<dynamic>(sql, new { it = intersectTypeID, type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 20 }, id });
         }
 
         [Route("export/{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/excel.xls"), HttpGet]
         public HttpResponseMessage RelationshipsForObjectByTargetTypeExportExcel(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID)
         {
-            var sType = type.ToString();
-            var tType = targetType.ToString();
-
-            var joins = "";
-            var columns = "";
-            //var whereClause = "";
-            getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns, true, false);
-
-            var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
-            foreach (var f in attributesTypes)
-            {
-                var name = $"AttributeType{f.AttributeType.ID}";
-                columns += $"{name}_T.FormattedValue as [{name}], ";
-                joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
-            }
-
-            var intersectType = Company.IntersectTypes.Where(x => x.ID == intersectTypeID).FirstOrDefault();
-
-            var predicateId = intersectType != null ? intersectType.PredicateID : null;
-
-            var predicateClause = predicateId.HasValue ? $"and PredicateID = {predicateId}" :"";
-
-            var querySql = $@"
-select  {columns} 
-        A.*
-from	(
-select	ID,
-        IntersectTypeID,
-        Object,
-		ObjectID,
-		ObjectName as Name,
-        ObjectUrl as Url,
-		ObjectType as Type,
-		ObjectTypeID as TypeID,
-		ObjectTypeName as TypeName,
-		T.HasTechnicalRelationships,
-        A.HasAttributes
-from	IntersectDetail I
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID
-					) T
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasAttributes
-					from	[Attribute]
-					where	ObjectType = 'Intersect' and ObjectID = I.ID
-					) A
-where	Subject ='{type.ToString()}'  and SubjectID = {id}
-		and ObjectType = '{targetType.ToString()}' and ObjectTypeID = {targetID} {predicateClause}
-union
-select	
-		ID,
-        IntersectTypeID,
-        Subject as Object,
-		SubjectID as ObjectID,
-		SubjectName as Name,
-        SubjectUrl as Url,
-		SubjectType as Type,
-		SubjectTypeID as TypeID,
-		SubjectTypeName as TypeName,
-		T.HasTechnicalRelationships,
-        A.HasAttributes	        
-from	IntersectDetail I
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID
-					) T
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasAttributes
-					from	[Attribute]
-					where	ObjectType = 'Intersect' and ObjectID = I.ID
-					) A
-
-where	Object = '{type.ToString()}' and ObjectID = {id}
-		and SubjectType = '{targetType.ToString()}' and SubjectTypeID = {targetID} {predicateClause}
-        ) A {joins}";
 
 
-            querySql += " order by A.Name";
-
-            var results = Company.Query<dynamic>(querySql);
+            var results = this.RelationshipsForObjectByTargetType(type, id, targetType, targetID, intersectTypeID);
 
             //get the fields for the spreadsheet
             var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && i.ObjectID == intersectTypeID && i.IsListable).ToList().OrderBy(x => x.SortOrder);
