@@ -624,6 +624,95 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 .AsQueryable();
         }
 
+        public Dictionary<string,object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true)
+        {
+            var ft = GetById<FieldType>(fieldTypeID);
+            var intersectType = GetById<IntersectType>(ft.LookupObjectID.Value);
+            int count = 0, objID = 0;
+            string sql, countSql, obj, selectedSql;
+
+            bool isSubject = (intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID);
+            obj = isSubject ? intersectType.Object : intersectType.Subject;
+            objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+            var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
+
+            countSql = @"select count(*) from AssetDetail where [Type] = @obj and TypeID = @objID order by DisplayValue";
+            sql = @"select ObjectID as Value, DisplayValue as Text from AssetDetail where [Type] = @obj and TypeID = @objID
+                    order by DisplayValue OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+            selectedSql = @"select 
+	                case when i.Subject = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end as [Value],
+	                P.TextPath as [Text],
+	                1 as Selected
+                 from [intersect] i
+                 inner join Asset A on A.[Object] = case when i.[Subject] = @obj and i.SubjectID = @objID then i.[Object] else i.[Subject] end
+				                and A.ObjectID = case when i.[Subject] = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end
+                cross apply GetAssetTextPathById(A.ID, '.') P
+                where i.intersectTypeID = @intersectTypeID and i.State = 1 and ((i.Subject = @obj and i.SubjectID = @objID) or (i.Object = @obj and i.ObjectID = @objID))";
+
+            switch (obj)
+            {
+                case "ArtifactType":
+                case "PolicyType":
+                case "ReferenceItemType":
+                case "RuleType":
+                case "TaxonomyType":
+                    countSql = @"select count(*) from AssetWithType A
+                        cross apply GetAssetTextPathById(A.ID, '.') P 
+                        where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')";
+                    sql = @"select A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
+                            from AssetWithType A 
+                            cross apply GetAssetTextPathById(A.ID, '.') P 
+                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
+	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                            where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')
+                            order by 3 desc, P.TextPath asc
+                            OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+                    break;
+                case "FusionAttributeType":
+                    countSql = "select count(*) from FusionAttribute where FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')";
+                    sql = @"select ID as Value, F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
+                            from FusionAttribute F
+                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and
+                                ((I.[Subject] = 'FustionAttribute' and I.SubjectID = F.ID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+                                (I.[Object] = 'FustionAttribute' and I.ObjectID = F.ID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                            where F.FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')
+                            order by 3 desc, TextPath asc
+                            OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+                    break;
+                case "ResourceType":
+                    countSql = "select count(*) from reporting.Global_Resource where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')";
+                    sql = @"select ID as Value, R.LastName + ', ' + R.FirstName as Text, case when I.ID is not null then 1 else 0 end as Selected 
+                            from reporting.[Global_Resource] R
+                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and
+	                            ((I.[Subject] = 'Resource' and I.SubjectID = F.ID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = 'Resource' and I.ObjectID = F.ID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                            where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
+                            order by 3 desc, R.LastName + ', ' + R.FirstName asc  
+                            OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+                    break;
+            }
+
+            if (offset == 0 || query != null)
+                count = Query<int>(countSql, new { obj, objID, query }).FirstOrDefault();
+
+            List<dynamic> selected = null;
+
+            if (includeSelection)
+                selected = Query<dynamic>(selectedSql, new { obj = @object, objID = objectID, intersectTypeID = intersectType.ID }).ToList();
+            var items = Query<dynamic>(sql, new { offset, rows, query, obj, objID, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID, intersectTypeID = intersectType.ID }).ToList();
+
+            var dict = new Dictionary<string, object>();
+
+            if (includeSelection)
+                dict.Add("Selection", selected.ToList());
+
+            dict.Add("Items", items.ToList());
+            dict.Add("Count", count);
+
+            return dict; 
+        }
+
         #region Fusion
 
         public Dictionary<string, object> GetFusionAsDictionary(int id)

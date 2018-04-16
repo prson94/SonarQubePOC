@@ -526,7 +526,7 @@ namespace d360.web.Controllers
                         {
                             patternMessage = f.ValidationDescription;
                         }
-                        
+
                         var fld = new EditableField
                         {
                             Row = row,
@@ -604,101 +604,29 @@ namespace d360.web.Controllers
 
                         if (f.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
                         {
-                            fld.FieldType = DataType.Relationship.ToString();
-                            try
-                            {
-                                fld.Items = new List<SelectListItem>();
+                            var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
+                            bool isSubject = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID);
+                            var obj = isSubject ? intersectType.Object : intersectType.Subject;
+                            var objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+                            var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
-                                var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
-                                if (intersectType != null)
-                                {
-                                    var obj = "";
-                                    var objID = 0;
+                            if (cardinality != Cardinality.Many)
+                                fld.MultiSelect = false;
+                            else
+                                fld.MultiSelect = true;
 
-                                    var isSubject = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID);
-                                    obj = isSubject ? intersectType.Object : intersectType.Subject;
-                                    objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
-                                    var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
+                            var result = Company.GetRelationshipFieldItems(f.ID);
+                            fld.Items = ((List<dynamic>)result["Items"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value, Selected = i.Selected }).ToList();
+                            fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value, Selected = i.Selected }).ToArray());
+                            fld.RecordCount = (int)result["Count"];
 
-                                    obj = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID) ? intersectType.Object : intersectType.Subject;
-                                    objID = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID) ? intersectType.ObjectID : intersectType.SubjectID;
-
-                                    if ((isSubject && intersectType.ObjectCardinality != Cardinality.One) || (!isSubject && intersectType.SubjectCardinality != Cardinality.One))
-                                        fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
-
-                                    var sql = $"select ObjectID as Value, DisplayValue as Text from AssetDetail where [Type] = '{obj}' and TypeID = {objID} order by DisplayValue";
-
-                                    switch (obj)
-                                    {
-                                        case "ArtifactType":
-                                        case "PolicyType":
-                                        case "ReferenceItemType":
-                                        case "RuleType":
-                                        case "TaxonomyType":
-                                            sql = $"select A.ObjectID as Value, P.TextPath as Text from AssetWithType A cross apply GetAssetTextPathById(A.ID, '.') P where A.[Type] = '{obj}' and A.TypeID = {objID} order by P.TextPath";
-                                            break;
-                                        case "FusionAttributeType":
-                                            sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";
-                                            break;
-                                        case "ResourceType":
-                                            sql = $"select ID as Value, LastName + ', ' + FirstName as Text from reporting.[Global_Resource] order by LastName + ', ' + FirstName";
-                                            break;
-                                    }
-
-                                    var items = Company.Query<SelectListItem>(sql);
-
-                                    if (cardinality != Cardinality.Many)
-                                    {
-                                        fld.MultiSelect = false;
-
-                                        var intersect = Company.Filter<Intersect>(i =>
-                                        i.IntersectTypeID == intersectType.ID &&
-                                        ((isSubject && i.Subject == obj && i.SubjectID == objID) || (!isSubject && i.Object == obj && i.ObjectID == objID))
-                                        ).FirstOrDefault();
-
-                                        if (intersect != null)
-                                        {
-                                            fld.Value = isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}";
-                                        }
-                                    }
-                                    else
-                                    {
-                                        fld.MultiSelect = true;
-
-                                        var intersects = Company.Filter<Intersect>(i =>
-                                        i.IntersectTypeID == intersectType.ID &&
-                                        ((isSubject && i.Subject == obj && i.SubjectID == objID) || (!isSubject && i.Object == obj && i.ObjectID == objID))
-                                        );
-
-                                        var selected = new List<string>();
-                                        foreach (var intersect in intersects)
-                                        {
-                                            selected.Add(isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}");
-                                        }
-
-                                        foreach (var item in items)
-                                        {
-                                            if (selected.Contains(item.Value))
-                                                item.Selected = true;
-                                        }
-                                    }
-
-                                    fld.Items.AddRange(
-                                        Company.Query<SelectListItem>(sql)
-                                    );
-                                }
-                            }
-                            catch
-                            {
-                                fld.Items.Add(new SelectListItem { Text = "No valid relationship option found", Value = "" });
-                            }
                         }
 
-                        if(f.Type == DataType.Lookup.ToString())  // lookups dont set min / length properties
+                        if (f.Type == DataType.Lookup.ToString())  // lookups dont set min / length properties
                             fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
                         else
                             fld.Required = (f.MinimumLength > 0 || f.Length > 0);
-                        
+
                         list.Add(fld);
                     }
 
@@ -785,7 +713,7 @@ namespace d360.web.Controllers
                         #region Lookup
 
                         if (ft.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
-                        {                            
+                        {
                             try
                             {
                                 fld.Items = new List<SelectListItem>();
@@ -798,7 +726,7 @@ namespace d360.web.Controllers
                                 {
                                     var parent = Company.FieldTypes.Where(x => x.ID == ft.ParentFieldTypeID).FirstOrDefault();
 
-                                    if(parent != null) fld.ParentFieldTypeName = parent.FriendlyName;
+                                    if (parent != null) fld.ParentFieldTypeName = parent.FriendlyName;
 
                                     if (ft.AllowMultipleValues)
                                     {
@@ -831,18 +759,18 @@ namespace d360.web.Controllers
                                         else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
                                             selected = ft.DefaultValue.Split(',').ToList();
 
-                                        if(ft.AllowAllValue && selected.Contains("0"))
+                                        if (ft.AllowAllValue && selected.Contains("0"))
                                         {
                                             var all = fld.Items.Where(x => x.Value == "0").FirstOrDefault();
                                             all.Selected = true;
                                         }
-                                                                                
+
                                         foreach (var item in items)
                                         {
-                                            if (selected.Contains(item.Value)) item.Selected = true;                                            
+                                            if (selected.Contains(item.Value)) item.Selected = true;
                                         }
                                     }
-                                    
+
                                     fld.Items.AddRange(
                                         items
                                     );
@@ -860,92 +788,23 @@ namespace d360.web.Controllers
 
                         if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
                         {
-                            fld.FieldType = DataType.Relationship.ToString();
-                            try
-                            {
-                                fld.Items = new List<SelectListItem>();
+                            var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
+                            bool isSubject = (intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID);
+                            var obj = isSubject ? intersectType.Object : intersectType.Subject;
+                            var objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+                            var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
-                                var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
-                                if (intersectType != null)
-                                {
-                                    var obj = "";
-                                    var objID = 0;
+                            if (cardinality != Cardinality.Many)
+                                fld.MultiSelect = false;
+                            else
+                                fld.MultiSelect = true;
 
-                                    var isSubject = (intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID);
-                                    obj = isSubject ? intersectType.Object : intersectType.Subject;
-                                    objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
-                                    var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
+                            var result = Company.GetRelationshipFieldItems(ft.ID, @object, objectID);
 
-                                    // Required relationship.
-                                    if ( (isSubject && intersectType.ObjectCardinality != Cardinality.One) || (!isSubject && intersectType.SubjectCardinality != Cardinality.One))
-                                        fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+                            fld.Items = ((List<dynamic>)result["Items"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToList();
+                            fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
+                            fld.RecordCount = (int)result["Count"];
 
-                                    var sql = $"select ObjectID as Value, DisplayValue as Text from AssetDetail where [Type] = '{obj}' and TypeID = {objID} order by DisplayValue";
-
-                                    switch (obj)
-                                    {
-                                        case "ArtifactType":
-                                        case "PolicyType":
-                                        case "ReferenceItemType":
-                                        case "RuleType":
-                                        case "TaxonomyType":
-                                            sql = $"select A.ObjectID as Value, P.TextPath as Text from AssetWithType A cross apply GetAssetTextPathById(A.ID, '.') P where A.[Type] = '{obj}' and A.TypeID = {objID} order by P.TextPath";
-                                            break;
-                                        case "FusionAttributeType":
-                                            sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";
-                                            break;
-                                        case "ResourceType":
-                                            sql = $"select ID as Value, LastName + ', ' + FirstName as Text from reporting.[Global_Resource] order by LastName + ', ' + FirstName";
-                                            break;
-                                    }
-
-                                    var items = Company.Query<SelectListItem>(sql);
-
-                                    if (cardinality != Cardinality.Many)
-                                    {
-                                        fld.MultiSelect = false;
-
-                                        var intersect = Company.Filter<Intersect>(i =>
-                                        i.IntersectTypeID == intersectType.ID &&
-                                        ((isSubject && i.Subject == @object && i.SubjectID == objectID) || (!isSubject && i.Object == @object && i.ObjectID == objectID))
-                                        ).FirstOrDefault();
-
-                                        if (intersect != null)
-                                        {
-                                            fld.Value = isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}";
-                                        }
-                                    }
-                                    else
-                                    {
-                                        fld.MultiSelect = true;
-
-                                        var intersects = Company.Filter<Intersect>(i =>
-                                        i.IntersectTypeID == intersectType.ID &&
-                                        ((isSubject && i.Subject == @object && i.SubjectID == objectID) || (!isSubject && i.Object == @object && i.ObjectID == objectID))
-                                        );
-
-                                        var selected = new List<string>();
-                                        foreach (var intersect in intersects)
-                                        {
-                                            selected.Add(isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}");
-                                        }
-
-                                        foreach (var item in items)
-                                        {
-                                            if (selected.Contains(item.Value))
-                                                item.Selected = true;
-                                        }
-                                    }
-
-                                    fld.Items.AddRange(
-                                        items
-                                    );
-                                }
-                            }
-                            catch
-                            {
-                                fld.Items.Add(new SelectListItem { Text = "No valid relationship option found", Value = "" });
-                            }
                         }
 
                         #endregion Relationship
@@ -965,7 +824,7 @@ namespace d360.web.Controllers
                                 fld.Value = ft.DefaultValue;
                             }
                         }
-                        
+
                         list.Add(fld);
 
                         row++;

@@ -8,6 +8,7 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { CascadeService } from '../../../services/cascade.service';
 import { FieldsService } from '../../../services/fields.service';
 import { concat } from 'rxjs/observable/concat';
+import { Subject } from 'rxjs';
 
 declare var CompanySettings;
 
@@ -76,9 +77,31 @@ declare var CompanySettings;
                                 </select>
                             </ng-template>                            
                         </div>
-                        <div *ngSwitchCase="'Relationship'"> 
-                            <p-dropdown *ngIf="!field?.MultiSelect" [filter]="true" [options]="field.Items | dropdownItemToSelectItemPipe" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [style]="{width:'100%'}" ngDefaultControl></p-dropdown>
-                            <p-multiSelect *ngIf="field?.MultiSelect" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
+                        <div *ngSwitchCase="'Relationship'">
+                            <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                            <p-dataTable #dt
+                                            [globalFilter]="gb"
+                                            [loading]="relationItemsLoading"
+                                            scrollable="true"
+                                            scrollWidth="100%"
+                                            [rowsPerPageOptions]="defaultPagingOptions"
+                                            [value]="field.Items"
+                                            [selection]="relationItems"
+                                            (selectionChange)="selectRelationItems($event)"
+                                            [formControlName]="field.FieldName"
+                                            [rows]="defaultInitialItemsPerPage"
+                                            paginator="true"
+                                            pageLinks="3"
+                                            lazy="true"
+                                            (onLazyLoad)="lazyLoad($event)"
+                                            [totalRecords]="field?.RecordCount"
+                                            ngDefaultControl>
+                                    <p-footer *ngIf="dt.totalRecords">
+                                        <d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
+                                    </p-footer>
+                                    <p-column field="Selected" [selectionMode]="field?.MultiSelect ? 'multiple' : 'single'" [style]="{'width':'30px'}"></p-column>
+                                    <p-column field="Text" header="Name"></p-column>
+                                </p-dataTable>
                         </div>
 
                         <input *ngSwitchCase="'Number'" [(ngModel)]="field.Value" [formControlName]="field.FieldName" style="width: 100%;" type="string">              
@@ -119,12 +142,18 @@ declare var CompanySettings;
 export class DynamicFieldComponent extends BaseComponent implements OnInit {
     @Input() field: EditorField;
     @Input() form: FormGroup;
+    @Input() object: string;
+    @Input() objectID: number = null;
     
     @Output() listItemChange = new EventEmitter();
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
-    private sub: any;
+    private cascadeSub: any;
+    private relationSource$ = new Subject<any>();
+    private relationSub: any;
+    private relationItems = [];
+    private relationItemsLoading = false;
 
     private colorValue: string = '#000';
 
@@ -140,7 +169,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.sub = this.cascadeService.cascadeMessage$.subscribe(
+        this.cascadeSub = this.cascadeService.cascadeMessage$.subscribe(
             casc => {
                 if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
                     if (casc.parentListItemId != null && casc.parentListItemId.length > 0) {
@@ -163,7 +192,19 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
                     }
                 }
             });
-                
+
+        this.relationSub = this.fieldsService.getRelationshipFieldItems(this.relationSource$)
+            .subscribe(res => {
+                this.relationItemsLoading = false;
+                this.field.Items = res.results.items;
+                this.selectRelationItems(this.relationItems);
+
+                if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0)
+                    this.field.RecordCount = res.results.count;
+                this.ref.markForCheck();
+        });
+
+
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
@@ -184,6 +225,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
             this.colorValue = this.field.Value;
         }
 
+        if (this.field.FieldType == 'Relationship') {
+            this.selectRelationItems(this.field.Value);
+        }
+
         if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
             window.setTimeout(() => {                
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
@@ -192,7 +237,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        this.cascadeSub.unsubscribe();
+        this.relationSub.unsubscribe();
     }
 
     get isValid() {
@@ -289,4 +335,36 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit {
         let value: string = this.form.controls[this.field.FieldName].value;
         this.form.controls[this.field.FieldName].setValue(value.trim());
     }
+
+    private lazyLoad(e: any) {
+        //console.log('lazyLoad', this.relatedItems, { fieldTypeID: this.field.FieldTypeID, object: this.object, objectID: this.objectID, event: e });
+        this.relationItemsLoading = true;
+        this.relationSource$.next({ fieldTypeID: this.field.FieldTypeID, object: this.object, objectID: this.objectID, event: e });
+    }
+
+    selectRelationItems(e: any) {
+        this.relationItems = e;
+        if (this.relationItems != null) {
+            if (!Array.isArray(this.relationItems))
+                this.relationItems = [this.relationItems];
+
+            for (let i = 0; i < this.relationItems.length; i++) { //associated the selection with the item in the table
+                let x = this.field.Items.findIndex(f => f.Value == this.relationItems[i].Value);
+                if (x > -1) {
+                    this.relationItems[i] = this.field.Items[x];
+                }
+            } 
+            
+            this.relationItems = this.relationItems.slice();
+            this.field.Value = this.relationItems.map(i => i.Value).join(',');
+        } else {
+            this.field.Value = null;
+        }
+
+        this.form.controls[this.field.FieldName].setValue(this.field.Value);
+        this.ref.markForCheck();
+
+        //console.log(e, this.relatedItems, this.field);
+    }
+
 }

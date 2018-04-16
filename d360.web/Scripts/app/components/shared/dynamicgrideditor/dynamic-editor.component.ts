@@ -21,14 +21,14 @@ import * as _ from 'lodash';
                             <simple-accordion *ngIf="category.name" [header]="category.name" [active]="true">                
                                 <div class="row" *ngFor="let row of category.rows">                          
                                     <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">                                
-                                        <d3s-dynamic-field [field]="field" [form]="form" (listItemChange)="listSelectionChanged($event)"></d3s-dynamic-field>
+                                        <d3s-dynamic-field [field]="field" [form]="form" (listItemChange)="listSelectionChanged($event)" [object]="objectType" [objectID]="objectID"></d3s-dynamic-field>
                                     </div>
                                 </div>
                             </simple-accordion>
                             <span *ngIf="!category.name">
                             <div class="row" *ngFor="let row of category.rows">                          
                                 <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">                                
-                                    <d3s-dynamic-field [field]="field" [form]="form" (listItemChange)="listSelectionChanged($event)" ></d3s-dynamic-field>
+                                    <d3s-dynamic-field [field]="field" [form]="form" (listItemChange)="listSelectionChanged($event)" [object]="objectType" [objectID]="objectID"></d3s-dynamic-field>
                                 </div>
                             </div>
                             </span>
@@ -207,7 +207,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                                 
             }            
             else {
-                if ((field.FieldType == "Lookup" || field.FieldType == "Relationship") && !field.Value && this.selection) {
+                if (field.FieldType == "Relationship" && this.selection) {
+                    if (field.Value != null)
+                        field.Value = JSON.parse(field.Value);
+                }
+                else if (field.FieldType == "Lookup" && !field.Value && this.selection) {
                     let selected = field.Items.filter(x => x.Selected);                    
                     field.Value = [];
                     for (let item of selected) {                        
@@ -239,7 +243,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         var minParts = vals[0].split('=');
                         if (minParts.length == 2) {
                             let minLen = Number(minParts[1]);
-                            if (minLen > 1) {  // only min lenght > 1                                
+                            if (minLen > 1) {  // only min length > 1                                
                                 validators.push(Validators.minLength(minLen));
                             }
                         }
@@ -293,7 +297,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
             }
         }
-        
+
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
             this.isLoading = true;            
             this.uriBasedService.saveItem(this.createUri, this.editUri, values)

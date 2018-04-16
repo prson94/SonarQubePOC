@@ -18,7 +18,7 @@ export class EditorField {
     Value: any;    
     ReadOnly: boolean;
     Required: boolean;
-    Items: EditorDropDownItem[];
+    Items: any[];
     Row: number;
     Column: number;
     SimilarItemsUri: string;
@@ -29,6 +29,7 @@ export class EditorField {
     ParentFieldTypeID: number;
     ParentFieldTypeName: string;
     FieldTypeID: number;
+    RecordCount: number;
 }
 
 export class EditorCategory {

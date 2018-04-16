@@ -233,6 +233,9 @@ namespace d360.web.Models
 
         [DataMember]
         public int FieldTypeID { get; set; }
+
+        [DataMember]
+        public int RecordCount { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

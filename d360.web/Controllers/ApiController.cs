@@ -2552,7 +2552,7 @@ order by    rnk, [Name]";
             #endregion
             string fieldName, join;
 
-            if(isFusionAttributeType)
+            if (isFusionAttributeType)
             {
                 fieldName = "fa.TextPath";
                 join = "inner join FusionAttribute fa on fa.ID = A.ObjectID";
@@ -3993,6 +3993,16 @@ order by C.TextPath";
             return msg;
         }
 
+        [Route("relationships/field/{fieldTypeID:int}"), HttpGet]
+        public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
+        {
+            var result = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, false);
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                items = ((List<dynamic>)result["Items"]).Select(s => new System.Web.Mvc.SelectListItem { Text = s.Text, Value = s.Value.ToString(), Selected = s.Selected == 1 ? true : false }).ToList(),
+                count = (int)result["Count"]
+            });
+        }
 
         #endregion
         

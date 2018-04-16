@@ -6,6 +6,7 @@ import { SelectItem } from 'primeng/components/common/api';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { JsonResult } from '../models/jsonresult.model';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class FieldsService extends BaseService implements IFieldsService {
@@ -228,6 +229,20 @@ export class FieldsService extends BaseService implements IFieldsService {
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
+    }
+
+    getRelationshipFieldItems(event: Observable<any>) {
+        return event
+            .distinctUntilChanged()
+            .switchMap(event => {
+                let uri = `api/relationships/field/${event.fieldTypeID}?offset=${event.event.first}&rows=${event.event.rows}`;
+                if (event.event.globalFilter != null && event.event.globalFilter.length > 0)
+                    uri += `&query=${event.event.globalFilter}`
+                if (event.objectID != null)
+                    uri += `&object=${event.object}&objectID=${event.objectID}`
+                return this.http.get(uri).map(res => res.json())
+                    .map(res => { return { fieldTypeID: event.fieldTypeID, results: res, event: event.event } });
+            });
     }
 
 }
