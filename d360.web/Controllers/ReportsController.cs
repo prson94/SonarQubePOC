@@ -116,12 +116,15 @@ namespace d360.web.Controllers
 
                 var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType != "legacy").Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
 
-                var currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+                var currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                //var currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 
-                var currentUserResponsibilityTypeID = 0;
+                var currentUserResponsibilityTypeIDList = new List<int>();
 
-                if (currentUserResponsibilityType != null)
-                    currentUserResponsibilityTypeID = currentUserResponsibilityType.ResponsibilityTypeID;
+                if (currentUserResponsibilityTypeList != null && currentUserResponsibilityTypeList.Count() > 0)
+                {
+                    currentUserResponsibilityTypeIDList = currentUserResponsibilityTypeList.Select(i => i.ResponsibilityTypeID).ToList();                    
+                }
 
                 //check that the current user has access to the current report
                 for (int i = reports.Count - 1; i >= 0; i--)
@@ -134,7 +137,7 @@ namespace d360.web.Controllers
 
                         foreach (var responsibility in report.Responsibilities)
                         {
-                            if (responsibility.ResponsibilityTypeID == currentUserResponsibilityTypeID)
+                            if (currentUserResponsibilityTypeIDList.Contains(responsibility.ResponsibilityTypeID))
                             {
                                 userHasAccess = true;
                                 break;
@@ -157,18 +160,25 @@ namespace d360.web.Controllers
 
                     if (report.Responsibilities != null && report.Responsibilities.Count > 0)
                     {
-                        var currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == report.ObjectType && x.SecurityAsset == "R" && x.SecurityAssetID == Company.CurrentResourceID).FirstOrDefault();
+                        List<core.entities.Views.ResponsibilityDetail> currentUserResponsibilityType = new List<core.entities.Views.ResponsibilityDetail>();
+                        if (!string.IsNullOrEmpty(report.ObjectType) && !report.ObjectType.Contains("Type"))
+                            currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Object == report.ObjectType && x.SecurityAsset == "R" && x.SecurityAssetID == Company.CurrentResourceID).ToList();
+                        else
+                            currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == report.ObjectType && x.SecurityAsset == "R" && x.SecurityAssetID == Company.CurrentResourceID).ToList();
 
-                        var currentUserResponsibilityTypeID = 0;
 
-                        if (currentUserResponsibilityType != null)
-                            currentUserResponsibilityTypeID = currentUserResponsibilityType.ResponsibilityTypeID;
+                        var currentUserResponsibilityTypeIDList = new List<int>();
+
+                        if (currentUserResponsibilityType != null && currentUserResponsibilityType.Count() > 0)
+                        {
+                            currentUserResponsibilityTypeIDList = currentUserResponsibilityType.Select(x => x.ResponsibilityTypeID).ToList();
+                        }
 
                         bool userHasAccess = false;
 
                         foreach (var responsibility in report.Responsibilities)
                         {
-                            if (responsibility.ResponsibilityTypeID == currentUserResponsibilityTypeID)
+                            if (currentUserResponsibilityTypeIDList.Contains(responsibility.ResponsibilityTypeID))
                             {
                                 userHasAccess = true;
                                 break;
