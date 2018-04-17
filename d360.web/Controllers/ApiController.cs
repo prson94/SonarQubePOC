@@ -3064,7 +3064,7 @@ end",
                             case "ResourceType":
                                 #region ResourceType
 
-                                if (i.FieldTypeName.In("FirstName", "LastName", "Email"))
+                                if (i.FieldTypeName.In("FirstName", "LastName", "Email", "TextPath", "DisplayValue"))
                                 {
                                     var rec = new ComplexColumnModel
                                     {

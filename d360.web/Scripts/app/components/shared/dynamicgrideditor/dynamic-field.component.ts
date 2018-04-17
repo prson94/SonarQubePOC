@@ -82,6 +82,7 @@ declare var CompanySettings;
                             <p-dataTable #dt
                                             [globalFilter]="gb"
                                             [loading]="relationItemsLoading"
+                                            loadingIcon="fa-spinner"
                                             scrollable="true"
                                             scrollWidth="100%"
                                             [rowsPerPageOptions]="defaultPagingOptions"
@@ -348,7 +349,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             if (!Array.isArray(this.relationItems))
                 this.relationItems = [this.relationItems];
 
-            for (let i = 0; i < this.relationItems.length; i++) { //associated the selection with the item in the table
+            for (let i = 0; i < this.relationItems.length; i++) { //associate the selection with the item in the table
                 let x = this.field.Items.findIndex(f => f.Value == this.relationItems[i].Value);
                 if (x > -1) {
                     this.relationItems[i] = this.field.Items[x];

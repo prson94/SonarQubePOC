@@ -3286,20 +3286,20 @@ namespace d360.web.Controllers
                 list.Add("LastName", 0);
                 list.Add("Email", 0);
                 list.Add("DateLastLoggedIn", 0);
+                list.Add("DisplayValue", 0);
             }
             else if (type == SystemObjects.FusionAttributeType)
             {
                 list.Add("Name", 0);
-
             }
             else if (type == SystemObjects.FusionQueryAttributeType)
             {
+                list.Add("Name", 0);
                 list.Add("DisplayValue", 0);
             }
             else
             {
                 list.Add("DisplayValue", 0);
-                //list.Add("TextPath", 0);
             }
 
             list.Add("TextPath", 0);

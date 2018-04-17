@@ -696,18 +696,19 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             if (offset == 0 || query != null)
                 count = Query<int>(countSql, new { obj, objID, query }).FirstOrDefault();
 
-            List<dynamic> selected = null;
+            List<dynamic> selected = null, items = null;
 
             if (includeSelection)
                 selected = Query<dynamic>(selectedSql, new { obj = @object, objID = objectID, intersectTypeID = intersectType.ID }).ToList();
-            var items = Query<dynamic>(sql, new { offset, rows, query, obj, objID, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID, intersectTypeID = intersectType.ID }).ToList();
+            if (!includeSelection)
+                items = Query<dynamic>(sql, new { offset, rows, query, obj, objID, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID, intersectTypeID = intersectType.ID }).ToList();
 
             var dict = new Dictionary<string, object>();
 
             if (includeSelection)
                 dict.Add("Selection", selected.ToList());
-
-            dict.Add("Items", items.ToList());
+            if (!includeSelection)
+                dict.Add("Items", items.ToList());
             dict.Add("Count", count);
 
             return dict; 

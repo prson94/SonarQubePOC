@@ -616,7 +616,6 @@ namespace d360.web.Controllers
                                 fld.MultiSelect = true;
 
                             var result = Company.GetRelationshipFieldItems(f.ID);
-                            fld.Items = ((List<dynamic>)result["Items"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToList();
                             fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
                             fld.RecordCount = (int)result["Count"];
 
@@ -801,7 +800,6 @@ namespace d360.web.Controllers
 
                             var result = Company.GetRelationshipFieldItems(ft.ID, @object, objectID);
 
-                            fld.Items = ((List<dynamic>)result["Items"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToList();
                             fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
                             fld.RecordCount = (int)result["Count"];
 
