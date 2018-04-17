@@ -52,6 +52,9 @@ namespace d360.core.entities.Views
         [DataMember]
         public string SecurityAssetName { get; set; }
 
+        [DataMember]
+        public string Context { get; set; }
+
         //[DataMember]
         //public bool Overriden { get; set; }
     }
