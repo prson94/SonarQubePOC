@@ -68,7 +68,7 @@
                                     [(ngModel)]="model.FieldType.IsListable" 
                                     label="Is Listable?" 
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="model.FieldType.Type == 'FusionLookup' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup' || (model.FieldType.Type == 'Relationship' && !isListableRelationship)"></p-checkbox>
+                                    [disabled]="model.FieldType.Type == 'FusionLookup' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup' || model.FieldType.Type == 'RefListRelationship' || (model.FieldType.Type == 'Relationship' && !isListableRelationship)"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true" 

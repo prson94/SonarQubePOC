@@ -329,6 +329,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case 'reflistrelationship':
                 try {
+                    this.model.FieldType.IsListable = false;
                     if (this.model.cardinalRelationship) {
                         promises.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship));
                     }
