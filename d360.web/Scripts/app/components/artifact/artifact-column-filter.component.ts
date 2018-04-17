@@ -28,6 +28,7 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                         <div class="col s1 FieldName">Filter:</div>
                         <div class="col s4">
                             <select [name]="'FilterField_' + index" required [ngModel]="filter.Field" (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">
+                               <option  [value]=""></option>
                                 <option *ngFor="let p of availableFilters" [ngValue]="p">{{p.Name}}</option>
                             </select>
                         </div>
