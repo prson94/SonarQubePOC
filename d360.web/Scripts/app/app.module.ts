@@ -23,6 +23,7 @@ import { HeaderActionsService } from './services/header-actions.service';
 import { RightSidebarService } from './services/right-sidebar.service';
 import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
+import { TooltipSingletonService } from './services/tooltip-singleton.service'
 
 import { AuthenticationConnectionBackend } from './authentication-connection-backend';
 
@@ -64,6 +65,7 @@ export function getLocale() {
         MessagesService,        
         RightSidebarService,
         WebAnalyticsService,
+        TooltipSingletonService,
         StateService,
         {
             provide: LOCALE_ID,

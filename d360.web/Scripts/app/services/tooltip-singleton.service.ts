@@ -1,0 +1,16 @@
+﻿import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs/Subject';
+
+@Injectable()
+export class TooltipSingletonService {
+    // Observable sources
+    private tooltipSource = new Subject<any>();
+
+    // Observable streams
+    tooltipMessage$ = this.tooltipSource.asObservable();
+
+    // Service message commands
+    tooltipShow(objectType: string, objectId: number) {
+        this.tooltipSource.next({ objectType: objectType, objectId: objectId });
+    }
+}

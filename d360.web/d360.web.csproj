@@ -1576,6 +1576,7 @@
     <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shortcuts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-customizations.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\tooltip-singleton.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tooltip.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow-fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />

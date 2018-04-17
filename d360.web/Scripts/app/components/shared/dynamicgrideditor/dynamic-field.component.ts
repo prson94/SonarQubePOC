@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { EditorField } from '../../../models/editor-field.model';
 import { SelectItem } from 'primeng/primeng';
@@ -139,7 +139,7 @@ declare var CompanySettings;
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsService]
 })
-export class DynamicFieldComponent extends BaseComponent implements OnInit {
+export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() field: EditorField;
     @Input() form: FormGroup;
     @Input() object: string;
