@@ -3423,8 +3423,15 @@ namespace d360.web.Controllers
                     list.Add("Last Name", "LastName");
                     list.Add("Email", "Email");
                     break;
-                case SystemObjects.TaxonomyType:                    
-                    list.Add("TextPath", "TextPath");
+                case SystemObjects.TaxonomyType:
+                    if (id == 0)
+                    {
+                        list.Add("Name", "Name");
+                    }
+                    else
+                    {
+                        list.Add("TextPath", "TextPath");
+                    }
                     break;                
             }
 

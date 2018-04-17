@@ -496,7 +496,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-        if (objectType != "DomainItem" && objectType != "ReferenceItemType") objectType += 'Type';
+        if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") objectType += 'Type';
         
         return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType)
             .then(r => {
@@ -510,7 +510,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-        if (objectType != "DomainItem" && objectType != "ReferenceItemType") objectType += 'Type';
+        if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") objectType += 'Type';
 
 
         return this.fieldsService.getLookupTokens(objectId, objectType)
