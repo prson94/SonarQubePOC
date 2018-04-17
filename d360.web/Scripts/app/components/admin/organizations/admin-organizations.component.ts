@@ -17,7 +17,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
     template: `
 <div class="col l4 m12">          
     <div class="tile tile-detail">
-        <d3s-admin-organization-types [(type)]="selectedType"></d3s-admin-organization-types>
+        <d3s-admin-organization-types [type]="selectedType" (typeChange)="selectOrganizationType($event)" ></d3s-admin-organization-types>
     </div>
     <div class="tile tile-detail"> 
         <d3s-admin-contracts></d3s-admin-contracts>
@@ -77,5 +77,13 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
 
     ngOnDestroy() {
         this.clearSidebar();
+    }
+
+    selectOrganizationType(e: any) {
+        this.selectedType = e;
+        if (this.selectedType != null) {
+            this.setObjectInfo('OrganizationType', this.selectedType.ID);
+            this.setCommonRightSideBar(true);
+        }
     }
 }

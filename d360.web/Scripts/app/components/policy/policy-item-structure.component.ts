@@ -99,12 +99,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private permissionsService: PermissionsService,
         private levelsService: LevelsService
     ) {
-
         super();
         this.rightSidebarService = rightSidebarService;
-        this.clearSidebar();
-        this.setCommonRightSideBar(true);
-
         this.theDeleteCallback = this.deletePolicyItem.bind(this);
     }
 
@@ -113,6 +109,10 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
             this.policyTypeId = +params['policyTypeId'];
             this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
+
+            this.setObjectInfo('PolicyType', this.policyTypeId);
+            this.clearSidebar();
+            this.setCommonRightSideBar(true);
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);            
             this.isLoading = true;
