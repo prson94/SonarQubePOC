@@ -1640,16 +1640,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                     if (!int.TryParse(fField, out fieldID)) continue;
 
-
-                    if (string.IsNullOrEmpty(filters))
-                        filter = $" inner join field hidft on ({idColumn} = hidft.objectID and hidft.ObjectType = 'Artifact') where ";
-                    else
-                        filter = " and ";
-
-                    filter += getFilteringConditionBind("hidft.FormattedValue", fCondition, i, dbParams, fValue, "hidflt",true);
-
-                    filter += $" and hidft.fieldtypeid={fieldID}";
-
+                    var tableId = $"hidft{i}";
+                    filter = $" inner join field {tableId} on ({idColumn} = {tableId}.objectID and {tableId}.ObjectType = 'Artifact'  and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId +".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
+                    
                     if (!string.IsNullOrEmpty(filter))
                     {                        
                         filters += filter;
@@ -1702,7 +1695,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                     if (!string.IsNullOrEmpty(filter))
                     {
-                        filters += (string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ";
+                        filters += (i == 0) ? " WHERE " : " AND ";
                         filters += filter;
                     }
                 }
