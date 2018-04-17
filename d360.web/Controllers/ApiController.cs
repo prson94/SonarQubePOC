@@ -7351,7 +7351,7 @@ SELECT (
                 Company.Query<TaxonomyType>(@"
 select	    FAT.ID,
 		    FAT.Name,
-            FAT.Description,
+            ISNULL(FAT.Description,'') as Description,
 		    FAT.MaximumDepth,
 			FAT.DisplayFormat,
 			T.CreatedBy,
