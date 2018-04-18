@@ -245,7 +245,7 @@
         <!-- complex relation lookup -->
         <simple-accordion header="Relation Lookup" active="true" *ngIf="model.FieldType.Type == 'ComplexRelationLookup'">
             <div class="row">
-                <div class="col s12" style="margin: 10px 0 10px 0">
+                <div class="col s12" style="margin: 10px 0 10px 0; overflow-x: auto">
                     <table cellpadding="5" class="relation-table">
                         <thead>
                             <tr>
@@ -315,29 +315,29 @@
                                         </thead>
                                         <tbody>
                                             <tr *ngFor="let d of i.DisplayFields">
-                                                <td>{{d.FieldTypeName}}</td>
-                                                <td style="width: 25%">
-                                                    <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.OverrideDisplayName" />
+                                                <td style="width: 20%; word-break:break-all">{{d.FieldTypeName}}</td>
+                                                <td style="width: 20%;">
+                                                    <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.OverrideDisplayName" style="width:95%" />
                                                 </td>
-                                                <td style="width: 10%">
-                                                    <input [ngModelOptions]="{standalone: true}" type="checkbox" [ngModel]="d.Show" (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);" />
+                                                <td style="width: 10%; max-width: 64px">
+                                                    <input [ngModelOptions]="{standalone: true}" type="checkbox" [ngModel]="d.Show" (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);" style="width:95%" />
                                                 </td>
-                                                <td style="width: 10%">
-                                                    <input [ngModelOptions]="{standalone: true}" type="number" [(ngModel)]="d.Width" />
+                                                <td style="width: 10%; max-width: 64px">
+                                                    <input [ngModelOptions]="{standalone: true}" type="number" [(ngModel)]="d.Width" style="width:95%"/>
                                                 </td>
-                                                <td style="width: 10%">
+                                                <td style="width: 10%; min-width: 64px">
                                                     <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.DisplayOrder" style="width:95%" (ngModelChange)="changeDisplayOrder(d, i)">
                                                         <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
                                                     </select>
                                                 </td>
-                                                <td style="width: 10%">
+                                                <td style="width: 10%; min-width: 64px">
                                                     <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
                                                         <option></option>
                                                         <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
                                                     </select>
                                                 </td>
-                                                <td style="width: 20%">
-                                                    <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.FilterValue" />
+                                                <td style="width:15%; max-width: 100px">
+                                                    <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.FilterValue" style="width:95%" />
                                                 </td>
                                             </tr>
                                         </tbody>
