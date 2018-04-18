@@ -25,7 +25,7 @@
             <p-column field="ObjectName" header="Type" sortable="true" [style]="{ 'width': '15%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="Context" header="Context" [style]="{ 'min-width': '60%' }" sortable="false">
                 <ng-template let-col let-item="rowData" pTemplate type="body">                   
-                        <span [innerHtml]="item.Context"></span>                    
+                        <span *ngIf="item.Context" [innerHtml]="item.Context"></span>                    
                 </ng-template>
             </p-column>
             <p-column [style]="{ 'width': '50px' }" *ngIf="showEditButton">
