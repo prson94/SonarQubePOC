@@ -3576,8 +3576,8 @@ namespace d360.web.Controllers
             var cardinalReferenceItemRelationships = cardinalRelationshipsList
                 .Where(i => 
                     (i.Subject == sType && i.SubjectID == id) ? 
-                        i.Object == SystemObjects.ReferenceItemType.ToString() : 
-                        i.Subject == SystemObjects.ReferenceItemType.ToString()
+                        (i.Object == SystemObjects.ReferenceItemType.ToString() && i.ObjectID != 0) : 
+                        (i.Subject == SystemObjects.ReferenceItemType.ToString() && i.SubjectID != 0)
                     ).Select(i => new {
                         title = ((i.Subject == sType && i.SubjectID == id) ? $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" : $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
                         value = $"{i.ID}"
