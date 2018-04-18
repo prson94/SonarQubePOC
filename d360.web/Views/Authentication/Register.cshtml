@@ -171,7 +171,7 @@
             }
         }
 
-                    @if (Model.Step == RegisterStep.TermsOfUse || Model.Step == RegisterStep.ADTermsOfUse)
+                    @if (Model.Step == RegisterStep.TermsOfUse)
                     {
                         <div>Please read the terms of use below, then click Accept.</div>
 
@@ -224,7 +224,7 @@
                         }
                     }
 
-                    @if (Model.Step == RegisterStep.TermsOfUseValidated)
+                    @if (Model.Step == RegisterStep.TermsOfUseValidated || Model.Step == RegisterStep.ADTermsOfUse)
                     {
                         <div>@Html.Raw(Model.Message)</div>
                     }
