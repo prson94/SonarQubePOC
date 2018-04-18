@@ -10600,7 +10600,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                         MinimumLength = 1,
                         SortOrder = 1,
                         Type = DataType.Text.ToString(),
-                        IsEditable = true
+                        IsEditable = true,
+                        IsPartOfKey=true
                     });
                 }
 
