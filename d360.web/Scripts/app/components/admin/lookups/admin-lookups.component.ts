@@ -165,6 +165,10 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
             .then(result => {
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, result);
+                if (result.type == "error") {
+                    return;
+                }
+
                 if (event.lookup.ID == undefined) {
                     event.lookup.ID = Number(result.id);
                     this.lookups[this.lookups.length] = event.lookup;
