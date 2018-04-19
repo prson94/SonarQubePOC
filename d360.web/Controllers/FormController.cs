@@ -940,14 +940,16 @@ namespace d360.web.Controllers
                     ArtifactTypeID = typeID
                 };
 
+                int? parentId = parseNullableIntField(form, "ParentID");
+
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList();
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server);
-                Company.SaveOrUpdate<Artifact>(model, fields);
+                Company.SaveOrUpdate<Artifact>(model, fields, (parentId.HasValue ? parentId.Value : -1));
                 processFormDynamicRelationshipFields(SystemObjects.ArtifactType, typeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
 
-                if (!string.IsNullOrEmpty(form["ParentID"]))
+                if (parentId.HasValue)
                 {
-                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, type.ID, SystemObjects.Artifact, parseIntField(form, "ParentID"), model.ID))
+                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, type.ID, SystemObjects.Artifact, parentId.Value, model.ID))
                     {
                         return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
                     }                    
@@ -1067,7 +1069,7 @@ namespace d360.web.Controllers
                 
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList();
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server, false);
-                Company.SaveOrUpdate<Artifact>(model, fields);
+                Company.SaveOrUpdate<Artifact>(model, fields, (parentID > 0 ? parentID : -1));
                 processFormDynamicRelationshipFields(SystemObjects.ArtifactType, model.ArtifactTypeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
                                
 
