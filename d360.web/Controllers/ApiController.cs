@@ -7565,7 +7565,7 @@ from	    TaxonomyType FAT
         [Route("breadcrumb/typeahead")]
         public IEnumerable<BreadcrumbTypeAheadModel> GetBreadcrumbTypeahead(string q, int num, SystemObjects objectType, int objectId)
         {
-            var sql = $"select top {num} d.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  cross apply [dbo].GetAssetDisplayValueById(ast.id) d cross apply [dbo].GetAssetUrl(astt.[object],astt.objectid, ast.objectid) u where ast.[object] = @typeName and astt.objectId = @typeId and d.DisplayValue like @search";
+            var sql = $"select top {num} d.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  cross apply [dbo].GetAssetDisplayValueById(ast.id) d cross apply [dbo].GetAssetUrl(ast.[object],astt.objectid, ast.objectid) u where ast.[object] = @typeName and astt.objectId = @typeId and d.DisplayValue like @search";
 
             return Company.Query<BreadcrumbTypeAheadModel>(sql, new { typeName = objectType.ToString(), typeId = objectId, search = $"{q}%" });            
         }
