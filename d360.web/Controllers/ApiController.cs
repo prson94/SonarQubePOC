@@ -178,7 +178,7 @@ namespace d360.web.Controllers
                                     }
 
                                     if (showPreviewLink)
-                                    {
+                                    {                                        
                                         ro.TooltipContext = TemplateAction.LookupPreview.ToString();
 
                                         if (ft.LookupObjectType == "Lookup")
@@ -194,6 +194,9 @@ namespace d360.web.Controllers
                                         }
                                         else
                                         {
+                                            if(ft.LookupObjectType == "Artifact" || ft.LookupObjectType == "Taxonomy" || ft.LookupObjectType == "TaxonomyType")
+                                                ro.TooltipContext = TemplateAction.Preview.ToString();
+
                                             if (string.IsNullOrEmpty(value))
                                             {
                                                 ro.TooltipID = 0;
@@ -4251,12 +4254,13 @@ from	[Policy] A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-where   RP.AssetID is null 
-order by A.[Level], TD.DisplayValue";
+where   RP.AssetID is null ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
             sql = applyFilteringSuffix(sql, Request);
+
+            sql += " order by A.DisplayValue";
 
             var policies = Company.Query<dynamic>(sql, new { id = id }).ToList();
 

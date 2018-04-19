@@ -39,7 +39,7 @@ from	AssetDetail A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1", new { id });
+where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 order by A.DisplayValue", new { id });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
