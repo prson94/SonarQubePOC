@@ -71,7 +71,7 @@ from	AssetDetail A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID)";
+where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID) order by DisplayValue ";
 
             var models = Company.Query<dynamic>(sql, new { id });
 
