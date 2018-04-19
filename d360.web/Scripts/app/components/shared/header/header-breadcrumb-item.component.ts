@@ -1,10 +1,11 @@
-﻿import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit, OnInit,OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { TreeNode } from 'primeng/components/common/api';
+import { ISubscription } from 'rxjs/Subscription';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
@@ -41,7 +42,7 @@ import { TreeNode } from 'primeng/components/common/api';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit {    
+export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestroy {    
     @Input() breadcrumb: Breadcrumb;
     @Input() lastItem: boolean;
     @Output() treeClick = new EventEmitter();
@@ -54,6 +55,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit {
     public searchValue: string;
     public treeItems: TreeNode[] = [];
     public maxOverlayHeight: string = '800px'
+    private searchSub: ISubscription
 
     constructor(private renderer:Renderer, private elementRef: ElementRef, private router: Router,
                 private typeaheadSearchService: TypeaheadSearchService) { }
@@ -65,6 +67,10 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit {
 
     ngOnInit() {
         this.setMaxHeight();
+    }
+
+    ngOnDestroy() {
+        if (this.searchSub)  this.searchSub.unsubscribe(); 
     }
 
     private setMaxHeight() {
@@ -89,9 +95,12 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit {
     }    
 
     search(event) {
-        this.typeaheadSearchService.getObjectTypeItems(10, event.query, this.breadcrumb.objectType, this.breadcrumb.objectId).then(data => {
-            this.results = data;
-        });
+        
+        this.searchSub = this.typeaheadSearchService.getObjectTypeItems(10, event.query, this.breadcrumb.objectType, this.breadcrumb.objectId)
+            .debounceTime(400)
+            .subscribe(data => {
+                this.results = data;
+            });
     }
 
     selectItem() {

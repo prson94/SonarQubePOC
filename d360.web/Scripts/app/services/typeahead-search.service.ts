@@ -19,8 +19,12 @@ export class TypeaheadSearchService extends BaseService {
 
     getObjectTypeItems(size: number, term: string, objectType: string, objectId: number) {
         return this.http.get(`api/breadcrumb/typeahead?q=${term}&num=${size}&objectType=${objectType}&objectId=${objectId}`)
-            .toPromise()
-            .then(response => <SearchResult[]>response.json())
+            .map(response => {
+                return response.json().map(item =>
+                        { return <SearchResult[]>item; }
+                   )
+            })
             .catch(err => this.handleError(err));
+            
     }    
 }
