@@ -68,7 +68,7 @@ namespace igx.jobs.databasetaskprocessor
         }
 
         const string functionName = "DatabaseTask_ProcessScheduled";
-        const string timerSettings = "*/1 * * * * *";
+        const string timerSettings = "*/10 * * * * *";
         
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
@@ -446,10 +446,9 @@ from    [queue].[Task] T
                                 #endregion
                                 case "Update":
                                     #region
-                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
-
                                     addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom);
-                                                                        
+
+                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
                                     break;
                                     #endregion
                             }
