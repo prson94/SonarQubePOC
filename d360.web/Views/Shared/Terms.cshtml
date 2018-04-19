@@ -68,6 +68,7 @@
             {
                 <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
                 @Html.HiddenFor(m => m.RedirectUri);
+                @Html.HiddenFor(m => m.IsLastContract);
                 @Html.HiddenFor(m => m.Contract.ID);
                 @Html.HiddenFor(m => m.Contract.OrganizationID);
                 @Html.HiddenFor(m => m.Contract.ContractType);

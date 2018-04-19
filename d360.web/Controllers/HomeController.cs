@@ -72,7 +72,7 @@ namespace d360.web.Controllers
             {
                 ContractValidation contractValidation = validations.OrderBy(v => (int)v.ContractType).ThenBy(v => v.OrganizationID.HasValue ? 1 : 0).First();
                 var contract = Company.GetById<Contract>(contractValidation.ContractID);
-                return View(new TermsModel(contract, redirectUri));
+                return View(new TermsModel(contract, redirectUri, validations.Count() == 1));
 
             }
             else
@@ -103,6 +103,7 @@ namespace d360.web.Controllers
 
             var contract = model.Contract;
             var acceptance = model.Acceptance;
+            var isLastContract = model.IsLastContract;
 
 
             if (contract.OrganizationID.HasValue)
@@ -118,7 +119,7 @@ namespace d360.web.Controllers
                     {
                         ResourceID = Company.CurrentResourceID,
                         OrganizationID = (int)contract.OrganizationID,
-                        Accepted = true,
+                        Accepted = isLastContract,
                         DateAccepted = DateTime.UtcNow,
 
                     };
@@ -127,7 +128,7 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    orgRes.Accepted = true;
+                    orgRes.Accepted = isLastContract;
                     orgRes.DateAccepted = DateTime.UtcNow;
                     Company.Update(orgRes);
                 }
@@ -137,7 +138,7 @@ namespace d360.web.Controllers
                     var org = Company.GetById<Organization>((int)contract.OrganizationID);
                     if (org != null)
                     {
-                        org.Accepted = true;
+                        org.Accepted = isLastContract;
                         org.AcceptedBy = Company.CurrentResourceID;
                         org.DateAccepted = DateTime.UtcNow;
                         Company.Update(org);
@@ -146,6 +147,17 @@ namespace d360.web.Controllers
 
                 if (invite != null)
                     Company.Delete(invite); //remove the invite
+            }
+            else
+            {
+                var orgRes = Company.OrganizationResources.Where(i => i.ResourceID == Company.CurrentResourceID).ToList();
+                orgRes.ForEach(o =>
+                {
+                    o.Accepted = isLastContract;
+                    o.DateAccepted = DateTime.UtcNow;
+                    Company.Update(o);
+                });
+
             }
 
             acceptance.ContractID = contract.ID;

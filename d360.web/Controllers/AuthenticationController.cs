@@ -1068,7 +1068,7 @@ namespace d360.web.Controllers
                             //    model.Step = RegisterStep.ADTermsOfUse;
                             //}
                         }
-                        return View(model);                        
+                        //return View(model);                        
                     case RegisterStep.Registration:
                         #region
                         try

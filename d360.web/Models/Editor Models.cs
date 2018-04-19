@@ -715,13 +715,16 @@ namespace d360.web.Models
             this.Acceptance.ContractID = contract.ID;
         }
 
-        public TermsModel(Contract contract, string redirectUri) : this(contract)
+        public TermsModel(Contract contract, string redirectUri, bool isLastContract) : this(contract)
         {
             this.RedirectUri = redirectUri;
+            this.IsLastContract = isLastContract;
         }
         public Contract Contract { get; set; }
         public ContractAcceptance Acceptance { get; set; }
         public string RedirectUri { get; set; } = null;
+
+        public bool IsLastContract { get; set; } = false;
     }
 
     public class ContractRegisterModel
