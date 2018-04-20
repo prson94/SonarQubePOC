@@ -6446,41 +6446,44 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.Monitor:
                     #region Fields
-                    var workflowType = Company.GetById<d360.core.entities.Workflow.Type>(id);
-                    if (workflowType != null)
+                    var WorkflowDtl = Company.Query<dynamic>(string.Format(@"select 
+	v.updatedon,
+	v.version,	
+	r.firstname +' '+ r.lastname as updatedby,
+	wt.name
+from workflow.version v 
+left join reporting.global_resource r on (v.updatedby = r.resourceid)
+inner join workflow.type wt on (wt.id = v.typeid)
+where v.id = {0}", id)).FirstOrDefault();
+                    if (WorkflowDtl != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Name", FieldName = " Name", FieldDescription = workflowType.GetDescription(i => i.Name), Value = workflowType.Name }
+                                new ReadOnlyField { Name = "Name", FieldName = "WorkFlowTypeName", FieldDescription = "WorkFlowTypeName", Value = !string.IsNullOrEmpty(WorkflowDtl.name) ? WorkflowDtl.name :  "None Provided" }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Updated On", FieldName = "UpdatedOn", FieldDescription = workflowType.GetDescription(i => i.UpdatedOn), Value = workflowType.UpdatedOn.ToString() }
+                                new ReadOnlyField { Name = "Update On", FieldName = "UpdateOn", FieldDescription = "UpdateOn", Value = WorkflowDtl.updatedon != null ? WorkflowDtl.updatedon.ToString() : "None Provided" }
                             }
-
                         });
 
-                        var ResourceName = Company.Query<dynamic>(string.Format("select r.FirstName + ' ' + r.LastName as label" +
-                            " from reporting.Global_Resource r where r.resourceID = {0}", workflowType.UpdatedBy)).FirstOrDefault();
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                
-                                new ReadOnlyField { Name = "Updated By", FieldName = "UpdatedBy", FieldDescription = workflowType.GetDescription(i => i.UpdatedBy), Value =  ResourceName != null && !string.IsNullOrEmpty(ResourceName.label) ? ResourceName.label : "Not Available"}
+                                new ReadOnlyField { Name = "Updated By", FieldName = "UpdatedBy", FieldDescription = "UpdatedBy", Value = string.IsNullOrEmpty(WorkflowDtl.updatedby) ? "None Provided" : WorkflowDtl.updatedby }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Version", FieldName = " PublishedVersionID", FieldDescription = workflowType.GetDescription(i => i.PublishedVersionID), Value = workflowType.PublishedVersionID.ToString() }
+                                new ReadOnlyField { Name = "Version", FieldName = "Version", FieldDescription = "Version", Value = WorkflowDtl.version > 0 ? WorkflowDtl.version.ToString() : "None Provided" }
                             }
                         });
-
                     }
-                    workflowType = null;
+                    WorkflowDtl = null;
                     break;
                     #endregion
 

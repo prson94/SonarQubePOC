@@ -27,13 +27,6 @@ import { Router } from '@angular/router';
                 </ng-template>
             </p-column>    
             <p-column header="Status" field="Status" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>      
-            <p-column field="UpdatedOn" header="Updated On" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
-                <ng-template pTemplate="body" let-item="rowData">
-                    {{item.UpdatedOn | date:'shortDate'}}
-                </ng-template>
-            </p-column>
-            <p-column field="UpdatedBy" header="Updated By" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
-            <p-column field="Version" header="Version" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
             <p-column field="ResponsibleUser" header="Responsibility" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'120px'}" filterMatchMode="contains">
                 <ng-template pTemplate="body" let-item="rowData">
                     <span *ngIf="item.ResponsibleUser != null && item.ResponsibleUser.length > 15" [pTooltip]="item.ResponsibleUser" style="word-wrap:break-word;">{{item.ResponsibleUser | slice:0:15}}...</span>
