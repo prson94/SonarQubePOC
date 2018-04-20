@@ -448,7 +448,8 @@ from    [queue].[Task] T
                                     #region
                                     addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom);
 
-                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
+                                    if(q.Object != "PolicyType" && q.Object != "TaxonomyType")
+                                        resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
                                     break;
                                     #endregion
                             }
