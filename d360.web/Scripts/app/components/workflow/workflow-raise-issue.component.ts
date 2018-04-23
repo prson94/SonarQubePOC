@@ -12,7 +12,7 @@ import { TagService } from '../../services/tag.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType, WorkflowIssueType } from '../../models/workflow.model';
-import { Subscription }   from 'rxjs/Subscription';
+import { Subscription, ISubscription }   from 'rxjs/Subscription';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { Tag } from '../../models/tag.model';
@@ -70,7 +70,8 @@ declare var CompanySettings;
     providers: [WorkflowService, ObjectDetailService, TagService]
 })
 
-export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit {
+export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit,OnDestroy {
+    
     private issue: string;        
     private selectedObjectType: string;
     private selectedObjectId: number;    
@@ -81,6 +82,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private issueType: WorkflowIssueType;
     private issueTypes: WorkflowIssueType[] = [];
     private actionMessage: string = CompanySettings.ActionMessage;
+    private searchSub: ISubscription;
 
     constructor(
         private tagService: TagService,
@@ -114,7 +116,10 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
         this.clearSidebar();     
     }
-    
+
+    ngOnDestroy(): void {
+        if (this.searchSub) this.searchSub.unsubscribe();
+    }
     
     private loadDetails(objectId, objectType) {        
         if (objectId == undefined || objectType == undefined) return;
@@ -155,7 +160,9 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private search(event) {
-        this.tagService.getTags(event.query).then(data => {
+        this.tagService.getTags(event.query)
+            .debounceTime(400)
+            .subscribe(data => {
             this.terms = data;
         });
     }

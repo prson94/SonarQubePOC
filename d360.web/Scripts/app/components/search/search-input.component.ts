@@ -95,7 +95,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
 
     @Input() advancedFilters: AdvancedSearchFilter[] = [];
     @Output() advancedFiltersChange = new EventEmitter();
-    private searchSub: ISubscription
+    private searchSub: ISubscription;
 
     private fields: DropdownOption[] = [
         { title: "Category", value: "Type" },

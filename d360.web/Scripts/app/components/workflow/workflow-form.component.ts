@@ -15,6 +15,7 @@ import { TagService } from '../../services/tag.service';
 import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
 import { MessagesService } from '../../services/messages.service';
+import { ISubscription } from 'rxjs/Subscription';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -165,7 +166,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private selectedReassignObjectId: number;
     private selectedReassignObjectType: string;
     private selectedReassignResource: number;
-
+    private searchSub: ISubscription;
     @Input() hasCloseButton: boolean = true;
 
     constructor(private route: ActivatedRoute,
@@ -197,6 +198,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     
     ngOnDestroy() {
         this.sub.unsubscribe();
+        if (this.searchSub) this.searchSub.unsubscribe();
     }
 
     get objectUrl() {
@@ -271,7 +273,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private search(event) {
-        this.tagService.getTags(event.query).then(data => {
+       this.searchSub= this.tagService.getTags(event.query)
+            .debounceTime(400)
+            .subscribe(data => {
             this.terms = data;
         });
     }

@@ -1,8 +1,9 @@
-﻿import { Component, Input, Output, EventEmitter, HostBinding } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, HostBinding, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { Tag } from '../../../models/tag.model';
 import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
+import { ISubscription } from 'rxjs/Subscription';
 
 @Component({
     selector: 'd3s-social-tag-input',
@@ -23,18 +24,25 @@ import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
     providers: [TagService],
 })
 
-export class SocialTagInputComponent extends BaseComponent {
+export class SocialTagInputComponent extends BaseComponent  implements OnDestroy{
+    
     @Output() selectTag = new EventEmitter();
         
     private tags : Tag[] = [];
     private tag : Tag;
-
+    private searchSub: ISubscription;
     constructor(private tagService: TagService) {
         super();
     }
 
+    ngOnDestroy(): void {
+        if (this.searchSub) this.searchSub.unsubscribe();
+    }
+
     private search(event) {
-        this.tagService.getTags(event.query).then(data => {
+        this.searchSub = this.tagService.getTags(event.query)
+            .debounceTime(400)
+            .subscribe(data => {
             this.tags = data;
         }); 
     }
