@@ -26,6 +26,7 @@ import { ISubscription } from 'rxjs/Subscription';
                             (completeMethod)="search($event)" 
                             field="Name"  
                             [placeholder]="breadcrumb.text"
+                            [autoHighlight]="true"
                             (onSelect)="selectItem()">                       
                     </p-autoComplete>                    
                 <div *ngIf="!lastItem && showSeperator" class="sep breadcrumb">::</div>                
@@ -99,7 +100,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         this.searchSub = this.typeaheadSearchService.getObjectTypeItems(10, event.query, this.breadcrumb.objectType, this.breadcrumb.objectId)
             .debounceTime(400)
             .subscribe(data => {
-                this.results = data;
+                 this.results = data;
             });
     }
 

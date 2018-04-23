@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import {SelectItem} from 'primeng/primeng';
@@ -7,6 +7,7 @@ import { TypeaheadSearchService } from '../../services/typeahead-search.service'
 import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { DropdownOption } from '../../models/dropdown.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { ISubscription } from 'rxjs/Subscription';
 
 @Component({
     selector: 'd3s-search-input',
@@ -75,7 +76,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     providers: [SearchService, TypeaheadSearchService],
 })
 
-export class SearchInputComponent extends BaseComponent implements OnChanges {
+export class SearchInputComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() isExactMatch: boolean = true;
     @Output() isExactMatchChange = new EventEmitter();
 
@@ -94,7 +95,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
 
     @Input() advancedFilters: AdvancedSearchFilter[] = [];
     @Output() advancedFiltersChange = new EventEmitter();
-    
+    private searchSub: ISubscription
 
     private fields: DropdownOption[] = [
         { title: "Category", value: "Type" },
@@ -142,7 +143,10 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
         if (this.isAdvancedMode && this.advancedFilters.length == 0)
             this.advancedFilters.push(new AdvancedSearchFilter("Name", this.searchText) );
     }
-    
+
+    ngOnDestroy(): void {
+        if (this.searchSub) this.searchSub.unsubscribe();
+    }
 
     private triggerSearch() {
         this.cancelAutocomplete();
@@ -189,8 +193,8 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
 
     private doAutocompleteSearch() {
         if (!this.searchText || this.searchText.length == 0) return;
-        this.typeaheadSearchService.getResults(this.autocompleteResultSize, this.searchText, this.searchTypes)
-            .then(res => {
+        this.searchSub = this.typeaheadSearchService.getResults(this.autocompleteResultSize, this.searchText, this.searchTypes)
+            .subscribe(res => {
                 this.autocompletions = res;
             });
     }

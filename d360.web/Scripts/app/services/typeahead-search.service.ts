@@ -3,17 +3,20 @@ import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { SearchResult } from '../models/search-result.model';
+import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class TypeaheadSearchService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getResults(size, term, types?: string[]): Promise<SearchResult[]> {
+    getResults(size, term, types?: string[]): Observable<SearchResult[]> {
         
-        return this.http.get(`search/typeahead?q=${encodeURIComponent(term)}&num=${size}&t=${types != undefined ? types.join(','):''}`)
-            .toPromise()
-            .then(response => <SearchResult[]>response.json())
+        return this.http.get(`search/typeahead?q=${encodeURIComponent(term)}&num=${size}&t=${types != undefined ? types.join(',') : ''}`)
+            .map(response => {
+                return response.json()
+                    .map(item => { return <SearchResult[]>item })
+            })
             .catch(err => this.handleError(err));
     }
 
