@@ -148,6 +148,7 @@ export class LineageEditorPreviewComponent extends DiagramBaseComponent implemen
         return this.diagramService.previewLineage(this.type, this.id, this.view, this.businessModel, this.technicalModel)
             .then(data => {
                 this.parseData(data);
+                console.log(this.diagram);
             })
             .then(() => {
                 this.diagram.zoomToFit();
@@ -220,7 +221,41 @@ export class LineageEditorPreviewComponent extends DiagramBaseComponent implemen
         }
 
         for (var i = 0; i < modelList.length; i++) {
-            this.diagram.model.addNodeData(modelList[i]);
+            let n = modelList[i];
+
+
+            if (n.key.startsWith('0.S')) {
+                //combine editor nodes with existing items if applicable
+                let node = modelList.find(m => m.obj == n.obj && m.objid == n.objid && m.key != n.key);
+                if (node != null) {
+                    let sourceLinks = linkList.filter(l => (<any>l).to == node.key).map(l => (<any>l).from);
+                    let nLinks = linkList.filter(l => (<any>l).to == n.key).map(l => (<any>l).from);
+                    let flagAdded = false;
+
+                    sourceLinks.forEach(s => {
+                        let commonLink = nLinks.find(l => l == s);
+                        if (commonLink != null) {
+                            let toLinks = linkList.filter(l => (<any>l).to == n.key);
+                            let fromLinks = linkList.filter(l => (<any>l).from == n.key);
+
+                            toLinks.forEach(l => {
+                                l.to = commonLink.key;
+                            });
+                            fromLinks.forEach(l => {
+                                l.from = commonLink.key;
+                            });
+                            flagAdded = true;
+                            return;
+                        }
+                    });
+                    if (!flagAdded)
+                        this.diagram.model.addNodeData(modelList[i]);
+                }
+                else
+                    this.diagram.model.addNodeData(modelList[i]);
+            }
+            else
+                this.diagram.model.addNodeData(modelList[i]);
         }
 
         dm.linkCategoryProperty = "Category";
