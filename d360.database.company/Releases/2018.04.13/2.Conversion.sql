@@ -23,11 +23,11 @@ select	'Name', 'Name', 'The artifact''s name', 'Text', 3, 1000,
 		'ArtifactType', ID as ObjectID, 
 		1 as SortOrder, 1 as IsRequired, 1 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 1 as IsPartOfKey
 from	ArtifactType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select 'Artifact', A.ID, FT.ID, A.Name, A.Name from Artifact A inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.Name = 'Name'
-go
+GO
 
 INSERT INTO [dbo].[FieldType]
            ([Name]
@@ -48,13 +48,13 @@ select	'Description', 'Description', 'The artifact''s description', 'Html',
 		'ArtifactType', ID as ObjectID, 
 		2 as SortOrder, 0 as IsRequired, 0 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey
 from	ArtifactType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select	'Artifact', A.ID, FT.ID, A.Description, A.Description 
 	from	Artifact A 
 			inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.Name = 'Description' and A.Description is not null and A.Description <> ''
-go
+GO
 
 -- Artifact Status
 declare @rt int
@@ -77,14 +77,14 @@ select	'Status', 'Status', 'The artifact''s status', 'Lookup',
 		'ArtifactType', ID as ObjectID, 
 		3 as SortOrder, 0 as IsRequired, 1 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey, 'ReferenceItem', @rt, '{Code}'
 from	ArtifactType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select	'Artifact', A.ID, FT.ID, R.ID, R.Code--, A.Status, A.ArtifactTypeID
 	from	Artifact A 
 			inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.Name = 'Status'
 			inner join ReferenceItem R on R.ReferenceItemTypeID = FT.LookupObjectID and ltrim(rtrim(R.Code)) = ltrim(rtrim(A.Status))
-go
+GO
 
 -- Artifact Subject Area
 declare @rt int
@@ -111,7 +111,7 @@ insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
 			inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.Name = 'SubjectArea'
 			inner join ReferenceItem R on R.ReferenceItemTypeID = FT.LookupObjectID and ltrim(rtrim(R.Code)) = ltrim(rtrim(T.Name))
-go
+GO
 
 UPDATE	TF
 SET		TF.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value)
@@ -141,11 +141,11 @@ select	'Name', 'Name', 'The policy''s name', 'Text', 3, 1000,
 		'PolicyType', ID as ObjectID, 
 		1 as SortOrder, 1 as IsRequired, 1 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 1 as IsPartOfKey
 from	PolicyType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select 'Policy', A.ID, FT.ID, A.Name, A.Name from [Policy] A inner join FieldType FT on FT.Object = 'PolicyType' and FT.ObjectID = A.PolicyTypeID and FT.Name = 'Name'
-go
+GO
 
 INSERT INTO [dbo].[FieldType]
            ([Name]
@@ -166,13 +166,13 @@ select	'Description', 'Description', 'The policy''s description', 'Html',
 		'PolicyType', ID as ObjectID, 
 		2 as SortOrder, 0 as IsRequired, 0 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey
 from	PolicyType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select	'Policy', A.ID, FT.ID, A.Description, A.Name 
 	from	[Policy] A 
 			inner join FieldType FT on FT.Object = 'PolicyType' and FT.ObjectID = A.PolicyTypeID and FT.Name = 'Description' and A.Description is not null and A.Description <> ''
-go
+GO
 
 -- RULE DYNAMIC FIELD GENERATION -----------------------------------------
 
@@ -197,11 +197,11 @@ select	'Name', 'Name', 'The rule''s name', 'Text', 3, 1000,
 		'RuleType', ID as ObjectID, 
 		1 as SortOrder, 1 as IsRequired, 1 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 1 as IsPartOfKey
 from	RuleType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select 'Rule', A.ID, FT.ID, A.Name, A.Name from [Rule] A inner join FieldType FT on FT.Object = 'RuleType' and FT.ObjectID = A.RuleTypeID and FT.Name = 'Name'
-go
+GO
 
 INSERT INTO [dbo].[FieldType]
            ([Name]
@@ -222,13 +222,13 @@ select	'Description', 'Description', 'The rule''s description', 'Html',
 		'RuleType', ID as ObjectID, 
 		2 as SortOrder, 0 as IsRequired, 0 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey
 from	RuleType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select	'Rule', A.ID, FT.ID, A.Description, A.Name 
 	from	[Rule] A 
 			inner join FieldType FT on FT.Object = 'RuleType' and FT.ObjectID = A.RuleTypeID and FT.Name = 'Description' and A.Description is not null and A.Description <> ''
-go
+GO
 
 INSERT INTO [dbo].[FieldType]
            ([Name]
@@ -249,13 +249,13 @@ select	'Purpose', 'Purpose', 'The rule''s Purpose', 'Html',
 		'RuleType', ID as ObjectID, 
 		2 as SortOrder, 0 as IsRequired, 0 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey
 from	RuleType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select	'Rule', A.ID, FT.ID, A.Description, A.Name 
 	from	[Rule] A 
 			inner join FieldType FT on FT.Object = 'RuleType' and FT.ObjectID = A.RuleTypeID and FT.Name = 'Purpose' and A.Purpose is not null and A.Purpose <> ''
-go
+GO
 
 INSERT INTO [dbo].[FieldType]
            ([Name]
@@ -276,13 +276,13 @@ select	'Measurement', 'Measurement', 'The rule''s Measurement', 'Html',
 		'RuleType', ID as ObjectID, 
 		2 as SortOrder, 0 as IsRequired, 0 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey
 from	RuleType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select	'Rule', A.ID, FT.ID, A.Description, A.Name 
 	from	[Rule] A 
 			inner join FieldType FT on FT.Object = 'RuleType' and FT.ObjectID = A.RuleTypeID and FT.Name = 'Measurement' and A.Purpose is not null and A.Purpose <> ''
-go
+GO
 
 INSERT INTO [dbo].[FieldType]
            ([Name]
@@ -303,13 +303,13 @@ select	'Resolution', 'Resolution', 'The rule''s Resolution', 'Html',
 		'RuleType', ID as ObjectID, 
 		2 as SortOrder, 0 as IsRequired, 0 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey
 from	RuleType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select	'Rule', A.ID, FT.ID, A.Description, A.Name 
 	from	[Rule] A 
 			inner join FieldType FT on FT.Object = 'RuleType' and FT.ObjectID = A.RuleTypeID and FT.Name = 'Resolution' and A.Resolution is not null and A.Resolution <> ''
-go
+GO
 
 -- TAXONOMY DYNAMIC FIELD GENERATION -------------------------------------
 
@@ -334,11 +334,11 @@ select	'Name', 'Name', 'The model''s name', 'Text', 3, 1000,
 		'TaxonomyType', ID as ObjectID, 
 		1 as SortOrder, 1 as IsRequired, 1 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 1 as IsPartOfKey
 from	TaxonomyType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select 'Taxonomy', A.ID, FT.ID, A.Name, A.Name from [Taxonomy] A inner join FieldType FT on FT.Object = 'TaxonomyType' and FT.ObjectID = A.TaxonomyTypeID and FT.Name = 'Name'
-go
+GO
 
 INSERT INTO [dbo].[FieldType]
            ([Name]
@@ -359,7 +359,7 @@ select	'Description', 'Description', 'The model''s description', 'Html',
 		'TaxonomyType', ID as ObjectID, 
 		2 as SortOrder, 0 as IsRequired, 0 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey
 from	TaxonomyType
-go
+GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select	'Taxonomy', A.ID, FT.ID, A.Description, A.Name 
@@ -370,31 +370,31 @@ GO
 -- INSERT INTO ASSET TYPE-------------------------------------------------
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 1, '{Name}', 1, 0, 1, 'ArtifactType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from ArtifactType
-go
+GO
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 2, '{Name}', 1, 1, MaximumDepth, 'TaxonomyType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from TaxonomyType
-go
+GO
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 3, '{Name}', 1, 0, 1, 'FusionType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from FusionType
-go
+GO
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, null, 4, '{Name}', 1, 0, 1, 'FusionAttributeType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from FusionAttributeType
-go
+GO
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, null, 4, '{Name}', 1, 0, 1, 'FusionQueryAttributeType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from FusionQueryAttributeType
-go
+GO
 INSERT into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 5, coalesce(DisplayFormat, '{Name}'), 1, 0, 1, 'AttributeType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from AttributeType
-go
+GO
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 6, '{Name}', 1, 1, MaximumDepth, 'PolicyType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from PolicyType
-go
+GO
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 7, '{Name}', 1, 0, 1, 'RuleType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from RuleType
-go
+GO
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 8, '{Name}', 1, 0, 1, 'MapType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from MapType
-go
+GO
 insert into AssetType (Name, Description, Class, DisplayFormat, [State],  [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 9, coalesce(DisplayFormat, '{Name}'), 1, 0, 1, 'ReferenceItemType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from ReferenceItemType
 GO
@@ -454,7 +454,7 @@ GO
 insert into OrganizationType (Name) values ('General Organization')
 GO
 alter table Organization add OrganizationTypeID int constraint DF_Organization_OrganizationType default(1) not null
-go
+GO
 ALTER TABLE [dbo].[Organization]  WITH CHECK ADD  CONSTRAINT [FK_Organization_OrganizationType] FOREIGN KEY([OrganizationTypeID]) REFERENCES [dbo].[OrganizationType] ([ID])
 GO
 ALTER TABLE [dbo].[Organization] CHECK CONSTRAINT [FK_Organization_OrganizationType]
@@ -1328,7 +1328,7 @@ alter table [Rule] add [CreatedBy]       INT            NULL
 alter table [Rule] add [CreatedOn]       DATETIME       NULL
 alter table [Rule] add [UpdatedBy]       INT            NULL
 alter table [Rule] add [UpdatedOn]       DATETIME       NULL
- go
+ GO
 
  ALTER TRIGGER [dbo].[Rule_AfterDelete]
    ON  [dbo].[Rule] 

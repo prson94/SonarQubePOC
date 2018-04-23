@@ -723,8 +723,9 @@ CREATE INDEX CIX_IntegrationUnresolvedRelationItem ON integration.UnresolvedRela
 GO
 
 EXEC sp_rename 'dbo.FieldType', 'FieldTypeOld'; 
-
+GO
 EXEC sp_rename 'PK_FieldType', 'PK_FieldTypeOld'; 
+GO
 ALTER TABLE [dbo].[FieldTypeOld] DROP CONSTRAINT [CK_FieldType_IsListable]
 ALTER TABLE [dbo].[FieldTypeOld] DROP CONSTRAINT [CK_FieldType_IsPrimaryFilter]
 ALTER TABLE [dbo].[FieldTypeOld] DROP CONSTRAINT [CK_FieldType_IsRequired]
@@ -822,51 +823,53 @@ ALTER TABLE [dbo].[FieldType] ADD  DEFAULT ((0)) FOR [ParentFieldTypeID]
 GO
 
 SET IDENTITY_INSERT FieldType ON
-go
+GO
 INSERT INTO [FieldType] (ID,[Name],[FriendlyName],[Description],[DisplayDescription],[FormDescription],[Type],[LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[MinimumLength],[MaximumLength],[Length],[Pattern],[Object],[ObjectID],[SortOrder],[IsRequired],[IsListable],[ValidationDescription],[Category],[IsDisplayable],[IsEditable],[DefaultValue],DefaultFormattedValue,[AllowAllValue],[AllowAllLabel],[IsPrimaryFilter],[LookupEditFormat],[IsPartOfKey],[ColumnOrder],[ColumnWidth],[LookupObjectFieldTypeID],[AllowMultipleValues])
-SELECT	[ID]
-		,[Name]
-		,[FriendlyName]
-		,[Description]
-		,[DisplayDescription]
-		,[FormDescription]
-		,[Type]
-		,[LookupObjectType]
-		,[LookupObjectID]
-		,[LookupDisplayFormat]
-		,[MinimumLength]
-		,[MaximumLength]
-		,[Length]
-		,[Pattern]
-		,[Object]
-		,[ObjectID]
-		,[SortOrder]
-		,[IsRequired]
-		,[IsListable]
-		,[ValidationDescription]
-		,[Category]
-		,[IsDisplayable]
-		,[IsEditable]
-		,[DefaultValue]
-		,[DefaultFormattedValue]
-		,[AllowAllValue]
-		,[AllowAllLabel]
-		,[IsPrimaryFilter]
-		,[LookupEditFormat]
-		,[IsPartOfKey]
-		,[ColumnOrder]
-		,[ColumnWidth]
-		,[LookupObjectFieldTypeID],
-		0
-  FROM	[FieldTypeOld]
+	SELECT	[ID]
+			,[Name]
+			,[FriendlyName]
+			,[Description]
+			,[DisplayDescription]
+			,[FormDescription]
+			,[Type]
+			,[LookupObjectType]
+			,[LookupObjectID]
+			,[LookupDisplayFormat]
+			,[MinimumLength]
+			,[MaximumLength]
+			,[Length]
+			,[Pattern]
+			,[Object]
+			,[ObjectID]
+			,[SortOrder]
+			,[IsRequired]
+			,[IsListable]
+			,[ValidationDescription]
+			,[Category]
+			,[IsDisplayable]
+			,[IsEditable]
+			,[DefaultValue]
+			,[DefaultFormattedValue]
+			,[AllowAllValue]
+			,[AllowAllLabel]
+			,[IsPrimaryFilter]
+			,[LookupEditFormat]
+			,[IsPartOfKey]
+			,[ColumnOrder]
+			,[ColumnWidth]
+			,[LookupObjectFieldTypeID],
+			0
+	  FROM	[FieldTypeOld]
 GO
 SET IDENTITY_INSERT FieldType OFF
-go
+GO
 
 
 
 EXEC sp_rename 'dbo.Field', 'FieldOld'; 
+GO
 EXEC sp_rename 'PK_Field', 'PK_FieldOld'; 
+GO
 ALTER TABLE [dbo].[FieldOld] DROP CONSTRAINT [FK_Field_FieldType]
 GO
 
@@ -995,8 +998,11 @@ ALTER TABLE [dbo].[IntersectGroupItem] CHECK CONSTRAINT [FK_IntersectGroupItem_I
 GO
 
 EXEC sp_rename 'dbo.IntersectType', 'IntersectTypeOld'; 
+GO
 EXEC sp_rename 'PK_IntersectType', 'PK_IntersectTypeOld'; 
+GO
 EXEC sp_rename 'UQ_IntersectType', 'UQ_IntersectTypeOld'; 
+GO
 ALTER TABLE [dbo].[IntersectTypeOld] DROP CONSTRAINT [DF_IntersectType_SubjectCardinality]
 ALTER TABLE [dbo].[IntersectTypeOld] DROP CONSTRAINT [DF_IntersectType_ObjectCardinality]
 GO
@@ -1042,7 +1048,6 @@ ALTER TABLE [dbo].[IntersectType] ADD  CONSTRAINT [DF_IntersectType_ObjectCardin
 GO
 
 SET IDENTITY_INSERT IntersectType ON
-go
 INSERT INTO [dbo].[IntersectType]
            (ID,[Subject],[SubjectID],[Object],[ObjectID],[IsSystem],[State],[CreatedBy],[CreatedOn],[UpdatedBy],[UpdatedOn]
 		   ,[PredicateID],[SubjectCardinality],[ObjectCardinality])
@@ -1067,8 +1072,11 @@ go
 
 
 EXEC sp_rename 'dbo.Intersect', 'IntersectOld'; 
+GO
 EXEC sp_rename 'PK_Intersect', 'PK_IntersectOld'; 
+GO
 EXEC sp_rename 'UQ_Intersect', 'UQ_IntersectOld'; 
+GO
 ALTER TABLE [dbo].[IntersectOld] DROP CONSTRAINT [FK_Intersect_IntersectType]
 GO
 ALTER TABLE [dbo].[IntersectOld] DROP CONSTRAINT [DF_Intersect_CreatedBy]
@@ -1139,8 +1147,8 @@ GO
 ALTER TABLE [dbo].[Intersect] CHECK CONSTRAINT [FK_Intersect_IntersectType]
 GO
 
-SET IDENTITY_INSERT [Intersect] ON
-GO
+SET IDENTITY_INSERT [Intersect] ON;
+
 INSERT INTO [Intersect] (ID, IntersectTypeID, Subject, SubjectID, Object, ObjectID, State, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Owner, Deleted, Visible)
 	SELECT [ID]
 		  ,[IntersectTypeID]

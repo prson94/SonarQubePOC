@@ -185,8 +185,8 @@ WHEN NOT MATCHED THEN
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("nmprod.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Northwestern Mutual - AAD - 2018-19", File = bytes };
+            var bytes = File.ReadAllBytes("SST Test Certificate - AAD.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "SST Test Certificate - AAD - 2018-19", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

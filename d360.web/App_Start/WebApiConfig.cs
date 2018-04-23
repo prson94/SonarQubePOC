@@ -37,7 +37,9 @@ namespace d360.web
             config.AddODataQueryFilter();
             config.EnableCors();
             config.Formatters.Add(new DictionaryXmlMediaTypeFormatter());
+
             config.Formatters.JsonFormatter.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+            config.Formatters.JsonFormatter.SerializerSettings.DateFormatString = "yyyy-MM-dd";
             config.Formatters.JsonFormatter.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             config.Formatters.JsonFormatter.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
             config.Formatters.JsonFormatter.MediaTypeMappings.Add(new RequestHeaderMapping("Accept", "text/html", StringComparison.InvariantCultureIgnoreCase, true, "application/json"));

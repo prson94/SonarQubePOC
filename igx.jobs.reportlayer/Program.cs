@@ -53,11 +53,16 @@ namespace igx.jobs.reportlayer
 
             fields.RemoveAll(i => typesToIgnore.Contains(i.Type));
 
+            var usedNames = new List<string>();
             foreach (var f in fields)
             {
                 var name = cleanObjectName(f.Name);
-                columns += (f.Type == "Lookup") ? $"[{name}].Value as [{name}ID], [{name}].FormattedValue as [{name}], " : $"[{name}].FormattedValue as [{name}], ";
-                joins += $" left join FieldDetail [{name}] on [{name}].Object = '{type}' and [{name}].ObjectID = {idColumn} and [{name}].FieldTypeID = {f.ID}";
+                if (!usedNames.Contains(name))
+                {
+                    columns += (f.Type == "Lookup") ? $"[{name}].Value as [{name}ID], [{name}].FormattedValue as [{name}], " : $"[{name}].FormattedValue as [{name}], ";
+                    joins += $" left join FieldDetail [{name}] on [{name}].Object = '{type}' and [{name}].ObjectID = {idColumn} and [{name}].FieldTypeID = {f.ID}";
+                    usedNames.Add(name);
+                }
             }
 
             fields = null;
@@ -160,7 +165,7 @@ select  A.ID,
         dbo.GenerateObjectUrl('{objectType}', A.TypeID, A.ObjectID) as Url, 
         cast(S.Value * 100 as int) as CurrentScore 
 from    AssetDetail A 
-        left join metrics.Score S on S.Object = 'Artifact' and S.ObjectID = A.ObjectID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
+        left join [metrics].[Score] S on S.Object = 'Artifact' and S.ObjectID = A.ObjectID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
         {joins} 
         {parentSqlJoin} 
 where   A.Type = 'ArtifactType' and A.TypeID = {o.ID}";
@@ -243,7 +248,7 @@ select  A.ID,
         cast(S.Value * 100 as int) as CurrentScore
 from    h as A  
         {joins} 
-        left join metrics.Score S on S.Object = '{objectType}' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
+        left join [metrics].[Score] S on S.Object = '{objectType}' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
         left join TaxonomyTypeLevel L on L.TaxonomyTypeID = A.TaxonomyTypeID and L.[Level] = A.[Level]";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -325,7 +330,7 @@ select  A.ID,
         cast(S.Value * 100 as int) as CurrentScore
 from    h as A  
         {joins} 
-        left join metrics.Score S on S.Object = '{objectType}' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
+        left join [metrics].[Score] S on S.Object = '{objectType}' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
         left join PolicyTypeLevel L on L.PolicyTypeID = A.PolicyTypeID and L.[Level] = A.[Level]";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -362,8 +367,39 @@ select  A.ObjectID as ID,
         cast(S.Value * 100 as int) as CurrentScorePct
 from    AssetDetail A  
 		left join PredicateIntersect I on I.Object = 'Artifact' and I.ObjectID = A.ID and I.PredicateType = 3
-    	left join metrics.Score S on S.Object = 'Artifact' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
+    	left join [metrics].[Score] S on S.Object = 'Artifact' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
 where	A.AssetTypeClass = 1";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region All Issues
+
+                        objectName = $"{SCHEMA}.[Issue_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select  t.ID as IssueTypeID,
+		t.Name as IssueTypeName
+        ,i.[ID] as IssueID
+        ,i.[CreatedOn]
+        ,i.[CreatedBy]
+        ,i.[UpdatedOn]
+        ,i.[UpdatedBy]
+        ,i.[Criticality]
+        ,a.TypeID as AssetTypeID
+		,a.TypeName as AssetTypeName
+        ,a.Type
+        ,a.ID as AssetID
+from    Issue i
+        inner Join IssueType t on t.ID = i.IssueTypeID
+        Inner Join AssetWithType a on a.ObjectID = i.ObjectID and a.Object = i.Object";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -780,12 +816,18 @@ FROM    ResponsibilityDetails";
 
                         selectSql = @"
 select  i.ID as IntersectID,
+        st.ID as SubjectAssetTypeID,
+        st.Name as SubjectAssetTypeName, 
         s.ID as SubjectAssetID, 
+        ot.ID as ObjectAssetTypeID,
+        ot.Name as ObjectAssetTypeName,         
         o.ID as ObjectAssetID, 
         i.IntersectTypeID 
 from    [intersect] i 
         inner join asset s on (i.[subject] = s.[object] and i.[subjectid] = s.objectid) 
-        inner join asset o on (i.[object] = o.[object] and i.[objectid] = o.objectid)";
+        inner join assettype st on s.assettypeid = st.id
+        inner join asset o on (i.[object] = o.[object] and i.[objectid] = o.objectid)
+        inner join assettype ot on o.assettypeid = ot.id";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

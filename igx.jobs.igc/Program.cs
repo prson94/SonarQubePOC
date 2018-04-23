@@ -33,17 +33,8 @@ namespace igx.jobs
     public static class IgcIntegration
     {
         const string functionName = "IGC_Integration";
-        const string timerSettings = "0 */10 * * * *";
+        const string timerSettings = "0 */5 * * * *";
         //const string timerSettings = "*/5 * * * * *";
-
-        #region State street Settings - NEED to Externalize
-
-        const string SourceUri = "https://edgm-catalog-uat.statestreet.com/ibm/iis/igc-rest/v1/";
-        const string SourceAuthString = "Basic dGVzdDM2MDpkYXRhMzYw";   //State Street UAT
-        //const string SourceUri = "https://edgm-catalog.statestreet.com/ibm/iis/igc-rest/v1/";
-        //const string SourceAuthString = "Basic c3BsRFRTV0VCMjg2MjM6cChMWlsxfF1bYkl1";   //State Street PROD //UID: splDTSWEB28623    PWD: p(LZ[1|][bIu
-
-        #endregion
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -75,7 +66,7 @@ namespace igx.jobs
                             // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
                             if (settings.Count > 0)
                             {
-                                mappings = company.Query<IntegrationAssetType>("select * from integration.SynchedAssetType").ToList();
+                                mappings = company.Query<IntegrationAssetType>("select * from integration.SynchedAssetType").ToList(); // where ID = 1
                                 mappingFields = company.Query<IntegrationAssetTypeFieldItem>("select * from integration.SynchedAssetTypeFieldItem").ToList();
                                 mappingRelations = company.Query<IntegrationAssetTypeRelationItem>("select * from integration.SynchedAssetTypeRelationItem").ToList();
                                 mappingRelationTargets = company.Query<IntegrationAssetTypeRelationItemTarget>("select * from integration.SynchedAssetTypeRelationItemTarget").ToList();
@@ -110,6 +101,11 @@ namespace igx.jobs
                                 {
                                     foreach (var item in mappings.Where(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID)) // && i.ID == 20
                                     {
+                                        if (checkForChangesOnly)
+                                        {
+                                            checkForChangesOnly = item.AllowChangeDetection; //Final check to see if we even allow for DELTA checking on this asset type.
+                                        }
+
                                         var fields = mappingFields.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
                                         var relations = mappingRelations.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
                                         var relationIDs = relations.Select(i => i.ID).ToList();
@@ -308,6 +304,9 @@ namespace igx.jobs
 
             DateTime? currentParsedUnvalidatedDate = null;
 
+            var enumFields = new List<string>();
+            var enumValues = new List<EnumResolutionModel>();
+
             Func<JArray, JArray> parse = delegate (JArray root)
             {
                 var fieldErrors = new Dictionary<string, string>();
@@ -329,169 +328,273 @@ namespace igx.jobs
 
                 foreach (var obj in root.Children())
                 {
-                    var igcObjectSourceID = obj["_id"].Value<string>();
-
-                    // Field Load Logic.
-                    var d3s = new JObject();
-                    fields.ForEach(f =>
+                    try
                     {
-                        if (f.ParentContextPosition.HasValue)
+                        var igcObjectSourceID = obj["_id"].Value<string>();
+
+                        // Field Load Logic.
+                        var targetObject = new JObject();
+                        fields.ForEach(f =>
                         {
-                            // There is a hierarchy here, and we need to resolve it.
-                            var context = (obj[f.SourceField] as JArray); // obj[f.SourceField].Cast<List<GenericIgcContextModel>>().FirstOrDefault();
-                            if (context != null)
+                            if (f.ParentContextPosition.HasValue)
                             {
-                                if (f.ParentContextPosition.Value == 99)
-                                {
-                                    d3s.Add(f.TargetField, context.Last["_id"].Value<string>());
-                                }
-                                else
-                                {
-                                    d3s.Add(f.TargetField, context[f.ParentContextPosition.Value]["_id"].Value<string>());
-                                }
-                                
-                            }
-                        }
-                        else
-                        {
-                            if (f.IsArray)
-                            {
-                                d3s.Add(f.TargetField, (obj[f.SourceField] != null) ? string.Join(", ", obj[f.SourceField]) : "");
-                            }
-                            else
-                            {
+                                // There is a hierarchy here, and we need to resolve it.
                                 try
                                 {
-                                    d3s.Add(f.TargetField, obj[f.SourceField].Value<string>());
-
-                                    // Set default value if empty and there is a default value to be used.
-                                    if (!d3s[f.TargetField].HasValues && !string.IsNullOrEmpty(f.DefaultValue))
+                                    var context = (obj[f.SourceField] as JArray); // obj[f.SourceField].Cast<List<GenericIgcContextModel>>().FirstOrDefault();
+                                    if (context != null)
                                     {
-                                        d3s[f.TargetField] = f.DefaultValue;
+                                        if (targetObject.Property(f.TargetField) == null)
+                                        {
+                                            if (f.ParentContextPosition.Value == 99)
+                                            {
+                                                targetObject.Add(f.TargetField, context.Last["_id"].Value<string>());
+                                            }
+                                            else
+                                            {
+                                                targetObject.Add(f.TargetField, context[f.ParentContextPosition.Value]["_id"].Value<string>());
+                                            }
+                                        }
+
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    if (!fieldErrors.ContainsKey(f.TargetField))
+                                    if (!fieldErrors.ContainsKey($"{f.SourceField}"))
                                     {
-                                        fieldErrors.Add(f.TargetField, ex.GetFullExceptionData());
-                                    }
-                                    // Set default value.
-                                    if (!string.IsNullOrEmpty(f.DefaultValue))
-                                    {
-                                        d3s[f.TargetField] = f.DefaultValue;
+                                        fieldErrors.Add($"{f.SourceField}", ex.GetFullExceptionData());
                                     }
                                 }
                             }
-                        }
-
-                    });
-
-                    // This is where we can inject an optional FusionID, or some other required identifier.
-                    if (!string.IsNullOrEmpty(mapping.OptionalIDName) && mapping.OptionalID.HasValue)
-                    {
-                        d3s.Add(mapping.OptionalIDName, mapping.OptionalID.Value.ToString());
-                    }
-
-                    // Add object to collection.
-                    arr.Add(d3s);
-
-                    // Relation Load Logic.
-                    relations.ForEach(r =>
-                    {
-                        try
-                        {
-                            var rm = obj[r.SourceField].ToObject<IgcRelationshipModel>();
-                            var items = (
-                                        from i in rm.items
-                                        select i
-                                        ).ToList();
-
-                            if (items.Count > 0)
+                            else
                             {
-                                var targets = relationTargets.Where(i => i.SynchedAssetTypeRelationItemID == r.ID).ToList();
-                                if (targets.Count == 1)
+                                if (f.IsArray)
                                 {
-                                    // If there is ONLY 1 target (most cases), then there is no need to loop through 
-                                    // all the related items to find the appropriate target. 
-                                    // Treat them all as the same target.
-                                    var target = targets.First();
-                                    if (items[0].Type.StartsWith(target.SourceAssetType))
+                                    if (targetObject.Property(f.TargetField) == null)
                                     {
-                                        relationships.AddRange(
-                                            items.Select(i => new D3sRelationshipModel
-                                            {
-                                                SubjectSourceID = r.IsSubject ? igcObjectSourceID : i.SourceID,
-                                                ObjectSourceID = r.IsSubject ? i.SourceID : igcObjectSourceID,
-                                                PredicateType = r.PredicateType,
-                                                IntersectTypeID = target.IntersectTypeID
-                                            })
-                                        );
+                                        if (enumFields.Contains(f.SourceField))
+                                        {
+                                            var codes = obj[f.SourceField].Values<string>().ToList();
+
+                                            var displayValues = enumValues
+                                            .Where(i => 
+                                                i.PropertyName == f.SourceField &&
+                                                codes.Contains(i.Code)
+                                            )
+                                            .Select(i => i.DisplayValue)
+                                            .ToList();
+                                            targetObject.Add(
+                                                f.TargetField, 
+                                                (obj[f.SourceField] != null) ? string.Join(", ", displayValues) : "");
+                                        }
+                                        else
+                                        {
+                                            targetObject.Add(f.TargetField, (obj[f.SourceField] != null) ? string.Join(", ", obj[f.SourceField]) : "");
+                                        }
                                     }
                                 }
-                                else if (targets.Count > 1)
+                                else
                                 {
-                                    // If more than one target, loop through each related item to uncover its appropriate target.
-                                    items.ForEach(ri =>
+                                    try
                                     {
-                                        var target = targets.FirstOrDefault(i => ri.Type.StartsWith(i.SourceAssetType));
-                                        if (target != null)
+                                        if (targetObject.Property(f.TargetField) == null)
                                         {
-                                            relationships.Add(new D3sRelationshipModel
+                                            if (enumFields.Contains(f.SourceField))
                                             {
-                                                SubjectSourceID = r.IsSubject ? igcObjectSourceID : ri.SourceID,
-                                                ObjectSourceID = r.IsSubject ? ri.SourceID : igcObjectSourceID,
-                                                PredicateType = r.PredicateType,
-                                                IntersectTypeID = target.IntersectTypeID
+                                                var displayValue = enumValues.Where(i => i.PropertyName == f.SourceField && i.Code == obj[f.SourceField].Value<string>()).FirstOrDefault();
+                                                if (displayValue != null)
+                                                {
+                                                    targetObject.Add(f.TargetField, displayValue.DisplayValue);
+                                                }
+                                                else
+                                                {
+                                                    targetObject.Add(f.TargetField, obj[f.SourceField].Value<string>());
+                                                }
+                                            }
+                                            else
+                                            {
+                                                targetObject.Add(f.TargetField, obj[f.SourceField].Value<string>());
+                                            }
+                                            
+                                        }
+
+                                        // Set default value if empty and there is a default value to be used.
+                                        if (!targetObject[f.TargetField].HasValues && !string.IsNullOrEmpty(f.DefaultValue))
+                                        {
+                                            targetObject[f.TargetField] = f.DefaultValue;
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        if (!fieldErrors.ContainsKey($"{f.SourceField}"))
+                                        {
+                                            fieldErrors.Add($"{f.SourceField}", ex.GetFullExceptionData());
+                                        }
+                                        // Set default value.
+                                        if (!string.IsNullOrEmpty(f.DefaultValue))
+                                        {
+                                            targetObject[f.TargetField] = f.DefaultValue;
+                                        }
+                                    }
+                                }
+                            }
+
+                        });
+
+                        // This is where we can inject an optional FusionID, or some other required identifier.
+                        if (!string.IsNullOrEmpty(mapping.OptionalIDName) && mapping.OptionalID.HasValue)
+                        {
+                            targetObject.Add(mapping.OptionalIDName, mapping.OptionalID.Value.ToString());
+                        }
+
+                        // Add object to collection.
+                        arr.Add(targetObject);
+
+                        // Relation Load Logic.
+                        relations.ForEach(r =>
+                        {
+                            try
+                            {
+                                var rm = obj[r.SourceField].ToObject<IgcRelationshipModel>();
+                                if (rm.items == null)
+                                {
+                                    rm.items = new List<IgcModel>();
+                                    rm.items.Add(obj[r.SourceField].ToObject<IgcModel>());
+                                }
+
+                                if (rm.items != null)
+                                {
+                                    var items = (
+                                                from i in rm.items
+                                                select i
+                                                ).ToList();
+
+                                    if (items.Count > 0)
+                                    {
+                                        var targets = relationTargets.Where(i => i.SynchedAssetTypeRelationItemID == r.ID).ToList();
+                                        if (targets.Count == 1)
+                                        {
+                                            // If there is ONLY 1 target (most cases), then there is no need to loop through 
+                                            // all the related items to find the appropriate target. 
+                                            // Treat them all as the same target.
+                                            var target = targets.First();
+                                            if (items[0].Type.StartsWith(target.SourceAssetType))
+                                            {
+                                                relationships.AddRange(
+                                                    items.Select(i => new D3sRelationshipModel
+                                                    {
+                                                        SubjectSourceID = r.IsSubject ? igcObjectSourceID : i.SourceID,
+                                                        ObjectSourceID = r.IsSubject ? i.SourceID : igcObjectSourceID,
+                                                        PredicateType = r.PredicateType,
+                                                        IntersectTypeID = target.IntersectTypeID
+                                                    })
+                                                );
+                                            }
+                                        }
+                                        else if (targets.Count > 1)
+                                        {
+                                            // If more than one target, loop through each related item to uncover its appropriate target.
+                                            items.ForEach(ri =>
+                                            {
+                                                var target = targets.FirstOrDefault(i => ri.Type.StartsWith(i.SourceAssetType));
+                                                if (target != null)
+                                                {
+                                                    relationships.Add(new D3sRelationshipModel
+                                                    {
+                                                        SubjectSourceID = r.IsSubject ? igcObjectSourceID : ri.SourceID,
+                                                        ObjectSourceID = r.IsSubject ? ri.SourceID : igcObjectSourceID,
+                                                        PredicateType = r.PredicateType,
+                                                        IntersectTypeID = target.IntersectTypeID
+                                                    });
+                                                }
                                             });
                                         }
-                                    });
+                                    }
                                 }
                             }
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    });
-
-                    // Role Load Logic.
-                    roles.ForEach(r => {
-                        var userFullName = "";
-                        var userId = "";
-                        if (!string.IsNullOrEmpty(r.SourceNameField))
-                        {
-                            if (obj[r.SourceNameField] != null)
+                            catch (Exception ex)
                             {
-                                userFullName = obj[r.SourceNameField].Value<string>();
                             }
-                        }
-                        if (!string.IsNullOrEmpty(r.SourceIdField))
-                        {
-                            if (obj[r.SourceIdField] != null)
-                            {
-                                userId = obj[r.SourceIdField].Value<string>();
-                            }
-                        }
-                        ownershipTopModel.Items.Add(new D3sOwnershipModel {
-                            RoleName = r.RoleName,
-                            SourceID = igcObjectSourceID,
-                            UserFullName = userFullName,
-                            UserId = userId
                         });
-                    });
+
+                        // Role Load Logic.
+                        roles.ForEach(r => {
+                            var userFullName = "";
+                            var userId = "";
+                            if (!string.IsNullOrEmpty(r.SourceNameField))
+                            {
+                                if (obj[r.SourceNameField] != null)
+                                {
+                                    userFullName = obj[r.SourceNameField].Value<string>();
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(r.SourceIdField))
+                            {
+                                if (obj[r.SourceIdField] != null)
+                                {
+                                    userId = obj[r.SourceIdField].Value<string>();
+                                }
+                            }
+                            ownershipTopModel.Items.Add(new D3sOwnershipModel {
+                                RoleName = r.RoleName,
+                                SourceID = igcObjectSourceID,
+                                UserFullName = userFullName,
+                                UserId = userId
+                            });
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!fieldErrors.ContainsKey("ParseError"))
+                        {
+                            fieldErrors.Add("ParseError", ex.GetFullExceptionData());
+                        }
+                    }
                 }
 
                 if (fieldErrors.Keys.Count > 0)
                 {
-                    CoreFunction.AITrackEvent(functionName, "Parse Asset", fieldErrors, companyID);
+                    CoreFunction.AITrackEvent(functionName, $"{mapping.SourceAssetTypeName}, Parse Asset", fieldErrors, companyID);
                 }
 
                 return root;
             };
 
-            var url = $"{setting.SourceUri}search/";
+            //First, get the type definition of the asset type, to pull enum values.
+            var url = $"{setting.SourceUri}types/{mapping.SourceAssetTypeName}?showEditProperties=true";
 
-            checkForChangesOnly = true;
+            try
+            {
+                var igcType = GetFromApi<IgcTypeModel>(url, sourceAuthString);
+
+                if (igcType != null)
+                {
+                    igcType.EditInfo.Properties.ForEach(p => {
+                        if (p.Type.Name == "enum")
+                        {
+                            if (p.Type.Values != null)
+                            {
+                                enumFields.Add(p.Name);
+
+                                enumValues.AddRange(p.Type.Values.Select(i => new EnumResolutionModel
+                                {
+                                    PropertyName = p.Name,
+                                    Code = i.Code,
+                                    DisplayValue = i.DisplayName
+                                }));
+                            }
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex);
+            }
+
+            url = $"{setting.SourceUri}search/";
+
+            //checkForChangesOnly = true;
 
             if (checkForChangesOnly)
             {
@@ -697,17 +800,6 @@ namespace igx.jobs
 
             return successfulPost;
         }
-
-        public static void GetTypes()
-        {
-            var url = $"{SourceUri}types";
-
-            var models = GetFromApi<dynamic>(url, SourceAuthString);
-            //if (models != null)
-            //{
-            //    url = models.paging.next;
-            //}
-
-        }
+        
     }
 }

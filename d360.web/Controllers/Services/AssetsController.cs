@@ -401,7 +401,8 @@ on          (
             )
 when matched then
     update set
-            T.Deleted = 0
+            T.Deleted = 0,
+            T.ParentID = S.ParentID
 when not matched by target then
     insert  (FusionAttributeTypeID, FusionID, ParentID, Name, SourceID)
     values  (@id, S.OptionalID, S.ParentID, S.Name, S.SourceID)
@@ -432,6 +433,36 @@ when matched then
 when not matched by target then
     insert  (PolicyTypeID, SourceID, UpdatedBy, UpdatedOn, Visible)
     values  (@id, S.SourceID, @r, getutcdate(), 1)
+output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
+", new { id = otid, @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
+                            break;
+                            #endregion
+                        case SystemObjects.ReferenceItemType:
+                            #region
+                            Company.Database.Connection.Execute($@"
+merge into  [ReferenceItem] T
+using       (
+            select      min(A.ItemNumber) as ItemNumber,
+                        A.SourceID,
+                        F.FieldValue as Code
+            from        #AssetTable A
+                        left join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
+            group by    A.SourceID, F.FieldValue
+            ) S
+on          (
+                T.ReferenceItemTypeID = @id and 
+                S.SourceID is not null and 
+                S.SourceID <> '' and 
+                S.SourceID = T.SourceID
+            )
+when matched then
+    update set
+            T.UpdatedBy = @r,
+            T.UpdatedOn = getutcdate(),
+            T.Code = S.Code
+when not matched by target then
+    insert  (ReferenceItemTypeID, SourceID, Code, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Visible)
+    values  (@id, S.SourceID, S.Code, @r, getutcdate(), @r, getutcdate(), 1)
 output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 ", new { id = otid, @r = Company.CurrentResourceID }, transaction: trans, commandTimeout: 1200);
                             break;

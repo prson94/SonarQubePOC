@@ -96,6 +96,7 @@
     <Folder Include="Properties" />
     <Folder Include="Releases" />
     <Folder Include="Releases\2018.04.13" />
+    <Folder Include="Releases\2018.04.27" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -107,5 +108,8 @@
     <Build Include="Releases\2018.04.13\2.Conversion.sql" />
     <Build Include="Releases\2018.04.13\3.Delete.sql" />
     <Build Include="Releases\2018.04.13\4.FixConstraintNames.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PreDeploy Include="Releases\2018.04.27\1.Updates.sql" />
   </ItemGroup>
 </Project>

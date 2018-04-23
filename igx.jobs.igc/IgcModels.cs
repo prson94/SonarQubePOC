@@ -6,6 +6,75 @@ namespace igx.jobs.igc
 {
     #region IGC
 
+    #region Type Classes
+
+    public class IgcTypeModel
+    {
+        [JsonProperty(PropertyName = "_id")]
+        public string TypeName { get; set; }
+
+        [JsonProperty(PropertyName = "_name")]
+        public string Name { get; set; }
+
+        [JsonProperty(PropertyName = "editInfo")]
+        public IgcTypeEditInfoModel EditInfo { get; set; }
+    }
+
+    public class IgcTypeEditInfoModel
+    {
+        [JsonProperty(PropertyName = "properties")]
+        public List<IgcTypeEditInfoPropertyModel> Properties { get; set; }
+    }
+
+    public class IgcTypeEditInfoPropertyModel
+    {
+        [JsonProperty(PropertyName = "name")]
+        public string Name { get; set; }
+
+        [JsonProperty(PropertyName = "displayName")]
+        public string DisplayName { get; set; }
+
+
+        [JsonProperty(PropertyName = "type")]
+        public IgcTypeEditInfoPropertyTypeModel Type { get; set; }
+    }
+
+    public class IgcTypeEditInfoPropertyTypeModel
+    {
+        [JsonProperty(PropertyName = "name")]
+        public string Name { get; set; }
+
+        [JsonProperty(PropertyName = "validValues")]
+        public List<IgcTypeEditInfoPropertyTypeEnumValueModel> Values { get; set; }
+        //[JsonProperty(PropertyName = "type")]
+        //public IgcTypeEditInfoPropertyTypeEnumModel Type { get; set; }
+    }
+
+    public class IgcTypeEditInfoPropertyTypeEnumModel
+    {
+        [JsonProperty(PropertyName = "validValues")]
+        public List<IgcTypeEditInfoPropertyTypeEnumValueModel> Values { get; set; }
+    }
+
+    public class IgcTypeEditInfoPropertyTypeEnumValueModel
+    {
+        [JsonProperty(PropertyName = "id")]
+        public string Code { get; set; }
+
+        [JsonProperty(PropertyName = "displayName")]
+        public string DisplayName { get; set; }
+    }
+
+    #endregion
+
+    public class EnumResolutionModel
+    {
+        public string PropertyName { get; set; }
+        public string Code { get; set; }
+
+        public string DisplayValue{ get; set; }
+    }
+
     public class GenericIgcContextModel
     {
         public string _type { get; set; }

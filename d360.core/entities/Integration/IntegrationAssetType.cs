@@ -37,6 +37,9 @@ namespace d360.core.entities
         public int? OptionalID { get; set; } = null;
 
         [DataMember]
+        public bool AllowChangeDetection { get; set; } = false;
+
+        [DataMember]
         public DateTime? LastSynchOn { get; set; } = null;
 
 
