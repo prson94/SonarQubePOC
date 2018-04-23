@@ -74,7 +74,7 @@
             </div>
             <div class="row" style="margin-top:15px;">
                 <div class="col s12">
-                    <button pButton type="button" label="Save" (click)="save()" [disabled]="selection == null || selection.Title == null || selection.Title == '' || permissionMode != FormMode.Default ||  folderItems == null || folderItems.length < 1  || !selection.IsCustom "></button>
+                    <button pButton type="button" label="Save" (click)="save()" [disabled]="selection == null || selection.Title == null || selection.Title == '' || permissionMode != FormMode.Default || (selection.IsCustom && (folderItems == null || folderItems.length < 1))"></button>
                     <button pButton type="button" label="Cancel" (click)="cancel()"></button>
                 </div>
             </div>
