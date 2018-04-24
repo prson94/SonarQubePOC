@@ -19,7 +19,6 @@ import { ISubscription } from 'rxjs/Subscription';
                                 (completeMethod)="search($event)"                              
                                 placeholder="Search Data3Sixty"  
                                 [minLength]="1"  
-                                [autoHighlight]="true"
                                 (onSelect)="selectItem()">                       
                             <ng-template let-result>
                                 <div style="padding:5px 0;">                                
@@ -59,6 +58,7 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
             .debounceTime(400)
             .subscribe(data => {
                 this.results = data;
+                this.ref.markForCheck();
         });
     }
 
