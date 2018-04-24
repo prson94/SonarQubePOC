@@ -677,7 +677,14 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
                      dispName = det != null ? det.Name : "";
 
-                    if (objectType == "Fusion")
+                    if (objectType == "TaxonomyType")
+                    {
+                        var desSql = @"Select Description from AssetType where objectid =@id and object= @ty";
+                        desc = Company.Query<string>(desSql, new { ty = objectType, id = objectID }).FirstOrDefault();
+                       
+                    }
+
+                        if (objectType == "Fusion")
                     {
                         var fusionSql = @"select f.name from fusion f 
                                             where f.id=@id";
