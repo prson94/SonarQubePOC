@@ -90,7 +90,12 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
             //if simple filter specified add that citeria to the sql
             if (!string.IsNullOrEmpty(filter))
             {
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] {  }, "Artifact", id, filter, dbArgs)}";
+                var fixedColumns = new List<string>();
+
+                if (parentIntersectType != null)
+                    fixedColumns.Add("P.DisplayValue"); //Owner/Parent
+
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(fixedColumns.ToArray(), "Artifact", id, filter, dbArgs)}";
             }
 
             var type = Company.GetById<ArtifactType>(id);
@@ -219,7 +224,13 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 and not exi
             //if simple filter specified add that citeria to the sql
             if (!string.IsNullOrEmpty(filter))
             {
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.DisplayValue" }, "Artifact", artifactTypeId, filter, dbArgs)}";
+                var fixedColumns = new List<string>();
+                fixedColumns.Add("A.DisplayValue");
+
+                if (parentIntersectType != null)
+                    fixedColumns.Add("P.DisplayValue"); //Owner/Parent
+
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(fixedColumns.ToArray(), "Artifact", artifactTypeId, filter, dbArgs)}";
             }
 
             var type = Company.GetById<ArtifactType>(artifactTypeId);
