@@ -6,11 +6,11 @@
         <div class="row">
             <div class="col l6 m6 s12">
                 <label id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</label>
-                <p-dropdown [options]="model.responsibilityTypes" [(ngModel)]="model.selectedResponsibilityType" (onChange)="getCurrentContext();" [style]="{'width':'90%', 'display':'block'}" name="responsibilityType" required></p-dropdown>
+                <p-dropdown [options]="model.responsibilityTypes" [(ngModel)]="model.selectedResponsibilityType" [disabled]="IsResponsibilityDisabled" (onChange)="getResponsibilityTypes();" [style]="{'width':'90%', 'display':'block'}" name="responsibilityType" required></p-dropdown>
             </div>
             <div class="col l6 m6 s12">
                 <label id='ResponsibleObjectTip' class="FieldNameRequired">Resource</label>
-                <p-dropdown [options]="model.resources" [(ngModel)]="model.selectedResource" (onChange)="getCurrentContext();" name="selectedResource" required [filter]="true" [style]="{'width':'90%', 'display':'block'}"></p-dropdown>
+                <p-dropdown [options]="resources" [(ngModel)]="model.selectedResource" name="selectedResource" required [filter]="true" [style]="{'width':'90%', 'display':'block'}"></p-dropdown>
             </div>
         </div>
         <div class="row">

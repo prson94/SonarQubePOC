@@ -14672,6 +14672,7 @@ order by TP.TextPath";
             List<SelectListItem> resources;
             List<SelectListItem> responsibilityTypes;
             ResponsibilityTypeRelationOverrideItem responsibility;
+            List<ResponsibilityDetail> responsibilityDetails;
             if (overrideID.HasValue)
             {
                 responsibility = Company.GetById<ResponsibilityTypeRelationOverrideItem>(overrideID.Value, i => i.ResponsibilityType);
@@ -14685,12 +14686,14 @@ order by TP.TextPath";
                 responsibility = new ResponsibilityTypeRelationOverrideItem { AssetID = assetID };
             }
 
+            responsibilityDetails = Company.Filter<ResponsibilityDetail>(i => i.AssetID == assetID).ToList<ResponsibilityDetail>();
             return new JsonNetResult
             {
                 Data = new {
                     resources,
                     responsibilityTypes,
-                    responsibility
+                    responsibility,
+                    responsibilityDetails
                 },
                 Formatting = Newtonsoft.Json.Formatting.None
             };

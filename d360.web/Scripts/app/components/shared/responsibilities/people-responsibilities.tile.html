@@ -37,7 +37,7 @@
                 <p-column [style]="{'width':'40px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
                         <div *ngIf="!item.RuleName && hasRootUpdatePermissions()" class="RowTools">
-                            <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="selectedRow = item; edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                         </div>
                     </ng-template>
                 </p-column>

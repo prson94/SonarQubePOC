@@ -13,6 +13,7 @@ export class ResponsibilityEditorModel {
     responsibilityTypes: SelectItem[];
     selectedResponsibilityType: string;
     responsibility: ResponsibilityItem;
+    responsibilityDetails: ResponsibilityItemDetail[];
 }
 
 export class ResponsibilityItem {

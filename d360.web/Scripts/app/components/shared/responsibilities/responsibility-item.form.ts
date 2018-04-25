@@ -27,6 +27,8 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private itemToSave = new ResponsibilityItem();
     private checkD: ResponsibilityItemDetail[] = [];
     private showVisible: boolean = false;
+    private resources: SelectItem[] = [];
+    private IsResponsibilityDisabled :boolean= false;
 
     constructor(private responsibilityService: ResponsibilityService, private messagesService: MessagesService) {
         super();
@@ -59,13 +61,30 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.responsibilityService.getResponsibilityItemEditor(this.itemToSave.AssetID, this.itemToSave.ID)
             .then(data => {
                 this.model = data;
-                //if (!this.item.ID) {
-                //    this.item.ObjectID = data.responsibility.ObjectID;
-                //    this.item.ObjectType = data.responsibility.ObjectType;
-                //}
+                this.getResponsibilityTypes();
                 this.onLoadComplete.emit({ item: this.item });
                 this.isLoading = false;
             });
+    }
+
+    private getResponsibilityTypes(): void {
+       
+        let allResources = this.model.resources;
+        let rType = this.model.selectedResponsibilityType;
+        let rID = this.model.selectedResource.split("|", 2);
+        let responsibilityDetails = this.model.responsibilityDetails;
+        
+        let rsDetail = responsibilityDetails.filter(x => x.ResponsibilityTypeID.toString() == rType)
+       
+        if (this.item == null || this.item.ResponsibilityTypeID == null) {
+            this.IsResponsibilityDisabled = false;
+            this.resources = allResources.filter(x => rsDetail.every(y => y.ResourceID.toString() != x.value.split("|", 2)[1]));
+        }
+        else {
+            this.IsResponsibilityDisabled = true;
+            this.resources = allResources.filter(x => rsDetail.every(y => (y.ResourceID.toString() != x.value.split("|", 2)[1]) || (y.ResourceID.toString() == rID[1])  ));
+        }
+ 
     }
 
     private getCurrentContext(): void {
@@ -79,7 +98,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                     //console.log('this should be: ' + rType + ' ' + rID[1]);
                     if (data[x].ResponsibilityTypeID.toString() == rType && data[x].ResourceID.toString() == rID[1]) {
                         this.model.responsibility.Context = data[x].Context;
-                    }
+                   }
                     else this.model.responsibility.Context = "";
                 }
                 this.isLoading = false;

@@ -60,7 +60,8 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         this.loadPermissionsById(this.permissionsService, this.assetID);
     }
 
-    edit(id: number): void {        
+    edit(item): void {  
+        this.selectedRow = item;
         this.isEditing = true;
     }
 
