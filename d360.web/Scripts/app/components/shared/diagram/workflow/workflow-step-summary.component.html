@@ -71,7 +71,7 @@
                     <div class="FieldName">
                         Body
                     </div>
-                    <div class="FormFieldContent" [innerHtml]="step.settings['MessageBodyTemplate']">
+                    <div class="FormFieldContent" *ngIf="step.settings['MessageBodyTemplate']" [innerHtml]="step.settings['MessageBodyTemplate']">
 
                     </div>
                 </div>
@@ -172,7 +172,7 @@
                     <div class="FieldName">
                         Body
                     </div>
-                    <div class="FormFieldContent"  [innerHTML]="step.settings['MessageBodyTemplate']">
+                    <div class="FormFieldContent" *ngIf="step.settings['MessageBodyTemplate']"  [innerHTML]="step.settings['MessageBodyTemplate']">
 
                     </div>
                 </div>
