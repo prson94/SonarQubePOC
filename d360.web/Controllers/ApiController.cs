@@ -1198,7 +1198,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 // Add to list
                 list.Add(listItem);
             }
-
+           
             return list;//.AsQueryable();
         }
 
@@ -5976,6 +5976,9 @@ where    A.RuleID = @id", new { id });
                                 break;
                             case "TaxonomyType":
                                 sql = "select 'Model Type : ' + Name from TaxonomyType where ID = @id";
+                                break;
+                            case "FusionType":
+                                sql = "select 'Fusion Type : ' + Name from FusionType where ID = @id";
                                 break;
                         }
 
