@@ -34,6 +34,15 @@ namespace d360.web
                 resource = new ContractValidationCacheModel.User();
                 cache.SetItemInListByID(key, resourceId, resource, true, time);
             }
+            else
+            {
+                var res = resource.Companies.FirstOrDefault(c => c.ID == companyId);
+                if (res != null)
+                {
+                    cache.SetItemInListByID(key, resourceId, resource, true, time);
+                    return res.ContractsAccepted;
+                }
+            }
 
             var resourceCompany = resource.Companies.FirstOrDefault(c => c.ID == companyId);
 
