@@ -1141,12 +1141,12 @@ where   h.ID <> @t order by h.[Level] desc;
         [Route("artifacttypes")]
         public IEnumerable<ArtifactType> GetArtifactTypes()
         {
-            var artifactTypes = Company.Table<ArtifactType>().ToList();
+            var artifactTypes = Company.Table<ArtifactType>().ToList().OrderBy<ArtifactType,string>(x=>x.Name);
 
             //get intersecttypes for intra parent so we can determine parents
 
             var artifactParentRelations = Company.IntersectTypeDetails.Where(x => x.PredicateType == PredicateType.InterTypeHierarchy && x.Object == "ArtifactType" && x.Subject == "ArtifactType").ToList();
-
+           
             foreach (var artifactType in artifactTypes)
             {
                 //
