@@ -68,7 +68,6 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Organizations";
         this.setCommonItems();
-        this.setCommonRightSideBar(true);
     }
 
     ngOnInit() {
@@ -83,7 +82,6 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
         this.selectedType = e;
         if (this.selectedType != null) {
             this.setObjectInfo('OrganizationType', this.selectedType.ID);
-            this.setCommonRightSideBar(true);
         }
     }
 }
