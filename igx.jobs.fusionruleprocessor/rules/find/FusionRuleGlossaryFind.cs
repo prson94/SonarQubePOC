@@ -2,8 +2,10 @@
 using Dapper;
 using Microsoft.Azure.WebJobs.Host;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.fusionruleprocessor
@@ -60,11 +62,44 @@ namespace igx.jobs.fusionruleprocessor
 
                 return;
             }
-                        
-            var sql = @"
+
+            using (var transaction = company.BeginTransaction())
+            {
+                await company.ExecuteAsync(@"IF OBJECT_ID('tempdb..#items') IS NOT NULL
+			                                DROP TABLE #items;
+
+		                                create table #items (                                            			                                
+			                                ID int not null
+		                                );
+                                ", transaction: transaction);
+
+                using (var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.TableLock, transaction))
+                {
+                    bulkCopy.BatchSize = itemsToPromote.Count;
+                    bulkCopy.DestinationTableName = "#items";
+                    bulkCopy.BulkCopyTimeout = 300;
+
+                    var table = new DataTable();
+                    var columnName = "ID";
+                    table.Columns.Add(columnName, typeof(int));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    foreach (var item in itemsToPromote)
+                    {
+                        var row = table.NewRow();
+
+                        row["ID"] = item;
+
+                        table.Rows.Add(row);
+                    }
+
+                    await bulkCopy.WriteToServerAsync(table);
+                }
+                
+                var sql = @"
                     MERGE	[fusion].[RulePromotion] AS T
 					USING	(
-                            select
+                            select distinct
                                 fVal.ID as AttributeID,
 							    fVal.ObjectType as AttributeType, 
                                 'Artifact' as ObjectType,
@@ -74,13 +109,15 @@ namespace igx.jobs.fusionruleprocessor
 								@RuleStepID as RuleStepID                        
 						    from	Artifact a
                                     inner join field f on(a.ID = f.ObjectID and f.Objecttype = 'Artifact' and f.fieldtypeid = @FindTargetField)
-                                    inner join #fields fVal on(fVal.ObjectType = @AttributeType and fVal.ID in @items and f.FormattedValue = fVal.Value and fVal.TargetFieldTypeID = f.fieldtypeid)
+                                    inner join #fields fVal on(fVal.ObjectType = @AttributeType and fVal.ID in (select distinct id from #items) and f.FormattedValue = fVal.Value and fVal.TargetFieldTypeID = f.fieldtypeid)
                             where	a.ArtifactTypeID = @FindSearchObjectID									                                    
                         ) as S
                     ON		T.RuleID = S.RuleID
 							and T.RuleStepID = S.RuleStepID 
 							and T.AttributeID = S.AttributeID 
-							and T.AttributeType = S.AttributeType							
+							and T.AttributeType = S.AttributeType	
+                            and T.ObjectID = S.ObjectID
+                            and T.ObjectType = S.ObjectType
 					WHEN	MATCHED THEN
 							UPDATE SET	T.RuleID = S.RuleID, 
 										T.ObjectTypeID = S.PromotedObjectTypeID,
@@ -93,8 +130,11 @@ namespace igx.jobs.fusionruleprocessor
                     WHEN NOT MATCHED BY SOURCE AND T.RuleID = @RuleID and T.RuleStepID = @RuleStepID
                         THEN DELETE; 
                     ";
-            
-            await company.ExecuteAsync(sql, new { RuleID = Rule.ID, FindSearchObjectID = FindSearchObjectID, items = itemsToPromote, AttributeType = Rule.ObjectType.Replace("Type", ""), RuleStepID = Step.ID, FindTargetField = FindTargetFieldID });
+
+                await company.ExecuteAsync(sql, new { RuleID = Rule.ID, FindSearchObjectID = FindSearchObjectID, AttributeType = Rule.ObjectType.Replace("Type", ""), RuleStepID = Step.ID, FindTargetField = FindTargetFieldID }, transaction: transaction);
+
+                transaction.Commit();
+            }
         }
     }
 }
