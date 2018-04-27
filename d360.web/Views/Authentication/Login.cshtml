@@ -2,6 +2,15 @@
 @{
     ViewBag.Title = "Login";
     Layout = "../Shared/Anonymous.cshtml";
+
+    var settings = (Dictionary<string, string>)ViewData["Settings"];
+    var hasRegisterSetting = settings["HasRegisterLink"];
+    var hasRegister = false;
+
+    if ((hasRegisterSetting ?? "").ToLower() == "true")
+    {
+        hasRegister = true;
+    }
 }
 @section TopJs {
 <script type="text/javascript">
@@ -35,6 +44,9 @@
             <div><input id="loginButton" type="submit" value="Log in" tabindex="3" style="width:100%" /></div>
             <br/>
         }
-        <a href="reset">Forgot your Password?</a> &nbsp;&#124;&nbsp; <a href="register">Register</a>
+        <a href="reset">Forgot your Password?</a>@if(hasRegister)
+        {
+            @:&nbsp; &#124;&nbsp;<a href="register">Register</a>
+        }
     </div>
 </body>
