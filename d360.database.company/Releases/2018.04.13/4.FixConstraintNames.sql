@@ -20,7 +20,7 @@ if @Command is not null
 begin
 	execute (@Command)
 end
-go
+GO
 
 ALTER TABLE [dbo].[ArtifactTypeExportTemplate] ADD  CONSTRAINT [DF_ArtifactTypeExportTemplate_ExportViewType]  DEFAULT ((0)) FOR [ExportViewType]
 GO
@@ -40,7 +40,7 @@ if @Command is not null
 begin
 	execute (@Command)
 end
-go
+GO
 
 ALTER TABLE [dbo].[ArtifactTypeExportTemplate] ADD  CONSTRAINT [DF_ArtifactTypeExportTemplate_IncludeUrl]  DEFAULT ((1)) FOR [IncludeUrl]
 GO
@@ -60,7 +60,7 @@ if @Command is not null
 begin
 	execute (@Command)
 end
-go
+GO
 
 ALTER TABLE [dbo].[ArtifactTypeExportTemplate] ADD  CONSTRAINT [DF_ArtifactTypeExportTemplate_IncludeParent]  DEFAULT ((1)) FOR [IncludeParent]
 GO
@@ -83,7 +83,7 @@ if @Command is not null
 begin
 	execute (@Command)
 end
-go
+GO
 
 ALTER TABLE [dbo].[ArtifactTypeExportTemplateStyle] ADD  CONSTRAINT [DF_ArtifactTypeExportTemplateStyle_IsBold]  DEFAULT ((0)) FOR [IsBold]
 GO
@@ -105,7 +105,7 @@ if @Command is not null
 begin
 	execute (@Command)
 end
-go
+GO
 
 ALTER TABLE [dbo].[AttributeType] ADD  CONSTRAINT [DF_AttributeType_ShowNameInTree]  DEFAULT ((1)) FOR [ShowNameInTree]
 GO
@@ -125,7 +125,7 @@ if @Command is not null
 begin
 	execute (@Command)
 end
-go
+GO
 
 ALTER TABLE [dbo].[AttributeType] ADD  CONSTRAINT [DF_AttributeType_DisplayFormat]  DEFAULT ('') FOR [DisplayFormat]
 GO
@@ -147,7 +147,7 @@ if @Command is not null
 begin
 	execute (@Command)
 end
-go
+GO
 
 ALTER TABLE [dbo].CommentVote ADD  CONSTRAINT DF_CommentVote_Vote  DEFAULT (0) FOR [Vote]
 GO
@@ -169,7 +169,7 @@ if @Command is not null
 begin
 	execute (@Command)
 end
-go
+GO
 
 ALTER TABLE [dbo].Organization ADD  CONSTRAINT DF_Organization_State  DEFAULT (0) FOR [State]
 GO

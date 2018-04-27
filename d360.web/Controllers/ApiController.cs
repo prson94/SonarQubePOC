@@ -6351,21 +6351,33 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.Taxonomy:
                     #region Fields
-                    var taxonomy = Company.GetById<Taxonomy>(id);
+                    var taxonomy = Company.Query<dynamic>(@"
+select	A.ID as AssetID,
+		A.ObjectID,
+		T.ObjectID as TypeID,
+		P.TextPath,
+		L.Level
+from	Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID
+		cross apply dbo.GetAssetTextPathById(A.ID, '/') P
+		cross apply dbo.GetAssetLevelById(A.ID) L
+where	A.Object = 'Taxonomy' and A.ObjectID = @id
+", new { id }).SingleOrDefault();
+
                     if (taxonomy != null)
                     {
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
-
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = taxonomy.GetName(i => i.TextPath), FieldName = "TaxonomyTextPath", FieldDescription = taxonomy.GetDescription(i => i.TextPath), Value = taxonomy.TextPath }
+                                new ReadOnlyField { Name = d360.core.resources.Fields.Path_Name, FieldName = "TaxonomyTextPath", FieldDescription = d360.core.resources.Fields.Path_Description, Value = taxonomy.TextPath }
                             }
                         });
 
-                        var levelInfo = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == taxonomy.TaxonomyTypeID && i.Level == taxonomy.Level).SingleOrDefault();
+                        var taxonomyTypeID = (int)taxonomy.TypeID;
+                        var taxonomyLevel = (int)taxonomy.Level;
+                        var levelInfo = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == taxonomyTypeID && i.Level == taxonomyLevel).SingleOrDefault();
 
                         if (levelInfo != null)
                         {
@@ -6383,26 +6395,17 @@ where    A.RuleID = @id", new { id });
                             });
                         }
 
-                        var asset = Company.Assets.Where(x => x.Object == "Taxonomy" && x.ObjectID == id).FirstOrDefault();
-
-                        if (asset != null)
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
-                            }
-                            });
-                        }
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
+                            columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = taxonomy.GetName(i => i.ID), FieldName = "TaxonomyID", FieldDescription = taxonomy.GetDescription(i => i.ID), Value = $"{taxonomy.ID}" }
-                                }
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = $"{taxonomy.AssetID}", DataType = "string" }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField { Name = "ID", FieldName = "TaxonomyID", Value = $"{taxonomy.ID}" }
+                            }
                         });
                     }
                     taxonomy = null;

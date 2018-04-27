@@ -178,7 +178,7 @@ namespace d360.web.Controllers.Services
                 #region Base SQL statements
 
                 var sql = @"
-    select  D.[key] as ID 
+    select  D.[key] as id 
             {0} 
     from    AssetApiModel A
             cross apply utility.GetAssetBusinessKey(A.ID) D 
@@ -332,7 +332,7 @@ namespace d360.web.Controllers.Services
     where   A.AssetTypeID = @id";
 
                 var sql = @"
-    select  D.[Key] as ID
+    select  D.[Key] as id
         {0}
     from    AssetApiModel A
             cross apply utility.GetAssetBusinessKey(A.ID) D 
@@ -942,7 +942,7 @@ namespace d360.web.Controllers.Services
                     foreach (var a in assets)
                     {
                         var xNode = DynamicHelper.ConvertToXml(a, "item");
-                        (xNode as XElement).Add(new XAttribute("id", a.ID));
+                        (xNode as XElement).Add(new XAttribute("id", a.id));
                         xItems.Add(xNode);
                     }
 

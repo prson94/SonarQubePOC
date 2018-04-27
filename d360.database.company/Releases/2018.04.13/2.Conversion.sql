@@ -26,7 +26,11 @@ from	ArtifactType
 GO
 
 insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
-	select 'Artifact', A.ID, FT.ID, A.Name, A.Name from Artifact A inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.Name = 'Name'
+	select	'Artifact', A.ID, FT.ID, A.Name, A.Name 
+	from	Artifact A 
+			inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.Name = 'Name'
+			left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'Artifact' and F.ObjectID = A.ID
+	where	F.FieldTypeID is null
 GO
 
 INSERT INTO [dbo].[FieldType]
@@ -54,6 +58,8 @@ insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 	select	'Artifact', A.ID, FT.ID, A.Description, A.Description 
 	from	Artifact A 
 			inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.Name = 'Description' and A.Description is not null and A.Description <> ''
+			left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'Artifact' and F.ObjectID = A.ID
+	where	F.FieldTypeID is null
 GO
 
 -- Artifact Status
@@ -2934,6 +2940,43 @@ begin
 end
 GO
 
+create FUNCTION [dbo].[GetAssetKeyHashById](
+	@Id bigint
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	
+
+select		A.AssetTypeID,
+				A.ID,
+				CONVERT(
+					varchar(32), 
+					SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+					2) as KeyHash
+	from		Asset A
+				inner join Field F on F.ObjectType = A.Object and F.ObjectID = A.ObjectID and A.Object != 'ReferenceItem'
+				inner join FieldType FT on FT.ID = F.FieldTypeID 
+										and FT.AssetTypeID = A.AssetTypeID
+										and FT.IsPartOfKey = 1
+	where a.assettypeid = @id
+	group by	A.AssetTypeID, A.ID
+union
+select		A.AssetTypeID,
+				A.ID,
+				CONVERT(
+					varchar(32), 
+					SUBSTRING(HASHBYTES('SHA1', STRING_AGG(r.code, char(59))), 3, 32), 
+					2) as KeyHash
+	from		Asset A
+				inner join referenceitem r on (a.object = 'ReferenceItem' and r.id = a.objectid)
+	where a.assettypeid = @id
+	group by	A.AssetTypeID, A.ID
+
+)
+GO
+
 alter procedure [bulkload].[Promotions]
 --declare
 	@id int
@@ -3222,13 +3265,23 @@ begin
 	
 	-- COMMON ------------------
 	-- Identify which load items already exist based on key hash.
-	update	T
+	-- oddly wonky
+	/*update	T
 	set		T.Object = A.Object,
 			T.ObjectID = A.ObjectID
 	from	LoadItem T
 			inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
 			inner join GetAssetKeyHash() S on S.AssetTypeID = ST.ID and S.KeyHash = T.KeyHash and T.LoadID = @id
-			inner join Asset A on A.ID = S.ID;
+			inner join Asset A on A.ID = S.ID;*/
+
+	update	T
+	set		T.Object = A.Object,
+			T.ObjectID = A.ObjectID
+	from	LoadItem T
+			inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
+			cross apply GetAssetKeyHashById(ST.ID) S 
+			inner join Asset A on A.ID = S.ID
+	where S.KeyHash = T.KeyHash and T.LoadID = @id
 	
 	-- ARTIFACTS ---------------
 	if @Object = 'ArtifactType'
@@ -3771,7 +3824,7 @@ begin
 	where	ID = @id
 	---------------------------------------------
 end
-GO
+go
 
 ALTER PROCEDURE [bulkload].[Unrelate]
 --declare 

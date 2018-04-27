@@ -660,6 +660,9 @@ CREATE TABLE [integration].[SynchedAssetTypeFieldItem] (
     [ParentContextPosition]    INT            NULL,
     [IsArray]                  BIT            CONSTRAINT [DF_IntegrationSynchedAssetTypeFieldItem_IsArray] DEFAULT ((0)) NOT NULL,
     [DefaultValue]             NVARCHAR (250) NULL,
+	ArrayValueDelimiter			varchar(10) null,
+	ArrayValueFieldName			varchar(50) null,
+	Active bit constraint DF_IntegrationSynchedAssetTypeFieldItem_Active default(1) not null,
     CONSTRAINT [PK_IntegrationSynchedAssetTypeFieldItem] PRIMARY KEY NONCLUSTERED ([ID] ASC),
     CONSTRAINT [FK_IntegrationSynchedAssetTypeFieldItem_IntegrationSynchedAssetType] FOREIGN KEY ([SynchedAssetTypeID]) REFERENCES [integration].[SynchedAssetType] ([ID])
 );

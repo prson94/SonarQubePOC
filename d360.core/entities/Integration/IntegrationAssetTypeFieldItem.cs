@@ -29,6 +29,12 @@ namespace d360.core.entities
         [DataMember]
         public string DefaultValue { get; set; }
 
+        [DataMember]
+        public string ArrayValueDelimiter { get; set; }
+
+        [DataMember]
+        public string ArrayValueFieldName { get; set; }
+
         [IgnoreDataMember, ForeignKey("SynchedAssetTypeID")]
         public virtual ICollection<IntegrationAssetType> IntegrationAssetType { get; set; }
     }

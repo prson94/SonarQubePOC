@@ -66,12 +66,15 @@ namespace igx.jobs
                             // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
                             if (settings.Count > 0)
                             {
-                                mappings = company.Query<IntegrationAssetType>("select * from integration.SynchedAssetType").ToList(); // where ID = 1
-                                mappingFields = company.Query<IntegrationAssetTypeFieldItem>("select * from integration.SynchedAssetTypeFieldItem").ToList();
+                                mappings = company.Query<IntegrationAssetType>("select * from integration.SynchedAssetType where Active = 1").ToList(); // where ID = 20").ToList();
+                                mappingFields = company.Query<IntegrationAssetTypeFieldItem>("select * from integration.SynchedAssetTypeFieldItem where Active = 1").ToList();
                                 mappingRelations = company.Query<IntegrationAssetTypeRelationItem>("select * from integration.SynchedAssetTypeRelationItem").ToList();
                                 mappingRelationTargets = company.Query<IntegrationAssetTypeRelationItemTarget>("select * from integration.SynchedAssetTypeRelationItemTarget").ToList();
                                 mappingRoles = company.Query<IntegrationAssetTypeRoleItem>("select * from integration.SynchedAssetTypeRoleItem").ToList();
                             }
+
+                            // Close the connection for now.
+                            company.Close();
 
                             foreach (var setting in settings)
                             {
@@ -113,18 +116,22 @@ namespace igx.jobs
                                         var roles = mappingRoles.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
 
                                         var success = false;
-                                        DateTime? lastDateCheckedSuccessfully = null;
-                                        success = IGC_LoadAssetsByMappingType(c.CompanyID, setting, checkForChangesOnly, now, c.UrlPrefix, resource, item, fields, relations, relationTargets, roles, out lastDateCheckedSuccessfully);
+                                        //DateTime? lastDateCheckedSuccessfully = null;
+                                        success = IGC_LoadAssetsByMappingType(c.CompanyID, setting, checkForChangesOnly, now, c.UrlPrefix, resource, item, fields, relations, relationTargets, roles, company);
                                         if (success)
                                         {
-                                            company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt where ID = @id", new { id = item.ID, dt = lastDateCheckedSuccessfully ?? now });
+                                            company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                                            company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt, LastSuccessfulCount = @cnt where ID = @id", new { id = item.ID, dt = item .LastSynchOn, cnt = item.LastSuccessfulCount });
+                                            company.Close();
                                         }
                                     }
 
                                     if (!checkForChangesOnly)
                                     {
                                         //Update the RefreshedOn property on the setting record, as we just did a full refresh.
+                                        company.OpenWithRetry(RetryPolicy.DefaultFixed);
                                         company.Execute("update integration.Setting set LastRefreshOn = @dt where ID = @id", new { id = setting.ID, dt = now });
+                                        company.Close();
                                     }
                                 }
                             }
@@ -275,9 +282,9 @@ namespace igx.jobs
             List<IntegrationAssetTypeRelationItem> relations,
             List<IntegrationAssetTypeRelationItemTarget> relationTargets,
             List<IntegrationAssetTypeRoleItem> roles, 
-            out DateTime? lastDateChecked)
+            SqlConnection company)//out DateTime? lastDateChecked)
         {
-            lastDateChecked = now;
+            //lastDateChecked = now;
 
             var success = true;
 
@@ -370,26 +377,64 @@ namespace igx.jobs
                             {
                                 if (f.IsArray)
                                 {
+                                    // If there is not already a target field with this name that is populated.
                                     if (targetObject.Property(f.TargetField) == null)
                                     {
-                                        if (enumFields.Contains(f.SourceField))
+                                        if (!string.IsNullOrEmpty(f.ArrayValueDelimiter) && !string.IsNullOrEmpty(f.ArrayValueFieldName))
                                         {
-                                            var codes = obj[f.SourceField].Values<string>().ToList();
+                                            try
+                                            {
+                                                // Concatenate a particular field from the array and delimit each string value into one consolidated string. For example, a path.
+                                                var delimitedFieldArray = obj[f.SourceField] as JArray;
+                                                var delimitedCollection = new List<string>();
+                                                delimitedCollection.AddRange(
+                                                    delimitedFieldArray.Select(i => i[f.ArrayValueFieldName].Value<string>())
+                                                );
 
-                                            var displayValues = enumValues
-                                            .Where(i => 
-                                                i.PropertyName == f.SourceField &&
-                                                codes.Contains(i.Code)
-                                            )
-                                            .Select(i => i.DisplayValue)
-                                            .ToList();
-                                            targetObject.Add(
-                                                f.TargetField, 
-                                                (obj[f.SourceField] != null) ? string.Join(", ", displayValues) : "");
+                                                targetObject.Add(f.TargetField, string.Join(f.ArrayValueDelimiter, delimitedCollection));
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                targetObject.Add(f.TargetField, $"ERROR: {ex.Message}");
+                                            }
                                         }
                                         else
                                         {
-                                            targetObject.Add(f.TargetField, (obj[f.SourceField] != null) ? string.Join(", ", obj[f.SourceField]) : "");
+                                            if (enumFields.Contains(f.SourceField))
+                                            {
+                                                try
+                                                {
+                                                    // If this field is an enumeration, then resolve to the underlying display values.
+                                                    var codes = obj[f.SourceField].Values<string>().ToList();
+
+                                                    var displayValues = enumValues
+                                                    .Where(i =>
+                                                        i.PropertyName == f.SourceField &&
+                                                        codes.Contains(i.Code)
+                                                    )
+                                                    .Select(i => i.DisplayValue)
+                                                    .ToList();
+                                                    targetObject.Add(
+                                                        f.TargetField,
+                                                        (obj[f.SourceField] != null) ? string.Join(", ", displayValues) : "");
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    targetObject.Add(f.TargetField, $"ERROR: {ex.Message}");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                try
+                                                {
+                                                    // Treat this is a straight value (non-enumeration).
+                                                    targetObject.Add(f.TargetField, (obj[f.SourceField] != null) ? string.Join(", ", obj[f.SourceField]) : "");
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    targetObject.Add(f.TargetField, $"ERROR: {ex.Message}");
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -438,7 +483,6 @@ namespace igx.jobs
                                     }
                                 }
                             }
-
                         });
 
                         // This is where we can inject an optional FusionID, or some other required identifier.
@@ -624,6 +668,11 @@ namespace igx.jobs
                 postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
                 postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
 
+                if (mapping.LastSuccessfulCount.HasValue)
+                {
+                    postModel.begin = mapping.LastSuccessfulCount.Value + 1;
+                }
+
                 var shouldContinue = true;
                 while (shouldContinue)
                 {
@@ -636,12 +685,26 @@ namespace igx.jobs
                             shouldContinue = (models.paging.numTotal > models.paging.end + 1);
                             postModel.begin = models.paging.end + 1;
 
-                            if (arr.Count > 999)
+                            if (arr.Count > 4999)
                             {
                                 if (SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
                                 {
-                                    lastDateChecked = currentParsedUnvalidatedDate;
+                                    mapping.LastSynchOn = currentParsedUnvalidatedDate;
+                                    //lastDateChecked = currentParsedUnvalidatedDate;
+                                    mapping.LastSuccessfulCount += arr.Count; //This line must be called before the array is re-initialized.
+                                    try
+                                    {
+                                        company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                                        company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, dt = mapping.LastSynchOn, cnt = mapping.LastSuccessfulCount });
+                                        company.Close();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        CoreFunction.AITrackException(functionName, ex);
+                                    }
                                 }
+
+                                // Re-initialize.
                                 arr = new JArray();
                                 relationships = new List<D3sRelationshipModel>();
                                 ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
@@ -667,6 +730,11 @@ namespace igx.jobs
                 url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceIdField)}"));
                 url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceNameField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceNameField)}"));
 
+                if (mapping.LastSuccessfulCount.HasValue)
+                {
+                    url += $"&begin={mapping.LastSuccessfulCount.Value + 1}";
+                }
+
                 while (!string.IsNullOrEmpty(url))
                 {
                     try
@@ -677,9 +745,23 @@ namespace igx.jobs
                             parse(models.items);
                             url = models.paging.next;
 
-                            if (arr.Count > 9999)
+                            if (arr.Count > 4999)
                             {
                                 SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
+                                mapping.LastSuccessfulCount += arr.Count;//This line must be called before the array is re-initialized.
+
+                                try
+                                {
+                                    company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                                    company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, dt = mapping.LastSynchOn, cnt = mapping.LastSuccessfulCount });
+                                    company.Close();
+                                }
+                                catch (Exception ex)
+                                {
+                                    CoreFunction.AITrackException(functionName, ex);
+                                }
+
+                                // Re-initialize.
                                 arr = new JArray();
                                 relationships = new List<D3sRelationshipModel>();
                                 ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
@@ -697,11 +779,13 @@ namespace igx.jobs
 
             if (SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
             {
-                lastDateChecked = currentParsedUnvalidatedDate;
+                //lastDateChecked = currentParsedUnvalidatedDate;
+                mapping.LastSuccessfulCount = null;
+                mapping.LastSynchOn = currentParsedUnvalidatedDate ?? now;
             }
 
-            if (!lastDateChecked.HasValue)
-                lastDateChecked = now;
+            //if (!lastDateChecked.HasValue)
+            //    lastDateChecked = now;
 
             return success;
         }

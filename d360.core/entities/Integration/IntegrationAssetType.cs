@@ -40,6 +40,9 @@ namespace d360.core.entities
         public bool AllowChangeDetection { get; set; } = false;
 
         [DataMember]
+        public int? LastSuccessfulCount { get; set; }
+
+        [DataMember]
         public DateTime? LastSynchOn { get; set; } = null;
 
 

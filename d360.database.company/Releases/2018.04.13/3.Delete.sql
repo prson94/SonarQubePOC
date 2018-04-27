@@ -5,6 +5,21 @@ DROP TABLE [dbo].[ResponsibilityContextItem]
 DROP TABLE [dbo].[ResponsibilityTypeRelationRuleItem]
 DROP TABLE [dbo].[Responsibility]
 DROP TABLE [dbo].[RuleGraph]
+
+ALTER TABLE [dbo].[ScoreTypeMetricVersion] DROP CONSTRAINT [FK_ScoreTypeMetricVersion_ScoreTypeMetricGroupVersion]
+GO
+ALTER TABLE [dbo].[ScoreTypeMetricVersion] DROP CONSTRAINT [FK_ScoreTypeMetricVersion_ScoreTypeMetric]
+GO
+ALTER TABLE [dbo].[ScoreTypeMetricGroupVersion] DROP CONSTRAINT [FK_ScoreTypeMetricGroupVersion_ScoreTypeMetricGroup]
+GO
+ALTER TABLE [dbo].[ScoreTypeMetricGroupVersion] DROP CONSTRAINT [FK_ScoreTypeMetricGroupVersion_Parent]
+GO
+ALTER TABLE [dbo].[ScoreTypeMetricGroup] DROP CONSTRAINT [FK_ScoreTypeMetricGroup_ScoreType]
+GO
+ALTER TABLE [dbo].[ScoreTypeMetricGroup] DROP CONSTRAINT [FK_ScoreTypeMetricGroup_Parent]
+GO
+ALTER TABLE [dbo].[ScoreTypeMetric] DROP CONSTRAINT [FK_ScoreTypeMetric_ScoreType]
+GO
 DROP TABLE [dbo].[ScoreMetric]
 DROP TABLE [dbo].[ScoreTypeMetric]
 DROP TABLE [dbo].[ScoreTypeMetricVersionConditionValue]
@@ -99,7 +114,19 @@ GO
 
 
 drop table IntersectOld
+
+ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget] DROP CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntersectType]
+GO
+
 drop table IntersectTypeOld
+GO
+
+ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget]  WITH CHECK ADD  CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID])
+GO
+
+ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget] CHECK CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntersectType]
+GO
+
 
 drop TRIGGER [dbo].[IssueType_AfterInsert]
 drop TRIGGER [dbo].[IssueType_AfterUpdate]
