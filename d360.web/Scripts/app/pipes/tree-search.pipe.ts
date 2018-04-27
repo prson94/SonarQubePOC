@@ -67,7 +67,7 @@ export class TreeSearchPipe implements PipeTransform {
         while (node) {
             var nameField = field ? node.data[field] : node.label;
 
-            if (nameField && nameField.toLowerCase().indexOf(search) != -1) return null;
+            if (nameField && nameField.toLowerCase().indexOf(search) != -1) return node;
 
             //push children
             if (node.children) {
