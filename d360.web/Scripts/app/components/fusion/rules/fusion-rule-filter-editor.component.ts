@@ -68,12 +68,11 @@ import { TreeNode } from 'primeng/primeng';
             <div class="col l5 m5 s12">
                 <div style="float: left" class="FieldName">Test Your Results:</div>
                 <div style="float: right; width: 75px; text-align: right">
-                    <span *ngIf="QueryExecuting"><i class="fa fa-spinner fa-spin"></i></span>
                     <button type="button" label="Test" (click)="getTestResults()" [disabled]="QueryExecuting || model.All" pButton></button>
                 </div>
                 <div style="clear:both"></div>
                 <div class="form-instructions">Run a test to see the returned results, according to your filters.</div>
-                <p-dataTable #dtItems [value]="queryValues" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                <p-dataTable #dtItems [value]="queryValues" paginator="true" pageLinks="3" [loading]="QueryExecuting" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
                     <p-column header="Name" field="Name" sortable="true" [style]="{width:'90%'}"></p-column>
                 </p-dataTable>
             </div>
