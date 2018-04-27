@@ -1355,7 +1355,8 @@ namespace d360.web.Controllers
                         case AssetTypeClass.ReferenceItemType:
                             var r = Company.GetById<ReferenceItemType>(model.AssetType.ObjectID);
                             model.AssetType.Name = r!= null ? r.Name : "";
-                            model.AssetType.Notes = r.SourceNotes;                            
+                            model.AssetType.Notes = r.SourceNotes;
+                            if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                             break;
                     }
                     model.AssetType.Object = ot.ToString();
