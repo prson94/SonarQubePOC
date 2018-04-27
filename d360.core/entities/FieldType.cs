@@ -112,6 +112,9 @@ namespace d360.core.entities
         [DataMember]
         public int ParentFieldTypeID { get; set; }
 
+        [DataMember]
+        public int UpdatedBy { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 

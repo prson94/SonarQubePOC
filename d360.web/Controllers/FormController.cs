@@ -3792,6 +3792,7 @@ namespace d360.web.Controllers
                 CheckIsFieldTypeNameReserved(model.FieldType.Name);
 
                 model.FieldType.ColumnOrder = maxColumnOrder + 1;
+                model.FieldType.UpdatedBy = Company.CurrentResourceID;
 
                 var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
                 if (!nameRegex.IsMatch(model.FieldType.Name))
@@ -4713,6 +4714,8 @@ namespace d360.web.Controllers
                         break;
                         #endregion
                 }
+
+                ft.UpdatedBy = Company.CurrentResourceID;
 
                 Company.Update<FieldType>(ft);
 
