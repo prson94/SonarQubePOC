@@ -3691,16 +3691,17 @@ namespace d360.web.Controllers
                         {
                             relationItems.Add(new
                             {
-                                ID = r.ID,
+                                r.ID,
                                 IntersectType = r.IntersectTypeID,
                                 ReferenceType = r.RelationType,
                                 ChildIntersectType = 0,
                                 DisplayFields = new List<dynamic>(),
-                                HideHeader = lookup.HideHeader,
-                                HideFooter = lookup.HideFooter,
-                                HideFilter = lookup.HideFilter,
-                                Object = r.Object,
-                                ObjectID = r.ObjectID
+                                lookup.HideHeader,
+                                lookup.HideFooter,
+                                lookup.HideFilter,
+                                Direction = r.Direction ?? 0,
+                                r.Object,
+                                r.ObjectID
                             });
                         }
                         if (definition.Fields != null)
@@ -3957,7 +3958,8 @@ namespace d360.web.Controllers
                                 IntersectTypeID = r.IntersectType,
                                 Object = r.Object,
                                 ObjectID = r.ObjectID,
-                                RelationType = r.ReferenceType
+                                RelationType = r.ReferenceType,
+                                Direction = r.Direction
 
                             });
                             if (r.DisplayFields == null)
@@ -4573,7 +4575,8 @@ namespace d360.web.Controllers
                                 IntersectTypeID = r.IntersectType,
                                 Object = r.Object,
                                 ObjectID = r.ObjectID,
-                                RelationType = r.ReferenceType
+                                RelationType = r.ReferenceType,
+                                Direction = r.Direction
 
                             });
                             if (r.DisplayFields == null)
@@ -15476,15 +15479,21 @@ order by DN.DisplayValue");
                 existing.ObjectID = model.ObjectID;
                 existing.ResponsibilityTypeID = model.ResponsibilityTypeID;
                 existing.Context = model.Context;
-                //existing.ApplyToType = model.ApplyToType;
-                //existing.IsVisible = model.IsVisible;
+                existing.ApplyToType = model.ApplyToType;
+                existing.IsVisible = model.IsVisible;
 
                 existing.SetRawFromDefinition();
 
                 Company.Update(existing);
 
-                //var cnn = new System.Data.SqlClient.SqlConnection(Company.Database.Connection.ConnectionString);
-                Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(existing, false);
+                if (model.ApplyToType)
+                {
+                    Company.Database.Connection.ProcessAndSaveResponsibilityRuleTypeResults(existing, false);
+                }
+                else
+                {
+                    Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(existing, false);
+                }
 
                 return jsonSuccess("Item successfully updated and processed.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -15507,6 +15516,14 @@ order by DN.DisplayValue");
                 model.SetRawFromDefinition();
                 Company.Add(model);
 
+                if (model.ApplyToType)
+                {
+                    Company.Database.Connection.ProcessAndSaveResponsibilityRuleTypeResults(model, false);
+                }
+                else
+                {
+                    Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(model, false);
+                }
                 Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(model, false);
 
                 return jsonSuccess("Item successfully created and processed.", model.ID.ToString(), "add", HttpStatusCode.Created);

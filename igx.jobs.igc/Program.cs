@@ -690,12 +690,11 @@ namespace igx.jobs
                                 if (SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
                                 {
                                     mapping.LastSynchOn = currentParsedUnvalidatedDate;
-                                    //lastDateChecked = currentParsedUnvalidatedDate;
                                     mapping.LastSuccessfulCount += arr.Count; //This line must be called before the array is re-initialized.
                                     try
                                     {
                                         company.OpenWithRetry(RetryPolicy.DefaultFixed);
-                                        company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, dt = mapping.LastSynchOn, cnt = mapping.LastSuccessfulCount });
+                                        company.Execute("update integration.SynchedAssetType set LastSynchOn = null, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, cnt = mapping.LastSuccessfulCount });
                                         company.Close();
                                     }
                                     catch (Exception ex)
@@ -753,7 +752,7 @@ namespace igx.jobs
                                 try
                                 {
                                     company.OpenWithRetry(RetryPolicy.DefaultFixed);
-                                    company.Execute("update integration.SynchedAssetType set LastSynchOn = @dt, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, dt = mapping.LastSynchOn, cnt = mapping.LastSuccessfulCount });
+                                    company.Execute("update integration.SynchedAssetType set LastSynchOn = null, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, cnt = mapping.LastSuccessfulCount });
                                     company.Close();
                                 }
                                 catch (Exception ex)

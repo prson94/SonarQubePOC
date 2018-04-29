@@ -28,11 +28,11 @@ namespace d360.core.entities
         [DataMember]
         public string Context { get; set; }
 
-        //[DataMember]
-        //public bool IsVisible { get; set; }
+        [DataMember]
+        public bool IsVisible { get; set; }
 
-        //[DataMember]
-        //public bool ApplyToType { get; set; }
+        [DataMember]
+        public bool ApplyToType { get; set; }
 
         private string _rawDefinition = "";
         [IgnoreDataMember]

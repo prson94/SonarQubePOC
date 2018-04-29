@@ -5,9 +5,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
-    public class AssetDetail
+    public class AssetDetail: BaseLongObject
     {
-        public long ID { get; set; }
+        //public long ID { get; set; }
 
         public string DisplayValue { get; set; }
 

@@ -14,6 +14,8 @@ namespace d360.model
 
         public DbSet<Asset> Assets { get; set; }
 
+        public DbSet<AssetDetail> AssetDetails { get; set; }
+
         public DbSet<AssetType> AssetTypes { get; set; }
 
         public DbSet<AssetApiModel> AssetApiModels { get; set; }

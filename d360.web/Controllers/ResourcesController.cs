@@ -677,7 +677,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     desc = Company.Query<string>(descSql, new { ty = objectType, obj = objectID }).FirstOrDefault();
 
                      dispName = det != null ? det.Name : "";
-                     typeName = det != null ? det.Type : "";
+                     typeName = det != null ? det.TypeName : "";
 
                     if (objectType == "TaxonomyType")
                     {

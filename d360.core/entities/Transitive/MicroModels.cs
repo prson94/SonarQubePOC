@@ -196,17 +196,20 @@ namespace d360.core.entities
         public string Name { get; set; }
     }
 
-    public class EndResult
+    public class EndTypeResult
     {
         public int RuleID { get; set; }
 
         public int ResponsibilityTypeID { get; set; }
 
-        public long AssetID { get; set; }
-
         public string SecurityAsset { get; set; }
 
         public int SecurityAssetID { get; set; }
+    }
+
+    public class EndResult: EndTypeResult
+    {
+        public long AssetID { get; set; }
     }
 
     #endregion

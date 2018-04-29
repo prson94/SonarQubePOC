@@ -124,6 +124,16 @@ namespace d360.core
         }
     }
 
+    public class IsTypeAttribute : Attribute
+    {
+        public bool IsType { get; set; }
+
+        public IsTypeAttribute(bool isType)
+        {
+            IsType = isType;
+        }
+    }
+
     public class AllowEditFromRelationshipEditorAttribute : Attribute
     {
         public bool Allowed { get; set; }

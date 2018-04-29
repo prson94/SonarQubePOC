@@ -1056,9 +1056,33 @@ namespace d360.web.Controllers
                     columns += "1 P_CanEdit, 1 P_CanDelete,";
                 }
                 else
-                {                    
-                    columns += $" (select count(1) from securitydetail p_sd_edit where ({innerIdColumn} = p_sd_edit.ObjectID and p_sd_edit.ObjectType = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
-                    columns += $" (select count(1) from securitydetail p_sd_delete where ({innerIdColumn} = p_sd_delete.ObjectID and p_sd_delete.ObjectType = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
+                {
+                    columns += "S_E.P_CanEdit, S_D.P_CanDelete, ";
+                    joins += $@"
+        cross apply (
+					select	case 
+								when count(1) > 0 then 1
+								else 0
+							end as P_CanEdit
+					from	SecurityDetail 
+					where	(
+							(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
+							(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
+							) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
+					) S_E
+        cross apply (
+					select	case 
+								when count(1) > 0 then 1
+								else 0
+							end as P_CanDelete
+					from	SecurityDetail 
+					where	(
+							(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
+							(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
+							) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
+					) S_D ";
+                    //columns += $" (select count(1) from securitydetail p_sd_edit where ({innerIdColumn} = p_sd_edit.ObjectID and p_sd_edit.Object = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
+                    //columns += $" (select count(1) from securitydetail p_sd_delete where ({innerIdColumn} = p_sd_delete.ObjectID and p_sd_delete.Object = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
                 }
             }
 

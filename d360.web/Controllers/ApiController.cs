@@ -3271,24 +3271,76 @@ end",
             {
                 case ComplexLookupRelationType.StandardRelationhip:
                     #region
-                    join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn} ) )";
+                    switch (join.Direction)
+                    {
+                        case FieldTypeComplexLookupRelationDirection.Back:
+                            join.JoinStatement = (i == 0) ? 
+                                $"from [Intersect] I{i}" : 
+                                $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn}";
+                            break;
+                        case FieldTypeComplexLookupRelationDirection.Forward:
+                            join.JoinStatement = (i == 0) ? 
+                                $"from [Intersect] I{i}" : 
+                                $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}";
+                            break;
+                        default:
+                            join.JoinStatement = (i == 0) ? 
+                                $"from [Intersect] I{i}" : 
+                                $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn} ) )";
+                            break;
+                    }
+                    
                     if (i == 0)
                     {
-                        join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                        switch (join.Direction)
+                        {
+                            case FieldTypeComplexLookupRelationDirection.Back:
+                                join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
+                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Object = '{type}' and I{i}.ObjectID = {id}";
+                                objColumn = $"I{i}.Subject";
+                                objIDColumn = $"I{i}.SubjectID";
+                                break;
+                            case FieldTypeComplexLookupRelationDirection.Forward:
+                                join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
+                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Subject = '{type}' and I{i}.SubjectID = {id}";
+                                objColumn = $"I{i}.Object";
+                                objIDColumn = $"I{i}.ObjectID";
+                                break;
+                            default:
+                                join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                                objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
+                                objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                break;
+                        }
+
                         join.JoinStatement += permissionJoin;
-                        join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
                         join.WhereStatement += permissionsWhere;
-                        objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
-                        objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                     }
                     else
                     {
-                        join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                        switch (join.Direction)
+                        {
+                            case FieldTypeComplexLookupRelationDirection.Back:
+                                join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
+                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                                objColumn = $"I{i}.Subject";
+                                objIDColumn = $"I{i}.SubjectID";
+                                break;
+                            case FieldTypeComplexLookupRelationDirection.Forward:
+                                join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
+                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                                objColumn = $"I{i}.Object";
+                                objIDColumn = $"I{i}.ObjectID";
+                                break;
+                            default:
+                                join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                                objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
+                                objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                break;
+                        }
                         join.JoinStatement += permissionJoin;
-                        join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
-
-                        objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
-                        objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                     }
                     if (addDeletedCheck)
                     {
@@ -4512,16 +4564,21 @@ from    (
                 var columns = "";
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
-                var querySql = string.Format(@"select	A.ID,
+                var querySql = string.Format(@"
+select	O.ID as AssetID,
+        A.ID,
         A.Threshold,
         A.RuleDimensionID,
         D.Name as Dimension,
         dbo.GenerateObjectUrl('Rule', A.RuleTypeID, A.ID) as Url,
         {0}
         A.RuleTypeID
-from	[Rule] A {1} 
+from	[Rule] A
+        inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
+        {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
-where    A.RuleTypeID = @id and A.[Visible] = 1", columns, joins);
+where    A.RuleTypeID = @id and A.[Visible] = 1
+        and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = " + Company.CurrentResourceID + @" and RP.AssetID = O.ID)", columns, joins);
 
                 //querySql += " OPTION (RECOMPILE)";
 
@@ -6659,26 +6716,62 @@ where v.id = {0}", id)).FirstOrDefault();
         [Route("{assetID:int}/ownership")]
         public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(long assetID)
         {
-            return Company.Filter<ResponsibilityDetail>(i => i.AssetID == assetID);
+            var asset = Company.GetAssetDetail(assetID);
+            if (asset == null)
+                return null;
+            return Company.Filter<ResponsibilityDetail>(i => 
+                ( i.AssetID == assetID || (i.Type == asset.Type && i.TypeID == asset.TypeID && !i.AssetID.HasValue) ) && 
+                i.IsVisible
+            );
         }
 
         [Route("{id:int}/permissionsbyid")]
         public List<PermissionModel> GetPermissionsObObject(int id)
         {
-            var asset = Company.GetAssetDetail(id);
+            var isAdmin = Company.CurrentResourceIsAdmin;
 
-            if (asset == null) throw new NotFoundException("Asset Not found");
+            AssetDetail asset = null;
+            if (!isAdmin)
+            {
+                asset = Company.GetAssetDetail(id);
+                if (asset == null) throw new NotFoundException("Asset Not found");
+            }
 
-            return GetPermissionsObObject((SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object), asset.ObjectID);
+            return GetPermissionsByObject(asset, isAdmin);
         }
         
 
         [Route("{type}/{id:int}/permissions")]
         public List<PermissionModel> GetPermissionsObObject(SystemObjects type, int id)
         {
+            var isAdmin = Company.CurrentResourceIsAdmin;
+            AssetDetail asset = null;
+            if (!isAdmin)
+            {
+                var sType = type.ToString();
+
+                if (type.IsType())
+                {
+                    return Company.GetPermissions(sType, id, null, 0).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
+                }
+                else
+                {
+                    asset = Company.Filter<AssetDetail>(i => i.Object == sType && i.ObjectID == id).FirstOrDefault();
+                    if (asset == null) throw new NotFoundException("Asset Not found");
+                    return GetPermissionsByObject(asset, isAdmin);
+                }
+            }
+            else
+            {
+                return GetPermissionsByObject(asset, isAdmin);
+            }
+        }
+
+        private List<PermissionModel> GetPermissionsByObject(AssetDetail asset, bool isAdministrator)
+        {
             List<PermissionModel> permissions = null;
 
-            if (Company.CurrentResourceIsAdmin)
+            if (isAdministrator)
             {
                 permissions = new List<PermissionModel>() {
                     new PermissionModel{ ClaimObject = ClaimObject.Attribute.ToString(), Claim = Claim.Create.ToString() },
@@ -6701,7 +6794,7 @@ where v.id = {0}", id)).FirstOrDefault();
             }
             else
             {
-                permissions = Company.GetPermissions(type, id).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
+                permissions = Company.GetPermissions(asset.Type, asset.TypeID, asset.Object, asset.ObjectID).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
             }
 
             return permissions;

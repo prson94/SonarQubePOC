@@ -10,6 +10,10 @@ using System;
 using System.Security.Cryptography;
 using System.Deployment.Internal.CodeSigning;
 using d360.core;
+using d360.web.Filters;
+using d360.web.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace d360.web
 {
@@ -30,7 +34,7 @@ namespace d360.web
             builder.RegisterType<d360.extensions.queue.AzureQueueSource>().As<IQueueSource>().InstancePerRequest();
             builder.RegisterType<d360.extensions.storage.AzureStorageProvider>().As<IStorageProvider>().InstancePerRequest();
             #endregion
-            
+
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
                 .InstancePerRequest()
                 .OnActivating(i => {

@@ -13,6 +13,8 @@ import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AuthenticationService } from '../../services/authentication.service';
 import { FormMode } from '../../models/form.model';
+import { Permission } from '../../models/permission.model'
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-reference-list',
@@ -34,7 +36,7 @@ import { FormMode } from '../../models/form.model';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid #itemsGrid [sortField]="'Code'" [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions() && canReadSelectedType" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
+                                    <d3s-dynamic-grid #itemsGrid [sortField]="'Code'" [title]="'Items'" [showEditButton]="canEditReferenceItem" [showAddButton]="canAddReferenceItem && canReadSelectedType" [showDeleteButton]="canRemoveReferenceItem" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>
@@ -51,6 +53,10 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     private canReadSelectedType = true;
 
     private showDefault: boolean = true;
+
+    private canAddReferenceItem: boolean = false;
+    private canEditReferenceItem: boolean = false;
+    private canRemoveReferenceItem: boolean = false;
 
     constructor(
         rightSidebarService: RightSidebarService,
@@ -122,7 +128,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                 this.rightSidebarService.showItem(fields);
             }
 
-
             if (this.authenticationService.isAdmin) {
                 let permissions = new RightSidebarItem()
                 permissions.hasDynamicUrl = true;
@@ -136,7 +141,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                 this.rightSidebarService.showItem(permissions);
             }
 
-
             let claims = [];
             //load default perms
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
@@ -147,6 +151,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                 this.referenceService.canReadReferenceType(this.selectedReferenceListId)
                     .then(r => {
                         this.canReadSelectedType = r;
+                        this.canAddReferenceItem = this.hasRootCreatePermissions();
+                        this.canEditReferenceItem = this.hasRootUpdatePermissions();
+                        this.canRemoveReferenceItem = this.hasRootDeletePermissions();
                     });
             }
         });
@@ -184,5 +191,13 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);
+        this.permissionsService.getPermissions(this.selectedReferenceListId, "ReferenceItemType")
+            .then(result => {
+                let claims = result;
+                console.log(result);
+                this.canAddReferenceItem = Permission.hasPermission(result, StringConstants.ObjectRoot, StringConstants.ClaimCreate);
+                this.canEditReferenceItem = Permission.hasPermission(result, StringConstants.ObjectRoot, StringConstants.ClaimUpdate);
+                this.canRemoveReferenceItem = Permission.hasPermission(result, StringConstants.ObjectRoot, StringConstants.ClaimDelete);
+            });
     }
 };

@@ -251,7 +251,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 //load cascading dropdowns
                 this.changeRefType(i)
                     .then(() => {
-                        item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
+                        item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID + '|' + item.Direction;
                     })
                     .then(() => this.changeRel(i))
                     .then(() => {
@@ -763,8 +763,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             let id = parseInt(params[2]);
             let type = params[1];
             let intersectType = parseInt(params[0]);
+            let direction = parseInt(params[3]);
 
             item.IntersectType = intersectType;
+            item.Direction = direction;
             item.Object = type;
             item.ObjectID = id;
 
@@ -822,6 +824,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.RelationItem.IntersectType = parseInt(params[0]);
             this.model.RelationItem.Object = params[1];
             this.model.RelationItem.ObjectID = parseInt(params[2]);
+            this.model.RelationItem.Direction = parseInt(params[3]);
         }
 
         if (this.model.RelationItem.IntersectType != null && !this.childIntersectDisabled) {

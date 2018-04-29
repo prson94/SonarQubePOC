@@ -172,6 +172,7 @@ export class FieldTypeRelationItemEditorModel {
     Object: string;
     ObjectID: number;
     RelationType: number; 
+    Direction: number; 
     selectedIntersectName: string;
 
 }

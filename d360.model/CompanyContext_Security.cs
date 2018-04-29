@@ -66,26 +66,26 @@ order by RT.Name", new { id }).AsQueryable();
             }
         }
 
-//        public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAssetType(int id)
-//        {
-//            try
-//            {
-//                return Database.Connection.Query<ResponsibilityType>(@"
-//select	RT.*
-//from	ResponsibilityType RT
-//		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = RT.ID
-//		inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and T.ID = @id 
-//order by RT.Name", new { id }).AsQueryable();
-//            }
-//            catch (SqlException ex)
-//            {
-//                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
-//            }
-//            catch
-//            {
-//                throw;
-//            }
-//        }
+        //        public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAssetType(int id)
+        //        {
+        //            try
+        //            {
+        //                return Database.Connection.Query<ResponsibilityType>(@"
+        //select	RT.*
+        //from	ResponsibilityType RT
+        //		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = RT.ID
+        //		inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and T.ID = @id 
+        //order by RT.Name", new { id }).AsQueryable();
+        //            }
+        //            catch (SqlException ex)
+        //            {
+        //                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
+        //            }
+        //            catch
+        //            {
+        //                throw;
+        //            }
+        //        }
 
         //public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByObject(SystemObjects type, int id)
         //{
@@ -107,10 +107,21 @@ order by RT.Name", new { id }).AsQueryable();
         //    }
         //}
 
+        public IQueryable<SecurityDetail> GetPermissions(string type, int typeID, string @object, int objectID)
+        {
+            return Filter<SecurityDetail>(i => 
+                (
+                    (i.Object == type && i.ObjectID == typeID && i.IsType) || 
+                    (i.Object == @object && i.ObjectID == objectID && !i.IsType)
+                )
+                && i.ResponsibleObjectID == CurrentResourceID
+            );
+        }
+
         public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int id)
         {
             var sType = type.ToString();
-            return Filter<SecurityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
+            return Filter<SecurityDetail>(i => i.Object == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
         }
 
         //public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int[] id)
@@ -180,7 +191,7 @@ order by RT.Name", new { id }).AsQueryable();
             bool hasPermission = CurrentResourceIsAdmin;
             if (!hasPermission)
             {
-                hasPermission = Any<SecurityDetail>(i => i.ObjectType == type && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID && i.Claim == claim && i.ClaimObject == claimObject);
+                hasPermission = Any<SecurityDetail>(i => i.Object == type && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID && i.Claim == claim && i.ClaimObject == claimObject);
             }
 
             return hasPermission;

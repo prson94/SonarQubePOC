@@ -17,10 +17,13 @@ namespace d360.core.entities.Views
         public int ResponsibleObjectID { get; set; }
 
         [DataMember, Key, Column(Order = 3, TypeName = "varchar"), StringLength(50)]
-        public string ObjectType { get; set; }
+        public string Object { get; set; }
 
         [DataMember, Key, Column(Order = 4)]
         public int ObjectID { get; set; }
+
+        [DataMember]
+        public bool IsType { get; set; }
 
         [DataMember, Key, Column(Order = 5)]
         public Claim Claim { get; set; }

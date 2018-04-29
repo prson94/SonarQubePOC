@@ -8,13 +8,13 @@ namespace d360.core.entities.Views
     public class ResponsibilityDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]
-        public long AssetID { get; set; }
+        public long? AssetID { get; set; }
         
         [DataMember]
         public string Object { get; set; }
 
         [DataMember]
-        public int ObjectID { get; set; }
+        public int? ObjectID { get; set; }
 
         [DataMember]
         public long? OverrideItemID { get; set; }
@@ -55,7 +55,7 @@ namespace d360.core.entities.Views
         [DataMember]
         public string Context { get; set; }
 
-        //[DataMember]
-        //public bool Overriden { get; set; }
+        [DataMember]
+        public bool IsVisible { get; set; }
     }
 }

@@ -2,11 +2,22 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Web;
 
 namespace d360.web.Models
 {
+    public class AssetDynamicApiObject: DynamicObject
+    {
+
+    }
+    public enum FieldTypeComplexLookupRelationDirection
+    {
+        Both = 0,
+        Back = 1,
+        Forward = 2
+    }
     public class FieldTypeComplexLookupDefinitionField
     {
         public string Object { get; set; }
@@ -26,6 +37,7 @@ namespace d360.web.Models
         public string Object { get; set; }
         public int ObjectID { get; set; }
         public core.ComplexLookupRelationType RelationType { get; set; }
+        public FieldTypeComplexLookupRelationDirection Direction { get; set; } = 0;
 
         /// <summary>
         /// Generated when it comes time to create a dynamic SQL query.
@@ -68,5 +80,7 @@ namespace d360.web.Models
         {
             return JsonConvert.DeserializeObject<FieldTypeOwnershipLookupDefinition>(lookup.Definition);
         }
+
+
     }
 }

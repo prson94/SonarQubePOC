@@ -93,7 +93,7 @@ export class BaseComponent {
     hasRootCreatePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimCreate);}
     hasRootDeletePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimDelete);}
     hasRootUpdatePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimUpdate);}
-    
+   
     hasRelationshipCreatePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimCreate);}
     hasRelationshipDeletePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimDelete);}
     hasRelationshipUpdatePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimUpdate);}    

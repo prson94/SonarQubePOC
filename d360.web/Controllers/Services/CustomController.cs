@@ -1,17 +1,23 @@
 ﻿using d360.core;
 using d360.core.enums;
 using d360.model;
+using d360.web.Filters;
+using d360.web.Models;
 using Dapper;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Web.Http;
 using System.Xml.Linq;
 
 namespace d360.web.Controllers.Services
 {
+    #region Classes for Custom Controller Logic Only
+
     internal class CustomApiSortField
     {
         public string FieldName { get; set; }
@@ -109,6 +115,7 @@ namespace d360.web.Controllers.Services
         public List<string> Values { get; set; }
     }
 
+    #endregion
 
     /// <summary>
     /// This service houses all endpoints handling custom API configurations.
@@ -116,11 +123,101 @@ namespace d360.web.Controllers.Services
     [RoutePrefix("services/custom"), Authorize]
     public class CustomController : BaseApiController
     {
+        public string CertificateCommonName { get; set; }
+        public bool ValidateWithClientCertificate { get; set; }
+
         #region DI
 
         public CustomController(CommunityContext community, CompanyContext company)
             : base(community, company)
-        { }
+        {
+            var sReq = "CustomApiClientCertificateRequired";
+            var sCn = "CustomApiClientCertificateCommonName";
+            var customApiSettings = community.GetCompanySettings().Where(i => i.Key == sReq || i.Key == sCn).ToList();
+            ValidateWithClientCertificate = bool.Parse(customApiSettings.First(i => i.Key == sReq).Value);
+            CertificateCommonName = customApiSettings.First(i => i.Key == sCn).Value;
+        }
+
+        #endregion
+
+        #region X509 Check
+
+        public void ValidateX509IfRequired(HttpRequestMessage request, out HttpStatusCode status, out string statusMessage)
+        {
+            status = HttpStatusCode.OK;
+            statusMessage = "";
+
+            if (ValidateWithClientCertificate)
+            {
+                X509Certificate2 clientCertificate = null;
+                try
+                {
+                    //***** 1. Get a Client Certificate from the Http context or http header ****/
+                    clientCertificate = request.GetClientCertificate();
+                    if (clientCertificate == null)
+                    {
+                        var clientCertificateInHeader = request.GetHeader("X-ARR-ClientCert");
+                        if (!string.IsNullOrEmpty(clientCertificateInHeader))
+                        {
+                            try
+                            {
+                                var clientCertBytes = Convert.FromBase64String(clientCertificateInHeader);
+                                clientCertificate = new X509Certificate2(clientCertBytes);
+                            }
+                            catch
+                            {
+                                status = HttpStatusCode.Forbidden;
+                                statusMessage = "Invalid certificate. It may not be formatted correctly.";
+                                //return request.CreateErrorResponse(
+                                //    HttpStatusCode.Forbidden,
+                                //    "Invalid certificate. It may not be formatted correctly.");
+                            }
+                        }
+                    }
+
+                    if (clientCertificate != null) //***** 2. Perform clientCertificate null validation check ****/
+                    {
+                        try
+                        {
+                            //***** 3. If the clientCertificate is not null, then Validate the incoming certificate CN with the allowed CN ****/
+                            var isValidCert = IsValidClientCertificate(clientCertificate);
+
+                            if (!isValidCert)  //***** 4. If it is a valid Certificate, then invoke next middleware ****/
+                            {
+                                status = HttpStatusCode.Forbidden;
+                                statusMessage = "Invalid client certificate.";
+                            }
+                        }
+                        catch (Exception ex) //***** 6. Any exception throw 403??? Not sure, this is valid case ****/
+                        {
+                            status = HttpStatusCode.Forbidden;
+                            statusMessage = "Invalid client certificate.";
+                        }
+                    }
+                    else //***** 7. If the clientCertificate is null, then return 403 status code ****
+                    {
+                        status = HttpStatusCode.Forbidden;
+                        statusMessage = "No client certificate found.";
+                    }
+
+                }
+                finally
+                {
+                    clientCertificate?.Dispose();
+                }
+            }
+
+        }
+
+        private bool IsValidClientCertificate(X509Certificate2 certificate)
+        {
+            var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
+
+            if (string.IsNullOrEmpty(commonName)) return false;
+
+            //Compare the incoming Certificate CN with the allowed Certificate CN.
+            return commonName.Equals(CertificateCommonName);
+        }
 
         #endregion
 
@@ -136,6 +233,13 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{service}/{endpoint}/{version}/{entityFormat}/{key}")]
         public HttpResponseMessage GetSingletonBasedOnRoute(string service, string endpoint, string version, string entityFormat, string key)
         {
+            HttpStatusCode certificateStatus;
+            string certificateStatusMessage;
+            ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
+
+            if (certificateStatus != HttpStatusCode.OK)
+                return Request.CreateErrorResponse(certificateStatus, certificateStatusMessage);
+
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -228,26 +332,36 @@ namespace d360.web.Controllers.Services
                 if (asset == null)
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
 
+                var canoUri = Request.RequestUri.PathAndQuery;
+
                 //Determine whether it is JSON or XML to send back to caller, and format appropriately.
                 if (asJson)
                 {
+                    //var json = new JsonResultsModel { total = count, items = new List<dynamic>asset, _links = new List<JsonResultLinkModel>() };
+                    //json._links.Add(new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO });
+                    //return Request.CreateResponse(HttpStatusCode.OK, json, "application/json");
+
                     return Request.CreateResponse(HttpStatusCode.OK, asset as object, "application/json");
                 }
                 else
                 {
-                    XElement xAsset = DynamicHelper.ConvertToXml(asset, "item");
-                    xAsset.Add(new XAttribute("id", asset.ID));
+                    XElement xAsset = DynamicHelper.ConvertToXml(asset, "item"); // "items"
+                    xAsset.Add(new XAttribute("id", asset.id));
 
-                    //var CollectionWrapper = new XElement(
-                    //    "CollectionWrapper",
-                    //    new XElement("total", count),
-                    //    xLinks,
-                    //    xItems
-                    //);
+                    var xLinks = new XElement("links");
+
+                    xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
+
+                    var CollectionWrapper = new XElement(
+                        "CollectionWrapper",
+                        xLinks,
+                        xAsset
+                    );
 
                     //XNamespace ns = "http://www.lmtom.london/schema/endpoints/Lloyds/RiskCode/v1";
                     //CollectionWrapper.Add(new XAttribute(XNamespace.Xmlns + "", ns));
 
+                    //responseMessage = Request.CreateResponse(HttpStatusCode.OK, CollectionWrapper, "application/xml");
                     return Request.CreateResponse(HttpStatusCode.OK, xAsset, "application/xml");
                 }
 
@@ -272,6 +386,13 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{service}/{endpoint}/{version}/{*entityFormat}")]
         public HttpResponseMessage GetCollectionBasedOnRoute(string service, string endpoint, string version, string entityFormat)
         {
+            HttpStatusCode certificateStatus;
+            string certificateStatusMessage;
+            ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
+
+            if (certificateStatus != HttpStatusCode.OK)
+                return Request.CreateErrorResponse(certificateStatus, certificateStatusMessage);
+
             try
             {
                 if (Request.RequestUri.ToString().Length > 16000)
@@ -328,17 +449,20 @@ namespace d360.web.Controllers.Services
                 var countSql = @"
     select  count(1)
     from    AssetApiModel A
-        {0} 
+            {0} 
     where   A.AssetTypeID = @id";
 
                 var sql = @"
-    select  D.[Key] as id
-        {0}
+    select  D.[Key] as id,
+            O.UpdatedOn as last_modified
+            {0}
     from    AssetApiModel A
+            inner join Asset O on O.ID = A.ID
             cross apply utility.GetAssetBusinessKey(A.ID) D 
-        {1} 
+            {1} 
     where   A.AssetTypeID = @id
-        {2}";
+            {2}
+            {3}";
 
                 #endregion
 
@@ -610,8 +734,6 @@ namespace d360.web.Controllers.Services
 
                         continueChecking = false;
                     }
-
-                    // NOTE: If implementations cannot correctly implement either exact matching or case insensitive matching then the implementation MUST return a 501 error code.
                 }
 
                 #endregion
@@ -624,6 +746,7 @@ namespace d360.web.Controllers.Services
 
                 var columnSql = "";
                 var fieldSql = "";
+                var additionalWhereSql = "";
                 var orderSql = "";
                 var defaultOrderBySql = " order by D.[key]";
                 var defaultOrderBySqlSet = false;
@@ -837,6 +960,8 @@ namespace d360.web.Controllers.Services
                             {
                                 fieldSql += $" and {fieldFilterSql}";
                             }
+
+                            filters.Remove(filter);
                         }
                         else
                         {
@@ -863,12 +988,135 @@ namespace d360.web.Controllers.Services
                     }
                 }
 
+                #region Last_modified Field Filter Check
+
+                if (filters.Count > 0)
+                {
+                    var filter = filters.FirstOrDefault(i => i.FieldName == "last_modified");
+                    if (filter != null)
+                    {
+                        var @operator = filter.Negated ? "<>" : "=";
+
+                        if (filter is SingleValueFilterModel)
+                        {
+                            var singleValueFilter = filter as SingleValueFilterModel;
+                            additionalWhereSql += $"O.UpdatedOn {@operator} @{filter.FieldName}) ";
+                            dbArgs.Add($"@{filter.FieldName}", singleValueFilter.Value, System.Data.DbType.DateTime);
+                        }
+                        else if (filter is MultiValueFilterModel)
+                        {
+                            var multiValueFilter = filter as MultiValueFilterModel;
+                            additionalWhereSql += "(";
+                            var loopNumber = 1;
+                            var dateFieldString = "";
+                            foreach (var v in multiValueFilter.Values)
+                            {
+                                if (!string.IsNullOrEmpty(dateFieldString)) dateFieldString += " OR ";
+                                dateFieldString += $"O.UpdatedOn {@operator} @{filter.FieldName}{loopNumber}";
+                                dbArgs.Add($"@{filter.FieldName}{loopNumber}", v, System.Data.DbType.DateTime);
+                                loopNumber++;
+                            }
+                            additionalWhereSql += dateFieldString;
+                            additionalWhereSql += ") ";
+                        }
+                        else if (filter is RangeValueFilterModel)
+                        {
+                            var rangeFilter = filter as RangeValueFilterModel;
+
+                            if (rangeFilter.StartValue == ".") rangeFilter.StartValue = string.Empty;
+                            if (rangeFilter.EndValue == ".") rangeFilter.EndValue = string.Empty;
+
+                            if (!string.IsNullOrEmpty(rangeFilter.StartValue) && string.IsNullOrEmpty(rangeFilter.EndValue))
+                            {
+                                // Start Value only.
+                                @operator = (rangeFilter.Negated ? " < " : " > ") + (rangeFilter.StartInclusive ? "=" : "");
+                                additionalWhereSql += $"O.UpdatedOn {@operator} @{filter.FieldName}Start";
+                                dbArgs.Add($"@{filter.FieldName}Start", rangeFilter.StartValue, System.Data.DbType.DateTime);
+                            }
+                            else if (!string.IsNullOrEmpty(rangeFilter.StartValue) && !string.IsNullOrEmpty(rangeFilter.EndValue))
+                            {
+                                // Start Value and End Value.
+                                if (rangeFilter.StartInclusive && rangeFilter.EndInclusive)
+                                {
+                                    @operator = rangeFilter.Negated ? " not between " : " between ";
+                                    additionalWhereSql += $"O.UpdatedOn {@operator} @{filter.FieldName}Start and @{filter.FieldName}End";
+                                }
+                                else
+                                {
+                                    if (rangeFilter.Negated)
+                                    {
+                                        var startOperator = rangeFilter.StartInclusive ? "<=" : "<";
+                                        var endOperator = rangeFilter.EndInclusive ? ">=" : ">";
+                                        additionalWhereSql += $"O.UpdatedOn {startOperator} @{filter.FieldName}Start and O.UpdatedOn {endOperator} @{filter.FieldName}End";
+                                    }
+                                    else
+                                    {
+                                        var startOperator = rangeFilter.StartInclusive ? ">=" : ">";
+                                        var endOperator = rangeFilter.EndInclusive ? "<=" : "<";
+                                        additionalWhereSql += $"O.UpdatedOn {startOperator} '@{filter.FieldName}Start and O.UpdatedOn {endOperator} @{filter.FieldName}End";
+                                    }
+                                }
+                                dbArgs.Add($"@{filter.FieldName}Start", rangeFilter.StartValue, System.Data.DbType.DateTime);
+                                dbArgs.Add($"@{filter.FieldName}End", rangeFilter.EndValue, System.Data.DbType.DateTime);
+                            }
+                            else if (string.IsNullOrEmpty(rangeFilter.StartValue) && !string.IsNullOrEmpty(rangeFilter.EndValue))
+                            {
+                                // End Value only.
+                                @operator = (rangeFilter.Negated ? " > " : " < ") + (rangeFilter.EndInclusive ? "=" : "");
+                                additionalWhereSql += $"O.UpdatedOn {@operator} @{filter.FieldName}End";
+                                dbArgs.Add($"@{filter.FieldName}End", rangeFilter.EndValue, System.Data.DbType.DateTime);
+                            }
+                        }
+                        else if (filter is SearchFilterModel)
+                        {
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, $"Search filters are invalid in your filter query parameter: last_modified.");
+                        }
+
+                        if (!string.IsNullOrEmpty(additionalWhereSql))
+                            additionalWhereSql = " and " + additionalWhereSql;
+
+                        filters.Remove(filter);
+                    }
+                }
+
+                #endregion
+
+                #region Last_modified order check
+
+                if (arrSort != null)
+                {
+                    if (arrSort.Count > 0)
+                    {
+
+                        var sRaw = arrSort.FirstOrDefault(s => s.FieldName == "last_modified");
+                        if (sRaw != null)
+                        {
+                            orderSql += ((string.IsNullOrEmpty(orderSql)) ? " order by " : ", ") + "O.UpdatedOn";
+                            orderSql += sRaw.IsAscending ? " asc" : " desc";
+                            arrSort.Remove(sRaw);
+                        }
+                    }
+                }
+
+                #endregion
+
                 #region VALIDATION: Has user included any sort fields that are not valid on this endpoint? If so, throw error.
                 if (arrSort != null)
                 {
                     if (arrSort.Count > 0)
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, "You have invalid fields in your _order query parameter.");
+                    }
+                }
+                #endregion
+
+                #region VALIDATION: Has user included any filter fields that are not valid on this endpoint? If so, throw error.
+                if (filters != null)
+                {
+                    if (filters.Count > 0)
+                    {
+                        var badFilterFieldNames = string.Join(", ", filters.Select(i => i.FieldName));
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"You have invalid fields in your filter query parameters: {badFilterFieldNames}.");
                     }
                 }
                 #endregion
@@ -881,7 +1129,7 @@ namespace d360.web.Controllers.Services
                 var count = Company.Query<int>(countSql, dbArgs).Single();
 
                 // Now, format the SQL to get the items.
-                sql = string.Format(sql, columnSql, fieldSql, orderSql);
+                sql = string.Format(sql, columnSql, fieldSql, additionalWhereSql, orderSql);
 
                 if (!sql.Contains("order by"))
                 {

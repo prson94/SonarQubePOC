@@ -290,6 +290,7 @@ namespace d360.web.Models
         public string Object { get; set; }
         public int ObjectID { get; set; }
         public int RelationType { get; set; }
+        public int Direction { get; set; }
     }
 
     public class FieldLookupFieldItem
@@ -421,6 +422,7 @@ namespace d360.web.Models
         public int IntersectType { get; set; }
         public int ReferenceType { get; set; }
         public int? ChildIntersectType { get; set; }
+        public int Direction { get; set; } = 0;
         public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
         public bool HideHeader { get; set; }
         public bool HideFooter { get; set; }

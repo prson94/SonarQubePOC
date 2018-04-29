@@ -169,6 +169,37 @@ from	reporting.Global_Resource O ";
             ((SqlConnection)cnn).SaveResponsibilityRuleResults(results, useTransaction, rule.ID);
         }
 
+        public static IEnumerable<EndTypeResult> GetProcessedResponsibilityRuleTypeResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule)
+        {
+            if (rule.StructuredDefinition == null)
+            {
+                rule.SetDefinitionFromRaw();
+            }
+
+            var sResults = cnn.GetThenResults(rule);
+
+            return
+                from s in sResults
+                select new EndTypeResult
+                {
+                    RuleID = rule.ID,
+                    ResponsibilityTypeID = rule.ResponsibilityTypeID,
+                    SecurityAsset = s.SecurityAsset,
+                    SecurityAssetID = s.SecurityAssetID
+                };
+        }
+
+        /// <summary>
+        /// Process and save type results for a single rule.
+        /// </summary>
+        /// <param name="cnn"></param>
+        /// <param name="rule"></param>
+        public static void ProcessAndSaveResponsibilityRuleTypeResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, bool useTransaction = true)
+        {
+            var results = cnn.GetProcessedResponsibilityRuleTypeResults(rule).ToList();
+            ((SqlConnection)cnn).SaveResponsibilityRuleTypeResults(results, useTransaction, rule.ID);
+        }
+
         /// <summary>
         /// Save results to temp table via bulk insert
         /// </summary>
@@ -336,6 +367,129 @@ commandTimeout: 3600, transaction: trans);
             if (useTransaction)
                 trans.Commit();
             //}
+        }
+
+        /// <summary>
+        /// Save type results to temp table via bulk insert
+        /// </summary>
+        /// <param name="cnn"></param>
+        /// <param name="results"></param>
+        /// <returns></returns>
+        public static void SaveResponsibilityRuleTypeResults(this SqlConnection cnn, List<EndTypeResult> results, bool useTransaction = true, int? ruleID = null)
+        {
+            if (cnn.State != System.Data.ConnectionState.Open)
+                cnn.Open();
+
+            SqlTransaction trans = null;
+            if (useTransaction)
+                trans = cnn.BeginTransaction();
+
+            cnn.Execute(@"
+set nocount on 
+create table #ResponsibilityTypeRelationTypeItem (
+RuleID int not null, 
+ResponsibilityTypeID int not null, 
+[SecurityAsset] char(1) not null, 
+[SecurityAssetID] int not null
+)
+set nocount off", commandTimeout: 3600, transaction: trans);
+
+            #region Bulk insert the rows above.
+
+            using (var bulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans))
+            {
+                bulkCopy.BatchSize = results.Count;
+                bulkCopy.DestinationTableName = "#ResponsibilityTypeRelationTypeItem";
+                bulkCopy.BulkCopyTimeout = 3600;
+
+                var table = new System.Data.DataTable();
+
+                #region Create column mappings
+
+                var columnName = "RuleID";
+                table.Columns.Add(columnName, typeof(int));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "ResponsibilityTypeID";
+                table.Columns.Add(columnName, typeof(int));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "SecurityAsset";
+                table.Columns.Add(columnName, typeof(string));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "SecurityAssetID";
+                table.Columns.Add(columnName, typeof(int));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                #endregion
+
+                foreach (var item in results)
+                {
+                    var row = table.NewRow();
+
+                    row["RuleID"] = item.RuleID;
+                    row["ResponsibilityTypeID"] = item.ResponsibilityTypeID;
+                    row["SecurityAsset"] = item.SecurityAsset;
+                    row["SecurityAssetID"] = item.SecurityAssetID;
+
+                    table.Rows.Add(row);
+                }
+
+                bulkCopy.WriteToServer(table);
+            }
+
+            #endregion
+
+            #region  Merge the raw data you compiled above into the item table. These are rule results.
+
+            if (ruleID.HasValue)
+            {
+                cnn.Execute(@"
+merge   ResponsibilityTypeRelationTypeItem as T 
+using   ( 
+        select  *
+        from    #ResponsibilityTypeRelationTypeItem
+        ) as S 
+        on  (
+            T.RuleID = S.RuleID 
+            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
+            and T.[SecurityAsset] = S.[SecurityAsset] 
+            and T.[SecurityAssetID] = S.[SecurityAssetID] 
+            )
+when    not matched by source and T.RuleID > 0 and T.RuleID = @r then 
+        delete
+when    not matched by target then 
+        insert (RuleID, ResponsibilityTypeID, SecurityAsset, SecurityAssetID) 
+        values (S.RuleID, S.ResponsibilityTypeID, S.SecurityAsset, S.SecurityAssetID);", new { r = ruleID.Value },
+commandTimeout: 3600, transaction: trans);
+            }
+            else
+            {
+                cnn.Execute(@"
+merge   ResponsibilityTypeRelationTypeItem as T 
+using   ( 
+        select  *
+        from    #ResponsibilityTypeRelationTypeItem
+        ) as S 
+        on  (
+            T.RuleID = S.RuleID 
+            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
+            and T.[SecurityAsset] = S.[SecurityAsset] 
+            and T.[SecurityAssetID] = S.[SecurityAssetID] 
+            )
+when    not matched by source and T.RuleID > 0 then 
+        delete
+when    not matched by target then 
+        insert (RuleID, ResponsibilityTypeID, SecurityAsset, SecurityAssetID) 
+        values (S.RuleID, S.ResponsibilityTypeID, S.SecurityAsset, S.SecurityAssetID);",
+commandTimeout: 3600, transaction: trans);
+            }
+
+            #endregion
+
+            if (useTransaction)
+                trans.Commit();
         }
     }
 }
