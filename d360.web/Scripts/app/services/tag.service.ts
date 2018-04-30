@@ -13,7 +13,8 @@ export class TagService extends BaseService {
     getTags(phrase: string): Observable<Tag[]> {
         return this.http.get(`api/tagsuggestions?phrase=${phrase}`)
             .map(response => {
-                return <Tag[]> response.json()})
+                    return response.json()})
+            .map(item => { return <Tag[]> item})
             .catch(err => this.handleError(err));
     }
 }

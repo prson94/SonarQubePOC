@@ -160,7 +160,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private search(event) {
-        this.tagService.getTags(event.query)
+        this.searchSub=  this.tagService.getTags(event.query)
             .debounceTime(400)
             .subscribe(data => {
             this.terms = data;
