@@ -1395,6 +1395,8 @@ namespace d360.web.Controllers
                         ParentID = parentID,
                         Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
                     };
+
+                    if(@class == AssetTypeClass.ReferenceItemType) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                     model.FormName = string.Format(FormInfo.Edit_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
                 }
