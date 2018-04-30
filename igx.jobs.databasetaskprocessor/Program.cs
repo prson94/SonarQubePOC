@@ -140,7 +140,7 @@ namespace igx.jobs.databasetaskprocessor
                         {
                             if (o == "Artifact")
                             {
-                                var assetIDResult = companyConnection.Query<long?>(assetSql, new { @obj = o, i = oid }).FirstOrDefault();
+                                var assetIDResult = companyConnection.Query<long?>(assetSql, new { @obj = new Dapper.DbString { IsAnsi = true, Value = o, IsFixedLength = true, Length = 20 }, i = oid }).FirstOrDefault();
                                 if (assetIDResult.HasValue)
                                     assetId = assetIDResult.Value;
                             }
