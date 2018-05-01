@@ -15,6 +15,8 @@ import { FormMode } from '../../models/form.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { LevelsService } from '../../services/levels.service';
+import { GridColumn, GridField } from '../../models/grid-definition.model';
+import { GridDefinitionService } from '../../services/grid-definition.service';
 
 @Component({
     selector: 'd3s-policy-item-structure',
@@ -26,9 +28,14 @@ import { LevelsService } from '../../services/levels.service';
                     </header>                              
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
-                        <p-column field="Name" header="Name">
+                        <p-column field="displayValue" header="Item">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.DisplayValue}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
+                            </ng-template>
+                        </p-column>
+                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">                                                                
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item.data"></d3s-dynamic-field-value>                                 
                             </ng-template>
                         </p-column>
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()">
@@ -63,7 +70,7 @@ import { LevelsService } from '../../services/levels.service';
                     <d3s-dynamic-editor *ngIf="showEditor" [objectID]="policyType.ID" objectType="Policy" [parentID]="selectedParentID" [title]="policyEditorTitle()" [selection]="selected?.data" (saveClick)="savePolicy($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
                 </div>                    
                 `,
-    providers: [PoliciesService, PermissionsService, LevelsService]
+    providers: [PoliciesService, GridDefinitionService, PermissionsService, LevelsService]
 })
 
 export class PolicyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -78,6 +85,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     selected: TreeNode;
     selectedParentID: number;
     selectedLevel: number;
+    columns: GridColumn[] = [];
+    fields: GridField[] = [];
     
     searchValue: string;
 
@@ -97,7 +106,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private messagesService: MessagesService,
         rightSidebarService: RightSidebarService,
         private permissionsService: PermissionsService,
-        private levelsService: LevelsService
+        private levelsService: LevelsService,
+        private gridDefinitionService: GridDefinitionService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -113,6 +123,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             this.setObjectInfo('PolicyType', this.policyTypeId);
             this.clearSidebar();
             this.setCommonRightSideBar(true);
+            this.getFieldsDefinition();
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);            
             this.isLoading = true;
@@ -141,17 +152,17 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     }
 
     private loadPolicyHierarchy(policyTypeId: number) {
-        this.policiesService.getPolicies(policyTypeId, true)
+       this.policiesService.getPolicies(policyTypeId, true)
             .then(result => {
                 for (let policy of result) {
                     policy.StatusName = PolicyStatus[policy.Status];
                 }
                 this.policies = result;                
-                this.treeNodeArray = this.buildTreeNodeArray(this.policies)
+                this.treeNodeArray = this.buildTreeNodeArray(this.policies,1)
             });
     }
 
-    private buildTreeNodeArray(models: Policy[], Parent?: number): TreeNode[] {
+    private buildTreeNodeArray(models: Policy[], levelNumber: number, Parent?: number): TreeNode[] {
         //find the root items then 
 
         let rootNodes = models.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
@@ -161,13 +172,12 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         let res: TreeNode[] = [];
 
         for (let root of rootNodes) {
+            root.Level = levelNumber;
             res.push({
                 label: root.DisplayValue,
-                expanded: true,
-                data: {
-                    ID: root.ID, DisplayValue: root.DisplayValue, Description: root.Description, ParentID: root.ParentID, StatusName: root.StatusName, Level: root.Level
-                },
-                children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
+                expanded: false,
+                data: root,
+                children: (this.buildTreeNodeArray(models, levelNumber + 1, root.ID)) //recursively find its children
             });
         }
 
@@ -176,6 +186,14 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     private showHierarchy(id: number) {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId};hierarchyId=${id}`);
+    }
+
+    private getFieldsDefinition() {
+        this.gridDefinitionService.getGridDefinition(this.policyTypeId, StringConstants.ObjectPolicyType)
+            .then(result => {
+                this.columns = result.Columns;
+                this.fields = result.Fields;
+            });
     }
 
     setTreeNodeStyles(node) {
