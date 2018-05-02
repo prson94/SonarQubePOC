@@ -48,9 +48,7 @@ namespace igx.jobs.fusionruleprocessor
 
                 if(subjectTarget == null || objectTarget == null)
                 {
-                    Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] relate cannot resolve either the source or target object.");
-
-                    return;
+                    continue;
                 }
 
                 //relate them
