@@ -757,12 +757,7 @@ where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1
         [Route("types")]
         public JsonNetResult GetTypes()
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
-                return null;
-            }
-
+            
             var models = Company.Query<dynamic>(@"
 select	    T.ID,
 		    IT.SubjectID as ParentID,
