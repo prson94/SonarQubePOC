@@ -49,8 +49,7 @@ import { StateService } from '../../services/state.service';
                                 <ng-template #elseContent>
                                     <p-column  [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px','cursor':'default'}">
                                         <ng-template let-item="rowData" pTemplate type="body">
-                                            <a *ngIf="item[column.datafield]" (click)="selectItem(item)">{{item[column.datafield]}}</a>
-                                           
+                                              <a *ngIf="item[column.datafield]" (click)="selectItem(item)"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value> </a> 
                                         </ng-template>
                                     </p-column>
                                 </ng-template>
@@ -84,6 +83,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
        
     private results: FusionAttributePagedResults;
     columns: GridColumn[] = [];
+    fields: GridField[] = [];
     filtercolumns: GridFilterColumn[] = [];
     private isFiltering: boolean = false;
     showEditor: boolean = false;
@@ -145,6 +145,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             .then(result => {
                 if (result) {
                     this.columns = result.Columns;
+                    this.fields = result.Fields;
                     this.filtercolumns = result.FilterColumns;
                 }                
                 this.isLoading = false;
