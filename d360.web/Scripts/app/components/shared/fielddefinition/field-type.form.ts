@@ -396,7 +396,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.LookupDisplayFormat = null;        
                 break;
             default:       
-                this.model.FieldType.LookupDisplayFormat = null;         
+                this.model.FieldType.LookupDisplayFormat = null;  
+                this.model.FieldType.LookupObjectID = null;
+                this.model.FieldType.LookupObjectType = null;
                 break;
         }
         return Promise.all(promises).then(() => { });
@@ -602,7 +604,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             });
         }
-
+        
         if (this.model.FieldType.Type == 'FilteredLookup') {
             let item = new FilteredLookupItem();
             item.Object = this.filteredLookup.split('|')[0];
