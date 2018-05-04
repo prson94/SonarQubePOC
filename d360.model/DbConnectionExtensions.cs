@@ -218,6 +218,11 @@ from	reporting.Global_Resource O ";
             //using (var trans = cnn.BeginTransaction())
             //{
                 cnn.Execute(@"
+
+IF OBJECT_ID('tempdb..#ResponsibilityTypeRelationItem') IS NOT NULL
+			DROP TABLE #ResponsibilityTypeRelationItem;
+
+
 set nocount on 
 create table #ResponsibilityTypeRelationItem (
 RuleID int not null, 
