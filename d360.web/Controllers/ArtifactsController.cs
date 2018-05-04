@@ -1208,7 +1208,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
         				from	SecurityDetail 
         				where	(
         						(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
-        						(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
+        						(IsType = 1 and Object = AST.Object and ObjectID = AST.ObjectID)
         						) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
         				) S_E
             cross apply (
@@ -1219,7 +1219,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
         				from	SecurityDetail 
         				where	(
         						(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
-        						(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
+        						(IsType = 1 and Object = AST.Object and ObjectID = AST.ObjectID)
         						) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
         				) S_D ";
                     //columns += $" (select count(1) from securitydetail p_sd_edit where ({innerIdColumn} = p_sd_edit.ObjectID and p_sd_edit.Object = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";

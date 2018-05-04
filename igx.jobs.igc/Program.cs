@@ -66,7 +66,7 @@ namespace igx.jobs
                             // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
                             if (settings.Count > 0)
                             {
-                                mappings = company.Query<IntegrationAssetType>("select * from integration.SynchedAssetType where Active = 1").ToList(); // where ID = 20").ToList();
+                                mappings = company.Query<IntegrationAssetType>("select * from integration.SynchedAssetType where Active = 1 and ID = 29").ToList(); // where ID = 20").ToList();
                                 mappingFields = company.Query<IntegrationAssetTypeFieldItem>("select * from integration.SynchedAssetTypeFieldItem where Active = 1").ToList();
                                 mappingRelations = company.Query<IntegrationAssetTypeRelationItem>("select * from integration.SynchedAssetTypeRelationItem").ToList();
                                 mappingRelationTargets = company.Query<IntegrationAssetTypeRelationItemTarget>("select * from integration.SynchedAssetTypeRelationItemTarget").ToList();
@@ -338,8 +338,8 @@ namespace igx.jobs
                 else urlPrefix = urlPrefix + "-igx";
             }
 
-            targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
-            //targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
+            //targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
+            targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
             targetBaseUri += $"/services/assets/";
 
             DateTime? currentParsedUnvalidatedDate = null;
