@@ -294,6 +294,8 @@ create table #AssetTable (
     IsNew bit null
 )", transaction: trans);
 
+                    Company.Database.Connection.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable ON #AssetTable ( [SourceID] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+
                     var assetBulkCopy = new SqlBulkCopy(
                         (SqlConnection)Company.Database.Connection,
                         SqlBulkCopyOptions.Default,
@@ -328,6 +330,8 @@ create table #AssetFieldTable (
     FieldTypeID int null
 )", transaction: trans);
 
+                    Company.Database.Connection.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetFieldTable ON #AssetFieldTable ( ItemNumber ASC ) INCLUDE ( FieldTypeID )", transaction: trans);
+
                     var assetFieldBulkCopy = new SqlBulkCopy(
                         (SqlConnection)Company.Database.Connection,
                         SqlBulkCopyOptions.Default,
@@ -347,6 +351,7 @@ create table #AssetFieldTable (
                     #endregion
 
                     Company.Database.Connection.Execute($@"create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));", transaction: trans);
+                    Company.Database.Connection.Execute(@"CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC )", transaction: trans);
 
                     var o = ot.ToString().Replace("Type", "");
 
@@ -789,6 +794,8 @@ create table #RelationshipTable (
     IsNew bit null
 )", transaction: trans);
 
+                    Company.Database.Connection.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable ON #RelationshipTable ( IntersectTypeID ASC, SubjectSourceID ASC, ObjectSourceID ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+
                     var assetBulkCopy = new SqlBulkCopy(
                         (SqlConnection)Company.Database.Connection,
                         SqlBulkCopyOptions.Default,
@@ -813,6 +820,8 @@ create table #RelationshipTable (
                     #endregion
 
                     Company.Database.Connection.Execute($@"create table #RelationshipMergeTableResult (IntersectID int, ItemNumber int, [Action] nvarchar(10));", transaction: trans);
+
+                    Company.Database.Connection.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipMergeTableResult ON #RelationshipMergeTableResult ( ItemNumber ASC ) INCLUDE ( IntersectID )", transaction: trans);
 
                     Company.Database.Connection.Execute($@"
 merge into  [Intersect] T
@@ -1020,6 +1029,8 @@ create table #OwnershipTable (
     IsNew bit null
 )", transaction: trans);
 
+                    Company.Database.Connection.Execute(@"CREATE NONCLUSTERED INDEX IX_TempOwnershipTable ON #OwnershipTable ( SourceID ASC ) INCLUDE ( ItemNumber, RoleName )", transaction: trans);
+
                     var assetBulkCopy = new SqlBulkCopy(
                         (SqlConnection)Company.Database.Connection,
                         SqlBulkCopyOptions.Default,
@@ -1044,6 +1055,8 @@ create table #OwnershipTable (
 
                     Company.Database.Connection.Execute($@"create table #UserTableResult (ItemNumber int, ResourceID int, UserId nvarchar(1000) null, UserIdFieldName nvarchar(50) null);", transaction: trans);
 
+                    Company.Database.Connection.Execute(@"CREATE NONCLUSTERED INDEX IX_TempUserTableResult ON #UserTableResult ( UserId ASC ) INCLUDE ( ItemNumber, UserIdFieldName )", transaction: trans);
+
                     Company.Database.Connection.Execute($@"
 insert into #UserTableResult 
     select ItemNumber, null, UserId, UserIdFieldName from #OwnershipTable; 
@@ -1060,6 +1073,8 @@ from    #UserTableResult  T
         inner join Field F on F.FieldTypeID = FT.ID and F.FormattedValue = T.UserId; ", transaction: trans);
 
                     Company.Database.Connection.Execute($@"create table #OwnershipMergeTableResult (ID bigint, ItemNumber int, [Action] nvarchar(10));", transaction: trans);
+
+                    Company.Database.Connection.Execute(@"CREATE NONCLUSTERED INDEX IX_TempOwnershipMergeTableResult ON #OwnershipMergeTableResult ( ItemNumber ASC ) INCLUDE ( ID )", transaction: trans);
 
                     Company.Database.Connection.Execute($@"
 merge into  [ResponsibilityTypeRelationOverrideItem] T

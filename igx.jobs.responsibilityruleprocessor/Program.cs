@@ -34,12 +34,12 @@ namespace igx.jobs.responsibilityruleprocessor
         {
             try
             {
-                CoreFunction.AITrackJobStart(functionName);
+                //CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
                 companies.ForEach(c =>
                 {
-                    CoreFunction.AITrackEvent(functionName, "Begin Processing Company", null, c.CompanyID);
+                    //CoreFunction.AITrackEvent(functionName, "Begin Processing Company", null, c.CompanyID);
 
                     try
                     {
@@ -49,13 +49,13 @@ namespace igx.jobs.responsibilityruleprocessor
 
                         var items = company.Query<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule").ToList();
 
-                        CoreFunction.AITrackEvent(functionName, $"Got {items.Count} rules", null, c.CompanyID);
-                        CoreFunction.AIFlush();
+                        //CoreFunction.AITrackEvent(functionName, $"Got {items.Count} rules", null, c.CompanyID);
+                        //CoreFunction.AIFlush();
 
                         if (items.Count > 0)
                         {
-                            CoreFunction.AITrackEvent(functionName, $"Item count is greater than 0", null, c.CompanyID);
-                            CoreFunction.AIFlush();
+                            //CoreFunction.AITrackEvent(functionName, $"Item count is greater than 0", null, c.CompanyID);
+                            //CoreFunction.AIFlush();
 
                             var errorList = string.Empty;
 
@@ -89,8 +89,8 @@ namespace igx.jobs.responsibilityruleprocessor
                                 }
                             });
 
-                            CoreFunction.AITrackEvent(functionName, $"After foreach item", null, c.CompanyID);
-                            CoreFunction.AIFlush();
+                            //CoreFunction.AITrackEvent(functionName, $"After foreach item", null, c.CompanyID);
+                            //CoreFunction.AIFlush();
 
                             if (!string.IsNullOrEmpty(errorList))
                             {
@@ -112,11 +112,11 @@ namespace igx.jobs.responsibilityruleprocessor
                         CoreFunction.AIFlush();
                     }
 
-                    CoreFunction.AITrackEvent(functionName, "End Processing Company", null, c.CompanyID);
-                    CoreFunction.AIFlush();
+                    //CoreFunction.AITrackEvent(functionName, "End Processing Company", null, c.CompanyID);
+                    //CoreFunction.AIFlush();
                 });
 
-                CoreFunction.AITrackJobCompletedNoErrors(functionName);
+                //CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
             catch (Exception ex)
             {

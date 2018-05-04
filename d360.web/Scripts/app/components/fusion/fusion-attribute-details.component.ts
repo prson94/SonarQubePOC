@@ -15,13 +15,15 @@ import { StringConstants } from '../../static/string-constants';
                  <div class="row" *ngIf="!isLoading">    
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-fusion-attribute-item-details [fusionAttributeId]="id" [name]="name" [objectType]="type" (close)="close()" (assetIdChange)="assetIdChange($event)" [hasClose]="true"></d3s-fusion-attribute-item-details>                            
+                            <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="id" [objectType]="type" [hasAttributes]="false"></d3s-object-definition-tile>
+                            <button pButton type="button" (click)="close()" label="Close"></button>
                         </div>           
                     </div>
                  </div>
                 `,
     providers: [PermissionsService],
 })
+//<d3s-fusion-attribute-item-details [fusionAttributeId]="id" [name]="name" [objectType]="type" (close)="close()" (assetIdChange)="assetIdChange($event)" [hasClose]="true"></d3s-fusion-attribute-item-details>                            
 
 export class FusionAttributeDetailsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;

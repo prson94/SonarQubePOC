@@ -33,8 +33,8 @@ namespace igx.jobs
     public static class IgcIntegration
     {
         const string functionName = "IGC_Integration";
-        const string timerSettings = "0 */5 * * * *";
-        //const string timerSettings = "*/5 * * * * *";
+        //const string timerSettings = "0 */5 * * * *";
+        const string timerSettings = "*/5 * * * * *";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -174,7 +174,7 @@ namespace igx.jobs
             return epoch;
         }
 
-        internal static T GetFromApi<T>(string uri, string authorization)
+        internal async static Task<T> GetFromApi<T>(HttpClient client, string uri, string authorization)
         {
             var cleanUri = new Uri(uri);
             if (cleanUri.Port != 80 && cleanUri.Port != 443)
@@ -182,41 +182,71 @@ namespace igx.jobs
                 uri = uri.Replace($":{cleanUri.Port}", "");
             }
 
-            var req = HttpWebRequest.CreateHttp(uri);
-            req.Accept = "application/json";
-            req.Headers.Set(HttpRequestHeader.Authorization, authorization);
-            req.ServerCertificateValidationCallback = delegate { return true; };
-
             var jsonRaw = "";
 
-            var response = req.GetResponse();
-            using (var responseStream = response.GetResponseStream())
+            try
             {
-                using (var rdr = new StreamReader(responseStream))
-                {
-                    jsonRaw = rdr.ReadToEnd();
-                }
+                //using (var client = new HttpClient())
+                //{
+                //client.Timeout = new TimeSpan(0, 10, 0);
+                //client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Remove("Authorization");
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
+                var response = await client.GetAsync(uri);
+                response.EnsureSuccessStatusCode();
+                jsonRaw = await response.Content.ReadAsStringAsync();
+                response.Dispose();
+                    //client.Dispose();
+                //}
             }
+            catch (Exception ex)
+            {
+                var properties = new Dictionary<string, string>();
+                properties.Add("Uri", uri);
+                CoreFunction.AITrackException(functionName, ex, null, properties);
+                throw ex;
+            }
+
+            //var req = HttpWebRequest.CreateHttp(uri);
+            //req.Accept = "application/json";
+            //req.Headers.Set(HttpRequestHeader.Authorization, authorization);
+            //req.ServerCertificateValidationCallback = delegate { return true; };
+
+            //var jsonRaw = "";
+
+            //var response = req.GetResponse();
+            //using (var responseStream = response.GetResponseStream())
+            //{
+            //    using (var rdr = new StreamReader(responseStream))
+            //    {
+            //        jsonRaw = rdr.ReadToEnd();
+            //    }
+            //}
+            //response.Close();
+            //response.Dispose();
 
             return JsonConvert.DeserializeObject<T>(jsonRaw, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
         }
 
-        static async Task<T> PostJsonToApiAsync<T>(string uri, string authorization, string requestBody)
+        static async Task<T> PostJsonToApiAsync<T>(HttpClient client, string uri, string authorization, string requestBody)
         {
             var jsonToReturn = "";
 
             try
             {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = new TimeSpan(1, 0, 0);
-                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                    //client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
-                    client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
-                    var response = await client.PostAsync(uri, new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json"));
-                    response.EnsureSuccessStatusCode();
-                    jsonToReturn = await response.Content.ReadAsStringAsync();
-                }
+                //using (var client = new HttpClient())
+                //{
+                //client.Timeout = new TimeSpan(0, 30, 0);
+                //client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                //client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+                client.DefaultRequestHeaders.Remove("Authorization");
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
+                var response = await client.PostAsync(uri, new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json"));
+                response.EnsureSuccessStatusCode();
+                jsonToReturn = await response.Content.ReadAsStringAsync();
+                response.Dispose();
+                //client.Dispose();
+                //}
 
                 return JsonConvert.DeserializeObject<T>(jsonToReturn, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
             }
@@ -230,22 +260,25 @@ namespace igx.jobs
             }
         }
 
-        static async Task<string> PostJsonToApiAsync(string uri, string authorization, string requestBody)
+        static async Task<string> PostJsonToApiAsync(HttpClient client, string uri, string authorization, string requestBody)
         {
             var jsonToReturn = "";
 
             try
             {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = new TimeSpan(1, 0, 0);
-                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                    client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
-                    client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
-                    var response = await client.PostAsync(uri, new StringContent(requestBody));
-                    response.EnsureSuccessStatusCode();
-                    jsonToReturn = await response.Content.ReadAsStringAsync();
-                }
+                //using (var client = new HttpClient())
+                //{
+                //client.Timeout = new TimeSpan(1, 0, 0);
+                //client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                //client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+                client.DefaultRequestHeaders.Remove("Authorization");
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
+                var response = await client.PostAsync(uri, new StringContent(requestBody));
+                response.EnsureSuccessStatusCode();
+                jsonToReturn = await response.Content.ReadAsStringAsync();
+                response.Dispose();
+                    //client.Dispose();
+                //}
 
                 return jsonToReturn;
             }
@@ -305,8 +338,8 @@ namespace igx.jobs
                 else urlPrefix = urlPrefix + "-igx";
             }
 
-            //targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
-            targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
+            targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
+            //targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
             targetBaseUri += $"/services/assets/";
 
             DateTime? currentParsedUnvalidatedDate = null;
@@ -348,21 +381,24 @@ namespace igx.jobs
                                 // There is a hierarchy here, and we need to resolve it.
                                 try
                                 {
-                                    var context = (obj[f.SourceField] as JArray); // obj[f.SourceField].Cast<List<GenericIgcContextModel>>().FirstOrDefault();
-                                    if (context != null)
+                                    if (obj[f.SourceField] != null)
                                     {
-                                        if (targetObject.Property(f.TargetField) == null)
+                                        var context = (obj[f.SourceField] as JArray); // obj[f.SourceField].Cast<List<GenericIgcContextModel>>().FirstOrDefault();
+                                        if (context != null)
                                         {
-                                            if (f.ParentContextPosition.Value == 99)
+                                            if (targetObject.Property(f.TargetField) == null)
                                             {
-                                                targetObject.Add(f.TargetField, context.Last["_id"].Value<string>());
+                                                if (f.ParentContextPosition.Value == 99)
+                                                {
+                                                    targetObject.Add(f.TargetField, context.Last["_id"].Value<string>());
+                                                }
+                                                else
+                                                {
+                                                    targetObject.Add(f.TargetField, context[f.ParentContextPosition.Value]["_id"].Value<string>());
+                                                }
                                             }
-                                            else
-                                            {
-                                                targetObject.Add(f.TargetField, context[f.ParentContextPosition.Value]["_id"].Value<string>());
-                                            }
-                                        }
 
+                                        }
                                     }
                                 }
                                 catch (Exception ex)
@@ -458,7 +494,16 @@ namespace igx.jobs
                                             }
                                             else
                                             {
-                                                targetObject.Add(f.TargetField, obj[f.SourceField].Value<string>());
+                                                if (string.IsNullOrEmpty(f.ArrayValueFieldName))
+                                                {
+                                                    targetObject.Add(f.TargetField, obj[f.SourceField].Value<string>());
+                                                }
+                                                else
+                                                {
+                                                    // Treat this as a JObject and get the field value.
+                                                    targetObject.Add(f.TargetField, obj[f.SourceField][f.ArrayValueFieldName].Value<string>());
+                                                }
+                                                
                                             }
                                             
                                         }
@@ -607,90 +652,154 @@ namespace igx.jobs
             //First, get the type definition of the asset type, to pull enum values.
             var url = $"{setting.SourceUri}types/{mapping.SourceAssetTypeName}?showEditProperties=true";
 
-            try
+            using (var client = new HttpClient())
             {
-                var igcType = GetFromApi<IgcTypeModel>(url, sourceAuthString);
+                client.Timeout = new TimeSpan(1, 0, 0);
+                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
-                if (igcType != null)
+                try
                 {
-                    igcType.EditInfo.Properties.ForEach(p => {
-                        if (p.Type.Name == "enum")
-                        {
-                            if (p.Type.Values != null)
-                            {
-                                enumFields.Add(p.Name);
+                    var igcType = GetFromApi<IgcTypeModel>(client, url, sourceAuthString).Result;
 
-                                enumValues.AddRange(p.Type.Values.Select(i => new EnumResolutionModel
+                    if (igcType != null)
+                    {
+                        igcType.EditInfo.Properties.ForEach(p =>
+                        {
+                            if (p.Type.Name == "enum")
+                            {
+                                if (p.Type.Values != null)
                                 {
-                                    PropertyName = p.Name,
-                                    Code = i.Code,
-                                    DisplayValue = i.DisplayName
-                                }));
+                                    enumFields.Add(p.Name);
+
+                                    enumValues.AddRange(p.Type.Values.Select(i => new EnumResolutionModel
+                                    {
+                                        PropertyName = p.Name,
+                                        Code = i.Code,
+                                        DisplayValue = i.DisplayName
+                                    }));
+                                }
+                            }
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    CoreFunction.AITrackException(functionName, ex);
+                }
+
+                url = $"{setting.SourceUri}search/";
+
+                //checkForChangesOnly = true;
+
+                if (checkForChangesOnly)
+                {
+                    //Perform search using POST method.
+                    var postModel = new IgcPostSearchRequestModel {
+                        sorts = new List<IgcPostSearchRequestSortModel>() {
+                            new IgcPostSearchRequestSortModel { ascending = true, property = "modified_on" },
+                            new IgcPostSearchRequestSortModel { ascending = true, property = "created_on" }
+                        }
+                    };
+                    postModel.begin = 0;
+                    postModel.pageSize = 250;
+
+                    postModel.types.Add(mapping.SourceAssetTypeName);
+
+                    postModel.properties.AddRange(fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                    postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                    postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
+                    postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
+
+                    if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
+                    if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
+
+                    var min = ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0));
+                    var max = ConvertDateToUnixTimeMilliseconds(now);
+                
+                    postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
+                    postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
+
+                    if (mapping.LastSuccessfulCount.HasValue)
+                    {
+                        postModel.begin = mapping.LastSuccessfulCount.Value + 1;
+                    }
+
+                    var shouldContinue = true;
+                    while (shouldContinue)
+                    {
+                        try
+                        {
+                            var models = PostJsonToApiAsync<IgcDynamicArrayModels>(client, url, sourceAuthString, JsonConvert.SerializeObject(postModel)).Result;
+                            if (models != null)
+                            {
+                                parse(models.items);
+                                shouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                                postModel.begin = models.paging.end + 1;
+
+                                if (arr.Count > 4999)
+                                {
+                                    if (SendIncrementalSetToGovern(client, companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
+                                    {
+                                        mapping.LastSynchOn = currentParsedUnvalidatedDate;
+                                        mapping.LastSuccessfulCount += arr.Count; //This line must be called before the array is re-initialized.
+                                        try
+                                        {
+                                            company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                                            company.Execute("update integration.SynchedAssetType set LastSynchOn = null, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, cnt = mapping.LastSuccessfulCount });
+                                            company.Close();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            CoreFunction.AITrackException(functionName, ex);
+                                        }
+                                    }
+
+                                    // Re-initialize.
+                                    arr = new JArray();
+                                    relationships = new List<D3sRelationshipModel>();
+                                    ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+                                }
                             }
                         }
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-
-            url = $"{setting.SourceUri}search/";
-
-            //checkForChangesOnly = true;
-
-            if (checkForChangesOnly)
-            {
-                //Perform search using POST method.
-                var postModel = new IgcPostSearchRequestModel {
-                    sorts = new List<IgcPostSearchRequestSortModel>() {
-                        new IgcPostSearchRequestSortModel { ascending = true, property = "modified_on" },
-                        new IgcPostSearchRequestSortModel { ascending = true, property = "created_on" }
-                    }
-                };
-                postModel.begin = 0;
-                postModel.pageSize = 250;
-
-                postModel.types.Add(mapping.SourceAssetTypeName);
-
-                postModel.properties.AddRange(fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
-                postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
-                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
-                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
-
-                if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
-                if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
-
-                var min = ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0));
-                var max = ConvertDateToUnixTimeMilliseconds(now);
-                
-                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
-                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
-
-                if (mapping.LastSuccessfulCount.HasValue)
-                {
-                    postModel.begin = mapping.LastSuccessfulCount.Value + 1;
-                }
-
-                var shouldContinue = true;
-                while (shouldContinue)
-                {
-                    try
-                    {
-                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, sourceAuthString, JsonConvert.SerializeObject(postModel)).Result;
-                        if (models != null)
+                        catch (Exception ex)
                         {
-                            parse(models.items);
-                            shouldContinue = (models.paging.numTotal > models.paging.end + 1);
-                            postModel.begin = models.paging.end + 1;
+                            CoreFunction.AITrackException(functionName, ex);
+                            shouldContinue = false;
+                            success = false;
+                        }
+                    }
+                }
+                else
+                {
+                    //Perform search using GET method.
 
-                            if (arr.Count > 4999)
+                    // Add the properties we are after for this IGC type.
+                    url += $"?pageSize=250&types={mapping.SourceAssetTypeName}";
+                    url += string.Concat(fields.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
+                    url += string.Concat(relations.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
+                    url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceIdField)}"));
+                    url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceNameField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceNameField)}"));
+
+                    if (mapping.LastSuccessfulCount.HasValue)
+                    {
+                        url += $"&begin={mapping.LastSuccessfulCount.Value + 1}";
+                    }
+
+                    while (!string.IsNullOrEmpty(url))
+                    {
+                        try
+                        {
+                            var models = GetFromApi<IgcDynamicArrayModels>(client, url, sourceAuthString).Result;
+                            if (models != null)
                             {
-                                if (SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
+                                parse(models.items);
+                                url = models.paging.next;
+
+                                if (arr.Count > 4999)
                                 {
-                                    mapping.LastSynchOn = currentParsedUnvalidatedDate;
-                                    mapping.LastSuccessfulCount += arr.Count; //This line must be called before the array is re-initialized.
+                                    SendIncrementalSetToGovern(client, companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
+                                    mapping.LastSuccessfulCount += arr.Count;//This line must be called before the array is re-initialized.
+
                                     try
                                     {
                                         company.OpenWithRetry(RetryPolicy.DefaultFixed);
@@ -701,95 +810,38 @@ namespace igx.jobs
                                     {
                                         CoreFunction.AITrackException(functionName, ex);
                                     }
-                                }
 
-                                // Re-initialize.
-                                arr = new JArray();
-                                relationships = new List<D3sRelationshipModel>();
-                                ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+                                    // Re-initialize.
+                                    arr = new JArray();
+                                    relationships = new List<D3sRelationshipModel>();
+                                    ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+                                }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex);
-                        shouldContinue = false;
-                        success = false;
-                    }
-                }
-            }
-            else
-            {
-                //Perform search using GET method.
-
-                // Add the properties we are after for this IGC type.
-                url += $"?pageSize=250&types={mapping.SourceAssetTypeName}";
-                url += string.Concat(fields.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
-                url += string.Concat(relations.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
-                url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceIdField)}"));
-                url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceNameField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceNameField)}"));
-
-                if (mapping.LastSuccessfulCount.HasValue)
-                {
-                    url += $"&begin={mapping.LastSuccessfulCount.Value + 1}";
-                }
-
-                while (!string.IsNullOrEmpty(url))
-                {
-                    try
-                    {
-                        var models = GetFromApi<IgcDynamicArrayModels>(url, sourceAuthString);
-                        if (models != null)
+                        catch (Exception ex)
                         {
-                            parse(models.items);
-                            url = models.paging.next;
-
-                            if (arr.Count > 4999)
-                            {
-                                SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
-                                mapping.LastSuccessfulCount += arr.Count;//This line must be called before the array is re-initialized.
-
-                                try
-                                {
-                                    company.OpenWithRetry(RetryPolicy.DefaultFixed);
-                                    company.Execute("update integration.SynchedAssetType set LastSynchOn = null, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, cnt = mapping.LastSuccessfulCount });
-                                    company.Close();
-                                }
-                                catch (Exception ex)
-                                {
-                                    CoreFunction.AITrackException(functionName, ex);
-                                }
-
-                                // Re-initialize.
-                                arr = new JArray();
-                                relationships = new List<D3sRelationshipModel>();
-                                ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-                            }
+                            CoreFunction.AITrackException(functionName, ex);
+                            url = null;
+                            success = false;
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex);
-                        url = null;
-                        success = false;
-                    }
                 }
-            }
 
-            if (SendIncrementalSetToGovern(companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
-            {
-                //lastDateChecked = currentParsedUnvalidatedDate;
-                mapping.LastSuccessfulCount = null;
-                mapping.LastSynchOn = currentParsedUnvalidatedDate ?? now;
-            }
+                if (SendIncrementalSetToGovern(client, companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
+                {
+                    //lastDateChecked = currentParsedUnvalidatedDate;
+                    mapping.LastSuccessfulCount = null;
+                    mapping.LastSynchOn = currentParsedUnvalidatedDate ?? now;
+                }
 
-            //if (!lastDateChecked.HasValue)
-            //    lastDateChecked = now;
+
+                client.Dispose(); // Now displose of the HTTPClient object we are using for all requests.
+            }
 
             return success;
         }
 
-        public static bool SendIncrementalSetToGovern(int companyID, IntegrationAssetType mapping, JArray arr, List<D3sRelationshipModel> relationships, D3sOwnershipItemsModel ownershipTopModel, string targetBaseUri, string targetAuthString)
+        public static bool SendIncrementalSetToGovern(HttpClient client, int companyID, IntegrationAssetType mapping, JArray arr, List<D3sRelationshipModel> relationships, D3sOwnershipItemsModel ownershipTopModel, string targetBaseUri, string targetAuthString)
         {
             bool successfulPost = true;
             // If any items to send to server.
@@ -798,6 +850,7 @@ namespace igx.jobs
                 try
                 {
                     var respString = PostJsonToApiAsync(
+                        client,
                         $"{targetBaseUri}{mapping.Object}/{mapping.ObjectID}/bulk",
                         targetAuthString,
                         JsonConvert.SerializeObject(arr)
@@ -853,6 +906,7 @@ namespace igx.jobs
                     if (ownershipTopModel.Items.Count > 0)
                     {
                         var respString = PostJsonToApiAsync(
+                            client,
                             $"{targetBaseUri}ownership/bulk",
                             targetAuthString,
                             JsonConvert.SerializeObject(ownershipTopModel)
@@ -870,6 +924,7 @@ namespace igx.jobs
                 try
                 {
                     var respString = PostJsonToApiAsync(
+                        client,
                         $"{targetBaseUri}relationships/bulk",
                         targetAuthString,
                         JsonConvert.SerializeObject(relationships)

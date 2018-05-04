@@ -119,6 +119,22 @@ insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 			inner join ReferenceItem R on R.ReferenceItemTypeID = FT.LookupObjectID and ltrim(rtrim(R.Code)) = ltrim(rtrim(T.Name))
 GO
 
+/*
+To Fix for NM:
+select	TF.ObjectType,
+		TF.ObjectID,
+		FT.Type, 
+		FT.LookupDisplayFormat, 
+		FT.LookupObjectType, 
+		FT.LookupObjectID, 
+		TF.Value
+from	Field TF
+		inner join FieldType FT on FT.ID = TF.FieldTypeID and FT.LookupObjectType = 'ReferenceItem'
+		and TF.Value = 'TABLE'
+
+update Field set Value = '9' where ObjectType = 'FusionAttribute' and ObjectID = 1039346 and FieldTypeID = 
+*/
+
 UPDATE	TF
 SET		TF.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value)
 from	Field TF
@@ -484,25 +500,10 @@ GO
 ALTER TABLE [dbo].[Artifact] DROP CONSTRAINT [FK_Artifact_TaxonomyType]
 GO
 
-
-
-ALTER TABLE Artifact DROP COLUMN Name
-ALTER TABLE Artifact DROP COLUMN Description
-ALTER TABLE Artifact DROP COLUMN Status
-ALTER TABLE Artifact DROP COLUMN TextPath
-ALTER TABLE Artifact DROP COLUMN DateLastCertified
-ALTER TABLE Artifact DROP COLUMN TaxonomyTypeID
-ALTER TABLE Artifact DROP COLUMN [KeyHash]
-ALTER TABLE Artifact DROP COLUMN [FieldHash]
-ALTER TABLE Artifact DROP COLUMN [DisplayValue]
-GO
-
 ALTER TABLE Artifact ADD [KeyHash]        AS             ([utility].[GetObjectHashWrapper]('Artifact',[ID],[ArtifactTypeID],(1)))
 ALTER TABLE Artifact ADD [FieldHash]      AS             ([utility].[GetObjectHashWrapper]('Artifact',[ID],[ArtifactTypeID],(0)))
 ALTER TABLE Artifact ADD [DisplayValue]   NVARCHAR (MAX) DEFAULT ('<INVALID NO LONGER USED>') NOT NULL
 GO
-
-
 
 CREATE NONCLUSTERED INDEX [IX_Artifact_ArtifactTypeID] ON [dbo].[Artifact]([ArtifactTypeID] ASC);
 GO
@@ -10566,14 +10567,119 @@ RETURN
 )
 GO
 
-
+alter table FieldType disable trigger FieldType_AfterUpsert
 update	T
 set		T.AssetTypeID = S.ID
 from	FieldType T 
 		inner join AssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID
+alter table FieldType enable trigger FieldType_AfterUpsert
 
-
+alter table Field disable trigger Field_AfterUpsert
 update	T
 set		T.AssetID = S.ID
 from	Field T 
 		inner join Asset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID
+alter table Field enable trigger Field_AfterUpsert
+
+
+
+--Parent/Child hierarchy conversion
+
+insert into [Predicate] values ('parent of', 'child of', 3, 1, 'p-c-inter')
+insert into [Predicate] values ('parent of', 'child of', 4, 1, 'p-c-intra')
+
+insert into IntersectType (Subject, SubjectID, Object, ObjectID, State, PredicateID, SubjectCardinality, ObjectCardinality)
+	select	'ArtifactType' as Subject,
+			P.ID as SubjectID,
+			'ArtifactType' as Object,
+			C.ID as ObjectID,
+			1,
+			(select top 1 ID from [Predicate] where [Code] = 'p-c-inter'),
+			1,
+			2
+	from	ArtifactType P
+			inner join ArtifactType C on C.ParentID = P.ID and P.ID <> 2
+
+insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Owner)
+	select	T.ID as IntersectTypeID,
+			'Artifact' as Subject,
+			P.ID as SubjectID,
+			'Artifact' as Object,
+			C.ID as ObjectID,
+			'UI'
+	from	Artifact P
+			inner join Artifact C on C.ParentID = P.ID
+			inner join IntersectType T on T.Subject = 'ArtifactType' and T.SubjectID = P.ArtifactTypeID and T.Object = 'ArtifactType' and T.ObjectID = C.ArtifactTypeID
+			inner join [Predicate] PR on PR.ID = T.PredicateID and PR.Type = 3 and PR.[Code] = 'p-c-inter'
+
+insert into IntersectType (Subject, SubjectID, Object, ObjectID, State, PredicateID, SubjectCardinality, ObjectCardinality)
+	select	'FusionAttributeType' as Subject,
+			P.ID as SubjectID,
+			'FusionAttributeType' as Object,
+			C.ID as ObjectID,
+			1,
+			(select top 1 ID from [Predicate] where [Code] = 'p-c-inter'),
+			1,
+			2
+	from	FusionAttributeType P
+			inner join FusionAttributeType C on C.ParentID = P.ID and C.FusionTypeID = P.FusionTypeID
+
+insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Owner)
+	select	T.ID as IntersectTypeID,
+			'FusionAttribute' as Subject,
+			P.ID as SubjectID,
+			'FusionAttribute' as Object,
+			C.ID as ObjectID,
+			'UI'
+	from	FusionAttribute P
+			inner join FusionAttribute C on C.ParentID = P.ID --and P.ArtifactTypeID = 2
+			inner join IntersectType T on T.Subject = 'FusionAttributeType' and T.SubjectID = P.FusionAttributeTypeID and T.Object = 'FusionAttributeType' and T.ObjectID = C.FusionAttributeTypeID
+			inner join [Predicate] PR on PR.ID = T.PredicateID and PR.Type = 3 and PR.[Code] = 'p-c-inter'
+
+
+insert into IntersectType (Subject, SubjectID, Object, ObjectID, State, PredicateID, SubjectCardinality, ObjectCardinality)
+	select	'PolicyType' as Subject,
+			ID as SubjectID,
+			'PolicyType' as Object,
+			ID as ObjectID,
+			1,
+			(select top 1 ID from [Predicate] where [Code] = 'p-c-intra'),
+			1,
+			2
+	from	PolicyType
+
+insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Owner)
+	select	T.ID as IntersectTypeID,
+			'Policy' as Subject,
+			P.ParentID as SubjectID,
+			'Policy' as Object,
+			P.ID as ObjectID,
+			'UI'
+	from	[Policy] P
+			inner join IntersectType T on T.Subject = 'PolicyType' and T.SubjectID = P.PolicyTypeID and T.Object = 'PolicyType' and T.ObjectID = P.PolicyTypeID and P.ParentID is not null
+			inner join [Predicate] PR on PR.ID = T.PredicateID and PR.Type = 4 and PR.[Code] = 'p-c-intra'
+
+insert into IntersectType (Subject, SubjectID, Object, ObjectID, State, PredicateID, SubjectCardinality, ObjectCardinality)
+	select	--I.ID,
+			'TaxonomyType' as Subject,
+			T.ID as SubjectID,
+			'TaxonomyType' as Object,
+			T.ID as ObjectID,
+			1,
+			(select top 1 ID from [Predicate] where [Code] = 'p-c-intra'),
+			1,
+			2
+	from	TaxonomyType T
+			--inner join IntersectType I on I.Subject = 'TaxonomyType' and I.Object = 'TaxonomyType' and I.SubjectID = T.ID and I.ObjectID = T.ID
+
+
+insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Owner)
+	select	T.ID as IntersectTypeID,
+			'Taxonomy' as Subject,
+			P.ParentID as SubjectID,
+			'Taxonomy' as Object,
+			P.ID as ObjectID,
+			'UI'
+	from	[Taxonomy] P
+			inner join IntersectType T on T.Subject = 'TaxonomyType' and T.SubjectID = P.TaxonomyTypeID and T.Object = 'TaxonomyType' and T.ObjectID = P.TaxonomyTypeID and P.ParentID is not null
+			inner join [Predicate] PR on PR.ID = T.PredicateID and PR.Type = 4 and PR.[Code] = 'p-c-intra'

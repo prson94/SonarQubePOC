@@ -705,15 +705,338 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
             return ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter, ownerUsers, ownerGroups);
         }
 
+        //        [HttpPost, Route("bytype"), NonNullableParameters]
+        //        public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter, string ownerUsers = "", string ownerGroups = "")
+        //        {
+        //            var objType = "ArtifactType";
+        //            var obj = "Artifact";
+
+
+        //            try
+        //            {
+        //                var type = Company.Filter<AssetType>(i => i.Object == objType && i.ObjectID == id).SingleOrDefault();
+        //                if (type == null) throw new Exception("Asset Type Not found");
+
+        //                var fields = Company.Filter<FieldType>(i => i.AssetTypeID == type.ID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+        //                var parentIntersectType = Company.Filter<IntersectType>(i => i.Object == objType && i.ObjectID == id && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
+
+        //                var requestParams = Request.Params;
+        //                var dbArgs = new Dapper.DynamicParameters();
+        //                dbArgs.Add("id", type.ID);
+
+
+        //                var parentSqlColumn = @"null as ParentID, null as Parent, null as ParentUrl,";
+        //                var parentSqlJoin = @"";
+
+        //                if (parentIntersectType != null)
+        //                {
+        //                    parentSqlColumn = @"PID.ParentID, PID.ParentDisplayValue as Parent, PID.ParentUrl, ";
+        //                    parentSqlJoin = @" cross apply [dbo].[GetArtifactParentByAssetID](A.ID) PID";
+        //                }
+
+        //                var columnsNamesStatement = string.Join(", ", fields.Select(o => $"[{o.ID}] as Field{o.ID}"));
+        //                var fieldIDs = string.Join(", ", fields.Select(o => $"{o.ID}"));
+        //                var blockFieldIDs = string.Join(", ", fields.Select(o => $"[{o.ID}]"));
+        //                var sortFields = string.Join(", ", fields.Select(o => $"[Field{o.ID}]"));
+
+        //                var simpleWhereClause = "";
+        //                if (!string.IsNullOrEmpty(filter))
+        //                {
+        //                    simpleWhereClause = string.Join(" or ", fields.Select(o => $"pvt.[{o.ID}] like @sfilter + '%'"));
+        //                    simpleWhereClause = "where " + simpleWhereClause;
+        //                    dbArgs.Add("sfilter", filter);
+        //                }
+
+        //                var countColumnPlaceholder = "{0}";
+        //                var orderPagingPlaceholder = "{1}";
+
+        //                var sql = $@"
+        //select {countColumnPlaceholder}
+        //from	(
+        //		select	AssetID, Object, ObjectID, Type, TypeID,
+        //				{columnsNamesStatement}
+        //		from	(
+        //				select	A.ID as AssetID,
+        //						A.Object,
+        //						A.ObjectID,        
+        //						AST.Object as Type,
+        //						AST.ObjectID as TypeID,
+        //						{parentSqlColumn} 
+        //						Field_TT.ID as FieldTypeID,
+        //						case 
+        //							when Field_TT.AllowAllValue = 1 and Field_T.Value = '0' then Field_TT.AllowAllLabel 
+        //							when Field_T.Value is not null then Field_T.FormattedValue 
+        //							when Field_TT.DefaultValue is not null then Field_TT.DefaultFormattedValue 
+        //							else '' 
+        //						end as [Field],
+        //						1 P_CanEdit, 
+        //						1 P_CanDelete,
+        //						dbo.GenerateObjectUrl('Artifact', AST.ObjectID, A.ObjectID) as Url
+        //				from	Asset A 
+        //						inner join AssetType AST on AST.ID = A.AssetTypeID and AST.Object = 'ArtifactType' and AST.ObjectID = 2 and A.State = 1
+        //		                {parentSqlJoin} 
+        //						inner join FieldType Field_TT on Field_TT.ID in ({fieldIDs}) and Field_TT.AssetTypeID = A.AssetTypeID
+        //						left join Field Field_T on Field_T.AssetID = A.ID and Field_T.FieldTypeID = Field_TT.ID  
+
+        //				where   not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = 1 and RP.AssetID = A.ID)
+        //				) A
+        //		pivot	(
+        //				MIN([Field]) for FieldTypeID in ({blockFieldIDs})
+        //				) pvt
+        //				{simpleWhereClause}
+        //		{orderPagingPlaceholder}
+        //		) A";
+
+        //                #region Field and Other Logic
+
+        //        //        var columns = "";
+        //        //        var joins = "";
+        //        //        var wheres = new List<string>();
+
+        //        //        var relationFieldInfos = getRelationFieldData(objType, id, fields);
+
+        //        //        foreach (var f in fields)
+        //        //        {
+        //        //            var name = $"Field{f.ID}";
+        //        //            var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
+
+        //        //            if (f.Type == DataType.Relationship.ToString() || f.Type == DataType.FieldFromRelationship.ToString())
+        //        //            {
+        //        //                var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
+
+        //        //                //if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+
+        //        //                if (relationFieldInfo != null)
+        //        //                {
+        //        //                    joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
+        //        //                    joins += relationFieldInfo.IsSubject ?
+        //        //                                $" {name}_T.Subject = '{obj}' and {name}_T.SubjectID = A.ObjectID" :
+        //        //                                $" {name}_T.Object = '{obj}' and {name}_T.ObjectID = A.ObjectID";
+
+        //        //                    if (f.Type == DataType.Relationship.ToString())
+        //        //                    {
+        //        //                        var tableName = relationFieldInfo.Object.Replace("Type", "");
+        //        //                        var typeIDColumnName = relationFieldInfo.Object + "ID";
+
+        //        //                        columns += $"{name}_OTD.DisplayValue as [{name}], ";
+        //        //                        joins += $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
+        //        //                        joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+        //        //                        joins += $" left join Asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+        //        //                        joins += $" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD";
+
+        //        //                        // If simple filter specified add that criteria to the sql
+        //        //                        if (!string.IsNullOrEmpty(filter))
+        //        //                        {
+        //        //                            wheres.Add($"{name}_OTD.DisplayValue like @simpleFilter + '%'");
+        //        //                        }
+        //        //                    }
+        //        //                    else if (f.Type == DataType.FieldFromRelationship.ToString())
+        //        //                    {
+        //        //                        columns += $"{name}_OT.FormattedValue as [{name}], ";
+        //        //                        joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {f.LookupObjectFieldTypeID}";
+        //        //                        joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
+        //        //                        joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+
+        //        //                        // If simple filter specified add that criteria to the sql
+        //        //                        if (!string.IsNullOrEmpty(filter))
+        //        //                        {
+        //        //                            wheres.Add($"{name}_OT.FormattedValue like @simpleFilter + '%'");
+        //        //                        }
+        //        //                    }
+        //        //                }
+        //        //            }
+        //        //            else
+        //        //            {
+        //        //                joins += $@"
+        //        //inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = AST.ID 
+        //        //left join Field {name}_T on {name}_T.AssetID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+
+        //        //                //if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+
+        //        //                switch (f.Type)
+        //        //                {
+        //        //                    case "Decimal":
+
+        //        //                        columns += $@"
+        //        //case     
+        //        //    when {name}_T.Value is not null then cast({name}_T.FormattedValue as decimal(38,6))
+        //        //    when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
+        //        //    else null 
+        //        //end as [{name}], ";
+        //        //                        break;
+        //        //                    case "Number":
+        //        //                        columns += $@"
+        //        //case     
+        //        //    when {name}_T.Value is not null then cast({name}_T.FormattedValue as bigint)
+        //        //    when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as bigint)
+        //        //    else null 
+        //        //end as [{name}], ";
+        //        //                        break;
+        //        //                    case "DateTime":
+        //        //                        columns += $@"
+        //        //case     
+        //        //    when {name}_T.Value is not null then cast({name}_T.FormattedValue as datetime)
+        //        //    when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as datetime)
+        //        //    else null 
+        //        //end as [{name}], ";
+        //        //                        break;
+        //        //                    default:
+        //        //                        columns += $@"
+        //        //case 
+        //        //    when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
+        //        //    when {name}_T.Value is not null then {name}_T.FormattedValue 
+        //        //    when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
+        //        //    else '' 
+        //        //end as [{name}], ";
+        //        //                        break;
+        //        //                }
+
+        //        //                // If simple filter specified add that criteria to the sql
+        //        //                if (!string.IsNullOrEmpty(filter))
+        //        //                {
+        //        //                    wheres.Add($@"case when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel when {name}_T.Value is not null then {name}_T.FormattedValue when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue else '' end like @simpleFilter + '%'");
+        //        //                }
+        //        //            }
+        //        //        }
+
+
+
+        //        //        // Ownership Joins
+        //        //        joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups, "A.ObjectID");
+
+        //        //        if (Company.CurrentResourceIsAdmin)
+        //        //        {
+        //        //            columns += "1 P_CanEdit, 1 P_CanDelete,";
+        //        //        }
+        //        //        else
+        //        //        {
+        //        //            columns += "S_E.P_CanEdit, S_D.P_CanDelete, ";
+        //        //            joins += $@"
+        //        //    cross apply (
+        //        //				select	case 
+        //        //							when count(1) > 0 then 1
+        //        //							else 0
+        //        //						end as P_CanEdit
+        //        //				from	SecurityDetail 
+        //        //				where	(
+        //        //						(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
+        //        //						(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
+        //        //						) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
+        //        //				) S_E
+        //        //    cross apply (
+        //        //				select	case 
+        //        //							when count(1) > 0 then 1
+        //        //							else 0
+        //        //						end as P_CanDelete
+        //        //				from	SecurityDetail 
+        //        //				where	(
+        //        //						(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
+        //        //						(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
+        //        //						) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
+        //        //				) S_D ";
+        //        //            //columns += $" (select count(1) from securitydetail p_sd_edit where ({innerIdColumn} = p_sd_edit.ObjectID and p_sd_edit.Object = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
+        //        //            //columns += $" (select count(1) from securitydetail p_sd_delete where ({innerIdColumn} = p_sd_delete.ObjectID and p_sd_delete.Object = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
+        //        //        }
+
+        //        //        var querySql = $@"select * from ({string.Format(sql, columns, joins)}) A";
+        //        //        var countSql = $@"select count(1) from ({string.Format(sql, "", joins)}) A";
+
+        //        //        #region Filtering
+
+        //        //        var filters = applyRelationFilteringExistsRawSuffix(Request, dbArgs, fields, "A.ObjectID");
+
+        //        //        countSql += filters;
+        //        //        querySql += filters;
+
+        //        //        filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields, "A.ObjectID");  // Filtering
+
+        //        //        if (wheres.Count > 0)
+        //        //        {
+        //        //            filters += (string.IsNullOrEmpty(filters)) ? "where " : " ";
+        //        //            filters += string.Join(" or ", wheres);
+        //        //            dbArgs.Add("simpleFilter", filter);
+        //        //        }
+
+        //        //        countSql += filters;
+        //        //        querySql += filters;
+
+        //        //        #endregion
+
+        //        //        #region Sorting
+
+        //        //        if (string.IsNullOrEmpty(sortDataField))
+        //        //        {
+        //        //            var sortSql = "";
+
+        //        //            foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
+        //        //            {
+        //        //                var columnName = $"Field{field.ID}";
+        //        //                switch (field.Type)
+        //        //                {
+        //        //                    case "Number":
+        //        //                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS bigint)";
+        //        //                        break;
+        //        //                    case "Date":
+        //        //                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS date)";
+        //        //                        break;
+        //        //                    default:
+        //        //                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
+        //        //                        break;
+        //        //                }
+        //        //            }
+
+        //        //            if (string.IsNullOrEmpty(sortSql))
+        //        //            {
+        //        //                sortSql = "DisplayValue";
+        //        //            }
+
+        //        //            querySql += " ORDER BY " + sortSql;
+        //        //        }
+        //        //        else
+        //        //        {
+        //        //            //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.
+        //        //            querySql = applySortSuffix(querySql, sortDataField, sortOrder, "DisplayValue", "asc", sortFieldType: sortColumnType(sortDataField, fields));         // Sorting
+        //        //        }
+
+        //        //        #endregion
+
+        //        //        #region Paging
+
+        //        //        querySql = applyPagingSuffix(querySql, pagenum, pagesize);
+
+        //        //        #endregion
+
+
+        //                #endregion
+
+        //                int total = Company.Query<int>(string.Format(sql, "count(1)", ""), dbArgs).First();
+        //                var results = Company.Query<dynamic>(string.Format(sql, "*", $"ORDER BY {sortFields} OFFSET({pagenum}) ROWS FETCH NEXT ({pagesize}) ROWS ONLY"), dbArgs);
+
+        //                return new JsonNetResult
+        //                {
+        //                    Data = new { results, total },
+        //                    Formatting = Newtonsoft.Json.Formatting.None
+        //                };
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                return jsonNetException(ex);
+        //            }
+        //        }
+
         [HttpPost, Route("bytype"), NonNullableParameters]
         public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter, string ownerUsers = "", string ownerGroups = "")
         {
-            try
-            {                
-                var type = Company.GetById<ArtifactType>(id);
-                if (type == null) throw new Exception("Artifact Type Not found");
+            var objType = "ArtifactType";
+            var obj = "Artifact";
 
-                var parentIntersectType = Company.Filter<IntersectType>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
+
+            try
+            {
+                var type = Company.Filter<AssetType>(i => i.Object == objType && i.ObjectID == id).SingleOrDefault();
+                if (type == null) throw new Exception("Asset Type Not found");
+
+                var parentIntersectType = Company.Filter<IntersectType>(i => i.Object == objType && i.ObjectID == id && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
 
                 var parentSqlColumn = @"null as ParentID, null as Parent, null as ParentUrl,";
                 var parentSqlJoin = @"";
@@ -728,25 +1051,260 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                 var djToken = "{1}";
 
                 var sql = $@"
-select	A.ID as AssetID,
-        A.ObjectID as ID,        
-        {parentSqlColumn}
-        {dcToken}
-        dbo.GenerateObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url            
-from	AssetDetail A 
-        {djToken} 
-        {parentSqlJoin}         
-where   A.Type = 'ArtifactType' and A.TypeID = @id and A.[State] = 1 
-        and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = " + Company.CurrentResourceID + @" and RP.AssetID = A.ID)";
-                
-                var model = processDynamicResults(
-                    sql, Request, 
-                    "ArtifactType", id, 
-                    true, 
-                    sortDataField, sortOrder, pagenum, pagesize,
-                    (parentIntersectType != null ? new string[] { "PID.ParentDisplayValue" } : new string[] {  }), 
-                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true, idColumn: "A.ID", innerIdColumn: "A.ObjectID", sortDefaultField:"1");
-                return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+        select	A.ID as AssetID, 
+                A.ObjectID as ID,        
+                {parentSqlColumn} 
+                {dcToken} 
+                dbo.GenerateObjectUrl('{obj}', AST.ObjectID, A.ObjectID) as Url 
+        from	Asset A 
+                inner join AssetType AST on AST.ID = A.AssetTypeID and AST.ID = @id and A.State = 1
+                {djToken} 
+                {parentSqlJoin} 
+        where   not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = " + Company.CurrentResourceID + @" and RP.AssetID = A.ID)";
+
+                #region Field and Other Logic
+
+                var requestParams = Request.Params;
+                var dbArgs = new Dapper.DynamicParameters();
+
+
+                var columns = "";
+                var joins = "";
+                var wheres = new List<string>();
+
+                var fields = Company.Filter<FieldType>(i => i.AssetTypeID == type.ID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+
+                var relationFieldInfos = getRelationFieldData(objType, id, fields);
+
+                foreach (var f in fields)
+                {
+                    var name = $"Field{f.ID}";
+                    var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
+
+                    if (f.Type == DataType.Relationship.ToString() || f.Type == DataType.FieldFromRelationship.ToString())
+                    {
+                        var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
+
+                        //if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+
+                        if (relationFieldInfo != null)
+                        {
+                            joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
+                            joins += relationFieldInfo.IsSubject ?
+                                        $" {name}_T.Subject = '{obj}' and {name}_T.SubjectID = A.ObjectID" :
+                                        $" {name}_T.Object = '{obj}' and {name}_T.ObjectID = A.ObjectID";
+
+                            if (f.Type == DataType.Relationship.ToString())
+                            {
+                                var tableName = relationFieldInfo.Object.Replace("Type", "");
+                                var typeIDColumnName = relationFieldInfo.Object + "ID";
+
+                                columns += $"{name}_OTD.DisplayValue as [{name}], ";
+                                joins += $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
+                                joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                joins += $" left join Asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                joins += $" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD";
+
+                                // If simple filter specified add that criteria to the sql
+                                if (!string.IsNullOrEmpty(filter))
+                                {
+                                    wheres.Add($"{name}_OTD.DisplayValue like @simpleFilter + '%'");
+                                }
+                            }
+                            else if (f.Type == DataType.FieldFromRelationship.ToString())
+                            {
+                                columns += $"{name}_OT.FormattedValue as [{name}], ";
+                                joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {f.LookupObjectFieldTypeID}";
+                                joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
+                                joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+
+                                // If simple filter specified add that criteria to the sql
+                                if (!string.IsNullOrEmpty(filter))
+                                {
+                                    wheres.Add($"A.[{name}] like @simpleFilter + '%'");
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        joins += $@"
+        inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = AST.ID 
+        left join Field {name}_T on {name}_T.AssetID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+
+                        //if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+
+                        switch (f.Type)
+                        {
+                            case "Decimal":
+
+                                columns += $@"
+        case     
+            when {name}_T.Value is not null then cast({name}_T.FormattedValue as decimal(38,6))
+            when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
+            else null 
+        end as [{name}], ";
+                                break;
+                            case "Number":
+                                columns += $@"
+        case     
+            when {name}_T.Value is not null then cast({name}_T.FormattedValue as bigint)
+            when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as bigint)
+            else null 
+        end as [{name}], ";
+                                break;
+                            case "DateTime":
+                                columns += $@"
+        case     
+            when {name}_T.Value is not null then cast({name}_T.FormattedValue as datetime)
+            when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as datetime)
+            else null 
+        end as [{name}], ";
+                                break;
+                            default:
+                                columns += $@"
+        case 
+            when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
+            when {name}_T.Value is not null then {name}_T.FormattedValue 
+            when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
+            else '' 
+        end as [{name}], ";
+                                break;
+                        }
+
+                        // If simple filter specified add that criteria to the sql
+                        if (!string.IsNullOrEmpty(filter))
+                        {
+                            wheres.Add($"A.[{name}] like @simpleFilter + '%'");
+                        }
+                    }
+                }
+
+                dbArgs.Add("id", type.ID);
+                //if (requestParams != null)
+                //{
+                //    foreach (string k in requestParams.Keys)
+                //    {
+                //        dbArgs.Add(k, (string)requestParams[k]);
+                //    }
+                //}
+
+                // Ownership Joins
+                joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups, "A.ObjectID");
+
+                if (Company.CurrentResourceIsAdmin)
+                {
+                    columns += "1 P_CanEdit, 1 P_CanDelete,";
+                }
+                else
+                {
+                    columns += "S_E.P_CanEdit, S_D.P_CanDelete, ";
+                    joins += $@"
+            cross apply (
+        				select	case 
+        							when count(1) > 0 then 1
+        							else 0
+        						end as P_CanEdit
+        				from	SecurityDetail 
+        				where	(
+        						(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
+        						(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
+        						) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
+        				) S_E
+            cross apply (
+        				select	case 
+        							when count(1) > 0 then 1
+        							else 0
+        						end as P_CanDelete
+        				from	SecurityDetail 
+        				where	(
+        						(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
+        						(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
+        						) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
+        				) S_D ";
+                    //columns += $" (select count(1) from securitydetail p_sd_edit where ({innerIdColumn} = p_sd_edit.ObjectID and p_sd_edit.Object = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
+                    //columns += $" (select count(1) from securitydetail p_sd_delete where ({innerIdColumn} = p_sd_delete.ObjectID and p_sd_delete.Object = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
+                }
+
+                var querySql = $@"select * from ({string.Format(sql, columns, joins)}) A";
+                var countSql = $@"select count(1) from ({string.Format(sql, columns, joins)}) A";
+
+                #region Filtering
+
+                var filters = applyRelationFilteringExistsRawSuffix(Request, dbArgs, fields, "A.ObjectID");
+
+                countSql += filters;
+                querySql += filters;
+
+                filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields, "A.ObjectID");  // Filtering
+
+                if (wheres.Count > 0)
+                {
+                    filters += (string.IsNullOrEmpty(filters)) ? " where " : " ";
+                    filters += string.Join(" or ", wheres);
+                    dbArgs.Add("simpleFilter", filter);
+                }
+
+                countSql += filters;
+                querySql += filters;
+
+                #endregion
+
+                #region Sorting
+
+                if (string.IsNullOrEmpty(sortDataField))
+                {
+                    var sortSql = "";
+
+                    foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
+                    {
+                        var columnName = $"Field{field.ID}";
+                        switch (field.Type)
+                        {
+                            case "Number":
+                                sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS bigint)";
+                                break;
+                            case "Date":
+                                sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS date)";
+                                break;
+                            default:
+                                sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
+                                break;
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(sortSql))
+                    {
+                        sortSql = "DisplayValue";
+                    }
+
+                    querySql += " ORDER BY " + sortSql;
+                }
+                else
+                {
+                    //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.
+                    querySql = applySortSuffix(querySql, sortDataField, sortOrder, "DisplayValue", "asc", sortFieldType: sortColumnType(sortDataField, fields));         // Sorting
+                }
+
+                #endregion
+
+                #region Paging
+
+                querySql = applyPagingSuffix(querySql, pagenum, pagesize);
+
+                #endregion
+
+
+                #endregion
+
+                int total = Company.Query<int>(countSql, dbArgs).First();
+                var results = Company.Query<dynamic>(querySql, dbArgs);
+
+                return new JsonNetResult
+                {
+                    Data = new { results, total },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
             }
             catch (Exception ex)
             {

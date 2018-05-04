@@ -401,6 +401,41 @@ namespace d360.web.Controllers
             Company = company;
         }
 
+        #region Json Message Handling
+
+        internal JsonNetResult jsonNetException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
+        {
+            return new JsonNetResult { Data = new { type = "error", title = title, message = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        internal JsonResult jsonException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
+        {
+            return Json(new { type = "error", title = title, message = ex.GetFullExceptionData() }, JsonRequestBehavior.AllowGet);
+        }
+
+        internal JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
+        {
+            return Json(new { type = "error", title = title, message = message }, JsonRequestBehavior.AllowGet);
+        }
+
+        internal JsonNetResult jsonNetException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
+        {
+            return new JsonNetResult
+            {
+                Data = new { type = "error", title = title, message = message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        internal JsonResult jsonSuccess(string message, string id, string action, HttpStatusCode statusCode, dynamic customdata = null)
+        {
+            Response.StatusCode = (int)statusCode;
+            Response.StatusDescription = message.Replace("\n", "  ");
+            return Json(new { type = "confirm", title = "Success!", action = action, message = message.Replace("\n", "  "), id = id, custom = customdata }, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
         internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, int? minLength, int? maxLength, string validationMessage = "")
         {
             var models = new List<FieldValidationModel>();
@@ -1151,8 +1186,8 @@ namespace d360.web.Controllers
 
             querySql = applyPagingSuffix(querySql, pagenum, pagesize);              // Paging
 
-            countSql += " OPTION (RECOMPILE)";
-            querySql += " OPTION (RECOMPILE)";
+            //countSql += " OPTION (RECOMPILE)";
+            //querySql += " OPTION (RECOMPILE)";
 
             int total = Company.Query<int>(countSql, dbArgs).First();
             var query = Company.Query<dynamic>(querySql, dbArgs);
@@ -1931,7 +1966,5 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             return false;
         }
-
-
     }
 }

@@ -5838,3 +5838,54 @@ go
 
 
 
+ALTER view [dbo].[SiteNavAvailable] as
+	select
+		u.ID as ObjectID,
+		u.Name,
+		u.url as Route,
+		u.Object,
+		null as SortOrder,
+		u.ParentID as ParentID
+	from
+	(
+		select
+		ID,
+		ParentID,
+		Name,
+		dbo.GenerateNgObjectUrl('ArtifactType', ID, 0) As url,
+		'ArtifactType' as [Object]
+		FROM ArtifactType
+		
+		UNION ALL
+		
+		SELECT
+		ID,
+		null as ParentID,
+		Name,
+		dbo.GenerateNgObjectUrl('TaxonomyType', ID, 0)  As url,
+		'TaxonomyType' as [Object]
+		FROM TaxonomyType
+		
+		UNION ALL
+
+		SELECT
+		ID,
+		null as ParentID,
+		Name,
+		dbo.GenerateNgObjectUrl('PolicyType', ID, 0)  As url,
+		'PolicyType' as [Object]
+		FROM PolicyType
+		
+		UNION ALL
+
+		SELECT
+		ID,
+		null as ParentID,
+		Name,
+		dbo.GenerateNgObjectUrl('RuleType', ID, 0)  As url,
+		'RuleType' as [Object]
+		FROM RuleType
+	) u
+	left join SiteNav v on v.Object = u.Object and v.ObjectID = u.ID
+	where v.ObjectID is null 
+GO

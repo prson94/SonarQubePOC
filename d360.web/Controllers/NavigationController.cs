@@ -13,6 +13,8 @@ using System;
 using d360.web.Models.Attributes;
 using d360.extensions;
 using d360.web.Filters;
+using Resources;
+using System.Net;
 
 namespace d360.web.Controllers
 {
@@ -82,7 +84,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpGet, Route("GetSiteNavItems")]
+        [HttpGet, Route("GetSiteNavItems")]
         public JsonNetResult GetSiteNavItems()
         {
             return new JsonNetResult
@@ -92,9 +94,12 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPost, Route("AddFolderItem"), AjaxValidateAntiForgeryToken]
+        [HttpPost, Route("AddFolderItem"), AjaxValidateAntiForgeryToken]
         public JsonNetResult AddFolderItem(SiteNav item)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
             var success = true;
             var message = "";
             try
@@ -135,9 +140,12 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpPost, Route("RemoveFolderItem"), NonNullableParameters, AjaxValidateAntiForgeryToken]
+        [HttpPost, Route("RemoveFolderItem"), NonNullableParameters, AjaxValidateAntiForgeryToken]
         public JsonNetResult RemoveFolderItem(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
             var success = true;
             var message = "";
             try
@@ -163,9 +171,12 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpPost, Route("RemoveFolder"), NonNullableParameters, AjaxValidateAntiForgeryToken]
+        [HttpPost, Route("RemoveFolder"), NonNullableParameters, AjaxValidateAntiForgeryToken]
         public JsonNetResult RemoveFolder(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
             var success = true;
             var message = "";
 
@@ -199,9 +210,12 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPost, Route("AddFolder"), AjaxValidateAntiForgeryToken]
+        [HttpPost, Route("AddFolder"), AjaxValidateAntiForgeryToken]
         public JsonNetResult AddFolder(AddSiteNavModel model)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
             var success = true;
             var message = "";
             try
@@ -237,9 +251,12 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpPut, Route("MoveUp"), NonNullableParameters]
+        [HttpPut, Route("MoveUp"), NonNullableParameters]
         public JsonNetResult MoveUp(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
             var success = true;
             var message = "";
 
@@ -271,9 +288,12 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPut, Route("MoveDown"), NonNullableParameters]
+        [HttpPut, Route("MoveDown"), NonNullableParameters]
         public JsonNetResult MoveDown(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
             var success = true;
             var message = "";
             try
@@ -303,9 +323,12 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPut, Route("EditFolder")]
+        [HttpPut, Route("EditFolder")]
         public JsonNetResult EditFolder(SiteNav folder)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
             var success = true;
             var message = "";
             try
@@ -337,9 +360,12 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpPut, Route("SiteNavFolderMove"), NonNullableParameters]
+        [HttpPut, Route("SiteNavFolderMove"), NonNullableParameters]
         public JsonNetResult SiteNavFolderMove(int targetFolderId,int adjacentFolderId)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
             var success = true;
             var message = "";
             try
@@ -369,9 +395,10 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+        
         #region Permissions
 
-        [Authorize, HttpGet, Route("permissions/get/list/{id:int}")]
+        [HttpGet, Route("permissions/get/list/{id:int}")]
         public JsonNetResult GetSiteNavPermissionList(int id = 0)
         {
             var sql = @"
@@ -394,7 +421,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpGet, Route("permissions/get/{id:int}")]
+        [HttpGet, Route("permissions/get/{id:int}")]
         public JsonNetResult GetSiteNavPermissions(int id)
         {
             var perms = Company.Query<SiteNavPermission>(QueryConstants.SiteNavPermissions, new { id }).ToList();
@@ -406,7 +433,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPost, Route("permissions/set"), AjaxValidateAntiForgeryToken]
+        [HttpPost, Route("permissions/set"), AjaxValidateAntiForgeryToken]
         public JsonNetResult SetSiteNavPermissions(SiteNav nav)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -444,7 +471,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPost, Route("permissions/add"), AjaxValidateAntiForgeryToken]
+        [HttpPost, Route("permissions/add"), AjaxValidateAntiForgeryToken]
         public JsonNetResult AddSiteNavPermission(SiteNavPermission perm)
         {
             var nav = Company.GetById<SiteNav>(perm.SiteNavID);
@@ -476,11 +503,11 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpDelete, Route("permissions/remove")]
+        [HttpDelete, Route("permissions/remove")]
         public JsonNetResult RemoveSiteNavPermission(SiteNavPermission perm)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return jsonNetException(new Exception("You do not have permission to do this"));
+                return jsonNetException(new Exception("You do not have permission to do this."));
 
             perm = Company.SiteNavPermissions.Where(p => p.SiteNavID == perm.SiteNavID && p.Object == perm.Object && p.ObjectID == perm.ObjectID).FirstOrDefault();
 
@@ -514,7 +541,7 @@ namespace d360.web.Controllers
         /// Clears current users favorites list
         /// </summary>
         /// <returns></returns>
-        [Authorize, HttpDelete, Route("DeleteMyFavorites")]
+        [HttpDelete, Route("DeleteMyFavorites")]
         public JsonNetResult DeleteMyFavorites()
         {
             var success = true;
@@ -538,7 +565,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Authorize, HttpPut, Route("ToggleFavorite")]
+        [HttpPut, Route("ToggleFavorite")]
         public JsonNetResult ToggleFavorite(Favorite favorite)
         {
             var success = true;
@@ -604,7 +631,7 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpPut, Route("MoveFavorite"), NonNullableParameters]
+        [HttpPut, Route("MoveFavorite"), NonNullableParameters]
         public JsonNetResult MoveFavorite(string route, bool moveUp = false, bool admin = false)
         {
             var success = true;
@@ -654,7 +681,7 @@ namespace d360.web.Controllers
 
         }
 
-        [Authorize, HttpGet, Route("GetFavorites")]
+        [HttpGet, Route("GetFavorites")]
         public JsonNetResult GetFavorites(bool adminOnly = false)
         {
             var sql = @"

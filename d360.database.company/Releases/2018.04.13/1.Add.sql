@@ -725,6 +725,16 @@ GO
 CREATE INDEX CIX_IntegrationUnresolvedRelationItem ON integration.UnresolvedRelationItem ( IntersectTypeID ASC, SubjectSourceID ASC, ObjectSourceID ASC )
 GO
 
+CREATE CLUSTERED INDEX [CIX_IntegrationSynchedAssetTypeRelationItem] ON [integration].[SynchedAssetTypeRelationItem] ( [SynchedAssetTypeID] ASC, [SourceField] ASC )
+GO
+
+CREATE CLUSTERED INDEX [CIX_IntegrationSynchedAssetTypeRelationItemTarget] ON [integration].[SynchedAssetTypeRelationItemTarget] ( SynchedAssetTypeRelationItemID ASC, [IntersectTypeID] ASC )
+GO
+
+CREATE CLUSTERED INDEX [CIX_IntegrationSynchedAssetTypeRoleItem] ON [integration].[SynchedAssetTypeRoleItem] ( [SynchedAssetTypeID] ASC, [SourceIdField] ASC )
+GO
+
+
 EXEC sp_rename 'dbo.FieldType', 'FieldTypeOld'; 
 GO
 EXEC sp_rename 'PK_FieldType', 'PK_FieldTypeOld'; 
@@ -826,7 +836,6 @@ ALTER TABLE [dbo].[FieldType] ADD  DEFAULT ((0)) FOR [ParentFieldTypeID]
 GO
 
 SET IDENTITY_INSERT FieldType ON
-GO
 INSERT INTO [FieldType] (ID,[Name],[FriendlyName],[Description],[DisplayDescription],[FormDescription],[Type],[LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[MinimumLength],[MaximumLength],[Length],[Pattern],[Object],[ObjectID],[SortOrder],[IsRequired],[IsListable],[ValidationDescription],[Category],[IsDisplayable],[IsEditable],[DefaultValue],DefaultFormattedValue,[AllowAllValue],[AllowAllLabel],[IsPrimaryFilter],[LookupEditFormat],[IsPartOfKey],[ColumnOrder],[ColumnWidth],[LookupObjectFieldTypeID],[AllowMultipleValues])
 	SELECT	[ID]
 			,[Name]
@@ -863,7 +872,6 @@ INSERT INTO [FieldType] (ID,[Name],[FriendlyName],[Description],[DisplayDescript
 			,[LookupObjectFieldTypeID],
 			0
 	  FROM	[FieldTypeOld]
-GO
 SET IDENTITY_INSERT FieldType OFF
 GO
 
@@ -1000,11 +1008,11 @@ GO
 ALTER TABLE [dbo].[IntersectGroupItem] CHECK CONSTRAINT [FK_IntersectGroupItem_IntersectGroup]
 GO
 
-EXEC sp_rename 'dbo.IntersectType', 'IntersectTypeOld'; 
+EXEC sp_rename 'dbo.IntersectType', 'IntersectTypeOld'
 GO
-EXEC sp_rename 'PK_IntersectType', 'PK_IntersectTypeOld'; 
+EXEC sp_rename 'PK_IntersectType', 'PK_IntersectTypeOld'
 GO
-EXEC sp_rename 'UQ_IntersectType', 'UQ_IntersectTypeOld'; 
+EXEC sp_rename 'UQ_IntersectType', 'UQ_IntersectTypeOld'
 GO
 ALTER TABLE [dbo].[IntersectTypeOld] DROP CONSTRAINT [DF_IntersectType_SubjectCardinality]
 ALTER TABLE [dbo].[IntersectTypeOld] DROP CONSTRAINT [DF_IntersectType_ObjectCardinality]
@@ -1069,16 +1077,15 @@ SELECT [ID]
       ,[SubjectCardinality]
       ,[ObjectCardinality]
   FROM [dbo].[IntersectTypeOld]
-GO
 SET IDENTITY_INSERT IntersectType OFF
 go
 
 
-EXEC sp_rename 'dbo.Intersect', 'IntersectOld'; 
+EXEC sp_rename 'dbo.Intersect', 'IntersectOld'
 GO
-EXEC sp_rename 'PK_Intersect', 'PK_IntersectOld'; 
+EXEC sp_rename 'PK_Intersect', 'PK_IntersectOld'
 GO
-EXEC sp_rename 'UQ_Intersect', 'UQ_IntersectOld'; 
+EXEC sp_rename 'UQ_Intersect', 'UQ_IntersectOld'
 GO
 ALTER TABLE [dbo].[IntersectOld] DROP CONSTRAINT [FK_Intersect_IntersectType]
 GO
@@ -1150,8 +1157,7 @@ GO
 ALTER TABLE [dbo].[Intersect] CHECK CONSTRAINT [FK_Intersect_IntersectType]
 GO
 
-SET IDENTITY_INSERT [Intersect] ON;
-
+SET IDENTITY_INSERT [Intersect] ON
 INSERT INTO [Intersect] (ID, IntersectTypeID, Subject, SubjectID, Object, ObjectID, State, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Owner, Deleted, Visible)
 	SELECT [ID]
 		  ,[IntersectTypeID]
@@ -1168,11 +1174,8 @@ INSERT INTO [Intersect] (ID, IntersectTypeID, Subject, SubjectID, Object, Object
 		  ,[Deleted]
 		  ,[Visible]
 	  FROM [dbo].[IntersectOld]
-GO
-
-
 SET IDENTITY_INSERT [Intersect] OFF
-go
+GO
 
 
 create view AssetApiModel
@@ -3146,6 +3149,9 @@ BEGIN
 END
 GO
 
+--ALTER TABLE AttributeType add DisplayFormat nvarchar(250) null
+--UPDATE AttributeType set DisplayFormat = TextFormatString
+
 CREATE FUNCTION utility.GetObjectDisplayValue
 (
 	@Object varchar(50),
@@ -3962,22 +3968,22 @@ GO
 
 CREATE NONCLUSTERED INDEX [IX_Asset_AssetType_KeyHash_Include]
     ON [dbo].[Asset]([AssetTypeID] ASC, [KeyHash] ASC)
-    INCLUDE([ID]);
+    INCLUDE([ID])
 GO
 
 CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID_Include]
     ON [dbo].[Asset]([AssetTypeID] ASC)
-    INCLUDE([ID], [Object], [ObjectID]);
+    INCLUDE([ID], [Object], [ObjectID])
 GO
 
 CREATE NONCLUSTERED INDEX [IX_Asset_Object_Include]
     ON [dbo].[Asset]([Object] ASC)
-    INCLUDE([ID], [AssetTypeID], [ObjectID]);
+    INCLUDE([ID], [AssetTypeID], [ObjectID])
 GO
 
 CREATE NONCLUSTERED INDEX [IX_Asset_Object_ObjectID_Include]
     ON [dbo].[Asset]([Object] ASC, [ObjectID] ASC)
-    INCLUDE([ID], [AssetTypeID]);
+    INCLUDE([ID], [AssetTypeID])
 GO
 
 CREATE TRIGGER [dbo].[Asset_AfterDelete]
@@ -4020,13 +4026,13 @@ GO
 
 CREATE NONCLUSTERED INDEX [IX_AssetType_Object_ObjectID_Include]
     ON [dbo].[AssetType]([Object] ASC, [ObjectID] ASC)
-    INCLUDE([ID]);
+    INCLUDE([ID])
 GO
 
 CREATE NONCLUSTERED INDEX [IX_Intersect_IntersectTypeID]
-    ON [dbo].[Intersect]([IntersectTypeID] ASC);
+    ON [dbo].[Intersect]([IntersectTypeID] ASC)
 GO
 
 CREATE NONCLUSTERED INDEX [IX_IntersectType_PredicateID]
-    ON [dbo].[IntersectType]([PredicateID] ASC);
+    ON [dbo].[IntersectType]([PredicateID] ASC)
 GO

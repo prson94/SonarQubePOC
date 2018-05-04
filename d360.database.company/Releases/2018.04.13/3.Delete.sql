@@ -1,4 +1,4 @@
-﻿DROP TABLE [cache].[ResponsibilityItem]
+﻿--DROP TABLE [cache].[ResponsibilityItem]
 DROP TABLE [dbo].[EmailTemplate]
 DROP TABLE [dbo].[LineageDefault]
 DROP TABLE [dbo].[ResponsibilityContextItem]
@@ -133,22 +133,6 @@ drop TRIGGER [dbo].[IssueType_AfterUpdate]
 
 ALTER TABLE [dbo].[Policy] DROP CONSTRAINT [DF_Policy_Status]
 GO
-alter table [Policy] drop column [Name]
-alter table [Policy] drop column [Description]
-alter table [Policy] drop column [Status]
-go
-alter table [Rule] drop column Name
-alter table [Rule] drop column Description
-alter table [Rule] drop column Purpose
-alter table [Rule] drop column Measurement
-alter table [Rule] drop column Resolution
-go
-
-alter table Taxonomy drop column Name
-alter table Taxonomy drop column Description
-alter table Taxonomy drop column DisplayValue
-alter table Taxonomy add [DisplayValue] NVARCHAR (MAX) constraint DF_Taxonomy_DisplayValue  DEFAULT ('<INVALID VALUE>') NOT NULL
-go
 
 --DROP SCHEMA [staging]
 --GO

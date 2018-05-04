@@ -194,41 +194,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Json Message Handling
-
-        JsonNetResult jsonNetException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {
-            return new JsonNetResult { Data = new { type = "error", title = title, message = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        JsonResult jsonException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {
-            return Json(new { type = "error", title = title, message = ex.GetFullExceptionData() }, JsonRequestBehavior.AllowGet);
-        }
-
-        JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {            
-            return Json(new { type = "error", title = title, message = message }, JsonRequestBehavior.AllowGet);
-        }
-
-        JsonNetResult jsonNetException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {         
-            return new JsonNetResult
-            {
-                Data = new { type = "error", title = title, message = message },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        JsonResult jsonSuccess(string message, string id, string action, HttpStatusCode statusCode, dynamic customdata = null)
-        {
-            Response.StatusCode = (int)statusCode;
-            Response.StatusDescription = message.Replace("\n", "  ");
-            return Json(new { type = "confirm", title = "Success!", action = action, message = message.Replace("\n", "  "), id = id, custom = customdata }, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
         #region Parse Methods
 
         bool parseBooleanField(FormCollection form, string fieldName, bool defaultValue = false)

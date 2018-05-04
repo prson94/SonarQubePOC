@@ -112,4 +112,7 @@
   <ItemGroup>
     <PreDeploy Include="Releases\2018.04.27\1.Updates.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="Releases\2018.04.13\VerificationBeforeStaticColumnDrop.sql" />
+  </ItemGroup>
 </Project>
