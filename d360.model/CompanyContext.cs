@@ -2337,6 +2337,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                     if (field.FieldType != null && field.FieldType.Type == "Html")
                     {
                         var sanitizer = new HtmlSanitizer();
+                        sanitizer.AllowedSchemes.Add("data");
                         field.Value = sanitizer.Sanitize(field.Value);
                     }
 
