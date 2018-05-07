@@ -9864,15 +9864,25 @@ for json path");
             });
 
 
-            var contexts = Company.Query<dynamic>(@"select * from
-                                                (
-                                                select a.Name, 'Artifact|' + cast(a.id as varchar(10)) as ID, 'Glossary' as Category, t.name as Type, cast(0 as bit) as Checked from artifact a
-                                                join artifacttype t on t.id = a.artifacttypeid
-                                                union all
-                                                select x.Name, 'Taxonomy|' + cast(x.id as varchar(10)) as ID, 'Model' as Category, t.name as Type, cast(0 as bit) as Checked from taxonomy x
-                                                join taxonomytype t on t.id = x.taxonomytypeid
-                                                ) z
-                                                order by name").ToList();
+            var contexts = Company.Query<dynamic>(@"		
+                select 
+			        D.DisplayValue as [Name],
+			        A.[Object] + '|' + cast(A.ObjectID as varchar) as ID,
+			        case when A.[Object] = 'Artifact' then
+				        'Glossary'
+			        when A.[Object] = 'Taxonomy' then
+				        'Model'
+			        else
+				        ''
+			        end as Category,
+			        A.TypeName as [Type],
+			        cast(0 as bit) as Checked
+		        from 
+			        AssetWithType A
+			        cross apply dbo.GetAssetDisplayValueById(A.ID) D
+		        where 
+			        A.[Object] = 'Artifact' or A.[Object] = 'Taxonomy'
+		        order by D.DisplayValue").ToList();
 
             return new JsonNetResult
             {
