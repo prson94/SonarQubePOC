@@ -318,7 +318,17 @@ namespace d360.web.Controllers.Services
 
                     #endregion
 
-                    columnSql += $", F{fID}.FormattedValue as [{fieldName}]";
+                    switch ((f.FieldType.Type ?? "").ToUpper()) 
+                    {
+                        case "DATE":
+                            //columnSql += $", F{fID}.FormattedValue as [{fieldName}]";
+                            columnSql += $", convert(varchar, cast(F{ fID}.FormattedValue as date), 120) as [{fieldName}]";
+                            break;
+                        default:
+                            columnSql += $", F{fID}.FormattedValue as [{fieldName}]";
+                            break;
+                    }
+                    
                     fieldSql += $" left join Field F{fID} on F{fID}.AssetID = A.ID and F{fID}.FieldTypeID = {f.FieldType.ID}";
 
                 }
@@ -340,7 +350,7 @@ namespace d360.web.Controllers.Services
                     //var json = new JsonResultsModel { total = count, items = new List<dynamic>asset, _links = new List<JsonResultLinkModel>() };
                     //json._links.Add(new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO });
                     //return Request.CreateResponse(HttpStatusCode.OK, json, "application/json");
-
+                    
                     return Request.CreateResponse(HttpStatusCode.OK, asset as object, "application/json");
                 }
                 else
@@ -830,10 +840,16 @@ namespace d360.web.Controllers.Services
 
                     // Determine if casting the formatted value is required.
                     var formattedValueColumnSql = $"F{fID}.FormattedValue";
-                    if (fieldDataType != "nvarchar")
+
+                    if (fieldDataType == "date")
+                    {
+                        formattedValueColumnSql = $"convert(varchar, cast(F{fID}.FormattedValue as date), 120)";
+                    }
+                    else if (fieldDataType != "nvarchar")
                     {
                         formattedValueColumnSql = $"cast(F{fID}.FormattedValue as {fieldDataType})";
                     }
+
                 
                     if (includeColumn)
                         columnSql += $", {formattedValueColumnSql} as [{fieldName}]";
