@@ -146,6 +146,9 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                                             this.loadThenValuesForFieldType(item,false);
                                         }
                                     }
+
+                                    if (!this.model.StructuredDefinition.Then.Conditions)
+                                        this.model.StructuredDefinition.Then.Conditions = [];
                                 })
                         });             
         } else {
