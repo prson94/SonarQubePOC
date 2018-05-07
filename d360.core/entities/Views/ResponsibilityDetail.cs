@@ -16,8 +16,8 @@ namespace d360.core.entities.Views
         [DataMember]
         public int? ObjectID { get; set; }
 
-        [DataMember]
-        public long? OverrideItemID { get; set; }
+      //  [DataMember]
+       // public long? OverrideItemID { get; set; }
 
         [DataMember]
         public string Type { get; set; }
@@ -25,8 +25,8 @@ namespace d360.core.entities.Views
         [DataMember]
         public int TypeID { get; set; }
 
-        [DataMember]
-        public string RuleName { get; set; }
+     //   [DataMember]
+     //   public string RuleName { get; set; }
 
         [DataMember, Key, Column(Order = 2)]
         public int ResponsibilityTypeID { get; set; }
