@@ -142,6 +142,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         this.isLoading = true;
         this.filters = [];
         let focal: NodeModel = null;
+        let nodes = [];
 
         this.diagramService.getImpactDiagram(this.objectType, this.objectID)
             .then(data => {
@@ -176,8 +177,14 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                     this.addCategoryLayer(focal, this.model.nodes, this.model.links, false);
                 }
 
+                //remove duplicates
+                this.model.nodes.forEach(n => {
+                    if (nodes.findIndex(i => i.key == n.key) == -1) {
+                        nodes.push(n);
+                    }
+                });
 
-                this.diagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
+                this.diagram.model = new go.GraphLinksModel(nodes, this.model.links);
 
                 if (this.model.nodes != null  && this.model.nodes.length == 1) {
                     //there are no relationships, hide the expand/collapse
@@ -188,8 +195,6 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                     if (n.data.isLeaf)
                         n.findObject('TREEBUTTON').visible = false;
                 });
-
-
 
                 this.isLoading = false;
             });
