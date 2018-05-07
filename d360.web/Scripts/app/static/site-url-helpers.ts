@@ -106,6 +106,8 @@ export class SiteUrlHelpers {
                 return `${SiteUrlHelpers.SITE_URL_COMMENTS_ROOT}/${objectId}/${objectName}`;
             case 'FUSIONTYPE':
                 return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${objectId}`;
+            case 'FUSIONTYPEWITHFUSIONATTRIBUTETYPE':
+                return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${parentId};fusionAttributeTypeId=${objectId}`;
             case 'FUSIONATTRIBUTE':
                 return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${SiteUrlHelpers.SITE_URL_FUSION_BY_FUSIONATTRIBUTEID}/${parentId}/${objectId}`;
             case 'GROUP':

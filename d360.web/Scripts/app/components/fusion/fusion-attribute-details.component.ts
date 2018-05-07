@@ -8,6 +8,9 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { StringConstants } from '../../static/string-constants';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { FusionAttributeService } from '../../services/fusion-attribute.service';
+import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
 
 @Component({
     selector: 'd3s-fusion-attribute-details',
@@ -21,24 +24,24 @@ import { StringConstants } from '../../static/string-constants';
                     </div>
                  </div>
                 `,
-    providers: [PermissionsService],
+    providers: [PermissionsService, FusionAttributeService],
 })
-//<d3s-fusion-attribute-item-details [fusionAttributeId]="id" [name]="name" [objectType]="type" (close)="close()" (assetIdChange)="assetIdChange($event)" [hasClose]="true"></d3s-fusion-attribute-item-details>                            
+
 
 export class FusionAttributeDetailsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private type: string = '';
     private id: number = -1;
     private name: string = '';
-
+    private fusionAttributeDetail: FusionAttributeValueDetails;
     constructor(        
         private route: ActivatedRoute,
         private router: Router,
         rightSidebarService: RightSidebarService,
         private titleService: Title,
         private headerBreadcrumbService: HeaderBreadcrumbService,
-        private location: Location,
-        private permissionsService: PermissionsService
+        private permissionsService: PermissionsService,
+        private fusionAttributeService: FusionAttributeService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -56,11 +59,15 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
             
             this.loadPermissions(this.permissionsService, StringConstants.ObjectFusionAttribute, this.id);
         });
-    }
 
-    assetIdChange(assetID) {
-        this.setObjectInfo(this.type, this.id, undefined, assetID);
-        this.setCommonRightSideBar(true, true, false, true, true, true, false);
+        this.fusionAttributeService.getFusionAttributeDetails(this.type, this.id)
+            .then(item => {
+                this.fusionAttributeDetail = item;
+                this.setObjectInfo(this.type, this.id, undefined, this.fusionAttributeDetail.AssetID);
+                this.setCommonRightSideBar(true, true, false, true, true, true, false);
+           });
+
+
     }
 
     ngOnDestroy() {
@@ -68,6 +75,6 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
     }
 
     private close() {
-        this.location.back();
+       this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionTypeWithFusionAttributeType', this.fusionAttributeDetail.FusionAttributeTypeID, this.fusionAttributeDetail.FusionID ));
     }
 };
