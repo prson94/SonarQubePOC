@@ -254,7 +254,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.name = d.name;
                 model.foreColor = d.foreColor;
                 model.backColor = d.backColor;
-                model.category = 'object';
+                model.category = (d.object == this.objectType && d.objectId == this.objectID) ? 'focal' : 'object';
 
                 modelList.push(model);
             }
@@ -1169,29 +1169,49 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private createFocalNode(): go.Node {
-        let nodeWidth = 150;
-        let nodeHeight = 75;
+        let nodeWidth = 150 * 1.15;
+        let nodeHeight = 75 * 1.35;
         let nodeBorderColor = '#000';
-        let nodeFontSize = 8;
+        let nodeFontSize = 10;
 
         return this.g(go.Node, "Spot",
+            new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(go.Point.stringify),
+            {
+                locationSpot: go.Spot.Center,
+                mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
+                mouseLeave: (e, obj) => { this.showPorts(obj.part, false); }
+            },
             this.g(go.Panel, "Auto", {
                 width: nodeWidth,
                 height: nodeHeight
             },
+
                 this.g(go.Shape, "RoundedRectangle", {
+                    isPanelMain: true,
                     strokeWidth: 3,
                     spot1: go.Spot.TopLeft,
                     spot2: go.Spot.BottomRight,
                     name: "NodeShape"
                 },
-                    new go.Binding("fill", "backColor"),
+
+                    new go.Binding("fill", "foreColor"),
                     new go.Binding("stroke", "valid", (v, m) => {
                         let data = m.panel.panel.data;
                         if (data == null) return 'transparent';
                         if (data.valid == false) return '#f00';
-                        return data.foreColor;
+                        return data.backColor;
                     })
+                ),
+                this.g(go.Shape, "RoundedRectangle", {
+                    strokeWidth: 0,
+                    spot1: go.Spot.TopLeft,
+                    spot2: go.Spot.BottomRight,
+                    desiredSize: new go.Size(nodeWidth - 10, nodeHeight - 10),
+                    name: "NodeShape2",
+                    fill: '#000',
+                    stroke: 'transparent',
+                },
+                    new go.Binding("fill", "backColor"),
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -1210,14 +1230,17 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                         margin: 2,
                         alignment: go.Spot.Top,
                         editable: false,
-                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                        maxSize: new go.Size(nodeHeight, NaN),
                         font: nodeFontSize - 2 + "pt sans-serif"
                     },
                         new go.Binding("text", "objectTypeName").makeTwoWay(),
                         new go.Binding("stroke", "foreColor")
                     )
                 )
-            ));
+            ),
+            this.makePort('L', go.Spot.Left, false, true),
+            this.makePort('R', go.Spot.Right, true, false)
+        );
     }
 
     private createDefaultLink(): go.Link {
