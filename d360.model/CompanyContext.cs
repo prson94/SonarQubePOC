@@ -651,9 +651,20 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
             switch (obj)
             {
+                case "ReferenceItemType":
+                    countSql = @"select count(*) from AssetType A
+                        where A.[Object] = @obj  and (@query is null or A.Name like '%' + @query + '%')";
+                    sql = @"select  A.ObjectID as [Value], A.[Name] as [Text], case when I.ID is not null then 1 else 0 end as Selected
+                            from AssetType A 
+                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
+	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                            where A.[Object] = @obj and (@query is null or A.[Name] like '%' + @query + '%')
+                            order by 3 desc, A.[Name] asc
+                            OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+                    break;
                 case "ArtifactType":
                 case "PolicyType":
-                case "ReferenceItemType":
                 case "RuleType":
                 case "TaxonomyType":
                     countSql = @"select count(*) from AssetWithType A
