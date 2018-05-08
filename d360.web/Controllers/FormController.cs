@@ -19639,6 +19639,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "AllowSort", Name = "Allow Sort", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AllowSelect", Name = "Allow Select", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AllowFilter", Name = "Allow Filter", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "JsonFieldNameOverride", Name = "Json Field Name Override", FieldDescription = "", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 4, Column = 1, Required = false, FieldName = "XmlFieldNameOverride", Name = "Xml Field Name Override", FieldDescription = "", FieldType = DataType.Text.ToString() });
+            
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -19676,6 +19679,8 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "AllowSort", Name = "Allow Sort", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = a.AllowSort.ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AllowSelect", Name = "Allow Select", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = a.AllowSelect.ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AllowFilter", Name = "Allow Filter", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = a.AllowFilter.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "JsonFieldNameOverride", Name = "Json Field Name Override", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.JsonFieldNameOverride });
+            list.Add(new EditableField { Row = 4, Column = 1, Required = false, FieldName = "XmlFieldNameOverride", Name = "Xml Field Name Override", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.XmlFieldNameOverride });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -19697,8 +19702,10 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 var allowSort = parseBooleanField(form, "AllowSort");
                 var allowSelect = parseBooleanField(form, "AllowSelect");
                 var allowFilter = parseBooleanField(form, "AllowFilter");
+                var jsonFieldNameOverride = parseTextField(form, "JsonFieldNameOverride");
+                var xmlFieldNameOverride = parseTextField(form, "XmlFieldNameOverride");
 
-                
+
                 var field = new ApiEntityFieldType
                 {
                     FieldTypeID = fieldTypeId,
@@ -19707,6 +19714,12 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                     AllowSelect = allowSelect,
                     AllowSort = allowSort
                 };
+
+                if (!string.IsNullOrWhiteSpace(jsonFieldNameOverride))
+                    field.JsonFieldNameOverride = jsonFieldNameOverride;
+
+                if (!string.IsNullOrWhiteSpace(xmlFieldNameOverride))
+                    field.XmlFieldNameOverride = xmlFieldNameOverride;
 
                 Company.Add<ApiEntityFieldType>(field);
 
@@ -19765,6 +19778,19 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 model.AllowFilter = parseBooleanField(form, "AllowFilter");
                 model.AllowSelect = parseBooleanField(form, "AllowSelect");
                 model.AllowSort = parseBooleanField(form, "AllowSort");
+
+                var jsonFieldNameOverride = parseTextField(form, "JsonFieldNameOverride");
+                var xmlFieldNameOverride = parseTextField(form, "XmlFieldNameOverride");
+
+                if (string.IsNullOrWhiteSpace(jsonFieldNameOverride))
+                    model.JsonFieldNameOverride = null;
+                else
+                    model.JsonFieldNameOverride = jsonFieldNameOverride;
+
+                if (string.IsNullOrWhiteSpace(xmlFieldNameOverride))
+                    model.XmlFieldNameOverride = null;
+                else
+                    model.XmlFieldNameOverride = xmlFieldNameOverride;
 
                 Company.Update<ApiEntityFieldType>(model);
                                 
