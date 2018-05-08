@@ -727,6 +727,10 @@ namespace d360.web.Models
         public string RedirectUri { get; set; } = null;
 
         public bool IsLastContract { get; set; } = false;
+
+        public bool IsLastOrgContract { get; set; } = false;
+
+        public List<int> OrgsWithContracts { get; set; } = new List<int>();
     }
 
     public class ContractRegisterModel

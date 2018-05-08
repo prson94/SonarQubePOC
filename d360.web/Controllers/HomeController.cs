@@ -70,9 +70,24 @@ namespace d360.web.Controllers
 
             if (validations.Any())
             {
+                
+
                 ContractValidation contractValidation = validations.OrderBy(v => (int)v.ContractType).ThenBy(v => v.OrganizationID.HasValue ? 1 : 0).First();
                 var contract = Company.GetById<Contract>(contractValidation.ContractID);
-                return View(new TermsModel(contract, redirectUri, validations.Count() == 1));
+                var orgs = validations.Where(v => v.ContractType == ContractType.OrganizationTermsOfUse && v.OrganizationID != null).Select(v => (int)v.OrganizationID).Distinct();
+
+
+                var termsModel = new TermsModel(contract);
+                termsModel.RedirectUri = redirectUri;
+                termsModel.IsLastContract = validations.Count() == 1;
+
+                if (contract.OrganizationID != null && contract.ContractType == ContractType.OrganizationTermsOfUse && validations.Count(v => v.ContractID == contract.ID) == 1)
+                    termsModel.IsLastOrgContract = true;
+
+                if (orgs.Count() > 0 && validations.Count(v => v.ContractType == ContractType.OrganizationTermsOfUse && v.OrganizationID == null) > 0)
+                    termsModel.OrgsWithContracts = orgs.ToList();
+
+                    return View(termsModel);
 
             }
             else
@@ -91,7 +106,7 @@ namespace d360.web.Controllers
                 return RedirectToAction("terms");
 
             var resource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == Company.CurrentResourceID);
-            List<OrganizationInvitation> invites = new List<OrganizationInvitation>(); // 
+            List<OrganizationInvitation> invites = new List<OrganizationInvitation>();
             List<OrganizationResource> orgResources = new List<OrganizationResource>();
 
 
@@ -136,9 +151,9 @@ namespace d360.web.Controllers
                 if (contract.ContractType == ContractType.OrganizationTermsOfUse)
                 {
                     var org = Company.GetById<Organization>((int)contract.OrganizationID);
-                    if (org != null)
+                    if (org != null && model.IsLastOrgContract)
                     {
-                        org.Accepted = isLastContract;
+                        org.Accepted = true;
                         org.AcceptedBy = Company.CurrentResourceID;
                         org.DateAccepted = DateTime.UtcNow;
                         Company.Update(org);
@@ -158,6 +173,21 @@ namespace d360.web.Controllers
                     Company.Update(o);
                 });
 
+                if (contract.ContractType == ContractType.OrganizationTermsOfUse) //default org TOU, need to update each org user is a member of
+                    orgRes.ForEach(o =>
+                    {
+                        if (model.OrgsWithContracts.Contains(o.OrganizationID))
+                            return;
+
+                        var org = Company.GetById<Organization>(o.OrganizationID);
+                        if (org != null)
+                        {
+                            org.Accepted = true;
+                            org.DateAccepted = DateTime.UtcNow;
+                            org.AcceptedBy = Company.CurrentResourceID;
+                            Company.Update(org);
+                        }
+                    });
             }
 
             acceptance.ContractID = contract.ID;
