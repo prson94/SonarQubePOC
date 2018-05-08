@@ -255,7 +255,7 @@ namespace d360.web.Controllers
                             var intersectTypeID = ft.LookupObjectID.Value;
                             var sType = type.ToString();
                             var values = new List<ReadOnlyFieldValue>();
-                            var intersects = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id)));
+                            var intersects = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).OrderBy(x=>x.ObjectName);
                             if (intersects != null)
                             {
                                 //load the current users permissions to these objects if they dont have access we cant show the link to let them go nowhere
