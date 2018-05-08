@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -47,7 +47,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                         </div>
                     </div>
                 </div>
-        `
+        `, changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -71,7 +71,8 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         private router: Router,
         private auditService: AuditService,
         private headerBreadcrumbService: HeaderBreadcrumbService,
-        private objectDetailService: ObjectDetailService
+        private objectDetailService: ObjectDetailService,
+        private changeDetectorRef: ChangeDetectorRef
     ) {
         super();
     }
@@ -98,6 +99,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                 this.isLoading = false;
                 this.audits = result.results;
                 this.totalRecords = result.total;
+                this.changeDetectorRef.markForCheck();
             });
     }
 
