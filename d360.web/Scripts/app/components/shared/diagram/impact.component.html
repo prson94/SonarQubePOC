@@ -18,7 +18,7 @@
                     <i class="fa fa-database fa-2x"></i>
                 </li>
             </ul>
-            <div *ngIf="selectedObject && selectedObjectID" [ngSwitch]="tab"  style="background-color: #fff; padding: 10px; overflow-y:scroll; max-height: 300px">
+            <div *ngIf="selectedObject && selectedObjectID && isWindowVisible" [ngSwitch]="tab"  style="background-color: #fff; padding: 10px; overflow-y:scroll; max-height: 300px">
                 <div *ngSwitchCase="'info'">
                     <div style="float:right;">
                         <button pButton type="button" [label]="showDetail ? 'Hide Detail' : 'Show Detail'" [icon]="showDetail ? 'fa-compress' : 'fa-expand'" (click)="toggleDetail()"></button>

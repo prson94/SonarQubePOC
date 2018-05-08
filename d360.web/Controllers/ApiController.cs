@@ -2929,8 +2929,9 @@ end",
                     {
                         if (i.FieldTypeName.ToLower() == "textpath")
                         {
+                            string delim = @object.StartsWith("Fusion") ? "." : "/";
                             overrideDisplayColumn = $@"(select T.TextPath from Asset a
-                                cross apply dbo.GetAssetTextPathById(a.ID, '.') T
+                                cross apply dbo.GetAssetTextPathById(a.ID, '{delim}') T
                                 where a.[Object] = '{@object}' and a.[ObjectID] = A{pos}.{idColumn})";
                         }
                         else if (i.FieldTypeName.ToLower() == "displayvalue" || i.FieldTypeName.ToLower() == "name")
