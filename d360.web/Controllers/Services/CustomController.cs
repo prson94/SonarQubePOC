@@ -294,6 +294,18 @@ namespace d360.web.Controllers.Services
 
                 var columnSql = "";
                 var fieldSql = "";
+
+                // special case for reference item lists
+                // add the code field with same value as id
+                var assetTypeId = config.First().AssetType.ID;
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
+
+                if (assetType != null && assetType.Object == "ReferenceItemType")
+                {
+                    columnSql += ", D.[Key] as [Code]";
+                }
+
+                
                 foreach (var f in config)
                 {
                     var fID = f.FieldType.ID;
@@ -320,8 +332,7 @@ namespace d360.web.Controllers.Services
 
                     switch ((f.FieldType.Type ?? "").ToUpper()) 
                     {
-                        case "DATE":
-                            //columnSql += $", F{fID}.FormattedValue as [{fieldName}]";
+                        case "DATE":                            
                             columnSql += $", convert(varchar, cast(F{ fID}.FormattedValue as date), 120) as [{fieldName}]";
                             break;
                         default:
@@ -760,6 +771,18 @@ namespace d360.web.Controllers.Services
                 var orderSql = "";
                 var defaultOrderBySql = " order by D.[key]";
                 var defaultOrderBySqlSet = false;
+
+                // special case for reference item lists
+                // add the code field with same value as id
+                var assetTypeId = config.First().AssetType.ID;
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
+
+                if (assetType != null && assetType.Object == "ReferenceItemType")
+                {
+                    columnSql += ", D.[Key] as [Code]";
+                }
+                
+
                 foreach (var f in config)
                 {
                     var fID = f.FieldType.ID;
