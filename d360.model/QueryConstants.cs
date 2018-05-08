@@ -1046,20 +1046,7 @@ from	TaxonomyType T
 					) S
 where	T.ID = @id";
 
-        public static string InvalidTextPaths = @"
-            select 
-	            od.[object],
-	            od.[objectid],
-	            od.[name],
-	            od.[textpath],
-	            utility.GetBreadcrumbStringWrapper(od.[object], od.[objectid], '/') as 'correctTextpath'
-            from
-	            cache.objectdetails od
-            where 
-	            od.[textpath] != utility.GetBreadcrumbStringWrapper(od.[object], od.[objectid], '/')
-		            and
-	            od.[object] in ('Artifact','Taxonomy', 'Policy')
-";
+        
 
         public static string SimilarItems = @"
                     select top 10

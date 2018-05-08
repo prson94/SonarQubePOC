@@ -7645,17 +7645,7 @@ from	    TaxonomyType FAT
         }
 
         #endregion
-
-        #region Diagnostics
-
-        [Route("Diagnostic/invalidtextpaths")]
-        public IEnumerable<dynamic> GetInvalidTextpaths()
-        {
-            return Company.Query<dynamic>(QueryConstants.InvalidTextPaths);
-        }
-
-        #endregion
-
+                
         #region Angular Breadcrumb calls
 
         public class BreadcrumbTypeAheadModel
