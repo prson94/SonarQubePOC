@@ -3842,6 +3842,14 @@ where   R.Object = @type and R.ObjectID = @id";
                     });
                 }
 
+                columns.Add(new GridColumn
+                {
+                    text = "Context",
+                    datafield = "Context",
+                    columntype = "textbox",
+                    filtertype = "textbox"
+                });
+
                 results = Company.Query<dynamic>(sql, new { type, id }).Distinct();
             }
             catch (Exception ex)
