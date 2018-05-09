@@ -40,7 +40,7 @@ namespace igx.jobs.reportlayer
             return name;
         }
 
-        static void getDynamicFieldJoinStatements(List<FieldType> fields, string type, out string joins, out string columns, string idColumn = "A.ID")
+        static void getDynamicFieldJoinStatements(List<FieldType> fields, string type, out string joins, out string columns, List<string> reservedNames = null, string idColumn = "A.ID")
         {
             columns = "";
             joins = "";
@@ -57,15 +57,32 @@ namespace igx.jobs.reportlayer
             foreach (var f in fields)
             {
                 var name = cleanObjectName(f.Name);
+                var alias = getAliasedName(name, reservedNames);
+
                 if (!usedNames.Contains(name))
                 {
-                    columns += (f.Type == "Lookup") ? $"[{name}].Value as [{name}ID], [{name}].FormattedValue as [{name}], " : $"[{name}].FormattedValue as [{name}], ";
+                    columns += (f.Type == "Lookup") ? $"[{name}].Value as [{alias}ID], [{name}].FormattedValue as [{alias}], " : $"[{name}].FormattedValue as [{alias}], ";
                     joins += $" left join FieldDetail [{name}] on [{name}].Object = '{type}' and [{name}].ObjectID = {idColumn} and [{name}].FieldTypeID = {f.ID}";
                     usedNames.Add(name);
                 }
             }
 
             fields = null;
+        }
+
+        static string getAliasedName(string name, List<string> reservedNames)
+        {
+            if (reservedNames == null)
+                return name;
+            else if (!reservedNames.Contains(name.ToLower()))
+                return name;
+            else
+            {
+                if (int.TryParse(name.Last().ToString(), out int i))
+                    return name.Substring(0, name.Length - 1) + (i + 1).ToString();
+                else
+                    return name + "2";
+            }
         }
 
         static void executeSqlWithTry(SqlConnection companyConnection, string viewSql)
@@ -132,8 +149,9 @@ namespace igx.jobs.reportlayer
 
                             var joins = "";
                             var columns = "";
+                            var reservedNames = new List<string>() { "id", "displayvalue", "parentid", "parentdisplayvalue", "currentscore", "url" };
 
-                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Artifact", out joins, out columns, "A.ObjectID");
+                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Artifact", out joins, out columns, reservedNames, "A.ObjectID");
 
                             objectName = $"{prefix}_{pluralize.Pluralize(cleanObjectName(o.Name))}";
                             if (objectName.Length > 128)
@@ -211,8 +229,9 @@ where   A.Type = 'ArtifactType' and A.TypeID = {o.ID}";
 
                             var joins = "";
                             var columns = "";
+                            var reservedNames = new List<string>() { "id", "parentid", "textpath", "level", "levelname", "leveldescription", "currentscore", "url" };
 
-                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Taxonomy", out joins, out columns);
+                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Taxonomy", out joins, out columns, reservedNames);
 
                             objectName = $"{SCHEMA}.[{prefix}_{pluralize.Pluralize(cleanObjectName(o.Name))}]";
                             viewNames.Add(objectName);
@@ -291,8 +310,9 @@ from    h as A
 
                             var joins = "";
                             var columns = "";
+                            var reservedNames = new List<string>() { "id", "textpath", "parentid", "level", "levelname", "leveldescription", "currentscore", "url" };
 
-                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Policy", out joins, out columns);
+                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Policy", out joins, out columns, reservedNames);
 
                             objectName = $"{SCHEMA}.[{prefix}_{pluralize.Pluralize(cleanObjectName(o.Name))}]";
                             viewNames.Add(objectName);
