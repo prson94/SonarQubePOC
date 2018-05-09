@@ -135,7 +135,11 @@ namespace igx.jobs.reportlayer
 
                             getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Artifact", out joins, out columns, "A.ObjectID");
 
-                            objectName = $"{SCHEMA}.[{prefix}_{pluralize.Pluralize(cleanObjectName(o.Name))}]";
+                            objectName = $"{prefix}_{pluralize.Pluralize(cleanObjectName(o.Name))}";
+                            if (objectName.Length > 128)
+                                objectName = objectName.Substring(0, 128);
+
+                            objectName = $"{SCHEMA}.[{objectName}]";
                             viewNames.Add(objectName);
 
                             var parentIntersectType = companyConnection.Query<IntersectTypeDetail>("select * from IntersectTypeDetail where Object = 'ArtifactType' and ObjectID = @id and PredicateType = @pt", new { id = o.ID, pt = (int)PredicateType.InterTypeHierarchy }).FirstOrDefault();
