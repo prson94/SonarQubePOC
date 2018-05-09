@@ -885,7 +885,7 @@ namespace d360.web.Controllers
         {
             foreach (var ft in fieldTypes)
             {
-                if (ft.Type == DataType.Relationship.ToString())
+                if (ft.Type == DataType.Relationship.ToString() && ft.IsEditable)
                 {
                     var value = form[ft.Name];
                     List<int> items = new List<int>();

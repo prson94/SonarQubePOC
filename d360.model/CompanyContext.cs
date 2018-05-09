@@ -681,8 +681,8 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
                 case "FusionAttributeType":
-                    countSql = "select count(*) from FusionAttribute where FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')";
-                    sql = @"select ID as Value, F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
+                    countSql = "select count(*) from FusionAttribute F where FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')";
+                    sql = @"select F.ID as Value, F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
                             from FusionAttribute F
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and
                                 ((I.[Subject] = 'FustionAttribute' and I.SubjectID = F.ID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
@@ -692,8 +692,8 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
                 case "ResourceType":
-                    countSql = "select count(*) from reporting.Global_Resource where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')";
-                    sql = @"select ID as Value, R.LastName + ', ' + R.FirstName as Text, case when I.ID is not null then 1 else 0 end as Selected 
+                    countSql = "select count(*) from reporting.Global_Resource R where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')";
+                    sql = @"select R.ResourceID as Value, R.LastName + ', ' + R.FirstName as Text, case when I.ID is not null then 1 else 0 end as Selected 
                             from reporting.[Global_Resource] R
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and
 	                            ((I.[Subject] = 'Resource' and I.SubjectID = F.ID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
