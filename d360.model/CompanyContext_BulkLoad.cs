@@ -334,6 +334,19 @@ order by	ColumnIndex", new { id });
 
                 return col.ColumnIndex;
             }
+            else if (objectType == "ReferenceItemType" && objectId == 0)
+            {
+                var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName} Asset Type ID", x.Name, true) == 0).FirstOrDefault();
+
+                if (col == null)
+                    throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName} Asset ID]");
+
+                var index = col.ColumnIndex;
+
+                columns.Remove(col);
+
+                return col.ColumnIndex;
+            }
             else
             {
                 var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName} Asset ID", x.Name, true) == 0).FirstOrDefault();
@@ -406,12 +419,15 @@ order by	ColumnIndex", new { id });
             while (rowData != null && rowData.Count > 0)
             {
                 BulkLoadStatusMsg = "";
+                
+                var subjectTypeName = (intersectType.Subject == "ReferenceItemType" && intersectType.SubjectID == 0) ? "ReferenceItemType" : intersectType.Subject.Replace("Type", "");
+                var objectTypeName = (intersectType.Object == "ReferenceItemType" && intersectType.ObjectID == 0) ? "ReferenceItemType" : intersectType.Object.Replace("Type", "");
 
-                int subjectId = getItemIdFromKeyFields(rowData, subjectAssetIDFieldIndex, intersectType.Subject.Replace("Type", ""), intersectType.SubjectID);
-                int objectId = getItemIdFromKeyFields(rowData, objectAssetIDFieldIndex, intersectType.Object.Replace("Type", ""), intersectType.ObjectID);
+                int subjectId = getItemIdFromKeyFields(rowData, subjectAssetIDFieldIndex, subjectTypeName, intersectType.SubjectID);
+                int objectId = getItemIdFromKeyFields(rowData, objectAssetIDFieldIndex, objectTypeName, intersectType.ObjectID);
 
                 int intersectId = (operation == BulkRelationshipOperation.Relate) ?
-                    RelateObjects(rowData, objectId, subjectId, intersectType.Object.Replace("Type", ""), intersectType.Subject.Replace("Type", ""), intersectType.ID, customFieldTypes, customFieldTypeMap) :
+                    RelateObjects(rowData, objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID, customFieldTypes, customFieldTypeMap) :
                     (await UnrelateObjects(objectId, subjectId, intersectType.Object.Replace("Type", ""), intersectType.Subject.Replace("Type", ""), intersectType.ID)); 
                 
                 // update status for this item
@@ -585,6 +601,37 @@ order by	ColumnIndex", new { id });
                 }
 
                 return intersectId;
+            }
+            else if (@object == "Intersect")
+            {
+                if (!int.TryParse(valItem.Value, out int intersectId))
+                {
+                    BulkLoadStatusMsg = $"Error intersect id is not a number {valItem.Value}";
+
+                    return -1;
+                }
+
+                return intersectId;
+            }
+            else if (@object == "ReferenceItemType")
+            {
+                if (!int.TryParse(valItem.Value, out int assetTypeId))
+                {
+                    BulkLoadStatusMsg = $"Error asset type id is not a number {valItem.Value}";
+
+                    return -1;
+                }
+
+                var assetType = AssetTypes.Where(x => x.ID == assetTypeId).FirstOrDefault();
+
+                if (assetType == null)
+                {
+                    BulkLoadStatusMsg = $"Specified asset id doesnt exist in the asset table[{valItem.Value}]";
+
+                    return -1;
+                }
+
+                return assetType.ObjectID;
             }
             else
             {

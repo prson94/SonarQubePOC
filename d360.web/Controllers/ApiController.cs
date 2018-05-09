@@ -5885,6 +5885,20 @@ where    A.RuleID = @id", new { id });
                             });
                         }
 
+                        var assetType = Company.AssetTypes.Where(x => x.Object == "ReferenceItemType" && x.ObjectID == id).FirstOrDefault();
+
+                        if (assetType != null)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Asset Type ID", FieldName = "AssetTypeId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = assetType.ID.ToString(), DataType = "string" }
+                            }
+                            });
+                        }
+
                         var parentRefType = Company.GetParentType<ReferenceItemType>(refType.ID);
 
                         var heirarchyColumns = new DetailReadOnlyRowModel
