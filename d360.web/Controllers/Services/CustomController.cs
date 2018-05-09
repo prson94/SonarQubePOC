@@ -10,6 +10,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Web.Http;
 using System.Xml.Linq;
@@ -40,6 +41,12 @@ namespace d360.web.Controllers.Services
         public int total { get; set; }
         public IEnumerable<dynamic> items { get; set; }
         public List<JsonResultLinkModel> _links { get; set; }
+    }
+
+    public class JsonVersionModel
+    {
+        public string APIVersionNumber { get; set; }
+        public string ImplementationVersion { get; set; }
     }
 
     internal interface IFilterModel
@@ -1266,5 +1273,80 @@ namespace d360.web.Controllers.Services
             }
         }
 
+
+        #region Version Endpoints
+
+        [HttpGet, Route("{service}/{endpoint}/{version}/version")]        
+        public HttpResponseMessage GetEndpointVersion(string service, string endpoint, string version)
+        {
+            HttpStatusCode certificateStatus;
+            string certificateStatusMessage;
+            ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
+
+            if (certificateStatus != HttpStatusCode.OK)
+                return Request.CreateErrorResponse(certificateStatus, certificateStatusMessage);
+
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var config = (
+                             from s in Company.ApiServices
+                             from e in s.Endpoints
+                             from v in e.Versions
+                             from en in v.Entities
+                             from u in en.Uris
+                             from f in en.FieldTypes
+                             where s.UriPrefix == service
+                             where e.UriPrefix == endpoint
+                             where v.UriPrefix == version
+                             select new
+                             {
+                                 MajorVersion = v.MajorVersion,
+                                 MinorVersion = v.MinorVersion,
+                                 MaximumCacheAge = s.MaximumCacheAge
+                             }).FirstOrDefault();
+
+                if (config == null)
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Endpoint not found.");
+
+                var acceptHeaders = Request.Headers.Accept;
+
+                var asJson = !acceptHeaders.Any(i => i.MediaType == "application/xml");
+
+                HttpResponseMessage responseMessage = null;
+
+                var apiVersion = $"{config.MajorVersion}.{config.MinorVersion}";
+                var governVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+                //Determine whether it is JSON or XML to send back to caller, and format appropriately.
+                if (asJson)
+                {
+                    var json = new JsonVersionModel { APIVersionNumber = apiVersion, ImplementationVersion = governVersion };
+                    
+                    responseMessage = Request.CreateResponse(HttpStatusCode.OK, json , "application/json");
+                }
+                else
+                {
+                    XNamespace ns = "http://www.api.londonmarketgroup.co.uk/schema/2017/07/version";
+
+                    var versionDoc = new XElement(ns + "Version",
+                        new XElement(ns+"APIVersionNumber", apiVersion),
+                        new XElement(ns+"ImplementationVersion", governVersion)
+                        );
+                    
+                    responseMessage = Request.CreateResponse(HttpStatusCode.OK, versionDoc, "application/xml");
+                }
+
+                responseMessage.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { MaxAge = new TimeSpan(0, 0, 0, config.MaximumCacheAge) };
+
+                return responseMessage;
+            }
+            catch (Exception)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
+            }
+        }
+        #endregion
     }
 }
