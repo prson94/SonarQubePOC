@@ -14,6 +14,11 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Web.Http;
 using System.Xml.Linq;
+using System.Xml.Serialization;
+using System.Xml;
+using System.Xml.Schema;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace d360.web.Controllers.Services
 {
@@ -122,6 +127,24 @@ namespace d360.web.Controllers.Services
         public List<string> Values { get; set; }
     }
 
+    [DataContract(Namespace = "http://www.api.londonmarketgroup.co.uk/schema/2017/07/error", Name ="Error")]
+    public class HttpCustomApiError
+    {
+        public HttpCustomApiError(string message, HttpStatusCode code)
+        {
+            Code = (int)code;
+            Message = message;
+        }
+
+        [JsonProperty(Order = 1)]
+        [DataMember(Order=1)]
+        public string Message { get; set; }
+        [JsonProperty(Order = 2)]
+        [DataMember(Order =2)]
+        public int Code { get; set; }        
+    }
+
+
     #endregion
 
     /// <summary>
@@ -228,6 +251,19 @@ namespace d360.web.Controllers.Services
 
         #endregion
 
+        #region Error Handling Helper
+
+        private HttpResponseMessage CreateCustomApiError(HttpStatusCode status, string message)
+        {            
+            HttpCustomApiError err = new HttpCustomApiError(message, status);
+
+            var acceptHeaders = Request.Headers.Accept;
+            var asJson = !acceptHeaders.Any(i => i.MediaType == "application/xml");
+            return Request.CreateResponse<HttpCustomApiError>(status, err, asJson ? "application/json": "application/xml");
+        }
+
+        #endregion
+
         /// <summary>
         /// Sends back data based on a custom route.
         /// </summary>
@@ -245,7 +281,7 @@ namespace d360.web.Controllers.Services
             ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
 
             if (certificateStatus != HttpStatusCode.OK)
-                return Request.CreateErrorResponse(certificateStatus, certificateStatusMessage);
+                return CreateCustomApiError(certificateStatus, certificateStatusMessage);
 
             try
             {
@@ -278,7 +314,7 @@ namespace d360.web.Controllers.Services
                              });
 
                 if (config.Count() <= 0)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Endpoint not found.");
+                    return CreateCustomApiError(HttpStatusCode.NotFound, "Endpoint not found.");
 
                 var acceptHeaders = Request.Headers.Accept;
 
@@ -398,8 +434,8 @@ namespace d360.web.Controllers.Services
                 //return Request.CreateResponse<string>($"Service: {service}, Endpoint: {endpoint}, Version: {version}, Entity: {entityFormat}, Key: {key}");
             }
             catch (Exception)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
+            {                
+                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
             }
         }
 
@@ -419,12 +455,12 @@ namespace d360.web.Controllers.Services
             ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
 
             if (certificateStatus != HttpStatusCode.OK)
-                return Request.CreateErrorResponse(certificateStatus, certificateStatusMessage);
+                return CreateCustomApiError(certificateStatus, certificateStatusMessage);
 
             try
             {
                 if (Request.RequestUri.ToString().Length > 16000)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Request URI must not exceed 16,000 characters.");
+                    return CreateCustomApiError(HttpStatusCode.NotFound, "Request URI must not exceed 16,000 characters.");
 
                 var queryParams = Request.GetQueryNameValuePairs();
 
@@ -460,7 +496,7 @@ namespace d360.web.Controllers.Services
                 #endregion
 
                 if (config.Count <= 0)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Endpoint not found.");
+                    return CreateCustomApiError(HttpStatusCode.NotFound, "Endpoint not found.");
 
                 var maxAge = config[0].MaximumCacheAge;
 
@@ -768,8 +804,8 @@ namespace d360.web.Controllers.Services
 
                 if (filterErrors.Count > 0)
                 {
-                    //There are errors parsing the filters. Return an error HTTP status to the caller.
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Filter expressions contained the following errors: {string.Join("; ", filterErrors)}.");
+                    //There are errors parsing the filters. Return an error HTTP status to the caller.                    
+                    return CreateCustomApiError(HttpStatusCode.BadRequest, $"Filter expressions contained the following errors: {string.Join("; ", filterErrors)}.");
                 }
 
                 var columnSql = "";
@@ -1115,7 +1151,7 @@ namespace d360.web.Controllers.Services
                         }
                         else if (filter is SearchFilterModel)
                         {
-                            return Request.CreateResponse(HttpStatusCode.BadRequest, $"Search filters are invalid in your filter query parameter: last_modified.");
+                            return CreateCustomApiError(HttpStatusCode.BadRequest, $"Search filters are invalid in your filter query parameter: last_modified.");
                         }
 
                         if (!string.IsNullOrEmpty(additionalWhereSql))
@@ -1150,8 +1186,8 @@ namespace d360.web.Controllers.Services
                 if (arrSort != null)
                 {
                     if (arrSort.Count > 0)
-                    {
-                        return Request.CreateResponse(HttpStatusCode.BadRequest, "You have invalid fields in your _order query parameter.");
+                    {                        
+                        return CreateCustomApiError(HttpStatusCode.BadRequest, "You have invalid fields in your _order query parameter.");
                     }
                 }
                 #endregion
@@ -1162,7 +1198,8 @@ namespace d360.web.Controllers.Services
                     if (filters.Count > 0)
                     {
                         var badFilterFieldNames = string.Join(", ", filters.Select(i => i.FieldName));
-                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"You have invalid fields in your filter query parameters: {badFilterFieldNames}.");
+
+                        return CreateCustomApiError(HttpStatusCode.BadRequest, $"You have invalid fields in your filter query parameters: {badFilterFieldNames}.");
                     }
                 }
                 #endregion
@@ -1269,7 +1306,7 @@ namespace d360.web.Controllers.Services
             }
             catch (Exception)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
+                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
             }
         }
 
@@ -1284,7 +1321,9 @@ namespace d360.web.Controllers.Services
             ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
 
             if (certificateStatus != HttpStatusCode.OK)
-                return Request.CreateErrorResponse(certificateStatus, certificateStatusMessage);
+            {
+                return CreateCustomApiError(certificateStatus, certificateStatusMessage);
+            }
 
             try
             {
@@ -1308,7 +1347,9 @@ namespace d360.web.Controllers.Services
                              }).FirstOrDefault();
 
                 if (config == null)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Endpoint not found.");
+                {                    
+                    return CreateCustomApiError(HttpStatusCode.NotFound, "Endpoint not found.");
+                }
 
                 var acceptHeaders = Request.Headers.Accept;
 
@@ -1343,8 +1384,8 @@ namespace d360.web.Controllers.Services
                 return responseMessage;
             }
             catch (Exception)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
+            {                
+                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
             }
         }
         #endregion
