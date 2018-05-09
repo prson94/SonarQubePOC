@@ -37,7 +37,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <p-column [style]="{width:'40px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">                                        
-                                        <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
+                                        <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ObjectID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
                                     </div>
                                 </ng-template>
                             </p-column>
