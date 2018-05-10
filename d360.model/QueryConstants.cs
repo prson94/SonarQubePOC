@@ -700,6 +700,40 @@ order by case
 			when (IT.Object = 'FusionQueryAttributeType' and IT.ObjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
 		end
 ";
+        public static string ReferenceListTypeRelationshipsAllCountsWithZero = @"
+select	IT.ID as IntersectTypeID,
+		case 
+			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[Object]
+			else IT.[Subject]
+		end as [Object],
+		case 
+			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[ObjectID]
+			else IT.[SubjectID]
+		end as [ObjectID],		
+		I.[Count],
+		case 
+			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[ObjectName] 
+			else IT.SubjectName
+		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+from	IntersectTypeDetail IT 
+		left join [Predicate] P on P.ID = IT.PredicateID
+		cross apply (
+					select	count(1) as [Count]
+					from	[Intersect] 
+					where	IntersectTypeID = IT.ID AND [Visible] = 1
+							and (
+								(Subject = @obj and SubjectID = @objId) or 
+								(Object = @obj and ObjectID = @objId)
+								)
+					) I
+		where
+			 ((IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) OR (IT.Object = 'ReferenceItemType' and IT.ObjectID = 0) 
+									   )
+order by case 
+			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[ObjectName] 
+			else IT.SubjectName
+		end + IIF(P.ID is not null, ' [' + P.Name + ']', '')
+";
 
         public static string ObjectRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
