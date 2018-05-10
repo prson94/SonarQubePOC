@@ -3793,7 +3793,7 @@ SELECT  R.ResponsibilityTypeName,
         R.Context
 from    ResponsibilityDetails R
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.Status = 'Active' 
-where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id";
+where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id and R.IsVisible=1";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
