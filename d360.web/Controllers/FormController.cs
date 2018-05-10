@@ -3036,13 +3036,13 @@ namespace d360.web.Controllers
                 case SystemObjects.ArtifactType:
                     list = Company.GetChildTypes<ArtifactType>(id)
                         .ToList()
-                        .Select(i => new { value = $"0|ArtifactType|{i.ID}", title = i.Name })
+                        .Select(i => new { value = $"0|ArtifactType|{i.ID}|0", title = i.Name })
                         .ToList();
                     break;
                 case SystemObjects.FusionAttributeType:
                     list = Company.GetChildTypes<FusionAttributeType>(id)
                         .ToList()
-                        .Select(i => new { value = $"0|FusionAttributeType|{i.ID}", title = i.Name })
+                        .Select(i => new { value = $"0|FusionAttributeType|{i.ID}|0", title = i.Name })
                         .ToList();
                     break;
             }
