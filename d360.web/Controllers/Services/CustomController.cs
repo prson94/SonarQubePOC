@@ -981,7 +981,7 @@ namespace d360.web.Controllers.Services
                                         {
                                             var startOperator = rangeFilter.StartInclusive ? ">=" : ">";
                                             var endOperator = rangeFilter.EndInclusive ? "<=" : "<";
-                                            fieldFilterSql += $"{formattedValueColumnSql} {startOperator} '@{filter.FieldName}Start and {formattedValueColumnSql} {endOperator} @{filter.FieldName}End";
+                                            fieldFilterSql += $"{formattedValueColumnSql} {startOperator} @{filter.FieldName}Start and {formattedValueColumnSql} {endOperator} @{filter.FieldName}End";
                                         }
                                     }
                                     dbArgs.Add($"@{filter.FieldName}Start", rangeFilter.StartValue, fieldDbType);
