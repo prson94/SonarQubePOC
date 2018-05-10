@@ -307,72 +307,72 @@ WHEN NOT MATCHED THEN
             public string BrowserLanguages { get; set; }
         }
 
-        [TestMethod]
-        public void MoveWebAnalyticsFromTableStorageToDb()
-        {
-            var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
-            var tableClient = storageAccount.CreateCloudTableClient();
+        //[TestMethod]
+        //public void MoveWebAnalyticsFromTableStorageToDb()
+        //{
+        //    var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
+        //    var tableClient = storageAccount.CreateCloudTableClient();
 
-            var companyIDs = getCompanies(true);
+        //    var companyIDs = getCompanies(true);
 
-            companyIDs.AsParallel().ForAll(companyID =>
-            {
-                try
-                {
-                    //var companyID = 15;
-                    var table = tableClient.GetTableReference($"WebLogs{companyID}");
+        //    companyIDs.AsParallel().ForAll(companyID =>
+        //    {
+        //        try
+        //        {
+        //            //var companyID = 15;
+        //            var table = tableClient.GetTableReference($"WebLogs{companyID}");
 
-                    var qry = new TableQuery<WebActivityEntity>();
-                    qry.Take(10000);
-                    var list = table.ExecuteQuery<WebActivityEntity>(qry);
+        //            var qry = new TableQuery<WebActivityEntity>();
+        //            qry.Take(10000);
+        //            var list = table.ExecuteQuery<WebActivityEntity>(qry);
 
-                    var company = getCompanyConnection(companyID);
-                    foreach (var item in list)
-                    {
-                        var okToDelete = false;
-                        try
-                        {
-                            SystemObjects ot;
+        //            var company = getCompanyConnection(companyID);
+        //            foreach (var item in list)
+        //            {
+        //                var okToDelete = false;
+        //                try
+        //                {
+        //                    SystemObjects ot;
 
-                            if (Enum.TryParse(item.ObjectName, true, out ot))
-                            {
-                                company.Execute(
-                                    @"analytics.AddStatistic @Object, @ObjectID, @Ip, @UserAgent, @Host, @BrowserLanguage, @Action, @ResourceID, @Timestamp",
-                                    new
-                                    {
-                                        Object = new Dapper.DbString { Value = ot.ToString(), IsAnsi = false, IsFixedLength = false, Length = 50 },
-                                        ObjectID = item.ObjectId,
-                                        UserAgent = item.UserAgent,
-                                        Ip = new Dapper.DbString { Value = item.IP, IsAnsi = false, IsFixedLength = false, Length = 100 },
-                                        Host = new Dapper.DbString { Value = item.Host, IsAnsi = false, IsFixedLength = false, Length = 50 },
-                                        BrowserLanguage = new Dapper.DbString { Value = item.BrowserLanguages, IsAnsi = false, IsFixedLength = false, Length = 500 },
-                                        Action = new Dapper.DbString { Value = item.Activity, IsAnsi = false, IsFixedLength = false, Length = 50 },
-                                        ResourceID = item.ResourceID,
-                                        Timestamp = item.Timestamp.Date
-                                    });
-                                okToDelete = true;
-                            }
-                            else
-                            {
-                                okToDelete = true;
-                            }
+        //                    if (Enum.TryParse(item.ObjectName, true, out ot))
+        //                    {
+        //                        company.Execute(
+        //                            @"analytics.AddStatistic @Object, @ObjectID, @Ip, @UserAgent, @Host, @BrowserLanguage, @Action, @ResourceID, @Timestamp",
+        //                            new
+        //                            {
+        //                                Object = new Dapper.DbString { Value = ot.ToString(), IsAnsi = false, IsFixedLength = false, Length = 50 },
+        //                                ObjectID = item.ObjectId,
+        //                                UserAgent = item.UserAgent,
+        //                                Ip = new Dapper.DbString { Value = item.IP, IsAnsi = false, IsFixedLength = false, Length = 100 },
+        //                                Host = new Dapper.DbString { Value = item.Host, IsAnsi = false, IsFixedLength = false, Length = 50 },
+        //                                BrowserLanguage = new Dapper.DbString { Value = item.BrowserLanguages, IsAnsi = false, IsFixedLength = false, Length = 500 },
+        //                                Action = new Dapper.DbString { Value = item.Activity, IsAnsi = false, IsFixedLength = false, Length = 50 },
+        //                                ResourceID = item.ResourceID,
+        //                                Timestamp = item.Timestamp.Date
+        //                            });
+        //                        okToDelete = true;
+        //                    }
+        //                    else
+        //                    {
+        //                        okToDelete = true;
+        //                    }
 
-                            if (okToDelete)
-                            {
-                                var deleteOperation = TableOperation.Delete(item);
-                                table.Execute(deleteOperation);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                }
-            });
-        }
+        //                    if (okToDelete)
+        //                    {
+        //                        var deleteOperation = TableOperation.Delete(item);
+        //                        table.Execute(deleteOperation);
+        //                    }
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                }
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //        }
+        //    });
+        //}
 
         [TestMethod]
         public void CreateKey()

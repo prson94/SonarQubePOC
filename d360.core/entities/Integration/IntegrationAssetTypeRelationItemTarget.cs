@@ -11,9 +11,6 @@ namespace d360.core.entities
         public int SynchedAssetTypeRelationItemID { get; set; }
 
         [DataMember]
-        public bool IncludeInPropertyRequest { get; set; } = true;
-
-        [DataMember]
         public string SourceAssetType { get; set; }
 
         [DataMember]

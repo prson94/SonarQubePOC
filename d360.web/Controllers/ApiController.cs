@@ -378,7 +378,7 @@ namespace d360.web.Controllers
                 indx++;
             }
                         
-            var sql = @"select [Object], ObjectId from AssetWithoutReadPermission where ResourceID = @resId and (" + dynamicSql + ")";
+            var sql = @"select [Object], ObjectID from cache.NoRead where ResourceID = @resId and (" + dynamicSql + ")";
 
             dbParams.Add("resId", Company.CurrentResourceID);
 
@@ -415,7 +415,6 @@ namespace d360.web.Controllers
             }
             return list;
         }
-
 
         [Route("FieldTypes")]
         public IQueryable<FieldType> GetFieldTypes()
@@ -1205,21 +1204,20 @@ where   h.ID <> @t order by h.[Level] desc;
         [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
         public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
         {
-            var sql = @"select distinct 
-	            cast(ResponsibilityTypeID as varchar) + '|' + cast(SecurityAssetID as varchar) as 'ID', 
-	            '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
-	            case when SecurityAsset = 'R' or SecurityAsset = 'O' then
-					'Resource'
-					when SecurityAsset = 'G' then
-					'Group'
-				else
-					[Type]
-				end as [Type]
-            from 
-	            [dbo].[ResponsibilityDetails] 
-            where 
-	            TypeID = @id and [Type] = 'ArtifactType' and IsVisible = 1 
-            order by 'Name'";
+            var sql = @"
+select  distinct 
+	    cast(ResponsibilityTypeID as varchar) + '|' + cast(SecurityAssetID as varchar) as 'ID', 
+	    '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
+	    case 
+            when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource' 
+			when SecurityAsset = 'G' then 'Group' 
+            else [Type] 
+        end as [Type]
+from    ResponsibilityDetails 
+where   TypeID = @id 
+        and [Type] = 'ArtifactType' 
+        and IsVisible = 1 
+order by 'Name'";
 
             return Request.CreateResponse(
                 HttpStatusCode.OK,
@@ -3255,9 +3253,8 @@ end",
             var joinType = "inner"; //the SQL join.
 
             var permissionJoin = $@"
-                inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID 
-                left join AssetWithoutReadPermission RP{i} on RP{i}.ResourceID = {Company.CurrentResourceID} and RP{i}.AssetID = O{i}.ID ";
-            var permissionsWhere = $" and RP{i}.AssetID is null ";
+                inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID ";
+            var permissionsWhere = $" and O{i}.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) ";
             switch (currentObj.ToLower())
             {
                 case "artifact":
@@ -3689,9 +3686,8 @@ select  R.Code
 from    ReferenceItem R 
         inner join Asset O on O.Object = 'ReferenceItem' and O.ObjectID = R.ID 
         {sqlJoins} 
-        left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
 where   R.ReferenceItemTypeID = {id} 
-        and RP.AssetID is null 
+        and O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})
 {sqlOrderBy}";
 
                 results = Company.Query<dynamic>(sqlQuery).Distinct();
@@ -3797,7 +3793,7 @@ SELECT  R.ResponsibilityTypeName,
         R.Context
 from    ResponsibilityDetails R
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.Status = 'Active' 
-where   R.Object = @type and R.ObjectID = @id";
+where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
@@ -4308,7 +4304,6 @@ select	top 100 percent
         A.[Level]
 from	[Policy] A 
         inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id and A.[Visible] = 1 
-        left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = OA.ID 
         {joins} 
         left join dbo.GetAssetDisplayValue() TD on TD.ID = OA.ID
         outer apply (
@@ -4317,7 +4312,7 @@ from	[Policy] A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-where   RP.AssetID is null ";
+where   OA.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -4575,7 +4570,7 @@ from    (
                 var columns = "";
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
-                var querySql = string.Format(@"
+                var querySql = string.Format($@"
 select	O.ID as AssetID,
         A.ID,
         A.Threshold,
@@ -4588,8 +4583,8 @@ from	[Rule] A
         inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
-where    A.RuleTypeID = @id and A.[Visible] = 1
-        and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = " + Company.CurrentResourceID + @" and RP.AssetID = O.ID)", columns, joins);
+where   A.RuleTypeID = @id and A.[Visible] = 1
+        and O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})", columns, joins);
 
                 //querySql += " OPTION (RECOMPILE)";
 
@@ -7704,7 +7699,7 @@ from	    TaxonomyType FAT
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]
         public async Task<HttpResponseMessage> CanReadReferenceItemType(int id)
         {
-            var records = await Company.QueryAsync<dynamic>(@"select 1 from AssetWithoutReadPermission A
+            var records = await Company.QueryAsync<dynamic>(@"select 1 from cache.NoRead A
                 inner join ReferenceItem r on r.ID = a.objectID
                 inner join ReferenceItemType t on t.ID = r.ReferenceItemTypeID
                 where a.Object = 'ReferenceItem' and t.ID = @id and ResourceID = @resource", new { id, resource = Company.CurrentResourceID });

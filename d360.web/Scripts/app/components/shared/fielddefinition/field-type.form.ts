@@ -308,8 +308,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     if (this.model.cardinalRelationship) {
                         promises.push(this.cardinalRelationshipSelected(this.model.cardinalRelationship));
                     }
-                    else if (this.lookups.CardinalRelationships.length > 0) {
-                        promises.push(this.cardinalRelationshipSelected(this.lookups.CardinalRelationships[0].value));
+                    else if (this.lookups.Field_Relationships.length > 0) {
+                        promises.push(this.cardinalRelationshipSelected(this.lookups.Field_Relationships[0].value));
                     }                    
                 } catch (e) {
                     console.log(e);
@@ -320,8 +320,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     if (this.model.cardinalRelationship) {
                         promises.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship));
                     }
-                    else if (this.lookups.CardinalRelationships.length > 0) {
-                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.CardinalRelationships[0].value));
+                    else if (this.lookups.Field_CardinalRelationships.length > 0) {
+                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalRelationships[0].value));
                     }
                 } catch (e) {
                     console.log(e);
@@ -333,8 +333,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     if (this.model.cardinalRelationship) {
                         promises.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship));
                     }
-                    else if (this.lookups.CardinalReferenceItemRelationships.length > 0) {
-                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.CardinalReferenceItemRelationships[0].value));
+                    else if (this.lookups.Field_CardinalReferenceRelationships.length > 0) {
+                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalReferenceRelationships[0].value));
                     }
                 } catch (e) {
                     console.log(e);

@@ -12,7 +12,7 @@ namespace d360.core.entities
         public int SynchedAssetTypeID { get; set; }
 
         [DataMember]
-        public bool IncludeInPropertyRequest { get; set; } = true;
+        public bool IncludeInPropertyRequest { get; set; }
 
         [DataMember]
         public string SourceIdField { get; set; } = string.Empty;

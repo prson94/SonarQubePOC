@@ -1717,6 +1717,267 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields);
         }
 
+        internal List<UiRequestFilterValue> GetFilterValuesFromRequest(HttpRequestBase Request, bool applyHiddenFilters = false)
+        {
+            var query = Request.Params;
+            var filters = new List<UiRequestFilterValue>();
+
+            int filterscount = 0;
+
+            #region Hidden Filters
+
+            if (applyHiddenFilters)
+            {
+                if (int.TryParse(query["hidfilterscount"], out filterscount))
+                {
+                    for (int i = 0; i < filterscount; i++)
+                    {
+                        var fField = query["hidfilterdatafield" + i];
+                        var fCondition = query["hidfiltercondition" + i];
+                        var fValue = query["hidfiltervalue" + i];
+
+                        if (!string.IsNullOrEmpty(fValue))
+                        {
+                            filters.Add(new UiRequestFieldFilterValue
+                            {
+                                IsUnlistedFilterField = true,
+                                Condition = fCondition,
+                                FieldName = fField,
+                                RawValue = fValue
+                            });
+                        }
+                    }
+                }
+
+                filterscount = 0; // Reset
+            }
+
+            #endregion
+
+            #region Field Filters
+
+            if (int.TryParse(query["filterscount"], out filterscount))
+            {
+                for (int i = 0; i < filterscount; i++)
+                {
+                    var fField = query["filterdatafield" + i];
+                    var fCondition = query["filtercondition" + i];
+                    var fValue = query["filtervalue" + i];
+
+                    if (fValue.EndsWith(".000")) fValue = fValue.Replace(".000", "");
+
+                    if (!string.IsNullOrEmpty(fValue))
+                    {
+                        filters.Add(new UiRequestFieldFilterValue
+                        {
+                            Condition = fCondition,
+                            FieldName = fField,
+                            RawValue = fValue
+                        });
+                    }
+                }
+            }
+
+            #endregion
+
+            #region Relationship Filters
+
+            int relcount = 0;
+
+            if (int.TryParse(query["relcount"], out relcount))
+            {
+                for (int i = 0; i < relcount; i++)
+                {
+                    var qs_includetype = $"rel_includetype_{i}";
+                    var qs_object = $"rel_object_{i}";
+                    var qs_objectids = $"rel_objectids_{i}";
+                    var qs_typeid = $"rel_typeid_{i}";
+
+                    //check form
+                    var RelationshipIncludeType = Request.Form.AllKeys.Any(k => k == qs_includetype) ? Request[qs_includetype] : "";
+                    var RelationshipObjectType = Request.Form.AllKeys.Any(k => k == qs_object) ? Request[qs_object] : "";
+                    var RelationshipObjectIDs = Request.Form.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(Request[qs_objectids]) : "";
+                    var RelationshipIntersectTypeID = Request.Form.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(Request[qs_typeid]) : "";
+
+                    //check querystring
+                    if (string.IsNullOrEmpty(RelationshipObjectIDs))
+                    {
+                        RelationshipIncludeType = query.AllKeys.Any(k => k == qs_includetype) ? query[qs_includetype] : "";
+                        RelationshipObjectType = query.AllKeys.Any(k => k == qs_object) ? query[qs_object] : "";
+                        RelationshipObjectIDs = query.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(query[qs_objectids]) : "";
+                        RelationshipIntersectTypeID = query.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(query[qs_typeid]) : "";
+                    }
+
+                    if (!string.IsNullOrEmpty(RelationshipObjectIDs))
+                    {
+                        var rawIDs = RelationshipObjectIDs.Split(',').ToList();
+                        var IDs = new List<int>();
+                        rawIDs.ForEach(ID =>
+                        {
+                            int idInt = 0;
+
+                            if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
+                                IDs.Add(idInt);
+                        });
+
+                        filters.Add(new UiRequestRelationshipFilterValue
+                        {
+                            IntersectTypeID = int.Parse(RelationshipIntersectTypeID),
+                            TargetObjectIDs = IDs,
+                            Operator = (RelationshipIncludeType == "Any") ? "OR" : "AND",
+                            TargetObject = RelationshipObjectType
+                        });
+
+                        //                    dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
+
+                        //                    if (RelationshipObjectType.ToUpper() == "MAP")
+                        //                    {
+                        //                        var subSql = $@"select a.ID from [Intersect] i
+                        //                                inner join intersecttype it on (i.intersecttypeid = it.id)
+                        //                                inner join[intersect] i_2 on(i_2.subject = 'Map' and i_2.subjectid = i.subjectid and i.subject = 'Map')
+                        //                                inner join artifact a on(a.id = i_2.objectid and a.artifacttypeid = @id)
+                        //                            where i.intersecttypeid = {int.Parse(RelationshipIntersectTypeID)} and i.objectid in ({idList})";
+
+                        //                        filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $"{idColumn} in ({subSql})";
+                        //                    }
+                        //                    else
+                        //                    {
+                        //                        if (RelationshipIncludeType == "Any")
+                        //                        {
+                        //                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $@"{idColumn} in (
+                        //select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+                        //union 
+                        //select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+                        //)";
+                        //                        }
+                        //                        else
+                        //                        {
+                        //                            IDs.ForEach(ID =>
+                        //                            {
+                        //                                int idInt = 0;
+                        //                                if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
+                        //                                {
+                        //                                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ");
+                        //                                    filters += $@"{idColumn} in (
+                        //select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+                        //union 
+                        //select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+                        //)";
+                        //                                }
+                        //                            });
+                        //                        }
+                        //                    }
+                    }
+                }
+            }
+
+            #endregion
+
+            #region Attribute Filters
+
+            int attcount = 0;
+
+            if (int.TryParse(query["attcount"], out attcount))
+            {
+                for (int i = 0; i < attcount; i++)
+                {
+                    var qs_value = $"att_value_{i}";
+                    var qs_typeid = $"att_typeid_{i}";
+
+                    var AttributeType = Request.Form.AllKeys.Any(k => k == qs_typeid) ? Request[qs_typeid] : "";
+                    var AttributeSearchValue = Request.Form.AllKeys.Any(k => k == qs_value) ? Server.UrlDecode(Request[qs_value]) : "";
+
+                    //check querystring
+                    if (string.IsNullOrEmpty(AttributeType) || string.IsNullOrEmpty(AttributeSearchValue))
+                    {
+                        AttributeType = query.AllKeys.Any(k => k == qs_typeid) ? query[qs_typeid] : "";
+                        AttributeSearchValue = query.AllKeys.Any(k => k == qs_value) ? Server.UrlDecode(query[qs_value]) : "";
+                    }
+
+                    if (!string.IsNullOrEmpty(AttributeType) && !string.IsNullOrEmpty(AttributeSearchValue))
+                    {
+                        int attributeTypeID;
+                        if (int.TryParse(AttributeType, out attributeTypeID))
+                        {
+                            filters.Add(new UiRequestAttributeFilterValue
+                            {
+                                AttributeTypeID = attributeTypeID,
+                                RawValue = AttributeSearchValue
+                            });
+
+     //                       dbParams.Add("attrTypeAdvFlt", "%" + AttributeSearchValue + "%"); // use bind variable to avoid sql injection
+
+     //                       filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + @"{idColumn} in (
+     //               select ObjectID
+     //               from AttributeDetail
+     //               where ObjectType = 'Artifact' and AttributeTypeID = " + attributeTypeID + @" and FormattedValue like @attrTypeAdvFlt
+     //               union
+     //               select  R.SourceObjectID
+     //               from    cache.Relationships R
+     //                       inner join AttributeDetail A on A.ObjectType = 'Intersect' and A.ObjectID = R.IntersectID and R.SourceType = 'ArtifactType' and R.SourceTypeID = @id and A.FormattedValue like @attrTypeAdvFlt
+					//)";
+                        }
+                    }
+                }
+            }
+
+            #endregion
+
+            #region Ownership Filters
+
+            string ownerUsers = query["ownerUsers"];
+            string ownerGroups = query["ownerGroups"];
+
+            var userFilterEnabled = !string.IsNullOrEmpty(ownerUsers);
+            var groupFilterEnabled = !string.IsNullOrEmpty(ownerGroups);
+
+            if (userFilterEnabled || groupFilterEnabled)
+            {
+                var ownershipFilter = new UiRequestOwnershipFilterValue();
+
+                if (groupFilterEnabled)
+                {
+                    foreach (var group in ownerGroups.Split(','))
+                    {
+                        var ids = group.Split('|');
+                        if (ids.Length == 2)
+                        {
+                            ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem {
+                                FilterType = UiRequestOwnershipFilterType.Group,
+                                ResponsibilityTypeID = int.Parse(ids[0]),
+                                SecurityAssetID = int.Parse(ids[1])
+                            });
+                        }
+                    }
+                }
+
+                if (userFilterEnabled)
+                {
+                    foreach (var user in ownerUsers.Split(','))
+                    {
+                        var ids = user.Split('|');
+                        if (ids.Length == 2)
+                        {
+                            ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem {
+                                FilterType = UiRequestOwnershipFilterType.User,
+                                ResponsibilityTypeID = int.Parse(ids[0]),
+                                SecurityAssetID = int.Parse(ids[1])
+                            });
+                        }
+                    }
+                }
+
+                if (ownershipFilter.Items.Count > 0)
+                {
+                    filters.Add(ownershipFilter);
+                }
+            }
+
+            #endregion
+
+            return filters;
+        }
+
         internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, string idColumn = "A.ID")
         {
             var query = Request.Params;

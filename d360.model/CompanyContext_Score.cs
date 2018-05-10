@@ -42,8 +42,6 @@ namespace d360.model
 
         public DbSet<ScoreTypeMetricVersion> ScoreTypeMetricVersions { get; set; }
 
-        public DbSet<StatisticTypeCheckOption> StatisticTypeCheckOptions { get; set; }
-
         #endregion
 
         #region Engine Methods

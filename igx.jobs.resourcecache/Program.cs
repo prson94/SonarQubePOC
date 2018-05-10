@@ -129,6 +129,95 @@ when	not matched by target then
 
                         #endregion
 
+                        #region Build cache.NoRead
+
+                        companyConnection.Execute(@"
+merge	cache.NoRead as T
+using	(
+		select		RD.AssetID,
+					RD.Object,
+					RD.ObjectID,
+					RD.ResourceID
+		from		ResponsibilityDetails RD with (NOLOCK, NOWAIT)
+					left join ResponsibilityTypeObjectClaim RTC with (NOLOCK, NOWAIT)	on RTC.ResponsibilityTypeID = RD.ResponsibilityTypeID 
+																	and RTC.ObjectType = RD.Type 
+																	and RTC.ObjectID = RD.TypeID
+																	and RTC.Claim = 1 
+																	and RTC.ClaimObject = 1
+		where		RTC.ObjectID is null 
+		group by	RD.AssetID,
+					RD.Object,
+					RD.ObjectID,
+					RD.ResourceID
+		) as S
+on		(T.AssetID = S.AssetID and T.ResourceID = S.ResourceID)
+when	not matched by source then
+		delete
+when	not matched by target then
+		insert (AssetID, Object, ObjectID, ResourceID)
+		values (S.AssetID, S.Object, S.ObjectID, S.ResourceID);"
+                            );
+
+                        log.WriteLine("Re-built cache.NoRead for company {0}.", c.CompanyID);
+
+                        #endregion
+
+                        #region Build cache.AssetEdit
+
+                        companyConnection.Execute(@"
+merge	cache.AssetEdit as T
+using	(
+		select		RD.AssetID,
+					RD.ResourceID
+		from		ResponsibilityDetails RD with (NOLOCK, NOWAIT)
+					inner join ResponsibilityTypeObjectClaim RTC with (NOLOCK, NOWAIT)	on RTC.ResponsibilityTypeID = RD.ResponsibilityTypeID 
+																	and RTC.ObjectType = RD.Type 
+																	and RTC.ObjectID = RD.TypeID
+																	and RTC.Claim = 3 
+																	and RTC.ClaimObject = 1
+		group by	RD.AssetID,
+					RD.ResourceID
+		) as S
+on		(T.AssetID = S.AssetID and T.ResourceID = S.ResourceID)
+when	not matched by source then
+		delete
+when	not matched by target then
+		insert (AssetID, ResourceID)
+		values (S.AssetID, S.ResourceID);"
+                            );
+
+                        log.WriteLine("Re-built cache.AssetEdit for company {0}.", c.CompanyID);
+
+                        #endregion
+
+                        #region Build cache.AssetDelete
+
+                        companyConnection.Execute(@"
+merge	cache.AssetDelete as T
+using	(
+		select		RD.AssetID,
+					RD.ResourceID
+		from		ResponsibilityDetails RD with (NOLOCK, NOWAIT)
+					inner join ResponsibilityTypeObjectClaim RTC with (NOLOCK, NOWAIT)	on RTC.ResponsibilityTypeID = RD.ResponsibilityTypeID 
+																	and RTC.ObjectType = RD.Type 
+																	and RTC.ObjectID = RD.TypeID
+																	and RTC.Claim = 4
+																	and RTC.ClaimObject = 1
+		group by	RD.AssetID,
+					RD.ResourceID
+		) as S
+on		(T.AssetID = S.AssetID and T.ResourceID = S.ResourceID)
+when	not matched by source then
+		delete
+when	not matched by target then
+		insert (AssetID, ResourceID)
+		values (S.AssetID, S.ResourceID);"
+                            );
+
+                        log.WriteLine("Re-built cache.AssetDelete for company {0}.", c.CompanyID);
+
+                        #endregion
+
                         companyConnection.Close();
                         companyConnection.Dispose();
                     }

@@ -85,7 +85,7 @@ import { ObjectDetailService } from '../../services/object-detail.service';
                             <p-column [style]="{width:'30px'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
-                                            <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
+                                            <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ObjectID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
                                         </div>
                                     </ng-template>
                             </p-column>
@@ -95,7 +95,7 @@ import { ObjectDetailService } from '../../services/object-detail.service';
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <d3s-delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
-                            [itemId]="selected?.ID"
+                            [itemId]="selected?.ObjectID"
                             method="callback"
                             [prompt]="'Are you sure you want to delete ['+ (selected?.DisplayValue ? selected?.DisplayValue : 'Artifact') + ']?'"                                         
                             (onCancel)="showDelete=false;"
@@ -308,7 +308,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     selectArtifact(artifact) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('Artifact', artifact.ID, this.artifactType.ID));
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('Artifact', artifact.ObjectID, this.artifactType.ID));
     }
 
     private loadArtifactsLazy(event: LazyLoadEvent) {
@@ -354,7 +354,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         var itemRect = event.srcElement.getBoundingClientRect();
         rightMenu.style.top = (event.screenY - gridRect.top) + 'px';
         rightMenu.style.left = (event.offsetX) + 'px'; //correct
-        this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', artifact.ID, this.artifactType.ID);
+        this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', artifact.ObjectID, this.artifactType.ID);
         return false;
     }
 
@@ -369,7 +369,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     protected doShowDelete() {
-        this.objectDetailService.getObject(this.selected.ID, 'Artifact').then(r => {
+        this.objectDetailService.getObject(this.selected.ObjectID, 'Artifact').then(r => {
             this.selected.DisplayValue = r.DisplayValue;
             this.showDelete = true;
             this.changeDetectorRef.markForCheck();            

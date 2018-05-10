@@ -105,6 +105,10 @@
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeFieldItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetType.cs" />
+    <Compile Include="entities\Integration\IntegrationUnresolvedRelationItem.cs" />
+    <Compile Include="entities\Integration\IntegrationExecutionAsset.cs" />
+    <Compile Include="entities\Integration\IntegrationExecutionAssetType.cs" />
+    <Compile Include="entities\Integration\IntegrationExecution.cs" />
     <Compile Include="entities\Integration\IntegrationSetting.cs" />
     <Compile Include="entities\Issue.cs" />
     <Compile Include="entities\IssueType.cs" />
@@ -210,6 +214,7 @@
     <Compile Include="entities\Transitive\FieldFilterModel.cs" />
     <Compile Include="entities\Transitive\FusionProcessingData.cs" />
     <Compile Include="entities\Transitive\PredicateIntersect.cs" />
+    <Compile Include="entities\Transitive\UiRequestFilterValue.cs" />
     <Compile Include="entities\Views\FieldDetail.cs" />
     <Compile Include="entities\Views\MapRuleItemDetail.cs" />
     <Compile Include="entities\Views\FusionExecutionResultDetail.cs" />
@@ -298,7 +303,6 @@
     <Compile Include="entities\Views\DomainAllocationDetail.cs" />
     <Compile Include="entities\Views\ResponsibilityTypeObjectClaimDetail.cs" />
     <Compile Include="entities\Views\SecurityDetail.cs" />
-    <Compile Include="entities\Views\StatisticTypeCheckOption.cs" />
     <Compile Include="entities\Views\RelationshipAggregate.cs" />
     <Compile Include="entities\Views\ResponsibilityDetail.cs" />
     <Compile Include="entities\Views\AttributeDetail.cs" />

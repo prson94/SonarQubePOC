@@ -309,7 +309,10 @@ namespace d360.model
                 );
                 c = null;
 
-                Caching.SetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID, cs);
+                if (!skipCacheCheck)
+                {
+                    Caching.SetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID, cs);
+                }
 
                 return cs;
             }

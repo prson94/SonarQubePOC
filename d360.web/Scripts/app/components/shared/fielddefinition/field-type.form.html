@@ -358,7 +358,7 @@
             <div class="row">
                 <div class="col s12" style="margin: 10px 0 10px 0">
                     <div class="FieldName">Relationship</div>
-                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.CardinalRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.Field_Relationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
             </div>
         </simple-accordion>
@@ -368,7 +368,7 @@
             <div class="row">
                 <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
                     <div class="FieldName">One-to-Many Relationship</div>
-                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.CardinalRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalFieldFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.Field_CardinalRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalFieldFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
                     <div class="FieldName">Selected Field</div>
@@ -382,7 +382,7 @@
             <div class="row">
                 <div class="col s12" style="margin: 10px 0 10px 0">
                     <div class="FieldName">One-to-Many Relationship</div>
-                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.CardinalReferenceItemRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalReferenceItemListFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.Field_CardinalReferenceRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalReferenceItemListFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
             </div>
         </simple-accordion>

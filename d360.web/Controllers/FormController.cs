@@ -3532,26 +3532,45 @@ namespace d360.web.Controllers
             var complexLookupRelations = ComplexLookupRelationType.ChildItem.GetComplexLookupRelationTypeInfoList().ToList();
 
             var sType = type.ToString();
-            var cardinalRelationshipsList = Company.Filter<IntersectTypeDetail>(i =>
-                (i.Subject == sType && i.SubjectID == id /*&& i.ObjectCardinality == Cardinality.One*/) ||
-                (i.Object == sType && i.ObjectID == id /*&& i.SubjectCardinality == Cardinality.One*/)
+
+            var allRelationships = Company.Filter<IntersectTypeDetail>(i =>
+                (i.Subject == sType && i.SubjectID == id) ||
+                (i.Object == sType && i.ObjectID == id)
             ).ToList();
 
-            var cardinalRelationships = cardinalRelationshipsList
-            .Select(i => new {
-                title = ((i.Subject == sType && i.SubjectID == id) ? $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" : $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
-                value = $"{i.ID}"
-            });
+            var cardinalRelationships = allRelationships.Where(i =>
+                (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
+                (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+            ).ToList();
 
-            var cardinalReferenceItemRelationships = cardinalRelationshipsList
-                .Where(i => 
-                    (i.Subject == sType && i.SubjectID == id) ? 
-                        (i.Object == SystemObjects.ReferenceItemType.ToString() && i.ObjectID != 0) : 
+            var Field_Relationships = allRelationships
+                .Select(i => new {
+                    title = ((i.Subject == sType && i.SubjectID == id) ? 
+                        $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" : 
+                        $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                    value = $"{i.ID}"
+                });
+
+            var Field_CardinalRelationships = cardinalRelationships
+                .Select(i => new {
+                    title = ((i.Subject == sType && i.SubjectID == id) ?
+                        $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
+                        $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                    value = $"{i.ID}"
+                });
+
+            var Field_CardinalReferenceRelationships = cardinalRelationships
+                .Where(i =>
+                    (i.Subject == sType && i.SubjectID == id) ?
+                        (i.Object == SystemObjects.ReferenceItemType.ToString() && i.ObjectID != 0) :
                         (i.Subject == SystemObjects.ReferenceItemType.ToString() && i.SubjectID != 0)
-                    ).Select(i => new {
-                        title = ((i.Subject == sType && i.SubjectID == id) ? $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" : $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
-                        value = $"{i.ID}"
-                    });
+                )
+                .Select(i => new {
+                    title = ((i.Subject == sType && i.SubjectID == id) ?
+                        $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
+                        $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                    value = $"{i.ID}"
+                });
 
             var patterns = new Dictionary<string, string>() {
                 { "Choose sample...", "" },
@@ -3579,8 +3598,9 @@ namespace d360.web.Controllers
                 Data = new
                 {
                     Attributes = attributes,
-                    CardinalRelationships = cardinalRelationships,
-                    CardinalReferenceItemRelationships = cardinalReferenceItemRelationships,
+                    Field_Relationships,
+                    Field_CardinalRelationships,
+                    Field_CardinalReferenceRelationships,
                     DataTypes = dataTypeOptions,
                     FilteredLookups = filteredLookups,
                     Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
@@ -13955,7 +13975,7 @@ from	AssetDetail A
 where   A.Type = @targetType 
         and A.TypeID = @targetTypeID 
         and A.[State] = 1 
-        and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID) 
+        and A.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) 
 order by TP.TextPath"; 
                             
                             break;

@@ -228,8 +228,9 @@ export class Lookups {
     IntersectTypes: LookupItem[];
     FusionAttributeTypes: SelectItem[];
     Lookups: SelectItem[];
-    CardinalRelationships: SelectItem[];
-    CardinalReferenceItemRelationships: SelectItem[];
+    Field_Relationships: SelectItem[];
+    Field_CardinalRelationships: SelectItem[];
+    Field_CardinalReferenceRelationships: SelectItem[];
     ComplexLookupRelations: any[] = [];
     FilteredLookups: any[] = [];
 

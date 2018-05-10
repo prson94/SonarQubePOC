@@ -639,7 +639,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             try
             {
                 //check if the user has access
-                var accessSql = "select count(1) from AssetWithoutReadPermission arp where arp.resourceid = @resourceId and arp.[object] = @Type and arp.objectid = @ID";
+                var accessSql = "select count(1) from cache.NoRead arp where arp.resourceid = @resourceId and arp.[object] = @Type and arp.objectid = @ID";
 
                 var accessCount = Company.Query<int>(accessSql, new { @resourceId = Company.CurrentResourceID, @Type = objectType, @ID = objectID }).FirstOrDefault();
 

@@ -97,8 +97,9 @@ export class FieldsService extends BaseService implements IFieldsService {
                     l.IntersectTypes.push({ value: j.value, label: j.label, id: null });
                 });
 
-                l.CardinalRelationships = this.ftItemToSelectItem(r.CardinalRelationships);
-                l.CardinalReferenceItemRelationships = this.ftItemToSelectItem(r.CardinalReferenceItemRelationships);
+                l.Field_Relationships = this.ftItemToSelectItem(r.Field_Relationships);
+                l.Field_CardinalRelationships = this.ftItemToSelectItem(r.Field_CardinalRelationships);
+                l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
                 l.Lookups = this.ftItemToSelectItem(r.Lookups);
                 l.Patterns = this.ftItemToSelectItem(r.Patterns);      
                 l.ComplexLookupRelations = r.ComplexLookupRelations;
@@ -162,9 +163,10 @@ export class FieldsService extends BaseService implements IFieldsService {
 
     private ftItemToSelectItem(items: FtItem[]): SelectItem[] {
         let s = new Array<SelectItem>();
+        s.push({ label: '', value: '' }); //Empty value at beginning of list
         items.forEach(i => {
             s.push({label: i.title, value: i.value }); 
-        });
+        });        
         return s;
     }
 

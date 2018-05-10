@@ -118,7 +118,8 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
                 filter.value = field.value;
                 filter.fieldtype = (field.hiddenfield) ? GridFilterFieldType.Hidden : GridFilterFieldType.Normal;
                 this.filters.push(filter);
-            }            
+            }
+            console.log("Filter value: " + filter.value);
         }
         
         this.filtersChange.emit(this.filters);

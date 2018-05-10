@@ -22,7 +22,7 @@ namespace d360.core.entities
         public string Object { get; set; }
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public int ObjectID { get; set; }
+        public int? ObjectID { get; set; }
 
         [DataMember]
         public bool ToGovern { get; set; } = true;

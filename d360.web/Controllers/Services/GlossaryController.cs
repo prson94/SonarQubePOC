@@ -185,8 +185,8 @@ select	A.ID,
 from	Artifact A 
         {joins}
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
-		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID 
-where   A.ArtifactTypeID = @id and RP.AssetID is null 
+where   A.ArtifactTypeID = @id 
+        and O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id }).ToList();
@@ -368,8 +368,8 @@ select	A.ID,
 from	Artifact A 
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         {joins}
-		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
-where   A.ID = @id and RP.AssetID is null
+where   A.ID = @id 
+        and O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();
@@ -453,8 +453,8 @@ from	Artifact A
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         left join Artifact P on P.ID = A.ParentID 
         {joins}
-		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
-where   A.ArtifactTypeID = @id and RP.AssetID is null";
+where   O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) 
+        and A.ArtifactTypeID = @id ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -687,8 +687,8 @@ from	Taxonomy A
         {joins} 
         inner join Asset O on O.Object = 'Taxonomy' and O.ObjectID = A.ID 
         left join Taxonomy P on P.ID = A.ParentID 
-		left join AssetWithoutReadPermission RP on RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = O.ID 
-where A.TaxonomyTypeID = @id and RP.AssetID is null";
+where   O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) 
+        and A.TaxonomyTypeID = @id ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
