@@ -640,20 +640,22 @@ namespace d360.web.Controllers
                         if (f.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
                         {
                             var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
-                            bool isSubject = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID);
-                            var obj = isSubject ? intersectType.Object : intersectType.Subject;
-                            var objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
-                            var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
+                            if (intersectType != null)
+                            {
+                                bool isSubject = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID);
+                                var obj = isSubject ? intersectType.Object : intersectType.Subject;
+                                var objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+                                var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
-                            if (cardinality != Cardinality.Many)
-                                fld.MultiSelect = false;
-                            else
-                                fld.MultiSelect = true;
+                                if (cardinality != Cardinality.Many)
+                                    fld.MultiSelect = false;
+                                else
+                                    fld.MultiSelect = true;
 
-                            var result = Company.GetRelationshipFieldItems(f.ID);
-                            fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
-                            fld.RecordCount = (int)result["Count"];
-
+                                var result = Company.GetRelationshipFieldItems(f.ID);
+                                fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
+                                fld.RecordCount = (int)result["Count"];
+                            }
                         }
 
                         if (f.Type == DataType.Lookup.ToString())  // lookups dont set min / length properties
