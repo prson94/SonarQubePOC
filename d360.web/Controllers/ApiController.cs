@@ -2450,7 +2450,7 @@ order by    rnk, [Name]";
         {
             var sql = @"
                 select 
-	                A.[Name] as label,
+	                coalesce(FAT.TextPath, A.[Name]) as label,
 	                A.ID as [value],
 	                R.[object], 
 	                R.objectId 
@@ -2476,7 +2476,9 @@ order by    rnk, [Name]";
 	                where 
 		                T.[State] = 1
                 ) R
-                inner join AssetType A on A.[Object] = R.[Object] and A.ObjectID = R.ObjectID";
+                inner join AssetType A on A.[Object] = R.[Object] and A.ObjectID = R.ObjectID
+				left join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and FAT.ID = A.ObjectID
+				order by label asc";
 
             var list = Company.Query<dynamic>(sql);
 
@@ -2561,8 +2563,8 @@ order by    rnk, [Name]";
                 join = "inner join FusionAttribute fa on fa.ID = A.ObjectID";
             } else
             {
-                fieldName = "d.DisplayValue";
-                join = "cross apply dbo.GetAssetDisplayValueById(a.id) d";
+                fieldName = "d.TextPath";
+                join = "cross apply dbo.GetAssetTextPathById(a.id, '/') d";
             }
 
             countSql = string.Format(countSql, join, fieldName);

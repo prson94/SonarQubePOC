@@ -1198,7 +1198,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     new go.Binding("stroke", "valid", (v, m) => {
                         let data = m.panel.panel.data;
                         if (data == null) return 'transparent';
-                        if (data.valid == false) return '#f00';
                         return data.backColor;
                     })
                 ),
