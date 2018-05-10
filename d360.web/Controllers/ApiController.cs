@@ -1218,7 +1218,7 @@ where   h.ID <> @t order by h.[Level] desc;
             from 
 	            [dbo].[ResponsibilityDetails] 
             where 
-	            TypeID = @id and [Type] = 'ArtifactType'  
+	            TypeID = @id and [Type] = 'ArtifactType' and IsVisible = 1 
             order by 'Name'";
 
             return Request.CreateResponse(
