@@ -15,6 +15,7 @@ namespace igx.jobs.fusionruleprocessor
 {
     public static class Processor
     {
+        const string functionName = "Fusion_ProcessRules";
         private static DateTime lastPromotionRun = DateTime.MinValue;
 
         
@@ -22,109 +23,123 @@ namespace igx.jobs.fusionruleprocessor
 
         public static async Task Process(int companyId, TextWriter log)
         {
-            
+
             using (var company = CompanyConnectionUtils.GetCompanyConnection(companyId))
             {
-                company.OpenWithRetry(RetryPolicy.DefaultFixed);
-
-                lastPromotionRun = await GetFusionRulesLastRun(company);
-
-                log.WriteLine($"Company ID[{companyId}] Fusion rules were last run {lastPromotionRun}");
-
-                if (await HasPendingFusionRules(company, companyId, log))
-                {                    
-                    return;
-                }
-
-                
-                //determine which fusion rules should be run
-                IEnumerable<d360.core.entities.FusionRule> fusionRulesToRun = await GetFusionRulesToProcess(company, companyId, log);
-
-                if (!fusionRulesToRun.Any())
-                {
-                    // load the steps for the rules
-                    log.WriteLine($"Company ID[{companyId}] has no fusion rules to run.");
-
-                    return;
-                }
-
-                IEnumerable<FusionRuleStepModel> fusionRuleSteps = await GetFusionRuleSteps(fusionRulesToRun, company, companyId, log);
-
-                if (!fusionRuleSteps.Any())
-                {
-                    log.WriteLine($"Company ID[{companyId}] fusion rules contain no step data.  This is not valid cannot run fusion rules with no steps.");
-
-                    return;
-                }
-
-                //add a record to the fusion.rulelog table so that these rules doent run another instance while it is running
-                int ruleLogId = await CreateFusionRuleLogRecord(company);
-
-                log.WriteLine($"Company ID[{companyId}] Created Fusion Rule Log ID [{ruleLogId}]");
-
+                int ruleLogId = 0;
+                IEnumerable<d360.core.entities.FusionRule> fusionRulesToRun = null;
                 List<FusionRuleStepStatistics> stats = new List<FusionRuleStepStatistics>();
 
-                foreach (var rule in fusionRulesToRun)
+                try
                 {
-                    //print the details of this fusion rule
-                    log.WriteLine($"Company ID[{companyId}] running fusion rule [{rule.Description}] rule ID [{rule.ID}], fusion ID [{rule.FusionID}], object type [{rule.ObjectType}], object id [{rule.ObjectID}]");
+                    company.OpenWithRetry(RetryPolicy.DefaultFixed);
 
-                    
-                    // get the filter items
-                    var items = await GetRuleItems(rule.ID, company, companyId, log);
+                    lastPromotionRun = await GetFusionRulesLastRun(company);
 
-                    // if nothing to run for we are done
-                    if (!items.Any())
+                    log.WriteLine($"Company ID[{companyId}] Fusion rules were last run {lastPromotionRun}");
+
+                    if (await HasPendingFusionRules(company, companyId, log))
                     {
-                        log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] contains no items skipping rule.");
-
-                        continue;
+                        return;
                     }
 
-                    log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Rule will run for {items.Count} items");
 
-                    // load the items for these rules into a temp table
-                    await CreateFusionRuleFieldsTempTable(rule, items, company, companyId, log);
+                    //determine which fusion rules should be run
+                    fusionRulesToRun = await GetFusionRulesToProcess(company, companyId, log);
+
+                    if (!fusionRulesToRun.Any())
+                    {
+                        // load the steps for the rules
+                        log.WriteLine($"Company ID[{companyId}] has no fusion rules to run.");
+
+                        return;
+                    }
+
+                    IEnumerable<FusionRuleStepModel> fusionRuleSteps = await GetFusionRuleSteps(fusionRulesToRun, company, companyId, log);
+
+                    if (!fusionRuleSteps.Any())
+                    {
+                        log.WriteLine($"Company ID[{companyId}] fusion rules contain no step data.  This is not valid cannot run fusion rules with no steps.");
+
+                        return;
+                    }
+
+                    //add a record to the fusion.rulelog table so that these rules doent run another instance while it is running
+                    ruleLogId = await CreateFusionRuleLogRecord(company);
+
+                    log.WriteLine($"Company ID[{companyId}] Created Fusion Rule Log ID [{ruleLogId}]");
+
+                    foreach (var rule in fusionRulesToRun)
+                    {
+                        //print the details of this fusion rule
+                        log.WriteLine($"Company ID[{companyId}] running fusion rule [{rule.Description}] rule ID [{rule.ID}], fusion ID [{rule.FusionID}], object type [{rule.ObjectType}], object id [{rule.ObjectID}]");
+
+
+                        // get the filter items
+                        var items = await GetRuleItems(rule.ID, company, companyId, log);
+
+                        // if nothing to run for we are done
+                        if (!items.Any())
+                        {
+                            log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] contains no items skipping rule.");
+
+                            continue;
+                        }
+
+                        log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Rule will run for {items.Count} items");
+
+                        // load the items for these rules into a temp table
+                        await CreateFusionRuleFieldsTempTable(rule, items, company, companyId, log);
 
 #if DEBUG
-                    await FusionActionBase.PrintTempTableContents(company, log, "fields");
+                        await FusionActionBase.PrintTempTableContents(company, log, "fields");
 #endif
 
-                    //get the steps for this rule
-                    var steps = fusionRuleSteps.Where(x => x.RuleID == rule.ID);
+                        //get the steps for this rule
+                        var steps = fusionRuleSteps.Where(x => x.RuleID == rule.ID);
 
-                    if(!steps.Any())
-                    {
-                        log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Rule contains no steps");
+                        if (!steps.Any())
+                        {
+                            log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Rule contains no steps");
 
-                        continue;
+                            continue;
+                        }
+
+                        log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Rule contains [{steps.Count()}] steps");
+
+                        foreach (var step in steps)
+                        {
+                            log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Step ID[{step.ID}] Action[{step.Action}] Starting...");
+
+                            FusionRuleType action = (FusionRuleType)Enum.Parse(typeof(FusionRuleType), step.Action, true);
+
+                            IFusionRuleAction ruleAction = FusionActionFactory.CreateAction(action, step, log, companyId, rule);
+
+                            if (ruleAction == null) return;
+
+                            await ruleAction.Execute(items, company);
+
+                            stats.Add(ruleAction.Stats);
+
+                            log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Step ID[{step.ID}] Action[{step.Action}] Completed...");
+                        }
                     }
+                    // update the rule log table 
+                    // log the statistics for this fusion rule run things like how many promotions etc
 
-                    log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Rule contains [{steps.Count()}] steps");
-                    
-                    foreach (var step in steps)
-                    {
-                        log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Step ID[{step.ID}] Action[{step.Action}] Starting...");
+                    // also send app insights message.
 
-                        FusionRuleType action = (FusionRuleType)Enum.Parse(typeof(FusionRuleType), step.Action, true);
 
-                        IFusionRuleAction ruleAction = FusionActionFactory.CreateAction(action, step, log, companyId, rule);
-
-                        if (ruleAction == null) return;
-
-                        await ruleAction.Execute(items, company);
-
-                        stats.Add(ruleAction.Stats);
-
-                        log.WriteLine($"Company ID[{companyId}] Rule ID[{rule.ID}] Step ID[{step.ID}] Action[{step.Action}] Completed...");
-                    }
                 }
-                // update the rule log table 
-                // log the statistics for this fusion rule run things like how many promotions etc
-
-                // also send app insights message.
-                await CreateRuleExecutionLogRecord(company, fusionRulesToRun, stats, ruleLogId);
-            }            
+                catch (Exception ex)
+                {
+                    CoreFunction.AITrackException(functionName, ex, companyId);
+                }
+                finally
+                {
+                    if(ruleLogId > 0) await CreateRuleExecutionLogRecord(company, fusionRulesToRun, stats, ruleLogId);
+                }
+            }
         }
 
         private static async Task<int> CreateFusionRuleLogRecord(SqlConnection company)
@@ -145,6 +160,7 @@ namespace igx.jobs.fusionruleprocessor
             }
             int promotedArtifacts = 0;
             int promotedTaxonomies = 0;
+            int rulesToRun = fusionRulesToRun != null ? fusionRulesToRun.Count() : 0;
 
             foreach (var stat in stepStats)
             {
@@ -156,7 +172,7 @@ namespace igx.jobs.fusionruleprocessor
                                             fusion.[rulelog] 
                                         set DateCompleted = @end, PromotedTaxonomies = @promoTaxonomy, PromotedArtifacts = @promoArtifacts, TotalNewPromotions = @promoTotal, NumberOfRules = @ruleCount 
                                         where id = @ruleLogId                
-                ", new { ruleCount = fusionRulesToRun.Count(), end = DateTime.UtcNow, promoArtifacts = promotedArtifacts, promoTaxonomy = promotedTaxonomies, promoTotal = promotedArtifacts + promotedTaxonomies, ruleLogId = ruleLogId });
+                ", new { ruleCount = rulesToRun, end = DateTime.UtcNow, promoArtifacts = promotedArtifacts, promoTaxonomy = promotedTaxonomies, promoTotal = promotedArtifacts + promotedTaxonomies, ruleLogId = ruleLogId });
         }
         
         private static async Task CreateFusionRuleFieldsTempTable(FusionRule rule, List<int> items, SqlConnection company, int companyId, TextWriter log)
