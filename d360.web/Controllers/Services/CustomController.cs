@@ -586,17 +586,18 @@ namespace d360.web.Controllers.Services
                 #region Field Selection Processing
 
                 List<string> arrSelect = null;
+                int arrSelectValidFieldCount = 0;
                 if (queryParams.Any(i => i.Key == "_select"))
                 {
                     var select = queryParams.SingleOrDefault(i => i.Key == "_select");
                     arrSelect = select.Value.Split(',').ToList();
                 }
-
+                                
                 #endregion
 
                 #region Field Filter Processing
 
-                var filterErrors = new List<string>();
+                    var filterErrors = new List<string>();
 
                 var filters = new List<IFilterModel>();
                 foreach (var qp in queryParams.Where(i => i.Key != "_pageNum" && i.Key != "_pageSize" && i.Key != "_order" && i.Key != "_select"))
@@ -895,6 +896,12 @@ namespace d360.web.Controllers.Services
                             {
                                 includeColumn = false;
                                 includeJoin = false;
+                            }
+                            else
+                            {
+                                //validate if select fields have been specified if this field is a select field or not so we can later compare 
+                                // the count of valid select fields to the number specified
+                                arrSelectValidFieldCount++;
                             }
                         }
                     }
@@ -1202,6 +1209,21 @@ namespace d360.web.Controllers.Services
                         return CreateCustomApiError(HttpStatusCode.BadRequest, $"You have invalid fields in your filter query parameters: {badFilterFieldNames}.");
                     }
                 }
+                #endregion
+
+                #region VALIDATION: Has the user included any select fields that are not valid on this endpoint? If so, throw an error.
+
+
+                if(arrSelect != null && arrSelect.Count > 0)
+                {
+                    if(arrSelect.Count != arrSelectValidFieldCount)
+                    {
+                        var badSelectFieldNames = string.Join(", ", arrSelect);
+
+                        return CreateCustomApiError(HttpStatusCode.BadRequest, $"You have invalid fields in your select query parameters: {badSelectFieldNames}.");
+                    }
+                }
+
                 #endregion
 
                 //Add final dynamic parameter.
