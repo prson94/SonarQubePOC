@@ -543,6 +543,9 @@ namespace d360.web.Controllers.Services
                         {
                             pageSize = 200;
                         }
+
+                        if (pageSize > 200)
+                            return CreateCustomApiError(HttpStatusCode.BadRequest, "_pageSize parameter has a maximum supported value of 200.");
                     }
                 }
 
@@ -562,6 +565,9 @@ namespace d360.web.Controllers.Services
                             pageNumber = 1;
                         }
                     }
+
+                    if(pageNumber < 1)
+                        return CreateCustomApiError(HttpStatusCode.BadRequest, "_pageNum parameter must be greater than 0.");
                 }
                 var currentPageNumber = pageNumber; //Nees to stay in this location as it records the unchanged current page, that will be used in later page number query string links.
 
@@ -1268,7 +1274,7 @@ namespace d360.web.Controllers.Services
                     prevUri.Replace($"_pageNum={currentPageNumber}", $"_pageNum={currentPageNumber - 1}") :
                     prevUri + $"&_pageNum={currentPageNumber - 1}";
 
-                var showPrevLink = (currentPageNumber > 1);
+                var showPrevLink = (currentPageNumber > 1) && (count > ((currentPageNumber-1) * pageSize));
                 var showNextLink = (count > (currentPageNumber * pageSize));
 
                 #endregion
