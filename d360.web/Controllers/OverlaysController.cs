@@ -56,7 +56,7 @@ namespace d360.web.Controllers
 				                            top 1 fa_sub.value as 'value'			                            
 			                            from reporting.global_fieldaudit fa_sub
 				                            inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
-			                            where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId ) as 'PreviousValue'
+			                            where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
 			
                             from reporting.global_audit ga 
 								left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
