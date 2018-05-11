@@ -404,7 +404,9 @@ namespace d360.web.Controllers.Services
                     //var json = new JsonResultsModel { total = count, items = new List<dynamic>asset, _links = new List<JsonResultLinkModel>() };
                     //json._links.Add(new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO });
                     //return Request.CreateResponse(HttpStatusCode.OK, json, "application/json");
-                    
+
+                    ((IDictionary<string, Object>)asset).Add("_links", new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO });
+
                     return Request.CreateResponse(HttpStatusCode.OK, asset as object, "application/json");
                 }
                 else
@@ -413,14 +415,15 @@ namespace d360.web.Controllers.Services
                     xAsset.Add(new XAttribute("id", asset.id));
 
                     var xLinks = new XElement("links");
-
                     xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
 
-                    var CollectionWrapper = new XElement(
+                    xAsset.Add(xLinks);
+
+                   /* var CollectionWrapper = new XElement(
                         "CollectionWrapper",
                         xLinks,
                         xAsset
-                    );
+                    );*/
 
                     //XNamespace ns = "http://www.lmtom.london/schema/endpoints/Lloyds/RiskCode/v1";
                     //CollectionWrapper.Add(new XAttribute(XNamespace.Xmlns + "", ns));
