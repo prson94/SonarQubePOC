@@ -804,13 +804,18 @@ cross apply (
 
             #endregion
 
+            var readFilter = $"A.ID not in (select AssetID from cache.NoRead where ResourceID = {CurrentResourceID})";
+
+            if (CurrentResourceIsAdmin)
+                readFilter = $"1=1";
+
             var countSql = $@"
 select	count(1)
 from	Asset A{tableHints}
         {filterJoinString} 
 where	A.AssetTypeID = {at.ID}
 		and A.State = 1
-        and A.ID not in (select AssetID from cache.NoRead where ResourceID = {CurrentResourceID})
+        and {readFilter}
         {filterWhereString}
 OPTION (RECOMPILE)
 ";
@@ -855,7 +860,7 @@ from	(
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
 						{fieldFromRelationshipJoinStatement} 
-                where   A.ID not in (select AssetID from cache.NoRead where ResourceID = {CurrentResourceID})
+                where   {readFilter}
                         {filterWhereString}
 				) A
 		pivot	(
