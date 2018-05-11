@@ -108,7 +108,7 @@ import { ObjectDetailService } from '../../services/object-detail.service';
 })
 
 export class ArtifactGridComponent extends BaseComponent implements OnChanges {
-    @Input() rowID: string = 'ID';
+    @Input() rowID: string = 'ObjectID';
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
