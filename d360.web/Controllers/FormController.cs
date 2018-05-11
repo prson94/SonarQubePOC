@@ -13523,12 +13523,13 @@ order by D.TextPath";
         [Route("Relationship_EditFields"), NonNullableParameters]
         public JsonResult Relationship_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Intersect, id, Claim.Create, ClaimObject.Relationship))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
             var relationship = Company.GetById<Intersect>(id, i => i.IntersectType);
-
             if (relationship == null) return jsonException("Relationship not found.", HttpStatusCode.NotFound);
+
+            if (!Company.HasPermission(relationship.Subject, relationship.SubjectID, Claim.Update, ClaimObject.Relationship) &&
+                !Company.HasPermission(relationship.Object, relationship.ObjectID, Claim.Update, ClaimObject.Relationship))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            
 
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
@@ -13554,7 +13555,7 @@ order by D.TextPath";
                 var relationshipType = Company.GetById<IntersectType>(typeID);
                 var sourceObject = Company.GetObjectDetail(source, sourceID);
 
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), sourceObject.Type), sourceObject.TypeID, Claim.Create, ClaimObject.Relationship))
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), source), sourceID, Claim.Create, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (relationshipType == null) throw new NotFoundException("relationship");
@@ -13620,9 +13621,9 @@ order by D.TextPath";
 
                 if (intersect == null) throw new NotFoundException("relationship");
 
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.IntersectType.Subject), intersect.IntersectType.SubjectID, Claim.Update, ClaimObject.Relationship))
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.Subject), intersect.SubjectID, Claim.Update, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.IntersectType.Object), intersect.IntersectType.ObjectID, Claim.Update, ClaimObject.Relationship))
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.Object), intersect.ObjectID, Claim.Update, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Update<Intersect>(intersect);
