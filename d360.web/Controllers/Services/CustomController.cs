@@ -696,13 +696,13 @@ namespace d360.web.Controllers.Services
                             if (fieldValueToFilterBy.StartsWith("contains("))
                             {
                                 filter.CaseSensitive = false;
-                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("contains(", "").Replace(")", "");
+                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("contains(", "").ReplaceLast(")", "");
                                 filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
                             }
                             else if (fieldValueToFilterBy.StartsWith("contains_casesens("))
                             {
                                 filter.CaseSensitive = true;
-                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("contains_casesens(", "").Replace(")", "");
+                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("contains_casesens(", "").ReplaceLast(")", "");
                                 filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
                             }
 
@@ -722,13 +722,13 @@ namespace d360.web.Controllers.Services
                             if (fieldValueToFilterBy.StartsWith("match("))
                             {
                                 filter.CaseSensitive = false;
-                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("match(", "").Replace(")", "");
+                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("match(", "").ReplaceLast(")", "");
                                 filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
                             }
                             else if (fieldValueToFilterBy.StartsWith("match_casesens("))
                             {
                                 filter.CaseSensitive = true;
-                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("match_casesens(", "").Replace(")", "");
+                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("match_casesens(", "").ReplaceLast(")", "");
                                 filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
                             }
 
@@ -748,13 +748,13 @@ namespace d360.web.Controllers.Services
                             if (fieldValueToFilterBy.StartsWith("prefix("))
                             {
                                 filter.CaseSensitive = false;
-                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("prefix(", "").Replace(")", "");
+                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("prefix(", "").ReplaceLast(")", "");
                                 filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
                             }
                             else if (fieldValueToFilterBy.StartsWith("prefix_casesens("))
                             {
                                 filter.CaseSensitive = true;
-                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("prefix_casesens(", "").Replace(")", "");
+                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("prefix_casesens(", "").ReplaceLast(")", "");
                                 filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
                             }
 
@@ -772,15 +772,15 @@ namespace d360.web.Controllers.Services
                             var filter = new SearchFilterModel { Negated = isNegated, FieldName = fieldToFilter, Type = SearchFilterType.Suffix };
 
                             if (fieldValueToFilterBy.StartsWith("suffix("))
-                            {
+                            {                                
                                 filter.CaseSensitive = false;
-                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("suffix(", "").Replace(")", "");
+                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("suffix(", "").ReplaceLast(")", "");
                                 filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
                             }
                             else if (fieldValueToFilterBy.StartsWith("suffix_casesens("))
                             {
                                 filter.CaseSensitive = true;
-                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("suffix_casesens(", "").Replace(")", "");
+                                fieldValueToFilterBy = fieldValueToFilterBy.Replace("suffix_casesens(", "").ReplaceLast(")", "");
                                 filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
                             }
 

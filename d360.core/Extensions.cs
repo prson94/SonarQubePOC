@@ -95,6 +95,16 @@ namespace d360.core
             }
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
+
+        public static string ReplaceLast(this string Source, string Find, string Replace)
+        {
+            int place = Source.LastIndexOf(Find);
+
+            if (place == -1)
+                return Source;
+
+            return Source.Remove(place, Find.Length).Insert(place, Replace);            
+        }
     }
 
     public static class XMLExtensions
