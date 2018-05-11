@@ -808,7 +808,7 @@ cross apply (
 select	count(1)
 from	Asset A{tableHints}
         {filterJoinString} 
-where	A.AssetTypeID = 1 
+where	A.AssetTypeID = {at.ID}
 		and A.State = 1
         and A.ID not in (select AssetID from cache.NoRead where ResourceID = {CurrentResourceID})
         {filterWhereString}
