@@ -165,6 +165,31 @@ namespace d360.web.Controllers
             }
             else
             {
+                if (isLastContract) //special case for default contract only on invite of existing user from different org
+                {
+                    invites.ForEach(i =>
+                    {
+                        var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email == i.Email);
+                        if (res != null)
+                        {
+                            var oRes = Company.OrganizationResources.FirstOrDefault(o => i.OrganizationID == o.OrganizationID && o.ResourceID == res.ResourceID);
+                            if (oRes == null)
+                            {
+                                Company.OrganizationResources.Add(new OrganizationResource
+                                {
+                                    ResourceID = res.ResourceID,
+                                    OrganizationID = i.OrganizationID,
+                                    Accepted = true,
+                                    DateAccepted = DateTime.UtcNow,
+                                });
+                                Company.OrganizationInvitations.Remove(i);
+                            }
+                        }
+                    });
+
+                    Company.SaveChanges();
+                }
+
                 var orgRes = Company.OrganizationResources.Where(i => i.ResourceID == Company.CurrentResourceID).ToList();
                 orgRes.ForEach(o =>
                 {
