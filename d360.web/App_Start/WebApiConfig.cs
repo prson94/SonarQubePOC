@@ -29,9 +29,10 @@ namespace d360.web
             {
                 config.Filters.Add(new ExceptionHandlingAttribute());
             }
-            
+
 
             // Web API routes
+            config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
             config.MapHttpAttributeRoutes();
 
             config.AddODataQueryFilter();
