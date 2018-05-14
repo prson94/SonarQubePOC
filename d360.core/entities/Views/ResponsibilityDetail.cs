@@ -16,8 +16,8 @@ namespace d360.core.entities.Views
         [DataMember]
         public int? ObjectID { get; set; }
 
-      //  [DataMember]
-       // public long? OverrideItemID { get; set; }
+        [DataMember]
+        public long? OverrideItemID { get; set; }
 
         [DataMember]
         public string Type { get; set; }

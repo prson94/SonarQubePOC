@@ -43,7 +43,7 @@
                 </p-column>
                 <p-column [style]="{'width':'40px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <div *ngIf="!item.RuleName && hasRootDeletePermissions()" class="RowTools">
+                        <div *ngIf="item.OverrideItemID && hasRootDeletePermissions()" class="RowTools">
                             <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </ng-template>
