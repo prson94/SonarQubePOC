@@ -3539,8 +3539,8 @@ namespace d360.web.Controllers
             ).ToList();
 
             var cardinalRelationships = allRelationships.Where(i =>
-                (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
-                (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+                (i.Subject == sType && i.SubjectID == id && i.SubjectCardinality == Cardinality.One) ||
+                (i.Object == sType && i.ObjectID == id && i.ObjectCardinality == Cardinality.One)
             ).ToList();
 
             var Field_Relationships = allRelationships
