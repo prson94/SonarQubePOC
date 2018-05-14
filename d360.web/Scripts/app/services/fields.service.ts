@@ -163,7 +163,7 @@ export class FieldsService extends BaseService implements IFieldsService {
 
     private ftItemToSelectItem(items: FtItem[]): SelectItem[] {
         let s = new Array<SelectItem>();
-        s.push({ label: '', value: '' }); //Empty value at beginning of list
+        //s.push({ label: '', value: '' }); //Empty value at beginning of list
         items.forEach(i => {
             s.push({label: i.title, value: i.value }); 
         });        
