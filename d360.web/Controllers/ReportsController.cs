@@ -162,11 +162,10 @@ namespace d360.web.Controllers
                     {
                         List<core.entities.Views.ResponsibilityDetail> currentUserResponsibilityType = new List<core.entities.Views.ResponsibilityDetail>();
                         if (!string.IsNullOrEmpty(report.ObjectType) && !report.ObjectType.Contains("Type"))
-                            currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Object == report.ObjectType && x.SecurityAsset == "R" && x.SecurityAssetID == Company.CurrentResourceID).ToList();
+                            currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Object == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
                         else
-                            currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == report.ObjectType && x.SecurityAsset == "R" && x.SecurityAssetID == Company.CurrentResourceID).ToList();
-
-
+                            currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
+                        
                         var currentUserResponsibilityTypeIDList = new List<int>();
 
                         if (currentUserResponsibilityType != null && currentUserResponsibilityType.Count() > 0)
