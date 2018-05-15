@@ -48,6 +48,7 @@
                 <div class="errorMessage" [hidden]="!showErrors || item.valid">Item is required</div>
                 <div class="FieldName" style="display: block">Target Matching Field</div>
                 <select [(ngModel)]="settings.TargetField" style="width:100%" name="targetField" #targetField="ngModel" required (ngModelChange)="validate()">
+                    <option></option>
                     <option *ngFor="let i of targetFields" [value]="i.ID">{{i.FriendlyName}}</option>
                 </select>
                 <div class="errorMessage" [hidden]="!showErrors || targetField.valid">Target field is required</div>

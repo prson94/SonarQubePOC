@@ -162,7 +162,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     }
 
     changeGlossaryTypeFields(): Promise<any> {
-        
+
         this.targetFields = [];
         if (this.settings.Object == 'ArtifactType') {
             return this.fusionService.getFindSourceFields('ArtifactType', this.settings.ObjectID)
@@ -197,7 +197,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
             if (this.settings.ObjectID == null)
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'Glossary') {
-            if (this.settings.FilterField == null || this.settings.Object == null || this.settings.ObjectID == null || this.settings.TargetField == null)
+            if (this.settings.FilterField == null || this.settings.Object == null || this.settings.ObjectID == null || !this.settings.TargetField)
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'Promotion') {
             if (this.settings.FilterField == null || this.settings.ObjectID == null)
