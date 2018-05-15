@@ -23,6 +23,8 @@ namespace igx.jobs.fusionruleprocessor
         public int ParentObjectID { get; set; }
         public FusionRuleParentSearchTypes ParentObjectSearchType { get; set; }
 
+        public int PromoteToParentChildIntersectTypeID { get; set; }
+
         protected async Task CreatePromotedItemsTempTable(SqlConnection company)
         {
             await company.ExecuteAsync(@"IF OBJECT_ID('tempdb..#promotedItems') IS NOT NULL
@@ -190,7 +192,13 @@ namespace igx.jobs.fusionruleprocessor
 
         protected async Task DetermineExisting(SqlConnection company, IEnumerable<string> keyFields)
         {
-            var sql = @"insert into #promotedItems 
+
+            // if the promote to object has a parent we need to consider that as well
+            var sql = string.Empty;
+
+            if (PromoteToParentChildIntersectTypeID <= 0)
+            {
+                sql = @"insert into #promotedItems 
                             select
 	                            ftemp.ID,
                                 ftemp.ObjectType,
@@ -202,7 +210,30 @@ namespace igx.jobs.fusionruleprocessor
                             where
 	                            ftemp.TargetFieldName in @keyFields;";
 
-            await company.ExecuteAsync(sql, new { keyFields = keyFields }, commandTimeout: EXECUTION_TIMEOUT);
+                await company.ExecuteAsync(sql, new { keyFields = keyFields }, commandTimeout: EXECUTION_TIMEOUT);
+
+                return;
+            }
+
+
+                sql = @"insert into #promotedItems 
+                            select
+	                            ftemp.ID,
+                                ftemp.ObjectType,
+                                f.[objectID],
+                                f.[objectType]
+                            from	
+	                            #fields ftemp
+	                            inner join field f on (ftemp.TargetFieldTypeID = f.FieldTypeID and ftemp.Value = f.FormattedValue)
+                                inner join #promotionParents p on (ftemp.ID = p.ObjectID)
+                                inner join [intersect] i on (i.IntersectTypeID = @it and i.objectid = f.[objectID] and i.object = f.[objecttype] and i.subjectid = p.ParentID and i.subject = f.objecttype)
+                            where
+	                            ftemp.TargetFieldName in @keyFields;";
+
+
+            await company.ExecuteAsync(sql, new { keyFields = keyFields, it = PromoteToParentChildIntersectTypeID }, commandTimeout: EXECUTION_TIMEOUT);
+
+            return;
         }
 
         protected async Task<int> GetNewItemCount(SqlConnection company)

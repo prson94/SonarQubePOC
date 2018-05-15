@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
+using System.Data;
 
 namespace igx.jobs.fusionruleprocessor
 {
@@ -28,13 +29,15 @@ namespace igx.jobs.fusionruleprocessor
             //determine Parent Object Search Type
             LoadParentSearchOptions();
 
-            if(ParentObjectSearchType == FusionRuleParentSearchTypes.Invalid)
+            if (ParentObjectSearchType == FusionRuleParentSearchTypes.Invalid)
             {                
                 Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] contains an invalid Parent Search type.");
 
                 return;
             }
-            
+
+            PromoteToParentChildIntersectTypeID = await GetPromotionParentChildRelationshipID(company);
+
             //create temp table for the fields
             await CreateFieldValuesTempTable(company);
 
@@ -76,6 +79,12 @@ namespace igx.jobs.fusionruleprocessor
             await PerformPostPromote(company, PromoteToObjectID, PromoteToObject);            
         }
 
+        private async Task<int> GetPromotionParentChildRelationshipID(SqlConnection company)
+        {
+            var sql = "select it.ID from intersecttype it inner join [predicate] pid on pid.id = it.predicateid  where [subject] = 'ArtifactType' and [object] = 'ArtifactType' and pid.type = 3 and it.objectid = @id";
+
+            return (await company.QuerySingleAsync<int>(sql, new { id = PromoteToObjectID }));
+        }
 
         private async Task MapItemParents(SqlConnection company, List<int> itemsToPromote)
         {
@@ -90,15 +99,50 @@ namespace igx.jobs.fusionruleprocessor
 
             // determine item parents
 
-            Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Parent search is {ParentObjectSearchType}");
-
-            switch (ParentObjectSearchType)
+            using (var transaction = company.BeginTransaction())
             {
-                case FusionRuleParentSearchTypes.Direct:
-                    Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Parent search is {ParentObjectSearchType} Parent ID is {ParentObjectID}");
-                    if (ParentObjectID > 0)
+
+                await company.ExecuteAsync(@"IF OBJECT_ID('tempdb..#itemsToPromote') IS NOT NULL
+			                                DROP TABLE #itemsToPromote;
+
+		                                create table #itemsToPromote (                                            			                                
+			                                ID int not null
+		                                );
+                                ", transaction: transaction);
+
+                using (var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.TableLock, transaction))
+                {
+                    bulkCopy.BatchSize = itemsToPromote.Count;
+                    bulkCopy.DestinationTableName = "#itemsToPromote";
+                    bulkCopy.BulkCopyTimeout = 300;
+
+                    var table = new DataTable();
+                    var columnName = "ID";
+                    table.Columns.Add(columnName, typeof(int));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    foreach (var item in itemsToPromote)
                     {
-                        await company.ExecuteAsync(@"
+                        var row = table.NewRow();
+
+                        row["ID"] = item;
+
+                        table.Rows.Add(row);
+                    }
+
+                    await bulkCopy.WriteToServerAsync(table);
+                }
+
+
+                Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Parent search is {ParentObjectSearchType}");
+
+                switch (ParentObjectSearchType)
+                {
+                    case FusionRuleParentSearchTypes.Direct:
+                        Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Parent search is {ParentObjectSearchType} Parent ID is {ParentObjectID}");
+                        if (ParentObjectID > 0)
+                        {
+                            await company.ExecuteAsync(@"
                             MERGE
 	                            INTO    #promotionParents d
 	                            USING   (
@@ -108,20 +152,20 @@ namespace igx.jobs.fusionruleprocessor
 								        from
 									        #fields ftemp
                                         where
-                                            ftemp.id in @items    
+                                            ftemp.id in (select distinct id from #itemsToPromote)    
 			                            ) S
 	                            ON      (1 != 1)
 	                            WHEN NOT MATCHED THEN
 	                                INSERT  (ObjectID, ParentID)
 	                                VALUES  (S.ObjectID, S.ParentID) ;                       
-                        ", new { items = itemsToPromote, ParentSearchObjectID = ParentObjectID });
-                    }
-                    break;
-                case FusionRuleParentSearchTypes.FusionOwner:
-                    Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Parent search is {ParentObjectSearchType} Parent ID is {ParentObjectID}");
-                    if (ParentObjectID > 0)
-                    {
-                        await company.ExecuteAsync(@"
+                        ", new { ParentSearchObjectID = ParentObjectID }, transaction:transaction,  commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+                        }
+                        break;
+                    case FusionRuleParentSearchTypes.FusionOwner:
+                        Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Parent search is {ParentObjectSearchType} Parent ID is {ParentObjectID}");
+                        if (ParentObjectID > 0)
+                        {
+                            await company.ExecuteAsync(@"
                             MERGE
 	                            INTO    #promotionParents d
 	                            USING   (
@@ -131,25 +175,25 @@ namespace igx.jobs.fusionruleprocessor
 								        from
 									        #fields ftemp
                                         where
-                                            ftemp.id in @items    
+                                            ftemp.id in  (select distinct id from #itemsToPromote)    
 			                            ) S
 	                            ON      (1 != 1)
 	                            WHEN NOT MATCHED THEN
 	                                INSERT  (ObjectID, ParentID)
 	                                VALUES  (S.ObjectID, S.ParentID) ;                       
-                        ", new { items = itemsToPromote, ParentSearchObjectID = ParentObjectID });
-                    }
-                    break;
-                case FusionRuleParentSearchTypes.ResultFromStep:
-                    
-                    if(ParentObjectID <= 0)
-                    {
-                        Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Parent search is {ParentObjectSearchType} Parent ID is {ParentObjectID}.  No Parent step specified!");
+                        ", new { ParentSearchObjectID = ParentObjectID }, transaction: transaction, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+                        }
+                        break;
+                    case FusionRuleParentSearchTypes.ResultFromStep:
 
-                        return;
-                    }
+                        if (ParentObjectID <= 0)
+                        {
+                            Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Parent search is {ParentObjectSearchType} Parent ID is {ParentObjectID}.  No Parent step specified!");
 
-                    await company.ExecuteAsync(@"
+                            return;
+                        }
+
+                        await company.ExecuteAsync(@"
                             MERGE
 	                            INTO    #promotionParents d
 	                            USING   (
@@ -161,19 +205,21 @@ namespace igx.jobs.fusionruleprocessor
                                         where
                                             rp.RuleID = @RuleID and
                                             rp.RuleStepID = @RuleStepID and
-                                            rp.AttributeID in @items                                            
+                                            rp.AttributeID in (select distinct id from #itemsToPromote)                                          
 			                            ) S
 	                            ON      (1 != 1)
 	                            WHEN NOT MATCHED THEN
 	                                INSERT  (ObjectID, ParentID)
 	                                VALUES  (S.ObjectID, S.ParentID);                        
-                        ", new { items = itemsToPromote, RuleID = Rule.ID, RuleStepID = ParentObjectID });
-                    break;                
-            }
+                        ", new { RuleID = Rule.ID, RuleStepID = ParentObjectID }, transaction: transaction, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+                        break;
+                }
 
 #if DEBUG
-            await PrintTempTableContents(company, Log, "promotionParents");
+                await PrintTempTableContents(company, Log, "promotionParents",transaction);
 #endif
+                transaction.Commit();
+            }
 
         }
 
@@ -201,7 +247,7 @@ namespace igx.jobs.fusionruleprocessor
 							INSERT (IntersectTypeID,[Subject], SubjectID, [Object], ObjectID, State,CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Deleted, Visible) 
 							VALUES (@IntersectTypeID, 'Artifact', S.ParentID, 'Artifact', S.ObjectID, 1,0,getutcdate(), 0,getutcdate(),0,1);";
 
-            await company.ExecuteAsync(sql, new { IntersectTypeID = intersectTypeId });
+            await company.ExecuteAsync(sql, new { IntersectTypeID = intersectTypeId }, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
         }
 
         private async Task CreateNewArtifacts(SqlConnection company, int ruleId, int ruleStepId)
@@ -223,7 +269,7 @@ namespace igx.jobs.fusionruleprocessor
 	                        INSERT  (ArtifactTypeID, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy, Visible)
 	                        VALUES  (@promoteToId, getutcdate(), 0, getutcdate(), 0, 1)                        
                         output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;";
-            await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact", rulestepid = ruleStepId, ruleid = ruleId });
+            await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact", rulestepid = ruleStepId, ruleid = ruleId }, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
         }
     }
 }

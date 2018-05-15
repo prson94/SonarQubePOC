@@ -27,11 +27,11 @@ namespace igx.jobs.fusionruleprocessor
             set;
         }
 
-        public static async Task PrintTempTableContents(SqlConnection company, TextWriter log, string tempTableName)
+        public static async Task PrintTempTableContents(SqlConnection company, TextWriter log, string tempTableName, SqlTransaction transaction = null)
         {            
             log.WriteLine($"====================DEBUG  {tempTableName.ToUpper()} PRINTING VALUES================================");
 
-            var items = await company.QueryAsync($"select * from #{tempTableName}");
+            var items = await company.QueryAsync($"select * from #{tempTableName}",transaction: transaction);
 
             foreach (var item in items)
             {
