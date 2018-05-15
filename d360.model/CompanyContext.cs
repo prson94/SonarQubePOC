@@ -652,9 +652,12 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             switch (obj)
             {
                 case "ReferenceItemType":
-                    countSql = @"select count(*) from AssetType A
+
+                    if (objID == 0)
+                    {
+                        countSql = @"select count(*) from AssetType A
                         where A.[Object] = @obj  and (@query is null or A.Name like '%' + @query + '%')";
-                    sql = @"select  A.ObjectID as [Value], A.[Name] as [Text], case when I.ID is not null then 1 else 0 end as Selected
+                        sql = @"select  A.ObjectID as [Value], A.[Name] as [Text], case when I.ID is not null then 1 else 0 end as Selected
                             from AssetType A 
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
@@ -662,6 +665,34 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                             where A.[Object] = @obj and (@query is null or A.[Name] like '%' + @query + '%')
                             order by 3 desc, A.[Name] asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+                        selectedSql = @"select 
+	                        case when i.Subject = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end as [Value],
+	                        A.[Name] as [Text],
+	                        1 as Selected
+                            from [intersect] i
+                            inner join AssetType A on A.[Object] = case when i.[Subject] = @obj and i.SubjectID = @objID then i.[Object] else i.[Subject] end
+				                        and A.ObjectID = case when i.[Subject] = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end
+                        where i.intersectTypeID = @intersectTypeID and i.State = 1 and ((i.Subject = @obj and i.SubjectID = @objID) or (i.Object = @obj and i.ObjectID = @objID))";
+                    }
+                    else
+                    {
+                        countSql = @"select count(*) from Asset A
+                        inner join AssetType T on T.ID = A.AssetTypeID
+						cross apply dbo.GetAssetDisplayValueById(a.ID) D
+                        where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')";
+
+                        sql = @"select  A.ObjectID as [Value], D.DisplayValue as [Text], case when I.ID is not null then 1 else 0 end as Selected
+                            from Asset A 
+							inner join AssetType T on T.ID = A.AssetTypeID
+							cross apply dbo.GetAssetDisplayValueById(a.ID) D
+                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
+	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                            where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')
+                            order by 3 desc, D.DisplayValue asc
+                            OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+                    }
+
                     break;
                 case "ArtifactType":
                 case "PolicyType":
