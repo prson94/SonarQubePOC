@@ -93,30 +93,59 @@ insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 GO
 
 -- Artifact Subject Area
-declare @rt int
+--if the TaxonomyTypeID column exists, we can upgrade
+IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'TaxonomyTypeID' AND Object_ID = Object_ID(N'dbo.Artifact')) 
+BEGIN
 
-INSERT INTO ReferenceItemType	( [Name], [DisplayFormat], [Description], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
-VALUES							( 'Artifact Subject Area', '{Code}', 'The subject area for an artifact.', getutcdate(), 0, getutcdate(), 0)
+   INSERT INTO [dbo].[FieldType]
+	([Name],[FriendlyName],[Description],[Type],[Object],[ObjectID],[SortOrder],[IsRequired],[IsListable],[IsDisplayable],[IsEditable],[AllowAllValue],[IsPrimaryFilter],[IsPartOfKey], LookupObjectType, LookupObjectID, LookupDisplayFormat)
+	select	'SubjectArea', 'Subject Area', 'The artifact''s subject area', 'Lookup', 
+			'ArtifactType', ID as ObjectID, 
+			4 as SortOrder, 0 as IsRequired, 1 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey, 'TaxonomyType', 0, '{Name}'
+	from	ArtifactType;
 
-set @rt = SCOPE_IDENTITY()
+	insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
+		select	'Artifact', A.ID, FT.ID, T.ID, T.[Name]
+		from	Artifact A 
+				inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+				inner join FieldType FT on FT.[Object] = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.[Name] = 'SubjectArea';
+END
+ELSE --ref list upgrade already ran, update it to use taxonomy type instead
+BEGIN
 
-INSERT INTO [dbo].[ReferenceItem]( [ReferenceItemTypeID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy], [Code], [Visible])
-select	@rt, getutcdate(), 0, getutcdate(), 0, Name, 1
-from	TaxonomyType
+	--update field records to point to taxonomytypeid instead of ref list
+	update 
+		F
+	set
+		F.[Value] = T.ID,
+		F.FormattedValue = T.[Name]
+	from 
+		Field F
+		inner join ReferenceItem R on R.ID = F.[Value]
+		inner join TaxonomyType T on T.[Name] = F.FormattedValue
+	where 
+		F.FieldTypeID in (select ID from FieldType where [Name] = 'SubjectArea' and LookupObjectType = 'ReferenceItem');
 
-INSERT INTO [dbo].[FieldType]
-([Name],[FriendlyName],[Description],[Type],[Object],[ObjectID],[SortOrder],[IsRequired],[IsListable],[IsDisplayable],[IsEditable],[AllowAllValue],[IsPrimaryFilter],[IsPartOfKey], LookupObjectType, LookupObjectID, LookupDisplayFormat)
-select	'SubjectArea', 'Subject Area', 'The artifact''s subject area', 'Lookup', 
-		'ArtifactType', ID as ObjectID, 
-		4 as SortOrder, 0 as IsRequired, 1 as IsListable, 1 as IsDisplayable, 1 as IsEditable, 0 as AllowAllValue, 0 as IsPrimaryFilter, 0 as IsPartOfKey, 'ReferenceItem', @rt, '{Code}'
-from	ArtifactType
+--update field type to use TaxonomyType list instead of ref list
+	update 
+		FieldType
+	set 
+		LookupObjectType = 'TaxonomyType',
+		LookupObjectID = 0,
+		LookupDisplayFormat = '{Name}',
+		MinimumLength = 0
+	where 
+		[Name] = 'SubjectArea' 
+		and LookupObjectType = 'ReferenceItem';
 
-insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
-	select	'Artifact', A.ID, FT.ID, R.ID, R.Code--, A.Status, A.ArtifactTypeID
-	from	Artifact A 
-			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
-			inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.Name = 'SubjectArea'
-			inner join ReferenceItem R on R.ReferenceItemTypeID = FT.LookupObjectID and ltrim(rtrim(R.Code)) = ltrim(rtrim(T.Name))
+	--remove subject area ref list
+	delete from ReferenceItem where ReferenceItemTypeID in (
+	select ID from ReferenceItemType where [Name] = 'Artifact Subject Area' and [Description] = 'The subject area for an artifact.');
+
+	delete from ReferenceItemType where [Name] = 'Artifact Subject Area' and [Description] = 'The subject area for an artifact.';
+
+END
+
 GO
 
 /*
