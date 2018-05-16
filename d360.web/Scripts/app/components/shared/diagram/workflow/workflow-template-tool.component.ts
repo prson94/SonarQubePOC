@@ -28,6 +28,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
 
     private defaultFields = [
         { value: '[OBJECT_NAME]', label: 'Object Name' },
+        { value: '[OBJECT_TYPE]', label: 'Object Type' },
         { value: '[SCORE]', label: 'Object Score' },
         { value: '[WORKFLOW_INITIATOR]', label: 'Workflow Initiator Name' },
         { value: '[ACTION_DETAILS]', label: 'Action Details' },
