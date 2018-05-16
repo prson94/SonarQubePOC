@@ -218,4 +218,11 @@ namespace igx.jobs.igc
 
         public int IntersectTypeID { get; set; }
     }
+
+    public class FailedExecutionModel
+    {
+        public long ExecutionID { get; set; }
+        public int CurrentCount { get; set; }
+        public int SynchedAssetTypeID { get; set; }
+    }
 }

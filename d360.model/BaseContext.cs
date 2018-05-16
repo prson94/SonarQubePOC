@@ -303,6 +303,11 @@ namespace d360.model
             return Database.SqlQuery<T>(commandText, parameters.ToArray()).ToList();
         }
 
+        //public IDataReader ExecuteReader(string commandText, List<SqlParameter> parameters)
+        //{
+        //    return Database.Connection.ExecuteReader(commandText, parameters.ToArray());
+        //}
+
         public void ExecuteNonQueryCommand(string commandText, List<SqlParameter> parameters)
         {
             var connection = new SqlConnection(Database.Connection.ConnectionString);

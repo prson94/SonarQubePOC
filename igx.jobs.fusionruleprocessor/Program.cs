@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace igx.jobs.fusionruleprocessor
 {
@@ -21,6 +22,7 @@ namespace igx.jobs.fusionruleprocessor
         const string functionName = "Fusion_ProcessRules";
         // const string timing = "0 * * * * *";
         const string timing = "0 */30 * * * *";
+        //const string timing = "*/5 0 * * * *";
 
         public static async Task Run([TimerTrigger(timing)]TimerInfo myTimer, TextWriter log)
         {
@@ -28,7 +30,7 @@ namespace igx.jobs.fusionruleprocessor
             {
                 CoreFunction.AITrackJobStart(functionName);
 
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 123).ToList();
 
                 foreach (var company in companies)
                 {

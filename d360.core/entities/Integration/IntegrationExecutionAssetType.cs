@@ -23,6 +23,9 @@ namespace d360.core.entities
         public int CurrentTargetAssetCount { get; set; }
 
         [DataMember]
+        public bool IsFullRefresh { get; set; }
+
+        [DataMember]
         public DateTime StartedOn { get; set; }
 
         [DataMember]

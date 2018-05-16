@@ -97,26 +97,57 @@ namespace igx.jobs
 
                                 bool globalCheckForChangesOnly = true; // TRUE = POST to IGC API
                                 var now = DateTime.UtcNow;
-                                if (setting.LastRefreshOn.HasValue)
-                                {
-                                    globalCheckForChangesOnly = (setting.LastRefreshOn.Value > DateTime.UtcNow.AddHours(-setting.RefreshInterval));
-                                }
-                                else
-                                {
-                                    globalCheckForChangesOnly = false;
-                                }
+                                globalCheckForChangesOnly = (setting.LastRefreshOn.HasValue) ? 
+                                    (setting.LastRefreshOn.Value > DateTime.UtcNow.AddHours(-setting.RefreshInterval)) : 
+                                    false;
 
                                 if (mappings.Any(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID && i.ObjectID.HasValue))
                                 {
-                                    var execution = new IntegrationExecution { StartedOn = now };
-                                    company.Add(execution);
+                                    var failedFullRefreshExecutions = company.Query<FailedExecutionModel>(@"
+select		max(T.ExecutionID) as ExecutionID,
+			count(1) as [CurrentCount],
+			T.SynchedAssetTypeID
+from		integration.ExecutionAssetType T
+			left join integration.ExecutionAsset A on A.ExecutionID = T.ExecutionID and A.SynchedAssetTypeID = T.SynchedAssetTypeID
+where		T.CompletedOn is null
+			and T.IsFullRefresh = 1
+group by	T.SynchedAssetTypeID
+order by	T.SynchedAssetTypeID").ToList();
+
+                                    IntegrationExecution newExecution = null;
 
                                     foreach (var item in mappings.Where(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID && i.ObjectID.HasValue))
                                     {
+                                        var failedFullRefreshExecution = failedFullRefreshExecutions.SingleOrDefault(f => f.SynchedAssetTypeID == item.ID);
+                                        IntegrationExecutionAssetType newAtExecution = null;
+                                        IntegrationExecutionAssetType previousAtExecution = null;
+                                        int currentCount = 0;
+
+                                        if (failedFullRefreshExecution == null)
+                                        {
+                                            if (newExecution == null)
+                                            {
+                                                // Initialize the new execution record on the first pass where we actually need a new one.
+                                                newExecution = new IntegrationExecution { StartedOn = now };
+                                                company.Add(newExecution);
+                                            }
+
+                                            newAtExecution = new IntegrationExecutionAssetType { StartedOn = DateTime.Now, SynchedAssetTypeID = item.ID, ExecutionID = newExecution.ID };
+                                            company.Add(newAtExecution);
+                                        }
+                                        else
+                                        {
+                                            currentCount = failedFullRefreshExecution.CurrentCount;
+                                            previousAtExecution = company.Filter<IntegrationExecutionAssetType>(f =>
+                                                    f.ExecutionID == failedFullRefreshExecution.ExecutionID &&
+                                                    f.SynchedAssetTypeID == failedFullRefreshExecution.SynchedAssetTypeID
+                                                ).Single();
+                                        }
+
                                         var mappingCheckForChangesOnly = globalCheckForChangesOnly;
                                         if (mappingCheckForChangesOnly)
                                         {
-                                            mappingCheckForChangesOnly = item.AllowChangeDetection; //Final check to see if we even allow for DELTA checking on this asset type.
+                                            mappingCheckForChangesOnly = item.AllowChangeDetection; // Final check to see if we even allow for DELTA checking on this asset type.
                                         }
 
                                         var fields = mappingFields.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
@@ -126,8 +157,13 @@ namespace igx.jobs
                                         var roles = mappingRoles.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
 
                                         var success = false;
-                                        var atExecution = new IntegrationExecutionAssetType { StartedOn = DateTime.Now, SynchedAssetTypeID = item.ID, ExecutionID = execution.ID };
-                                        company.Add(atExecution);
+
+                                        // If > 0, that means that the last full refresh did not successfully complete. Do not check for changes, do a full refresh again, starting where you left off.
+                                        if (currentCount > 0)
+                                        {
+                                            mappingCheckForChangesOnly = false;
+                                        }
+
                                         switch (setting.IntegrationSystem)
                                         {
                                             case d360.core.enums.IntegrationSystem.IGC:
@@ -138,28 +174,43 @@ namespace igx.jobs
                                                     now,
                                                     c.UrlPrefix,
                                                     resource,
-                                                    atExecution,
+                                                    previousAtExecution ?? newAtExecution,
                                                     item,
                                                     fields,
                                                     relations,
                                                     relationTargets,
                                                     roles,
-                                                    company);
+                                                    company, 
+                                                    currentCount);
                                                 break;
                                         }
 
                                         if (success)
                                         {
-                                            atExecution.CompletedOn = DateTime.UtcNow;
-                                            company.Update(atExecution);
+                                            if (newAtExecution != null)
+                                            {
+                                                newAtExecution.CompletedOn = DateTime.UtcNow;
+                                                company.Update(newAtExecution);
+                                            }
+                                            else
+                                            {
+                                                if (previousAtExecution != null)
+                                                {
+                                                    previousAtExecution.CompletedOn = DateTime.UtcNow;
+                                                    company.Update(previousAtExecution);
+                                                }
+                                            }
 
                                             item.LastSuccessfulCount = null;
                                             company.Update(item);
                                         }
                                     }
 
-                                    execution.CompletedOn = DateTime.UtcNow;
-                                    company.Update(execution);
+                                    if (newExecution != null)
+                                    {
+                                        newExecution.CompletedOn = DateTime.UtcNow;
+                                        company.Update(newExecution);
+                                    }
                                 }
 
                                 if (!globalCheckForChangesOnly)
@@ -167,6 +218,18 @@ namespace igx.jobs
                                     //Update the RefreshedOn property on the setting record, as we just did a full refresh.
                                     setting.LastRefreshOn = now;
                                     company.Update(setting);
+                                }
+                            }
+
+                            if (settings.Count > 0)
+                            {
+                                try
+                                {
+                                    company.ProcessUnresolvedRelationships();
+                                }
+                                catch (Exception ex)
+                                {
+                                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                                 }
                             }
                         }
@@ -350,30 +413,36 @@ namespace igx.jobs
             List<IntegrationAssetTypeRelationItem> relations,
             List<IntegrationAssetTypeRelationItemTarget> relationTargets,
             List<IntegrationAssetTypeRoleItem> roles, 
-            CompanyContext company)//SqlConnection company)//out DateTime? lastDateChecked)
+            CompanyContext company,
+            int previouslyProcessCount = 0)//SqlConnection company)//out DateTime? lastDateChecked)
         {
-            var success = true;
+            var success = false; // By default, this has not successfully been processed yet.
 
             var igcData = new IgcDynamicArrayModels();
-            var assets = new BulkAssetImport(); //new JArray();
+            var assets = new BulkAssetImport();
             var relationships = new BulkRelationshipImport();
             var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
 
             var sourceAuthString = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
+
+            #region Base uri logic. Not needed at this point.
+
             var targetAuthString = $"{resource.APIPublicKey};{resource.APIPrivateKey}";
             var targetBaseUri = "";
 
-            if (!urlPrefix.Contains("-igx"))
-            {
-                if (urlPrefix.Contains(".preview")) urlPrefix = urlPrefix.Replace(".preview", "-igx.preview");
-                else if (urlPrefix.Contains(".dev")) urlPrefix = urlPrefix.Replace(".dev", "-igx.dev");
-                else if (urlPrefix.Contains(".uat")) urlPrefix = urlPrefix.Replace(".uat", "-igx.uat");
-                else urlPrefix = urlPrefix + "-igx";
-            }
+            //if (!urlPrefix.Contains("-igx"))
+            //{
+            //    if (urlPrefix.Contains(".preview")) urlPrefix = urlPrefix.Replace(".preview", "-igx.preview");
+            //    else if (urlPrefix.Contains(".dev")) urlPrefix = urlPrefix.Replace(".dev", "-igx.dev");
+            //    else if (urlPrefix.Contains(".uat")) urlPrefix = urlPrefix.Replace(".uat", "-igx.uat");
+            //    else urlPrefix = urlPrefix + "-igx";
+            //}
 
             //targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
-            targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
-            targetBaseUri += $"/services/assets/";
+            //targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
+            //targetBaseUri += $"/services/assets/";
+
+            #endregion
 
             DateTime? currentParsedUnvalidatedDate = null;
 
@@ -434,7 +503,7 @@ namespace igx.jobs
                                             var context = (obj[f.SourceField] as JArray); // obj[f.SourceField].Cast<List<GenericIgcContextModel>>().FirstOrDefault();
                                             if (context != null)
                                             {
-                                                if (targetObject[f.TargetField] == null)
+                                                if (!targetObject.ContainsKey(f.TargetField))
                                                 {
                                                     if (f.ParentContextPosition.Value == 99)
                                                     {
@@ -765,8 +834,8 @@ namespace igx.jobs
                         new IgcPostSearchRequestSortModel { ascending = true, property = "created_on" }
                     }
                 };
-                postModel.begin = 0;
-                postModel.pageSize = 250;
+                postModel.begin = previouslyProcessCount;
+                postModel.pageSize = 500;
 
                 postModel.types.Add(mapping.SourceAssetTypeName);
 
@@ -786,6 +855,8 @@ namespace igx.jobs
                 postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
                 postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
 
+                execution.IsFullRefresh = !checkForChangesOnly;
+
                 if (mapping.LastSuccessfulCount.HasValue)
                 {
                     postModel.begin = mapping.LastSuccessfulCount.Value + 1;
@@ -801,7 +872,7 @@ namespace igx.jobs
                         if (models != null)
                         {
                             // Write the IGC total if we have not already done so.
-                            if (execution.CurrentTargetAssetCount <= 0)
+                            if (execution.CurrentSourceAssetCount <= 0)
                             {
                                 execution.CurrentSourceAssetCount = models.paging.numTotal;
                                 execution.CurrentTargetAssetCount = 0;
@@ -822,8 +893,8 @@ namespace igx.jobs
                             shouldContinue = (models.paging.numTotal > models.paging.end + 1);
                             postModel.begin = models.paging.end + 1;
 
-                            if (assets.Count > 4999)
-                            {
+                            //if (assets.Count > 4999)
+                            //{
                                 if (SendIncrementalSetToGovern(client, company, companyID, mapping, assets, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
                                 {
                                     mapping.LastSynchOn = currentParsedUnvalidatedDate;
@@ -831,7 +902,6 @@ namespace igx.jobs
                                     try
                                     {
                                         company.Update(mapping);
-                                        //company.Execute("update integration.SynchedAssetType set LastSynchOn = null, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, cnt = mapping.LastSuccessfulCount });
                                     }
                                     catch (Exception ex)
                                     {
@@ -840,10 +910,10 @@ namespace igx.jobs
                                 }
 
                                 // Re-initialize.
-                                assets = new BulkAssetImport();//new JArray();
+                                assets = new BulkAssetImport();
                                 relationships = new BulkRelationshipImport();
                                 ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-                            }
+                            //}
                         }
                     }
                     catch (Exception ex)
@@ -853,13 +923,15 @@ namespace igx.jobs
                         success = false;
                     }
                 }
+
+                #region Old GET Code - Keep for now
                 //}
                 //else
                 //{
                 //    //Perform search using GET method.
 
                 //    // Add the properties we are after for this IGC type.
-                //    url += $"?pageSize=250&types={mapping.SourceAssetTypeName}";
+                //    url += $"?pageSize=500&types={mapping.SourceAssetTypeName}";
                 //    url += string.Concat(fields.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
                 //    url += string.Concat(relations.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
                 //    url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceIdField)}"));
@@ -911,14 +983,22 @@ namespace igx.jobs
                 //        }
                 //    }
                 //}
+                #endregion
 
-                if (SendIncrementalSetToGovern(client, company, companyID, mapping, assets, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
+                if (assets.Count > 0)
                 {
-                    //lastDateChecked = currentParsedUnvalidatedDate;
+                    success = SendIncrementalSetToGovern(client, company, companyID, mapping, assets, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
+                }
+                else
+                {
+                    success = true; // Nothing left to post.
+                }
+                
+                if (success)
+                {
                     mapping.LastSuccessfulCount = null;
                     mapping.LastSynchOn = currentParsedUnvalidatedDate ?? now;
                 }
-
 
                 client.Dispose(); // Now displose of the HTTPClient object we are using for all requests.
             }
@@ -1060,6 +1140,5 @@ namespace igx.jobs
 
             return successfulPost;
         }
-        
     }
 }

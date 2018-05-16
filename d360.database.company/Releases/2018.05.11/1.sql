@@ -4023,3 +4023,114 @@ go
 
 drop view [dbo].[StatisticTypeCheckOption]
 GO
+
+ALTER PROCEDURE [dbo].[GetReferenceItemValues]	
+	@listid int,
+	@resourceID int	= 0,
+	@useApiName bit = 0
+AS
+BEGIN
+	SET NOCOUNT ON;
+	
+	create table #fieldtypes (ID int, Name nvarchar(250))
+	create table #parentTypes (IntersectTypeID int, Name nvarchar(250), ReferenceListTypeID int, ParentLevel int)
+
+	-- load the fields for this item
+	if @useApiName = 1
+		begin
+			insert into #fieldtypes
+				select ID, [Name] from fieldtype where object = 'ReferenceItemType' and objectid = @listid order by ColumnOrder
+		end
+	else
+		begin
+			insert into #fieldtypes
+				select ID, 'Field' + cast(id as varchar(100)) as [Name] from fieldtype where object = 'ReferenceItemType' and objectid = @listid order by ColumnOrder
+		end
+
+	declare @parentLevel int = 0;
+	declare @currentReferenceListID int = @listid;	
+	-- load the parents for this reference item type
+	while exists (select 1 from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3 and @parentLevel < 20)
+	begin
+		-- need to loop through parent / child relations till we get to the lowest one or loop to many times
+		insert into #parentTypes 
+			select id, subjectname, subjectid, @parentLevel from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3;
+
+		select @currentReferenceListID =subjectid from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3;
+		
+		set @parentLevel = @parentLevel +1;
+	end
+	
+	
+	DECLARE @tsqlSelect nvarchar(max);
+	DECLARE @tsqlFrom nvarchar(max);
+	DECLARE @tsqlWhere nvarchar(max);
+	DECLARE @tsql nvarchar(max);
+
+	set @tsqlSelect = 'select ri.id as [ID] ,ri.code as [Code],o.id as [AssetID]';
+	set @tsqlFrom = ' from [dbo].[referenceitem] ri  inner join Asset O on O.Object = ''ReferenceItem'' and O.ObjectID = ri.ID ';
+	set @tsqlWhere = ' where ri.visible = 1 and ri.referenceitemtypeid = ' + cast(@listid as nvarchar(20));
+	if @resourceID > 0
+	begin
+		set @tsqlFrom = @tsqlFrom  + ' left join cache.NoRead RP on RP.ResourceID = ' +  cast(@resourceID as varchar) + ' and RP.AssetID = O.ID ';
+		set @tsqlWhere = @tsqlWhere + ' and RP.AssetID is null ';
+	end	
+
+	DECLARE @name nvarchar(250);
+	DECLARE @id int = 0;
+	DECLARE @intersectTypeId int;
+	DECLARE @parentName nvarchar(250);
+	DECLARE @parentListTypeID int = 0;	
+	DECLARE @index int = 0;
+	DECLARE @previousRelation varchar(200) = 'ri.ID';
+
+	-- generate dynamic sql for each relationship
+	DECLARE relCur CURSOR FOR SELECT IntersectTypeId, Name, ReferenceListTypeID, ParentLevel FROM #parentTypes
+	OPEN relCur
+
+	FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel
+
+	WHILE @@FETCH_STATUS = 0 BEGIN
+	
+		SET @tsqlSelect = @tsqlSelect + ',REL_' + cast(@index as nvarchar(10)) + '.DisplayValue as [Rel' + cast(@parentListTypeID as varchar(20)) + ']';
+        SET @tsqlFrom = @tsqlFrom +' outer apply (
+				    select	ID.DisplayValue, I.SubjectID                            
+				    from	[PredicateIntersect] I
+                            inner join Asset IA on I.Object = ''ReferenceItem'' and I.ObjectID = ' + @previousRelation + ' and IA.Object = ''ReferenceItem'' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
+                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID
+                            cross apply dbo.GetAssetDisplayValueById(IA.ID) ID
+				    ) REL_' + cast(@index as nvarchar(10));
+
+		set @previousRelation = 'REL_' + cast(@index as nvarchar(10)) + '.SubjectID';
+		SET @index = @index + 1;
+		FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel
+	END
+
+	CLOSE relCur    
+	DEALLOCATE relCur
+
+	set @index = 0;
+	-- generate dynamic sql for each field
+	DECLARE cur CURSOR FOR SELECT id, name FROM #fieldtypes
+	OPEN cur
+
+	FETCH NEXT FROM cur INTO @id, @name
+
+	WHILE @@FETCH_STATUS = 0 BEGIN
+		
+		SET @tsqlSelect = @tsqlSelect + ',f'+ cast(@index as nvarchar(10)) + '.formattedvalue as [' + @name + ']';
+		SET @tsqlFrom = @tsqlFrom + ' left outer join [dbo].[field] f' + cast(@index as nvarchar(10)) + ' on (ri.id = f' + cast(@index as nvarchar(10)) + '.objectid and f' + cast(@index as nvarchar(10)) + '.[objecttype] = ''ReferenceItem'' and f' + cast(@index as nvarchar(10)) + '.fieldtypeid = ' + cast(@id as nvarchar(20)) + ')';
+
+		SET @index = @index + 1;
+		FETCH NEXT FROM cur INTO @id, @name
+	END
+
+	CLOSE cur    
+	DEALLOCATE cur
+
+	SET @tsql = @tsqlSelect + @tsqlFrom + @tsqlWhere;
+	print @tsql
+	EXEC sp_executesql @tsql;
+
+END
+GO

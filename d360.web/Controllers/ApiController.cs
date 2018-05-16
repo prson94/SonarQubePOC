@@ -450,7 +450,13 @@ namespace d360.web.Controllers
                 case "":
                 case "Lookup":
                     if (loadLookupList)
-                        filterItems = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && o.LookupObjectType == item.LookupObjectType && o.LookupObjectID == item.LookupObjectID).OrderBy(o => o.Text).Select(o => o.Text).ToList();
+                        filterItems = Company
+                            .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && 
+                                                            o.LookupObjectType == item.LookupObjectType && 
+                                                            o.LookupObjectID == item.LookupObjectID)
+                            .OrderBy(o => o.Text)
+                            .Select(o => o.Text)
+                            .ToList();
                     columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
                     filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
                     break;
@@ -580,7 +586,9 @@ namespace d360.web.Controllers
             #endregion
 
             var sType = type.ToString();
-            var totalItems = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).ToList();
+            var totalItems = Company
+                .Filter<FieldType>(i => i.Object == sType && i.ObjectID == id && !CalculatedFieldTypes.Contains(i.Type))
+                .ToList();
             var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
             var columns = new List<GridColumn>();
@@ -4565,12 +4573,13 @@ from    (
                 var dbArgs = new Dapper.DynamicParameters();
 
                 dbArgs.Add("id", id);
+                dbArgs.Add("r", Company.CurrentResourceID);
 
                 var joins = "";
                 var columns = "";
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
-                var querySql = string.Format($@"
+                var querySql = string.Format(@"
 select	O.ID as AssetID,
         A.ID,
         A.Threshold,
@@ -4584,7 +4593,7 @@ from	[Rule] A
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
 where   A.RuleTypeID = @id and A.[Visible] = 1
-        and O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})", columns, joins);
+        and O.ID not in (select AssetID from cache.NoRead where ResourceID = @r)", columns, joins);
 
                 //querySql += " OPTION (RECOMPILE)";
 

@@ -1,8 +1,10 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace d360.model
@@ -23,7 +25,17 @@ namespace d360.model
 
         #endregion
 
+        internal List<string> CalculatedFieldTypes = new List<string>() { DataType.Attribute.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(), DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.OwnershipLookup.ToString() };
+
         #region Engine Methods
+
+        private string wildcardValue(string value)
+        {
+            if (value.Contains("*") || value.Contains("?"))
+                return value.Replace("*", "%").Replace("?", "_");
+            else
+                return value += "%";
+        }
 
         /// <summary>
         /// Not actively used at this point. Just for reference for performance comparison.
@@ -33,229 +45,36 @@ namespace d360.model
             count = 0; //initialize
 
             var assetTypeID = at.ID;
+            var tableHints = " with (NOLOCK)";
+            var dbArgs = new DynamicParameters();
 
-            var fieldTypes = Filter<FieldType>(i => i.AssetTypeID == assetTypeID).ToList();
+            var fieldTypes = Filter<FieldType>(i => i.AssetTypeID == assetTypeID && !CalculatedFieldTypes.Contains(i.Type)).ToList();
             var selectFields = fieldTypes.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+
+            var selectFieldList = new List<string>();
+            var listableJoinList = new List<string>();
+            var filterJoinList = new List<string>();
+            var whereList = new List<string>();
+
+            dbArgs.Add("r", CurrentResourceID, System.Data.DbType.Int32);
+            dbArgs.Add("atID", assetTypeID, System.Data.DbType.Int32);
 
             #region Administrator Editability Sql Syntax
 
-            var editRightsColumnStatement = "1 as P_CanEdit, 1 as P_CanDelete ";
+            var editRightsColumnStatement = ", 1 as P_CanEdit, 1 as P_CanDelete ";
             var editRightsJoinStatement = "";
 
             if (!CurrentResourceIsAdmin)
             {
-                editRightsColumnStatement = " IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete ";
-                editRightsJoinStatement = @"
-left join responsibility.ClaimCore S_E on S_E.ResourceID = {CurrentResourceID} and S_E.ClaimObject = 1 and S_E.Claim = 3 and S_E.AssetID = A.ID 
-left join responsibility.ClaimCore S_D on S_D.ResourceID = {CurrentResourceID} and S_D.ClaimObject = 1 and S_D.Claim = 4 and S_D.AssetID = A.ID ";
+                editRightsColumnStatement = ", IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete ";
+                editRightsJoinStatement = $@"
+left join cache.AssetEdit S_E{tableHints} on S_E.ResourceID = @r and S_E.AssetID = A.ID 
+left join cache.AssetDelete S_D{tableHints} on S_D.ResourceID = @r and S_D.AssetID = A.ID ";
             }
 
             #endregion
 
-            #region Filter Processing
-
-            var filterJoinList = new List<string>();
-            var whereList = new List<string>();
-
-            var dbArgs = new DynamicParameters();
-            foreach (var filter in filters)
-            {
-                if (filter is UiRequestAttributeFilterValue)
-                {
-                    var f = filter as UiRequestAttributeFilterValue;
-
-                    var paramPrefix = $"AttType{f.AttributeTypeID}";
-                    dbArgs.Add($"{paramPrefix}", f.AttributeTypeID);
-                    dbArgs.Add($"{paramPrefix}Value", $"{f.RawValue}%");
-                    whereList.Add($@"A.ObjectID in ( select ObjectID from [Attribute] where AttributeTypeID = @{paramPrefix} and FormattedValue like @{paramPrefix}Value ) ");
-                }
-
-                if (filter is UiRequestFieldFilterValue)
-                {
-                    var f = filter as UiRequestFieldFilterValue;
-
-                    var thisFilterFieldType = useFieldNames ?
-                        fieldTypes.FirstOrDefault(i => i.Name == f.FieldName) :
-                        fieldTypes.FirstOrDefault(i => i.ID == int.Parse(f.FieldName.Replace("Field", "")));
-
-                    if (thisFilterFieldType != null)
-                    {
-                        var inWhereClause = thisFilterFieldType.IsListable;
-                        var columnName = $"F{thisFilterFieldType.ID}.FormattedValue";
-                        var bind = $"fld{thisFilterFieldType.ID}";
-
-                        if (thisFilterFieldType.AllowAllValue)
-                        {
-                            //allItemsBind = $"{prefix}{filterNumber}val_all";
-                            //allValueBind = $"{thisFilterFieldType.AllowAllLabel.Replace("'", "''")}";
-                        }
-
-                        if (thisFilterFieldType.AllowMultipleValues)
-                        {
-                            if (f.Condition == "IN")
-                                f.Condition = "IN_MULTI";
-                            else
-                                f.Condition = "CONTAINS";
-                        }
-
-                        var joinPrefix = $"inner join Field F{thisFilterFieldType.ID} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
-                        switch (f.Condition)
-                        {
-                            case "EQUAL":
-                                dbArgs.Add(bind, $"\"{f.RawValue}\"");
-                                if (inWhereClause)
-                                    whereList.Add($"CONTAINS({columnName}, @{bind})");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and CONTAINS({columnName}, @{bind})");
-                                break;
-                            case "CONTAINS":
-                                dbArgs.Add(bind, $"\"{f.RawValue}*\"");
-                                if (inWhereClause)
-                                    whereList.Add($"CONTAINS({columnName}, @{bind})");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and CONTAINS({columnName}, @{bind})");
-                                break;
-                            case "NOT_EQUAL":
-                            case "DOES_NOT_CONTAIN":
-                                dbArgs.Add(bind, $"\"{f.RawValue}\"");
-                                if (inWhereClause)
-                                    whereList.Add($"NOT CONTAINS({columnName}, @{bind})");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and NOT CONTAINS({columnName}, @{bind})");
-                                break;
-                            case "STARTS_WITH":
-                                dbArgs.Add(bind, $"\"{f.RawValue}*\"");
-                                if (inWhereClause)
-                                    whereList.Add($"CONTAINS({columnName}, @{bind})");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and CONTAINS({columnName}, @{bind}");
-                                break;
-                            case "ENDS_WITH":
-                                dbArgs.Add(bind, $"%{f.RawValue}");
-                                if (inWhereClause)
-                                    whereList.Add($"{columnName} LIKE @{bind}");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and {columnName} LIKE @{bind}");
-                                break;
-                            case "IN":
-                                var values = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries).Select(i => $"\"{i}\"").ToList();
-                                var concatenatedValue = string.Join(" or ", values);
-                                dbArgs.Add(bind, concatenatedValue);
-                                if (inWhereClause)
-                                    whereList.Add($"CONTAINS({columnName}, @{bind})");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and CONTAINS({columnName}, @{bind})");
-                                break;
-                            case "IN_MULTI":
-                                var multiValues = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries).Select(i => $"\"{i}\"").ToList();
-                                var multiConcatenatedValue = string.Join($" {f.Operator} ", multiValues);
-                                dbArgs.Add(bind, multiConcatenatedValue);
-                                if (inWhereClause)
-                                    whereList.Add($"CONTAINS({columnName}, @{bind})");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and CONTAINS({columnName}, @{bind})");
-                                break;
-                            case "NULL":
-                                if (inWhereClause)
-                                    whereList.Add($"{columnName} is null");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and {columnName} is null");
-                                break;
-                            case "NOT_NULL":
-                                if (inWhereClause)
-                                    whereList.Add($"{columnName} is not null");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and {columnName} is not null");
-                                break;
-                            case "EMPTY":
-                                if (inWhereClause)
-                                    whereList.Add($"{columnName} = ''");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and {columnName} = ''");
-                                break;
-                            case "NOT_EMPTY":
-                                if (inWhereClause)
-                                    whereList.Add($"{columnName} <> ''");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and {columnName} <> ''");
-                                break;
-                            default:
-                                dbArgs.Add(bind, $"\"{f.RawValue}\"");
-                                if (inWhereClause)
-                                    whereList.Add($"CONTAINS({columnName}, @{bind})");
-                                else
-                                    filterJoinList.Add($"{joinPrefix} and CONTAINS({columnName}, @{bind})");
-                                break;
-                        }
-                    }
-                }
-
-                if (filter is UiRequestOwnershipFilterValue)
-                {
-                    var f = filter as UiRequestOwnershipFilterValue;
-
-                    var index = 1;
-                    foreach (var o in f.Items)
-                    {
-                        var securityAsset = "";
-                        switch (o.FilterType)
-                        {
-                            case UiRequestOwnershipFilterType.Group:
-                                securityAsset = "G";
-                                break;
-                            case UiRequestOwnershipFilterType.Organization:
-                                securityAsset = "O";
-                                break;
-                            case UiRequestOwnershipFilterType.User:
-                                securityAsset = "R";
-                                break;
-                        }
-
-                        whereList.Add($"A.ID in (select AssetID from ResponsibilityDetails where SecurityAsset = '{securityAsset}' and SecurityAssetID = {o.SecurityAssetID} and ResponsibilityTypeID = {o.ResponsibilityTypeID} )");
-
-                        index++;
-                    }
-                }
-
-                if (filter is UiRequestRelationshipFilterValue)
-                {
-                    var f = filter as UiRequestRelationshipFilterValue;
-
-                    var paramPrefix = $"RelType{f.IntersectTypeID}";
-                    dbArgs.Add($"{paramPrefix}", f.IntersectTypeID);
-                    dbArgs.Add($"{paramPrefix}Obj", f.TargetObject);
-
-                    if (f.Operator == "OR")
-                    {
-                        var idList = string.Join(",", f.TargetObjectIDs);
-                        whereList.Add(
-    $@"A.ObjectID in (
-select ObjectID from [Intersect] where IntersectTypeID = @{paramPrefix} and Subject = @{paramPrefix}Obj and SubjectID in ({idList})
-union
-select SubjectID from [Intersect] where IntersectTypeID = @{paramPrefix} and Object = @{paramPrefix}Obj and ObjectID in ({idList})
-)"
-                            );
-                    }
-                    else
-                    {
-                        f.TargetObjectIDs.ForEach(id =>
-                        {
-                            whereList.Add(
-        $@"A.ObjectID in (
-select ObjectID from [Intersect] where IntersectTypeID = @{paramPrefix} and Subject = @{paramPrefix}Obj and SubjectID = {id})
-union
-select SubjectID from [Intersect] where IntersectTypeID = @{paramPrefix} and Object = @{paramPrefix}Obj and ObjectID = {id})
-)"
-                                );
-                        });
-                    }
-                }
-            }
-
-            #endregion
-
-            var selectFieldList = new List<string>();
-            var listableJoinList = new List<string>();
+            #region Column Generation
 
             selectFields.ForEach(ft => {
 
@@ -264,89 +83,261 @@ select SubjectID from [Intersect] where IntersectTypeID = @{paramPrefix} and Obj
                 switch (ft.Type)
                 {
                     case "Relationship":
-                        #region Relationship Sql Syntax
-
-                        selectFieldList.Add($@"case when F{ft.ID}.Subject = A.Object and F{ft.ID}.SubjectID = A.ObjectID then F{ft.ID}.ObjectName else F{ft.ID}.SubjectName end as {columnName}");
-                        listableJoinList.Add($@"left join IntersectDetail F{ft.ID} on F{ft.ID}.IntersectTypeID = {ft.LookupObjectID} and ( (F{ft.ID}.Subject = A.Object and F{ft.ID}.SubjectID = A.ObjectID) or  (F{ft.ID}.Object = A.Object and F{ft.ID}.ObjectID = A.ObjectID) ) ");
-
-                        #endregion
+                        selectFieldList.Add($@"F{ft.ID}.FormattedValue as {columnName} ");
+                        listableJoinList.Add($@"inner join DynamicGidRelationship F{ft.ID} on F{ft.ID}.FieldTypeID = {ft.ID} and F{ft.ID}.AssetID = A.ID");
                         break;
                     case "FieldFromRelationship":
-                        #region Relationship Field Sql Syntax
-
                         selectFieldList.Add($@"F{ft.ID}.FormattedValue as {columnName} ");
-                        listableJoinList.Add($@"
-left join Field F{ft.ID} on FT{ft.ID}.ID = {ft.LookupObjectFieldTypeID} and F{ft.ID}.ObjectType = case when F{ft.ID}.Subject = A.Object and F{ft.ID}.SubjectID = A.ObjectID then F{ft.ID}.Object else F{ft.ID}.Subject end 
-and F{ft.ID}.ObjectType = case when F{ft.ID}.Subject = A.Object and F{ft.ID}.SubjectID = A.ObjectID then F{ft.ID}.ObjectID else F{ft.ID}.SubjectID end 
-and F{ft.ID}.FieldTypeID = {ft.LookupObjectFieldTypeID} ");
-
-                        #endregion
+                        listableJoinList.Add($@"inner join DynamicGidRelationshipField F{ft.ID} on F{ft.ID}.FieldTypeID = {ft.ID} and F{ft.ID}.AssetID = A.ID");
                         break;
                     default:
                         #region Regular Field
-                        /*
-                        switch (f.Type)
+                        var convertedTypeColumn = "";
+                        var convertedTypeDefaultColumn = "";
+                        switch (ft.Type)
                         {
                             case "Decimal":
-
-                                columns += $@"
-        case     
-            when {name}_T.Value is not null then cast({name}_T.FormattedValue as decimal(38,6))
-            when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
-            else null 
-        end as [{name}], ";
+                                convertedTypeColumn = $"cast(F{ft.ID}.FormattedValue as decimal(38,6))";
+                                convertedTypeDefaultColumn = $"cast(F{ft.ID}.DefaultFormattedValue as decimal(38,6))";
                                 break;
                             case "Number":
-                                columns += $@"
-        case     
-            when {name}_T.Value is not null then cast({name}_T.FormattedValue as bigint)
-            when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as bigint)
-            else null 
-        end as [{name}], ";
+                                convertedTypeColumn = $"cast(F{ft.ID}.FormattedValue as bigint)";
+                                convertedTypeDefaultColumn = $"cast(F{ft.ID}.DefaultFormattedValue as bigint)";
                                 break;
                             case "DateTime":
-                                columns += $@"
-        case     
-            when {name}_T.Value is not null then cast({name}_T.FormattedValue as datetime)
-            when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as datetime)
-            else null 
-        end as [{name}], ";
+                                convertedTypeColumn = $"cast(F{ft.ID}.FormattedValue as datetime)";
+                                convertedTypeDefaultColumn = $"cast(F{ft.ID}.DefaultFormattedValue as datetime)";
+                                break;
+                            case "Date":
+                                convertedTypeColumn = $"cast(F{ft.ID}.FormattedValue as date)";
+                                convertedTypeDefaultColumn = $"cast(F{ft.ID}.DefaultFormattedValue as date)";
                                 break;
                             default:
-                                columns += $@"
-        case 
-            when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
-            when {name}_T.Value is not null then {name}_T.FormattedValue 
-            when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
-            else '' 
-        end as [{name}], ";
+                                convertedTypeColumn = $"F{ft.ID}.FormattedValue";
+                                convertedTypeDefaultColumn = $"F{ft.ID}.DefaultFormattedValue";
                                 break;
                         }                         
-                         */
-                        selectFieldList.Add($@"case 
-	when FT{ft.ID}.AllowAllValue = 1 and F{ft.ID}.FormattedValue = '0' then cast(FT{ft.ID}.AllowAllLabel as nvarchar(max))
-	when F{ft.ID}.FormattedValue is not null then F{ft.ID}.FormattedValue
-	when FT{ft.ID}.DefaultFormattedValue is not null then cast(FT{ft.ID}.DefaultFormattedValue as nvarchar(max))
+
+                        selectFieldList.Add($@"
+case 
+	when F{ft.ID}.AllowAllValue = 1 and F{ft.ID}.Value = '0' then F{ft.ID}.AllowAllLabel
+	when F{ft.ID}.FormattedValue is not null then {convertedTypeColumn}
+	when F{ft.ID}.DefaultFormattedValue is not null then {convertedTypeDefaultColumn}
 	else null
 end as {columnName} ");
-                        listableJoinList.Add($@"inner join FieldType FT{ft.ID} on FT{ft.ID}.AssetTypeID = A.AssetTypeID and FT{ft.ID}.ID = {ft.ID} left join Field F{ft.ID} on F{ft.ID}.FieldTypeID = FT{ft.ID}.ID and F{ft.ID}.AssetID = A.ID ");
+                        listableJoinList.Add($@"inner join DynamicGidField F{ft.ID} on F{ft.ID}.FieldTypeID = {ft.ID} and F{ft.ID}.AssetID = A.ID ");
 
                         #endregion
                         break;
                 }
             });
 
+            #endregion
+
             #region Parent Sql Syntax
 
-            var parentIntersectType = Filter<IntersectType>(i => i.Object == at.Object && i.ObjectID == at.ObjectID && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
+            var parentPresent = Any<IntersectType>(i => i.Object == at.Object && i.ObjectID == at.ObjectID && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy);
 
             var parentSqlColumn = @"";
             var parentSqlJoin = @"";
 
-            if (parentIntersectType != null)
+            if (parentPresent)
             {
-                parentSqlColumn = @"PID.ParentID, PID.ParentDisplayValue as Parent, PID.ParentUrl, ";
+                parentSqlColumn = @", PID.ParentID, PID.ParentDisplayValue as Parent, PID.ParentUrl ";
                 parentSqlJoin = @" cross apply [dbo].[GetArtifactParentByAssetID](A.ID) PID";
+            }
+
+            #endregion
+
+            #region Filter Processing
+
+            if (string.IsNullOrEmpty(simpleFilter))
+            {
+                foreach (var filter in filters)
+                {
+                    if (filter is UiRequestAttributeFilterValue)
+                    {
+                        var f = filter as UiRequestAttributeFilterValue;
+
+                        var paramPrefix = $"AttType{f.AttributeTypeID}";
+
+                        dbArgs.Add($"{paramPrefix}", f.AttributeTypeID);
+                        dbArgs.Add($"{paramPrefix}Value", $"{wildcardValue(f.RawValue)}");//$"\"{f.RawValue}\"");
+
+                        whereList.Add($@"A.ObjectID in ( select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{paramPrefix} and FormattedValue like @{paramPrefix}Value )"); 
+                        //CONTAINS(FormattedValue, @{paramPrefix}Value)
+                    }
+
+                    if (filter is UiRequestFieldFilterValue)
+                    {
+                        var f = filter as UiRequestFieldFilterValue;
+
+                        var thisFilterFieldType = useFieldNames ?
+                            fieldTypes.FirstOrDefault(i => i.Name == f.FieldName) :
+                            fieldTypes.FirstOrDefault(i => i.ID == int.Parse(f.FieldName.Replace("Field", "")));
+
+                        if (thisFilterFieldType != null)
+                        {
+                            var inWhereClause = thisFilterFieldType.IsListable;
+                            var bind = $"fld{thisFilterFieldType.ID}";
+                            var filterFieldName = $"F{thisFilterFieldType.ID}.FormattedValue";
+                            var valueColumnQuery = "";
+                            switch (f.Condition)
+                            {
+                                case "EQUAL":
+                                    dbArgs.Add(bind, $"{f.RawValue}");// $"\"{f.RawValue}\"");
+                                    valueColumnQuery = $"{filterFieldName} = @{bind}";
+                                    //valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})"; 
+                                    break;
+                                case "CONTAINS":
+                                    dbArgs.Add(bind, $"{wildcardValue(f.RawValue)}");
+                                    valueColumnQuery = $"{filterFieldName} like @{bind}";
+                                    break;
+                                case "NOT_EQUAL":
+                                    dbArgs.Add(bind, $"{f.RawValue}");
+                                    valueColumnQuery = $"{filterFieldName} <> @{bind}";
+                                    break;
+                                case "DOES_NOT_CONTAIN":
+                                    dbArgs.Add(bind, $"{wildcardValue(f.RawValue)}");
+                                    valueColumnQuery = $"NOT {filterFieldName} not like @{bind}";
+                                    break;
+                                case "STARTS_WITH":
+                                    dbArgs.Add(bind, $"{f.RawValue}%");
+                                    valueColumnQuery = $"{filterFieldName} like @{bind}";
+                                    break;
+                                case "ENDS_WITH":
+                                    dbArgs.Add(bind, $"%{f.RawValue}");
+                                    valueColumnQuery = $"{filterFieldName} like @{bind}";
+                                    break;
+                                case "IN":
+                                case "IN_MULTI":
+                                    try
+                                    {
+                                        var values = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries).Select(i => int.Parse(i)).ToList();
+                                        var concatenatedValue = string.Join(", ", values);
+                                        dbArgs.Add(bind, concatenatedValue);
+                                        valueColumnQuery = $"{filterFieldName} in (@{bind})";
+                                    }
+                                    catch { }
+                                    break;
+                                case "NULL":
+                                    valueColumnQuery = $"{filterFieldName} is null";
+                                    break;
+                                case "NOT_NULL":
+                                    valueColumnQuery = $"{filterFieldName} is not null";
+                                    break;
+                                case "EMPTY":
+                                    valueColumnQuery = $"{filterFieldName} = ''";
+                                    break;
+                                case "NOT_EMPTY":
+                                    valueColumnQuery = $"{filterFieldName} <> ''";
+                                    break;
+                                default:
+                                    dbArgs.Add(bind, $"{wildcardValue(f.RawValue)}");
+                                    valueColumnQuery = $"{filterFieldName} like @{bind}";
+                                    break;
+                            }
+
+                            var filterInnerJoinPrefix = $"inner join Field F{thisFilterFieldType.ID}{tableHints} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
+                            if (inWhereClause)
+                            {
+                                if (thisFilterFieldType.AllowAllValue)
+                                    whereList.Add($"({valueColumnQuery} or F{thisFilterFieldType.ID}.Value = '0')");
+                                else
+                                    whereList.Add($"{valueColumnQuery}");
+                            }
+                            else
+                            {
+                                if (thisFilterFieldType.AllowAllValue)
+                                    filterJoinList.Add($"{filterInnerJoinPrefix} and ({valueColumnQuery} or F{thisFilterFieldType.ID}.Value = '0')");
+                                else
+                                    filterJoinList.Add($"{filterInnerJoinPrefix} and {valueColumnQuery}");
+                            }
+                        }
+                    }
+
+                    if (filter is UiRequestOwnershipFilterValue)
+                    {
+                        var f = filter as UiRequestOwnershipFilterValue;
+
+                        var index = 1;
+                        foreach (var o in f.Items)
+                        {
+                            var securityAsset = "";
+                            switch (o.FilterType)
+                            {
+                                case UiRequestOwnershipFilterType.Group:
+                                    securityAsset = "G";
+                                    break;
+                                case UiRequestOwnershipFilterType.Organization:
+                                    securityAsset = "O";
+                                    break;
+                                case UiRequestOwnershipFilterType.User:
+                                    securityAsset = "R";
+                                    break;
+                            }
+
+                            var paramPrefix = $"OwnerFilter{index}";
+                            dbArgs.Add($"{paramPrefix}SA", securityAsset);
+                            dbArgs.Add($"{paramPrefix}SAID", o.SecurityAssetID);
+                            dbArgs.Add($"{paramPrefix}RTID", o.ResponsibilityTypeID);
+                            whereList.Add($"A.ID in (select AssetID from ResponsibilityDetails where SecurityAsset = @{paramPrefix}SA and SecurityAssetID = @{paramPrefix}SAID and ResponsibilityTypeID = @{paramPrefix}RTID )");
+
+                            index++;
+                        }
+                    }
+
+                    if (filter is UiRequestRelationshipFilterValue)
+                    {
+                        var f = filter as UiRequestRelationshipFilterValue;
+
+                        var paramPrefix = $"RelType{f.IntersectTypeID}";
+                        dbArgs.Add($"{paramPrefix}", f.IntersectTypeID);
+                        dbArgs.Add($"{paramPrefix}Obj", f.TargetObject);
+
+                        if (f.Operator == "OR")
+                        {
+                            var idList = string.Join(",", f.TargetObjectIDs);
+                            whereList.Add(
+        $@"A.ObjectID in (
+select ObjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPrefix} and Subject = @{paramPrefix}Obj and SubjectID in ({idList})
+union
+select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPrefix} and Object = @{paramPrefix}Obj and ObjectID in ({idList})
+)"
+                                );
+                        }
+                        else
+                        {
+                            f.TargetObjectIDs.ForEach(id =>
+                            {
+                                whereList.Add(
+            $@"A.ObjectID in (
+select ObjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPrefix} and Subject = @{paramPrefix}Obj and SubjectID = {id})
+union
+select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPrefix} and Object = @{paramPrefix}Obj and ObjectID = {id})
+)"
+                                    );
+                            });
+                        }
+                    }
+                }
+            }
+            else
+            {
+                dbArgs.Add("allValuesFilter", "0", System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                dbArgs.Add("simpleFilter", $"{wildcardValue(simpleFilter)}", System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                //dbArgs.Add("simpleFilter", $"\"{simpleFilter}*\"", System.Data.DbType.String, System.Data.ParameterDirection.Input);
+
+                var simpleFilterIDs = string.Join(",", selectFields.Select(i => i.ID));
+                filterJoinList.Add($@"
+inner join (
+		    select	AssetID
+		    from	Field SF{tableHints} 
+		    where	FieldTypeID in ({simpleFilterIDs})
+				    --and (CONTAINS(FormattedValue, @simpleFilter) OR Value = @allValuesFilter)
+                    and (FormattedValue like @simpleFilter OR Value = @allValuesFilter)
+            group by AssetID
+		    ) SF on SF.AssetID = A.ID ");
             }
 
             #endregion
@@ -362,7 +353,7 @@ end as {columnName} ");
                     selectFields
                         .Where(i => i.SortOrder != 0)
                         .OrderBy(i => i.SortOrder)
-                        .Select(i => (useFieldNames ? $"[{i.Name}] asc" : $"[Field{i.ID}] asc"))
+                        .Select(i => $"F{i.ID}.FormattedValue asc")//.Select(i => (useFieldNames ? $"[{i.Name}] asc" : $"[Field{i.ID}] asc"))
                 );
 
                 if (string.IsNullOrEmpty(orderFieldString))
@@ -372,7 +363,7 @@ end as {columnName} ");
                         selectFields
                             .Where(i => i.IsPartOfKey)
                             .OrderBy(i => i.ColumnOrder)
-                            .Select(i => (useFieldNames ? $"[{i.Name}] asc" : $"[Field{i.ID}] asc"))
+                            .Select(i => $"F{i.ID}.FormattedValue asc")//.Select(i => (useFieldNames ? $"[{i.Name}] asc" : $"[Field{i.ID}] asc"))
                     );
                 }
             }
@@ -383,7 +374,7 @@ end as {columnName} ");
                     selectFields.SingleOrDefault(i => sortField == $"Field{i.ID}");
                 if (sortFieldType != null)
                 {
-                    orderFieldString = useFieldNames ? $"[{sortFieldType.Name}] {sortOrder}" : $"[Field{sortFieldType.ID}] {sortOrder}";
+                    orderFieldString = $"F{sortFieldType.ID}.FormattedValue {sortOrder}";//useFieldNames ? $"[{sortFieldType.Name}] {sortOrder}" : $"[Field{sortFieldType.ID}] {sortOrder}";
                 }
             }
 
@@ -399,7 +390,7 @@ end as {columnName} ");
             var selectFieldString = "";
             if (selectFieldList.Count > 0)
             {
-                selectFieldString = string.Join(", ", selectFieldList) + ", ";
+                selectFieldString = ", " + string.Join(", ", selectFieldList);
             }
 
             var listableJoinString = "";
@@ -422,8 +413,6 @@ end as {columnName} ");
                     whereString = $" and {whereString}";
             }
 
-
-
             #endregion
 
             var countSql = "";
@@ -432,53 +421,59 @@ end as {columnName} ");
             {
                 countSql = $@"
 select	count(1)
-from	Asset A 
+from	Asset A{tableHints} 
         {filterJoinString} 
-where   A.AssetTypeID = {at.ID} and A.State = 1
-";
+where   A.AssetTypeID = {at.ID} and A.State = 1 
+OPTION (RECOMPILE)";
             }
             else
             {
                 countSql = $@"
 select	count(1)
-from	Asset A 
+from	Asset A{tableHints} 
         {listableJoinString} 
         {filterJoinString} 
-where   A.AssetTypeID = {at.ID} and A.State = 1
-        {whereString}
-";
+where   A.AssetTypeID = @atID 
+        and A.State = 1
+        and A.ID not in (select AssetID from cache.NoRead where ResourceID = @r) 
+{whereString} 
+OPTION (RECOMPILE)";
             }
 
             count = Query<int>(countSql, dbArgs).Single();
 
-            pageNumber = (pageNumber > 0) ? pageNumber - 1 : 0;
+            pageNumber = ((pageNumber < 0) ? 0 : pageNumber) * pageSize;
+
             if (pageSize < 0)
                 pageSize = 25;
 
             var sql = $@"
 select	A.ID as AssetID,
 		A.Object,
-		A.ObjectID,        
+		A.ObjectID      
 		{selectFieldString}
         {parentSqlColumn}
 		{editRightsColumnStatement}
-from	Asset A 
+from	Asset A{tableHints} 
         {parentSqlJoin} 
         {listableJoinString} 
         {filterJoinString} 
         {editRightsJoinStatement} 
-where   A.AssetTypeID = {at.ID} and A.State = 1  
+where   A.AssetTypeID = @atID 
+        and A.State = 1  
+        and A.ID not in (select AssetID from cache.NoRead where ResourceID = @r) 
         {whereString}
 ORDER BY {orderFieldString}
-OFFSET({pageNumber}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY";
+OFFSET({pageNumber}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY 
+OPTION (RECOMPILE)";
 
             return Query<dynamic>(sql, dbArgs);
         }
 
         /// <summary>
-        /// This is the pivot version of the method above, but the sort is where this design broke down.
+        /// This is the pivot version of the method above, but the paging is where this design broke down.
         /// </summary>
-        public IEnumerable<dynamic> GetPivotVersionDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, out int count, int pageNumber = 1, int pageSize = 25, bool useFieldNames = false, string sortField = "", string sortOrder = "", string simpleFilter = "")
+        public IEnumerable<dynamic> GetPivotVersionDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, out int count, int pageNumber = 0, int pageSize = 25, bool useFieldNames = false, string sortField = "", string sortOrder = "", string simpleFilter = "")
         {
             count = 0; //initialize
 
@@ -494,6 +489,10 @@ OFFSET({pageNumber}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY";
 
             var tableHints = " with (NOLOCK)";
 
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("r", CurrentResourceID, System.Data.DbType.Int32);
+            dbArgs.Add("atID", assetTypeID, System.Data.DbType.Int32);
+
             #region Administrator Editability Sql Syntax
 
             var editRightsColumnStatement = "1 as P_CanEdit, 1 as P_CanDelete,";
@@ -503,8 +502,8 @@ OFFSET({pageNumber}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY";
             {
                 editRightsColumnStatement = " IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete, ";
                 editRightsJoinStatement = $@"
-left join cache.AssetEdit S_E{tableHints} on S_E.ResourceID = {CurrentResourceID} and S_E.AssetID = A.ID 
-left join cache.AssetDelete S_D{tableHints} on S_D.ResourceID = {CurrentResourceID} and S_D.AssetID = A.ID ";
+left join cache.AssetEdit S_E{tableHints} on S_E.ResourceID = @r and S_E.AssetID = A.ID 
+left join cache.AssetDelete S_D{tableHints} on S_D.ResourceID = @r and S_D.AssetID = A.ID ";
             }
 
             #endregion
@@ -515,9 +514,13 @@ left join cache.AssetDelete S_D{tableHints} on S_D.ResourceID = {CurrentResource
             var relationshipJoinStatement = "";
             if (selectFields.Any(i => i.Type == "Relationship"))
             {
-                relationshipCaseStatement = @" 
+                if (selectFields.Any(i => i.Type == "Relationship"))
+                {
+                    relationshipCaseStatement = @" 
 when FT.Type = 'Relationship' and FT.LookupObjectType = 'IntersectType' and F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.ObjectName
 when FT.Type = 'Relationship' and FT.LookupObjectType = 'IntersectType' and F_R.Object = A.Object and F_R.ObjectID = A.ObjectID then F_R.SubjectName ";
+                }
+
                 relationshipJoinStatement = $@"
  left join IntersectDetail F_R{tableHints} on	FT.LookupObjectType = 'IntersectType' 
 										and F_R.IntersectTypeID = FT.LookupObjectID 
@@ -537,8 +540,14 @@ when FT.Type = 'Relationship' and FT.LookupObjectType = 'IntersectType' and F_R.
             {
                 fieldFromRelationshipCaseStatement = @"when FT.Type = 'FieldFromRelationship' and FT.LookupObjectType = 'IntersectType' then F_RF.FormattedValue";
                 fieldFromRelationshipJoinStatement = $@"
- left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.Object else F_R.Subject end
-						and F_RF.ObjectType = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.ObjectID else F_R.SubjectID end
+ left join [Intersect] F_R{tableHints} on	FT.LookupObjectType = 'IntersectType' 
+										and F_R.IntersectTypeID = FT.LookupObjectID 
+										and (
+											(F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID) or 
+											(F_R.Object = A.Object and F_R.ObjectID = A.ObjectID)
+											)
+left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.Object else F_R.Subject end
+						and F_RF.ObjectID = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.ObjectID else F_R.SubjectID end
 						and F_RF.FieldTypeID = FT.LookupObjectFieldTypeID ";
             }
 
@@ -566,8 +575,6 @@ when FT.Type = 'Relationship' and FT.LookupObjectType = 'IntersectType' and F_R.
             var filterJoinList = new List<string>();
             var filterWhereList = new List<string>();
 
-            var dbArgs = new DynamicParameters();
-
             if (string.IsNullOrEmpty(simpleFilter))
             {
                 foreach (var filter in filters)
@@ -577,13 +584,15 @@ when FT.Type = 'Relationship' and FT.LookupObjectType = 'IntersectType' and F_R.
                         var f = filter as UiRequestAttributeFilterValue;
 
                         var paramPrefix = $"AttType{f.AttributeTypeID}";
+
                         dbArgs.Add($"{paramPrefix}", f.AttributeTypeID);
-                        dbArgs.Add($"{paramPrefix}Value", $"\"{f.RawValue}\"");
+                        dbArgs.Add($"{paramPrefix}Value", $"{wildcardValue(f.RawValue)}");//$"\"{f.RawValue}\"");
+
                         filterWhereList.Add(
     $@"A.ObjectID in (
-select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{paramPrefix} and CONTAINS(FormattedValue, @{paramPrefix}Value)
+select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{paramPrefix} and FormattedValue like @{paramPrefix}Value
 )"
-                            );
+                            ); //CONTAINS(FormattedValue, @{paramPrefix}Value)
                     }
 
                     if (filter is UiRequestFieldFilterValue)
@@ -596,12 +605,6 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
 
                         if (thisFilterFieldType != null)
                         {
-                            if (thisFilterFieldType.AllowAllValue)
-                            {
-                                //allItemsBind = $"{prefix}{filterNumber}val_all";
-                                //allValueBind = $"{thisFilterFieldType.AllowAllLabel.Replace("'", "''")}";
-                            }
-
                             if (thisFilterFieldType.AllowMultipleValues)
                             {
                                 if (f.Condition == "IN")
@@ -612,59 +615,80 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
 
                             var bind = $"fld{thisFilterFieldType.ID}";
                             var nonPivotFieldName = $"F{thisFilterFieldType.ID}.FormattedValue";
-                            var nonPivotInnerJoinPrefix = $"inner join Field F{thisFilterFieldType.ID}{tableHints} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
+                            var valueColumnQuery = "";
                             switch (f.Condition)
                             {
                                 case "EQUAL":
-                                    dbArgs.Add(bind, $"\"{f.RawValue}\"");
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and CONTAINS({nonPivotFieldName}, @{bind})");
+                                    dbArgs.Add(bind, $"{f.RawValue}");// $"\"{f.RawValue}\"");
+                                    valueColumnQuery = $"{nonPivotFieldName} = @{bind}";
+                                    //valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})"; 
                                     break;
                                 case "CONTAINS":
-                                    dbArgs.Add(bind, $"\"{f.RawValue}*\"");
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and CONTAINS({nonPivotFieldName}, @{bind})");
+                                    dbArgs.Add(bind, $"{wildcardValue(f.RawValue)}");
+                                    valueColumnQuery = $"{nonPivotFieldName} like @{bind}";
                                     break;
                                 case "NOT_EQUAL":
+                                    dbArgs.Add(bind, $"{f.RawValue}");
+                                    valueColumnQuery = $"{nonPivotFieldName} <> @{bind}";
+                                    break;
                                 case "DOES_NOT_CONTAIN":
-                                    dbArgs.Add(bind, $"\"{f.RawValue}\"");
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and NOT CONTAINS({nonPivotFieldName}, @{bind})");
+                                    dbArgs.Add(bind, $"{wildcardValue(f.RawValue)}");
+                                    valueColumnQuery = $"NOT {nonPivotFieldName} not like @{bind}";
                                     break;
                                 case "STARTS_WITH":
-                                    dbArgs.Add(bind, $"\"{f.RawValue}*\"");
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and CONTAINS({nonPivotFieldName}, @{bind}");
+                                    dbArgs.Add(bind, $"{f.RawValue}%");
+                                    valueColumnQuery = $"{nonPivotFieldName} like @{bind}";
                                     break;
                                 case "ENDS_WITH":
                                     dbArgs.Add(bind, $"%{f.RawValue}");
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {nonPivotFieldName} LIKE @{bind}");
+                                    valueColumnQuery = $"{nonPivotFieldName} like @{bind}";
                                     break;
                                 case "IN":
-                                    var values = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries).Select(i => $"\"{i}\"").ToList();
-                                    var concatenatedValue = string.Join(" or ", values);
-                                    dbArgs.Add(bind, concatenatedValue);
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and CONTAINS({nonPivotFieldName}, @{bind})");
-                                    break;
                                 case "IN_MULTI":
-                                    var multiValues = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries).Select(i => $"\"{i}\"").ToList();
-                                    var multiConcatenatedValue = string.Join($" {f.Operator} ", multiValues);
-                                    dbArgs.Add(bind, multiConcatenatedValue);
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and CONTAINS({nonPivotFieldName}, @{bind})");
+                                    try
+                                    {
+                                        var values = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries);//.Select(i => int.Parse(i)).ToList();
+                                        var inParamsList = new List<string>();
+                                        for (var iLoop = 0; iLoop < values.Length; iLoop++)
+                                        {
+                                            dbArgs.Add($"{bind}{iLoop}", values[iLoop]);
+                                            inParamsList.Add($"@{bind}{iLoop}");
+
+                                        }
+                                        if (values.Length > 0)
+                                            valueColumnQuery = $"{nonPivotFieldName} in ({string.Join(",", inParamsList)})";
+                                    }
+                                    catch { }
                                     break;
+                                //case "IN_MULTI":
+                                //    var multiValues = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries).Select(i => $"\"{i}\"").ToList();
+                                //    var multiConcatenatedValue = string.Join($" {f.Operator} ", multiValues);
+                                //    dbArgs.Add(bind, multiConcatenatedValue);
+                                //    valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})";
+                                //    break;
                                 case "NULL":
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {nonPivotFieldName} is null");
+                                    valueColumnQuery = $"{nonPivotFieldName} is null";
                                     break;
                                 case "NOT_NULL":
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {nonPivotFieldName} is not null");
+                                    valueColumnQuery = $"{nonPivotFieldName} is not null";
                                     break;
                                 case "EMPTY":
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {nonPivotFieldName} = ''");
+                                    valueColumnQuery = $"{nonPivotFieldName} = ''";
                                     break;
                                 case "NOT_EMPTY":
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {nonPivotFieldName} <> ''");
+                                    valueColumnQuery = $"{nonPivotFieldName} <> ''";
                                     break;
                                 default:
-                                    dbArgs.Add(bind, $"\"{f.RawValue}\"");
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and CONTAINS({nonPivotFieldName}, @{bind})");
+                                    dbArgs.Add(bind, $"{wildcardValue(f.RawValue)}");
+                                    valueColumnQuery = $"{nonPivotFieldName} like @{bind}";
                                     break;
                             }
+
+                            var nonPivotInnerJoinPrefix = $"inner join Field F{thisFilterFieldType.ID}{tableHints} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
+                            if (thisFilterFieldType.AllowAllValue)
+                                filterJoinList.Add($"{nonPivotInnerJoinPrefix} and ({valueColumnQuery} or F{thisFilterFieldType.ID}.Value = '0')");
+                            else
+                                filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {valueColumnQuery}");
                         }
                     }
 
@@ -736,18 +760,20 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
             }
             else
             {
-                dbArgs.Add("simpleFilter", $"\"{simpleFilter}*\"");
+                dbArgs.Add("allValuesFilter", "0", System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                dbArgs.Add("simpleFilter", $"{wildcardValue(simpleFilter)}", System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                //dbArgs.Add("simpleFilter", $"\"{simpleFilter}*\"", System.Data.DbType.String, System.Data.ParameterDirection.Input);
+
                 var simpleFilterIDs = string.Join(",", selectFields.Select(i => i.ID));
                 filterJoinList.Add($@"
-cross apply (
-		    select	count(1) as [Count]
+inner join (
+		    select	AssetID
 		    from	Field SF{tableHints} 
-		    where	SF.AssetID = A.ID
-				    and SF.FieldTypeID in ({simpleFilterIDs})
-				    and CONTAINS(SF.FormattedValue, @simpleFilter) 
-		    ) SF ");
-
-                filterWhereList.Add("SF.[Count] > 0");
+		    where	FieldTypeID in ({simpleFilterIDs})
+				    --and (CONTAINS(FormattedValue, @simpleFilter) OR Value = @allValuesFilter)
+                    and (FormattedValue like @simpleFilter OR Value = @allValuesFilter)
+            group by AssetID
+		    ) SF on SF.AssetID = A.ID ");
             }
 
             var filterJoinString = "";
@@ -804,27 +830,23 @@ cross apply (
 
             #endregion
 
-            var readFilter = $"A.ID not in (select AssetID from cache.NoRead where ResourceID = {CurrentResourceID})";
-
-            if (CurrentResourceIsAdmin)
-                readFilter = $"1=1";
-
             var countSql = $@"
 select	count(1)
 from	Asset A{tableHints}
         {filterJoinString} 
-where	A.AssetTypeID = {at.ID}
+where	A.AssetTypeID = @atID
 		and A.State = 1
-        and {readFilter}
+        and A.ID not in (select AssetID from cache.NoRead where ResourceID = @r)
         {filterWhereString}
-OPTION (RECOMPILE)
-";
+OPTION (RECOMPILE)";
 
             count = Query<int>(countSql, dbArgs).Single();
-
-            pageNumber = (pageNumber > 0) ? pageNumber - 1 : 0;
+            //count = ExecuteQuery<int>(countSql, countParameters).Single();
+            
+            pageNumber = (pageNumber < 0) ? 0 : pageNumber;
             if (pageSize < 0)
                 pageSize = 25;
+            pageNumber = ((pageNumber < 0) ? 0 : pageNumber) * pageSize;
 
             var sql = $@"
 select	*
@@ -853,14 +875,14 @@ from	(
 						dbo.GenerateObjectUrl('Artifact', AST.ObjectID, A.ObjectID) as Url
 				from	Asset A{tableHints}
                         {parentSqlJoin} 
-                        inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = {at.ID} and A.State = 1  
+                        inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
                         {filterJoinString} 
                         {editRightsJoinStatement} 
 						inner join FieldType FT{tableHints} on FT.ID in ({selectFieldIDs}) and FT.AssetTypeID = A.AssetTypeID
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
 						{fieldFromRelationshipJoinStatement} 
-                where   {readFilter}
+                where   A.ID not in (select AssetID from cache.NoRead where ResourceID = @r)
                         {filterWhereString}
 				) A
 		pivot	(
@@ -872,6 +894,8 @@ from	(
 OPTION (RECOMPILE)";
 
             return Query<dynamic>(sql, dbArgs);
+            //var items = ExecuteQuery<dynamic>(sql, queryParameters);
+            //Dapper.SqlMapper.Parse()
         }
 
         #endregion

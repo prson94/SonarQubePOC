@@ -642,6 +642,12 @@ when not matched by target then
                                 Action = d.IsNew ? ChangeType.Add : ChangeType.Update,
                                 Object = new EventObjectInfo { Object = sObject, ObjectType = ot, ObjectID = d.ObjectID, ObjectTypeID = otid }
                             });
+
+                            if (events.Count > 50)
+                            {
+                                QueueSource.CreateTopicMessages(events);
+                                events.Clear();
+                            }
                         }
                     }
                 }
@@ -990,6 +996,11 @@ when not matched by target then
                             Action = ChangeType.Add,
                             Object = new EventObjectInfo { Object = SystemObjects.Intersect, ObjectType = SystemObjects.IntersectType, ObjectID = r.IntersectID, ObjectTypeID = r.IntersectTypeID }
                         });
+                        if (events.Count > 50)
+                        {
+                            QueueSource.CreateTopicMessages(events);
+                            events.Clear();
+                        }
                     }
                 });
                 if (events.Count > 0)
@@ -1094,6 +1105,11 @@ when not matched by target then
                     trans.Rollback();
                 }
             }
+        }
+
+        public void ProcessUnresolvedRelationships()
+        {
+            Execute(@"exec integration.ProcessUnresolvedRelationships");
         }
 
         #endregion

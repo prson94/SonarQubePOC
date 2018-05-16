@@ -637,7 +637,10 @@ where   A.Type = 'ArtifactType'
                 default:
                     var doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(value+"");
-                    document.SetCellValue(rowIndex, columnIndex, doc.DocumentNode.InnerText);
+                    var txt = doc.DocumentNode.InnerText;
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, columnIndex, txt);
                     break;
             }
         }
@@ -728,6 +731,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                 var filters = GetFilterValuesFromRequest(Request);
 
                 int total;
+                //var results = Company.GetDynamicAssets(assetType, filters, out total, pagenum, pagesize, false, sortDataField, sortOrder, filter);
                 var results = Company.GetPivotVersionDynamicAssets(assetType, filters, out total, pagenum, pagesize, false, sortDataField, sortOrder, filter);
 
                 return new JsonNetResult

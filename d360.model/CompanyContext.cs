@@ -2193,7 +2193,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
         public IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90)
         {
-            return Database.Connection.Query<T>(sql, param, null, true, timeout);
+            return Database.Connection.Query<T>(sql, param, null, false, timeout);
         }
 
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)

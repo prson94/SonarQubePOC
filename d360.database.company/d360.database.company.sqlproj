@@ -98,6 +98,7 @@
     <Folder Include="Releases\2018.04.13" />
     <Folder Include="Releases\2018.04.27" />
     <Folder Include="Releases\2018.05.11" />
+    <Folder Include="Releases\2018.05.18" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -113,6 +114,7 @@
   <ItemGroup>
     <PreDeploy Include="Releases\2018.04.27\1.Updates.sql" />
     <None Include="Releases\2018.05.11\1.sql" />
+    <None Include="Releases\2018.05.18\1.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Releases\2018.04.13\VerificationBeforeStaticColumnDrop.sql" />
