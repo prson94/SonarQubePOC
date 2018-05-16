@@ -144,8 +144,6 @@ export class AdminMetricGroupEditorComponent extends BaseComponent implements On
                 let total = 0;
                 this.model.Children.forEach(c => {
 
-                    if (c.Weight == 0)
-                        valid = false;
                     total += c.Weight;
                 });
 
