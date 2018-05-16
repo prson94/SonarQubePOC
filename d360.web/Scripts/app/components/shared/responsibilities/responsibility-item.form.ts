@@ -70,19 +70,23 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private getResponsibilityTypes(): void {
        
         let allResources = this.model.resources;
-        let rType = this.model.selectedResponsibilityType;
-        let rID = this.model.selectedResource.split("|", 2);
+        let rType = this.item.ResponsibilityTypeID ? this.item.ResponsibilityTypeID : this.model.selectedResponsibilityType;
+
+        let rID:string = this.item.SecurityAssetID ? this.item.SecurityAssetID.toString() : this.model.selectedResource.split("|", 2)[1];
         let responsibilityDetails = this.model.responsibilityDetails;
         
         let rsDetail = responsibilityDetails.filter(x => x.ResponsibilityTypeID.toString() == rType)
-       
+
         if (this.item == null || this.item.ResponsibilityTypeID == null) {
             this.IsResponsibilityDisabled = false;
             this.resources = allResources.filter(x => rsDetail.every(y => y.ResourceID.toString() != x.value.split("|", 2)[1]));
+            this.model.selectedResource = this.resources[0].value;
         }
         else {
             this.IsResponsibilityDisabled = true;
-            this.resources = allResources.filter(x => rsDetail.every(y => (y.ResourceID.toString() != x.value.split("|", 2)[1]) || (y.ResourceID.toString() == rID[1])  ));
+            this.resources = allResources.filter(x => rsDetail.every(y => (y.ResourceID.toString() != x.value.split("|", 2)[1]) || (y.ResourceID.toString() == rID)));
+            this.model.selectedResponsibilityType = rType.toString();
+            this.model.selectedResource = this.item.SecurityAsset + "|" + rID.toString();
         }
  
     }
