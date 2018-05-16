@@ -31,8 +31,7 @@ namespace d360.web
             }
 
 
-            // Web API routes
-            config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
+            // Web API routes            
             config.MapHttpAttributeRoutes();
 
             config.AddODataQueryFilter();
