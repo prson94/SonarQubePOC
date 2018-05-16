@@ -1571,6 +1571,37 @@ namespace d360.model
                 }
             }
 
+            if (result.Contains("[OBJECT_TYPE]"))
+            {
+                string path = null;
+                if (objectInfo.Object == SystemObjects.Issue)
+                {
+                    var issue = Issues.Where(i => i.ID == objectInfo.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+
+                    if (issue != null)
+                    {
+                        path = GetObjectTypePath(issue.Object, issue.ObjectID);
+                    }
+                }
+                else
+                {
+                    //get the objects name
+                    path = GetObjectTypePath(objectInfo.Object.ToString(), objectInfo.ObjectID);
+                }
+
+                var itemLink = "(unknown item)";
+
+                if (path != null)
+                {
+                    if (supportHtml)
+                        itemLink = $"<b>{path}</b>";
+                    else
+                        itemLink = path;
+                }
+
+                result = result.Replace("[OBJECT_TYPE]", itemLink);
+            }
+
             return result;
         }
 

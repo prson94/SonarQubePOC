@@ -953,6 +953,12 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return model;
         }
 
+        public string GetObjectTypePath(string type, long id)
+        {
+            string query = string.Format("SELECT utility.GetObjectTypePath('{0}', {1}) as path", type, id);
+            return Database.SqlQuery<string>(query).SingleOrDefault();            
+        }
+
         public ObjectStyle GetObjectStyle(string type, int id)
         {
             return Filter<ObjectStyle>(i => i.ObjectType == type && i.ObjectID == id).FirstOrDefault();
