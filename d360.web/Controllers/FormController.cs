@@ -13674,6 +13674,11 @@ order by D.TextPath";
                 return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
             }
 
+            if(type == SystemObjects.ReferenceItemType)
+            {
+                objectTypeID = 0;
+            }
+
             var targetType = "";
             var targetTypeID = 0;
             if (relationshipType.Subject == parentType && relationshipType.SubjectID == objectTypeID)
