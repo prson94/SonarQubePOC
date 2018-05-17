@@ -1356,6 +1356,38 @@ BEGIN
 END
 GO
 
+insert into ResponsibilityTypeRelationOverrideItem (ResponsibilityTypeID, AssetID, SecurityAsset, SecurityAssetID) 
+select 
+	ResponsibilityTypeID, 
+	A.ID as AssetID, 
+	case when ResponsibleObject = 'Group' then 
+		'G' 
+	when ResponsibleObject = 'Resource' then 
+		'R' 
+	when ResponsibleObject = 'Organization' then
+		'O'
+	end as SecurityAsset, 
+	ResponsibleObjectID as SecurityAssetID
+from cache.ResponsibilityItem R
+inner join Asset A on A.Object = R.Object and A.ObjectID = R.ObjectID
+where not exists (
+	select 
+		* 
+	from 
+		ResponsibilityTypeRelationOverrideItem O 
+	where 
+		O.ResponsibilityTypeID = R.ResponsibilityTypeID 
+		and O.AssetID = A.ID 
+		and O.SecurityAssetID = R.ResponsibleObjectID
+		and O.SecurityAsset = case when R.ResponsibleObject = 'Group' then 
+			'G' 
+		when R.ResponsibleObject = 'Resource' then 
+			'R' 
+		when R.ResponsibleObject = 'Organization' then
+			'O'
+		end);
+go
+
 alter table [Rule] drop column [DisplayValue]
 alter table [Rule] add [DisplayValue] AS ([utility].[GetObjectDisplayValueWrapper]('Rule',[ID],[RuleTypeID]))
 GO
