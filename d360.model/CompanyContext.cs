@@ -185,6 +185,8 @@ namespace d360.model
 
         public DbSet<core.entities.IssueType> IssueTypes { get; set; }
 
+        public DbSet<IssueTypeRelation> IssueTypeRelations { get; set; }
+
         public DbSet<Language> Languages { get; set; }
 
         public DbSet<Lookup> Lookups { get; set; }

@@ -404,4 +404,34 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getIssueTypeAllocations(issueTypeId: number) {
+        return this.http.get(`api/issuetype/${issueTypeId}/allocations`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postIssueTypeAllocation(item: any) {
+        let values: any = {};
+
+        //takes the form and convert any array values to , separated string values
+        for (var p in item) {
+            if (item.hasOwnProperty(p)) {
+                if (Array.isArray(item[p])) {
+                    values[p] = item[p].join();
+                }
+                else {
+                    values[p] = item[p];
+                }
+            }
+        }
+        return this.postDynamic(this.http, 'IssueTypeRelation', values);
+    }
+
+    deleteIssueTypeAllocation(issueTypeId: number, assetTypeId: number) {
+        return this.http.delete(`form/DeleteIssueTypeRelation?issueTypeID=${issueTypeId}&assetTypeID=${assetTypeId}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 }

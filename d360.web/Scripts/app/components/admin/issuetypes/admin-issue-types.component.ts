@@ -61,7 +61,14 @@ import { Title } from '@angular/platform-browser';
                                     <d3s-field-definition-tile [objectType]="'IssueType'" [objectID]="selected?.ID" ></d3s-field-definition-tile>     
                                 </div>
                             </div>
-                        </div>                        
+                        </div> 
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail"> 
+                                    <d3s-admin-issue-type-allocation [issueTypeId]="selected?.ID"></d3s-admin-issue-type-allocation>
+                                </div>
+                            </div>
+                        </div>
                     <div>
                 </div>  
                 `,

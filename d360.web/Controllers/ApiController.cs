@@ -7887,6 +7887,18 @@ from	    TaxonomyType FAT
             });
 
         }
+
+        [Route("issuetype/{issueTypeID:int}/allocations")]
+        public HttpResponseMessage GetIssueTypeRelations(int issueTypeID)
+        {
+            var relations = Company.Query<IssueTypeRelation>(@"select R.IssueTypeID, R.AssetTypeID, T.[Object] as ObjectType, T.[Name] as TypeName 
+                from IssueTypeRelation R
+                inner join AssetType T on T.ID = R.AssetTypeID
+                inner join IssueType I on I.ID = R.IssueTypeID
+                where R.IssueTypeID = @issueTypeID", new { issueTypeID }).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, new { Allocations = relations });
+        }
         #endregion
 
         #region Metrics

@@ -24,6 +24,7 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 
 import { AdminIssueTypesComponent } from './admin-issue-types.component';
+import { AdminIssueTypeAllocationComponent } from './admin-issue-type-allocation.component';
 
 
 import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
@@ -53,7 +54,8 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
         TilesModule,
     ],
     declarations: [
-        AdminIssueTypesComponent
+        AdminIssueTypesComponent,
+        AdminIssueTypeAllocationComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

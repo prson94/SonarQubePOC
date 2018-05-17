@@ -396,6 +396,8 @@ namespace d360.web.Controllers
                     return Issue_AddFields(objectID.GetValueOrDefault());
                 case "ISSUETYPE":
                     return IssueType_AddFields();
+                case "ISSUETYPERELATION":
+                    return IssueTypeRelation_AddFields(objectID.GetValueOrDefault());
                 case "LOOKUPTYPE":
                     return Lookup_AddFields(objectID.GetValueOrDefault());
                 case "MAP":
@@ -678,6 +680,8 @@ namespace d360.web.Controllers
                     return AddIssue(form);
                 case "ISSUETYPE":
                     return AddIssueType(form);
+                case "ISSUETYPERELATION":
+                    return AddIssueTypeRelation(form);
                 case "LOOKUP":
                     return AddLookup(form);
                 case "MAP":
@@ -8321,6 +8325,25 @@ namespace d360.web.Controllers
 
         #region Issue Types
 
+        [Route("IssueTypeRelation_AddFields"), NonNullableParameters]
+        public JsonResult IssueTypeRelation_AddFields(int issueTypeId)
+        {
+            if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
+            
+            var availableTypes = Company.Query<SelectListItem>(string.Format(@"select ID as [Value], {0} + T.[Name] as [Text]
+                from AssetType T
+                where not exists (select 1 from IssueTypeRelation where AssetTypeID = T.ID and IssueTypeID = @issueTypeId)
+                order by 2", QueryConstants.HighLevelTypeCaseStatement), new { issueTypeId }).ToList();
+
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "AssetTypeID", Name = "Asset Type", FieldType = DataType.Lookup.ToString(), Items = availableTypes, Required = true });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
         [Route("IssueType_EditFields"), NonNullableParameters]
         public JsonResult IssueType_EditFields(int id)
         {
@@ -8336,7 +8359,6 @@ namespace d360.web.Controllers
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
         
         [Route("IssueType_AddFields"), NonNullableParameters]
         public JsonResult IssueType_AddFields()
@@ -8441,7 +8463,65 @@ namespace d360.web.Controllers
 
         }
 
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddIssueType")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddIssueTypeRelation")]
+        public JsonResult AddIssueTypeRelation(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("IssueType");
+
+                var model = new IssueTypeRelation
+                {
+                    IssueTypeID = parseIntField(form, "IssueTypeID"),
+                    AssetTypeID = parseIntField(form, "AssetTypeID")
+                };
+
+                Company.Add(model);
+
+                return jsonSuccess("Issue Type allocation successfully added.", model.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete, ValidateInput(false), Route("DeleteIssueTypeRelation")]
+        public JsonResult DeleteIssueTypeRelation(int issueTypeID, int assetTypeID)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Delete, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (issueTypeID < 1 || assetTypeID < 1) throw new InvalidDataException("IssueTypeRelation");
+
+                var relation = Company.IssueTypeRelations.Where(i => i.IssueTypeID == issueTypeID && i.AssetTypeID == assetTypeID).FirstOrDefault();
+                Company.Delete(relation);
+
+                return jsonSuccess("Issue Type allocation successfully deleted.", assetTypeID.ToString(), "delete", HttpStatusCode.OK);
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddIssueType")]
         public JsonResult AddIssueType(FormCollection form)
         {
             try
@@ -8541,6 +8621,10 @@ namespace d360.web.Controllers
 
                 if (!Company.HasPermission(SystemObjects.IssueType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+
+                var typeRelations = Company.IssueTypeRelations.Where(i => i.IssueTypeID == id).ToList();
+                Company.IssueTypeRelations.RemoveRange(typeRelations);
 
                 Company.Delete<core.entities.IssueType>(i => i.ID == id);
                 
