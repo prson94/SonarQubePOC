@@ -31,7 +31,7 @@ declare var CompanySettings;
                             <div class="row">
                                 <div class="col s12">
                                     <div class="FieldName">{{actionMessage}}</div>
-                                    <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectID;selectedObjectType=objectType;" value="current">{{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}</label></div>
+                                    <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectCurrent()" value="current">{{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}</label></div>
                                     <div>
                                         <label style="padding-left:20px"><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption">Other item</label>
                                         <div *ngIf="selectedOption=='other'" style="padding-left:40px"><p-autoComplete size="100"                                                
@@ -55,10 +55,12 @@ declare var CompanySettings;
                                     <div class="FieldName">What are you reporting?</div>                                    
                                 </div>                 
                                 <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
-                                    <div style="padding-left:40px"><select required name="availableTypes" style="width:100%" placeholder="Choose a type" [(ngModel)]="issueType">                                            
-                                          <option></option>
-                                          <option *ngFor="let p of issueTypes" [ngValue]="p">{{p.Name}}</option>
-                                    </select></div>                       
+                                    <div style="padding-left:40px">
+                                        <select required name="availableTypes" style="width:100%" placeholder="Choose a type" [(ngModel)]="issueType">                                            
+                                              <option></option>
+                                              <option *ngFor="let p of issueTypes" [ngValue]="p">{{p.Name}}</option>
+                                        </select>
+                                    </div>                       
                                     <p *ngIf="issueType" style="padding-left:40px" [innerHtml]="issueType.Description"></p>                   
                                 </div>                                                          
                                 <d3s-dynamic-editor *ngIf="issueType" [hasHeader]="false" [objectID]="issueType?.ID" objectType="Issue" (saveClick)="save($event)" (closeClick)="cancel()"></d3s-dynamic-editor>                                       
@@ -107,9 +109,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.type)
             this.objectType = this.headerBreadcrumbService.currentObject.type;
 
-        this.loadDetails(this.objectID, this.objectType);
-
-        this.loadIssueTypes();
+        this.loadDetails(this.objectID, this.objectType)
+            .then(() => this.loadIssueTypes());
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
@@ -124,7 +125,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private loadDetails(objectId, objectType) {        
         if (objectId == undefined || objectType == undefined) return;
         this.isLoading = true;
-        this.objectDetailService.getObject(objectId, objectType).then(
+        return this.objectDetailService.getObject(objectId, objectType).then(
             res => {
                 this.objectDetail = res;
                 this.selectedOption = 'current';
@@ -136,7 +137,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     private loadIssueTypes() {
         this.isLoading = true;
-        this.workflowService.getWorkflowIssueTypes()
+        this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId)
             .then(result => {
                 this.issueTypes = result;
                 if (this.issueTypes != null && this.issueTypes.length == 1) this.issueType = this.issueTypes[0];
@@ -169,11 +170,22 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     private selectItem() {
         this.selectedObjectType = this.term.Object;
-        this.selectedObjectId = this.term.ObjectID;       
+        this.selectedObjectId = this.term.ObjectID;  
+        this.loadIssueTypes();
     }
 
     private userFriendlyObjectName(objectType: string) {
         return D3SObjectHelpers.getObjectTypeFriendlyName(objectType);
+    }
+
+    private selectCurrent() {
+        if (this.selectedOption == 'other') {
+            this.issueType = null;
+            this.selectedOption = 'current';
+            this.selectedObjectId = this.objectID;
+            this.selectedObjectType = this.objectType;
+            this.loadIssueTypes()
+        }
     }
 
 }

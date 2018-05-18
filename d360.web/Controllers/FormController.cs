@@ -8334,8 +8334,9 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
             
-            var availableTypes = Company.Query<SelectListItem>(string.Format(@"select ID as [Value], {0} + T.[Name] as [Text]
+            var availableTypes = Company.Query<SelectListItem>(string.Format(@"select T.ID as [Value], {0} + coalesce(FAT.TextPath, T.[Name]) as [Text]
                 from AssetType T
+                left join FusionAttributeType FAT on T.[Object] = 'FusionAttributeType' and FAT.ID = T.ObjectID
                 where not exists (select 1 from IssueTypeRelation where AssetTypeID = T.ID and IssueTypeID = @issueTypeId)
                 order by 2", QueryConstants.HighLevelTypeCaseStatement), new { issueTypeId }).ToList();
 
@@ -8494,7 +8495,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, ValidateInput(false), Route("DeleteIssueTypeRelation")]
+        [HttpDelete, ValidateInput(false), Route("DeleteIssueTypeRelation"), NonNullableParameters]
         public JsonResult DeleteIssueTypeRelation(int issueTypeID, int assetTypeID)
         {
             try

@@ -85,8 +85,11 @@ export class WorkflowService extends BaseService {
         return this.postDynamic(this.http, 'issue', issue);
     }
    
-    getWorkflowIssueTypes(): Promise<WorkflowIssueType[]> {
-        return this.http.get('api/issuetypes')
+    getWorkflowIssueTypes(object: string = null, objectId: number = null): Promise<WorkflowIssueType[]> {
+        let url = 'api/issuetypes';
+        if (object != null && objectId != null)
+            url += `?object=${object}&objectID=${objectId}`
+        return this.http.get(url)
             .toPromise()
             .then(response => <WorkflowIssueType[]>response.json())
             .catch(err => this.handleError(err));

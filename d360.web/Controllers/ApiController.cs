@@ -7860,9 +7860,24 @@ from	    TaxonomyType FAT
         }
 
         [Route("issuetypes")]
-        public IQueryable<core.entities.IssueType> GetIssueTypes()
+        public IQueryable<core.entities.IssueType> GetIssueTypes(string @object = null, int? objectID = null)
         {
-            return Company.Table<core.entities.IssueType>();
+            var sql = @"select I.ID, I.Name, I.Description, I.IsSystem, I.UpdatedBy, I.UpdatedOn from IssueType I
+                cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = I.ID) C
+                where C.Allocations = 0
+                {0}";
+            if (@object != null && objectID != null)
+                sql = string.Format(sql, @"union all
+                    select I.ID, I.Name, I.Description, I.IsSystem, I.UpdatedBy, I.UpdatedOn from IssueType I
+                    inner join IssueTypeRelation R on R.IssueTypeID = I.ID
+                    inner join AssetType T on T.ID = R.AssetTypeID
+                    inner join Asset A on A.AssetTypeID = T.ID
+                    where A.Object = @object and A.ObjectID = @objectID
+                    order by name asc");
+            else
+                sql = string.Format(sql, "order by name asc");
+
+            return Company.Query<IssueType>(sql, new { @object, objectID }).AsQueryable();
         }
 
         [Route("issue/{issueID:int}")]
@@ -7891,9 +7906,10 @@ from	    TaxonomyType FAT
         [Route("issuetype/{issueTypeID:int}/allocations")]
         public HttpResponseMessage GetIssueTypeRelations(int issueTypeID)
         {
-            var relations = Company.Query<IssueTypeRelation>(@"select R.IssueTypeID, R.AssetTypeID, T.[Object] as ObjectType, T.[Name] as TypeName 
+            var relations = Company.Query<IssueTypeRelation>(@"select R.IssueTypeID, R.AssetTypeID, T.[Object] as ObjectType, coalesce(FAT.TextPath, T.[Name]) as TypeName 
                 from IssueTypeRelation R
                 inner join AssetType T on T.ID = R.AssetTypeID
+                left join FusionAttributeType FAT on T.[Object] = 'FusionAttributeType' and FAT.ID = T.ObjectID
                 inner join IssueType I on I.ID = R.IssueTypeID
                 where R.IssueTypeID = @issueTypeID", new { issueTypeID }).ToList();
 
