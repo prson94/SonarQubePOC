@@ -826,6 +826,10 @@ inner join (
                 {
                     orderFieldString = useFieldNames ? $"[{sortFieldType.Name}] {sortOrder}" : $"[Field{sortFieldType.ID}] {sortOrder}";
                 }
+                else if(string.Compare(sortField,"PARENT",true) == 0)
+                {
+                    orderFieldString = $"Parent {sortOrder}";
+                }
             }
 
             #endregion
