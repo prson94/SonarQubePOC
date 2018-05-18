@@ -22,6 +22,8 @@ namespace d360.core.entities
         public string FieldName { get; set; }
         public string Condition { get; set; }
         public bool IsUnlistedFilterField { get; set; } = false;
+
+        public bool IsParentField { get {  return (string.Compare(this.FieldName, "Parent", true) == 0); } }
     }
 
     public enum UiRequestOwnershipFilterType

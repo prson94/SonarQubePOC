@@ -139,7 +139,7 @@ end as {columnName} ");
             var parentPresent = Any<IntersectType>(i => i.Object == at.Object && i.ObjectID == at.ObjectID && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy);
 
             var parentSqlColumn = @"";
-            var parentSqlJoin = @"";
+            var parentSqlJoin = @"";            
 
             if (parentPresent)
             {
@@ -559,7 +559,8 @@ left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_R.Subject = A.
 
             var parentOuterSqlColumn = @"";
             var parentSqlColumn = @"";
-            var parentSqlJoin = @"";
+            var parentSqlJoin = @"";         
+            var countRequireParentJoin = false;
 
             if (parentIntersectType != null)
             {
@@ -574,11 +575,13 @@ left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_R.Subject = A.
 
             var filterJoinList = new List<string>();
             var filterWhereList = new List<string>();
+            int filterIndex = 0;
 
             if (string.IsNullOrEmpty(simpleFilter))
             {
                 foreach (var filter in filters)
                 {
+                    filterIndex++;
                     if (filter is UiRequestAttributeFilterValue)
                     {
                         var f = filter as UiRequestAttributeFilterValue;
@@ -599,96 +602,42 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                     {
                         var f = filter as UiRequestFieldFilterValue;
 
-                        var thisFilterFieldType = useFieldNames ?
-                            fieldTypes.FirstOrDefault(i => i.Name == f.FieldName) :
-                            fieldTypes.FirstOrDefault(i => i.ID == int.Parse(f.FieldName.Replace("Field", "")));
 
-                        if (thisFilterFieldType != null)
+                        if (f.IsParentField)
                         {
-                            if (thisFilterFieldType.AllowMultipleValues)
+                            countRequireParentJoin = true;
+
+                            dbArgs.Add($"parentFilterVal{filterIndex}", f.RawValue);
+
+                            filterWhereList.Add($"PID.ParentDisplayValue = @parentFilterVal{filterIndex}");
+                        }
+                        else
+                        {
+
+                            var thisFilterFieldType = useFieldNames ?
+                                fieldTypes.FirstOrDefault(i => i.Name == f.FieldName) :
+                                fieldTypes.FirstOrDefault(i => i.ID == int.Parse(f.FieldName.Replace("Field", "")));
+
+                            if (thisFilterFieldType != null)
                             {
-                                if (f.Condition == "IN")
-                                    f.Condition = "IN_MULTI";
+                                if (thisFilterFieldType.AllowMultipleValues)
+                                {
+                                    if (f.Condition == "IN")
+                                        f.Condition = "IN_MULTI";
+                                    else
+                                        f.Condition = "CONTAINS";
+                                }
+
+                                var bind = $"fld{thisFilterFieldType.ID}";
+                                var nonPivotFieldName = $"F{thisFilterFieldType.ID}.FormattedValue";
+                                var valueColumnQuery = GetFilterCondition(f.Condition, nonPivotFieldName, bind, dbArgs, f.RawValue);
+
+                                var nonPivotInnerJoinPrefix = $"inner join Field F{thisFilterFieldType.ID}{tableHints} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
+                                if (thisFilterFieldType.AllowAllValue)
+                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and ({valueColumnQuery} or F{thisFilterFieldType.ID}.Value = '0')");
                                 else
-                                    f.Condition = "CONTAINS";
+                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {valueColumnQuery}");
                             }
-
-                            var bind = $"fld{thisFilterFieldType.ID}";
-                            var nonPivotFieldName = $"F{thisFilterFieldType.ID}.FormattedValue";
-                            var valueColumnQuery = "";
-                            switch (f.Condition)
-                            {
-                                case "EQUAL":
-                                    dbArgs.Add(bind, $"{f.RawValue}");// $"\"{f.RawValue}\"");
-                                    valueColumnQuery = $"{nonPivotFieldName} = @{bind}";
-                                    //valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})"; 
-                                    break;
-                                case "CONTAINS":
-                                    dbArgs.Add(bind, $"{wildcardValue(f.RawValue)}");
-                                    valueColumnQuery = $"{nonPivotFieldName} like @{bind}";
-                                    break;
-                                case "NOT_EQUAL":
-                                    dbArgs.Add(bind, $"{f.RawValue}");
-                                    valueColumnQuery = $"{nonPivotFieldName} <> @{bind}";
-                                    break;
-                                case "DOES_NOT_CONTAIN":
-                                    dbArgs.Add(bind, $"{wildcardValue(f.RawValue)}");
-                                    valueColumnQuery = $"NOT {nonPivotFieldName} not like @{bind}";
-                                    break;
-                                case "STARTS_WITH":
-                                    dbArgs.Add(bind, $"{f.RawValue}%");
-                                    valueColumnQuery = $"{nonPivotFieldName} like @{bind}";
-                                    break;
-                                case "ENDS_WITH":
-                                    dbArgs.Add(bind, $"%{f.RawValue}");
-                                    valueColumnQuery = $"{nonPivotFieldName} like @{bind}";
-                                    break;
-                                case "IN":
-                                case "IN_MULTI":
-                                    try
-                                    {
-                                        var values = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries);//.Select(i => int.Parse(i)).ToList();
-                                        var inParamsList = new List<string>();
-                                        for (var iLoop = 0; iLoop < values.Length; iLoop++)
-                                        {
-                                            dbArgs.Add($"{bind}{iLoop}", values[iLoop]);
-                                            inParamsList.Add($"@{bind}{iLoop}");
-
-                                        }
-                                        if (values.Length > 0)
-                                            valueColumnQuery = $"{nonPivotFieldName} in ({string.Join(",", inParamsList)})";
-                                    }
-                                    catch { }
-                                    break;
-                                //case "IN_MULTI":
-                                //    var multiValues = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries).Select(i => $"\"{i}\"").ToList();
-                                //    var multiConcatenatedValue = string.Join($" {f.Operator} ", multiValues);
-                                //    dbArgs.Add(bind, multiConcatenatedValue);
-                                //    valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})";
-                                //    break;
-                                case "NULL":
-                                    valueColumnQuery = $"{nonPivotFieldName} is null";
-                                    break;
-                                case "NOT_NULL":
-                                    valueColumnQuery = $"{nonPivotFieldName} is not null";
-                                    break;
-                                case "EMPTY":
-                                    valueColumnQuery = $"{nonPivotFieldName} = ''";
-                                    break;
-                                case "NOT_EMPTY":
-                                    valueColumnQuery = $"{nonPivotFieldName} <> ''";
-                                    break;
-                                default:
-                                    dbArgs.Add(bind, $"{wildcardValue(f.RawValue)}");
-                                    valueColumnQuery = $"{nonPivotFieldName} like @{bind}";
-                                    break;
-                            }
-
-                            var nonPivotInnerJoinPrefix = $"inner join Field F{thisFilterFieldType.ID}{tableHints} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
-                            if (thisFilterFieldType.AllowAllValue)
-                                filterJoinList.Add($"{nonPivotInnerJoinPrefix} and ({valueColumnQuery} or F{thisFilterFieldType.ID}.Value = '0')");
-                            else
-                                filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {valueColumnQuery}");
                         }
                     }
 
@@ -765,15 +714,31 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                 //dbArgs.Add("simpleFilter", $"\"{simpleFilter}*\"", System.Data.DbType.String, System.Data.ParameterDirection.Input);
 
                 var simpleFilterIDs = string.Join(",", selectFields.Select(i => i.ID));
-                filterJoinList.Add($@"
-inner join (
-		    select	AssetID
-		    from	Field SF{tableHints} 
-		    where	FieldTypeID in ({simpleFilterIDs})
-				    --and (CONTAINS(FormattedValue, @simpleFilter) OR Value = @allValuesFilter)
-                    and (FormattedValue like @simpleFilter OR Value = @allValuesFilter)
-            group by AssetID
-		    ) SF on SF.AssetID = A.ID ");
+
+                if (parentIntersectType != null)
+                {                    
+                    filterJoinList.Add($@"
+                        inner join (
+		                            select	AssetID
+		                            from	Field SF{tableHints} 
+                                    cross apply [dbo].[GetArtifactParentByAssetID](AssetID) PID 
+		                            where	FieldTypeID in ({simpleFilterIDs})				                            
+                                            and (FormattedValue like @simpleFilter OR Value = @allValuesFilter OR PID.ParentDisplayValue like @simpleFilter)
+                                    group by AssetID
+		                            ) SF on SF.AssetID = A.ID ");
+                }
+                else
+                {
+                    filterJoinList.Add($@"
+                        inner join (
+		                            select	AssetID
+		                            from	Field SF{tableHints}                                             
+		                            where	FieldTypeID in ({simpleFilterIDs})
+				                            --and (CONTAINS(FormattedValue, @simpleFilter) OR Value = @allValuesFilter)
+                                            and (FormattedValue like @simpleFilter OR Value = @allValuesFilter)
+                                    group by AssetID
+		                            ) SF on SF.AssetID = A.ID ");
+                }
             }
 
             var filterJoinString = "";
@@ -837,7 +802,8 @@ inner join (
             var countSql = $@"
 select	count(1)
 from	Asset A{tableHints}
-        {filterJoinString} 
+        {(countRequireParentJoin ? parentSqlJoin : "")} 
+        {filterJoinString}         
 where	A.AssetTypeID = @atID
 		and A.State = 1
         and A.ID not in (select AssetID from cache.NoRead where ResourceID = @r)
@@ -900,6 +866,81 @@ OPTION (RECOMPILE)";
             return Query<dynamic>(sql, dbArgs);
             //var items = ExecuteQuery<dynamic>(sql, queryParameters);
             //Dapper.SqlMapper.Parse()
+        }
+
+        private string GetFilterCondition(string condition, string fieldName, string bind, DynamicParameters dbArgs, string value)
+        {
+            string valueColumnQuery = "";
+
+            switch (condition)
+            {
+                case "EQUAL":
+                    dbArgs.Add(bind, $"{value}");// $"\"{f.RawValue}\"");
+                    valueColumnQuery = $"{fieldName} = @{bind}";
+                    //valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})"; 
+                    break;
+                case "CONTAINS":
+                    dbArgs.Add(bind, $"{wildcardValue(value)}");
+                    valueColumnQuery = $"{fieldName} like @{bind}";
+                    break;
+                case "NOT_EQUAL":
+                    dbArgs.Add(bind, $"{value}");
+                    valueColumnQuery = $"{fieldName} <> @{bind}";
+                    break;
+                case "DOES_NOT_CONTAIN":
+                    dbArgs.Add(bind, $"{wildcardValue(value)}");
+                    valueColumnQuery = $"NOT {fieldName} not like @{bind}";
+                    break;
+                case "STARTS_WITH":
+                    dbArgs.Add(bind, $"{value}%");
+                    valueColumnQuery = $"{fieldName} like @{bind}";
+                    break;
+                case "ENDS_WITH":
+                    dbArgs.Add(bind, $"%{value}");
+                    valueColumnQuery = $"{fieldName} like @{bind}";
+                    break;
+                case "IN":
+                case "IN_MULTI":
+                    try
+                    {
+                        var values = value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries);//.Select(i => int.Parse(i)).ToList();
+                        var inParamsList = new List<string>();
+                        for (var iLoop = 0; iLoop < values.Length; iLoop++)
+                        {
+                            dbArgs.Add($"{bind}{iLoop}", values[iLoop]);
+                            inParamsList.Add($"@{bind}{iLoop}");
+
+                        }
+                        if (values.Length > 0)
+                            valueColumnQuery = $"{fieldName} in ({string.Join(",", inParamsList)})";
+                    }
+                    catch { }
+                    break;
+                //case "IN_MULTI":
+                //    var multiValues = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries).Select(i => $"\"{i}\"").ToList();
+                //    var multiConcatenatedValue = string.Join($" {f.Operator} ", multiValues);
+                //    dbArgs.Add(bind, multiConcatenatedValue);
+                //    valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})";
+                //    break;
+                case "NULL":
+                    valueColumnQuery = $"{fieldName} is null";
+                    break;
+                case "NOT_NULL":
+                    valueColumnQuery = $"{fieldName} is not null";
+                    break;
+                case "EMPTY":
+                    valueColumnQuery = $"{fieldName} = ''";
+                    break;
+                case "NOT_EMPTY":
+                    valueColumnQuery = $"{fieldName} <> ''";
+                    break;
+                default:
+                    dbArgs.Add(bind, $"{wildcardValue(value)}");
+                    valueColumnQuery = $"{fieldName} like @{bind}";
+                    break;
+            }
+
+            return valueColumnQuery;
         }
 
         #endregion

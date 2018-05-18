@@ -630,7 +630,7 @@ namespace d360.web.Controllers
                             filteritems = Company.Query<string>(@"select D.DisplayValue from Artifact A
                                 inner join Asset B on B.[Object] = 'Artifact' and B.ObjectID = A.ID
                                 cross apply dbo.GetAssetDisplayValueById(B.ID) D
-                                where A.ArtifactTypeID = @parentId", new { parentId = parentType.ID }).ToList(),
+                                where A.ArtifactTypeID = @parentId order by D.DisplayValue", new { parentId = parentType.ID }).ToList(),
                             columnWidth = 200
                         });
                     }
