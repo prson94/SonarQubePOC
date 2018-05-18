@@ -83,7 +83,7 @@ namespace igx.jobs.fusionruleprocessor
         {
             var sql = "select it.ID from intersecttype it inner join [predicate] pid on pid.id = it.predicateid  where [subject] = 'ArtifactType' and [object] = 'ArtifactType' and pid.type = 3 and it.objectid = @id";
 
-            return (await company.QuerySingleAsync<int>(sql, new { id = PromoteToObjectID }));
+            return (await company.QueryFirstOrDefaultAsync<int>(sql, new { id = PromoteToObjectID }));
         }
 
         private async Task MapItemParents(SqlConnection company, List<int> itemsToPromote)
