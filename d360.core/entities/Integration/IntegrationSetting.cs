@@ -30,6 +30,9 @@ namespace d360.core.entities
         [DataMember]
         public int RefreshInterval { get; set; }
 
+        [DataMember]
+        public int PageSize { get; set; }
+
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationAssetType> IntegrationAssetTypes { get; set; }
     }

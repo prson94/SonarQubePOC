@@ -45,6 +45,12 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? LastSynchOn { get; set; } = null;
 
+        [DataMember]
+        public bool TriggerTopicMessage { get; set; }
+
+        [DataMember]
+        public int? PageSize { get; set; }
+
 
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationSetting> IntegrationSetting { get; set; }

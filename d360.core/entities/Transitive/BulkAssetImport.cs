@@ -15,6 +15,8 @@ namespace d360.core.entities
         public string SourceID { get; set; }
         public string Message { get; set; }
         public bool Success { get; set; }
+        public bool IsNew { get; set; }
+        public int ObjectID { get; set; }
     }
 
     [DataContract(Name = "relationships")]

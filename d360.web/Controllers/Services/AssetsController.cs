@@ -102,7 +102,7 @@ namespace d360.web.Controllers.Services
                 var import = readRequestJsonContent<BulkAssetImport>(Request).Result;
                 //var import = JsonConvert.DeserializeObject<BulkAssetImport>(json);
 
-                var results = Company.BulkAssetsImport(ot, otid, import);
+                var results = (Company.Database.Connection as SqlConnection).BulkAssetsImport(Company.CurrentResourceID, ot, otid, import);
 
                 return Request.CreateResponse(HttpStatusCode.OK, results);
             }
@@ -135,7 +135,7 @@ namespace d360.web.Controllers.Services
             try
             {
                 var import = readRequestJsonContent<BulkRelationshipImport>(Request).Result;
-                var retResults = Company.BulkRelationshipsImport(import);
+                var retResults = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(Company.CurrentResourceID, import);
                 return Request.CreateResponse(HttpStatusCode.OK, retResults);
             }
             catch (Exception ex)
@@ -163,7 +163,7 @@ namespace d360.web.Controllers.Services
             try
             {
                 var import = readRequestJsonContent<BulkOwnerImport>(Request).Result;
-                var retResults = Company.BulkOwnersImport(import);
+                var retResults = (Company.Database.Connection as SqlConnection).BulkOwnersImport(Company.CurrentResourceID, import);
                 return Request.CreateResponse(HttpStatusCode.OK, retResults);
             }
             catch (Exception ex)

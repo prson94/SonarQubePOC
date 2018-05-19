@@ -76,9 +76,11 @@ namespace igx.jobs.fusiondeploymentprocessor
         #endregion
 
         const string functionName = "FusionDeployment_Process";
+#if DEBUG
+        const string timerSettings = "*/5 * * * * *";
+#else
         const string timerSettings = "0 */15 * * * *";
-        //const string timerSettings = "*/5 * * * * *";
-
+#endif
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
         {
             try
@@ -104,7 +106,11 @@ from	plugin.FusionAttributeType A
                 community.Close();
                 community.Dispose();
 
+#if DEBUG
+                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 15 || i.CompanyID == 110 || i.CompanyID == 8).ToList();
+#else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
+#endif
                 var environment = CoreFunction.GetConfigValueByKey("Environment");
 
                 companies.ForEach(c =>
@@ -113,13 +119,18 @@ from	plugin.FusionAttributeType A
                     {
                         #region Lists
 
+#if DEBUG
+                        clientFusionTypes = clientFusionTypes.Where(i => i.FusionTypeID == 26).ToList();
+#endif
+
                         var c_FusionTypes = (
                             from cft in clientFusionTypes
                             from ft in fusionTypes
                             where cft.ClientID == c.CompanyID
                             where cft.FusionTypeID == ft.ID
                             select ft
-                            ).ToList();
+                        ).ToList();
+
 
                         var c_FusionTypeFields = (
                             from ft in c_FusionTypes
@@ -292,6 +303,8 @@ from	plugin.FusionAttributeType A
 
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
                         company.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                        company.Execute("DISABLE TRIGGER FieldType_AfterUpsert ON dbo.FieldType");
 
                         using (var trans = company.BeginTransaction())
                         {
@@ -512,6 +525,8 @@ from	plugin.FusionAttributeType A
                                 CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                             }
                         }
+
+                        company.Execute("ENABLE TRIGGER FieldType_AfterUpsert ON dbo.FieldType");
 
                         company.Close();
                         company.Dispose();

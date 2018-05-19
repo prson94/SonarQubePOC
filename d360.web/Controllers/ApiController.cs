@@ -6748,10 +6748,7 @@ where v.id = {0}", id)).FirstOrDefault();
             var asset = Company.GetAssetDetail(assetID);
             if (asset == null)
                 return null;
-            return Company.Filter<ResponsibilityDetail>(i => 
-                ( i.AssetID == assetID || (i.Type == asset.Type && i.TypeID == asset.TypeID && !i.AssetID.HasValue) ) && 
-                i.IsVisible
-            );
+            return Company.Filter<ResponsibilityDetail>(i => i.AssetID == assetID && i.IsVisible);
         }
 
         [Route("{id:int}/permissionsbyid")]

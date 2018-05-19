@@ -1,5 +1,8 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums.Workflow;
+using d360.core.queue;
+using d360.extensions;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
@@ -37,8 +40,11 @@ namespace igx.jobs
     public static class IgcIntegration
     {
         const string functionName = "IGC_Integration";
+#if DEBUG
+        const string timerSettings = "*/5 * * * * *";
+#else
         const string timerSettings = "0 */5 * * * *";
-        //const string timerSettings = "*/5 * * * * *";
+#endif
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -54,7 +60,12 @@ namespace igx.jobs
                     var Queue = new AzureQueueSource();
                     var Security = new UriSecurityContextProvider { IsAdministrator = true, ResourceID = 0 };
                     var Community = new CommunityContext(Caching, Queue, Security);
-                    var companies = CoreFunction.GetCompaniesByCurrentSlot();//.Where(i => i.CompanyID == 122).ToList();
+#if DEBUG
+                    var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 122).ToList();
+#else
+                    var companies = CoreFunction.GetCompaniesByCurrentSlot();
+#endif
+
                     companies.ForEach(async c =>
                     {
                         try
@@ -76,7 +87,12 @@ namespace igx.jobs
                             // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
                             if (settings.Count > 0)
                             {
-                                mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList(); // && i.ID == 1
+#if DEBUG
+                                var IDs = new List<int>() { 54 };
+                                mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
+#else
+                                mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
+#endif
                                 mappingFields = company.Filter<IntegrationAssetTypeFieldItem>(i => i.Active).ToList();
                                 mappingRelations = company.Table<IntegrationAssetTypeRelationItem>().ToList();
                                 mappingRelationTargets = company.Table<IntegrationAssetTypeRelationItemTarget>().ToList();
@@ -85,16 +101,6 @@ namespace igx.jobs
 
                             foreach (var setting in settings)
                             {
-                                #region Get the resource for this setting.
-
-                                var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                                cnn.OpenWithRetry(RetryPolicy.DefaultFixed);
-                                var resource = cnn.Query<Resource>("select * from Resource where ID = @id", new { id = setting.TargetResourceID }).SingleOrDefault();
-                                cnn.Close();
-                                cnn.Dispose();
-
-                                #endregion
-
                                 bool globalCheckForChangesOnly = true; // TRUE = POST to IGC API
                                 var now = DateTime.UtcNow;
                                 globalCheckForChangesOnly = (setting.LastRefreshOn.HasValue) ? 
@@ -168,19 +174,17 @@ order by	T.SynchedAssetTypeID").ToList();
                                         {
                                             case d360.core.enums.IntegrationSystem.IGC:
                                                 success = IGC_LoadAssetsByMappingType(
-                                                    c.CompanyID,
                                                     setting,
                                                     mappingCheckForChangesOnly,
                                                     now,
-                                                    c.UrlPrefix,
-                                                    resource,
                                                     previousAtExecution ?? newAtExecution,
                                                     item,
                                                     fields,
                                                     relations,
                                                     relationTargets,
                                                     roles,
-                                                    company, 
+                                                    company,
+                                                    c,
                                                     currentCount);
                                                 break;
                                         }
@@ -257,7 +261,7 @@ order by	T.SynchedAssetTypeID").ToList();
             CoreFunction.AIFlush();
         }
 
-        #region Generic
+#region Generic
 
         public static long ConvertDateToUnixTimeMilliseconds(DateTime? date = null)
         {
@@ -390,7 +394,7 @@ order by	T.SynchedAssetTypeID").ToList();
             }
         }
 
-        #endregion
+#endregion
 
         /// <summary>
         /// Synchronizes a specific type of asset from IGC with the customer's environment, based off a serieis of field, relationship, and ownership mappings.
@@ -399,14 +403,15 @@ order by	T.SynchedAssetTypeID").ToList();
         /// <param name="setting">The high-level setting that define the type of system we are connecting to and synchronizing.</param>
         /// <param name="checkForChangesOnly">Determine if this is a DELTA check, checking for changes only, or if this is a full refresh of the content.</param>
         /// <param name="now">The current date in UTC.</param>
-        /// <param name="urlPrefix">the Govern environment prefix URL.</param>
-        /// <param name="resource">The user account whose API key and secret we will use to post data into Govern.</param>
         /// <param name="mapping">The high-level asset-to-asset mapping.</param>
         /// <param name="fields">The asset field mappings.</param>
         /// <param name="relations">The asset relationship mappings.</param>
         /// <param name="roles">The asset role mappings.</param>
         /// <returns>An asynchronous boolean to indicate whether the process was successful or not.</returns>
-        public static bool IGC_LoadAssetsByMappingType(int companyID, IntegrationSetting setting, bool checkForChangesOnly, DateTime now, string urlPrefix, Resource resource,
+        public static bool IGC_LoadAssetsByMappingType(
+            IntegrationSetting setting, 
+            bool checkForChangesOnly, 
+            DateTime now, 
             IntegrationExecutionAssetType execution,
             IntegrationAssetType mapping, 
             List<IntegrationAssetTypeFieldItem> fields, 
@@ -414,7 +419,8 @@ order by	T.SynchedAssetTypeID").ToList();
             List<IntegrationAssetTypeRelationItemTarget> relationTargets,
             List<IntegrationAssetTypeRoleItem> roles, 
             CompanyContext company,
-            int previouslyProcessCount = 0)//SqlConnection company)//out DateTime? lastDateChecked)
+            CompanyWithDatabaseServerSettings cs,
+            int previouslyProcessCount = 0)
         {
             var success = false; // By default, this has not successfully been processed yet.
 
@@ -424,25 +430,6 @@ order by	T.SynchedAssetTypeID").ToList();
             var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
 
             var sourceAuthString = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
-
-            #region Base uri logic. Not needed at this point.
-
-            var targetAuthString = $"{resource.APIPublicKey};{resource.APIPrivateKey}";
-            var targetBaseUri = "";
-
-            //if (!urlPrefix.Contains("-igx"))
-            //{
-            //    if (urlPrefix.Contains(".preview")) urlPrefix = urlPrefix.Replace(".preview", "-igx.preview");
-            //    else if (urlPrefix.Contains(".dev")) urlPrefix = urlPrefix.Replace(".dev", "-igx.dev");
-            //    else if (urlPrefix.Contains(".uat")) urlPrefix = urlPrefix.Replace(".uat", "-igx.uat");
-            //    else urlPrefix = urlPrefix + "-igx";
-            //}
-
-            //targetBaseUri = $"http://{urlPrefix}.data3sixty.local";
-            //targetBaseUri = $"https://{urlPrefix}.data3sixty.com";
-            //targetBaseUri += $"/services/assets/";
-
-            #endregion
 
             DateTime? currentParsedUnvalidatedDate = null;
 
@@ -505,13 +492,16 @@ order by	T.SynchedAssetTypeID").ToList();
                                             {
                                                 if (!targetObject.ContainsKey(f.TargetField))
                                                 {
-                                                    if (f.ParentContextPosition.Value == 99)
+                                                    if (context.Count > 0)
                                                     {
-                                                        targetObject.Add(f.TargetField, context.Last["_id"].Value<string>());
-                                                    }
-                                                    else
-                                                    {
-                                                        targetObject.Add(f.TargetField, context[f.ParentContextPosition.Value]["_id"].Value<string>());
+                                                        if (f.ParentContextPosition.Value == 99)
+                                                        {
+                                                            targetObject.Add(f.TargetField, context.Last["_id"].Value<string>());
+                                                        }
+                                                        else
+                                                        {
+                                                            targetObject.Add(f.TargetField, context[f.ParentContextPosition.Value]["_id"].Value<string>());
+                                                        }
                                                     }
                                                 }
 
@@ -550,7 +540,7 @@ order by	T.SynchedAssetTypeID").ToList();
                                                 catch (Exception ex)
                                                 {
                                                     executionAsset.ErrorMessages += $"{f.SourceField}: {ex.GetFullExceptionData()}; ";
-                                                    targetObject.Add(f.TargetField, $"ERROR: {ex.Message}");
+                                                    //targetObject.Add(f.TargetField, $"ERROR: {ex.Message}");
                                                 }
                                             }
                                             else
@@ -576,7 +566,7 @@ order by	T.SynchedAssetTypeID").ToList();
                                                     catch (Exception ex)
                                                     {
                                                         executionAsset.ErrorMessages += $"{f.SourceField}: {ex.GetFullExceptionData()}; ";
-                                                        targetObject.Add(f.TargetField, $"ERROR: {ex.Message}");
+                                                        //targetObject.Add(f.TargetField, $"ERROR: {ex.Message}");
                                                     }
                                                 }
                                                 else
@@ -589,7 +579,7 @@ order by	T.SynchedAssetTypeID").ToList();
                                                     catch (Exception ex)
                                                     {
                                                         executionAsset.ErrorMessages += $"{f.SourceField}: {ex.GetFullExceptionData()}; ";
-                                                        targetObject.Add(f.TargetField, $"ERROR: {ex.Message}");
+                                                        //targetObject.Add(f.TargetField, $"ERROR: {ex.Message}");
                                                     }
                                                 }
                                             }
@@ -777,7 +767,7 @@ order by	T.SynchedAssetTypeID").ToList();
 
                 if (fieldErrors.Keys.Count > 0)
                 {
-                    CoreFunction.AITrackEvent(functionName, $"{mapping.SourceAssetTypeName}, Parse Asset", fieldErrors, companyID);
+                    CoreFunction.AITrackEvent(functionName, $"{mapping.SourceAssetTypeName}, Parse Asset", fieldErrors, cs.CompanyID);
                 }
 
                 return root;
@@ -821,81 +811,94 @@ order by	T.SynchedAssetTypeID").ToList();
                     CoreFunction.AITrackException(functionName, ex);
                 }
 
-                url = $"{setting.SourceUri}search/";
-
-                //checkForChangesOnly = true;
-
-                //if (checkForChangesOnly)
-                //{
-                //Perform search using POST method.
-                var postModel = new IgcPostSearchRequestModel {
-                    sorts = new List<IgcPostSearchRequestSortModel>() {
-                        new IgcPostSearchRequestSortModel { ascending = true, property = "modified_on" },
-                        new IgcPostSearchRequestSortModel { ascending = true, property = "created_on" }
-                    }
-                };
-                postModel.begin = previouslyProcessCount;
-                postModel.pageSize = 500;
-
-                postModel.types.Add(mapping.SourceAssetTypeName);
-
-                postModel.properties.AddRange(fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
-                postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
-                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
-                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
-
-                if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
-                if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
-
-                var min = checkForChangesOnly ? 
-                    (ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0))) : 
-                    0;
-                var max = ConvertDateToUnixTimeMilliseconds(now);
-                
-                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
-                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
-
-                execution.IsFullRefresh = !checkForChangesOnly;
-
-                if (mapping.LastSuccessfulCount.HasValue)
+                try
                 {
-                    postModel.begin = mapping.LastSuccessfulCount.Value + 1;
-                }
+                    url = $"{setting.SourceUri}search/";
 
-                var shouldContinue = true;
-                while (shouldContinue)
-                {
-                    try
+                    //The raw sql connection to use for the specific company.
+                    var companyConnnectionString = $"Server={cs.Server};Database=D3S_{cs.CompanyID};User ID={cs.Username};Password={cs.Password}";
+                    var cnn = new SqlConnection(companyConnnectionString);
+
+                    //Perform search using POST method.
+                    var postModel = new IgcPostSearchRequestModel
                     {
-                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(client, url, sourceAuthString, JsonConvert.SerializeObject(postModel)).Result;
+                        begin = previouslyProcessCount,
+                        sorts = new List<IgcPostSearchRequestSortModel>() {
+                            new IgcPostSearchRequestSortModel { ascending = true, property = "modified_on" },
+                            new IgcPostSearchRequestSortModel { ascending = true, property = "created_on" }
+                        }
+                    };
 
-                        if (models != null)
+                    #region Figure out page size
+
+                    var pageSize = 500;
+                    if (mapping.PageSize.HasValue)
+                        pageSize = mapping.PageSize.Value;
+                    else
+                        pageSize = setting.PageSize;
+                    postModel.pageSize = pageSize;
+
+                    #endregion
+
+                    postModel.types.Add(mapping.SourceAssetTypeName);
+
+                    postModel.properties.AddRange(fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                    postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                    postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
+                    postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
+
+                    if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
+                    if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
+
+                    var min = checkForChangesOnly ?
+                        (ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0))) :
+                        0;
+                    var max = ConvertDateToUnixTimeMilliseconds(now);
+
+                    postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
+                    postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
+
+                    execution.IsFullRefresh = !checkForChangesOnly;
+
+                    if (mapping.LastSuccessfulCount.HasValue)
+                    {
+                        postModel.begin = mapping.LastSuccessfulCount.Value + 1;
+                    }
+
+                    var shouldContinue = true;
+                    while (shouldContinue)
+                    {
+                        try
                         {
-                            // Write the IGC total if we have not already done so.
-                            if (execution.CurrentSourceAssetCount <= 0)
+                            var models = PostJsonToApiAsync<IgcDynamicArrayModels>(client, url, sourceAuthString, JsonConvert.SerializeObject(postModel)).Result;
+
+                            if (models != null)
                             {
-                                execution.CurrentSourceAssetCount = models.paging.numTotal;
-                                execution.CurrentTargetAssetCount = 0;
-                                company.Update(execution);
-                            }
+                                // Write the IGC total if we have not already done so.
+                                if (execution.CurrentSourceAssetCount <= 0)
+                                {
+                                    execution.CurrentSourceAssetCount = models.paging.numTotal;
+                                    execution.CurrentTargetAssetCount = 0;
+                                    company.Update(execution);
+                                }
 
-                            // Create the execution asset records.
-                            var executionAssets = new List<IntegrationExecutionAsset>();
-                            parse(models.items, true, executionAssets);     
-                            company.BulkExecutionAssetLoad(executionAssets);
+                                // Create the execution asset records.
+                                var executionAssets = new List<IntegrationExecutionAsset>();
+                                parse(models.items, true, executionAssets);
+                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
 
-                            // Now parse the data fully.
-                            executionAssets = new List<IntegrationExecutionAsset>();
-                            parse(models.items, false, executionAssets);    
-                            company.BulkExecutionAssetLoad(executionAssets);
+                                // Now parse the data fully.
+                                executionAssets = new List<IntegrationExecutionAsset>();
+                                parse(models.items, false, executionAssets);
+                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
 
-                            // Should we do this again, since we have not completed the paged dataset.
-                            shouldContinue = (models.paging.numTotal > models.paging.end + 1);
-                            postModel.begin = models.paging.end + 1;
+                                // Should we do this again, since we have not completed the paged dataset.
+                                shouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                                postModel.begin = models.paging.end + 1;
 
-                            //if (assets.Count > 4999)
-                            //{
-                                if (SendIncrementalSetToGovern(client, company, companyID, mapping, assets, relationships, ownershipTopModel, targetBaseUri, targetAuthString))
+                                //if (assets.Count > 4999)
+                                //{
+                                if (SendIncrementalSetToGovern(client, cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel))
                                 {
                                     mapping.LastSynchOn = currentParsedUnvalidatedDate;
                                     mapping.LastSuccessfulCount += assets.Count; //This line must be called before the array is re-initialized.
@@ -913,91 +916,106 @@ order by	T.SynchedAssetTypeID").ToList();
                                 assets = new BulkAssetImport();
                                 relationships = new BulkRelationshipImport();
                                 ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-                            //}
+                                //}
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            execution.ErrorMessage = ex.GetFullExceptionData();
+                            CoreFunction.AITrackException(functionName, ex);
+                            shouldContinue = false;
+                            success = false;
                         }
                     }
-                    catch (Exception ex)
+
+                    #region Old GET Code - Keep for now
+                    //    //Perform search using GET method.
+
+                    //    // Add the properties we are after for this IGC type.
+                    //    url += $"?pageSize=500&types={mapping.SourceAssetTypeName}";
+                    //    url += string.Concat(fields.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
+                    //    url += string.Concat(relations.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
+                    //    url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceIdField)}"));
+                    //    url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceNameField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceNameField)}"));
+
+                    //    if (mapping.LastSuccessfulCount.HasValue)
+                    //    {
+                    //        url += $"&begin={mapping.LastSuccessfulCount.Value + 1}";
+                    //    }
+
+                    //    while (!string.IsNullOrEmpty(url))
+                    //    {
+                    //        try
+                    //        {
+                    //            var models = GetFromApi<IgcDynamicArrayModels>(client, url, sourceAuthString).Result;
+                    //            if (models != null)
+                    //            {
+                    //                parse(models.items);
+                    //                url = models.paging.next;
+
+                    //                if (arr.Count > 4999)
+                    //                {
+                    //                    SendIncrementalSetToGovern(client, company, companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
+                    //                    mapping.LastSuccessfulCount += arr.Count;//This line must be called before the array is re-initialized.
+
+                    //                    try
+                    //                    {
+                    //                        //company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                    //                        company.Execute("update integration.SynchedAssetType set LastSynchOn = null, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, cnt = mapping.LastSuccessfulCount });
+                    //                        //company.Close();
+                    //                    }
+                    //                    catch (Exception ex)
+                    //                    {
+                    //                        CoreFunction.AITrackException(functionName, ex);
+                    //                    }
+
+                    //                    // Re-initialize.
+                    //                    arr = new BulkAssetImport();// JArray();
+                    //                    relationships = new BulkRelationshipImport();
+                    //                    ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
+                    //                }
+                    //            }
+                    //        }
+                    //        catch (Exception ex)
+                    //        {
+                    //            CoreFunction.AITrackException(functionName, ex);
+                    //            url = null;
+                    //            success = false;
+                    //        }
+                    //    }
+                    #endregion
+
+                    if (assets.Count > 0)
                     {
-                        CoreFunction.AITrackException(functionName, ex);
-                        shouldContinue = false;
-                        success = false;
+                        success = SendIncrementalSetToGovern(client, cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
+                    }
+                    else
+                    {
+                        success = true; // Nothing left to post.
+                    }
+
+                    if (success)
+                    {
+                        mapping.LastSuccessfulCount = null;
+                        mapping.LastSynchOn = currentParsedUnvalidatedDate ?? now;
                     }
                 }
-
-                #region Old GET Code - Keep for now
-                //}
-                //else
-                //{
-                //    //Perform search using GET method.
-
-                //    // Add the properties we are after for this IGC type.
-                //    url += $"?pageSize=500&types={mapping.SourceAssetTypeName}";
-                //    url += string.Concat(fields.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
-                //    url += string.Concat(relations.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
-                //    url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceIdField)}"));
-                //    url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceNameField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceNameField)}"));
-
-                //    if (mapping.LastSuccessfulCount.HasValue)
-                //    {
-                //        url += $"&begin={mapping.LastSuccessfulCount.Value + 1}";
-                //    }
-
-                //    while (!string.IsNullOrEmpty(url))
-                //    {
-                //        try
-                //        {
-                //            var models = GetFromApi<IgcDynamicArrayModels>(client, url, sourceAuthString).Result;
-                //            if (models != null)
-                //            {
-                //                parse(models.items);
-                //                url = models.paging.next;
-
-                //                if (arr.Count > 4999)
-                //                {
-                //                    SendIncrementalSetToGovern(client, company, companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
-                //                    mapping.LastSuccessfulCount += arr.Count;//This line must be called before the array is re-initialized.
-
-                //                    try
-                //                    {
-                //                        //company.OpenWithRetry(RetryPolicy.DefaultFixed);
-                //                        company.Execute("update integration.SynchedAssetType set LastSynchOn = null, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, cnt = mapping.LastSuccessfulCount });
-                //                        //company.Close();
-                //                    }
-                //                    catch (Exception ex)
-                //                    {
-                //                        CoreFunction.AITrackException(functionName, ex);
-                //                    }
-
-                //                    // Re-initialize.
-                //                    arr = new BulkAssetImport();// JArray();
-                //                    relationships = new BulkRelationshipImport();
-                //                    ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-                //                }
-                //            }
-                //        }
-                //        catch (Exception ex)
-                //        {
-                //            CoreFunction.AITrackException(functionName, ex);
-                //            url = null;
-                //            success = false;
-                //        }
-                //    }
-                //}
-                #endregion
-
-                if (assets.Count > 0)
+                catch (Exception oex)
                 {
-                    success = SendIncrementalSetToGovern(client, company, companyID, mapping, assets, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
+                    try
+                    {
+                        execution.ErrorMessage += oex.GetFullExceptionData();
+                        company.Update(execution);
+                    }
+                    catch (Exception cex)
+                    {
+                        CoreFunction.AITrackException(functionName, cex);
+                    }
                 }
-                else
+                finally
                 {
-                    success = true; // Nothing left to post.
-                }
-                
-                if (success)
-                {
-                    mapping.LastSuccessfulCount = null;
-                    mapping.LastSynchOn = currentParsedUnvalidatedDate ?? now;
+                    // Now, logout of IGC.
+                    string logout = GetFromApi<string>(client, $"{setting.SourceUri}logout/", sourceAuthString).Result;
                 }
 
                 client.Dispose(); // Now displose of the HTTPClient object we are using for all requests.
@@ -1007,53 +1025,64 @@ order by	T.SynchedAssetTypeID").ToList();
         }
 
         public static bool SendIncrementalSetToGovern(
-            HttpClient client, CompanyContext company,
-            int companyID, IntegrationAssetType mapping,
-            BulkAssetImport assets, BulkRelationshipImport relationships, D3sOwnershipItemsModel owners,
-            string targetBaseUri, string targetAuthString,
-            bool useHttp = false)
+            HttpClient client, SqlConnection cnn, 
+            int companyID, string companyDomain, int resourceID, 
+            IntegrationAssetType mapping, BulkAssetImport assets, BulkRelationshipImport relationships, D3sOwnershipItemsModel owners)
         {
             bool successfulPost = true;
+
+            var queue = new AzureQueueSource();
 
             // If any items to send to server.
             if (assets.Count > 0)
             {
                 try
                 {
-                    List<AssetImportResult> assetResults = null;
-
-                    if (useHttp)
-                    {
-                        var respString = PostJsonToApiAsync(
-                            client,
-                            $"{targetBaseUri}{mapping.Object}/{mapping.ObjectID}/bulk",
-                            targetAuthString,
-                            JsonConvert.SerializeObject(assets)
-                        ).Result;
-
-                        assetResults = JsonConvert.DeserializeObject<List<AssetImportResult>>(respString);
-                    }
-                    else
-                    {
-                        assetResults = company.BulkAssetsImport((SystemObjects)Enum.Parse(typeof(SystemObjects), mapping.Object), mapping.ObjectID.Value, assets);
-                    }
+                    var assetResults = cnn.BulkAssetsImport(resourceID, (SystemObjects)Enum.Parse(typeof(SystemObjects), mapping.Object), mapping.ObjectID.Value, assets);
 
                     if (assetResults != null)
                     {
-                        string assetErrorMessage = string.Empty;
-
-                        assetResults.ForEach(r =>
-                        {
-                            if (!r.Success)
-                            {
-                                assetErrorMessage += $"{r.SourceID} : {r.Message}.";
-                            }
-                        });
-
+                        var assetErrorMessage = string.Join(". ", assetResults.Where(r => !r.Success).Select(r => $"{r.SourceID} : {r.Message}"));
                         if (!string.IsNullOrEmpty(assetErrorMessage))
                         {
                             CoreFunction.AITrackEvent(functionName, "Bulk Import Assets", new Dictionary<string, string>() { { "Error", assetErrorMessage } }, companyID);
                         }
+                        
+                        #region Cycle through the return results from the database, and update the results collection to send back to the caller.
+
+                        var events = new List<EventInfo>();
+                        var sObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), mapping.Object.Replace("Type", ""));
+                        var sObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), mapping.Object);
+                        assetResults.ForEach(d =>
+                        {
+                            if (string.IsNullOrEmpty(d.Message))
+                            {
+                                if (mapping.TriggerTopicMessage && d.Success)
+                                {
+                                    events.Add(new EventInfo
+                                    {
+                                        CompanyID = companyID,
+                                        DomainPrefix = companyDomain,
+                                        ResourceID = resourceID,
+                                        Action = d.IsNew ? ChangeType.Add : ChangeType.Update,
+                                        Object = new EventObjectInfo { Object = sObject, ObjectType = sObjectType, ObjectID = d.ObjectID, ObjectTypeID = mapping.ObjectID.Value }
+                                    });
+
+                                    if (events.Count > 50)
+                                    {
+                                        queue.CreateTopicMessages(events);
+                                        events.Clear();
+                                    }
+                                }
+                            }
+                        });
+
+                        if (mapping.TriggerTopicMessage && events.Count > 0)
+                        {
+                            queue.CreateTopicMessages(events);
+                        }
+
+                        #endregion
                     }
                 }
                 catch (Exception ex)
@@ -1089,22 +1118,9 @@ order by	T.SynchedAssetTypeID").ToList();
                 {
                     if (owners.Items.Count > 0)
                     {
-                        if (useHttp)
-                        {
-
-                            var respString = PostJsonToApiAsync(
-                                client,
-                                $"{targetBaseUri}ownership/bulk",
-                                targetAuthString,
-                                JsonConvert.SerializeObject(owners)
-                            ).Result;
-                        }
-                        else
-                        {
-                            var ownerImport = new BulkOwnerImport { UserIdFieldName = owners.UserIdFieldName };
-                            ownerImport.Items = owners.Items.Select(i => new OwnerImportRequest { RoleName = i.RoleName, SourceID = i.SourceID, UserId = i.UserId }).ToList();
-                            var ownerResults = company.BulkOwnersImport(ownerImport);
-                        }
+                        var ownerImport = new BulkOwnerImport { UserIdFieldName = owners.UserIdFieldName };
+                        ownerImport.Items = owners.Items.Select(i => new OwnerImportRequest { RoleName = i.RoleName, SourceID = i.SourceID, UserId = i.UserId }).ToList();
+                        var ownerResults = cnn.BulkOwnersImport(resourceID, ownerImport);
                     }
                 }
                 catch (Exception ex)
@@ -1118,18 +1134,33 @@ order by	T.SynchedAssetTypeID").ToList();
             {
                 try
                 {
-                    if (useHttp)
+                    var relationshipResults = cnn.BulkRelationshipsImport(resourceID, relationships);
+                    if (relationshipResults != null)
                     {
-                        var respString = PostJsonToApiAsync(
-                            client,
-                            $"{targetBaseUri}relationships/bulk",
-                            targetAuthString,
-                            JsonConvert.SerializeObject(relationships)
-                        ).Result;
-                    }
-                    else
-                    {
-                        var relationshipResults = company.BulkRelationshipsImport(relationships);
+                        var events = new List<EventInfo>();
+                        relationshipResults.ForEach(r => {
+                            if (mapping.TriggerTopicMessage && r.IsNew == true && r.IntersectID != null)
+                            {
+                                events.Add(new EventInfo
+                                {
+                                    CompanyID = companyID,
+                                    DomainPrefix = companyDomain,
+                                    ResourceID = resourceID,
+                                    Action = ChangeType.Add,
+                                    Object = new EventObjectInfo { Object = SystemObjects.Intersect, ObjectType = SystemObjects.IntersectType, ObjectID = r.IntersectID, ObjectTypeID = r.IntersectTypeID }
+                                });
+                                if (events.Count > 50)
+                                {
+                                    queue.CreateTopicMessages(events);
+                                    events.Clear();
+                                }
+                            }
+                        });
+
+                        if (mapping.TriggerTopicMessage && events.Count > 0)
+                        {
+                            queue.CreateTopicMessages(events);
+                        }
                     }
                 }
                 catch (Exception ex)

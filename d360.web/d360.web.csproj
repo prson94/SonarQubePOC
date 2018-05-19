@@ -1701,7 +1701,7 @@
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://demo.dev.data3sixty.local</IISUrl>
           <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
-          <IISAppRootUrl>http://lmtom.uat.data3sixty.local/</IISAppRootUrl>
+          <IISAppRootUrl>http://statestreet-igx.uat.data3sixty.local/</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
