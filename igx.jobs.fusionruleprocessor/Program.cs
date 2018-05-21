@@ -21,7 +21,7 @@ namespace igx.jobs.fusionruleprocessor
     {
         const string functionName = "Fusion_ProcessRules";
         // const string timing = "0 * * * * *";
-        const string timing = "0 */30 * * * *";
+        const string timing = "0 */10 * * * *";
         //const string timing = "*/5 0 * * * *";
 
         public static async Task Run([TimerTrigger(timing)]TimerInfo myTimer, TextWriter log)
@@ -29,9 +29,11 @@ namespace igx.jobs.fusionruleprocessor
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
-
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 123).ToList();
-
+#if DEBUG
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 5).ToList();
+#else
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().ToList();
+#endif
                 foreach (var company in companies)
                 {
                     try
