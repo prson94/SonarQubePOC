@@ -71,7 +71,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
         { text: 'Promote', value: 'promote' },
         { text: 'Find', value: 'find' },
         { text: 'Find via Relationship', value: 'findrelation' },
-        { text: 'Lineage', value: 'lineage' },
+        //{ text: 'Lineage', value: 'lineage' }, // depricated and disable given intersectrole was removed.
         { text: 'Relate', value: 'relate' },
         { text: 'Update', value: 'update' },
     ];
