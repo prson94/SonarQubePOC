@@ -123,7 +123,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
     
     private loadDetails(objectId, objectType) {        
-        if (objectId == undefined || objectType == undefined) return;
+        if (objectId == undefined || objectType == undefined) return Promise.resolve();
         this.isLoading = true;
         return this.objectDetailService.getObject(objectId, objectType).then(
             res => {
