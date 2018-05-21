@@ -896,7 +896,7 @@ namespace d360.web.Controllers
                         {
                             var isSubject = (intersectType.Subject == ot.ToString() && intersectType.SubjectID == otid);
                             if(!string.IsNullOrEmpty(value))
-                                items =  value.Split(',').Select<string, int>(int.Parse).ToList();
+                                items =  value.Trim(' ', ',').Split(',').Select<string, int>(int.Parse).ToList();
                             //delete any intersects for this object not in the list
                             List<Intersect> intersects = null;
                             if (isSubject)

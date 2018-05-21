@@ -638,15 +638,15 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
             var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
-            countSql = @"select count(*) from AssetDetail where [Type] = @obj and TypeID = @objID order by DisplayValue";
-            sql = @"select ObjectID as Value, DisplayValue as Text from AssetDetail where [Type] = @obj and TypeID = @objID
+            countSql = @"select count(*) from AssetDetail with (nolock) where [Type] = @obj and TypeID = @objID order by DisplayValue";
+            sql = @"select ObjectID as Value, DisplayValue as Text from AssetDetail with (nolock) where [Type] = @obj and TypeID = @objID
                     order by DisplayValue OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
             selectedSql = @"select 
 	                case when i.Subject = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end as [Value],
 	                P.TextPath as [Text],
 	                1 as Selected
                  from [intersect] i
-                 inner join Asset A on A.[Object] = case when i.[Subject] = @obj and i.SubjectID = @objID then i.[Object] else i.[Subject] end
+                 inner join Asset A with (nolock) on A.[Object] = case when i.[Subject] = @obj and i.SubjectID = @objID then i.[Object] else i.[Subject] end
 				                and A.ObjectID = case when i.[Subject] = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end
                 cross apply GetAssetTextPathById(A.ID, '.') P
                 where i.intersectTypeID = @intersectTypeID and i.State = 1 and ((i.Subject = @obj and i.SubjectID = @objID) or (i.Object = @obj and i.ObjectID = @objID))";
@@ -657,10 +657,10 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
                     if (objID == 0)
                     {
-                        countSql = @"select count(*) from AssetType A
+                        countSql = @"select count(*) from AssetType A with (nolock)
                         where A.[Object] = @obj  and (@query is null or A.Name like '%' + @query + '%')";
                         sql = @"select  A.ObjectID as [Value], A.[Name] as [Text], case when I.ID is not null then 1 else 0 end as Selected
-                            from AssetType A 
+                            from AssetType A with (nolock)
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
 	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
@@ -672,20 +672,20 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 	                        A.[Name] as [Text],
 	                        1 as Selected
                             from [intersect] i
-                            inner join AssetType A on A.[Object] = case when i.[Subject] = @obj and i.SubjectID = @objID then i.[Object] else i.[Subject] end
+                            inner join AssetType A with (nolock) on A.[Object] = case when i.[Subject] = @obj and i.SubjectID = @objID then i.[Object] else i.[Subject] end
 				                        and A.ObjectID = case when i.[Subject] = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end
                         where i.intersectTypeID = @intersectTypeID and i.State = 1 and ((i.Subject = @obj and i.SubjectID = @objID) or (i.Object = @obj and i.ObjectID = @objID))";
                     }
                     else
                     {
-                        countSql = @"select count(*) from Asset A
-                        inner join AssetType T on T.ID = A.AssetTypeID
+                        countSql = @"select count(*) from Asset A with (nolock)
+                        inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
 						cross apply dbo.GetAssetDisplayValueById(a.ID) D
                         where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')";
 
                         sql = @"select  A.ObjectID as [Value], D.DisplayValue as [Text], case when I.ID is not null then 1 else 0 end as Selected
-                            from Asset A 
-							inner join AssetType T on T.ID = A.AssetTypeID
+                            from Asset A with (nolock)
+							inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
 							cross apply dbo.GetAssetDisplayValueById(a.ID) D
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
@@ -700,11 +700,11 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 case "PolicyType":
                 case "RuleType":
                 case "TaxonomyType":
-                    countSql = @"select count(*) from AssetWithType A
+                    countSql = @"select count(*) from AssetWithType A with (nolock)
                         cross apply GetAssetTextPathById(A.ID, '.') P 
                         where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')";
                     sql = @"select A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
-                            from AssetWithType A 
+                            from AssetWithType A with (nolock)
                             cross apply GetAssetTextPathById(A.ID, '.') P 
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
@@ -716,7 +716,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 case "FusionAttributeType":
                     countSql = "select count(*) from FusionAttribute F where FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')";
                     sql = @"select F.ID as Value, F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
-                            from FusionAttribute F
+                            from FusionAttribute F with (nolock)
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and
                                 ((I.[Subject] = 'FustionAttribute' and I.SubjectID = F.ID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
                                 (I.[Object] = 'FustionAttribute' and I.ObjectID = F.ID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))

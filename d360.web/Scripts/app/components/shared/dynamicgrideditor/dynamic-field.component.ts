@@ -338,15 +338,19 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private lazyLoad(e: any) {
-        //console.log('lazyLoad', this.relatedItems, { fieldTypeID: this.field.FieldTypeID, object: this.object, objectID: this.objectID, event: e });
+        //console.log('lazyLoad', this.relationItems, { fieldTypeID: this.field.FieldTypeID, object: this.object, objectID: this.objectID, event: e });
         this.relationItemsLoading = true;
         this.relationSource$.next({ fieldTypeID: this.field.FieldTypeID, object: this.object, objectID: this.objectID, event: e });
     }
 
     selectRelationItems(e: any) {
-        this.relationItems = e;
+        if (e === '[]')
+            this.relationItems = [];
+        else
+            this.relationItems = e;
+
         if (this.relationItems != null) {
-            if (!Array.isArray(this.relationItems))
+            if (!Array.isArray(this.relationItems)) 
                 this.relationItems = [this.relationItems];
 
             for (let i = 0; i < this.relationItems.length; i++) { //associate the selection with the item in the table
@@ -365,7 +369,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         this.form.controls[this.field.FieldName].setValue(this.field.Value);
         this.ref.markForCheck();
 
-        //console.log(e, this.relatedItems, this.field);
+        //console.log(e, this.relationItems, this.field);
     }
 
 }
