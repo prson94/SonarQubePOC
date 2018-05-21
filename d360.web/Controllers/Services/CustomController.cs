@@ -36,7 +36,7 @@ namespace d360.web.Controllers.Services
         internal const string CANO = "canonical";
         internal const string NEXT = "next";
         internal const string PREV = "previous";
-
+        
         public string @ref { get; set; }
         public string href { get; set; }
     }
@@ -415,7 +415,7 @@ namespace d360.web.Controllers.Services
                     xAsset.Add(new XAttribute("id", asset.id));
 
                     var xLinks = new XElement("links");
-                    xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
+                    xLinks.Add(new XElement("Link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
 
                     xAsset.Add(xLinks);
 
@@ -1310,11 +1310,11 @@ namespace d360.web.Controllers.Services
 
                     var xLinks = new XElement("links");
 
-                    xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
+                    xLinks.Add(new XElement("Link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
                     if (showNextLink)
-                        xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.NEXT), new XElement("href", nextUri)));
+                        xLinks.Add(new XElement("Link", new XElement("rel", JsonResultLinkModel.NEXT), new XElement("href", nextUri)));
                     if (showPrevLink)
-                        xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.PREV), new XElement("href", prevUri)));
+                        xLinks.Add(new XElement("Link", new XElement("rel", JsonResultLinkModel.PREV), new XElement("href", prevUri)));
 
                     var CollectionWrapper = new XElement(
                         "CollectionWrapper",
