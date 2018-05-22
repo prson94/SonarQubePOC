@@ -72,7 +72,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     add(): void {
         this.addingRow = new ResponsibilityItemDetail();
         this.addingRow.AssetID = this.assetID;
-        this.addingRow.OverrideItemID = this.overrideItemID;
+        //this.addingRow.OverrideItemID = this.overrideItemID;
         this.isAdding = true;
     }
 

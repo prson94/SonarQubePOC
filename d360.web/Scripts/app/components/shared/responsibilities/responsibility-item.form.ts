@@ -91,23 +91,23 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
  
     }
 
-    private getCurrentContext(): void {
-        this.isLoading = true;
-        let rType = this.model.selectedResponsibilityType;
-        let rID = this.model.selectedResource.split("|", 2);
-        this.responsibilityService.getResponsibilityDetail(this.model.responsibility.AssetID)
-            .then(data => {
-                for (var x = 0; x < data.length; x++) {
-                    //console.log('this is it: ' + data[x].ResponsibilityTypeID + ' ' + data[x].ResourceID);
-                    //console.log('this should be: ' + rType + ' ' + rID[1]);
-                    if (data[x].ResponsibilityTypeID.toString() == rType && data[x].ResourceID.toString() == rID[1]) {
-                        this.model.responsibility.Context = data[x].Context;
-                   }
-                    else this.model.responsibility.Context = "";
-                }
-                this.isLoading = false;
-            });
-    }
+    //private getCurrentContext(): void {
+    //    this.isLoading = true;
+    //    let rType = this.model.selectedResponsibilityType;
+    //    let rID = this.model.selectedResource.split("|", 2);
+    //    this.responsibilityService.getResponsibilityDetail(this.model.responsibility.AssetID)
+    //        .then(data => {
+    //            for (var x = 0; x < data.length; x++) {
+    //                if (data[x].ResponsibilityTypeID.toString() == rType && data[x].ResourceID.toString() == rID[1]) {
+    //                    this.model.responsibility.Context = data[x].Context;
+    //                }
+    //                else {
+    //                    this.model.responsibility.Context = "";
+    //                }
+    //            }
+    //            this.isLoading = false;
+    //        });
+    //}
 
     private save(): void {
         try {
@@ -115,8 +115,8 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
             this.itemToSave.SecurityAssetID = parseInt(this.model.selectedResource.split('|')[1]);
             this.itemToSave.ResponsibilityTypeID = parseInt(this.model.selectedResponsibilityType);
             this.itemToSave.Context = this.model.responsibility.Context;
-
-        } catch (exception) {
+        }
+        catch (exception) {
             this.message.Error("An error occurred while parsing the select item values.");
             this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
             return;
@@ -129,27 +129,49 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                 this.checkD = data;
             })
             .then(() => {
-                for (var i = 0; i < this.checkD.length; i++) {
-                    //console.log('this is it: ' + this.checkD[i].SecurityAssetID + ' ' + this.checkD[i].ResponsibilityTypeID)
-                    //console.log('this should be: ' + this.itemToSave.SecurityAssetID + ' ' + this.itemToSave.ResponsibilityTypeID)
-                    if (this.checkD[i].SecurityAssetID == this.itemToSave.SecurityAssetID && this.checkD[i].ResponsibilityTypeID == this.itemToSave.ResponsibilityTypeID) {
-                        this.itemToSave.ID = this.checkD[i].OverrideItemID;
-                        this.responsibilityService.putResponsibility(this.itemToSave)
-                            .then(data => {
-                                this.isLoading = false;
-                                this.showMessageForResult(this.messagesService, data);
-                                this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
-                            });
-                        return;
-                    }
+                if (this.itemToSave.ID && this.itemToSave.ID > 0) {
+                    this.responsibilityService.putResponsibility(this.itemToSave)
+                        .then(data => {
+                            this.isLoading = false;
+                            this.showMessageForResult(this.messagesService, data);
+                            this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
+                        });
                 }
-                this.responsibilityService.postResponsibility(this.itemToSave)
-                    .then(data => {
-                        this.isLoading = false;
-                        this.showMessageForResult(this.messagesService, data);
-                        this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
-                    });
-            })
+                else {
+                    for (var i = 0; i < this.checkD.length; i++) {
+                        if (this.checkD[i].SecurityAsset == this.itemToSave.SecurityAsset &&
+                            this.checkD[i].SecurityAssetID == this.itemToSave.SecurityAssetID &&
+                            this.checkD[i].ResponsibilityTypeID == this.itemToSave.ResponsibilityTypeID) {
+
+                            this.itemToSave.ID = this.checkD[i].OverrideItemID;
+                            //this.responsibilityService.putResponsibility(this.itemToSave)
+                            //    .then(data => {
+                            //        this.isLoading = false;
+                            //        this.showMessageForResult(this.messagesService, data);
+                            //        this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
+                            //    });
+                            var securityAssetDisplayNameForError = "user";
+                            switch (this.itemToSave.SecurityAsset) {
+                                case "G":
+                                    securityAssetDisplayNameForError = "group";
+                                    break;
+                                case "O":
+                                    securityAssetDisplayNameForError = "organization";
+                                    break;
+                            }
+                            this.message.Error("There is already a responsibility assigned for this role and " + securityAssetDisplayNameForError + ".");
+                            this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
+                            return;
+                        }
+                    }
+                    this.responsibilityService.postResponsibility(this.itemToSave)
+                        .then(data => {
+                            this.isLoading = false;
+                            this.showMessageForResult(this.messagesService, data);
+                            this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
+                        });
+                }
+            });
     }
 
     private cancel(): void {

@@ -39,12 +39,13 @@ export class LoadService extends BaseService {
     }
 
     getActionOptions(): SelectItem[] {
-        this.aOptions = 
-            [   { label: 'Promotion', value: 'P' },
-                { label: 'Relation', value: 'R' },
-                { label: 'Responsibilities', value: 'O' },
-                { label: 'Unrelation', value: 'U' } 
-        ]
+        this.aOptions = [
+            { label: 'Promotion', value: 'P' },
+            { label: 'Relation', value: 'R' },
+            { label: 'Responsibilities', value: 'O' },
+            { label: 'Unrelation', value: 'U' },
+            { label: 'Users/Groups', value: 'M' }
+        ];
         if (CompanySettings != null && CompanySettings.UseLegacyLineage != null) {
             this.lineageFlag = CompanySettings.UseLegacyLineage;
         }

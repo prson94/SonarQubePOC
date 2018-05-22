@@ -215,9 +215,7 @@ from	reporting.Global_Resource O ";
             if (useTransaction)
                 trans = cnn.BeginTransaction();
 
-            //using (var trans = cnn.BeginTransaction())
-            //{
-                cnn.Execute(@"
+            cnn.Execute(@"
 
 IF OBJECT_ID('tempdb..#ResponsibilityTypeRelationItem') IS NOT NULL
 			DROP TABLE #ResponsibilityTypeRelationItem;
@@ -334,46 +332,8 @@ commandTimeout: 3600, transaction: trans);
 
             #endregion
 
-            #region Merge the overrides into the item table. These are override items.
-
-            //I think this is quite dangerous. Removing for now.
-            //                cnn.Execute(@"
-            //merge   ResponsibilityTypeRelationItem as T 
-            //using   ( 
-            //        select  *
-            //        from    ResponsibilityTypeRelationOverrideItem
-            //        ) as S 
-            //        on  (
-            //            T.RuleID = 0
-            //            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
-            //            and T.[AssetID] = S.[AssetID] 
-            //            and T.[SecurityAsset] = S.[SecurityAsset] 
-            //            and T.[SecurityAssetID] = S.[SecurityAssetID] 
-            //            )
-            //when    not matched by source and T.RuleID = 0 then 
-            //        delete
-            //when    not matched by target then 
-            //        insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID, OverrideItemID) 
-            //        values (0, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID, S.ID);",
-            //commandTimeout: 3600, transaction: trans);
-
-            #endregion
-
-            #region Mark the overriden items generated from rules with overrides we loaded above.
-
-            //I think this is quite dangerous. Removing for now.
-            //                cnn.Execute(@"
-            //update	T
-            //set		T.Overriden = 1
-            //from	ResponsibilityTypeRelationItem T
-            //		inner join ResponsibilityTypeRelationItem S on S.RuleID = 0 and T.RuleID > 0 and S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and T.Overriden = 0;",
-            //commandTimeout: 3600, transaction: trans);
-
-            #endregion
-
             if (useTransaction)
                 trans.Commit();
-            //}
         }
 
         /// <summary>

@@ -34,13 +34,10 @@ namespace igx.jobs.responsibilityruleprocessor
         {
             try
             {
-                //CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
                 companies.ForEach(c =>
                 {
-                    //CoreFunction.AITrackEvent(functionName, "Begin Processing Company", null, c.CompanyID);
-
                     try
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
@@ -49,27 +46,14 @@ namespace igx.jobs.responsibilityruleprocessor
 
                         var items = company.Query<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule").ToList();
 
-                        //CoreFunction.AITrackEvent(functionName, $"Got {items.Count} rules", null, c.CompanyID);
-                        //CoreFunction.AIFlush();
-
                         if (items.Count > 0)
                         {
-                            //CoreFunction.AITrackEvent(functionName, $"Item count is greater than 0", null, c.CompanyID);
-                            //CoreFunction.AIFlush();
-
                             var errorList = string.Empty;
-
 
                             items.ForEach(i => {
                                 try
                                 {
-                                    //CoreFunction.AITrackEvent(functionName, $"Deserializing item definition from raw [{i.Definition}]", null, c.CompanyID);
-                                    //CoreFunction.AIFlush();
-
                                     i.SetDefinitionFromRaw();
-
-                                    //CoreFunction.AITrackEvent(functionName, $"Parsed raw definition", null, c.CompanyID);
-                                    //CoreFunction.AIFlush();
 
                                     if (i.ApplyToType)
                                     {
@@ -79,9 +63,6 @@ namespace igx.jobs.responsibilityruleprocessor
                                     {
                                         company.GetProcessedResponsibilityRuleResults(i);
                                     }
-
-                                    //CoreFunction.AITrackEvent(functionName, $"Parsed end results", null, c.CompanyID);
-                                    //CoreFunction.AIFlush();
                                 }
                                 catch (Exception ex)
                                 {
@@ -89,8 +70,9 @@ namespace igx.jobs.responsibilityruleprocessor
                                 }
                             });
 
-                            //CoreFunction.AITrackEvent(functionName, $"After foreach item", null, c.CompanyID);
-                            //CoreFunction.AIFlush();
+                            // Build cache.SecurityProcessor
+                            company.Execute("exec cache.SecurityProcessor 4, 1, 0", commandTimeout: 1200);
+                            log.WriteLine("Re-built cache.AssetResponsibility for company {0}.", c.CompanyID);
 
                             if (!string.IsNullOrEmpty(errorList))
                             {
@@ -108,20 +90,15 @@ namespace igx.jobs.responsibilityruleprocessor
                     catch (Exception ex)
                     {
                         CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        //log.Error($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                        log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
                         CoreFunction.AIFlush();
                     }
-
-                    //CoreFunction.AITrackEvent(functionName, "End Processing Company", null, c.CompanyID);
-                    //CoreFunction.AIFlush();
                 });
-
-                //CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
             catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex);
-                //log.Error($"General Exception: {ex.GetFullExceptionData()}");
+                log.WriteLine($"General Exception: {ex.GetFullExceptionData()}");
             }
 
             CoreFunction.AIFlush();
