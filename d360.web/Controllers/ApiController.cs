@@ -3611,7 +3611,7 @@ end",
                                         Name = $"{ft.FriendlyName} Description",
                                         FieldDescription = ft.DisplayDescription,
                                         FieldName = ft.Name,
-                                        Value = referenceItemType.Name
+                                        Value = referenceItemType.Description
                                     }
                                 },
                                 Category = ft.Category
