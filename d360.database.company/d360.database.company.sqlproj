@@ -99,11 +99,13 @@
     <Folder Include="Releases\2018.04.27" />
     <Folder Include="Releases\2018.05.11" />
     <Folder Include="Releases\2018.05.18" />
+    <Folder Include="Releases\2018.05.25" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
     <None Include="DevelopmentCompare.scmp" />
     <None Include="SST-UAT-to-Dev.dcmp" />
+    <None Include="Releases\2018.05.25\1.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Releases\2018.04.13\1.Add.sql" />
