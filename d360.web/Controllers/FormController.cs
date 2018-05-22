@@ -11058,7 +11058,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
-        [ HttpDelete, ValidateInput(false), Route("MetricMap")]
+        [HttpDelete, ValidateInput(false), Route("MetricMap")]
         public JsonResult DeleteMetricMap(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -11072,12 +11072,13 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             if (map == null)
                 return jsonException($"The mapping with id {id} could not be found", HttpStatusCode.NotFound);
 
+            map.State = State.Deleted;
+
             var conditions = Company.MetricConditions.Where(c => c.MapID == id);
 
             try
             {
                 Company.MetricConditions.RemoveRange(conditions);
-                Company.MetricMaps.Remove(map);
                 Company.SaveChanges();
             }
             catch (Exception ex)
@@ -11255,6 +11256,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             try
             {
+                model.Map.State = State.Active;
                 Company.Add(model.Map);
                 Company.SaveChanges();
 
@@ -11366,6 +11368,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             try
             {
+                model.Group.State = State.Active;
                 Company.Add(model.Group);
                 Company.SaveChanges();
             }
@@ -11448,14 +11451,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 maps.ForEach(m =>
                 {
+                    m.State = State.Deleted;
                     var conditions = Company.MetricConditions.Where(c => c.MapID == m.ID).ToList();
                     Company.MetricConditions.RemoveRange(conditions);
                 });
 
-                Company.SaveChanges();
-                Company.MetricMaps.RemoveRange(maps);
-                Company.SaveChanges();
-                Company.MetricGroups.Remove(group);
+                group.State = State.Deleted;
                 Company.SaveChanges();
             }
             catch(Exception ex)

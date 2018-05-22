@@ -177,49 +177,50 @@ order by	R.LastName, R.FirstName", new { id = id }).ToList();
             //           });
 
             var query = @"
-                     with groups as
-(
-select 
-	null as ID, 
-	g1.ID as GroupID, 
-	null as [Value], 
-	g1.ParentID, 
-	g1.[Name] 
-from 
-	metrics.[Group] g1
-	inner join metrics.Map m1 on m1.GroupID = g1.ID
-	inner join metrics.MapResult r1 on r1.MapID = m1.ID
-	inner join metrics.Score s1 on s1.ID = r1.ScoreID
-where 
-	s1.[Object] = @type and s1.ObjectID = @id
-union all
-	select 
-		null as ID,  
-		g2.ID as GroupID, 
-		null as [Value], 
-		g2.ParentID as ParentID, 
-		g2.[Name]
-	from 
-		metrics.[group] g2
-	inner join groups g3 on g3.ParentID = g2.ID
-)
-select distinct * from groups
-union all
-	select 
-		s.ID as ID, 
-		g.ID as GroupID, 
-		s.[Value], 
-		g.ParentID, 
-		i.[Name]
-	from 
-		metrics.Score s
-	inner join metrics.MapResult r on r.ScoreID = s.ID
-	inner join metrics.Map m on m.ID = r.MapID
-	inner join metrics.Item i on i.ID = m.ItemID
-	inner join metrics.[Group] g on g.ID = m.GroupID
-	where 
-		s.[Object] = @type and s.ObjectID = @id
-        and @date between S.EffectiveStartDate and S.EffectiveEndDate";
+                    with groups as
+                    (
+                    select 
+	                    null as ID, 
+	                    g1.ID as GroupID, 
+	                    null as [Value], 
+	                    g1.ParentID, 
+	                    g1.[Name] 
+                    from 
+	                    metrics.[Group] g1
+	                    inner join metrics.Map m1 on m1.GroupID = g1.ID and m1.[State] = 1
+	                    inner join metrics.MapResult r1 on r1.MapID = m1.ID
+	                    inner join metrics.Score s1 on s1.ID = r1.ScoreID
+                    where 
+	                    g1.[State] = 1 and s1.[Object] = @type and s1.ObjectID = @id
+                    union all
+	                    select 
+		                    null as ID,  
+		                    g2.ID as GroupID, 
+		                    null as [Value], 
+		                    g2.ParentID as ParentID, 
+		                    g2.[Name]
+	                    from 
+		                    metrics.[group] g2
+	                    inner join groups g3 on g3.ParentID = g2.ID
+	                    where g2.[State] = 1
+                    )
+                    select distinct * from groups
+                    union all
+	                    select 
+		                    s.ID as ID, 
+		                    g.ID as GroupID, 
+		                    s.[Value], 
+		                    g.ParentID, 
+		                    i.[Name]
+	                    from 
+		                    metrics.Score s
+	                    inner join metrics.MapResult r on r.ScoreID = s.ID
+	                    inner join metrics.Map m on m.ID = r.MapID and m.[State] = 1
+	                    inner join metrics.Item i on i.ID = m.ItemID
+	                    inner join metrics.[Group] g on g.ID = m.GroupID and g.[State] = 1
+	                    where 
+		                    s.[Object] = @type and s.ObjectID = @id
+                            and @date between S.EffectiveStartDate and S.EffectiveEndDate";
 
             var results = Company.Query<dynamic>(query, new { type = type.ToString(), id, date = date ?? DateTime.UtcNow.ToString() });
 

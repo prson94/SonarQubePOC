@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.enums;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -27,6 +28,9 @@ namespace d360.core.entities.Metric
 
         [DataMember]
         public DateTime? EffectiveEndDate { get; set; }
+
+        [DataMember]
+        public State State { get; set; } = State.Active;
 
         [IgnoreDataMember, NotMapped]
         public virtual MetricGroup Group { get; set; }

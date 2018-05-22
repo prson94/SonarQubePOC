@@ -7921,7 +7921,7 @@ from	    TaxonomyType FAT
         {
             if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
 
-            return Company.Table<MetricGroup>();
+            return Company.MetricGroups.Where(m => m.State == State.Active);
         }
 
         [Route("metrics/items")]
@@ -7958,7 +7958,7 @@ from	    TaxonomyType FAT
                                     from metrics.map m
                                     inner join assettype a on a.[object] = m.[object] and a.objectid = m.objectid
                                     inner join metrics.item i on i.id = m.itemid
-                                    where m.groupid = @groupId", new { groupId }).ToList();
+                                    where m.[State] = 1 and m.groupid = @groupId", new { groupId }).ToList();
         }
 
         [Route("metrics/map/{mapId:int}/conditions")]
