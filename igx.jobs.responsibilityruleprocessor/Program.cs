@@ -27,15 +27,20 @@ namespace igx.jobs.responsibilityruleprocessor
     public static class ResponsibilityRuleProcessor
     {
         const string functionName = "ResponsibilityRules_ProcessScheduled";
+#if DEBUG
+        const string timerSettings = "*/2 * * * * *";
+#else
         const string timerSettings = "0 */3 * * * *";
-        //const string timerSettings = "*/5 * * * * *";
-
+#endif
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
         {
             try
             {
+#if DEBUG
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 4).ToList();
+#else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
-
+#endif
                 companies.ForEach(c =>
                 {
                     try
@@ -57,11 +62,15 @@ namespace igx.jobs.responsibilityruleprocessor
 
                                     if (i.ApplyToType)
                                     {
-                                        company.GetProcessedResponsibilityRuleTypeResults(i);
+                                        var typeResults = company.GetProcessedResponsibilityRuleTypeResults(i).ToList();
+                                        company.SaveResponsibilityRuleTypeResults(typeResults, true, i.ID);
+                                        typeResults = null;
                                     }
                                     else
                                     {
-                                        company.GetProcessedResponsibilityRuleResults(i);
+                                        var itemResults = company.GetProcessedResponsibilityRuleResults(i).ToList();
+                                        company.SaveResponsibilityRuleResults(itemResults, true, i.ID);
+                                        itemResults = null;
                                     }
                                 }
                                 catch (Exception ex)
@@ -81,11 +90,11 @@ namespace igx.jobs.responsibilityruleprocessor
                                 CoreFunction.AIFlush();
                             }
                         }
-                        else
-                        {
-                            CoreFunction.AITrackEvent(functionName, $"Item count is 0", null, c.CompanyID);
-                            CoreFunction.AIFlush();
-                        }
+                        //else
+                        //{
+                        //    CoreFunction.AITrackEvent(functionName, $"Item count is 0", null, c.CompanyID);
+                        //    CoreFunction.AIFlush();
+                        //}
                     }
                     catch (Exception ex)
                     {

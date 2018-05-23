@@ -63,76 +63,86 @@ from	Asset A
             string obj = "";
             string uniqueIdField = "ID";
 
-            if (rule.StructuredDefinition.Then.Object == "OrganizationType")
+            if (rule.StructuredDefinition != null)
             {
-                obj = "Organization";
+                if (rule.StructuredDefinition.Then.Object == "OrganizationType")
+                {
+                    obj = "Organization";
 
-                thenSql = $@"
+                    thenSql = $@"
 select	'O' as SecurityAsset,
         O.ID as SecurityAssetID,
 		O.Name
 from	Organization O ";
-            }
+                }
 
-            if (rule.StructuredDefinition.Then.Object == "GroupType")
-            {
-                obj = "Group";
+                if (rule.StructuredDefinition.Then.Object == "GroupType")
+                {
+                    obj = "Group";
 
-                thenSql = $@"
+                    thenSql = $@"
 select	'G' as SecurityAsset,
         O.ID as SecurityAssetID,
         O.Name
 from	[Group] O ";
-            }
+                }
 
-            if (rule.StructuredDefinition.Then.Object == "ResourceType")
-            {
-                obj = "Resource";
-                uniqueIdField = "ResourceID";
+                if (rule.StructuredDefinition.Then.Object == "ResourceType")
+                {
+                    obj = "Resource";
+                    uniqueIdField = "ResourceID";
 
-                thenSql = $@"
+                    thenSql = $@"
 select	'R' as SecurityAsset,
         O.ResourceID as SecurityAssetID,
 		O.FirstName + ' ' + O.LastName as Name
 from	reporting.Global_Resource O ";
-            }
+                }
 
-
-            if (rule.StructuredDefinition.Then.Conditions != null)
-            {
-                rule.StructuredDefinition.Then.Conditions.ForEach(rc =>
+                if (rule.StructuredDefinition.Then.Conditions != null)
                 {
-                    if (rc.FieldTypeID > 0)
+                    rule.StructuredDefinition.Then.Conditions.ForEach(rc =>
                     {
-                        thenSql += $"inner join FieldDetail F{tCount} on F{tCount}.Object = '{obj}' and F{tCount}.ObjectID = O.{uniqueIdField} and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(rc.FieldTypeName))
+                        if (rc.FieldTypeID > 0)
                         {
-                            if (rc.FieldTypeName == "Name")
+                            thenSql += $"inner join FieldDetail F{tCount} on F{tCount}.Object = '{obj}' and F{tCount}.ObjectID = O.{uniqueIdField} and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(rc.FieldTypeName))
                             {
-                                whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.{uniqueIdField} = {rc.Value}";
-                            }
-                            else
-                            {
-                                whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.{rc.FieldTypeName} = '{rc.Value}'";
+                                if (rc.FieldTypeName == "Name")
+                                {
+                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.{uniqueIdField} = {rc.Value}";
+                                }
+                                else
+                                {
+                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.{rc.FieldTypeName} = '{rc.Value}'";
+                                }
                             }
                         }
-                    }
 
-                    tCount++;
-                });
-            }
+                        tCount++;
+                    });
+                }
 
-            if (obj == "Resource")
-            {
-                whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.Status = 'Active'";
+                if (obj == "Resource")
+                {
+                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.Status = 'Active'";
+                }
             }
 
             thenSql += whenSuffix;
 
-            return cnn.Query<SecurityResult>(thenSql, commandTimeout: 7200);
+            if (string.IsNullOrEmpty(thenSql))
+            {
+                return new List<SecurityResult>().AsEnumerable();
+            }
+            else
+            {
+                return cnn.Query<SecurityResult>(thenSql, commandTimeout: 7200);
+            }
+            
         }
 
         public static IEnumerable<EndResult> GetProcessedResponsibilityRuleResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule)
@@ -215,12 +225,9 @@ from	reporting.Global_Resource O ";
             if (useTransaction)
                 trans = cnn.BeginTransaction();
 
+            cnn.Execute("DROP TABLE IF EXISTS #ResponsibilityTypeRelationItem", transaction: trans);
+
             cnn.Execute(@"
-
-IF OBJECT_ID('tempdb..#ResponsibilityTypeRelationItem') IS NOT NULL
-			DROP TABLE #ResponsibilityTypeRelationItem;
-
-
 set nocount on 
 create table #ResponsibilityTypeRelationItem (
 RuleID int not null, 
@@ -350,6 +357,8 @@ commandTimeout: 3600, transaction: trans);
             SqlTransaction trans = null;
             if (useTransaction)
                 trans = cnn.BeginTransaction();
+
+            cnn.Execute("DROP TABLE IF EXISTS #ResponsibilityTypeRelationTypeItem", transaction: trans);
 
             cnn.Execute(@"
 set nocount on 
