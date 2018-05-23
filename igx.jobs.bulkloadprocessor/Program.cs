@@ -231,7 +231,10 @@ namespace igx.jobs.bulkloadprocessor
                 switch (load.Action)
                 {
                     case "M":
-                        await BulkLoadMembership(company, load.ID);
+                        if (load.ObjectID == 0)
+                            BulkLoadMembership(companyConnection, load.ID);
+                        else
+                            BulkLoadUsers(companyConnection, loadInfo.CompanyID, load.ID);
                         break;
                     case "O":
                         await BulkLoadOwnership(company, load.ID);
@@ -522,260 +525,531 @@ namespace igx.jobs.bulkloadprocessor
             }
         }
 
-        private static async Task BulkLoadMembership(CompanyContext company, int loadId)
+        private static void BulkLoadMembership(SqlConnection company, int loadId)
         {
-            var load = company.Loads.Where(x => x.ID == loadId).FirstOrDefault();
-
+            var load = company.Query<Load>("select * from [Load] where ID = @loadId", new { loadId }).SingleOrDefault();
             if (load == null)
             {
                 //log.Error($"Bulk load relate cannot find the load job to run [{loadId}].");
                 throw new Exception($"Bulk load membership cannot find the load job to run [{loadId}].");
             }
+            load = null;
 
             // get the load columns
-            var columns = company.LoadColumns.Where(x => x.LoadID == loadId).ToList();
-
+            var columns = company.Query<LoadColumn>("select * from LoadColumn where ID = @loadId", new { loadId });
             if (columns == null)
             {
                 throw new Exception($"Bulk load data does not contain any columns in LoadColumn table.  Load ID [{loadId}]");
             }
+            columns = null;
 
-            var loadItemColumns = company.LoadItemColumns.Where(x => x.LoadID == loadId);
-
-            //loop throw rows until there are no more indexes start at 2
-            int currentRowIndex = 2;
-            var rowData = loadItemColumns.Where(x => x.RowIndex == currentRowIndex).ToList();
-
-            if (load.ObjectID == 0)
+            using (var trans = company.BeginTransaction())
             {
-                /*
-			    insert into @fields values (-4, 'Action', 1, 0, 0, 1)
-			    insert into @fields values (0, 'Group Name', 1, 1, 0, 0)
-			    insert into @fields values (0, 'User Email', 1, 1, 0, 0)
-                */
-
-                var groups = company.Table<d360.core.entities.Group>().ToList();
-                var users = company.Table<GlobalReportingResource>().ToList();
-                while (rowData != null && rowData.Count > 0)
+                try
                 {
-                    //add a row to [ResponsibilityTypeRelationOverrideItem] table for the responsibility
-                    var actionCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == 0).FirstOrDefault();
-                    var groupNameCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == 1).FirstOrDefault();
-                    var userEmailCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == 2).FirstOrDefault();
-                    var msg = "";
+                    company.Execute(@"
+select	I.LoadID,
+		I.RowIndex,
+		I.StatusMessage,
+		I.Status,
+		C1.ColumnIndex as C1Index,
+		C1.Value as [Action],
+		C2.ColumnIndex as C2Index,
+		C2.Value as [Group],
+		cast(null as int) as GroupID,
+		C3.ColumnIndex as C3Index,
+		C3.Value as [User],
+		cast(null as int) as UserID
+into	#GroupLoadItems
+from	LoadItem I
+		inner join LoadItemColumn C1 on C1.LoadID = I.LoadID and C1.RowIndex = I.RowIndex and C1.ColumnIndex = 1
+		inner join LoadItemColumn C2 on C2.LoadID = I.LoadID and C2.RowIndex = I.RowIndex and C2.ColumnIndex = 2
+		inner join LoadItemColumn C3 on C3.LoadID = I.LoadID and C3.RowIndex = I.RowIndex and C3.ColumnIndex = 3
+where	I.LoadID = @id", new { id = loadId }, transaction: trans);
 
-                    if ((actionCol == null) || (groupNameCol == null) || (userEmailCol == null))
-                    {
-                        if (actionCol == null)
-                            CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities cannot find the action column in row {currentRowIndex}", companyId: company.CurrentCompanyID);
-                        if (groupNameCol == null)
-                            CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities cannot find the group column in row {currentRowIndex}", companyId: company.CurrentCompanyID);
-                        if (userEmailCol == null)
-                            CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities cannot find the user column in row {currentRowIndex}", companyId: company.CurrentCompanyID);
-                    }
-                    else
-                    {
-                        var actionValue = actionCol.Value;
-                        var groupValue = groupNameCol.Value;
-                        var userValue = userEmailCol.Value;
+                    company.Execute(@"
+create table #GroupInsertResult (ID int);
+create table #ResourceGroupInsertResult (ID int);
+create table #ResourceGroupDeleteResult (ID int);", transaction: trans);
 
-                        var group = groups.FirstOrDefault(i => i.Name == groupNameCol.Value);
-                        var user = users.FirstOrDefault(i => i.Email == userEmailCol.Value);
+                    company.Execute(@"
+merge into	[Group] as T
+using		(
+			select	distinct
+					ltrim(rtrim([Group])) as Name
+			from	#GroupLoadItems
+			) S
+on			(T.Name  = S.Name)
+when not matched by target then
+	insert (Name, UpdatedOn, UpdatedBy)
+	values (S.Name, getutcdate(), 0)
+output inserted.ID into #GroupInsertResult;", transaction: trans);
 
-                        if (actionValue.Equals("Remove"))
-                        {
-                            // Remove
-                            if (group == null)
-                            {
-                                // Save error to load item.
-                            }
-                            if (user == null)
-                            {
-                                // Save error to load item.
-                            }
-                        }
-                        else
-                        {
-                            // Add
-                            if (group == null)
-                            {
-                                group = new d360.core.entities.Group { Name = groupNameCol.Value, Description = "Created through bulk load.", UpdatedBy = load.UpdatedBy, UpdatedOn = load.DateStarted };
-                                company.Add(group);
-                                groups.Add(group);
-                            }
-                            if (user == null)
-                            {
-                                // Save error to load item.
-                            }
+                    company.Execute(@"
+update	T
+set		T.GroupID = S.ID,
+		T.StatusMessage = case
+							when I.ID is not null then 'Group created. '
+							else T.StatusMessage
+						  end
+from	#GroupLoadItems T
+		inner join [Group] S on S.Name= T.[Group]
+		left join #GroupInsertResult I on I.ID = S.ID;
 
-                            if (group != null && user != null)
-                            {
-                                var groupMember = new ResourceGroup { GroupID = group.ID, ResourceID = user.ResourceID, IsOwner = false };
-                            }
-                        }
-                        //if (resourceParts.Length != 2)
-                        //{
-                        //    msg = $"Bulk load responsibilities resource value {resource} is not a valid resource it must be formatted [type]:[id].";
-                        //    CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                        //}
+update	T
+set		T.UserID = S.ResourceID
+from	#GroupLoadItems T
+		inner join reporting.Global_Resource S on S.Email = T.[User];
 
-                        //CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities adding {currentRowIndex} of {rowData.Count} responsibilites.", companyId: company.CurrentCompanyID);
+update	#GroupLoadItems
+set		Status = 0,
+		StatusMessage = 'No user found with this email address. '
+where	UserID is null;", transaction: trans);
 
-                        // update status for this item
-                        //var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = 1, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
-                        //await company.QueryAsync<int>(statusSql, new { objectId = responsiblityOverride.ID, msg = msg, loadId = loadId, rowIndex = currentRowIndex });
-                    }
+                    company.Execute(@"
+merge into	[ResourceGroup] as T
+using		(
+			select	distinct
+					[UserID],
+					[GroupID]
+			from	#GroupLoadItems
+			where	UserID is not null and GroupID is not null and [Action] = 'Add'
+			) S
+on			(T.ResourceID = S.UserID and T.GroupID = S.GroupID)
+when not matched by target then
+	insert (ResourceID, GroupID, IsOwner)
+	values (S.UserID, S.GroupID, 0)
+output inserted.ResourceID into #ResourceGroupInsertResult;", transaction: trans);
 
-                    //next row
-                    currentRowIndex++;
+                    company.Execute(@"
+update	T
+set		T.Status = 1,
+		T.StatusMessage = coalesce(T.StatusMessage, '') + case
+							when I.ID is not null then 'Membership created. '
+							else 'Membership already exists.'
+						  end
+from	#GroupLoadItems T
+		left join #ResourceGroupInsertResult I on I.ID = T.UserID
+where	T.UserID is not null and T.GroupID is not null and T.[Action] = 'Add';", transaction: trans);
 
-                    rowData = loadItemColumns.Where(x => x.RowIndex == currentRowIndex).ToList();
+                    company.Execute(@"
+merge into	[ResourceGroup] as T
+using		(
+			select	distinct
+					[UserID],
+					[GroupID]
+			from	#GroupLoadItems
+			where	UserID is not null and GroupID is not null and [Action] = 'Remove'
+			) S
+on			(T.ResourceID = S.UserID and T.GroupID = S.GroupID)
+when matched and T.ResourceID = S.UserID and T.GroupID = S.GroupID then
+	delete
+output deleted.ResourceID into #ResourceGroupDeleteResult;", new { id = loadId }, transaction: trans);
+
+                    company.Execute(@"
+update	T
+set		T.Status =	case
+						when I.ID is not null then 1
+						else 0
+					end,
+		T.StatusMessage = coalesce(T.StatusMessage, '') + case
+							when I.ID is not null then 'Membership removed. '
+							else 'Membership does not exist.'
+						  end
+from	#GroupLoadItems T
+		left join #ResourceGroupDeleteResult I on I.ID = T.UserID
+where	T.UserID is not null and T.GroupID is not null and T.[Action] = 'Remove';
+
+update	T
+set		T.Status = S.Status,
+		T.StatusMessage = S.StatusMessage
+from	LoadItem T
+		inner join #GroupLoadItems S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex;", new { id = loadId }, transaction: trans);
+
+                    company.Execute(@"
+update	[Load]
+set		DateCompleted = getutcdate()
+where	ID = @id", new { id = loadId }, transaction: trans);
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw;
                 }
             }
-            else
-            {
-                foreach (var column in columns)
-                {
-                    if (string.Compare(column.Name, "Asset ID") == 0)
-                    {
-                        assetIdIndex = column.ColumnIndex;
-                    }
-                    else if (string.Compare(column.Name, "Resource") == 0)
-                    {
-                        resourceIndex = column.ColumnIndex;
-                    }
-                    else if (string.Compare(column.Name, "Responsibility") == 0)
-                    {
-                        responsibilityIndex = column.ColumnIndex;
-                    }
-                }
-
-                while (rowData != null && rowData.Count > 0)
-                {
-                    //add a row to [ResponsibilityTypeRelationOverrideItem] table for the responsibility
-                    var responsibilityCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == responsibilityIndex).FirstOrDefault();
-                    var resourceCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == resourceIndex).FirstOrDefault();
-                    var assetCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == assetIdIndex).FirstOrDefault();
-                    var msg = "";
-
-                    if ((responsibilityCol == null) || (resourceCol == null) || (assetCol == null))
-                    {
-                        if (responsibilityCol == null)
-                            CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities cannot find the responsibility column in row {currentRowIndex}", companyId: company.CurrentCompanyID);
-                        if (resourceCol == null)
-                            CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities cannot find the resource column in row {currentRowIndex}", companyId: company.CurrentCompanyID);
-                        if (assetCol == null)
-                            CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities cannot find the asset column in row {currentRowIndex}", companyId: company.CurrentCompanyID);
-                    }
-                    else
-                    {
-                        var responsiblityOverride = new ResponsibilityTypeRelationOverrideItem();
-                        //company.ResponsibilityTypeRelationOverrideItems
-                        if (!int.TryParse(assetCol.Value, out int assetId))
-                        {
-                            msg = $"Bulk load responsibilities asset ID value {assetCol.Value} is not a valid asset id.  Asset ID values must be an integer.";
-                            CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                        }
-                        else
-                        {
-                            responsiblityOverride.AssetID = assetId;
-                        }
-
-                        var resource = resourceCol.Value;
-                        var responsiblity = responsibilityCol.Value;
-
-                        // lookup the resource
-                        var resourceParts = resource.Split(':');
-
-                        if (resourceParts.Length != 2)
-                        {
-                            msg = $"Bulk load responsibilities resource value {resource} is not a valid resource it must be formatted [type]:[id].";
-                            CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                        }
-                        else
-                        {
-                            if (string.Compare(resourceParts[0], "USER", true) == 0)
-                            {
-                                responsiblityOverride.SecurityAsset = "R";
-
-                                var email = resourceParts[1];
-                                //lookup the resource
-                                var res = company.GlobalReportingResources.Where(x => string.Compare(x.Email, email, true) == 0).FirstOrDefault();
-
-                                if (res == null)
-                                {
-                                    msg = $"Bulk load responsibilities user value {resourceParts[1]} is not a valid resource and the email cannot be found in the resources table.";
-                                    CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                                }
-                                else
-                                {
-                                    responsiblityOverride.SecurityAssetID = res.ResourceID;
-                                }
-                            }
-                            else
-                            {
-                                responsiblityOverride.SecurityAsset = "G";
-
-                                //lookup the group
-                                var grp = company.Groups.Where(x => string.Compare(x.Name, resourceParts[1], true) == 0).FirstOrDefault();
-
-                                if (grp == null)
-                                {
-                                    msg = $"Bulk load responsibilities group name value {resourceParts[1]} is not a valid group name it cannot be found in the groups table.";
-                                    CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                                }
-                                else
-                                {
-                                    responsiblityOverride.SecurityAssetID = grp.ID;
-                                }
-                            }
-                        }
-
-                        // lookup the responsibility
-
-                        var resp = company.ResponsibilityTypes.Where(x => string.Compare(x.Name, responsiblity, true) == 0).FirstOrDefault();
-
-                        if (resp == null)
-                        {
-                            msg = $"Bulk load responsibilities responsibility value {responsiblity} is not a valid responsibility type it cannot be found in the responsibility type table.";
-                            CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                        }
-                        else
-                        {
-                            responsiblityOverride.ResponsibilityTypeID = resp.ID;
-                        }
-
-                        if (string.IsNullOrEmpty(msg))
-                        {
-                            if (company.ResponsibilityTypeRelationOverrideItems.Any(x => x.ResponsibilityTypeID == responsiblityOverride.ResponsibilityTypeID && x.SecurityAsset == responsiblityOverride.SecurityAsset && x.SecurityAssetID == responsiblityOverride.SecurityAssetID && responsiblityOverride.AssetID == x.AssetID))
-                            {
-                                msg = "Responsibility already exists.";
-                            }
-                            else
-                            {
-                                msg = "Responsibility added sucessfully.";
-                                company.ResponsibilityTypeRelationOverrideItems.Add(responsiblityOverride);
-                            }
-                        }
-
-                        CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities adding {currentRowIndex} of {rowData.Count} responsibilites.", companyId: company.CurrentCompanyID);
-
-                        // update status for this item
-                        var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = 1, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
-
-                        await company.QueryAsync<int>(statusSql, new { objectId = responsiblityOverride.ID, msg = msg, loadId = loadId, rowIndex = currentRowIndex });
-                    }
-
-                    //next row
-                    currentRowIndex++;
-
-                    rowData = loadItemColumns.Where(x => x.RowIndex == currentRowIndex).ToList();
-                }
-            }
-
-            if (currentRowIndex > 2) company.SaveChanges();
         }
 
+        public class CommunityUserAddResult
+        {
+            public int LoadID { get; set; }
+            public int RowIndex { get; set; }
+            public string UserStatus { get; set; }
+            public string Email { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public int EnvironmentID { get; set; }
+            public int? ClientID { get; set; }
+            public int? ResourceID { get; set; }
+            public bool? Success { get; set; }
+            public string Message { get; set; }
+        }
+
+        private static void BulkLoadUsers(SqlConnection company, int companyID, int loadId)
+        {
+            var load = company.Query<Load>("select * from [Load] where ID = @loadId", new { loadId }).SingleOrDefault();
+            if (load == null)
+            {
+                //log.Error($"Bulk load relate cannot find the load job to run [{loadId}].");
+                throw new Exception($"Bulk load users cannot find the load job to run [{loadId}].");
+            }
+            load = null;
+
+            // get the load columns
+            var columns = company.Query<LoadColumn>("select * from LoadColumn where LoadID = @loadId", new { loadId });
+            if (columns == null)
+            {
+                throw new Exception($"Bulk load data does not contain any columns in LoadColumn table.  Load ID [{loadId}]");
+            }
+            if (columns.Count() < 4)
+            {
+                throw new Exception($"Bulk load data does not contain the correct number of columns in LoadColumn table.  Load ID [{loadId}]");
+            }
+            //columns = null; //may need these shortly.
+
+            var usersToLoad = company.Query<dynamic>(@"
+select	I.LoadID,
+		I.RowIndex,
+		C1.Value as [UserStatus],
+		C2.Value as [Email],
+		C3.Value as [FirstName],
+		C4.Value as [LastName]
+from	LoadItem I
+		inner join LoadItemColumn C1 on C1.LoadID = I.LoadID and C1.RowIndex = I.RowIndex and C1.ColumnIndex = 1
+		inner join LoadItemColumn C2 on C2.LoadID = I.LoadID and C2.RowIndex = I.RowIndex and C2.ColumnIndex = 2
+		inner join LoadItemColumn C3 on C3.LoadID = I.LoadID and C3.RowIndex = I.RowIndex and C3.ColumnIndex = 3
+		inner join LoadItemColumn C4 on C4.LoadID = I.LoadID and C4.RowIndex = I.RowIndex and C4.ColumnIndex = 4
+where	I.LoadID = @loadId", new { loadId }, commandTimeout: 1200).ToList();
+
+            #region Generate data sets
+
+            var tbl = new System.Data.DataTable();
+
+            tbl.Columns.Add("LoadID", typeof(int));
+            tbl.Columns.Add("RowIndex", typeof(int));
+            tbl.Columns.Add("UserStatus", typeof(string));
+            tbl.Columns.Add("Email", typeof(string));
+            tbl.Columns.Add("FirstName", typeof(string));
+            tbl.Columns.Add("LastName", typeof(string));
+            tbl.Columns.Add("EnvironmentID", typeof(int));
+
+            foreach (var userToLoad in usersToLoad)
+            {
+                var row = tbl.NewRow();
+
+                row["LoadID"] = userToLoad.LoadID;
+                row["RowIndex"] = userToLoad.RowIndex;
+                row["UserStatus"] = userToLoad.UserStatus;
+                row["Email"] = userToLoad.Email;
+                row["FirstName"] = userToLoad.FirstName;
+                row["LastName"] = userToLoad.LastName;
+                row["EnvironmentID"] = companyID;
+
+                tbl.Rows.Add(row);
+            }
+
+            #endregion
+
+            List<CommunityUserAddResult> userResults = null;
+
+            var community = new SqlConnection(d360.core.constants.COMMUNITY_DATABASE_CONNECTION);
+            community.OpenWithRetry(RetryPolicy.DefaultProgressive);
+            using (var trans = community.BeginTransaction())
+            {
+                try
+                {
+                    community.Execute(@"
+DROP TABLE IF EXISTS #Users;
+DROP TABLE IF EXISTS #UsersResult;
+DROP TABLE IF EXISTS #UserMembershipsResult;", transaction: trans);
+
+                    community.Execute(@"
+create table #Users (
+    LoadID int not null,
+    RowIndex int not null,
+    UserStatus nvarchar(50) null,
+    Email nvarchar(1000) null,
+    FirstName nvarchar(1000) null,
+    LastName nvarchar(50) null,
+	EnvironmentID int not null, 
+	ClientID int null,
+	ResourceID int null,
+    Success bit null,
+    Message nvarchar(2500) null
+);
+create table #UsersResult (LoadID int, RowIndex int, ResourceID int, [Action] varchar(25) not null);
+create table #UserMembershipsResult (ResourceID int, [Action] varchar(25) not null);
+CREATE NONCLUSTERED INDEX IX_TempUsers ON #Users ( Email ASC );
+", transaction: trans);
+
+                    var usersBulkCopy = new SqlBulkCopy(community, SqlBulkCopyOptions.Default, trans)
+                    {
+                        BatchSize = tbl.Rows.Count,
+                        DestinationTableName = "#Users",
+                        BulkCopyTimeout = 3600
+                    };
+
+                    usersBulkCopy.ColumnMappings.Add("LoadID", "LoadID");
+                    usersBulkCopy.ColumnMappings.Add("RowIndex", "RowIndex");
+                    usersBulkCopy.ColumnMappings.Add("UserStatus", "UserStatus");
+                    usersBulkCopy.ColumnMappings.Add("Email", "Email");
+                    usersBulkCopy.ColumnMappings.Add("FirstName", "FirstName");
+                    usersBulkCopy.ColumnMappings.Add("LastName", "LastName");
+                    usersBulkCopy.ColumnMappings.Add("EnvironmentID", "EnvironmentID");
+
+                    usersBulkCopy.WriteToServer(tbl);
+
+                    community.Execute(@"
+update	T
+set		T.ClientID = S.ClientID
+from	#Users T
+		inner join Company S on S.ID = T.EnvironmentID;
+
+update	T
+set		T.ResourceID = S.ID
+from	#Users T
+		inner join [Resource] S on S.Email = T.Email;
+
+update	T
+set		T.Success = case
+						when S.[Count] > 0 then cast(0 as bit)
+						else null
+					end,
+		T.Message = case
+						when S.[Count] > 0 then 'User is a member of another account and may not be modified.'
+						else null
+					end
+from	#Users T
+		cross apply (
+			select	count(1) as [Count]
+			from	CompanyResource CR
+					inner join Company C on C.ID = CR.CompanyID and C.ClientID <> T.ClientID and CR.ResourceID = T.ResourceID
+		) S;", transaction: trans);
+
+                    community.Execute(@"
+merge into  [Resource] T
+using       (
+            select  *
+            from    #Users
+			where	Success is null
+            ) S
+on          (
+                T.ID = S.ResourceID
+            )
+when matched then
+	update
+	set	T.FirstName = S.FirstName,
+		T.LastName = S.LastName,
+		T.Status = S.UserStatus
+when not matched by target then
+    insert  (ResourceTypeID, Username, [Password], LastName, FirstName, Email, [Status])
+    values  (1, S.Email, 'not set', S.LastName, S.FirstName, S.Email, S.UserStatus)
+output S.LoadID, S.RowIndex, inserted.ID, $action into #UsersResult;", transaction: trans);
+
+                    community.Execute(@"
+update	T
+set		T.Success = 1,
+		T.ResourceID = S.ResourceID,
+		Message = case S.[Action]
+					when 'INSERT' then 'User created. '
+					else 'User updated. '
+				  end
+from	#Users T
+		inner join #UsersResult S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex;", transaction: trans);
+
+                    community.Execute(@"
+merge into  [CompanyResource] T
+using       (
+            select  distinct
+					EnvironmentID as CompanyID,
+					ResourceID
+            from    #Users
+			where	Success = 1
+            ) S
+on          (
+                T.CompanyID = S.CompanyID and T.ResourceID = S.ResourceID
+            )
+when not matched by target then
+    insert  (CompanyID, ResourceID, IsAdministrator)
+    values  (S.CompanyID, S.ResourceID, 0)
+output inserted.ResourceID, $action into #UserMembershipsResult;", transaction: trans);
+
+                    community.Execute(@"
+update	T
+set		T.Message = T.Message + 
+					case S.[Action]
+						when 'INSERT' then 'User added to environment. '
+						else 'User already assigned to environment. '
+					end
+from	#Users T
+		left join #UserMembershipsResult S on S.ResourceID = T.ResourceID
+where	T.Success = 1", transaction: trans);
+
+                    userResults = community.Query<CommunityUserAddResult>("select * from #Users", transaction: trans).ToList();
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw;
+                }
+            }
+
+            tbl = new System.Data.DataTable();
+
+            tbl.Columns.Add("LoadID", typeof(int));
+            tbl.Columns.Add("RowIndex", typeof(int));
+            tbl.Columns.Add("UserStatus", typeof(string));
+            tbl.Columns.Add("Email", typeof(string));
+            tbl.Columns.Add("FirstName", typeof(string));
+            tbl.Columns.Add("LastName", typeof(string));
+            tbl.Columns.Add("ResourceID", typeof(int));
+            tbl.Columns.Add("Success", typeof(bool));
+            tbl.Columns.Add("Message", typeof(string));
+
+            foreach (var userResult in userResults)
+            {
+                var row = tbl.NewRow();
+
+                row["LoadID"] = userResult.LoadID;
+                row["RowIndex"] = userResult.RowIndex;
+                row["UserStatus"] = userResult.UserStatus;
+                row["Email"] = userResult.Email;
+                row["FirstName"] = userResult.FirstName;
+                row["LastName"] = userResult.LastName;
+                row["ResourceID"] = userResult.ResourceID;
+                row["Success"] = userResult.Success;
+                row["Message"] = userResult.Message;
+
+                tbl.Rows.Add(row);
+            }
+
+
+            using (var trans = company.BeginTransaction())
+            {
+                try
+                {
+                    company.Execute(@"DROP TABLE IF EXISTS #Users;", transaction: trans);
+
+                    company.Execute(@"
+create table #Users (
+    LoadID int not null,
+    RowIndex int not null,
+    UserStatus nvarchar(50) null,
+    Email nvarchar(1000) null,
+    FirstName nvarchar(1000) null,
+    LastName nvarchar(50) null,
+	ResourceID int null,
+    Success bit null,
+    Message nvarchar(2500) null
+)
+CREATE NONCLUSTERED INDEX IX_TempUsers_Load ON #Users ( LoadID ASC, RowIndex ASC );
+CREATE NONCLUSTERED INDEX IX_TempUsers_ResourceID ON #Users ( ResourceID ASC );
+", transaction: trans);
+
+                    var usersBulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
+                    {
+                        BatchSize = tbl.Rows.Count,
+                        DestinationTableName = "#Users",
+                        BulkCopyTimeout = 3600
+                    };
+
+                    usersBulkCopy.ColumnMappings.Add("LoadID", "LoadID");
+                    usersBulkCopy.ColumnMappings.Add("RowIndex", "RowIndex");
+                    usersBulkCopy.ColumnMappings.Add("UserStatus", "UserStatus");
+                    usersBulkCopy.ColumnMappings.Add("Email", "Email");
+                    usersBulkCopy.ColumnMappings.Add("FirstName", "FirstName");
+                    usersBulkCopy.ColumnMappings.Add("LastName", "LastName");
+                    usersBulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
+                    usersBulkCopy.ColumnMappings.Add("Success", "Success");
+                    usersBulkCopy.ColumnMappings.Add("Message", "Message");
+
+                    usersBulkCopy.WriteToServer(tbl);
+
+                    company.Execute(@"
+merge into  reporting.Global_Resource T
+using       (
+            select  *
+            from    #Users
+			where	Success = 1
+            ) S
+on          (
+                T.ResourceID = S.ResourceID
+            )
+when matched then
+	update
+	set	T.FirstName = S.FirstName,
+		T.LastName = S.LastName,
+		T.Status = S.UserStatus
+when not matched by target then
+    insert  (ResourceID, LastName, FirstName, Email, [Status], IsAdministrator)
+    values  (S.ResourceID, S.LastName, S.FirstName, S.Email, S.UserStatus, 0);", transaction: trans);
+
+                    company.Execute(@"exec [bulkload].[UpdateDynamicLookupFieldColumns] @loadId", new { loadId }, transaction: trans);
+
+                    company.Execute(@"
+merge into  Field T
+using       (
+			select	A.ID as AssetID,
+					A.Object,
+					A.ObjectID,
+					FT.ID as FieldTypeID,
+					case 
+						when FT.[Type] = 'Boolean' and LOWER(CI.Value) in ('y', 'yes', 'true', 't', '1') then 'true'
+						when FT.[Type] = 'Boolean' and LOWER(CI.Value) not in ('y', 'yes', 'true', 't', '1') then 'false'
+						when FT.[Type] = 'Lookup' then cast(CI.LookupObjectID as nvarchar(250))
+						else CI.Value
+					end as Value,
+					0 as UpdatedBy
+			from	LoadItem I
+					inner join #Users U on U.LoadID = I.LoadID and U.RowIndex = I.RowIndex and U.Success = 1
+					inner join Asset A on A.Object = 'Resource' and A.ObjectID = U.ResourceID
+					inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex > 4
+					inner join LoadItemColumn CI on CI.LoadID = I.LoadID and CI.RowIndex = I.RowIndex and CI.ColumnIndex = C.ColumnIndex
+					inner join FieldType FT on FT.Object = 'ResourceType' and FT.ObjectID = 1 and FT.Name = C.Name
+            ) S
+on          (
+                T.AssetID = S.AssetID and T.FieldTypeID = S.FieldTypeID
+            )
+when matched then
+	update
+	set	T.Value = S.Value,
+		T.UpdatedBy = S.UpdatedBy
+when not matched by target then
+    insert  (FieldTypeID, ObjectType, ObjectID, Value, UpdatedBy)
+    values  (S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.UpdatedBy);", transaction: trans);
+
+                    company.Execute(@"
+update	T
+set		T.Status = S.Success,
+		T.StatusMessage = S.Message
+from	LoadItem T
+		inner join #Users S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex;
+update	[Load]
+set		DateCompleted = getutcdate()
+where	ID = @loadId", new { loadId }, transaction: trans);
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw;
+                }
+            }
+        }
 
         private static async Task BulkLoadOwnership(CompanyContext company, int loadId)
         {

@@ -39,13 +39,18 @@ namespace d360.model
         string LoadDetailBaseSql = @"select	L.ID,
 		L.[Object],
 		L.ObjectID,
-		coalesce(C_D.Name, 'Default') as ObjectName,
+		case 
+			when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
+			when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
+			else coalesce(C_D.Name, 'Default') 
+		end as ObjectName,
 		L.Notes,
 		'MyFile.' + L.Extension as FilePath,
 		L.DateStarted,
 		L.DateCompleted,
 		case L.[Action]
-			when 'P' then 'Promotion'
+			when 'M' then 'Users/Groups'
+            when 'P' then 'Promotion'
 			when 'R' then 'Relation'
 			when 'U' then 'Unrelation'
             when 'BL' then 'Lineage : Business'

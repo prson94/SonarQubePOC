@@ -10136,8 +10136,10 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     break;
                 #endregion
                 case "M":   // USers/Groups
-                    models = new List<OptionModel> { new OptionModel { title = "Group Membership", value = "Membership|0" } };
-                    models = new List<OptionModel> { new OptionModel { title = "Users", value = "Membership|1" } };
+                    models = new List<OptionModel> {
+                        new OptionModel { title = "Group Membership", value = "Membership|0" },
+                        new OptionModel { title = "Users", value = "Membership|1" }
+                    };
                     break;
                 case "BL":   // Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
