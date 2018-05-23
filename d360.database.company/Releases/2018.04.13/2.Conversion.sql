@@ -147,6 +147,11 @@ BEGIN
 END
 
 GO
+--set default display format where none is defined
+update ArtifactType
+set DisplayFormat = '{Name}'
+where DisplayFormat is null;
+GO
 
 /*
 To Fix for NM:
