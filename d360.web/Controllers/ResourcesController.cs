@@ -31,6 +31,14 @@ namespace d360.web.Models
         public int QuestionTypeID { get; set; }
     }
 
+    public class TooltipFieldLevelPathModel
+    {
+        public string Path { get; set; }
+        public string LevelName { get; set; }
+        public string Url { get; set; }
+        public int Level { get; set; }
+    }
+
     public class FieldTooltipValueModel
     {
         public string Name { get; set; }
@@ -646,6 +654,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                 bool show = false;
                 ObjectDetail det = null;
                 List<FieldTooltipValueModel> res = new List<FieldTooltipValueModel>();
+                List<TooltipFieldLevelPathModel> levels = new List<TooltipFieldLevelPathModel>();
                 string desc = "";
                 string dispName = "";
                 string typeName = "";
@@ -694,9 +703,14 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         dispName = fusionName;
                     }
 
+                    if ((objectType == "Artifact") || (objectType == "Taxonomy") || (objectType == "FusionAttribute"))
+                    {
+                        string query = string.Format("[dbo].[GetAssetHierarchy] {0}, '{1}'", objectID, objectType);
+                        levels = Company.Query<TooltipFieldLevelPathModel>(query).ToList<TooltipFieldLevelPathModel>();
+                    }
                 }
 
-                return Json(new { ShowTooltip = show, AssetID = (det != null ? det.AssetID : -1), DisplayName = dispName, TypeName = typeName, Url = (det != null ? $"/{det.Url}" : ""), FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
+                return Json(new { ShowTooltip = show, AssetID = (det != null ? det.AssetID : -1), DisplayName = dispName, TypeName = typeName, Url = (det != null ? $"/{det.Url}" : ""), Levels=levels, FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {

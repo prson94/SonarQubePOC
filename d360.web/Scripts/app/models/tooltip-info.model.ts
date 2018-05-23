@@ -6,11 +6,19 @@ export class TooltipFieldValue {
     Value: string;
 }
 
+export class TooltipFieldLevelPath {
+    Path: string;
+    LevelName: string;
+    Url: string
+    Level: string;
+}
+
 export class TooltipInfo {
     DisplayName: string;   
     TypeName: string;
     Url: string;    
-    FieldValues: TooltipFieldValue[];    
+    FieldValues: TooltipFieldValue[];
+    Levels: TooltipFieldLevelPath[];
     Description: string;
     ShowTooltip: boolean;
 }
