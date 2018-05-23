@@ -3,6 +3,11 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Data;
+using System.Data.SqlClient;
+using Dapper;
 
 namespace igx.jobs.databasecleaner
 {
@@ -21,9 +26,9 @@ namespace igx.jobs.databasecleaner
     {
         const string functionName = "DatabaseMaintenance_Cleaner";
         const string timerSettings = "0 0 4 * * *";
-        //const string timerSettings = "*/10 * * * * *";
+       // const string timerSettings = "*/10 * * * * *";
 
-        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
+        public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
@@ -31,30 +36,31 @@ namespace igx.jobs.databasecleaner
 
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-                companies.ForEach(c =>
+#if DEBUG
+                companies = companies.Where(x => x.CompanyID == 4).ToList();
+#endif
+
+                foreach(var c in companies)
                 {
                     try
                     {
-                        var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        company.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                        company.ProcessTask(log, functionName, c.CompanyID, "sp_updatestats", 1400);
-                        company.Close();
-                        company.Dispose();
+                        using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+                        {
+                            company.OpenWithRetry(RetryPolicy.DefaultProgressive);                        
+                            await company.ExecuteAsync("sp_updatestats", commandTimeout: 1400);
+                        }                          
                     }
                     catch (Exception ex)
                     {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        //log.Error($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);                        
                     }
-
-                });
+                }
 
                 CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex);
-                //log.Error($"General Exception: {ex.GetFullExceptionData()}");
+                CoreFunction.AITrackException(functionName, ex);                
             }
 
             CoreFunction.AIFlush();
