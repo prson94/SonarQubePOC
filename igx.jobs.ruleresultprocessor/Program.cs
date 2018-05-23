@@ -4,6 +4,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace igx.jobs.ruleresultprocessor
 {
@@ -22,7 +23,7 @@ namespace igx.jobs.ruleresultprocessor
     {
         const string functionName = "DataQuality_ProcessRuleResults";
         const string timerSettings = "0 */5 * * * *";
-        //const string timerSettings = "*/10 * * * * *";
+      //  const string timerSettings = "*/10 * * * * *";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -30,6 +31,10 @@ namespace igx.jobs.ruleresultprocessor
             {
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
+
+#if DEBUG
+                companies = companies.Where(x => x.CompanyID == 4).ToList();
+#endif
 
                 companies.ForEach(c =>
                 {
@@ -57,8 +62,8 @@ namespace igx.jobs.ruleresultprocessor
 					    select	top 1
 							    'Artifact' as Object,
 							    O.ID as ObjectID
-					    from	Artifact O
-							    inner join ArtifactType T on T.ID = O.ArtifactTypeID and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ArtifactType' and T.ID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
+					    from	AssetDetail O
+							    where O.[Object] = 'Artifact' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ArtifactType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
 					    ) R_A
 		    outer apply (
 					    select	top 1
@@ -71,8 +76,8 @@ namespace igx.jobs.ruleresultprocessor
 					    select	top 1
 							    'Taxonomy' as Object,
 							    O.ID as ObjectID
-					    from	Taxonomy O
-							    inner join TaxonomyType T on T.ID = O.TaxonomyTypeID and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'TaxonomyType' and T.ID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
+					    from	AssetDetail O
+							    where O.[Object] = 'Taxonomy' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'TaxonomyType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
 					    ) R_T");
 
                         #endregion
