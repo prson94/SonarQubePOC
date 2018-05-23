@@ -637,7 +637,7 @@ where   A.Type = 'ArtifactType'
                 default:
                     var doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(value+"");
-                    var txt = doc.DocumentNode.InnerText;
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
                     if (txt.StartsWith("="))
                         txt = "'" + txt;
                     document.SetCellValue(rowIndex, columnIndex, txt);
