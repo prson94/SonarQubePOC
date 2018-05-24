@@ -2,16 +2,12 @@
 using d360.core.entities;
 using d360.core.enums.Workflow;
 using d360.core.queue;
-using d360.extensions;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
 using d360.model;
-using d360.utils.company;
-using Dapper;
 using igx.jobs.igc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -19,7 +15,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -193,15 +188,23 @@ order by	T.SynchedAssetTypeID").ToList();
                                         {
                                             if (newAtExecution != null)
                                             {
-                                                newAtExecution.CompletedOn = DateTime.UtcNow;
-                                                company.Update(newAtExecution);
+                                                var newExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == newAtExecution.ExecutionID);
+                                                if (newExecutionAssetCount == newAtExecution.CurrentSourceAssetCount)
+                                                {
+                                                    newAtExecution.CompletedOn = DateTime.UtcNow;
+                                                    company.Update(newAtExecution);
+                                                }
                                             }
                                             else
                                             {
                                                 if (previousAtExecution != null)
                                                 {
-                                                    previousAtExecution.CompletedOn = DateTime.UtcNow;
-                                                    company.Update(previousAtExecution);
+                                                    var previousExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == previousAtExecution.ExecutionID);
+                                                    if (previousExecutionAssetCount == previousAtExecution.CurrentSourceAssetCount)
+                                                    {
+                                                        previousAtExecution.CompletedOn = DateTime.UtcNow;
+                                                        company.Update(previousAtExecution);
+                                                    }
                                                 }
                                             }
 
@@ -230,6 +233,7 @@ order by	T.SynchedAssetTypeID").ToList();
                                 try
                                 {
                                     company.ProcessUnresolvedRelationships();
+                                    company.ProcessIntegrationAssetDeletions();
                                 }
                                 catch (Exception ex)
                                 {

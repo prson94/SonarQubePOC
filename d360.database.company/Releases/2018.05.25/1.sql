@@ -467,18 +467,11 @@ BEGIN
 	when	matched then
 	update	set T.SecurityAsset = S.SecurityAsset,
 				T.SecurityAssetID = S.SecurityAssetID,
-				T.ResponsibilityTypeID = S.ResponsibilityTypeID
+				T.ResponsibilityTypeID = S.ResponsibilityTypeID,
+				T.Context = S.Context
 	when	not matched by target then
 			insert (RuleID, ResponsibilityTypeID, AssetID, Object, ObjectID, AssetTypeID, Type, TypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, IsVisible, Overriden, OverrideItemID)
 			values (S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.Object, S.ObjectID, S.AssetTypeID, S.Type, S.TypeID, S.SecurityAsset, S.SecurityAssetID, S.Context, 0, 1, 0, S.ID);
-
-	--update	T
-	--set		T.AssetID = S.AssetID,
-	--		T.ResponsibilityTypeID = S.ResponsibilityTypeID,
-	--		T.SecurityAsset = S.SecurityAsset,
-	--		T.SecurityAssetID = S.SecurityAssetID
-	--from	ResponsibilityTypeRelationItem T
-	--		inner join inserted S on S.ID = T.OverrideItemID
 END
 GO
 
@@ -2135,3 +2128,5 @@ CREATE PROCEDURE [dbo].[GetAssetHierarchy]
   end
 GO
 
+alter table integration.ExecutionAssetType add ProcessedDelete bit constraint DF_IntegrationExecutionAssetType_ProcessedDelete default(0) not null
+GO

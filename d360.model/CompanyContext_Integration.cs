@@ -43,7 +43,12 @@ namespace d360.model
 
         public void ProcessUnresolvedRelationships()
         {
-            Database.Connection.Execute(@"exec integration.ProcessUnresolvedRelationships");
+            Database.Connection.Execute(@"exec integration.ProcessUnresolvedRelationships", commandTimeout: 1200);
+        }
+
+        public void ProcessIntegrationAssetDeletions()
+        {
+            Database.Connection.Execute(@"exec integration.ProcessDeletions", commandTimeout: 1200);
         }
 
         #endregion
