@@ -153,6 +153,9 @@
   <data name="DisplayStyle_Name" xml:space="preserve">
     <value>Display Style</value>
   </data>
+  <data name="FieldReferenceItemListFromRelationship_NeededRelationship" xml:space="preserve">
+    <value>You should not be able to save or edit a 'reference item list from relationship' without a relationship.</value>
+  </data>
   <data name="FieldTypeCategory_Name" xml:space="preserve">
     <value>Category</value>
   </data>

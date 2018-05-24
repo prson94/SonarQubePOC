@@ -330,11 +330,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'reflistrelationship':
                 try {
                     this.model.FieldType.IsListable = false;
-                    if (this.model.cardinalRelationship) {
+                    if (this.model.cardinalRelationship && (this.lookups.Field_CardinalReferenceRelationships.length > 0)
+                        && (this.lookups.Field_CardinalReferenceRelationships.find(x => x.value == this.model.cardinalRelationship))) {
                         promises.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship));
                     }
                     else if (this.lookups.Field_CardinalReferenceRelationships.length > 0) {
                         promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalReferenceRelationships[0].value));
+                    }
+                    else {
+                        this.model.FieldType.LookupObjectID = null;
+                        this.model.FieldType.LookupObjectType = null;
                     }
                 } catch (e) {
                     console.log(e);
@@ -578,7 +583,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.onCancel.emit(null);
     }
 
-    private onSubmit(): any {        
+    private onSubmit(): any {  
         //convert DisplayFields to objects
         if (this.model.FusionItems) {
             this.model.FusionItems.forEach(i => {

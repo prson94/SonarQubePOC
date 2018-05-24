@@ -3813,7 +3813,11 @@ namespace d360.web.Controllers
                     throw new ConflictException("Error Occurred!", val.Message);
                 }
 
-                if (model.FieldType.Type != DataType.Lookup.ToString())                
+                if (model.FieldType.Type == DataType.RefListRelationship.ToString() && (model.FieldType.LookupObjectType != "IntersectType" || model.FieldType.LookupObjectID ==null))
+                {
+                    throw new ConflictException("Error Occurred!", FieldInfo.FieldReferenceItemListFromRelationship_NeededRelationship);
+                }
+                    if (model.FieldType.Type != DataType.Lookup.ToString())                
                     model.FieldType.ParentFieldTypeID = 0;
 
                 switch (model.FieldType.Type)
@@ -4173,6 +4177,10 @@ namespace d360.web.Controllers
                     throw new ConflictException("Error Occurred!", FormInfo.FieldType_List_Error_Multiple_Items_Used);
                 }
 
+                if (model.FieldType.Type == DataType.RefListRelationship.ToString() && (model.FieldType.LookupObjectType != "IntersectType" || model.FieldType.LookupObjectID == null))
+                {
+                    throw new ConflictException("Error Occurred!", FieldInfo.FieldReferenceItemListFromRelationship_NeededRelationship);
+                }
                 // Static fields
                 var oldType = ft.Type;
 

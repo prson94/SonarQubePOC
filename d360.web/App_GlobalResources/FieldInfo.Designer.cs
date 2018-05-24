@@ -169,6 +169,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You should not be able to save or edit a &apos;reference item list from relationship&apos; without a relationship..
+        /// </summary>
+        public static string FieldReferenceItemListFromRelationship_NeededRelationship {
+            get {
+                return ResourceManager.GetString("FieldReferenceItemListFromRelationship_NeededRelationship", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Category.
         /// </summary>
         public static string FieldTypeCategory_Name {

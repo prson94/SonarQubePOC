@@ -452,6 +452,11 @@
               Looks up a localized string similar to Display Style.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.FieldReferenceItemListFromRelationship_NeededRelationship">
+            <summary>
+              Looks up a localized string similar to You should not be able to save or edit a &apos;reference item list from relationship&apos; without a relationship..
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.FieldTypeCategory_Name">
             <summary>
               Looks up a localized string similar to Category.
