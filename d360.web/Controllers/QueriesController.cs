@@ -184,7 +184,8 @@ order by	R.LastName, R.FirstName", new { id = id }).ToList();
 	                    g1.ID as GroupID, 
 	                    null as [Value], 
 	                    g1.ParentID, 
-	                    g1.[Name] 
+	                    g1.[Name],
+                        null as MapID
                     from 
 	                    metrics.[Group] g1
 	                    inner join metrics.Map m1 on m1.GroupID = g1.ID and m1.[State] = 1
@@ -198,7 +199,8 @@ order by	R.LastName, R.FirstName", new { id = id }).ToList();
 		                    g2.ID as GroupID, 
 		                    null as [Value], 
 		                    g2.ParentID as ParentID, 
-		                    g2.[Name]
+		                    g2.[Name],
+                            null as MapID
 	                    from 
 		                    metrics.[group] g2
 	                    inner join groups g3 on g3.ParentID = g2.ID
@@ -207,11 +209,12 @@ order by	R.LastName, R.FirstName", new { id = id }).ToList();
                     select distinct * from groups
                     union all
 	                    select 
-		                    s.ID as ID, 
+		                    max(s.ID) as ID, 
 		                    g.ID as GroupID, 
-		                    s.[Value], 
+		                    avg(s.[Value]), 
 		                    g.ParentID, 
-		                    i.[Name]
+		                    i.[Name],
+                            m.ID as MapID
 	                    from 
 		                    metrics.Score s
 	                    inner join metrics.MapResult r on r.ScoreID = s.ID
@@ -220,7 +223,8 @@ order by	R.LastName, R.FirstName", new { id = id }).ToList();
 	                    inner join metrics.[Group] g on g.ID = m.GroupID and g.[State] = 1
 	                    where 
 		                    s.[Object] = @type and s.ObjectID = @id
-                            and @date between S.EffectiveStartDate and S.EffectiveEndDate";
+                            and @date between S.EffectiveStartDate and S.EffectiveEndDate
+                        group by m.ID, g.ID, g.ParentID, i.[Name]";
 
             var results = Company.Query<dynamic>(query, new { type = type.ToString(), id, date = date ?? DateTime.UtcNow.ToString() });
 
