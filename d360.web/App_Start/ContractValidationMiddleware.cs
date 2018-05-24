@@ -32,11 +32,16 @@ namespace d360.web
             if (resource == null)
             {
                 resource = new ContractValidationCacheModel.User();
+                resource.Companies = new List<ContractValidationCacheModel.Company>();
                 cache.SetItemInListByID(key, resourceId, resource, true, time);
             }
             else
             {
-                var res = resource.Companies.FirstOrDefault(c => c.ID == companyId);
+                if (resource.Companies == null)
+                    resource.Companies = new List<ContractValidationCacheModel.Company>();
+
+                var comp = new List<ContractValidationCacheModel.Company>(resource.Companies ?? new List<ContractValidationCacheModel.Company>());
+                var res = comp.FirstOrDefault(c => c.ID == companyId);
                 if (res != null)
                 {
                     cache.SetItemInListByID(key, resourceId, resource, true, time);
@@ -44,7 +49,11 @@ namespace d360.web
                 }
             }
 
-            var resourceCompany = resource.Companies.FirstOrDefault(c => c.ID == companyId);
+            if (resource.Companies == null)
+                resource.Companies = new List<ContractValidationCacheModel.Company>();
+
+            var companies = new List<ContractValidationCacheModel.Company>(resource.Companies ?? new List<ContractValidationCacheModel.Company>());
+            var resourceCompany = companies.FirstOrDefault(c => c.ID == companyId);
 
             if (resourceCompany == null)
             {
@@ -60,11 +69,15 @@ namespace d360.web
                     try
                     {
                         cnn.Open();
-                        contractCount = (await cnn.QueryAsync<int>(@"select count(*) from dbo.GetContractValidations(@ResourceID) where accepted = 0 and ((contractType = 1 and isFirstUser = 1) or contractType = 2 or organizationId is null)", new { resourceId })).FirstOrDefault();
+                        var result = await cnn.QueryAsync<int>(@"select count(*) from dbo.GetContractValidations(@ResourceID) where accepted = 0 and ((contractType = 1 and isFirstUser = 1) or contractType = 2 or organizationId is null)", new { resourceId });
+                        if (result != null)
+                            contractCount = result.FirstOrDefault();
+                        else
+                            contractCount = 0;
                     }
                     catch (Exception ex)
                     {
-                        throw ex;
+                        contractCount = 0;
                     }
                     finally
                     {
