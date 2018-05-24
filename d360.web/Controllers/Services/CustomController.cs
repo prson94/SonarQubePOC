@@ -414,7 +414,7 @@ namespace d360.web.Controllers.Services
                     XElement xAsset = DynamicHelper.ConvertToXml(asset, "item"); // "items"
                     xAsset.Add(new XAttribute("id", asset.id));
 
-                    var xLinks = new XElement("links");
+                    var xLinks = new XElement("Links");
                     xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
 
                     xAsset.Add(xLinks);
@@ -1299,7 +1299,7 @@ namespace d360.web.Controllers.Services
                 }
                 else
                 {
-                    var xItems = new XElement("items");
+                    var xItems = new XElement("Items");
 
                     foreach (var a in assets)
                     {
@@ -1308,7 +1308,7 @@ namespace d360.web.Controllers.Services
                         xItems.Add(xNode);
                     }
 
-                    var xLinks = new XElement("links");
+                    var xLinks = new XElement("Links");
 
                     xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
                     if (showNextLink)
@@ -1318,7 +1318,7 @@ namespace d360.web.Controllers.Services
 
                     var CollectionWrapper = new XElement(
                         "CollectionWrapper",
-                        new XElement("total", count),
+                        new XElement("Total", count),
                         xLinks,
                         xItems
                     );
