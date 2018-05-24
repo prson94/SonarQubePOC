@@ -73,6 +73,7 @@ import { TreeNode } from 'primeng/primeng';
                 <div style="clear:both"></div>
                 <div class="form-instructions">Run a test to see the returned results, according to your filters.</div>
                 <p-dataTable #dtItems [value]="queryValues" paginator="true" pageLinks="3" [loading]="QueryExecuting" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                    <p-footer *ngIf="dtItems.totalRecords"><d3s-grid-paging-info [totalRecords]="dtItems.totalRecords" [first]="dtItems.first" [rows]="dtItems.rows"></d3s-grid-paging-info></p-footer>
                     <p-column header="Name" field="Name" sortable="true" [style]="{width:'90%'}"></p-column>
                 </p-dataTable>
             </div>
