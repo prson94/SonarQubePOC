@@ -2183,11 +2183,19 @@
             <param name="models">A collection of aggregated rule results.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.GetRuleImplementationResults(System.Int32)">
+        <member name="M:d360.web.Controllers.Services.EventsController.GetRuleResults(System.Int32)">
             <summary>
-            Gets all results for a rule.
+            Gets all results for a rule across all implementations.
             </summary>
             <param name="id">The ID of the rule to get results from.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.GetRuleImplementationResults(System.Int32,System.Int32)">
+            <summary>
+            Gets all results for a rule implementation.
+            </summary>
+            <param name="id">The ID of the rule.</param>
+            <param name="implementationID">The ID of the rule imeplementation to get results from.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.Services.EventsController.AddRuleImplementation(System.Int32,d360.web.Controllers.Services.EventsController.RuleImplementationModel)">

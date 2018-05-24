@@ -857,7 +857,7 @@ order by I.ID, QT.Name", new { id = implementationID }).ToList();
 
 
         /// <summary>
-        /// Gets all results for a rule.
+        /// Gets all results for a rule across all implementations.
         /// </summary>
         /// <param name="id">The ID of the rule to get results from.</param>
         /// <returns></returns>
@@ -866,12 +866,58 @@ order by I.ID, QT.Name", new { id = implementationID }).ToList();
             Route("rules/{id:int}/results"),
             HttpGet
         ]
-        public HttpResponseMessage GetRuleImplementationResults(int id)
+        public HttpResponseMessage GetRuleResults(int id)
+        {
+            var sql = $@"
+select	A.RuleImplementationID,
+		RI.Name as RuleImplementation,
+		A.ID,
+        A.RowsPassed,
+        A.RowsFailed,
+        A.PassFraction,
+        A.FailFraction,
+        A.Passed,
+        A.EffectiveDate,
+        A.RunDate,
+		F.FusionAttributes,
+		Q.Qualifiers
+from	RuleResult A  
+		inner join RuleImplementation RI on RI.ID = A.RuleImplementationID and RI.RuleID = @id
+		cross apply (
+					select	STRING_AGG(RQT.Name + ': ' + RQ.Value, ', ') as Qualifiers
+					from	RuleResultQualifier RQ
+							inner join RuleResultQualifierType RQT on RQT.ID = RQ.RuleResultQualifierTypeID and RQT.RuleImplementationID = RI.ID and RQ.RuleResultID = A.ID
+					) Q
+		cross apply (
+					select	STRING_AGG(COALESCE(FA.TextPath, RF.FusionAttribute), ', ') as FusionAttributes
+					from	RuleResultFusionAttribute RF
+							left join FusionAttribute FA on FA.ID = RF.FusionAttributeID and RF.RuleResultID = A.ID
+					) F
+order by A.RunDate desc, A.EffectiveDate desc";
+
+            var models = Company.Query<dynamic>(sql, new { id });
+
+            return Request.CreateResponse<dynamic>(HttpStatusCode.OK, models);
+        }
+
+
+        /// <summary>
+        /// Gets all results for a rule implementation.
+        /// </summary>
+        /// <param name="id">The ID of the rule.</param>
+        /// <param name="implementationID">The ID of the rule imeplementation to get results from.</param>
+        /// <returns></returns>
+        [
+            Route("rules/{id:int}/implementations/{implementationID:int}/events"),
+            Route("rules/{id:int}/implementations/{implementationID:int}/results"),
+            HttpGet
+        ]
+        public HttpResponseMessage GetRuleImplementationResults(int id, int implementationID)
         {
             var joins = "";
             var columns = "";
 
-            var fields = Company.Filter<RuleResultQualifierType>(i => i.RuleImplementationID == id).OrderBy(i => i.Order).ToList();
+            var fields = Company.Filter<RuleResultQualifierType>(i => i.RuleImplementationID == implementationID).OrderBy(i => i.Order).ToList();
 
             foreach (var f in fields)
             {
@@ -888,18 +934,21 @@ select	A.ID,
         A.PassFraction,
         A.FailFraction,
         A.Passed,
-        {columns}
-        A.FusionAttributeID,
-        --F.TextPath as FusionAttributePath,
         A.EffectiveDate,
-        A.RunDate
+        A.RunDate,
+        {columns}
+		F.FusionAttributes
 from	RuleResult A  
-        --left join FusionAttribute F on F.ID = A.FusionAttributeID
         {joins} 
-where   A.RuleImplementationID = {id} 
+		cross apply (
+					select	STRING_AGG(COALESCE(FA.TextPath, RF.FusionAttribute), ', ') as FusionAttributes
+					from	RuleResultFusionAttribute RF
+							left join FusionAttribute FA on FA.ID = RF.FusionAttributeID and RF.RuleResultID = A.ID
+					) F
+where   A.RuleImplementationID = @implementationID
 order by A.RunDate desc, A.EffectiveDate desc";
 
-            var models = Company.Query<dynamic>(sql);
+            var models = Company.Query<dynamic>(sql, new { implementationID });
 
             return Request.CreateResponse<dynamic>(HttpStatusCode.OK, models);
         }
