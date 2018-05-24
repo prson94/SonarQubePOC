@@ -6930,6 +6930,7 @@ where v.id = {0}", id)).FirstOrDefault();
             var isTargetObject = intersectType.Object == targetType.ToString() && intersectType.ObjectID == targetID;
             var isTargetSubjectSame = intersectType.Object == intersectType.Subject && intersectType.ObjectID == intersectType.SubjectID;
             var isTargetReferenceItemType = targetType.ToString() == "ReferenceItemType" && targetID == 0;
+            var isTargetFusion = targetType.ToString().StartsWith("Fusion");
 
             var innerSql = "";
             var assetJoin = "";
@@ -6946,11 +6947,11 @@ where v.id = {0}", id)).FirstOrDefault();
                 }
                 else
                 {
-                    assetJoin = @"inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
+                    assetJoin = $@"inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
 							        and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end
 		                        inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
 								    and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
-                                cross apply dbo.GetAssetTextPathById(IA.ID, '/') P";
+                                cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
                 }
 
                 innerSql = $@"select	I.ID,
@@ -6990,11 +6991,11 @@ where v.id = {0}", id)).FirstOrDefault();
                 }
                 else
                 {
-                    assetJoin = @"inner join AssetType AST on AST.Object = IT.Object
+                    assetJoin = $@"inner join AssetType AST on AST.Object = IT.Object
 									                        and AST.ObjectID = IT.ObjectID
 		                        inner join Asset IA on	IA.Object = I.Object
 								                        and IA.ObjectID = I.ObjectID
-		                        cross apply dbo.GetAssetTextPathById(IA.ID, '/') P";
+		                        cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
                 }
 
                 innerSql = $@"select	I.ID,
@@ -7031,11 +7032,11 @@ where v.id = {0}", id)).FirstOrDefault();
                 }
                 else
                 {
-                    assetJoin = @"inner join AssetType AST on AST.Object = IT.Subject
+                    assetJoin = $@"inner join AssetType AST on AST.Object = IT.Subject
                                                             and AST.ObjectID = IT.SubjectID
                                 inner join Asset IA on IA.Object = I.Subject
                                                         and IA.ObjectID = I.SubjectID
-                                cross apply dbo.GetAssetTextPathById(IA.ID, '/') P";
+                                cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
                 }
 
                 innerSql = $@"select	I.ID,
