@@ -142,7 +142,7 @@ namespace igx.jobs.eaglemessagestreamprocessor
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, new ApplicationException($"ERROR WHILE LOADING LAST MODIFIED INFO.", ex), companyId: companyID);
+                //CoreFunction.AITrackException(functionName, new ApplicationException($"ERROR WHILE LOADING LAST MODIFIED INFO.", ex), companyId: companyID);
                 return;
             }
 
