@@ -4,6 +4,8 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using System;
 using System.IO;
+using System.Linq;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace igx.jobs.scoreprocessor
 {
@@ -23,7 +25,7 @@ namespace igx.jobs.scoreprocessor
     {
         const string functionName = "Scoring_Calculate";
         const string timerSettings = "0 */5 * * * *";
-        //const string timerSettings = "*/5 * * * * *";
+       // const string timerSettings = "*/5 * * * * *";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -32,46 +34,53 @@ namespace igx.jobs.scoreprocessor
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
+#if DEBUG
+                companies = companies.Where(x => x.CompanyID == 4).ToList();
+#endif
+
                 companies.ForEach(c =>
                 {
                     try
                     {
-                        var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        //company.Execute("metrics.LoadFromStaging", commandTimeout: 1400);
-
-                        bool processStatus = false;
-                        var processTask = company.ExecuteAsync("metrics.LoadFromStaging", commandTimeout: 1400);
-                        processTask.ContinueWith(t =>
+                        using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
-                            string exceptionData = "";
-                            if (t.Exception != null)
-                            {
-                                exceptionData = t.Exception.GetFullExceptionData();
-                                if (t.Exception.InnerExceptions != null)
-                                {
-                                    foreach (var ex in t.Exception.InnerExceptions)
-                                    {
-                                        exceptionData += ex.GetFullExceptionData();
-                                    }
-                                }
-                                CoreFunction.AITrackException(functionName, t.Exception, c.CompanyID);
-                            }
+                            company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                            //company.Execute("metrics.LoadFromStaging", commandTimeout: 1400);
 
-                            if (t.IsCompleted)
+                            bool processStatus = false;
+                            var processTask = company.ExecuteAsync("metrics.LoadFromStaging", commandTimeout: 1400);
+                            processTask.ContinueWith(t =>
                             {
-                                if (t.IsFaulted)
+                                string exceptionData = "";
+                                if (t.Exception != null)
                                 {
+                                    exceptionData = t.Exception.GetFullExceptionData();
+                                    if (t.Exception.InnerExceptions != null)
+                                    {
+                                        foreach (var ex in t.Exception.InnerExceptions)
+                                        {
+                                            exceptionData += ex.GetFullExceptionData();
+                                        }
+                                    }
                                     CoreFunction.AITrackException(functionName, t.Exception, c.CompanyID);
                                 }
+
+                                if (t.IsCompleted)
+                                {
+                                    if (t.IsFaulted)
+                                    {
+                                        CoreFunction.AITrackException(functionName, t.Exception, c.CompanyID);
+                                    }
+                                }
+
+                                processStatus = false;
+                            });
+
+                            while (processStatus && (processTask.Exception == null))
+                            {
+                                log.WriteLine("Processing scores for company {0}...", c.CompanyID);
+                                System.Threading.Thread.Sleep(30000);
                             }
-
-                            processStatus = false;
-                        });
-
-                        while (processStatus && (processTask.Exception == null))
-                        {
-                            log.WriteLine("Processing scores for company {0}...", c.CompanyID);
-                            System.Threading.Thread.Sleep(30000);
                         }
                     }
                     catch (Exception ex)
