@@ -18,7 +18,9 @@ import { Router } from '@angular/router';
             </div>            
             <ng-template [ngIf]="!field.Values || field.Values.length == 0">
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name == 'Email'" class="FieldDisplayContent"><a [href]="'mailto:' + field.Value">{{field.Value}}</a></div>
-                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'date'" class="FieldDisplayContent" [innerHtml]="field.Value | date:'shortDate'"></div>
+                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'date'" class="FieldDisplayContent" >
+                    <div *ngIf="field.Value" [innerHtml]="field.Value | date:'shortDate'"></div>
+                </div>
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'text'" class="FieldDisplayContent">{{field.Value}}</div>
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'bool'" class="FieldDisplayContent">                    
                     <i *ngIf="(field.Value || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
@@ -52,6 +54,11 @@ export class ObjectDetailFieldComponent {
     DetailFieldType = DetailFieldType;
 
     constructor(private router: Router) {}
+    ngOnInit() {
+
+          if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
+                this.field.Value = null;
+    }
 
     navigate(url: string) {        
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));

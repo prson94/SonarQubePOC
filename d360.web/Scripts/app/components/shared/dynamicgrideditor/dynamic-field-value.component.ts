@@ -8,8 +8,8 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
     selector: 'd3s-dynamic-field-value',
     template: `   
             <span [ngSwitch]="fieldType">
-                <span *ngSwitchCase="'date'">{{fieldValue | date:'shortDate'}}</span>
-                <span *ngSwitchCase="'datetime'">{{fieldValue | date:'medium'}}</span>
+                <span *ngSwitchCase="'date'" ><span *ngIf="fieldValue">{{fieldValue | date:'shortDate'}}</span></span>
+                <span *ngSwitchCase="'datetime'"><span *ngIf="fieldValue">{{fieldValue | date:'medium'}}</span></span>
                 <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>                
                 <span *ngSwitchCase="'bool'">
                     <i *ngIf="fieldValue == 'TRUE'" class="fa fa-check enabled" title="True"></i>
@@ -58,7 +58,10 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
         if (this.fieldType == 'bool' && this.fieldValue) {
             this.fieldValue = this.fieldValue.toUpperCase(); //fix for miXeD CaSe booleans!
-        }        
+        }   
+
+        if ((this.fieldType == 'date' || this.fieldType == 'datetime') && isNaN(Date.parse(this.fieldValue)))
+            this.fieldValue = null;
     }
 
     private formatAsNumber(): string {        
