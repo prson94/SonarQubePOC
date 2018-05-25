@@ -1021,7 +1021,7 @@ namespace d360.web.Controllers
                     var ids = user.Split('|');
                     if (ids.Length == 2)
                     {
-                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.ObjectID = {idColumn} and RD{index}.Object = 'Artifact' and RD{index}.SecurityAsset = 'R' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
+                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.AssetID = {idColumn} and RD{index}.SecurityAsset = 'R' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
                         index++;
                     }
                 }
@@ -1034,7 +1034,7 @@ namespace d360.web.Controllers
                     var ids = group.Split('|');
                     if (ids.Length == 2)
                     {
-                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.ObjectID = {idColumn} and RD{index}.Object = 'Artifact' and RD{index}.SecurityAsset = 'G' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
+                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.AssetID = {idColumn} and RD{index}.SecurityAsset = 'G' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
                         index++;
                     }
                 }
