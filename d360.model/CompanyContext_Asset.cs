@@ -746,14 +746,16 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                 }
                 else
                 {
+                    var simpleFilterFieldJoin = string.IsNullOrEmpty(fieldFromRelationshipAssets) ? ") SF on SF.AssetID = A.ID " : fieldFromRelationshipAssets;
+
                     filterJoinList.Add($@"
                         inner join (
 		                            select	AssetID
 		                            from	Field SF{tableHints}                                             
 		                            where	FieldTypeID in ({simpleFilterIDs})
                                             and (FormattedValue like @simpleFilter OR Value = @allValuesFilter)
-                                    group by AssetID
-                                    {fieldFromRelationshipAssets}");
+                                    group by AssetID                                    
+                                    {simpleFilterFieldJoin}");
                 }
             }
 
