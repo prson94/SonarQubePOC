@@ -15,7 +15,7 @@ namespace igx.jobs.fusionruleprocessor
             Stats = new FusionRuleStepStatistics();
         }
 
-        public static int EXECUTION_TIMEOUT = 300;
+        public static int EXECUTION_TIMEOUT = 600;
         public FusionRuleStepModel Step { get; set; }
         public int CompanyId { get; set; }
         public d360.core.entities.FusionRule Rule { get; set; }
