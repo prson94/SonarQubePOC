@@ -4716,4 +4716,23 @@ CREATE PROCEDURE [dbo].[GetAssetHierarchy]
   end
 GO
 
+ALTER TABLE [api].[EntityFieldType] ADD  CONSTRAINT [PK_Api_EntityFieldType] PRIMARY KEY NONCLUSTERED 
+(
+	[EntityID] ASC,
+	[FieldTypeID] ASC
+)
+GO
 
+CREATE NONCLUSTERED INDEX [IX_Asset_ObjectID_Include]
+    ON [dbo].[Asset]([ObjectID] ASC)
+    INCLUDE([ID]);
+GO
+
+alter table FieldType add [UpdatedBy] INT CONSTRAINT [DF_FieldType_UpdatedBy] DEFAULT ((0)) NOT NULL
+GO
+
+alter table integration.ExecutionAssetType add [ErrorMessage]            NVARCHAR (2500) NULL
+GO
+
+alter table integration.Setting add [PageSize]          INT             CONSTRAINT [IntegrationSetting_PageSize] DEFAULT ((500)) NOT NULL
+GO

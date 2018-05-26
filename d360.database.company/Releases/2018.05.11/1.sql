@@ -1314,6 +1314,31 @@ GO
 CREATE SCHEMA responsibility AUTHORIZATION dbo
 GO
 
+CREATE TABLE [dbo].[ResponsibilityTypeRelationTypeItem](
+	[RuleID] [int] NOT NULL,
+	[ResponsibilityTypeID] [int] NOT NULL,
+	[SecurityAsset] [char](1) NOT NULL,
+	[SecurityAssetID] [int] NOT NULL,
+	[EffectiveStartDate] [datetime2](0) GENERATED ALWAYS AS ROW START NOT NULL,
+	[EffectiveEndDate] [datetime2](0) GENERATED ALWAYS AS ROW END NOT NULL,
+ CONSTRAINT [PK_ResponsibilityTypeRelationTypeItem] PRIMARY KEY NONCLUSTERED 
+(
+	[RuleID] ASC,
+	[ResponsibilityTypeID] ASC,
+	[SecurityAsset] ASC,
+	[SecurityAssetID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF),
+	PERIOD FOR SYSTEM_TIME ([EffectiveStartDate], [EffectiveEndDate])
+)
+WITH
+(
+SYSTEM_VERSIONING = ON ( HISTORY_TABLE = [dbo].[ResponsibilityTypeRelationTypeItem_History] )
+)
+GO
+
+
+
+
 CREATE INDEX IX_ResponsibilityTypeRelationTypeItem_RuleID ON [dbo].[ResponsibilityTypeRelationTypeItem] ( RuleID ASC )
 GO
 --DROP INDEX [IX_ResponsibilityTypeRelationTypeItem_SecurityAssetID] ON [dbo].[ResponsibilityTypeRelationTypeItem]
