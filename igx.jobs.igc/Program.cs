@@ -83,7 +83,7 @@ namespace igx.jobs
                             if (settings.Count > 0)
                             {
 #if DEBUG
-                                var IDs = new List<int>() { 54 };
+                                var IDs = new List<int>() { 1 };
                                 mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
 #else
                                 mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
@@ -771,7 +771,8 @@ order by	T.SynchedAssetTypeID").ToList();
 
                 if (fieldErrors.Keys.Count > 0)
                 {
-                    CoreFunction.AITrackEvent(functionName, $"{mapping.SourceAssetTypeName}, Parse Asset", fieldErrors, cs.CompanyID);
+                    execution.ErrorMessage += string.Join("; ", fieldErrors.Select(o => $"{o.Key}: {o.Value}"));
+                    //CoreFunction.AITrackEvent(functionName, $"{mapping.SourceAssetTypeName}, Parse Asset", fieldErrors, cs.CompanyID);
                 }
 
                 return root;

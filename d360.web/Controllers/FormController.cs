@@ -15434,7 +15434,7 @@ order by	case
         public JsonNetResult GetResponsibilityTypeRelationRuleRelationships_FormData(SystemObjects type, int id, int intersectTypeID)
         {
             var items = Company.Query<dynamic>($@"
-select	D.ObjectID as value,
+select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
 		DN.DisplayValue as label
 from	Asset D
         inner join AssetType DT on DT.ID = D.AssetTypeID

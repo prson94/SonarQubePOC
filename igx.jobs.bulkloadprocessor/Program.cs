@@ -536,7 +536,7 @@ namespace igx.jobs.bulkloadprocessor
             load = null;
 
             // get the load columns
-            var columns = company.Query<LoadColumn>("select * from LoadColumn where ID = @loadId", new { loadId });
+            var columns = company.Query<LoadColumn>("select * from LoadColumn where LoadID = @loadId", new { loadId });
             if (columns == null)
             {
                 throw new Exception($"Bulk load data does not contain any columns in LoadColumn table.  Load ID [{loadId}]");
@@ -548,29 +548,34 @@ namespace igx.jobs.bulkloadprocessor
                 try
                 {
                     company.Execute(@"
-select	I.LoadID,
-		I.RowIndex,
-		I.StatusMessage,
-		I.Status,
-		C1.ColumnIndex as C1Index,
-		C1.Value as [Action],
-		C2.ColumnIndex as C2Index,
-		C2.Value as [Group],
-		cast(null as int) as GroupID,
-		C3.ColumnIndex as C3Index,
-		C3.Value as [User],
-		cast(null as int) as UserID
-into	#GroupLoadItems
-from	LoadItem I
-		inner join LoadItemColumn C1 on C1.LoadID = I.LoadID and C1.RowIndex = I.RowIndex and C1.ColumnIndex = 1
-		inner join LoadItemColumn C2 on C2.LoadID = I.LoadID and C2.RowIndex = I.RowIndex and C2.ColumnIndex = 2
-		inner join LoadItemColumn C3 on C3.LoadID = I.LoadID and C3.RowIndex = I.RowIndex and C3.ColumnIndex = 3
-where	I.LoadID = @id", new { id = loadId }, transaction: trans);
-
-                    company.Execute(@"
+create table #GroupLoadItems (LoadID int, RowIndex int, 
+    StatusMessage nvarchar(500), Status bit, 
+    [Action] nvarchar(max),
+    [Group] nvarchar(max),
+    [GroupID] int null,
+    [User] nvarchar(max),
+    [UserID] int null
+);
 create table #GroupInsertResult (ID int);
 create table #ResourceGroupInsertResult (ID int);
 create table #ResourceGroupDeleteResult (ID int);", transaction: trans);
+
+                    company.Execute(@"
+insert into #GroupLoadItems
+    select	I.LoadID,
+		    I.RowIndex,
+		    I.StatusMessage,
+		    I.Status,
+		    C1.Value as [Action],
+		    C2.Value as [Group],
+		    cast(null as int) as GroupID,
+		    C3.Value as [User],
+		    cast(null as int) as UserID
+    from	LoadItem I
+		    inner join LoadItemColumn C1 on C1.LoadID = I.LoadID and C1.RowIndex = I.RowIndex and C1.ColumnIndex = 1
+		    inner join LoadItemColumn C2 on C2.LoadID = I.LoadID and C2.RowIndex = I.RowIndex and C2.ColumnIndex = 2
+		    inner join LoadItemColumn C3 on C3.LoadID = I.LoadID and C3.RowIndex = I.RowIndex and C3.ColumnIndex = 3
+    where	I.LoadID = @id", new { id = loadId }, transaction: trans);
 
                     company.Execute(@"
 merge into	[Group] as T

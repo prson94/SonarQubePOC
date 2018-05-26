@@ -17,7 +17,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                 </span>
                 <span *ngSwitchCase="'lookup'">
                     <d3s-lookup-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]">
-                        <a (click)="navigate(item[column.urlfield])" [innerHtml]="fieldValue"></a>
+                        <a (click)="navigate(item[column.urlfield])" [innerText]="fieldValue"></a> 
                     </d3s-lookup-tooltip>                    
                 </span>
                 <span *ngSwitchCase="'string'">{{fieldValue}}</span>                                                        

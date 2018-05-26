@@ -33,11 +33,11 @@ import { Router } from '@angular/router';
                     </d3s-preview-tooltip>
                     <ng-template #listTooltip>
                         <d3s-lookup-tooltip *ngIf="field.TooltipUrl;else noLinkTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                            <a (click)="navigate(field.TooltipUrl)" [innerHtml]="field.Value"></a>                        
+                            <a (click)="navigate(field.TooltipUrl)" [innerText]="field.Value"></a>                        
                         </d3s-lookup-tooltip>
                         <ng-template #noLinkTooltip>
                             <d3s-lookup-tooltip  [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                                <span [innerHtml]="field.Value"></span>
+                                <span [innerText]="field.Value"></span>
                             </d3s-lookup-tooltip>
                         </ng-template>                    
                     </ng-template>

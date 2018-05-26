@@ -109,7 +109,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 });              
                     let r: ResponsibilityTypeRelationRule;
                     this.responsibilityTypeService.getResponsibilityTypeRelationRule(this.id)
-                        .then(data => {                            
+                        .then(data => {
                             this.model = data;
                             this.model.ObjectString = this.model.Object + '|' + this.model.ObjectID;
                             r = data;
@@ -124,13 +124,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                                     this.responsibilityTypeService.getRelationRuleFormData(this.model.Object, this.model.ObjectID)
                                         .then(d => {
                                             this.whenFieldTypes = d.FieldTypes;
+                                            this.whenIntersectTypes = d.IntersectTypes;
 
                                             if (this.model.StructuredDefinition.When)
                                             {
                                                 this.model.StructuredDefinition.When.forEach(wft => this.loadWhenValuesForFieldType(wft));
                                             }
 
-                                            this.whenIntersectTypes = d.IntersectTypes;
                                             this.whenFieldTypes.unshift({ label: 'Choose...', value: null, type: null, isLookup: false, values: [] });
                                             this.whenIntersectTypes.unshift({ label: 'Choose...', value: null });
                                         })
@@ -207,28 +207,49 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     private loadWhenValuesForFieldType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
         item.IsBool = false;
-        let selectedFieldType = this.whenFieldTypes.find(f => f.value == item.FieldTypeID.toString());        
-        if (selectedFieldType) {
-            item.FieldTypeName = selectedFieldType.label;
-            if (selectedFieldType.isLookup) {
-                selectedFieldType.values.unshift({ label: 'Choose...', value: null });
-                item.ValueOptions = selectedFieldType.values;
-                item.IsLookup = selectedFieldType.isLookup;
-            }
-            else if (selectedFieldType.type == 'Boolean') {
-                item.IsBool = true;
-                item.ValueOptions = this.whenBoolTypes;
-                item.IsLookup = selectedFieldType.isLookup;
-                console.log("value: " + item.Value);
+        if (item.FieldTypeID) {
+            let selectedFieldType = this.whenFieldTypes.find(f => f.value == item.FieldTypeID.toString());
+            if (selectedFieldType) {
+                item.FieldTypeName = selectedFieldType.label;
+                if (selectedFieldType.isLookup) {
+                    selectedFieldType.values.unshift({ label: 'Choose...', value: null });
+                    item.ValueOptions = selectedFieldType.values;
+                    item.IsLookup = selectedFieldType.isLookup;
+                }
+                else if (selectedFieldType.type == 'Boolean') {
+                    item.IsBool = true;
+                    item.ValueOptions = this.whenBoolTypes;
+                    item.IsLookup = selectedFieldType.isLookup;
+                    //console.log("value: " + item.Value);
+                }
+                else {
+                    item.ValueOptions = [];
+                    item.IsLookup = selectedFieldType.isLookup;
+                }
             }
             else {
                 item.ValueOptions = [];
-                item.IsLookup = selectedFieldType.isLookup;
+                item.IsLookup = false;
             }
         }
         else {
-            item.ValueOptions = [];
-            item.IsLookup = false;
+            let selectedIntersectType = this.whenIntersectTypes.find(f => f.value == item.IntersectTypeID.toString());
+            if (selectedIntersectType) {
+                this.loadValuesForIntersectType(item);
+            }
+            else {
+                item.ValueOptions = [];
+                item.IsLookup = false;
+            }
+        }
+
+        return null;
+    }
+
+    private parseRelationshipWhenValue(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
+        if (item.Value) {
+            item.TargetObject = item.Value.split('|')[0];
+            item.TargetObjectID = parseInt(item.Value.split('|')[1]);
         }
         return null;
     }
