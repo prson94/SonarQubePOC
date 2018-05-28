@@ -5,6 +5,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ResponsibilityTypeCount, ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 
 declare var require: any;
 const Highcharts = require('highcharts/highstock.src');
@@ -50,9 +51,11 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     
     constructor(protected responsibilityTypeService: ResponsibilityTypeService,
         protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        rightSidebarService: RightSidebarService
     ) {
         super();
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {
@@ -61,7 +64,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Community'));
-
+        this.clearSidebar();
         this.load();
     }
 

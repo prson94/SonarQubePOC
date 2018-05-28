@@ -140,7 +140,8 @@
                 </div>
                 <div class="col l4 m5 s12">
                     <button pButton type="button" label="Test Filters" (click)="testWhen()"></button>
-                    <p-dataTable #dt [value]="WhenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px" loadingIcon="fa-spinner" [loading]="isWhenTestLoading">
+                    <p-dataTable #dt [value]="WhenTestRows" selectionMode="single" scrollable="false" scrollHeight="150px" loadingIcon="fa-spinner" [loading]="isWhenTestLoading" [rows]="5" [paginator]="true">
+                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Name" header="Name" sortable="true"></p-column>
                     </p-dataTable>
                 </div>
@@ -189,7 +190,8 @@
                 </div>
                 <div class="col l4 m5 s12">
                     <button pButton type="button" label="Test Filters" (click)="testThen()"></button>
-                    <p-dataTable #dt [value]="ThenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px" loadingIcon="fa-spinner" [loading]="isThenTestLoading">
+                    <p-dataTable #dt [value]="ThenTestRows" selectionMode="single" scrollable="false" scrollHeight="150px" loadingIcon="fa-spinner" [loading]="isThenTestLoading" [rows]="5" [paginator]="true">
+                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Name" header="Security Asset" sortable="true"></p-column>
                     </p-dataTable>
                 </div>

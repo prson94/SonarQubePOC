@@ -6,6 +6,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-monitor',
@@ -78,11 +79,14 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected router: Router,
         protected route: ActivatedRoute,
-        private objectDetailService: ObjectDetailService) {
+        private objectDetailService: ObjectDetailService,
+        rightSidebarService: RightSidebarService) {
         super();
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {
+        this.clearSidebar();
         this.isLoading = true;
         this.sub = this.route.params.subscribe(params => {
             if (params['id'] != null) {
@@ -110,6 +114,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnDestroy() {
+        this.clearSidebar();
         this.sub.unsubscribe();
     }
 

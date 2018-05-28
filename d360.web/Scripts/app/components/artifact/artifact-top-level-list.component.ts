@@ -8,6 +8,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { TreeNode } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-artifact-top-level-list',
@@ -49,8 +50,10 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
         private router: Router,
         private artifactsService: ArtifactTypeService,        
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private titleService: Title) {
+        private titleService: Title, rightSidebarService: RightSidebarService) {
+
         super(headerBreadcrumbService);
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {
@@ -58,6 +61,7 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Glossary'));
+        this.clearSidebar();
         this.load();
     }
 
