@@ -463,6 +463,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.fieldsService.getRelationObjectFields(this.objectType, this.objectID, value)
             .then(d => {
                 this.fieldsFromRelation = d;
+                if (this.fieldsFromRelation.length > 0)
+                    this.model.FieldType.LookupObjectFieldTypeID = this.fieldsFromRelation[0].value;
             });            
     }
 
