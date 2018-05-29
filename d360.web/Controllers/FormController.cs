@@ -876,8 +876,8 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
                 
-        [HttpGet, Route("Aritfact_SimilarItems"), NonNullableParameters]
-        public JsonNetResult Aritfact_SimilarItems(int typeID, string query)
+        [HttpGet, Route("Artifact_SimilarItems"), NonNullableParameters]
+        public JsonNetResult Artifact_SimilarItems(int typeID, string query)
         {
             //escape wildcards
             query = query.Replace("_", "[_]");

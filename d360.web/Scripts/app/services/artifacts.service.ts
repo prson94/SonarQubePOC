@@ -221,7 +221,7 @@ export class ArtifactService extends BaseService {
     }
 
     getSimilarArtifactNames(typeID: number, query: string): Promise<any[]> {
-        return this.http.get(`form/Aritfact_SimilarItems?typeID=${typeID}&query=${query}`)
+        return this.http.get(`form/Artifact_SimilarItems?typeID=${typeID}&query=${query}`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
