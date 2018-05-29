@@ -76,7 +76,8 @@ namespace d360.web.Controllers
             //A.ID as AssetID, 
         
             var sql = $@"
-select	A.ObjectID as ID,
+select	distinct 
+        A.ObjectID as ID,
         {parentSqlColumn}
         {columns}
         A.ID as AssetID,dbo.GenerateNgObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url
