@@ -622,6 +622,8 @@ namespace d360.web.Controllers
                     return DeleteScoreType(form);
                 case "SCORETYPEMETRIC":
                     return DeleteScoreTypeMetric(form);
+                case "SERVICE":
+                    return DeleteCustomAPIService(form);
                 case "SURVEYTYPE":
                     return DeleteSurveyType(form);
                 case "SURVEYQUESTIONTYPE":
@@ -19862,7 +19864,27 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             }
         }
 
-        
+        private JsonResult DeleteCustomAPIService(FormCollection form)
+        {
+            try {
+                     var id = parseIntField(form, "ID");
+
+                    if (!Company.CurrentResourceIsAdmin)
+                        return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                    var o = Company.GetById<ApiService>(id);
+                    
+                    Company.Delete<ApiService>(o);
+                    return jsonSuccess("api service successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+
+            } catch (BaseException ex) {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
         public JsonResult DeleteApiField(FormCollection form)
         {
             

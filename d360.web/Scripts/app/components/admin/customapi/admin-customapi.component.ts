@@ -42,10 +42,24 @@ import { Router } from '@angular/router';
                                                 <a style="cursor:pointer;" (click)="selected=service;showEditor=true"><i class="fa fa-pencil"></i></a>                                                                                        
                                             </div>
                                         </ng-template>
-                                    </p-column>                                                                                    
+                                    </p-column> 
+                                <p-column  [style]="{width:'40px'}" >
+                                    <ng-template let-service="rowData" pTemplate type="body">
+                                <div class="RowTools">                              
+                                    <a  style="cursor:pointer;" (click)="selected=service;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                </div>
+                            </ng-template>
+                        </p-column>      
                                 </p-dataTable>                                  
                             </span>             
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Service'" [title]="'APIService'" [selection]="selected" (saveClick)="saveService($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                           <d3s-delete-form *ngIf="showDelete"
+                            [callback]="theDeleteCallback"
+                            [itemId]="selected?.ID"
+                            [method]="'callback'"
+                            [prompt]="'Are you sure you want to delete the api service [' + [selected?.Name] + ']?'"                                         
+                            (onCancel)="showDelete=false;"
+                        ></d3s-delete-form>
                         </div>
                     </div>
                 </div>  
@@ -57,11 +71,15 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
     public selected: ApiService = null;
     public services: ApiService[] = [];
     public showEditor: boolean = false;
+    public showDelete: boolean = false;
+
+    theDeleteCallback: Function;
 
     constructor(protected customAPIService: CustomAPIService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title, private router: Router) {
         super(headerBreadcrumbService, titleService);
         this.areaName = "Custom API";
         this.setCommonItems();
+        this.theDeleteCallback = this.deleteService.bind(this);
     }
 
     ngOnInit() : void {
@@ -86,5 +104,15 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
 
     public showService(item: ApiService): void {
         this.router.navigateByUrl(`admin/customapi/${item.ID}/details`);
+    }
+
+    deleteService(id: number) {
+        this.customAPIService.deleteService(id).
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.load();
+          
+            });
     }
 }
