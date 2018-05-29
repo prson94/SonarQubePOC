@@ -292,6 +292,8 @@ namespace d360.web.Controllers
                                     values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });                                    
                                 }
 
+                                values = values.OrderBy(x => x.Value).ToList();
+
                                 var ro = new ReadOnlyField
                                 {
                                     Name = ft.FriendlyName,
