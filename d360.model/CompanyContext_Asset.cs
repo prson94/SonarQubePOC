@@ -628,15 +628,36 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                         f.Condition = "CONTAINS";
                                 }
 
+                                var nonPivotInnerJoinPrefix = "";
+
+                                if (thisFilterFieldType.Type == "FieldFromRelationship")
+                                {
+                                    var intersectSql = $@"left join [Intersect] FI{thisFilterFieldType.ID}{tableHints} on
+                                     FI{thisFilterFieldType.ID}.IntersectTypeID = {thisFilterFieldType.LookupObjectID}
+                                    and(
+                                        (FI{thisFilterFieldType.ID}.Subject = A.Object and FI{thisFilterFieldType.ID}.SubjectID = A.ObjectID) or
+                                        (FI{thisFilterFieldType.ID}.Object = A.Object and FI{thisFilterFieldType.ID}.ObjectID = A.ObjectID)
+										)";
+
+                                    var joinSql = $@"inner join Field F{thisFilterFieldType.ID}{tableHints} on F{thisFilterFieldType.ID}.ObjectType = case when FI{thisFilterFieldType.ID}.Subject = A.Object and FI{thisFilterFieldType.ID}.SubjectID = A.ObjectID then FI{thisFilterFieldType.ID}.Object else FI{thisFilterFieldType.ID}.Subject end
+												and F{thisFilterFieldType.ID}.ObjectID = case when FI{thisFilterFieldType.ID}.Subject = A.Object and FI{thisFilterFieldType.ID}.SubjectID = A.ObjectID then FI{thisFilterFieldType.ID}.ObjectID else FI{thisFilterFieldType.ID}.SubjectID end
+												and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.LookupObjectFieldTypeID}";
+
+                                    nonPivotInnerJoinPrefix = intersectSql + '\n' + joinSql;
+                                }
+                                else
+                                {
+                                    nonPivotInnerJoinPrefix = $"inner join Field F{thisFilterFieldType.ID}{tableHints} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
+                                }
+
                                 var bind = $"fld{thisFilterFieldType.ID}";
                                 var nonPivotFieldName = $"F{thisFilterFieldType.ID}.FormattedValue";
                                 var valueColumnQuery = GetFilterCondition(f.Condition, nonPivotFieldName, bind, dbArgs, f.RawValue);
-
-                                var nonPivotInnerJoinPrefix = $"inner join Field F{thisFilterFieldType.ID}{tableHints} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
                                 if (thisFilterFieldType.AllowAllValue)
                                     filterJoinList.Add($"{nonPivotInnerJoinPrefix} and ({valueColumnQuery} or F{thisFilterFieldType.ID}.Value = '0')");
                                 else
                                     filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {valueColumnQuery}");
+
                             }
                         }
                     }
