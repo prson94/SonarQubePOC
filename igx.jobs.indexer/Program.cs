@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.jobs.indexer
 {
@@ -38,7 +39,7 @@ namespace igx.jobs.indexer
         private static int _defaultQueryCommandTimeout = 180;
         const string functionName = "Indexing_ReIndex";
         const string timerSettings = "0 0 4 * * 6";
-        //const string timerSettings = "*/1 * * * * *";
+      //  const string timerSettings = "*/1 * * * * *";
 
         const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> ''";
 
@@ -48,228 +49,187 @@ namespace igx.jobs.indexer
             {
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
-
+                
+#if DEBUG
+                //var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
+                companies = companies.Where(x => x.CompanyID == 4).ToList();
+#endif
 
                 companies.ForEach(c =>
                 {
                     try
                     {
                         var source = new ElasticSearchSource();
-                        var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        IEnumerable<AddToIndexModel> models = null;
-
-                        company.OpenWithRetry(RetryPolicy.DefaultFixed);
-
-                        #region Load Assets
-
-                        //var assetTypes = company.Query<AssetType>("select * from AssetType").ToList();
-                        //var assetSql = "select * from AssetDetail where AssetTypeID = @t State = 1";
-                        //var fieldSql = "select	F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.AssetTypeID = @t";
-                        //foreach (var at in assetTypes)
-                        //{
-                        //    var assets = company.Query<AssetDetail>(assetSql, new { t = at.ID });
-                        //    var fields = company.Query<FieldDetail>(fieldSql, new { t = at.ID });
-                        //    var adds = new List<AddToIndexModel>();
-                        //    var urlFormat = "";
-                        //    switch (at.Class)
-                        //    {
-                        //        case AssetTypeClass.FusionAttribute:
-                        //            urlFormat = "";
-                        //            break;
-                        //        case AssetTypeClass.Glossary:
-                        //            urlFormat = "/artifact/{0}/{1}";
-                        //            break;
-                        //        case AssetTypeClass.Group:
-                        //            urlFormat = "";
-                        //            break;
-                        //        case AssetTypeClass.Model:
-                        //            urlFormat = "/model/{0};hierarchyId={1}";
-                        //            break;
-                        //        case AssetTypeClass.Policy:
-                        //            urlFormat = "/policy/{0};hierarchyId={1}";
-                        //            break;
-                        //        case AssetTypeClass.Reference:
-                        //            urlFormat = "";
-                        //            break;
-                        //        case AssetTypeClass.Rule:
-                        //            urlFormat = "";
-                        //            break;
-                        //        default:
-                        //            urlFormat = "";
-                        //            break;
-                        //    }
-
-                        //    if (!string.IsNullOrEmpty(urlFormat))
-                        //    {
-                        //        foreach (var a in assets)
-                        //        {
-                        //            var theseFields = fields.Where(f => f.AssetID == a.ID).ToDictionary(k => k.Name, v => v.FormattedValue);
-                        //            if (!theseFields.ContainsKey("Name"))
-                        //            {
-                        //                theseFields.Add("Name", a.DisplayValue);
-                        //            }
-                        //            if (!theseFields.ContainsKey("Description"))
-                        //            {
-                        //                var description = string.Join("; ", theseFields.Values);
-                        //                theseFields.Add("Description", description);
-                        //            }
-                        //            adds.Add(new AddToIndexModel {
-                        //                Group = at.Class.ToString(),
-                        //                CompanyID = c.CompanyID,
-                        //                Type = a.TypeName,
-                        //                ID = a.ObjectID,
-                        //                ItemUniqueID = a.ID.ToString(),
-                        //                RelativeUrl = string.Format(urlFormat, a.TypeID, a.ObjectID),
-                        //                Fields = theseFields
-                        //            });
-                        //        }
-
-                        //        source.AddToIndex(models);
-                        //    }
-                        //}
-
-
-                        #endregion
-
-
-                        source.ClearIndex(c.CompanyID);
-
-                        try
+                        using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
-                            models = LoadArtifacts(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            IEnumerable<AddToIndexModel> models = null;
 
-                        try
-                        {
-                            models = LoadAttributes(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            company.OpenWithRetry(RetryPolicy.DefaultFixed);
 
-                        try
-                        {
-                            models = LoadModels(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            source.ClearIndex(c.CompanyID);
 
-                        try
-                        {
-                            models = LoadPolicies(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            LogReindexStart("Artifacts", c.CompanyID);
+                            
+                            try
+                            {
+                                models = LoadArtifacts(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
 
-                        try
-                        {
-                            models = LoadFusionTypes(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            LogReindexStart("Attributes", c.CompanyID);
 
-                        try
-                        {
-                            models = LoadReferenceItemTypes(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            try
+                            {
+                                models = LoadAttributes(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
 
-                        try
-                        {
-                            models = LoadGroups(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            LogReindexStart("Models", c.CompanyID);
 
-                        try
-                        {
-                            models = LoadRules(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            try
+                            {
+                                models = LoadModels(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
 
-                        try
-                        {
-                            models = LoadFusionAttributes(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            LogReindexStart("Policies", c.CompanyID);
 
-                        try
-                        {
-                            models = LoadArtifactSynonyms(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            try
+                            {
+                                models = LoadPolicies(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
 
-                        try
-                        {
-                            models = LoadCustomSynonyms(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                            LogReindexStart("Fusion Types", c.CompanyID);
 
-                        var users = new List<AddToIndexModel>();
+                            try
+                            {
+                                models = LoadFusionTypes(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
 
-                        #region Company Users
+                            LogReindexStart("Reference Item Types", c.CompanyID);
 
-                        var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
+                            try
+                            {
+                                models = LoadReferenceItemTypes(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
 
-                        users = company.Query(sql).ToList().Select(u => new AddToIndexModel
-                        {
-                            Group = "Users",
-                            CompanyID = c.CompanyID,
-                            Type = "User",
-                            ID = u.ResourceID,
-                            RelativeUrl = $"#/resources/{u.ResourceID}",
-                            Fields = new Dictionary<string, string>() {
+                            LogReindexStart("Groups", c.CompanyID);
+
+                            try
+                            {
+                                models = LoadGroups(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
+
+                            LogReindexStart("Rules", c.CompanyID);
+
+                            try
+                            {
+                                models = LoadRules(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
+
+                            LogReindexStart("FusionAttributes", c.CompanyID);
+
+                            try
+                            {
+                                models = LoadFusionAttributes(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
+
+                            LogReindexStart("Artifact Synonyms", c.CompanyID);
+
+                            try
+                            {
+                                models = LoadArtifactSynonyms(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
+
+                            LogReindexStart("Custom Synonyms", c.CompanyID);
+
+                            try
+                            {
+                                models = LoadCustomSynonyms(company, c.CompanyID, source);
+                                source.AddToIndex(models);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
+
+                            LogReindexStart("Users", c.CompanyID);
+
+                            var users = new List<AddToIndexModel>();
+
+                            #region Company Users
+
+                            var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
+
+                            users = company.Query(sql).ToList().Select(u => new AddToIndexModel
+                            {
+                                Group = "Users",
+                                CompanyID = c.CompanyID,
+                                Type = "User",
+                                ID = u.ResourceID,
+                                RelativeUrl = $"#/resources/{u.ResourceID}",
+                                Fields = new Dictionary<string, string>() {
                                     { "Name", $"{u.FirstName} {u.LastName}" },
                                     { "Type", "User" },
                                     { "Email", u.Email },
                                     { "Username", u.Username }
                                 }
-                        }).ToList();
+                            }).ToList();
 
-                        source.AddToIndex(users);
+                            source.AddToIndex(users);
 
-                        #endregion
+                            #endregion
 
-                        company.Close();
+                            LogCompanyReindexComplete(c.CompanyID);
+
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -286,10 +246,20 @@ namespace igx.jobs.indexer
             CoreFunction.AIFlush();
         }
 
+        private static void LogCompanyReindexComplete(int companyID)
+        {
+            CoreFunction.AITrackTrace(functionName, $"Completed reindex for company {companyID}", companyId: companyID);
+        }
+
+        private static void LogReindexStart(string typeName, int companyID)
+        {
+            CoreFunction.AITrackTrace(functionName, $"Starting {typeName} reindex for company {companyID}", companyId: companyID);
+        }
+
 
         #region Supporting Functions
 
-        private static List<AddToIndexModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"                    	
                 (select	
@@ -347,7 +317,7 @@ namespace igx.jobs.indexer
             });
         }
 
-        private static List<AddToIndexModel> LoadCustomSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadCustomSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select 
@@ -384,36 +354,37 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadFusionAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadFusionAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"select
-	                            f.ID,
-	                            f.Name,
-	                            f.FusionAttributeTypeID,
-	                            ft.Name as FusionAttributeTypeName,
-	                            fu.Name as FusionName
-                            from fusionattribute f
-	                            inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
-	                            inner join fusion fu on (f.fusionid = fu.id)";
+	                        f.ID,
+	                        f.Name,
+	                        f.FusionAttributeTypeID,
+	                        ft.Name as FusionAttributeTypeName,
+	                        fu.Name as FusionName
+                        from fusionattribute f
+	                        inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
+	                        inner join fusion fu on (f.fusionid = fu.id)
+                        where f.Deleted = 0";
 
-            return getData(context, sql, companyID, source, SystemObjects.FusionAttribute.ToString(), false, (dynamic o) =>
+            foreach (var a in context.Query(sql, new { compid = companyID }, buffered:false,commandTimeout: _defaultQueryCommandTimeout))
             {
-                return new AddToIndexModel
-                {
-                    Group = "FusionAttributes",
+                var item = new AddToIndexModel { Group = "FusionAttributes",
                     CompanyID = companyID,
-                    ID = o.ID,
-                    Type = o.FusionAttributeTypeName,
-                    RelativeUrl = $"/fusion/details/FusionAttribute/{o.ID}/{Uri.EscapeDataString(o.Name)}",
+                    Type = a.FusionAttributeTypeName,
+                    ID = a.ID,                    
+                    RelativeUrl = $"/fusion/details/FusionAttribute/{a.ID}/{Uri.EscapeDataString(a.Name)}",
                     Fields = new Dictionary<string, string>() {
-                        { "Name", o.Name },
-                        { "Type", $"{o.FusionName} {o.FusionAttributeTypeName}" }
+                        { "Name", a.Name },
+                        { "Type", $"{a.FusionName} {a.FusionAttributeTypeName}" }
                     }
-                };
-            });
-        }
+                };                
 
-        private static List<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
+                yield return item;
+            }
+        }
+        
+        private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"SELECT R.[ID]
                                     ,R.DisplayValue as [Name]    
@@ -441,7 +412,7 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"SELECT [ID],[Name],[Description] FROM [Group]";
 
@@ -464,7 +435,7 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"select ID, Name, [Description] from ReferenceItemType";
             var sType = "Reference";
@@ -486,7 +457,7 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"select  p.ID,
                                 p.DisplayValue as Name,
@@ -517,7 +488,7 @@ from
             });
         }
 
-        private static List<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select	cast(ID as varchar) as ItemUniqueID,
@@ -552,7 +523,7 @@ where	Type = 'ArtifactType'
             });
         }
 
-        private static List<AddToIndexModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select	AD.ID, AD.Name, AD.FormattedValue, OD.Url 
@@ -578,7 +549,7 @@ from	AttributeDetail AD
             });
         }
 
-        private static List<AddToIndexModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select	ObjectID as ID,
@@ -611,7 +582,7 @@ where	Type = 'TaxonomyType'
             });
         }
 
-        private static List<AddToIndexModel> LoadFusionTypes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadFusionTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select  f.id as ID,
@@ -642,25 +613,38 @@ from    fusion f
             });
         }
 
-        private static List<AddToIndexModel> getData(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, bool loadFields, Func<dynamic, AddToIndexModel> convertToDictionary)
+        private static IEnumerable<AddToIndexModel> getData(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, bool loadFields, Func<dynamic, AddToIndexModel> convertToDictionary)
         {
-            var list = context.Query(sql, commandTimeout: _defaultQueryCommandTimeout).ToList().Select(a => (AddToIndexModel)convertToDictionary(a)).ToList();
-
             if (loadFields)
             {
-                var fields = context.Query<FieldSqlModel>(fieldsSql, new { t = type }, commandTimeout: _defaultQueryCommandTimeout).ToList();
-                list.ForEach(item =>
-                {
-                    var subset = fields.Where(i => i.ObjectID == item.ID);
-                    foreach (var f in subset)
-                    {
-                        item.Fields[f.Name] = f.FormattedValue;
-                    }
-                });
-                fields = null;
+                return getDataWithFields(context, sql, companyID, source, type, convertToDictionary);
             }
+            
+            return getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
+            
+        }
 
-            return list;
+        private static IEnumerable<AddToIndexModel> getDataWithoutFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, AddToIndexModel> convertToDictionary)
+        {
+            return context.Query(sql, commandTimeout: _defaultQueryCommandTimeout, buffered:false).ToList().Select(a => (AddToIndexModel)convertToDictionary(a));
+        }
+
+        private static IEnumerable<AddToIndexModel> getDataWithFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, AddToIndexModel> convertToDictionary)
+        {
+            var fields = context.Query<FieldSqlModel>(fieldsSql, new { t = type }, commandTimeout: _defaultQueryCommandTimeout).ToList();
+            var list = getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
+
+            
+            foreach (var item in list)
+            {
+                var subset = fields.Where(i => i.ObjectID == item.ID);
+                foreach (var f in subset)
+                {
+                    item.Fields[f.Name] = f.FormattedValue;
+                }
+
+                yield return item;
+            }            
         }
 
         #endregion
