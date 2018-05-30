@@ -23,7 +23,9 @@ namespace igx.jobs.ruleresultprocessor
     {
         const string functionName = "DataQuality_ProcessRuleResults";
         const string timerSettings = "0 */5 * * * *";
-      //  const string timerSettings = "*/10 * * * * *";
+        //  const string timerSettings = "*/10 * * * * *";
+
+        private static int _defaultQueryCommandTimeout = 180;
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -78,7 +80,7 @@ namespace igx.jobs.ruleresultprocessor
 							    O.ID as ObjectID
 					    from	AssetDetail O
 							    where O.[Object] = 'Taxonomy' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'TaxonomyType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
-					    ) R_T");
+					    ) R_T", commandTimeout: _defaultQueryCommandTimeout);
 
                         #endregion
 
@@ -107,7 +109,7 @@ namespace igx.jobs.ruleresultprocessor
 	    update	T
 	    set		T.EventNotificationSent = 1
 	    from	RuleResultQualifier T
-			    inner join #tbl S on S.RuleResultID = T.RuleResultID and S.RuleResultQualifierTypeID = T.RuleResultQualifierTypeID");
+			    inner join #tbl S on S.RuleResultID = T.RuleResultID and S.RuleResultQualifierTypeID = T.RuleResultQualifierTypeID", commandTimeout: _defaultQueryCommandTimeout);
 
                         #endregion
                     }
