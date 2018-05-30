@@ -69,7 +69,7 @@ namespace igx.jobs.fusionruleprocessor
 			                                DROP TABLE #items;
 
 		                                create table #items (                                            			                                
-			                                ID int not null
+			                                ID int not null PRIMARY KEY
 		                                );
                                 ", transaction: transaction);
 
