@@ -423,6 +423,89 @@ insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 			inner join FieldType FT on FT.Object = 'TaxonomyType' and FT.ObjectID = A.TaxonomyTypeID and FT.Name = 'Description' and A.Description is not null and A.Description <> ''
 GO
 
+
+-- CONVERT Name/Description FIELDs IN COMPLEX LOOKUP ------
+
+IF OBJECT_ID('tempdb.dbo.#fieldTypeLookupConversion', 'U') IS NOT NULL
+	drop table #fieldTypeLookupConversion
+create table #fieldTypeLookupConversion
+(
+FieldTypeID int,
+[Definition] nvarchar(max),
+)
+insert into #fieldTypeLookupConversion
+select FieldTypeID, Definition from FieldTypeLookup
+
+IF OBJECT_ID('tempdb.dbo.#resolvedFields', 'U') IS NOT NULL
+	drop table #resolvedFields
+create table #resolvedFields
+(
+	id int identity not null,
+	FieldTypeID int,
+	Definition nvarchar(max),
+	JPath nvarchar(max),
+	ResolvedFieldTypeID int
+)
+
+while((select count(*) from #fieldTypeLookupConversion) > 0)
+begin
+
+	declare @json nvarchar(max), @fieldTypeID int;
+	select top 1 
+		@fieldTypeID = FieldTypeID 
+	from #fieldTypeLookupConversion 
+	order by FieldTypeID;
+	
+	select 
+		@json = Definition 
+	from #fieldTypeLookupConversion 
+	where FieldTypeID = @fieldTypeID;
+
+	--need to find the json paths for all fields that need to be updated, as well as the field type id they will resolve to
+	insert into #resolvedFields
+	select 
+		@fieldTypeID as FieldTypeID,
+		@json as [Definition],
+		'$.Fields[' + cast(f.[key] as varchar) + '].FieldTypeID' as JPath,
+		ft.ID as ResolvedFieldTypeID
+	from openjson(@json, '$.Fields') f
+	inner join FieldType ft on ft.Object = json_value(f.value,'$.Object') 
+		and ft.ObjectID = json_value(f.value,'$.ObjectID') 
+		and ft.FriendlyName = json_value(f.value,'$.FieldTypeName')
+	where 
+		json_value(f.value,'$.FieldTypeName') in ('Name','Description') 
+		and json_value(f.value,'$.FieldTypeID') = 0 
+
+	delete from #fieldTypeLookupConversion where FieldTypeID = @fieldTypeID;
+
+end
+
+while((select count(*) from #resolvedFields) > 0)
+begin
+	declare @id int;
+	select top 1 
+		@id = id 
+	from #resolvedFields 
+	order by id;
+
+	--modify the json based on the info from the previous operation
+	update F
+	set [Definition] = json_modify(f.[Definition], r.jpath, r.ResolvedFieldTypeID)
+	from FieldTypeLookup F
+	inner join #resolvedFields R on R.FieldTypeID = F.FieldTypeID;
+
+	delete from #resolvedFields where id = @id; 
+end
+
+--clean up
+IF OBJECT_ID('tempdb.dbo.#fieldTypeLookupConversion', 'U') IS NOT NULL
+	drop table #fieldTypeLookupConversion
+IF OBJECT_ID('tempdb.dbo.#resolvedFields', 'U') IS NOT NULL
+	drop table #resolvedFields
+	
+-- END CONVERT Name/Description FIELDs IN COMPLEX LOOKUP ------
+
+
 -- INSERT INTO ASSET TYPE-------------------------------------------------
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 1, '{Name}', 1, 0, 1, 'ArtifactType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from ArtifactType
