@@ -1420,5 +1420,63 @@ namespace d360.web.Controllers.Services
             }
         }
         #endregion
+
+        #region Health Endpoints
+
+        [AllowAnonymous, HttpGet, Route("{service}/{endpoint}/{version}/health")]
+        public HttpResponseMessage GetEndpointHealth(string service, string endpoint, string version)
+        {
+            HttpStatusCode certificateStatus;
+            string certificateStatusMessage;
+            ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
+
+            if (certificateStatus != HttpStatusCode.OK)
+            {
+                return CreateCustomApiError(certificateStatus, certificateStatusMessage);
+            }
+
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var config = (
+                             from s in Company.ApiServices
+                             from e in s.Endpoints
+                             from v in e.Versions
+                             from en in v.Entities
+                             from u in en.Uris
+                             from f in en.FieldTypes
+                             where s.UriPrefix == service
+                             where e.UriPrefix == endpoint
+                             where v.UriPrefix == version
+                             select new
+                             {
+                                 MajorVersion = v.MajorVersion,
+                                 MinorVersion = v.MinorVersion,
+                                 MaximumCacheAge = s.MaximumCacheAge
+                             }).FirstOrDefault();
+
+                if (config == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "Endpoint not found.");
+                }
+
+                //test the database connection
+                Company.Database.Connection.Open();
+            }
+            catch (Exception)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "The underlying data source is not reachable.");
+            }
+            finally
+            {
+                Company.Database.Connection.Close();
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        #endregion
+
     }
 }
