@@ -5325,6 +5325,8 @@ namespace d360.web.Controllers
                     if (form.Items.Count == 0)
                         throw new NotFoundException("Fusion Rule Filter Fields");
 
+                    List<int> usedFieldTypeIDs = new List<int>();
+
                     foreach (var f in form.Items)
                     {
                         var queryFormat = "";
@@ -5369,7 +5371,14 @@ namespace d360.web.Controllers
                             if (f.Type == "Boolean" && string.IsNullOrEmpty(f.Value)) f.Value = "false";
 
                             if (!string.IsNullOrEmpty(f.Value))
-                                sql += $" inner join Field F{f.FieldTypeID} on F{f.FieldTypeID}.FieldTypeID = {f.FieldTypeID} and F{f.FieldTypeID}.ObjectType = '{rule.ObjectType.Replace("Type", "")}' and F{f.FieldTypeID}.ObjectID = A.ID and {string.Format(queryFormat, $"F{f.FieldTypeID}.FormattedValue", f.Value.Replace("'", "''"))}";
+                            {
+                                var fieldTypeCount = usedFieldTypeIDs.Count(i => i == f.FieldTypeID);
+                                var alias = f.FieldTypeID.ToString() + (fieldTypeCount > 0 ? $"_{fieldTypeCount}" : "");
+                                usedFieldTypeIDs.Add(f.FieldTypeID);
+
+                                sql += $" inner join Field F{alias} on F{alias}.FieldTypeID = {f.FieldTypeID} and F{alias}.ObjectType = '{rule.ObjectType.Replace("Type", "")}' and F{alias}.ObjectID = A.ID and {string.Format(queryFormat, $"F{alias}.FormattedValue", f.Value.Replace("'", "''"))}";
+
+                            }
                         }
                     }
                 }
