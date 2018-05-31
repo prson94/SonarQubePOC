@@ -2731,6 +2731,9 @@ order by    rnk, [Name]";
                             c.texttype = GridColumn.COLUMN_TYPE_NUMBER;
                             c.datafieldtype = "number";
                             break;
+                        case "Html":
+                            c.datafieldtype = "html";
+                            break;
                     }
 
                     c.description = ft.DisplayDescription;
@@ -3815,7 +3818,7 @@ where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id and R.IsVisibl
                 gridFields.Add(new GridField { name = "SecurityAssetID", type = "number" });
                 gridFields.Add(new GridField { name = "SecurityAssetName", type = "lookup" });
                 gridFields.Add(new GridField { name = "SecurityAssetContext", type = "string" });
-                gridFields.Add(new GridField { name = "Context", type = "string" });
+                gridFields.Add(new GridField { name = "Context", type = "html" });
 
                 columns.Add(new GridColumn
                 {
