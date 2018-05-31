@@ -116,7 +116,15 @@ namespace d360.web.Controllers
 
                 var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType != "legacy").Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
 
-                var currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                List<core.entities.Views.ResponsibilityDetail> currentUserResponsibilityTypeList = new List<core.entities.Views.ResponsibilityDetail>();
+                if (!string.IsNullOrEmpty(type) && !type.Contains("Type"))
+                    currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                else if (type.Contains("Type"))
+                    currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.TypeID == id && x.Type == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                else
+                    currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+
+             //   var currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
                 //var currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 
                 var currentUserResponsibilityTypeIDList = new List<int>();
@@ -163,6 +171,8 @@ namespace d360.web.Controllers
                         List<core.entities.Views.ResponsibilityDetail> currentUserResponsibilityType = new List<core.entities.Views.ResponsibilityDetail>();
                         if (!string.IsNullOrEmpty(report.ObjectType) && !report.ObjectType.Contains("Type"))
                             currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Object == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
+                        else if (report.ObjectType.Contains("Type"))
+                            currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Type == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
                         else
                             currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
                         
