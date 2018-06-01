@@ -20,7 +20,7 @@ export class Breadcrumb {
     }
 
     public hasLink(): boolean {
-        return (this.link && this.link.length > 0 && !this.active);
+        return (this.link && this.link.length > 0 && this.active);
     }
 }
 
