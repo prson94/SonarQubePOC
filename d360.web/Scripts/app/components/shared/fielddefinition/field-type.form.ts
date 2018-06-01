@@ -465,7 +465,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.fieldsFromRelation = d;
                 if (this.fieldsFromRelation.length > 0)
                     this.model.FieldType.LookupObjectFieldTypeID = this.fieldsFromRelation[0].value;
-            });            
+                else
+                    this.model.FieldType.LookupObjectFieldTypeID = null;
+            });    
     }
 
     private cardinalReferenceItemListFromRelationshipSelected(value: number): Promise<any> {
@@ -660,6 +662,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
+    //no longer used? can we remove this?
     private validate(): boolean {
         let valid = true;
         this.errorMessage = '';
@@ -694,6 +697,18 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
                 break;
         }
+        return valid;
+    }
+
+    private valid(): boolean {
+        let valid = true;
+
+        if (this.model.FieldType.Type == 'RefListRelationship' && !this.model.FieldType.LookupObjectID)
+            valid = false;
+
+        if (this.model.FieldType.Type == 'FieldFromRelationship' && !this.model.FieldType.LookupObjectFieldTypeID)
+            valid = false;
+
         return valid;
     }
 
