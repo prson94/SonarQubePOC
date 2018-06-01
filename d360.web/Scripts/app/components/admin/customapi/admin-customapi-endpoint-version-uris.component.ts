@@ -34,10 +34,24 @@ import { Router, ActivatedRoute } from '@angular/router';
                                                 <a style="cursor:pointer;" (click)="selected=service;showEditor=true"><i class="fa fa-pencil"></i></a>                                                                                        
                                             </div>
                                         </ng-template>
-                                    </p-column>                                                                                    
+                                    </p-column>  
+                                    <p-column  [style]="{width:'40px'}" >
+                                        <ng-template let-service="rowData" pTemplate type="body">
+                                            <div class="RowTools">                              
+                                                <a  style="cursor:pointer;" (click)="selected=service;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                            </div>
+                                        </ng-template>
+                                    </p-column>     
                                 </p-dataTable>                                  
                             </span>             
                             <d3s-dynamic-editor *ngIf="showEditor" [parentID]="version?.ID" [objectID]="selected?.ID" [objectType]="'Uri'" [title]="'Uri'" [selection]="selected" (saveClick)="saveUri($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                             <d3s-delete-form *ngIf="showDelete"
+                                [callback]="theDeleteCallback"
+                                [itemId]="selected?.ID"
+                                [method]="'callback'"
+                                [prompt]="'Are you sure you want to delete the uri [' + [selected?.Format] + ']?'"                                         
+                                (onCancel)="showDelete=false;">
+                            </d3s-delete-form>
                     </div>                
                 `
 })
@@ -47,6 +61,8 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
     public showEditor: boolean = false;
     public uris: ApiUri[] = [];
     public selected: ApiUri = null;
+    public showDelete: boolean = false;
+    theDeleteCallback: Function;
     
     constructor(
         protected customAPIService: CustomAPIService,
@@ -55,6 +71,7 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
         private router: Router,
     ) {
         super();
+        this.theDeleteCallback = this.deleteService.bind(this);
     }
 
     ngOnInit(): void {
@@ -81,5 +98,15 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
             this.load();
             this.showEditor = false;
         })
+    }
+
+    deleteService(id: number) {
+        this.customAPIService.deleteEndpointUri(id).
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.load();
+
+            });
     }
 }

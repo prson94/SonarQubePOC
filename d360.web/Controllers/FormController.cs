@@ -574,6 +574,8 @@ namespace d360.web.Controllers
                     return DeleteContract(objectID);
                 case "CUSTOMSYNONYM":
                     return DeleteCustomSynonym(form);
+                case "ENDPOINT":
+                    return DeleteCustomAPIEndPoint(form);
                 case "FUSIONQUERYATTRIBUTE":
                     return DeleteFusionQueryAttribute(form);
                 case "FUSIONATTRIBUTETYPECUSTOMQUERY":
@@ -636,6 +638,10 @@ namespace d360.web.Controllers
                     return DeleteTaxonomyType(form);
                 case "TAXONOMYTYPELEVEL":
                     return DeleteTaxonomyTypeLevel(form);
+                case "URI":
+                    return DeleteCustomAPIUri(form);
+                case "VERSION":
+                    return DeleteCustomAPIVersion(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -19873,6 +19879,33 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             }
         }
 
+        private JsonResult DeleteCustomAPIEndPoint(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                var o = Company.GetById<ApiEndpoint>(id);
+
+                Company.Delete<ApiEndpoint>(o);
+                return jsonSuccess("end ponint successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+
         private JsonResult DeleteCustomAPIService(FormCollection form)
         {
             try {
@@ -19886,6 +19919,56 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                     return jsonSuccess("api service successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
 
             } catch (BaseException ex) {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private JsonResult DeleteCustomAPIVersion(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                var o = Company.GetById<ApiEndpointVersion>(id);
+
+                Company.Delete<ApiEndpointVersion>(o);
+                return jsonSuccess("api endpoint version successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private JsonResult DeleteCustomAPIUri(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                var o = Company.GetById<ApiEntityUri>(id);
+
+                Company.Delete<ApiEntityUri>(o);
+                return jsonSuccess("api endpoint uri successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+
+            }
+            catch (BaseException ex)
+            {
                 return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
             }
             catch (Exception ex)

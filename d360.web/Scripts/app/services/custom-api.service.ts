@@ -38,11 +38,19 @@ export class CustomAPIService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    deleteEndpoint(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'endpoint', id);
+    }
+
     getEndpointVersions(id: number): Promise<ApiVersion[]> {
         return this.http.get(`api/custom/endpoint/${id}/versions`)
             .toPromise()
             .then(response => <ApiVersion[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    deleteEndpointVersion(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'version', id);
     }
 
     getEndpointVersionFields(id: number): Promise<ApiField[]> {
@@ -58,7 +66,11 @@ export class CustomAPIService extends BaseService {
             .then(response => <ApiUri[]>response.json())
             .catch(err => this.handleError(err));
     }
-    
+
+    deleteEndpointUri(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'uri', id);
+    }
+
     saveService(service: ApiService): Promise<JsonResult> {
         if (service.ID == undefined || !service.ID) {
             return this.postDynamic(this.http, 'service', service);

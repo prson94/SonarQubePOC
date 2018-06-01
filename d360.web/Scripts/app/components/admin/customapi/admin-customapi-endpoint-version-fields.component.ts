@@ -62,7 +62,7 @@ import { Router, ActivatedRoute } from '@angular/router';
                                                         [callback]="theDeleteCallback"
                                                         [itemId]="selected?.ID"
                                                         method="callback"
-                                                        [prompt]="'Are you sure you want to delete the selected field?'"                                         
+                                                        [prompt]="'Are you sure you want to delete the  field [' + [selected?.Name] + ']?'"                                        
                                                         (onCancel)="showDelete=false;"
                                             ></d3s-delete-form>  
                     </div>                

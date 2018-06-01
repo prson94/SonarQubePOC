@@ -38,10 +38,24 @@ import { Router, ActivatedRoute } from '@angular/router';
                                                 <a style="cursor:pointer;" (click)="selected=service;showEditor=true"><i class="fa fa-pencil"></i></a>                                                                                        
                                             </div>
                                         </ng-template>
-                                    </p-column>                                                                                    
+                                    </p-column>
+                                    <p-column  [style]="{width:'40px'}" >
+                                        <ng-template let-service="rowData" pTemplate type="body">
+                                            <div class="RowTools">                              
+                                                <a  style="cursor:pointer;" (click)="selected=service;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                            </div>
+                                        </ng-template>
+                                    </p-column>      
                                 </p-dataTable>                                  
                             </span>             
                             <d3s-dynamic-editor *ngIf="showEditor" [parentID]="service?.ID" [objectID]="selected?.ID" [objectType]="'Endpoint'" [title]="'Endpoint'" [selection]="selected" (saveClick)="saveEndpoint($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                            <d3s-delete-form *ngIf="showDelete"
+                            [callback]="theDeleteCallback"
+                            [itemId]="selected?.ID"
+                            [method]="'callback'"
+                            [prompt]="'Are you sure you want to delete the end point [' + [selected?.Name] + ']?'"                                         
+                            (onCancel)="showDelete=false;"
+                        ></d3s-delete-form>
                     </div>
                 
                 `
@@ -52,6 +66,9 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
     public showEditor: boolean = false;
     public endpoints: ApiEndpoint[] = [];
     public selected: ApiEndpoint = null;
+    public showDelete: boolean = false;
+
+    theDeleteCallback: Function;
 
     @Input() numberOfEndpoints: number = 0;
     @Output() numberOfEndpointsChange = new EventEmitter();
@@ -62,7 +79,8 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
         private route: ActivatedRoute,
         private router: Router,
     ) {
-        super();                
+        super();   
+        this.theDeleteCallback = this.deleteService.bind(this);
     }
 
     ngOnInit(): void {
@@ -89,5 +107,15 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
 
     public showEndpoint(item: ApiEndpoint): void {
         this.router.navigateByUrl(`admin/customapi/${this.service.ID}/details/${item.ID}/details`);
+    }
+
+    deleteService(id: number) {
+        this.customAPIService.deleteEndpoint(id).
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.load();
+
+            });
     }
 }
