@@ -19,11 +19,23 @@ const Highcharts = require('highcharts/highstock.src');
                         <div class="col s12">
                             <header>Point Breakdown</header>
                             <p-treeTable  scrollable="true" scrollWidth="100%" [value]="pointBreakdownTree" selectionMode="single">                                
-                                <p-column field="Name" header="Analytic" [style]="{'width':'250px'}"></p-column>                                
-                                <p-column header="Value" [style]="{'width':'250px'}">
+                                <p-column header="Analytic">
                                     <ng-template let-item="rowData" pTemplate type="body">
-                                        <i *ngIf="item.data.Value" class="fa fa-check enabled" title="Passed"></i>
-                                        <i *ngIf="!item.data.Value" class="fa fa-times disabled" title="Failed"></i>
+                                        <span *ngIf="item.data.MapID" [innerText]="item.data.Name"></span>
+                                        <b *ngIf="!item.data.MapID"><span [innerText]="item.data.Name"></span></b>
+                                    </ng-template>
+                                </p-column>                                
+                                <p-column header="Value" [style]="{'width':'75px'}">
+                                    <ng-template let-item="rowData" pTemplate type="body">
+                                        <span *ngIf="item.data.MapID">
+                                            <i *ngIf="item.data.Value" class="fa fa-check enabled" title="Passed"></i>
+                                            <i *ngIf="!item.data.Value" class="fa fa-times disabled" title="Failed"></i>
+                                        </span>
+                                    </ng-template>
+                                </p-column>
+                                <p-column header="Weight" [style]="{'width':'75px'}">
+                                    <ng-template let-item="rowData" pTemplate type="body">
+                                        <span [innerText]="item.data.Weight"></span>
                                     </ng-template>
                                 </p-column>
                             </p-treeTable>  
@@ -174,6 +186,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         childScores.forEach(c => {
                             node.children.push({
                                 data: c,
+                                expanded: true,
                                 leaf: true
                             });
                         });
@@ -187,7 +200,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
                         childGroups.forEach(c => {
                             var child = {
-                                data: c
+                                data: c,
+                                expanded: true
                             }
                             tree(child);
                             node.children.push(child);
@@ -200,6 +214,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     var root = {
                         data: p,
                         leaf: false,
+                        expanded: true,
                         children: []
                     };
 

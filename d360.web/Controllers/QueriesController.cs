@@ -177,54 +177,57 @@ order by	R.LastName, R.FirstName", new { id = id }).ToList();
             //           });
 
             var query = @"
-                    with groups as
-                    (
-                    select 
-	                    null as ID, 
-	                    g1.ID as GroupID, 
-	                    null as [Value], 
-	                    g1.ParentID, 
-	                    g1.[Name],
-                        null as MapID
-                    from 
-	                    metrics.[Group] g1
-	                    inner join metrics.Map m1 on m1.GroupID = g1.ID and m1.[State] = 1
-	                    inner join metrics.MapResult r1 on r1.MapID = m1.ID
-	                    inner join metrics.Score s1 on s1.ID = r1.ScoreID
-                    where 
-	                    g1.[State] = 1 and s1.[Object] = @type and s1.ObjectID = @id
-                    union all
-	                    select 
-		                    null as ID,  
-		                    g2.ID as GroupID, 
-		                    null as [Value], 
-		                    g2.ParentID as ParentID, 
-		                    g2.[Name],
-                            null as MapID
-	                    from 
-		                    metrics.[group] g2
-	                    inner join groups g3 on g3.ParentID = g2.ID
-	                    where g2.[State] = 1
-                    )
-                    select distinct * from groups
-                    union all
-	                    select 
-		                    max(s.ID) as ID, 
-		                    g.ID as GroupID, 
-		                    avg(s.[Value]), 
-		                    g.ParentID, 
-		                    i.[Name],
-                            m.ID as MapID
-	                    from 
-		                    metrics.Score s
-	                    inner join metrics.MapResult r on r.ScoreID = s.ID
-	                    inner join metrics.Map m on m.ID = r.MapID and m.[State] = 1
-	                    inner join metrics.Item i on i.ID = m.ItemID
-	                    inner join metrics.[Group] g on g.ID = m.GroupID and g.[State] = 1
-	                    where 
-		                    s.[Object] = @type and s.ObjectID = @id
-                            and @date between S.EffectiveStartDate and S.EffectiveEndDate
-                        group by m.ID, g.ID, g.ParentID, i.[Name]";
+ with groups as (
+	select	null as ID, 
+			g1.ID as GroupID, 
+			null as [Value], 
+			g1.ParentID, 
+			g1.[Name],
+			g1.Weight,
+			null as MapID
+	from	metrics.[Group] g1
+			inner join metrics.Map m1 on m1.GroupID = g1.ID and m1.[State] = 1
+			inner join metrics.MapResult r1 on r1.MapID = m1.ID
+			inner join metrics.Score s1 on s1.ID = r1.ScoreID
+	where	g1.[State] = 1 and s1.[Object] = @type and s1.ObjectID = @id
+	union all
+	select	null as ID,  
+			g2.ID as GroupID, 
+			null as [Value], 
+			g2.ParentID as ParentID, 
+			g2.[Name],
+			g2.Weight,
+			null as MapID
+	from	metrics.[group] g2
+			inner join groups g3 on g3.ParentID = g2.ID
+	where	g2.[State] = 1
+)
+select distinct * from groups
+union all
+select		MS.ID, 
+			MS.GroupID, 
+			r.[Value], 
+			g.ParentID, 
+			i.[Name],
+			m.Weight,
+            MS.MapID
+from		(
+			select		max(s.ID) as ID, 
+						g.ID as GroupID, 
+						m.ID as MapID
+			from		metrics.Score s
+						inner join metrics.MapResult r on r.ScoreID = s.ID
+						inner join metrics.Map m on m.ID = r.MapID and m.[State] = 1
+						inner join metrics.Item i on i.ID = m.ItemID
+						inner join metrics.[Group] g on g.ID = m.GroupID and g.[State] = 1
+			where		s.[Object] = @type and s.ObjectID = @id
+						and @date between S.EffectiveStartDate and S.EffectiveEndDate
+			group by  g.ID, m.ID
+			) MS
+			inner join metrics.MapResult r on r.ScoreID = MS.ID and r.MapID = MS.MapID
+			inner join metrics.Map m on m.ID = r.MapID and m.[State] = 1
+			inner join metrics.Item i on i.ID = m.ItemID
+			inner join metrics.[Group] g on g.ID = MS.GroupID and g.[State] = 1";
 
             var results = Company.Query<dynamic>(query, new { type = type.ToString(), id, date = date ?? DateTime.UtcNow.ToString() });
 
