@@ -28,7 +28,7 @@ import { AuthenticationService } from '../../services/authentication.service';
                     <div class="col l9 m12 s12" *ngIf="!isQueryConfigVisible">
                         <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>                        
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-                            <d3s-object-definition-tile [objectPermissions]="[]" [objectID]="selectedFusionAttribute?.ID" [objectType]="'FusionAttribute'" [hasAttributes]="selectedFusionAttribute?.AllowAttributes" [nymTypes]="selectedFusionAttribute?.NymTypes"></d3s-object-definition-tile>
+                            <d3s-object-definition-tile [objectPermissions]="[]" [objectID]="selectedFusionAttribute?.ID" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [hasAttributes]="selectedFusionAttribute?.AllowAttributes" [nymTypes]="selectedFusionAttribute?.NymTypes"></d3s-object-definition-tile>
                         </div> 
                         <div *ngIf="selectedFusionAttribute">
                             <d3s-fusion-attribute-profile-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'"></d3s-fusion-attribute-profile-details>
@@ -46,7 +46,7 @@ import { AuthenticationService } from '../../services/authentication.service';
 })
 //<d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'"></d3s-fusion-attribute-item-details>
 
-export class FusionItemComponent extends BaseComponent implements OnInit, OnDestroy {
+export class FusionItemComponent extends BaseComponent implements OnInit, OnDestroy { 
     private sub: any;    
     private fusionId: number;
     private fusion: FusionConfigurationDetails;
@@ -158,7 +158,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     
     private changeFusionAttributeTypeId(event) {
         if (event == this.selectedFusionAttributeTypeId) {
-            console.log('current type is same as selected');
+            //console.log('current type is same as selected');
             return;
         }
         this.selectedFusionAttribute = null;

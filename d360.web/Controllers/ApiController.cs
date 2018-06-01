@@ -5323,6 +5323,17 @@ where    A.RuleID = @id", new { id });
                     fusionAttributeType = null;
                     break;
                 #endregion
+                case SystemObjects.FusionQueryAttribute:
+                    #region Fields
+                    var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id);
+                    if (fusionQueryAttribute != null)
+                    {
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
+                        model.rows.AddRange(loadDisplayableRelationshipsAsFields(type, id));
+                    }
+                    fusionQueryAttribute = null;
+                    break;
+                #endregion
                 case SystemObjects.FusionExecution:
                     #region Fields
                     var fusionExecution = Company.GetById<FusionExecution>(id);
