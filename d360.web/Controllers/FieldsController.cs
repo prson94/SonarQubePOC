@@ -127,7 +127,8 @@ namespace d360.web.Controllers
                     f.ColumnOrder = sorts[0];
                     sorts.RemoveAt(0);
                 }
-
+                Company.ObjectContext.CommandTimeout = 180;
+                //((IObjectContextAdapter)this.context).ObjectContext.CommandTimeout = 180;
                 Company.SaveChanges();//.SaveFieldTypes(type, id, list); 
 
                 code = HttpStatusCode.OK;
