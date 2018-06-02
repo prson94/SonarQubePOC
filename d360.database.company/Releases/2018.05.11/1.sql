@@ -452,7 +452,6 @@ BEGIN
 END
 GO
 
-
 ALTER procedure [dbo].[DeleteObject]
 	@ObjTemp varchar(50),
 	@ObjectIDTemp int,
@@ -461,7 +460,6 @@ as
 begin
 	set nocount on
 
-	-- Weird StackOverflow about SQL Server using parameter sniffing, which can potentially slow down executing of procs from an application. See GOV-3316 for more details.
 	declare
 		@Obj varchar(50) = @ObjTemp,
 		@ObjectID int = @ObjectIDTemp,
@@ -1258,6 +1256,9 @@ RETURN
 							) D
 	where A.ID = @Id
 )
+GO
+
+ALTER TABLE FieldType add UpdatedBy int CONSTRAINT [DF_FieldType_UpdatedBy]  DEFAULT (0) NOT NULL
 GO
 
 ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
@@ -3234,7 +3235,7 @@ begin
 end
 GO
 
-ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
+ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]
 --declare
 	@TemplateType varchar(25),
 	@Type varchar(50),

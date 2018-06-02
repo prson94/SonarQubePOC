@@ -475,6 +475,11 @@ CREATE TABLE [api].[EntityFieldType](
 )
 GO
 
+ALTER TABLE [api].[EntityFieldType] ADD  CONSTRAINT [PK_Api_EntityFieldType] PRIMARY KEY NONCLUSTERED ( [EntityID] ASC, [FieldTypeID] ASC )
+GO
+
+
+
 ALTER TABLE [api].[EntityFieldType]  WITH CHECK ADD  CONSTRAINT [FK_EntityFieldType_Entity] FOREIGN KEY([EntityID]) REFERENCES [api].[Entity] ([ID]) ON DELETE CASCADE
 GO
 
@@ -1503,9 +1508,6 @@ from	dbo.ResponsibilityTypeRelationItem O
 																		end
 where	O.Overriden = 0
 GO
-
-
-
 
 create FUNCTION [dbo].[GetAssetLevelById]
 (

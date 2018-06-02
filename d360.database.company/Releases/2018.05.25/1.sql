@@ -600,7 +600,7 @@ CREATE NONCLUSTERED INDEX [IX_ReferenceItem_Visible]
     INCLUDE([ReferenceItemTypeID], [ID]);
 GO
 
-alter procedure [bulkload].[GetLoadColumns]
+ALTER procedure [bulkload].[GetLoadColumns]
 --declare	
 	@action varchar(2),-- = 'P', --P = Promotion, R = Relation, O = Responsibilities, BL = Business Lineage, TL = Technical Lineage
 	@type varchar(50),-- = 'ArtifactType',--'ArtifactType',--'IntersectType',--'ArtifactType',
@@ -619,25 +619,25 @@ begin
 	begin
 		if @id = 0 -- Group membership
 		begin
-			insert into @fields values (-4, 'Action', 1, 0, 0, 1)
+			insert into @fields values (1, 'Action', 1, 0, 0, 1)
 			insert into @fields values (0, 'Group Name', 1, 1, 0, 0)
 			insert into @fields values (0, 'User Email', 1, 1, 0, 0)
 
-			insert into @lookups values (-4, 'Add')
-			insert into @lookups values (-4, 'Remove')
+			insert into @lookups values (1, 'Add')
+			insert into @lookups values (1, 'Remove')
 		end
 
 		if @id = 1 -- Add users
 		begin
 			set @type = 'ResourceType'
 
-			insert into @fields values (-4, 'Status', 1, 1, 0, 0)
+			insert into @fields values (1, 'Status', 1, 1, 0, 0)
 			insert into @fields values (0, 'User Email', 1, 1, 0, 0)
 			insert into @fields values (0, 'First Name', 1, 1, 0, 0)
 			insert into @fields values (0, 'Last Name', 1, 1, 0, 0)
 
-			insert into @lookups values (-4, 'Active')
-			insert into @lookups values (-4, 'Inactive')
+			insert into @lookups values (1, 'Active')
+			insert into @lookups values (1, 'Inactive')
 		end
 	end
 
@@ -2292,6 +2292,9 @@ GO
 
 ENABLE TRIGGER [dbo].[IntersectType_AfterInsert]
     ON [dbo].[IntersectType];
+GO
+
+DROP INDEX [IX_ReferenceItem_ReferenceItemType_Visible] ON [dbo].[ReferenceItem]
 GO
 
 CREATE NONCLUSTERED INDEX [IX_ReferenceItem_ReferenceItemType_Visible]
@@ -4631,7 +4634,7 @@ begin
 end
 GO
 
-CREATE PROCEDURE [dbo].[GetAssetHierarchy]
+ALTER PROCEDURE [dbo].[GetAssetHierarchy]
   ( @ID int,
     @Type varchar(50) )
 	AS
@@ -4728,8 +4731,8 @@ CREATE NONCLUSTERED INDEX [IX_Asset_ObjectID_Include]
     INCLUDE([ID]);
 GO
 
-alter table FieldType add [UpdatedBy] INT CONSTRAINT [DF_FieldType_UpdatedBy] DEFAULT ((0)) NOT NULL
-GO
+--alter table FieldType add [UpdatedBy] INT CONSTRAINT [DF_FieldType_UpdatedBy] DEFAULT ((0)) NOT NULL
+--GO
 
 alter table integration.ExecutionAssetType add [ErrorMessage]            NVARCHAR (2500) NULL
 GO

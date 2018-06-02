@@ -423,89 +423,6 @@ insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue)
 			inner join FieldType FT on FT.Object = 'TaxonomyType' and FT.ObjectID = A.TaxonomyTypeID and FT.Name = 'Description' and A.Description is not null and A.Description <> ''
 GO
 
-
--- CONVERT Name/Description FIELDs IN COMPLEX LOOKUP ------
-
-IF OBJECT_ID('tempdb.dbo.#fieldTypeLookupConversion', 'U') IS NOT NULL
-	drop table #fieldTypeLookupConversion
-create table #fieldTypeLookupConversion
-(
-FieldTypeID int,
-[Definition] nvarchar(max),
-)
-insert into #fieldTypeLookupConversion
-select FieldTypeID, Definition from FieldTypeLookup
-
-IF OBJECT_ID('tempdb.dbo.#resolvedFields', 'U') IS NOT NULL
-	drop table #resolvedFields
-create table #resolvedFields
-(
-	id int identity not null,
-	FieldTypeID int,
-	Definition nvarchar(max),
-	JPath nvarchar(max),
-	ResolvedFieldTypeID int
-)
-
-while((select count(*) from #fieldTypeLookupConversion) > 0)
-begin
-
-	declare @json nvarchar(max), @fieldTypeID int;
-	select top 1 
-		@fieldTypeID = FieldTypeID 
-	from #fieldTypeLookupConversion 
-	order by FieldTypeID;
-	
-	select 
-		@json = Definition 
-	from #fieldTypeLookupConversion 
-	where FieldTypeID = @fieldTypeID;
-
-	--need to find the json paths for all fields that need to be updated, as well as the field type id they will resolve to
-	insert into #resolvedFields
-	select 
-		@fieldTypeID as FieldTypeID,
-		@json as [Definition],
-		'$.Fields[' + cast(f.[key] as varchar) + '].FieldTypeID' as JPath,
-		ft.ID as ResolvedFieldTypeID
-	from openjson(@json, '$.Fields') f
-	inner join FieldType ft on ft.Object = json_value(f.value,'$.Object') 
-		and ft.ObjectID = json_value(f.value,'$.ObjectID') 
-		and ft.FriendlyName = json_value(f.value,'$.FieldTypeName')
-	where 
-		json_value(f.value,'$.FieldTypeName') in ('Name','Description') 
-		and json_value(f.value,'$.FieldTypeID') = 0 
-
-	delete from #fieldTypeLookupConversion where FieldTypeID = @fieldTypeID;
-
-end
-
-while((select count(*) from #resolvedFields) > 0)
-begin
-	declare @id int;
-	select top 1 
-		@id = id 
-	from #resolvedFields 
-	order by id;
-
-	--modify the json based on the info from the previous operation
-	update F
-	set [Definition] = json_modify(f.[Definition], r.jpath, r.ResolvedFieldTypeID)
-	from FieldTypeLookup F
-	inner join #resolvedFields R on R.FieldTypeID = F.FieldTypeID;
-
-	delete from #resolvedFields where id = @id; 
-end
-
---clean up
-IF OBJECT_ID('tempdb.dbo.#fieldTypeLookupConversion', 'U') IS NOT NULL
-	drop table #fieldTypeLookupConversion
-IF OBJECT_ID('tempdb.dbo.#resolvedFields', 'U') IS NOT NULL
-	drop table #resolvedFields
-	
--- END CONVERT Name/Description FIELDs IN COMPLEX LOOKUP ------
-
-
 -- INSERT INTO ASSET TYPE-------------------------------------------------
 insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 	select Name, Description, 1, '{Name}', 1, 0, 1, 'ArtifactType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from ArtifactType
@@ -844,7 +761,7 @@ GO
 CREATE NONCLUSTERED INDEX [IX_FieldType_Object-ObjectID] ON [dbo].[FieldType]([Object] ASC, [ObjectID] ASC);
 GO
 
-DROP TRIGGER [dbo].[FieldType_AfterDelete]
+--DROP TRIGGER [dbo].[FieldType_AfterDelete]
 GO
 
 CREATE TRIGGER [dbo].[FieldType_AfterInsert]
@@ -1237,7 +1154,6 @@ AS
 			inner join inserted S on T.Object = 'Policy' and T.ObjectID = S.ID
 GO
 
-
 ALTER TRIGGER [dbo].[PolicyType_AfterDelete]
    ON  [dbo].[PolicyType] 
    AFTER DELETE
@@ -1445,7 +1361,7 @@ END
 GO
 
 insert into ResponsibilityTypeRelationOverrideItem (ResponsibilityTypeID, AssetID, SecurityAsset, SecurityAssetID) 
-select 
+select distinct
 	ResponsibilityTypeID, 
 	A.ID as AssetID, 
 	case when ResponsibleObject = 'Group' then 
@@ -1486,7 +1402,7 @@ alter table [Rule] add [UpdatedBy]       INT            NULL
 alter table [Rule] add [UpdatedOn]       DATETIME       NULL
  GO
 
- ALTER TRIGGER [dbo].[Rule_AfterDelete]
+ALTER TRIGGER [dbo].[Rule_AfterDelete]
    ON  [dbo].[Rule] 
    AFTER DELETE
 AS 
@@ -1519,7 +1435,6 @@ AS
 	from	Asset T
 			inner join inserted S on T.Object = 'Rule' and T.ObjectID = S.ID
 GO
-
 
 ALTER TRIGGER [dbo].[RuleType_AfterDelete]
    ON  [dbo].[RuleType] 
@@ -1594,6 +1509,7 @@ AS
 GO
 
 DROP TRIGGER [dbo].[Taxonomy_AfterUpsert]
+GO
 
 ALTER TRIGGER [dbo].[TaxonomyType_AfterDelete]
    ON  [dbo].[TaxonomyType] 
@@ -7232,7 +7148,7 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
+ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]
 --declare
 	@TemplateType varchar(25),
 	@Type varchar(50),
@@ -8004,7 +7920,7 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE [dbo].[GetScoreHistoryByObject]-- 'Artifact', 733
+ALTER PROCEDURE [dbo].[GetScoreHistoryByObject]
 --declare
 	@type varchar(50),-- = 'Artifact',
 	@id int-- = 4651
@@ -10717,18 +10633,26 @@ RETURN
 GO
 
 alter table FieldType disable trigger FieldType_AfterUpsert
+GO
+
 update	T
 set		T.AssetTypeID = S.ID
 from	FieldType T 
 		inner join AssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID
+GO
+
 alter table FieldType enable trigger FieldType_AfterUpsert
+GO
 
 alter table Field disable trigger Field_AfterUpsert
+GO
 update	T
 set		T.AssetID = S.ID
 from	Field T 
 		inner join Asset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID
+GO
 alter table Field enable trigger Field_AfterUpsert
+GO
 
 
 

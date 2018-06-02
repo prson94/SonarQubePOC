@@ -4721,6 +4721,7 @@ begin
 	--where	F.[Count] > 0
 end
 GO
+
 ALTER FUNCTION [dbo].[GetAssetKeyHashById](
 	@Id bigint
 )
@@ -4757,7 +4758,6 @@ select		A.AssetTypeID,
 
 )
 GO
-
 
 ALTER FUNCTION [dbo].[GetAssetUrl]
 (	
@@ -5831,12 +5831,8 @@ begin
 end
 GO
 
-
-
 alter table [integration].[SynchedAssetType] add LastSuccessfulCount int null
-go
-
-
+GO
 
 ALTER view [dbo].[SiteNavAvailable] as
 	select
