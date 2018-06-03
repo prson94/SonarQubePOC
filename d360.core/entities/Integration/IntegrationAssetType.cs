@@ -40,9 +40,6 @@ namespace d360.core.entities
         public bool AllowChangeDetection { get; set; } = false;
 
         [DataMember]
-        public int? LastSuccessfulCount { get; set; }
-
-        [DataMember]
         public DateTime? LastSynchOn { get; set; } = null;
 
         [DataMember]
@@ -51,6 +48,8 @@ namespace d360.core.entities
         [DataMember]
         public int? PageSize { get; set; }
 
+        [DataMember]
+        public int? RefreshIntervalOverride { get; set; }
 
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationSetting> IntegrationSetting { get; set; }

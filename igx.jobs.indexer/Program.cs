@@ -38,8 +38,11 @@ namespace igx.jobs.indexer
     {
         private static int _defaultQueryCommandTimeout = 180;
         const string functionName = "Indexing_ReIndex";
-        const string timerSettings = "0 0 4 * * 6";
-      //  const string timerSettings = "*/1 * * * * *";
+#if DEBUG
+        const string timerSettings = "*/1 * * * * *";
+#else
+        const string timerSettings = "0 0 17 * * 6";
+#endif
 
         const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> ''";
 
@@ -204,7 +207,7 @@ namespace igx.jobs.indexer
 
                             var users = new List<AddToIndexModel>();
 
-                            #region Company Users
+#region Company Users
 
                             var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
 
@@ -225,7 +228,7 @@ namespace igx.jobs.indexer
 
                             source.AddToIndex(users);
 
-                            #endregion
+#endregion
 
                             LogCompanyReindexComplete(c.CompanyID);
 
@@ -257,7 +260,7 @@ namespace igx.jobs.indexer
         }
 
 
-        #region Supporting Functions
+#region Supporting Functions
 
         private static IEnumerable<AddToIndexModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
@@ -647,6 +650,6 @@ from    fusion f
             }            
         }
 
-        #endregion
+#endregion
     }
 }

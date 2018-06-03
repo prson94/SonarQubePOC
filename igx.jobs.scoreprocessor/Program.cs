@@ -24,63 +24,66 @@ namespace igx.jobs.scoreprocessor
     public static class ScoreProcessor
     {
         const string functionName = "Scoring_Calculate";
+#if DEBUG
+        const string timerSettings = "*/5 * * * * *";
+#else
         const string timerSettings = "0 */5 * * * *";
-       // const string timerSettings = "*/5 * * * * *";
-
+#endif
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
-                CoreFunction.AITrackJobStart(functionName);
+                //CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(x => x.CompanyID == 4).ToList();
+                companies = companies.Where(x => x.CompanyID == 6).ToList();
 #endif
 
-                companies.ForEach(c =>
+                companies.AsParallel().WithDegreeOfParallelism(3).ForAll(c =>
                 {
                     try
                     {
                         using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
                             company.OpenWithRetry(RetryPolicy.DefaultFixed);
-                            //company.Execute("metrics.LoadFromStaging", commandTimeout: 1400);
+                            company.Execute("metrics.LoadFromStaging", commandTimeout: 1400);
 
-                            bool processStatus = false;
-                            var processTask = company.ExecuteAsync("metrics.LoadFromStaging", commandTimeout: 1400);
-                            processTask.ContinueWith(t =>
-                            {
-                                string exceptionData = "";
-                                if (t.Exception != null)
-                                {
-                                    exceptionData = t.Exception.GetFullExceptionData();
-                                    if (t.Exception.InnerExceptions != null)
-                                    {
-                                        foreach (var ex in t.Exception.InnerExceptions)
-                                        {
-                                            exceptionData += ex.GetFullExceptionData();
-                                        }
-                                    }
-                                    CoreFunction.AITrackException(functionName, t.Exception, c.CompanyID);
-                                }
+                            //bool processStatus = false;
+                            //var processTask = company.ExecuteAsync("metrics.LoadFromStaging", commandTimeout: 1400);
+                            //processTask.ContinueWith(t =>
+                            //{
+                            //    string exceptionData = "";
+                            //    if (t.Exception != null)
+                            //    {
+                            //        exceptionData = t.Exception.GetFullExceptionData();
+                            //        if (t.Exception.InnerExceptions != null)
+                            //        {
+                            //            foreach (var ex in t.Exception.InnerExceptions)
+                            //            {
+                            //                exceptionData += ex.GetFullExceptionData();
+                            //            }
+                            //        }
+                            //        CoreFunction.AITrackException(functionName, t.Exception, c.CompanyID);
+                            //    }
 
-                                if (t.IsCompleted)
-                                {
-                                    if (t.IsFaulted)
-                                    {
-                                        CoreFunction.AITrackException(functionName, t.Exception, c.CompanyID);
-                                    }
-                                }
+                            //    if (t.IsCompleted)
+                            //    {
+                            //        if (t.IsFaulted)
+                            //        {
+                            //            CoreFunction.AITrackException(functionName, t.Exception, c.CompanyID);
+                            //        }
+                            //    }
 
-                                processStatus = false;
-                            });
+                            //    processStatus = false;
+                            //});
 
-                            while (processStatus && (processTask.Exception == null))
-                            {
-                                log.WriteLine("Processing scores for company {0}...", c.CompanyID);
-                                System.Threading.Thread.Sleep(30000);
-                            }
+                            //while (processStatus && (processTask.Exception == null))
+                            //{
+                            //    log.WriteLine("Processing scores for company {0}...", c.CompanyID);
+                            //    System.Threading.Thread.Sleep(30000);
+                            //}
+                            log.WriteLine("Processed scores for company {0}...", c.CompanyID);
                         }
                     }
                     catch (Exception ex)
@@ -90,7 +93,7 @@ namespace igx.jobs.scoreprocessor
                     }
                 });
 
-                CoreFunction.AITrackJobCompletedNoErrors(functionName);
+                //CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
             catch (Exception ex)
             {

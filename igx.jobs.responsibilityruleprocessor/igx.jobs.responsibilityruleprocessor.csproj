@@ -137,6 +137,7 @@
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\US - Client Development.pubxml" />
     <None Include="Properties\PublishProfiles\US - Nightly 2.pubxml" />
+    <None Include="Properties\PublishProfiles\US - Production.pubxml" />
     <None Include="Properties\PublishProfiles\US - Uat.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>

@@ -373,6 +373,68 @@ from    h as A
 
                         #region General Views
 
+                        #region All Assets
+
+                        objectName = $"{SCHEMA}.[Asset_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	A.ID,
+		A.AssetTypeID,
+		A.State,
+		A.Object,
+		A.ObjectID,
+		A.SourceID,
+		A.CreatedOn,
+		A.CreatedBy,
+		A.UpdatedOn,
+		A.UpdatedBy,
+		T.Class as AssetTypeClass,
+		T.Description as AssetTypeDescription,
+		T.Name as TypeName,
+		T.Object as Type,
+		T.ObjectID as TypeID
+from	Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region All Metrics
+
+                        objectName = $"{SCHEMA}.[Metric_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+SELECT M.[ID] as MapID
+     ,M.[GroupID]
+     ,M.[ItemID]
+     ,M.[Object]
+     ,M.[ObjectID]
+     ,M.[Weight]
+     ,M.[EffectiveStartDate]
+     ,M.[EffectiveEndDate]
+      ,g.[Name]                    as GroupName
+      ,I.[Description]            as RuleDefinition
+ FROM [metrics].[Map] M
+ Inner Join [metrics].[Item] I on I.ID = M.ItemID
+ Inner Join [metrics].[Group] G on G.ID = M.GroupID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
                         #region All Artifacts
 
                         objectName = $"{SCHEMA}.[Glossary_All]";

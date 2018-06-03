@@ -15614,6 +15614,7 @@ order by DN.DisplayValue");
                 {
                     Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(existing, false);
                 }
+                Company.Database.Connection.Execute("exec cache.SecurityProcessor 4, 5, @id", new { id = existing.ID }, commandTimeout: 1200);
 
                 return jsonSuccess("Item successfully updated and processed.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -15644,7 +15645,8 @@ order by DN.DisplayValue");
                 {
                     Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(model, false);
                 }
-                Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(model, false);
+
+                Company.Database.Connection.Execute("exec cache.SecurityProcessor 4, 5, @id", new { id = model.ID }, commandTimeout: 1200);
 
                 return jsonSuccess("Item successfully created and processed.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }

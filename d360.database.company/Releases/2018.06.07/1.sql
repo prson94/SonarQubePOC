@@ -1,6 +1,27 @@
 ﻿alter table [integration].[SynchedAssetType] add [RefreshIntervalOverride] int null
 GO
 
+
+declare @schema_name nvarchar(256)
+declare @table_name nvarchar(256)
+declare @Command  nvarchar(1000)
+
+set @schema_name = N'reporting'
+set @table_name = N'Dates'
+
+select	@Command = 'sp_rename N''' + @schema_name + '.' + @table_name + '.' + d.name + ''', N''PK_ReportingDates'''
+from	sys.tables t
+	inner join sys.key_constraints d on d.type = 'PK' and d.parent_object_id = t.object_id
+where	t.name = @table_name
+	and t.schema_id = schema_id(@schema_name)
+
+if @Command is not null
+begin
+	execute (@Command)
+end
+GO
+
+
 declare @schema_name nvarchar(256)
 declare @table_name nvarchar(256)
 declare @Command  nvarchar(1000)
@@ -304,5 +325,67 @@ end
 			inner join #a S on S.AssetID = T.AssetID and S.EffectiveDate = T.EffectiveDate and S.ID = T.MapID and S.Type = 'M';
 
 end
+GO
+
+update	A
+set		A.DisplayFormat = coalesce(F.Name, '')
+--select *
+from	AttributeType A
+		outer apply (
+			select	top 1 
+					'{' + Name + '}' as Name
+			from	FieldType 
+			where	Object = 'AttributeType' and ObjectID = A.ID and IsListable = 1
+		) F
+where	DisplayFormat is null
+GO
+
+declare @schema_name nvarchar(256)
+declare @table_name nvarchar(256)
+declare @Command  nvarchar(1000)
+
+set @schema_name = N'dbo'
+set @table_name = N'CommentVote'
+
+select	@Command = 'sp_rename N''' + d.name + ''', N''FK_CommentVote_Comment'''
+from	sys.tables t
+	inner join sys.foreign_keys d on d.parent_object_id = t.object_id --and d.type = 'FK'
+where	t.name = @table_name
+	and t.schema_id = schema_id(@schema_name)
+--select @Command
+if @Command is not null
+begin
+	execute (@Command)
+end
+GO
+
+
+ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
+   ON  [dbo].[FieldType] 
+   AFTER INSERT,UPDATE
+AS 
+
+
+		UPDATE	F
+		set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+		FROM	Field F
+				inner join inserted FT on FT.ID = F.FieldTypeID and FT.LookupObjectType is not null
+
+		update	FT	
+		set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
+		from	FieldType FT
+				inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is not null
+		
+		--check insert vs update --  power(2, (25-1)) is 16777216
+		IF (EXISTS (SELECT * FROM DELETED) AND ((COLUMNS_UPDATED() & 16777216)=16777216))
+		begin
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Update', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
+		end
+		ELSE IF (NOT EXISTS (SELECT * FROM DELETED))
+		BEGIN
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Add', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
+		END
 GO
 

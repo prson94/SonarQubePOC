@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 
 namespace igx.jobs.igc
@@ -224,5 +225,11 @@ namespace igx.jobs.igc
         public long ExecutionID { get; set; }
         public int CurrentCount { get; set; }
         public int SynchedAssetTypeID { get; set; }
+    }
+
+    public class LastFullRefreshModel
+    {
+        public int ID { get; set; }
+        public DateTime StartedOn { get; set; }
     }
 }

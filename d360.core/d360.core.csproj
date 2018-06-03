@@ -105,6 +105,7 @@
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeFieldItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetType.cs" />
+    <Compile Include="entities\Integration\IntegrationExecutionRelationItem.cs" />
     <Compile Include="entities\Integration\IntegrationUnresolvedRelationItem.cs" />
     <Compile Include="entities\Integration\IntegrationExecutionAsset.cs" />
     <Compile Include="entities\Integration\IntegrationExecutionAssetType.cs" />

@@ -21,6 +21,8 @@ namespace d360.model
 
         public DbSet<IntegrationExecutionAsset> IntegrationExecutionAssets { get; set; }
 
+        public DbSet<IntegrationExecutionRelationItem> IntegrationExecutionRelationItems { get; set; }
+
         public DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
 
         public DbSet<IntegrationSetting> IntegrationSettings { get; set; }
@@ -1059,6 +1061,89 @@ when not matched by target then
                 }
             }
         }
+
+        public static void BulkExecutionRelationItemLoad(this SqlConnection cnn, int currentResourceID, List<IntegrationExecutionRelationItem> executionRelations)
+        {
+            var relationTable = new System.Data.DataTable();
+
+            relationTable.Columns.Add("ExecutionID", typeof(long));
+            relationTable.Columns.Add("SubjectSourceID", typeof(string));
+            relationTable.Columns.Add("ObjectSourceID", typeof(string));
+            relationTable.Columns.Add("IntersectTypeID", typeof(int));
+
+            executionRelations.ForEach(a =>
+            {
+                var row = relationTable.NewRow();
+                row["ExecutionID"] = a.ExecutionID;
+                row["SubjectSourceID"] = a.SubjectSourceID;
+                row["ObjectSourceID"] = a.ObjectSourceID;
+                row["IntersectTypeID"] = a.IntersectTypeID;
+                relationTable.Rows.Add(row);
+            });
+
+            if (cnn.State != System.Data.ConnectionState.Open)
+                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+
+            using (var trans = cnn.BeginTransaction())
+            {
+                try
+                {
+                    cnn.Execute("DROP TABLE IF EXISTS #IntegrationRelationTable", transaction: trans);
+
+                    cnn.Execute(@"
+                        create table #IntegrationRelationTable (
+	                        ExecutionID bigint NOT NULL,
+	                        SubjectSourceID nvarchar(250) NOT NULL,
+	                        ObjectSourceID nvarchar(250) NOT NULL,
+	                        IntersectTypeID int NOT NULL
+                        )", transaction: trans);
+
+                    cnn.Execute(@"CREATE CLUSTERED INDEX IX_TempIntegrationRelationTable ON #IntegrationRelationTable ( ExecutionID ASC, IntersectTypeID, SubjectSourceID ASC, ObjectSourceID ASC )", transaction: trans);
+
+                    var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
+
+                    assetBulkCopy.BatchSize = relationTable.Rows.Count;
+                    assetBulkCopy.DestinationTableName = "#IntegrationRelationTable";
+                    assetBulkCopy.BulkCopyTimeout = 3600;
+
+                    assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    assetBulkCopy.ColumnMappings.Add("SubjectSourceID", "SubjectSourceID");
+                    assetBulkCopy.ColumnMappings.Add("ObjectSourceID", "ObjectSourceID");
+                    assetBulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
+
+                    assetBulkCopy.WriteToServer(relationTable);
+
+                    cnn.Execute($@"
+merge into  [integration].[ExecutionRelationItem] T
+using       (
+            select      ExecutionID,
+                        IntersectTypeID,
+                        SubjectSourceID,
+                        ObjectSourceID
+            from        #IntegrationRelationTable
+            ) S
+on          (
+                S.ExecutionID = T.ExecutionID and 
+                S.IntersectTypeID = T.IntersectTypeID and 
+                S.SubjectSourceID = T.SubjectSourceID and 
+                S.ObjectSourceID = T.ObjectSourceID
+            )
+when not matched by target then
+    insert  (ExecutionID, IntersectTypeID, SubjectSourceID, ObjectSourceID)
+    values  (S.ExecutionID, S.IntersectTypeID, S.SubjectSourceID, S.ObjectSourceID);",
+    transaction: trans, commandTimeout: 1200);
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
+        }
+
 
         public static void ProcessUnresolvedRelationships(this SqlConnection cnn)
         {

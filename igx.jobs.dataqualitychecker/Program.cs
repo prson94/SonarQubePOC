@@ -25,7 +25,7 @@ namespace igx.jobs.dataqualitychecker
         {
             try
             {
-                CoreFunction.AITrackJobStart(functionName);
+                //CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
                 companies.ForEach(c =>
@@ -83,7 +83,7 @@ namespace igx.jobs.dataqualitychecker
                     }
                 });
 
-                CoreFunction.AITrackJobCompletedNoErrors(functionName);
+                //CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
             catch (Exception ex)
             {

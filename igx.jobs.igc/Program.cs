@@ -83,7 +83,7 @@ namespace igx.jobs
                             if (settings.Count > 0)
                             {
 #if DEBUG
-                                var IDs = new List<int>() { 1 };
+                                var IDs = new List<int>() { 46, 47, 48 };
                                 mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
 #else
                                 mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
@@ -96,11 +96,7 @@ namespace igx.jobs
 
                             foreach (var setting in settings)
                             {
-                                bool globalCheckForChangesOnly = true; // TRUE = POST to IGC API
                                 var now = DateTime.UtcNow;
-                                globalCheckForChangesOnly = (setting.LastRefreshOn.HasValue) ? 
-                                    (setting.LastRefreshOn.Value > DateTime.UtcNow.AddHours(-setting.RefreshInterval)) : 
-                                    false;
 
                                 if (mappings.Any(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID && i.ObjectID.HasValue))
                                 {
@@ -114,6 +110,15 @@ where		T.CompletedOn is null
 			and T.IsFullRefresh = 1
 group by	T.SynchedAssetTypeID
 order by	T.SynchedAssetTypeID").ToList();
+
+                                    var lastFullRefreshModels = company.Query<LastFullRefreshModel>(@"
+select	A.ID,
+		coalesce(max(E.StartedOn), '1/1/1970') as StartedOn
+from	[integration].[SynchedAssetType] A
+		left join [integration].[ExecutionAssetType] E on E.SynchedAssetTypeID = A.ID and A.IntegrationSettingID = @s and A.Active = 1 and E.IsFullRefresh = 1 and E.CompletedOn is not null
+group by A.ID
+order by A.ID
+", new {s = setting.ID }).ToList();
 
                                     IntegrationExecution newExecution = null;
 
@@ -133,7 +138,7 @@ order by	T.SynchedAssetTypeID").ToList();
                                                 company.Add(newExecution);
                                             }
 
-                                            newAtExecution = new IntegrationExecutionAssetType { StartedOn = DateTime.Now, SynchedAssetTypeID = item.ID, ExecutionID = newExecution.ID };
+                                            newAtExecution = new IntegrationExecutionAssetType { StartedOn = now, SynchedAssetTypeID = item.ID, ExecutionID = newExecution.ID };
                                             company.Add(newAtExecution);
                                         }
                                         else
@@ -143,13 +148,43 @@ order by	T.SynchedAssetTypeID").ToList();
                                                     f.ExecutionID == failedFullRefreshExecution.ExecutionID &&
                                                     f.SynchedAssetTypeID == failedFullRefreshExecution.SynchedAssetTypeID
                                                 ).Single();
+                                            now = previousAtExecution.StartedOn; //Start off from the last marked date.
                                         }
 
-                                        var mappingCheckForChangesOnly = globalCheckForChangesOnly;
-                                        if (mappingCheckForChangesOnly)
+                                        #region Figure out if we should perform a DELTA or a FULL REFRESH
+
+                                        var performDelta = true;
+
+                                        if (item.AllowChangeDetection)
                                         {
-                                            mappingCheckForChangesOnly = item.AllowChangeDetection; // Final check to see if we even allow for DELTA checking on this asset type.
+                                            // Continue to check if we should perform delta.
+                                            
+                                            if (currentCount > 0)
+                                            {
+                                                // If > 0, that means that the last full refresh did not successfully complete. 
+                                                // Do not check for changes, do a full refresh again, starting where you left off.
+                                                performDelta = false;
+                                            }
+                                            else
+                                            {
+                                                // Get the start date of the last full refresh.
+                                                var lastFullRefreshModel = lastFullRefreshModels.Single(i => i.ID == item.ID);
+
+                                                var refreshInterval = (item.RefreshIntervalOverride.HasValue) ?
+                                                    item.RefreshIntervalOverride.Value :
+                                                    setting.RefreshInterval;
+
+                                                // If last refresh+interval > current time, then perform a delta instead, as you have not surpassed the refresh interval.
+                                                performDelta = (lastFullRefreshModel.StartedOn.AddHours(refreshInterval) > DateTime.UtcNow); 
+                                            }
                                         }
+                                        else
+                                        {
+                                            // Delta checking not even allowed.
+                                            performDelta = false;
+                                        }
+
+                                        #endregion
 
                                         var fields = mappingFields.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
                                         var relations = mappingRelations.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
@@ -159,18 +194,12 @@ order by	T.SynchedAssetTypeID").ToList();
 
                                         var success = false;
 
-                                        // If > 0, that means that the last full refresh did not successfully complete. Do not check for changes, do a full refresh again, starting where you left off.
-                                        if (currentCount > 0)
-                                        {
-                                            mappingCheckForChangesOnly = false;
-                                        }
-
                                         switch (setting.IntegrationSystem)
                                         {
                                             case d360.core.enums.IntegrationSystem.IGC:
                                                 success = IGC_LoadAssetsByMappingType(
                                                     setting,
-                                                    mappingCheckForChangesOnly,
+                                                    performDelta,
                                                     now,
                                                     previousAtExecution ?? newAtExecution,
                                                     item,
@@ -188,7 +217,7 @@ order by	T.SynchedAssetTypeID").ToList();
                                         {
                                             if (newAtExecution != null)
                                             {
-                                                var newExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == newAtExecution.ExecutionID);
+                                                var newExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == newAtExecution.ExecutionID && i.SynchedAssetTypeID == newAtExecution.SynchedAssetTypeID);
                                                 if (newExecutionAssetCount == newAtExecution.CurrentSourceAssetCount)
                                                 {
                                                     newAtExecution.CompletedOn = DateTime.UtcNow;
@@ -199,7 +228,7 @@ order by	T.SynchedAssetTypeID").ToList();
                                             {
                                                 if (previousAtExecution != null)
                                                 {
-                                                    var previousExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == previousAtExecution.ExecutionID);
+                                                    var previousExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == previousAtExecution.ExecutionID && i.SynchedAssetTypeID == previousAtExecution.SynchedAssetTypeID);
                                                     if (previousExecutionAssetCount == previousAtExecution.CurrentSourceAssetCount)
                                                     {
                                                         previousAtExecution.CompletedOn = DateTime.UtcNow;
@@ -207,8 +236,6 @@ order by	T.SynchedAssetTypeID").ToList();
                                                     }
                                                 }
                                             }
-
-                                            item.LastSuccessfulCount = null;
                                             company.Update(item);
                                         }
                                     }
@@ -218,13 +245,6 @@ order by	T.SynchedAssetTypeID").ToList();
                                         newExecution.CompletedOn = DateTime.UtcNow;
                                         company.Update(newExecution);
                                     }
-                                }
-
-                                if (!globalCheckForChangesOnly)
-                                {
-                                    //Update the RefreshedOn property on the setting record, as we just did a full refresh.
-                                    setting.LastRefreshOn = now;
-                                    company.Update(setting);
                                 }
                             }
 
@@ -865,11 +885,6 @@ order by	T.SynchedAssetTypeID").ToList();
 
                     execution.IsFullRefresh = !checkForChangesOnly;
 
-                    if (mapping.LastSuccessfulCount.HasValue)
-                    {
-                        postModel.begin = mapping.LastSuccessfulCount.Value + 1;
-                    }
-
                     var shouldContinue = true;
                     while (shouldContinue)
                     {
@@ -897,25 +912,16 @@ order by	T.SynchedAssetTypeID").ToList();
                                 parse(models.items, false, executionAssets);
                                 cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
 
+                                var executionRelationItems = relationships.Select(i => new IntegrationExecutionRelationItem { ExecutionID = execution.ExecutionID, IntersectTypeID = i.IntersectTypeID, SubjectSourceID = i.SubjectSourceID, ObjectSourceID = i.ObjectSourceID }).ToList();
+                                cnn.BulkExecutionRelationItemLoad(setting.TargetResourceID, executionRelationItems);
+
                                 // Should we do this again, since we have not completed the paged dataset.
                                 shouldContinue = (models.paging.numTotal > models.paging.end + 1);
                                 postModel.begin = models.paging.end + 1;
 
                                 //if (assets.Count > 4999)
                                 //{
-                                if (SendIncrementalSetToGovern(client, cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel))
-                                {
-                                    mapping.LastSynchOn = currentParsedUnvalidatedDate;
-                                    mapping.LastSuccessfulCount += assets.Count; //This line must be called before the array is re-initialized.
-                                    try
-                                    {
-                                        company.Update(mapping);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        CoreFunction.AITrackException(functionName, ex);
-                                    }
-                                }
+                                SendIncrementalSetToGovern(client, cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
 
                                 // Re-initialize.
                                 assets = new BulkAssetImport();
@@ -933,63 +939,6 @@ order by	T.SynchedAssetTypeID").ToList();
                         }
                     }
 
-                    #region Old GET Code - Keep for now
-                    //    //Perform search using GET method.
-
-                    //    // Add the properties we are after for this IGC type.
-                    //    url += $"?pageSize=500&types={mapping.SourceAssetTypeName}";
-                    //    url += string.Concat(fields.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
-                    //    url += string.Concat(relations.Where(i => i.IncludeInPropertyRequest).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceField)}"));
-                    //    url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceIdField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceIdField)}"));
-                    //    url += string.Concat(roles.Where(i => i.IncludeInPropertyRequest).Where(i => !string.IsNullOrEmpty(i.SourceNameField)).Select(i => $"&properties={WebUtility.UrlEncode(i.SourceNameField)}"));
-
-                    //    if (mapping.LastSuccessfulCount.HasValue)
-                    //    {
-                    //        url += $"&begin={mapping.LastSuccessfulCount.Value + 1}";
-                    //    }
-
-                    //    while (!string.IsNullOrEmpty(url))
-                    //    {
-                    //        try
-                    //        {
-                    //            var models = GetFromApi<IgcDynamicArrayModels>(client, url, sourceAuthString).Result;
-                    //            if (models != null)
-                    //            {
-                    //                parse(models.items);
-                    //                url = models.paging.next;
-
-                    //                if (arr.Count > 4999)
-                    //                {
-                    //                    SendIncrementalSetToGovern(client, company, companyID, mapping, arr, relationships, ownershipTopModel, targetBaseUri, targetAuthString);
-                    //                    mapping.LastSuccessfulCount += arr.Count;//This line must be called before the array is re-initialized.
-
-                    //                    try
-                    //                    {
-                    //                        //company.OpenWithRetry(RetryPolicy.DefaultFixed);
-                    //                        company.Execute("update integration.SynchedAssetType set LastSynchOn = null, LastSuccessfulCount = @cnt where ID = @id", new { id = mapping.ID, cnt = mapping.LastSuccessfulCount });
-                    //                        //company.Close();
-                    //                    }
-                    //                    catch (Exception ex)
-                    //                    {
-                    //                        CoreFunction.AITrackException(functionName, ex);
-                    //                    }
-
-                    //                    // Re-initialize.
-                    //                    arr = new BulkAssetImport();// JArray();
-                    //                    relationships = new BulkRelationshipImport();
-                    //                    ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-                    //                }
-                    //            }
-                    //        }
-                    //        catch (Exception ex)
-                    //        {
-                    //            CoreFunction.AITrackException(functionName, ex);
-                    //            url = null;
-                    //            success = false;
-                    //        }
-                    //    }
-                    #endregion
-
                     if (assets.Count > 0)
                     {
                         success = SendIncrementalSetToGovern(client, cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
@@ -1001,8 +950,7 @@ order by	T.SynchedAssetTypeID").ToList();
 
                     if (success)
                     {
-                        mapping.LastSuccessfulCount = null;
-                        mapping.LastSynchOn = currentParsedUnvalidatedDate ?? now;
+                        mapping.LastSynchOn = now;
                     }
                 }
                 catch (Exception oex)
