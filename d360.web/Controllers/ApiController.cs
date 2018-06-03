@@ -2732,6 +2732,7 @@ order by    rnk, [Name]";
                             c.datafieldtype = "number";
                             break;
                         case "Html":
+                        case "Link":
                             c.datafieldtype = "html";
                             break;
                     }
