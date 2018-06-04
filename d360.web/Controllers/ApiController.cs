@@ -2781,21 +2781,21 @@ order by    rnk, [Name]";
                         var fc = new ComplexColumnModel
                         {
                             DisplayColumn = (ft.Type == "Boolean") ?
-$@"case 
+getFieldTypeColumnString(ft.Type, $@"case 
     when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then lower({tbtPrefix}.AllowAllLabel) 
     when {tbPrefix}.Value is not null then lower({tbPrefix}.FormattedValue)
     when {tbtPrefix}.DefaultValue is not null then lower({tbtPrefix}.DefaultFormattedValue) 
-    else '' 
-end" :
-$@"case 
+    else null 
+end") :
+getFieldTypeColumnString(ft.Type, $@"case 
     when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then {tbtPrefix}.AllowAllLabel 
     when {tbPrefix}.Value is not null then {tbPrefix}.FormattedValue 
     when {tbtPrefix}.DefaultValue is not null then {tbtPrefix}.DefaultFormattedValue 
-    else '' 
-end",
+    else null 
+end"),
                             text = i.OverrideDisplayName ?? ft.FriendlyName,
                             datafield = $"{dataField}",
-                            SortColumn = ft.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"{tbPrefix}.FormattedValue") : string.Empty,
+                            SortColumn = i.SortOrder > 0 ? dataField : "",
                             OutputColumn = true,
                             Width = i.Width
                         };
@@ -3514,7 +3514,7 @@ end",
                 if (!string.IsNullOrEmpty(whereQuery)) whereQuery = " where " + whereQuery;
                 sqlQuery += whereQuery + " ";
 
-                var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && i.SortOrder > 0 && !string.IsNullOrEmpty(i.SortColumn)).OrderBy(i => i.SortOrder).Select(i => i.SortColumn));
+                var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && i.SortOrder > 0 && !string.IsNullOrEmpty(i.SortColumn)).OrderBy(i => i.SortOrder).Select(i => $"[{i.SortColumn}]"));
                 if (!string.IsNullOrEmpty(orderQuery)) orderQuery = " order by " + orderQuery;
                 sqlQuery += orderQuery;
 
