@@ -250,6 +250,10 @@ export class FusionRuleItem {
     ObjectType: string;
 }
 
+export class FusionRuleMappingModel {
+    Items: FusionRuleMapping[] = [];
+    UnMappedKeyColumns: string[] = [];
+}
 export class FusionRuleMapping {
     ID: number;
     SourceFieldTypeID: number;

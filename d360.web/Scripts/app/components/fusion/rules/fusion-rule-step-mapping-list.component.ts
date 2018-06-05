@@ -14,6 +14,9 @@ declare var CompanySettings;
     <div *ngIf="!isLoading">
         <header>Mappings for selected step<d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
         <input [hidden]="!showSimpleFilter" #gbRuleMappings type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+        <div *ngIf="UnMappedKeyColumns && UnMappedKeyColumns.length >0" class="red-text left"  style="font-weight:bold">
+                <span>**Warning: All key fields not mapped < </span><span *ngFor="let c of UnMappedKeyColumns;let first=first;let last=last;">{{c}}<i *ngIf="!last">,</i><i *ngIf="last">></i></span>
+        </div>
         <p-dataTable #dtRuleMappings [globalFilter]="gbRuleMappings" [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
             <p-footer *ngIf="dtRuleMappings.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleMappings.totalRecords" [first]="dtRuleMappings.first" [rows]="dtRuleMappings.rows"></d3s-grid-paging-info></p-footer>
             <p-column header="Source" field="SourceFieldName" [filter]="!showSimpleFilter"></p-column>
@@ -42,7 +45,7 @@ export class FusionRuleStepMappingListComponent extends BaseComponent implements
     @Output() onDeleteClick = new EventEmitter();
 
     values: FusionRuleMapping[];
-
+    UnMappedKeyColumns: string[]=[];
 
     constructor(private fusionService: FusionService, private messagesService: MessagesService) {
         super();
@@ -61,16 +64,17 @@ export class FusionRuleStepMappingListComponent extends BaseComponent implements
         this.isLoading = true;
         this.fusionService.getFusionRuleStepMappings(this.fusionRuleStep.ID)
             .then(r => {
-
+                
                 //update Source/Target subject area fields with company settings value
-                r.filter(i => i.TargetFieldName == "TaxonomyTypeID").forEach(i => {
+                r.Items.filter(i => i.TargetFieldName == "TaxonomyTypeID").forEach(i => {
                     i.TargetFieldName = (CompanySettings.ArtifactType_TaxonomyTypeID || "Subject Area");
                 });
-                r.filter(i => i.SourceFieldName == "TaxonomyTypeID").forEach(i => {
+                r.Items.filter(i => i.SourceFieldName == "TaxonomyTypeID").forEach(i => {
                     i.SourceFieldName = (CompanySettings.ArtifactType_TaxonomyTypeID || "Subject Area");
                 });
-
-                this.values = r;
+                
+                this.UnMappedKeyColumns = r.UnMappedKeyColumns;
+                this.values = r.Items;
                 if (this.values.length > 0) {
                     if (this.selection == null || this.values.findIndex(v => v.ID == this.selection.ID) < 0)
                         this.selectionChange.emit(this.values[0]);

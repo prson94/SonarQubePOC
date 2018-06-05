@@ -1642,9 +1642,25 @@ order by 'Name'";
         [Route("fusion/{id:int}/FusionRuleStepMappings")]
         public HttpResponseMessage GetFusionRuleMappings(int id)
         {
+            var rulestep = Company.GetById<FusionRuleStep>(id);
+            IEnumerable<string> unMappedColumns = new List<string>();
+            if (rulestep.Action.ToUpper() == "PROMOTE")
+            {
+                var rulesetting = rulestep.FusionRuleStepSettings;
+                var obj = rulestep.GetSettingValueByName("Object");
+                 unMappedColumns = Company.Query<string>(QueryConstants.FusionRuleUnmappedKeyColumnList,
+                    new
+                    {
+                        obj = rulestep.GetSettingValueByName("Object"),
+                        objId = Convert.ToInt32(rulestep.GetSettingValueByName("ObjectID")),
+                        ruleStepId = id
+                    });
+            }
+
+           
             return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Query<dynamic>(QueryConstants.FusionRuleMappingList, new { id })
+                HttpStatusCode.OK, new {Items = Company.Query<dynamic>(QueryConstants.FusionRuleMappingList, new { id }), UnMappedKeyColumns = unMappedColumns }
+               
             );
         }
 

@@ -407,6 +407,13 @@ from	[fusion].[RuleItem] I
 where   I.RuleID = @id
         ";
 
+        public static string FusionRuleUnmappedKeyColumnList = @"
+Select Name from fieldtype ft 
+where ft.object=@obj 
+and ft.objectid=@objId and ft.ispartofkey=1
+and  not exists (select	* from	[fusion].[RuleStepMapping] I where   I.RuleStepID =@ruleStepId and TargetFieldTypeId=ft.id)";
+
+
         public static string FusionRuleMappingList = @"
 select	I.ID,
         RS.RuleID,

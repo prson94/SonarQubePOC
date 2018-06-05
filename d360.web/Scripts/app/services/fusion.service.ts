@@ -40,6 +40,7 @@ import {
     RelationIntersectType,
     RuleStepPromotionHistoryModel,
     FusionExecutionResultPaged,
+    FusionRuleMappingModel
 } from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/components/common/api';
 import { GridColumn } from '../models/grid-definition.model';
@@ -347,10 +348,10 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getFusionRuleStepMappings(id: number): Promise<FusionRuleMapping[]> {
-        return this.http.get(`api/fusion/${id}/FusionRuleStepMappings`)
+    getFusionRuleStepMappings(id: number): Promise<FusionRuleMappingModel> {
+                return this.http.get(`api/fusion/${id}/FusionRuleStepMappings`)
             .toPromise()
-            .then(response => <FusionRuleMapping[]>response.json())
+            .then(response => <FusionRuleMappingModel>response.json())
             .catch(err => this.handleError(err));
     }
 
