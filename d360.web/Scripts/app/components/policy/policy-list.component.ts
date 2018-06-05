@@ -31,7 +31,7 @@ import * as _ from 'lodash';
                                 </p-column>                                                                                                                                                        
                                 <p-column field="Description" header="Description" sortable="true" [filter]="!showSimpleFilter">
                                     <ng-template let-col let-data="rowData" pTemplate type="body">
-                                        <span [innerHtml]="data?.Description"></span>
+                                        <span *ngIf="data.Description" [innerHtml]="data?.Description"></span>
                                     </ng-template>                                                        
                                 </p-column>                              
                             </p-dataTable>      
