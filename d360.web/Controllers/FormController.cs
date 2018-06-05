@@ -2999,7 +2999,7 @@ namespace d360.web.Controllers
                             WHERE   v.ParentID = @parentId
                             ORDER BY v.SortOrder";
 
-            var items = Company.Query<SiteNav>(sql, new { parentId = id });
+            IList<SiteNav> items = Company.Query<SiteNav>(sql, new { parentId = id }).ToList();
             var maxSortOrderVal = items.Max(p => p.SortOrder);
             maxSortOrderVal = maxSortOrderVal == null ? 0 : maxSortOrderVal;
             foreach (SiteNav i in items)
