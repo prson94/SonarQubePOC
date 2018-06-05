@@ -2795,24 +2795,30 @@ order by    rnk, [Name]";
                         var fc = new ComplexColumnModel
                         {
                             DisplayColumn = (ft.Type == "Boolean") ?
-getFieldTypeColumnString(ft.Type, $@"case 
+ $@"case 
     when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then lower({tbtPrefix}.AllowAllLabel) 
     when {tbPrefix}.Value is not null then lower({tbPrefix}.FormattedValue)
     when {tbtPrefix}.DefaultValue is not null then lower({tbtPrefix}.DefaultFormattedValue) 
-    else null 
-end") :
-getFieldTypeColumnString(ft.Type, $@"case 
+    else '' 
+end" :
+ $@"case 
     when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then {tbtPrefix}.AllowAllLabel 
     when {tbPrefix}.Value is not null then {tbPrefix}.FormattedValue 
     when {tbtPrefix}.DefaultValue is not null then {tbtPrefix}.DefaultFormattedValue 
-    else null 
-end"),
+    else '' 
+end",
                             text = i.OverrideDisplayName ?? ft.FriendlyName,
                             datafield = $"{dataField}",
-                            SortColumn = i.SortOrder > 0 ? dataField : "",
                             OutputColumn = true,
                             Width = i.Width
                         };
+
+                        if (i.SortOrder > 0)
+                        {
+                            var columnValue = getFieldTypeColumnString(ft.Type, fc.DisplayColumn);
+                            fc.SortColumn = columnValue == fc.DisplayColumn ? "" : columnValue;
+                        }
+
                         setColumnTypeInfo(ft, i, fc);
 
 
@@ -3518,6 +3524,8 @@ end",
                 }
 
                 var sqlQuery = "select distinct " + string.Join(", ", columnModels.Where(i => i.DisplayOrder > 0).OrderBy(i => i.DisplayOrder).Select(i => $"{i.DisplayColumn} as [{i.datafield}]")) + " ";
+                if (columnModels.Any(i => i.SortOrder.HasValue && i.SortOrder > 0 && !string.IsNullOrEmpty(i.SortColumn)))
+                    sqlQuery += ", " + string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && i.SortOrder > 0 && !string.IsNullOrEmpty(i.SortColumn)).Select(i => $"{i.SortColumn} as [Sort_{i.datafield}]")) + " ";
                 sqlQuery += string.Join(" ", def.Relations.Select(i => i.JoinStatement)) + " ";
 
                 var whereQuery = string.Join(" AND ", def.Relations.Where(i => !string.IsNullOrEmpty(i.WhereStatement)).Select(i => i.WhereStatement));
@@ -3528,7 +3536,7 @@ end",
                 if (!string.IsNullOrEmpty(whereQuery)) whereQuery = " where " + whereQuery;
                 sqlQuery += whereQuery + " ";
 
-                var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && i.SortOrder > 0 && !string.IsNullOrEmpty(i.SortColumn)).OrderBy(i => i.SortOrder).Select(i => $"[{i.SortColumn}]"));
+                var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && i.SortOrder > 0).OrderBy(i => i.SortOrder).Select(i => string.IsNullOrEmpty(i.SortColumn) ? $"[{i.datafield}]" : $"[Sort_{i.datafield}]"));
                 if (!string.IsNullOrEmpty(orderQuery)) orderQuery = " order by " + orderQuery;
                 sqlQuery += orderQuery;
 
