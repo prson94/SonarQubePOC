@@ -753,7 +753,9 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
 		                            ) SF on SF.AssetID = A.ID" : "";
 
                 if (parentIntersectType != null)
-                {                    
+                {   
+                    var joinInfo = fieldFromRelationshipAssets.Any() ? "" : " ) SF on SF.AssetID = A.ID ";
+                    
                     filterJoinList.Add($@"
                         inner join (
 		                            select	AssetID
@@ -762,7 +764,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
 		                            where	FieldTypeID in ({simpleFilterIDs})				                            
                                             and (FormattedValue like @simpleFilter OR Value = @allValuesFilter OR PID.ParentDisplayValue like @simpleFilter)
                                     group by AssetID
-		                            ) SF on SF.AssetID = A.ID 
+		                            {joinInfo} 
                                    {fieldFromRelationshipAssets}");
                 }
                 else
