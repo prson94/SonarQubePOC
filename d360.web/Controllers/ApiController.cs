@@ -1644,10 +1644,8 @@ order by 'Name'";
         {
             var rulestep = Company.GetById<FusionRuleStep>(id);
             IEnumerable<string> unMappedColumns = new List<string>();
-            if (rulestep.Action.ToUpper() == "PROMOTE")
+            if (rulestep?.Action.ToUpper() == "PROMOTE")
             {
-                var rulesetting = rulestep.FusionRuleStepSettings;
-                var obj = rulestep.GetSettingValueByName("Object");
                  unMappedColumns = Company.Query<string>(QueryConstants.FusionRuleUnmappedKeyColumnList,
                     new
                     {
