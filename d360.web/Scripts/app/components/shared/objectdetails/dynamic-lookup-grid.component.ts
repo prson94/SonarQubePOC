@@ -37,8 +37,8 @@ import { BaseComponent } from '../base.component';
                                                     <a (click)="navigate(item[column.urlfield])" [innerText]="item[column.datafield]"></a>
                                                 </d3s-preview-tooltip>
                                             </span>
-                                            <span *ngSwitchCase="'html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield] || ''"></span>
-                                            <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" [innerText]="item[column.datafield] || ''"></span>
+                                            <span *ngSwitchCase="'html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
+                                            <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" [innerText]="item[column.datafield]"></span>
                                         </div>
                              </ng-template>
                         </p-column>                                                                                         
@@ -74,7 +74,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
                     v[c.datafield] = this.formatAsNumber(v[c.datafield]);
                 });
             }
-            if (c.type == 'string' || c.type == 'preview' || c.type == 'lookup') {
+            if (c.type == 'string' || c.type == 'preview' || c.type == 'lookup' || c.type=='html') {
                 this.data.Values.forEach(v => {
                     if (v[c.datafield] === null) {
                         v[c.datafield] = ''; //prevent IE from displaying 'null'
