@@ -874,6 +874,7 @@ from	(
 						AST.ObjectID as TypeID,
                         {parentSqlColumn}
 						FT.ID as FieldTypeID,
+                        {editRightsColumnStatement}
 						case 
 							when FT.AllowAllValue = 1 and F_O.Value = '0' then FT.AllowAllLabel 
                             when F_O.Value is not null then F_O.FormattedValue
@@ -881,9 +882,7 @@ from	(
 							{relationshipCaseStatement}
 							{fieldFromRelationshipCaseStatement}
 							else '' 
-						end as [Field],
-						{editRightsColumnStatement}
-						dbo.GenerateObjectUrl('Artifact', AST.ObjectID, A.ObjectID) as Url
+						end as [Field]											
 				from	Asset A{tableHints}
                         {parentSqlJoin} 
                         inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
