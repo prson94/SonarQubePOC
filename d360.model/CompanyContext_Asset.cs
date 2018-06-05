@@ -845,7 +845,7 @@ from	Asset A{tableHints}
         {filterJoinString}         
 where	A.AssetTypeID = @atID
 		and A.State = 1
-        and A.ID not in (select AssetID from cache.NoRead where ResourceID = @r)
+        and not exists (select 1 from cache.NoRead where ResourceID = @r and AssetID = A.ID)
         {filterWhereString}
 OPTION (RECOMPILE)";
 
