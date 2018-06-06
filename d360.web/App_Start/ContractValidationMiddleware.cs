@@ -108,7 +108,23 @@ namespace d360.web
 
             var str = cache.GetItemInListByID<string, int>("Company_ConnectionStrings", companyId);
             if (str == null)
-                return null;
+            {
+                using (var comm = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+                {
+                    try
+                    {
+                        var res = comm.Query<string>(@"select 'server=' + s.Server + ';Database=D3S_' + cast(@companyId as varchar) + ';User ID=' + s.Username + ';Password='+ s.Password + ';MultipleActiveResultSets=True;' from Company c
+                                inner join DatabaseServer s on s.ID = c.DatabaseServerID 
+                                where c.ID = @companyId", new { companyId }).FirstOrDefault();
+                        return new SqlConnection(res);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+
+                }
+            }
             else
                 return new SqlConnection(str);
         }
