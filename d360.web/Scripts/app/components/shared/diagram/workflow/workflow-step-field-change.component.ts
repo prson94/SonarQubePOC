@@ -320,6 +320,13 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     cancel() {
+        
+        let field = _.cloneDeep(this.selectedField);
+        let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
+        if (fieldTypeIndex > -1) {
+            this.usedFields.push(this.fields[fieldTypeIndex]);
+            this.fields.splice(fieldTypeIndex, 1);
+        }
         this.selectedField = null;
         this.formMode = FormMode.Default;
         this.valueType = null;

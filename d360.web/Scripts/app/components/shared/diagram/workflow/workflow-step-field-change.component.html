@@ -1,6 +1,6 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <div class="row">
+    <div class="row" *ngIf="formMode != FormMode.Adding && formMode != FormMode.Editing">
         <div class="col s12">
             <header>
                 &nbsp; <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>

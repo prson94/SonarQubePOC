@@ -26,6 +26,7 @@
             </div>
         </div>
     </div>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <ng-container *ngIf="step.settings != null">
         <ng-container [ngSwitch]="step.activityType">
             <!--EMAIL NOTIFICATION-->
@@ -61,7 +62,7 @@
                 </div>
                 <div class="col s6">
                     <div class="FieldName">
-                        Subject 
+                        Subject
                     </div>
                     <div>
                         {{step.settings['MessageSubjectTemplate']}}
@@ -226,7 +227,7 @@
             </div>
             <!--RELATIONSHIP UPDATE-->
             <div *ngSwitchCase="WorkflowActivityType.RelationshipUpdate" class="row">
- 
+
             </div>
             <!--STATE CHANGE-->
             <div *ngSwitchCase="WorkflowActivityType.StateChange" class="row">
