@@ -701,7 +701,7 @@ namespace d360.web.Models
 
         public bool IsUsingActiveDirectory { get; set; }
 
-        [Display(Name = "Title")]
+        [Display(Name = "Job Title")]
         public string Title { get; set; }
     }
 
