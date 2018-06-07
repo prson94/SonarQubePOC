@@ -32,7 +32,7 @@ namespace d360.model
         private string wildcardValue(string value)
         {
             if (value.Contains("*") || value.Contains("?"))
-                return value.Replace("*", "%").Replace("?", "_");
+                return value.Replace("*", "%").Replace("?", "_") + "%";
             else
                 return value += "%";
         }
