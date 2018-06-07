@@ -413,7 +413,7 @@ from	plugin.FusionAttributeType A
 	    ON      (T.Object = 'FusionType' and S.FusionTypeID = T.ObjectID and S.Name = T.Name)
     WHEN NOT MATCHED THEN
 	    INSERT  (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable, IsDisplayable, IsEditable, Category)
-	    VALUES  (S.Name, S.FriendlyName, S.[Type], 'FusionType', S.FusionTypeID, S.SortOrder, 1, S.IsListable, 1, 0, S.Category);", transaction: trans);
+	    VALUES  (S.Name, S.FriendlyName, S.[Type], 'FusionType', S.FusionTypeID, S.SortOrder, 1, S.IsListable, 1, 1, S.Category);", transaction: trans);
 
                                 #endregion
 
