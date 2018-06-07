@@ -7700,8 +7700,7 @@ from	    TaxonomyType FAT
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
-	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)
-	                                inner join [reporting].global_resource gr on (wi.startedby = gr.resourceid)	                                
+	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
 	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
 	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
