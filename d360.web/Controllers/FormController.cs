@@ -1395,6 +1395,7 @@ namespace d360.web.Controllers
                         var parents = Company.Query<PrimeSelectItem>("select ObjectID as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
                         model.Parents = parents;
                     }
+                    model.Parents?.Insert(0, new PrimeSelectItem() { label = "", value = "" });
                 }
 
                 return new JsonNetResult
