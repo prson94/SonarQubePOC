@@ -356,7 +356,8 @@ export class WorkflowService extends BaseService {
     }
 
     exportVersionStepHistory(id: number, filteredObject: string = null, filteredObjectId: number = null) {
-        let uri = 'services/workflow/versionstep/history/${id}/excel.xls';
+        
+        let uri = `services/workflow/versionstep/history/${id}/excel.xls`;
 
         if (filteredObject != null && filteredObjectId != null) {
             uri += `?filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
