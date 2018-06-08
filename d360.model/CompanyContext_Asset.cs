@@ -809,7 +809,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                     selectFields
                         .Where(i => i.SortOrder != 0)
                         .OrderBy(i => i.SortOrder)
-                        .Select(i => (useFieldNames ? $"[{i.Name}] asc" : $"[Field{i.ID}] asc"))
+                        .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i.Type) : GetFieldTypeSort($"Field{i.ID}", true, i.Type)))
                 );
 
                 if (string.IsNullOrEmpty(orderFieldString))
@@ -819,7 +819,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                         selectFields
                             .Where(i => i.IsPartOfKey)
                             .OrderBy(i => i.ColumnOrder)
-                            .Select(i => (useFieldNames ? $"[{i.Name}] asc" : $"[Field{i.ID}] asc"))
+                            .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i.Type) : GetFieldTypeSort($"Field{i.ID}", true, i.Type)))
                     );
                 }
             }
@@ -830,11 +830,14 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                     selectFields.SingleOrDefault(i => sortField == $"Field{i.ID}");
                 if (sortFieldType != null)
                 {
-                    orderFieldString = useFieldNames ? $"[{sortFieldType.Name}] {sortOrder}" : $"[Field{sortFieldType.ID}] {sortOrder}";
+                    orderFieldString = useFieldNames ? GetFieldTypeSort(sortFieldType.Name, (sortOrder ??"").ToUpper() == "ASC" , sortFieldType.Type) : GetFieldTypeSort($"{sortFieldType.ID}", (sortOrder ?? "").ToUpper() == "ASC", sortFieldType.Type);
                 }
                 else if(string.Compare(sortField,"PARENT",true) == 0)
                 {
-                    orderFieldString = $"Parent {sortOrder}";
+                    orderFieldString = $"Parent ";
+
+                    // you cant trust the user must validate its asc or desc
+                    orderFieldString += ((sortOrder ?? "").ToUpper() == "ASC" ? "ASC" : "DESC");
                 }
             }
 
@@ -906,6 +909,18 @@ OPTION (RECOMPILE)";
             return Query<dynamic>(sql, dbArgs);
             //var items = ExecuteQuery<dynamic>(sql, queryParameters);
             //Dapper.SqlMapper.Parse()
+        }
+
+        private string GetFieldTypeSort(string fieldName, bool ascending, string datatype)
+        {
+            if ((datatype ?? "").ToUpper() == "NUMBER")
+                return " CAST( [" + fieldName + "] AS bigint) " + (ascending ? "ASC" : "DESC");
+            else if ((datatype ?? "").ToUpper() == "DATE")
+                return " CAST( [" + fieldName + "] AS date) " + (ascending ? "ASC" : "DESC");
+            else if ((datatype ?? "").ToUpper() == "DECIMAL")
+                return " CAST( [" + fieldName + "] AS DECIMAL(18, 4)) " + (ascending ? "ASC" : "DESC");
+
+            return " [" + fieldName + "] " + (ascending ? "ASC" : "DESC"); ;
         }
 
         private string GetFilterCondition(string condition, string fieldName, string bind, DynamicParameters dbArgs, string value)
