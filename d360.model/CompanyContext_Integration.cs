@@ -43,9 +43,9 @@ namespace d360.model
 
         #region Engine Methods
 
-        public void ProcessUnresolvedRelationships()
+        public IEnumerable<dynamic> ProcessUnresolvedRelationships()
         {
-            Database.Connection.Execute(@"exec integration.ProcessUnresolvedRelationships", commandTimeout: 1200);
+            return Database.Connection.Query<dynamic>(@"exec integration.ProcessUnresolvedRelationships", commandTimeout: 1200);
         }
 
         public void ProcessIntegrationAssetDeletions()
