@@ -20,6 +20,7 @@ import { AdminCustomAPIEndpointDetailComponent } from './admin-customapi-endpoin
 import { AdminCustomAPIEndpointVersionsComponent } from './admin-customapi-endpoint-version.component';
 import { AdminCustomAPIEndpointVersionFieldsComponent } from './admin-customapi-endpoint-version-fields.component';
 import { AdminCustomAPIEndpointVersionUriTypesComponent } from './admin-customapi-endpoint-version-uris.component';
+import { AdminCustomAPIServiceNamespaceComponent } from './admin-customapi-service-namespace.component';
 
 import { AdminCustomAPIRoutingModule } from './admin-customapi.routes';
 
@@ -58,6 +59,7 @@ import {
         AdminCustomAPIEndpointVersionsComponent,
         AdminCustomAPIEndpointVersionFieldsComponent,
         AdminCustomAPIEndpointVersionUriTypesComponent,
+        AdminCustomAPIServiceNamespaceComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

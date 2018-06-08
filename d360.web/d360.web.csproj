@@ -1050,6 +1050,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />

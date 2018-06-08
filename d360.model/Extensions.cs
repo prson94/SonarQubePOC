@@ -2331,17 +2331,22 @@ namespace d360.model
         /// Converts the specified dynamic object to XML.
         /// </summary>
         /// <param name="dynamicObject">The dynamic object.</param>
-        /// /// <param name="element">The element name.</param>
+        /// <param name="element">The element name.</param>
+        /// <param name="namespaces">An optional dictionary of available namespaces</param>
+        /// <param name="parent">An optional parent XElement to inherit a namespace from if none is directly applied</param>
         /// <returns>Returns an Xml representation of the dynamic object.</returns>
-        public static XElement ConvertToXml(dynamic dynamicObject, string element)
+        public static XElement ConvertToXml(dynamic dynamicObject, string element, Dictionary<string,string> namespaces = null, XElement parent = null)
         {
+            if (namespaces == null)
+                namespaces = new Dictionary<string, string>();
+
             if (String.IsNullOrWhiteSpace(element))
             {
                 element = "object";
             }
 
             element = XmlConvert.EncodeName(element);
-            var ret = new XElement(element);
+            var ret = GetXElement(element, namespaces, parent);
 
             var members = new Dictionary<string, object>(dynamicObject);
 
@@ -2352,18 +2357,26 @@ namespace d360.model
                 {
                     if (prop.Value.GetType().IsArray)
                     {
-                        ret.Add(GetArrayElement(prop.Key, (Array)prop.Value));
+                        var key = XmlConvert.EncodeName(prop.Key);
+                        var el = GetArrayElement(prop.Key, (Array)prop.Value, namespaces, ret);
+
+                        ret.Add(el);
                     }
                     else
                     {
                         if (prop.Value.GetType().IsSimpleType())
                         {
                             if (!string.IsNullOrEmpty(Convert.ToString(prop.Value)))
-                                ret.Add(new XElement(name, prop.Value));
+                            {
+                                var el = GetXElement(name, namespaces, ret, prop.Value);
+                                ret.Add(el);
+
+                            }
                         }
                         else
                         {
-                            ret.Add(prop.Value.ToXml(name));
+                            var el = prop.Value.ToXml(name, namespaces, ret);
+                            ret.Add(el);
                         }
                     }
 
@@ -2408,13 +2421,17 @@ namespace d360.model
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="element">The element name.</param>
+        /// <param name="namespaces">An optional dictionary of available namespaces</param>
+        /// <param name="parent">An optional parent XElement to inherit a namespace from if none is directly applied</param>
         /// <returns>Returns the object as it's XML representation in an XElement.</returns>
-        public static XElement ToXml(this object input, string element)
+        public static XElement ToXml(this object input, string element, Dictionary<string, string> namespaces = null, XElement parent = null)
         {
             if (input == null)
             {
                 return null;
             }
+            if (namespaces == null)
+                namespaces = new Dictionary<string, string>();
 
             if (String.IsNullOrWhiteSpace(element))
             {
@@ -2422,7 +2439,7 @@ namespace d360.model
             }
 
             element = XmlConvert.EncodeName(element);
-            var ret = new XElement(element);
+            var ret = GetXElement(element, namespaces, parent);
 
             if (input != null)
             {
@@ -2432,7 +2449,7 @@ namespace d360.model
                 var elements = from prop in props
                                let name = XmlConvert.EncodeName(prop.Name)
                                let val = prop.PropertyType.IsArray ? "array" : prop.GetValue(input, null)
-                               let value = prop.PropertyType.IsArray ? GetArrayElement(prop, (Array)prop.GetValue(input, null)) : (prop.PropertyType.IsSimpleType() ? new XElement(name, val) : val.ToXml(name))
+                               let value = prop.PropertyType.IsArray ? GetArrayElement(prop, (Array)prop.GetValue(input, null), namespaces) : (prop.PropertyType.IsSimpleType() ? GetXElement(name, namespaces, ret, val) : val.ToXml(name, namespaces, ret))
                                where value != null
                                select value;
 
@@ -2457,10 +2474,12 @@ namespace d360.model
         /// </summary>
         /// <param name="info">The property info.</param>
         /// <param name="input">The input object.</param>
+        /// <param name="namespaces">An optional dictionary of available namespaces</param>
+        /// <param name="parent">An optional parent XElement to inherit a namespace from if none is directly applied</param>
         /// <returns>Returns an XElement with the array collection as child elements.</returns>
-        private static XElement GetArrayElement(PropertyInfo info, Array input)
+        private static XElement GetArrayElement(PropertyInfo info, Array input, Dictionary<string, string> namespaces = null, XElement parent = null)
         {
-            return GetArrayElement(info.Name, input);
+            return GetArrayElement(info.Name, input, namespaces, parent);
         }
 
         /// <summary>
@@ -2468,24 +2487,60 @@ namespace d360.model
         /// </summary>
         /// <param name="propertyName">The property name.</param>
         /// <param name="input">The input object.</param>
+        /// <param name="namespaces">An optional dictionary of available namespaces</param>
+        /// <param name="parent">An optional parent XElement to inherit a namespace from if none is directly applied</param>
         /// <returns>Returns an XElement with the array collection as child elements.</returns>
-        private static XElement GetArrayElement(string propertyName, Array input)
+        private static XElement GetArrayElement(string propertyName, Array input, Dictionary<string, string> namespaces = null, XElement parent = null)
         {
+            if (namespaces == null)
+                namespaces = new Dictionary<string, string>();
+
             var name = XmlConvert.EncodeName(propertyName);
 
-            XElement rootElement = new XElement(name);
+            XElement rootElement = GetXElement(name, namespaces, parent);
 
             var arrayCount = input.GetLength(0);
 
             for (int i = 0; i < arrayCount; i++)
             {
                 var val = input.GetValue(i);
-                XElement childElement = val.GetType().IsSimpleType() ? new XElement(name + "Child", val) : val.ToXml();
+                XElement childElement = val.GetType().IsSimpleType() ? GetXElement(name + "Child", namespaces, rootElement, val) : val.ToXml();
 
                 rootElement.Add(childElement);
             }
 
             return rootElement;
+        }
+
+        /// <summary>
+        /// Creates an XElement with the appropriate namespace
+        /// </summary>
+        /// <param name="name">The node name</param>
+        /// <param name="namespaces">An optional dictionary of available namespaces</param>
+        /// <param name="parent">An optional parent XElement to inherit a namespace from if none is directly applied</param>
+        /// <param name="content">Content for the XElement</param>
+        /// <returns></returns>
+        public static XElement GetXElement(string name, Dictionary<string,string> namespaces = null, XElement parent = null, params object[] content)
+        {
+            if (namespaces == null)
+                namespaces = new Dictionary<string, string>();
+
+            if (namespaces.ContainsKey(name))
+            {
+                XNamespace ns = namespaces[name];
+                var x = new XElement(ns + name, content);
+                return x;
+            }
+            else
+            {
+                if (parent != null)
+                {
+                    XNamespace ns = parent.Name.NamespaceName;
+                    return new XElement(ns + name, content);
+                }
+                else
+                    return new XElement(name, content);
+            }
         }
     }
 

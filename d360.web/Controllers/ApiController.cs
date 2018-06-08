@@ -8081,6 +8081,12 @@ from	    TaxonomyType FAT
             return Company.ApiServices.ToList();
         }
 
+        [Route("custom/service/{id:int}/namespaces")]
+        public List<ApiNamespace> GetCustomAPINamespaces(int id)
+        {
+            return Company.ApiNamespaces.Where(i => i.ServiceID == id).ToList();
+        }
+
         [Route("custom/service/{id:int}")]
         public ApiService GetCustomAPIService(int id)
         {

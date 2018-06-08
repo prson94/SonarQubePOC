@@ -333,6 +333,8 @@ namespace d360.web.Controllers
                     return MetricItem_EditFields(oid);
                 case "METRICMAP":
                     return MetricMap_EditFields(oid);
+                case "NAMESPACE":
+                    return CustomAPINamespace_EditFields(oid);
                 case "ORGANIZATION":
                     return Organization_EditFields(oid);
                 case "ORGANIZATIONDOMAIN":
@@ -406,6 +408,8 @@ namespace d360.web.Controllers
                     return MetricItem_AddFields();
                 case "METRICMAP":
                     return MetricMap_AddFields(parentID.GetValueOrDefault());
+                case "NAMESPACE":
+                    return CustomAPINamespace_AddFields(parentID.GetValueOrDefault());
                 case "ORGANIZATION":
                     return Organization_AddFields(objectID.GetValueOrDefault());
                 case "ORGANIZATIONDOMAIN":
@@ -499,6 +503,8 @@ namespace d360.web.Controllers
                     return EditMap(form);
                 case "METRICITEM":
                     return PutMetricItem(form);
+                case "NAMESPACE":
+                    return EditNamespace(form);
                 case "ORGANIZATION":
                     return PutOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -591,7 +597,9 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return DeleteLookup(form);
                 case "LOOKUPTYPE":
-                    return DeleteLookupType(form);                
+                    return DeleteLookupType(form);
+                case "NAMESPACE":
+                    return DeleteCustomAPINamespace(form);
                 case "ORGANIZATION":
                     return DeleteOrganization(objectID);
                 case "ORGANIZATIONDOMAIN":
@@ -696,6 +704,8 @@ namespace d360.web.Controllers
                     return AddMap(form);
                 case "METRICITEM":
                     return PostMetricItem(form);
+                case "NAMESPACE":
+                    return AddNamespace(form);
                 case "ORGANIZATION":
                     return PostOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -19357,6 +19367,138 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
         #endregion
 
+        #region Custom API Service Namespaces
+        public JsonResult CustomAPINamespace_AddFields(int serviceId)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ServiceID", FieldType = DataType.Hidden.ToString(), Value = serviceId.ToString() });
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Element Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Namespace", Name = "Namespace", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult CustomAPINamespace_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.ApiNamespaces.Where(x => x.ID == id).FirstOrDefault();
+
+            if (a == null) return jsonException("Cannot find the specified service to edit", HttpStatusCode.NotFound);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Element Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Node });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Namespace", Name = "Namespace", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250), Value = a.Namespace });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddNamespace")]
+        public JsonResult AddNamespace(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("service");
+
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var name = parseTextField(form, "Name");
+                var ns = parseTextField(form, "Namespace");
+                var serviceId = parseIntField(form, "ServiceID");
+
+                if (string.IsNullOrEmpty(name))
+                    return jsonException("API Namespace Name is null", HttpStatusCode.NotFound);
+
+                if (string.IsNullOrEmpty(ns))
+                    return jsonException("API Namespace is null", HttpStatusCode.NotFound);
+
+                var apiNamespace = new ApiNamespace
+                {
+                    ServiceID = serviceId,
+                    Node = name,
+                    Namespace = ns
+                };
+
+                Company.Add<ApiNamespace>(apiNamespace);
+
+
+                return jsonSuccess("Namespace successfully created.", apiNamespace.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut, ValidateInput(false), Route("EditNamespace")]
+        public JsonResult EditNamespace(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("service");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ApiNamespace>(id);
+                if (model == null) throw new NotFoundException("api service");
+
+                model.Node = parseTextField(form, "Name");
+                model.Namespace = parseTextField(form, "Namespace");
+
+                Company.Update<ApiNamespace>(model);
+
+                return jsonSuccess("Namespace successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private JsonResult DeleteCustomAPINamespace(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                var o = Company.GetById<ApiNamespace>(id);
+
+                Company.Delete<ApiNamespace>(o);
+                return jsonSuccess("api namespace successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
         #region Custom API Service Endpoint
 
         public JsonResult CustomAPIServiceEndpoint_AddFields(int serviceId)
@@ -19828,7 +19970,6 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddServiceEndpointVersionField")]
         public JsonResult AddServiceEndpointVersionField(FormCollection form)
         {
@@ -19903,8 +20044,6 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-
 
         private JsonResult DeleteCustomAPIService(FormCollection form)
         {

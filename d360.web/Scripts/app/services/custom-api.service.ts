@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { ApiService, ApiEndpoint, ApiVersion, ApiField, ApiUri } from '../models/custom-api.model';
+import { ApiService, ApiEndpoint, ApiVersion, ApiField, ApiUri, ApiNamespace } from '../models/custom-api.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -67,6 +67,13 @@ export class CustomAPIService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getNamespaces(id: number): Promise<ApiNamespace[]> {
+        return this.http.get(`api/custom/service/${id}/namespaces`)
+            .toPromise()
+            .then(response => <ApiNamespace[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     deleteEndpointUri(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'uri', id);
     }
@@ -112,5 +119,16 @@ export class CustomAPIService extends BaseService {
             return this.postDynamic(this.http, 'uri', uri);
         }
         return this.putDynamic(this.http, 'uri', uri);
+    }
+
+    saveNamespace(ns: ApiNamespace): Promise<JsonResult> {
+        if (ns.ID == undefined || !ns.ID) {
+            return this.postDynamic(this.http, 'namespace', ns);
+        }
+        return this.putDynamic(this.http, 'namespace', ns);
+    }
+
+    deleteNamespace(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'namespace', id);
     }
 }

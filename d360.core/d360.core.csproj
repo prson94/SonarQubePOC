@@ -83,6 +83,7 @@
     <Compile Include="entities\Api\ApiEntity.cs" />
     <Compile Include="entities\Api\ApiEndpointVersion.cs" />
     <Compile Include="entities\Api\ApiEndpoint.cs" />
+    <Compile Include="entities\Api\ApiNamespace.cs" />
     <Compile Include="entities\Api\ApiService.cs" />
     <Compile Include="entities\Asset.cs" />
     <Compile Include="entities\AssetType.cs" />

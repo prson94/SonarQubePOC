@@ -210,7 +210,7 @@ export class AdminMetricMapEditorComponent extends BaseComponent implements OnIn
 
     changeMetricItem(e: any) {
         this.metricItem = e;
-        console.log(e);
+        //console.log(e);
         if (e != null) {
             this.model.Map.ItemID = isNaN(+e.Value) ? null : +e.Value;
         } else {

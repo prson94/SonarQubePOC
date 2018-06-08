@@ -302,6 +302,7 @@ namespace d360.web.Controllers.Services
                              select new
                              {
                                  ServiceName = s.Name,
+                                 ServiceID = s.ID,
                                  en.AssetType,
                                  en.FieldTypes,
                                  f.AllowFilter,
@@ -411,14 +412,20 @@ namespace d360.web.Controllers.Services
                 }
                 else
                 {
-                    XElement xAsset = DynamicHelper.ConvertToXml(asset, "item"); // "items"
+                    var serviceID = config.First().ServiceID;
+                    var namespaces = Company.ApiNamespaces.Where(i => i.ServiceID == serviceID).ToDictionary(k => k.Node, v => v.Namespace);
+
+                    XElement xAsset = DynamicHelper.ConvertToXml(asset, "item", namespaces);
                     xAsset.Add(new XAttribute("id", asset.id));
 
-                    var xLinks = new XElement("Links");
-                    xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
+                    XElement xLinks = DynamicHelper.GetXElement("Links", namespaces, xAsset); 
+                    XElement link = DynamicHelper.GetXElement("link", namespaces, xLinks);
 
+                    link.Add(DynamicHelper.GetXElement("rel", namespaces, link, JsonResultLinkModel.CANO), DynamicHelper.GetXElement("href", namespaces, link, canoUri));
+
+                    xLinks.Add(link);
                     xAsset.Add(xLinks);
-
+                    
                    /* var CollectionWrapper = new XElement(
                         "CollectionWrapper",
                         xLinks,
@@ -484,6 +491,7 @@ namespace d360.web.Controllers.Services
                              select new
                              {
                                  ServiceName = s.Name,
+                                 ServiceID = s.ID,
                                  s.MaximumCacheAge,
                                  en.AssetType,
                                  en.FieldTypes,
@@ -1299,32 +1307,47 @@ namespace d360.web.Controllers.Services
                 }
                 else
                 {
-                    var xItems = new XElement("Items");
+                    int serviceID = config.First().ServiceID;
+                    var namespaces = Company.ApiNamespaces.Where(i => i.ServiceID == serviceID).ToDictionary(k => k.Node, v => v.Namespace);
+
+
+                    var CollectionWrapper = DynamicHelper.GetXElement(
+                        "CollectionWrapper",
+                        namespaces);
+
+                    var xItems = DynamicHelper.GetXElement("Items", namespaces, CollectionWrapper);
 
                     foreach (var a in assets)
                     {
-                        var xNode = DynamicHelper.ConvertToXml(a, "item");
+                        var xNode = DynamicHelper.ConvertToXml(a, "item", namespaces, xItems);
                         (xNode as XElement).Add(new XAttribute("id", a.id));
                         xItems.Add(xNode);
                     }
 
-                    var xLinks = new XElement("Links");
+                    var xLinks = DynamicHelper.GetXElement("Links", namespaces, CollectionWrapper);
 
-                    xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.CANO), new XElement("href", canoUri)));
+                    var link = DynamicHelper.GetXElement("link", namespaces, xLinks);
+                    link.Add(DynamicHelper.GetXElement("rel", namespaces, link, JsonResultLinkModel.CANO), DynamicHelper.GetXElement("href", namespaces, link, canoUri));
+                    xLinks.Add(link);
+                        
                     if (showNextLink)
-                        xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.NEXT), new XElement("href", nextUri)));
+                    {
+                        link = DynamicHelper.GetXElement("link", namespaces, xLinks);
+                        link.Add(DynamicHelper.GetXElement("rel", namespaces, link, JsonResultLinkModel.NEXT), DynamicHelper.GetXElement("href", namespaces, link, nextUri));
+                        xLinks.Add(link);
+                    }
                     if (showPrevLink)
-                        xLinks.Add(new XElement("link", new XElement("rel", JsonResultLinkModel.PREV), new XElement("href", prevUri)));
+                    {
+                        link = DynamicHelper.GetXElement("link", namespaces, xLinks);
+                        link.Add(DynamicHelper.GetXElement("rel", namespaces, link, JsonResultLinkModel.PREV), DynamicHelper.GetXElement("href", namespaces, link, prevUri));
+                        xLinks.Add(link);
+                    }
 
-                    var CollectionWrapper = new XElement(
-                        "CollectionWrapper",
-                        new XElement("Total", count),
+                    CollectionWrapper.Add(
+                        DynamicHelper.GetXElement("Total", namespaces, CollectionWrapper, count),
                         xLinks,
                         xItems
                     );
-
-                    //XNamespace ns = "http://www.lmtom.london/schema/endpoints/Lloyds/RiskCode/v1";
-                    //CollectionWrapper.Add(new XAttribute(XNamespace.Xmlns + "", ns));
 
                     responseMessage = Request.CreateResponse(HttpStatusCode.OK, CollectionWrapper, "application/xml");
                 }
@@ -1372,6 +1395,7 @@ namespace d360.web.Controllers.Services
                              where v.UriPrefix == version
                              select new
                              {
+                                 ServiceID = s.ID,
                                  MajorVersion = v.MajorVersion,
                                  MinorVersion = v.MinorVersion,
                                  MaximumCacheAge = s.MaximumCacheAge
@@ -1400,11 +1424,15 @@ namespace d360.web.Controllers.Services
                 }
                 else
                 {
-                    XNamespace ns = "http://www.api.londonmarketgroup.co.uk/schema/2017/07/version";
+                    //XNamespace ns = "http://www.api.londonmarketgroup.co.uk/schema/2017/07/version";
 
-                    var versionDoc = new XElement(ns + "Version",
-                        new XElement(ns+"APIVersionNumber", apiVersion),
-                        new XElement(ns+"ImplementationVersion", governVersion)
+                    var serviceID = config.ServiceID;
+                    var namespaces = Company.ApiNamespaces.Where(i => i.ServiceID == serviceID).ToDictionary(k => k.Node, v => v.Namespace);
+
+                    XElement versionDoc = DynamicHelper.GetXElement("Version", namespaces);
+                    versionDoc.Add(
+                        DynamicHelper.GetXElement("APIVersionNumber", namespaces, versionDoc, apiVersion),
+                        DynamicHelper.GetXElement("ImplementationVersion", namespaces, versionDoc, governVersion)
                         );
                     
                     responseMessage = Request.CreateResponse(HttpStatusCode.OK, versionDoc, "application/xml");
@@ -1437,6 +1465,9 @@ namespace d360.web.Controllers.Services
 
             try
             {
+                //test the database connection
+                Company.Database.Connection.Open();
+
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 var config = (
@@ -1458,11 +1489,10 @@ namespace d360.web.Controllers.Services
 
                 if (config == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "Endpoint not found.");
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "Endpoint not found."); 
                 }
 
-                //test the database connection
-                Company.Database.Connection.Open();
+
             }
             catch (Exception)
             {

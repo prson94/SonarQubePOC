@@ -6,6 +6,13 @@
     MaximumCacheAge: number;
 }
 
+export class ApiNamespace {
+    ID: number;
+    ServiceID: number;
+    Node: string;
+    Namespace: string;
+}
+
 export class ApiEndpoint {
     ID: number;
     ServiceID: number;
