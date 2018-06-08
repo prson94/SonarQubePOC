@@ -9,7 +9,8 @@ import { TooltipSingletonService } from '../../services/tooltip-singleton.servic
     template: ` 
                 <span #item class="d3s-tooltip" [ngClass]="{'d3s-tooltip-active':active}" (mouseenter)="show(item,tip)" (mouseleave)="hide()" (click)="click.emit()">
                     <i *ngIf="icon && icon !=''" class="fa" [ngClass]="['fa-' + this.icon, class ? class: '']"  [ngStyle]="{'color': iconColor}"></i>                    
-                    <ng-content></ng-content>                                        
+                    <ng-content></ng-content>  
+                    <div [innerHtml]="innerHtmlContent"></div>
                     <div class="tooltip-child tooltip-panel" #tip>
                         <h3 style="positon: relative"><a [routerLink]="data?.Url">{{data?.DisplayName}}</a> <small *ngIf="data && data.TypeName" style="background-color: #fff; float:right;font-size:65%;">{{data.TypeName}}</small></h3>
                         <div>&nbsp;</div>
@@ -32,6 +33,7 @@ export class PreviewTooltipComponent  {
     @Input() objectId: number;
     @Input() icon: string;
     @Input() class: string;
+    @Input() innerHtmlContent: string;
     @HostBinding('style.color') @Input() iconColor: string;
     @HostBinding('style.background') @Input() foreColor: string;
 

@@ -20,7 +20,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <div class="col s12 FieldName">Workflow Name</div>
                         <div class="col s12">{{details?.Workflow.Name}}</div>
                         <div class="col s12 FieldName">Name</div>
-                        <div class="col s12" *ngIf="details?.ObjectDetails != null"><d3s-preview-tooltip [objectType]="details?.Item.Object" [objectId]="details?.ObjectDetails?.ID">{{details?.ObjectDetails?.Name}}</d3s-preview-tooltip></div>
+                        <div class="col s12" *ngIf="details?.ObjectDetails != null"><d3s-preview-tooltip [objectType]="details?.Item.Object" [objectId]="details?.ObjectDetails?.ID" [innerHtmlContent]="details?.ObjectDetails?.Name"></d3s-preview-tooltip></div>
                         <div class="col s12" *ngIf="details?.ObjectDetails == null">(item deleted)</div>
                         <div class="col s12 FieldName">Type Name</div>
                         <div class="col s12" *ngIf="details?.ObjectDetails != null">{{details?.ObjectDetails?.TypeName}}</div>
