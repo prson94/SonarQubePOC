@@ -56,7 +56,7 @@ namespace igx.jobs
                     var Security = new UriSecurityContextProvider { IsAdministrator = true, ResourceID = 0 };
                     var Community = new CommunityContext(Caching, Queue, Security);
 #if DEBUG
-                    var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 122).ToList();
+                    var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 126).ToList();
 #else
                     var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -83,7 +83,7 @@ namespace igx.jobs
                             if (settings.Count > 0)
                             {
 #if DEBUG
-                                var IDs = new List<int>() { 46, 47, 48 };
+                                var IDs = new List<int>() { 1 };
                                 mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
 #else
                                 mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
