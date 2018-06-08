@@ -360,7 +360,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [Route("home"), HttpGet]
+        [Route("home"), ValidateContracts(Ignore = true), HttpGet]
         public JsonNetResult GetHomePageReports()
         {
             var reports = Company.Filter<Report>(r => r.ShowOnHomePage && r.ReportType.ToLower() != "legacy").ToList();

@@ -18189,7 +18189,9 @@ from    [IntersectType] RT
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-        [HttpGet, Route("shortcut/list")]
+
+        [HttpGet, ValidateContracts(Ignore = true), Route("shortcut/list")]
+
         public JsonNetResult ListShortcuts()
         {
             return new JsonNetResult

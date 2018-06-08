@@ -30,7 +30,7 @@ namespace d360.web.Controllers
 
         #endregion
 
-        [Route("sitemenu")]
+        [ValidateContracts(Ignore = true), Route("sitemenu")]
         public JsonNetResult SiteMenu()
         {
             List<TopNavigationItem> nodes = null;
@@ -681,7 +681,7 @@ namespace d360.web.Controllers
 
         }
 
-        [HttpGet, Route("GetFavorites")]
+        [HttpGet, ValidateContracts(Ignore = true), Route("GetFavorites")]
         public JsonNetResult GetFavorites(bool adminOnly = false)
         {
             var sql = @"

@@ -62,7 +62,7 @@ namespace d360.web.Controllers
 
         #region Actions
 
-        [HttpGet, Route("image/{id:int}")]
+        [HttpGet, ValidateContracts(Ignore = true), Route("image/{id:int}")]
         public ActionResult MyImage(int id, int size = 150)
         {
             var resource = Community.GetById<Resource>(id);
