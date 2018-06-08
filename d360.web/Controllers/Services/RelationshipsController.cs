@@ -475,7 +475,7 @@ namespace d360.web.Controllers.Services
                                         ObjectID = existing.ObjectID,
                                     };
 
-                                    Company.Delete(SystemObjects.Intersect, existing.ID); 
+                                    Company.DeleteRelationship(existing.ID);
                                     Company.Add(copy);
                                 }
                                 return;
@@ -501,7 +501,7 @@ namespace d360.web.Controllers.Services
             }
             catch (Exception ex)
             {
-                return Json<dynamic>(new { type = "error", title = "Error", message = ex.Message });
+                return Json<dynamic>(new { type = "error", title = "Error", message = ex.GetBaseException().Message });
             }
             return Json<dynamic>(new { type = "confirm", title = "Success", message = "Lineage saved successfully." });
         }
