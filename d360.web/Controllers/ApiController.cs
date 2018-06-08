@@ -2691,6 +2691,8 @@ order by    rnk, [Name]";
                     return $"cast({columnName} as datetime)";
                 case "boolean":
                     return $"case when lower({columnName}) = 'true' then 1 else 0 end";
+                case "link":
+                    return $"substring({columnName}, 0, charindex('|', {columnName}))";
                 default:
                     return $"{columnName}";
             }
@@ -2815,7 +2817,7 @@ end",
 
                         if (i.SortOrder > 0)
                         {
-                            var columnValue = getFieldTypeColumnString(ft.Type, fc.DisplayColumn);
+                            var columnValue = getFieldTypeColumnString(ft.Type, ft.Type == "Link" ? $"{tbPrefix}.Value" : fc.DisplayColumn);
                             fc.SortColumn = columnValue == fc.DisplayColumn ? "" : columnValue;
                         }
 
