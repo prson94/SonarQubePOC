@@ -1453,13 +1453,13 @@ order by wi.StartedOn desc";
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
-	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)
-	                                inner join [reporting].global_resource gr on (wi.startedby = gr.resourceid)
+	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
 	                                left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
 									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
 	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
 	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+                                    inner join [reporting].global_resource gr on (wia.resourceobjectid = gr.resourceid)
                                     left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
                                     left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
                                     left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
