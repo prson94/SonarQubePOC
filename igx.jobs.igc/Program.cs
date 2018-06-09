@@ -16,6 +16,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace igx.jobs
@@ -43,313 +44,384 @@ namespace igx.jobs
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
-            var available = false;
             try
             {
-                available = true;// CoreFunction.LockWebJobIfAvailable(functionName);
+                CoreFunction.AITrackJobStart(functionName);
+                var Caching = new DummyCachingProvider();
+                var Queue = new AzureQueueSource();
+                var Security = new UriSecurityContextProvider { IsAdministrator = true, ResourceID = 0 };
+                var Community = new CommunityContext(Caching, Queue, Security);
+#if DEBUG
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 126).ToList();
+#else
+                var companies = CoreFunction.GetCompaniesByCurrentSlot();
+#endif
 
-                if (available)
+                companies.ForEach(async c =>
                 {
-                    CoreFunction.AITrackJobStart(functionName);
-                    var Caching = new DummyCachingProvider();
-                    var Queue = new AzureQueueSource();
-                    var Security = new UriSecurityContextProvider { IsAdministrator = true, ResourceID = 0 };
-                    var Community = new CommunityContext(Caching, Queue, Security);
-#if DEBUG
-                    var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 126).ToList();
-#else
-                    var companies = CoreFunction.GetCompaniesByCurrentSlot();
-#endif
-
-                    companies.ForEach(async c =>
+                    try
                     {
-                        try
+                        Community.CurrentCompanyID = c.CompanyID;
+                        Community.CurrentCompanyDomain = c.UrlPrefix;
+                        Security.CompanyID = c.CompanyID;
+                        Security.CompanyPrefix = c.UrlPrefix;
+                        var company = new CompanyContext(Community, Caching, Queue, Security, true);
+
+                        var settings = company.Table<IntegrationSetting>().ToList();
+
+                        List<IntegrationAssetType> mappings = null;
+                        List<IntegrationAssetTypeFieldItem> mappingFields = null;
+                        List<IntegrationAssetTypeRelationItem> mappingRelations = null;
+                        List<IntegrationAssetTypeRelationItemTarget> mappingRelationTargets = null;
+                        List<IntegrationAssetTypeRoleItem> mappingRoles = null;
+
+                        // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
+                        if (settings.Count > 0)
                         {
-                            Community.CurrentCompanyID = c.CompanyID;
-                            Community.CurrentCompanyDomain = c.UrlPrefix;
-                            Security.CompanyID = c.CompanyID;
-                            Security.CompanyPrefix = c.UrlPrefix;
-                            var company = new CompanyContext(Community, Caching, Queue, Security, true);
+//#if DEBUG
+//                                var IDs = new List<int>() { 1, 53, 54, 55 };
+//                                mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
+//#else
+                            mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
+//#endif
+                            mappingFields = company.Filter<IntegrationAssetTypeFieldItem>(i => i.Active).ToList();
+                            mappingRelations = company.Table<IntegrationAssetTypeRelationItem>().ToList();
+                            mappingRelationTargets = company.Table<IntegrationAssetTypeRelationItemTarget>().ToList();
+                            mappingRoles = company.Table<IntegrationAssetTypeRoleItem>().ToList();
+                        }
 
-                            var settings = company.Table<IntegrationSetting>().ToList();
+                        foreach (var setting in settings)
+                        {
+                            var now = DateTime.UtcNow;
+                            var delayStartUntil = setting.DelayStartUntil ?? now;
 
-                            List<IntegrationAssetType> mappings = null;
-                            List<IntegrationAssetTypeFieldItem> mappingFields = null;
-                            List<IntegrationAssetTypeRelationItem> mappingRelations = null;
-                            List<IntegrationAssetTypeRelationItemTarget> mappingRelationTargets = null;
-                            List<IntegrationAssetTypeRoleItem> mappingRoles = null;
-
-                            // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
-                            if (settings.Count > 0)
+                            if (now >= delayStartUntil)
                             {
-#if DEBUG
-                                var IDs = new List<int>() { 1, 53, 54, 55 };
-                                mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
-#else
-                                mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
-#endif
-                                mappingFields = company.Filter<IntegrationAssetTypeFieldItem>(i => i.Active).ToList();
-                                mappingRelations = company.Table<IntegrationAssetTypeRelationItem>().ToList();
-                                mappingRelationTargets = company.Table<IntegrationAssetTypeRelationItemTarget>().ToList();
-                                mappingRoles = company.Table<IntegrationAssetTypeRoleItem>().ToList();
-                            }
-
-                            foreach (var setting in settings)
-                            {
-                                var now = DateTime.UtcNow;
-
                                 if (mappings.Any(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID && i.ObjectID.HasValue))
                                 {
                                     var failedFullRefreshExecutions = company.Query<FailedExecutionModel>(@"
 select		max(T.ExecutionID) as ExecutionID,
-			count(1) as [CurrentCount],
-			T.SynchedAssetTypeID
+		count(1) as [CurrentCount],
+		T.SynchedAssetTypeID
 from		integration.ExecutionAssetType T
-			left join integration.ExecutionAsset A on A.ExecutionID = T.ExecutionID and A.SynchedAssetTypeID = T.SynchedAssetTypeID
+		left join integration.ExecutionAsset A on A.ExecutionID = T.ExecutionID and A.SynchedAssetTypeID = T.SynchedAssetTypeID
 where		T.CompletedOn is null
-			and T.IsFullRefresh = 1
+		and T.IsFullRefresh = 1
 group by	T.SynchedAssetTypeID
 order by	T.SynchedAssetTypeID").ToList();
 
                                     var lastFullRefreshModels = company.Query<LastFullRefreshModel>(@"
 select	A.ID,
-		coalesce(max(E.StartedOn), '1/1/1970') as StartedOn
+	coalesce(max(E.StartedOn), '1/1/1970') as StartedOn
 from	[integration].[SynchedAssetType] A
-		left join [integration].[ExecutionAssetType] E on E.SynchedAssetTypeID = A.ID and A.IntegrationSettingID = @s and A.Active = 1 and E.IsFullRefresh = 1 and E.CompletedOn is not null
+	left join [integration].[ExecutionAssetType] E on E.SynchedAssetTypeID = A.ID and A.IntegrationSettingID = @s and A.Active = 1 and E.IsFullRefresh = 1 and E.CompletedOn is not null
 group by A.ID
 order by A.ID
-", new {s = setting.ID }).ToList();
+", new { s = setting.ID }).ToList();
 
                                     IntegrationExecution newExecution = null;
+                                    bool shouldContinue = false;
 
                                     #region  Authenticate to API to get session.
+
                                     var sourceAuthString = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
                                     List<string> cookies = null;
                                     switch (setting.IntegrationSystem)
                                     {
                                         case d360.core.enums.IntegrationSystem.IGC:
-                                            log.WriteLine("Getting new IGC session...");
-                                            cookies = GetCookiesFromApi($"{setting.SourceUri}types", sourceAuthString).Result;
+                                            try
+                                            {
+                                                log.WriteLine("Begin getting new IGC session...");
+                                                cookies = GetCookiesFromApi($"{setting.SourceUri}types", sourceAuthString).Result;
+                                                shouldContinue = (cookies != null);
+                                                log.WriteLine("Finished getting new IGC session...");
+                                            }
+                                            catch (HttpRequestException rex)
+                                            {
+                                                if (rex.Message.Contains("403 (Forbidden)"))
+                                                {
+                                                    log.WriteLine($"Failed getting new IGC session...{rex.GetFullExceptionData()}. Waiting for 30 minutes and will retry.");
+                                                    setting.DelayStartUntil = DateTime.UtcNow.AddMinutes(31);
+                                                    company.Update(setting);
+                                                }
+                                                else
+                                                {
+                                                    log.WriteLine($"Failed getting new IGC session...{rex.GetFullExceptionData()}");
+                                                    var properties = new Dictionary<string, string>();
+                                                    properties.Add("Uri", $"{setting.SourceUri}types");
+                                                    CoreFunction.AITrackException(functionName, rex, null, properties);
+                                                }
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                log.WriteLine($"Failed getting new IGC session...{ex.GetFullExceptionData()}");
+                                                var properties = new Dictionary<string, string>();
+                                                properties.Add("Uri", $"{setting.SourceUri}types");
+                                                CoreFunction.AITrackException(functionName, ex, null, properties);
+                                                throw ex;
+                                            }
                                             break;
                                     }
                                     #endregion
 
-                                    foreach (var item in mappings.Where(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID && i.ObjectID.HasValue))
+                                    if (shouldContinue)
                                     {
-                                        var failedFullRefreshExecution = failedFullRefreshExecutions.SingleOrDefault(f => f.SynchedAssetTypeID == item.ID);
-                                        IntegrationExecutionAssetType newAtExecution = null;
-                                        IntegrationExecutionAssetType previousAtExecution = null;
-                                        int currentCount = 0;
-
-                                        if (failedFullRefreshExecution == null)
+                                        foreach (var item in mappings.Where(i => i.Active && i.ToGovern && i.IntegrationSettingID == setting.ID && i.ObjectID.HasValue))
                                         {
-                                            if (newExecution == null)
+                                            if (!shouldContinue)
+                                                break;
+
+                                            var failedFullRefreshExecution = failedFullRefreshExecutions.SingleOrDefault(f => f.SynchedAssetTypeID == item.ID);
+                                            IntegrationExecutionAssetType newAtExecution = null;
+                                            IntegrationExecutionAssetType previousAtExecution = null;
+                                            int currentCount = 0;
+
+                                            if (failedFullRefreshExecution == null)
                                             {
-                                                // Initialize the new execution record on the first pass where we actually need a new one.
-                                                newExecution = new IntegrationExecution { StartedOn = now };
-                                                company.Add(newExecution);
-                                            }
+                                                if (newExecution == null)
+                                                {
+                                                    // Initialize the new execution record on the first pass where we actually need a new one.
+                                                    newExecution = new IntegrationExecution { StartedOn = now };
+                                                    company.Add(newExecution);
+                                                }
 
-                                            newAtExecution = new IntegrationExecutionAssetType { StartedOn = now, SynchedAssetTypeID = item.ID, ExecutionID = newExecution.ID };
-                                            company.Add(newAtExecution);
-                                        }
-                                        else
-                                        {
-                                            currentCount = failedFullRefreshExecution.CurrentCount;
-                                            previousAtExecution = company.Filter<IntegrationExecutionAssetType>(f =>
-                                                    f.ExecutionID == failedFullRefreshExecution.ExecutionID &&
-                                                    f.SynchedAssetTypeID == failedFullRefreshExecution.SynchedAssetTypeID
-                                                ).Single();
-                                            now = previousAtExecution.StartedOn; //Start off from the last marked date.
-                                        }
-
-                                        #region Figure out if we should perform a DELTA or a FULL REFRESH
-
-                                        var performDelta = true;
-
-                                        if (item.AllowChangeDetection)
-                                        {
-                                            // Continue to check if we should perform delta.
-                                            
-                                            if (currentCount > 0)
-                                            {
-                                                // If > 0, that means that the last full refresh did not successfully complete. 
-                                                // Do not check for changes, do a full refresh again, starting where you left off.
-                                                performDelta = false;
+                                                newAtExecution = new IntegrationExecutionAssetType { StartedOn = now, SynchedAssetTypeID = item.ID, ExecutionID = newExecution.ID };
+                                                company.Add(newAtExecution);
                                             }
                                             else
                                             {
-                                                // Get the start date of the last full refresh.
-                                                var lastFullRefreshModel = lastFullRefreshModels.Single(i => i.ID == item.ID);
+                                                currentCount = failedFullRefreshExecution.CurrentCount;
+                                                previousAtExecution = company.Filter<IntegrationExecutionAssetType>(f =>
+                                                        f.ExecutionID == failedFullRefreshExecution.ExecutionID &&
+                                                        f.SynchedAssetTypeID == failedFullRefreshExecution.SynchedAssetTypeID
+                                                    ).Single();
+                                                now = previousAtExecution.StartedOn; //Start off from the last marked date.
+                                            }
 
-                                                var refreshInterval = (item.RefreshIntervalOverride.HasValue) ?
-                                                    item.RefreshIntervalOverride.Value :
-                                                    setting.RefreshInterval;
+                                            #region Figure out if we should perform a DELTA or a FULL REFRESH
 
-                                                // If last refresh+interval > current time, then perform a delta instead, as you have not surpassed the refresh interval.
-                                                performDelta = (lastFullRefreshModel.StartedOn.AddHours(refreshInterval) > DateTime.UtcNow); 
+                                            var performDelta = true;
+
+                                            if (item.AllowChangeDetection)
+                                            {
+                                                // Continue to check if we should perform delta.
+
+                                                if (currentCount > 0)
+                                                {
+                                                    // If > 0, that means that the last full refresh did not successfully complete. 
+                                                    // Do not check for changes, do a full refresh again, starting where you left off.
+                                                    performDelta = false;
+                                                }
+                                                else
+                                                {
+                                                    // Get the start date of the last full refresh.
+                                                    var lastFullRefreshModel = lastFullRefreshModels.Single(i => i.ID == item.ID);
+
+                                                    var refreshInterval = (item.RefreshIntervalOverride.HasValue) ?
+                                                        item.RefreshIntervalOverride.Value :
+                                                        setting.RefreshInterval;
+
+                                                    // If last refresh+interval > current time, then perform a delta instead, as you have not surpassed the refresh interval.
+                                                    performDelta = (lastFullRefreshModel.StartedOn.AddHours(refreshInterval) > DateTime.UtcNow);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                // Delta checking not even allowed.
+                                                performDelta = false;
+                                            }
+
+                                            #endregion
+
+                                            var fields = mappingFields.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
+                                            var relations = mappingRelations.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
+                                            var relationIDs = relations.Select(i => i.ID).ToList();
+                                            var relationTargets = mappingRelationTargets.Where(i => relationIDs.Contains(i.SynchedAssetTypeRelationItemID)).ToList();
+                                            var roles = mappingRoles.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
+
+                                            var success = false;
+
+                                            switch (setting.IntegrationSystem)
+                                            {
+                                                case d360.core.enums.IntegrationSystem.IGC:
+                                                    log.WriteLine($"Begin processing IGC asset {item.SourceAssetTypeName}...");
+                                                    try
+                                                    {
+                                                        success = IGC_LoadAssetsByMappingType(
+                                                            setting,
+                                                            cookies,
+                                                            performDelta,
+                                                            now,
+                                                            previousAtExecution ?? newAtExecution,
+                                                            item,
+                                                            fields,
+                                                            relations,
+                                                            relationTargets,
+                                                            roles,
+                                                            company,
+                                                            c,
+                                                            currentCount);
+                                                    }
+                                                    catch (HttpRequestException rex)
+                                                    {
+                                                        shouldContinue = false;
+                                                        success = false;
+                                                        log.WriteLine($"Failed processing: {rex.GetFullExceptionData()}...");
+                                                        if (rex.Message.Contains("403 (Forbidden)"))
+                                                        {
+                                                            setting.DelayStartUntil = DateTime.UtcNow.AddMinutes(31);
+                                                            company.Update(setting);
+                                                        }
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        shouldContinue = false;
+                                                        success = false;
+                                                        log.WriteLine($"Failed processing: {ex.GetFullExceptionData()}...");
+                                                    }
+
+                                                    if (success)
+                                                        log.WriteLine($"Complete processing IGC asset {item.SourceAssetTypeName}...");
+                                                    else
+                                                        log.WriteLine($"Failed on processing IGC asset {item.SourceAssetTypeName}...");
+                                                    break;
+                                            }
+
+                                            #region Mark execution asset type record as complete or not.
+
+                                            if (success)
+                                            {
+                                                if (newAtExecution != null)
+                                                {
+                                                    var newExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == newAtExecution.ExecutionID && i.SynchedAssetTypeID == newAtExecution.SynchedAssetTypeID);
+                                                    if (newExecutionAssetCount == newAtExecution.CurrentSourceAssetCount)
+                                                    {
+                                                        newAtExecution.CompletedOn = DateTime.UtcNow;
+                                                        company.Update(newAtExecution);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (previousAtExecution != null)
+                                                    {
+                                                        var previousExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == previousAtExecution.ExecutionID && i.SynchedAssetTypeID == previousAtExecution.SynchedAssetTypeID);
+                                                        if (previousExecutionAssetCount == previousAtExecution.CurrentSourceAssetCount)
+                                                        {
+                                                            previousAtExecution.CompletedOn = DateTime.UtcNow;
+                                                            company.Update(previousAtExecution);
+                                                        }
+                                                    }
+                                                }
+                                                company.Update(item);
+                                            }
+
+                                            #endregion
+                                        }
+
+                                        if (setting.IntegrationSystem == d360.core.enums.IntegrationSystem.IGC)
+                                        {
+                                            log.WriteLine($"Logging out of IGC...");
+                                            try
+                                            {
+                                                IGC_Logout(setting, cookies);
+                                            }
+                                            catch (Exception loex)
+                                            {
+                                                log.WriteLine($"Unable to log out of IGC: {loex.GetFullExceptionData()}.");
                                             }
                                         }
-                                        else
+
+                                        if (newExecution != null)
                                         {
-                                            // Delta checking not even allowed.
-                                            performDelta = false;
+                                            log.WriteLine($"Completing execution ID {newExecution.ID}.");
+                                            newExecution.CompletedOn = DateTime.UtcNow;
+                                            company.Update(newExecution);
+                                        }
+
+                                        #region Process unresolved relationships and process workflows around them
+
+                                        try
+                                        {
+                                            log.WriteLine($"Begin processing unresolved relationships.");
+                                            var unResolvedRelationResults = company.ProcessUnresolvedRelationships();
+                                            if (unResolvedRelationResults != null)
+                                            {
+                                                var events = new List<EventInfo>();
+                                                foreach (var r in unResolvedRelationResults)
+                                                {
+                                                    if (r.Action == "INSERT" && r.IntersectID != null)
+                                                    {
+                                                        events.Add(new EventInfo
+                                                        {
+                                                            CompanyID = c.CompanyID,
+                                                            DomainPrefix = c.UrlPrefix,
+                                                            ResourceID = setting.TargetResourceID,
+                                                            Action = ChangeType.Add,
+                                                            Object = new EventObjectInfo
+                                                            {
+                                                                Object = SystemObjects.Intersect,
+                                                                ObjectType = SystemObjects.IntersectType,
+                                                                ObjectID = r.IntersectID,
+                                                                ObjectTypeID = r.IntersectTypeID
+                                                            }
+                                                        });
+                                                        if (events.Count > 50)
+                                                        {
+                                                            Queue.CreateTopicMessages(events);
+                                                            events.Clear();
+                                                        }
+                                                    }
+                                                }
+
+                                                if (events.Count > 0)
+                                                {
+                                                    Queue.CreateTopicMessages(events);
+                                                }
+                                            }
+                                            log.WriteLine($"End processing unresolved relationships.");
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                                         }
 
                                         #endregion
-
-                                        var fields = mappingFields.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
-                                        var relations = mappingRelations.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
-                                        var relationIDs = relations.Select(i => i.ID).ToList();
-                                        var relationTargets = mappingRelationTargets.Where(i => relationIDs.Contains(i.SynchedAssetTypeRelationItemID)).ToList();
-                                        var roles = mappingRoles.Where(i => i.SynchedAssetTypeID == item.ID).ToList();
-
-                                        var success = false;
-
-                                        switch (setting.IntegrationSystem)
-                                        {
-                                            case d360.core.enums.IntegrationSystem.IGC:
-                                                log.WriteLine($"Begin processing IGC asset {item.SourceAssetTypeName}...");
-                                                success = IGC_LoadAssetsByMappingType(
-                                                    setting,
-                                                    cookies,
-                                                    performDelta,
-                                                    now,
-                                                    previousAtExecution ?? newAtExecution,
-                                                    item,
-                                                    fields,
-                                                    relations,
-                                                    relationTargets,
-                                                    roles,
-                                                    company,
-                                                    c,
-                                                    currentCount);
-                                                log.WriteLine($"Complete processing IGC asset {item.SourceAssetTypeName}...");
-                                                break;
-                                        }
-
-                                        if (success)
-                                        {
-                                            if (newAtExecution != null)
-                                            {
-                                                var newExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == newAtExecution.ExecutionID && i.SynchedAssetTypeID == newAtExecution.SynchedAssetTypeID);
-                                                if (newExecutionAssetCount == newAtExecution.CurrentSourceAssetCount)
-                                                {
-                                                    newAtExecution.CompletedOn = DateTime.UtcNow;
-                                                    company.Update(newAtExecution);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                if (previousAtExecution != null)
-                                                {
-                                                    var previousExecutionAssetCount = company.Count<IntegrationExecutionAsset>(i => i.ExecutionID == previousAtExecution.ExecutionID && i.SynchedAssetTypeID == previousAtExecution.SynchedAssetTypeID);
-                                                    if (previousExecutionAssetCount == previousAtExecution.CurrentSourceAssetCount)
-                                                    {
-                                                        previousAtExecution.CompletedOn = DateTime.UtcNow;
-                                                        company.Update(previousAtExecution);
-                                                    }
-                                                }
-                                            }
-                                            company.Update(item);
-                                        }
                                     }
-
-                                    log.WriteLine($"Logging out of IGC...");
-                                    IGC_Logout(setting, cookies);
-
-                                    if (newExecution != null)
-                                    {
-                                        log.WriteLine($"Completing execution ID {newExecution.ID}.");
-                                        newExecution.CompletedOn = DateTime.UtcNow;
-                                        company.Update(newExecution);
-                                    }
-
-
-                                    #region Process unresolved relationships and process workflows around them
-
-                                    try
-                                    {
-                                        log.WriteLine($"Begin processing unresolved relationships.");
-                                        var unResolvedRelationResults = company.ProcessUnresolvedRelationships();
-                                        if (unResolvedRelationResults != null)
-                                        {
-                                            var events = new List<EventInfo>();
-                                            foreach (var r in unResolvedRelationResults)
-                                            {
-                                                if (r.Action == "INSERT" && r.IntersectID != null)
-                                                {
-                                                    events.Add(new EventInfo
-                                                    {
-                                                        CompanyID = c.CompanyID,
-                                                        DomainPrefix = c.UrlPrefix,
-                                                        ResourceID = setting.TargetResourceID,
-                                                        Action = ChangeType.Add,
-                                                        Object = new EventObjectInfo
-                                                        {
-                                                            Object = SystemObjects.Intersect,
-                                                            ObjectType = SystemObjects.IntersectType,
-                                                            ObjectID = r.IntersectID,
-                                                            ObjectTypeID = r.IntersectTypeID
-                                                        }
-                                                    });
-                                                    if (events.Count > 50)
-                                                    {
-                                                        Queue.CreateTopicMessages(events);
-                                                        events.Clear();
-                                                    }
-                                                }
-                                            }
-
-                                            if (events.Count > 0)
-                                            {
-                                                Queue.CreateTopicMessages(events);
-                                            }
-                                        }
-                                        log.WriteLine($"End processing unresolved relationships.");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                                    }
-
-                                    #endregion
                                 }
-                            }
 
-                            if (settings.Count > 0)
-                            {
-                                try
-                                {
-                                    log.WriteLine($"Begin processing deletions.");
-                                    company.ProcessIntegrationAssetDeletions();
-                                    log.WriteLine($"End processing deletions.");
-                                }
-                                catch (Exception ex)
-                                {
-                                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                                }
                             }
                         }
-                        catch (Exception ex)
+
+                        #region Process deletes
+
+                        if (settings.Count > 0)
                         {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            //log.Error($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                            try
+                            {
+                                log.WriteLine($"Begin processing deletions.");
+                                company.ProcessIntegrationAssetDeletions();
+                                log.WriteLine($"End processing deletions.");
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
                         }
-                    });
 
-                    CoreFunction.AITrackJobCompletedNoErrors(functionName);
-                }
+                        #endregion
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                    }
+                });
+
             }
             catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex);
-                //log.Error($"General Exception: {ex.GetFullExceptionData()}");
-            }
-            finally
-            {
-                if (available)
-                    CoreFunction.UnlockWebJob(functionName);
+                log.WriteLine($"General Exception: {ex.GetFullExceptionData()}");
             }
 
             CoreFunction.AIFlush();
@@ -377,36 +449,24 @@ order by A.ID
                 uri = uri.Replace($":{cleanUri.Port}", "");
             }
 
-            //var jsonRaw = "";
-
             List<string> cookies = null;
 
-            try
+            using (var client = new HttpClient())
             {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = new TimeSpan(0, 10, 0);
-                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                    client.DefaultRequestHeaders.Remove("Authorization");
-                    client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
-                    var response = await client.GetAsync(uri);
-                    response.EnsureSuccessStatusCode();
-                    cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
-                              from cv in c.Value
-                              select cv
-                              )
-                              .ToList();
-                    //jsonRaw = await response.Content.ReadAsStringAsync();
-                    response.Dispose();
-                    client.Dispose();
-                }
-            }
-            catch (Exception ex)
-            {
-                var properties = new Dictionary<string, string>();
-                properties.Add("Uri", uri);
-                CoreFunction.AITrackException(functionName, ex, null, properties);
-                throw ex;
+                client.Timeout = new TimeSpan(0, 10, 0);
+                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Remove("Authorization");
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorization);
+                var response = await client.GetAsync(uri);
+                response.EnsureSuccessStatusCode();
+                cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
+                            from cv in c.Value
+                            select cv
+                            )
+                            .ToList();
+
+                response.Dispose();
+                client.Dispose();
             }
 
             return cookies;
@@ -931,6 +991,14 @@ order by A.ID
                             });
                         }
                     }
+                    catch (HttpRequestException rex)
+                    {
+                        if (rex.Message.Contains("403 (Forbidden)"))
+                        {
+                            client.Dispose();
+                            throw rex;
+                        }
+                    }
                     catch (Exception ex)
                     {
                         CoreFunction.AITrackException(functionName, ex);
@@ -1019,15 +1087,12 @@ order by A.ID
                                     shouldContinue = (models.paging.numTotal > models.paging.end + 1);
                                     postModel.begin = models.paging.end + 1;
 
-                                    //if (assets.Count > 4999)
-                                    //{
                                     SendIncrementalSetToGovern(client, cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
 
                                     // Re-initialize.
                                     assets = new BulkAssetImport();
                                     relationships = new BulkRelationshipImport();
                                     ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-                                    //}
                                 }
                             }
                             catch (Exception ex)
@@ -1064,11 +1129,6 @@ order by A.ID
                         {
                             CoreFunction.AITrackException(functionName, cex);
                         }
-                    }
-                    finally
-                    {
-                        // Now, logout of IGC.
-                        //string logout = GetFromApi<string>(client, $"{setting.SourceUri}logout/", sourceAuthString).Result;
                     }
 
                     client.Dispose(); // Now displose of the HTTPClient object we are using for all requests.

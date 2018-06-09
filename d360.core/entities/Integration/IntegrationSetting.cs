@@ -33,6 +33,9 @@ namespace d360.core.entities
         [DataMember]
         public int PageSize { get; set; }
 
+        [DataMember]
+        public DateTime? DelayStartUntil { get; set; }
+
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationAssetType> IntegrationAssetTypes { get; set; }
     }
