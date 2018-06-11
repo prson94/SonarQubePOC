@@ -146,7 +146,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     loadObjectFields(): Promise<any> {
-        return this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
+        return this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true)
             .then(r => {
                 this.fields = [];
                 this.fields = r;
@@ -276,7 +276,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.condition['@FieldName'] = special.label;
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
 
-            console.log('selectField: ', e, special, this.selectedType, this.selectedField);
+            //console.log('selectField: ', e, special, this.selectedType, this.selectedField);
 
         }
     }
@@ -292,6 +292,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     { value: '=', label: '=' },
                     { value: '!=', label: '!=' },
                 ];
+                break;
+            case 'html':
+                this.operators = [ ];
                 break;
             case 'decimal':
             case 'number':
@@ -333,6 +336,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case 'datetime':
                 return 'DT';
             case 'text':
+            case 'html':
                 return 'T';
             default:
                 return 'U';
