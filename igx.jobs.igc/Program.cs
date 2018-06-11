@@ -1054,6 +1054,7 @@ order by A.ID
                         execution.IsFullRefresh = !checkForChangesOnly;
 
                         var shouldContinue = true;
+                        var hasError = false;
                         while (shouldContinue)
                         {
                             try
@@ -1097,10 +1098,18 @@ order by A.ID
                             }
                             catch (Exception ex)
                             {
-                                execution.ErrorMessage = ex.GetFullExceptionData();
-                                CoreFunction.AITrackException(functionName, ex);
                                 shouldContinue = false;
                                 success = false;
+                                hasError = true;
+                                if (ex.Message.Contains("403 (Forbidden)"))
+                                {
+                                    throw ex;
+                                }
+                                else
+                                {
+                                    execution.ErrorMessage = ex.GetFullExceptionData();
+                                    CoreFunction.AITrackException(functionName, ex);
+                                }
                             }
                         }
 
@@ -1113,7 +1122,7 @@ order by A.ID
                             success = true; // Nothing left to post.
                         }
 
-                        if (success)
+                        if (success & !hasError)
                         {
                             mapping.LastSynchOn = now;
                         }
@@ -1128,6 +1137,10 @@ order by A.ID
                         catch (Exception cex)
                         {
                             CoreFunction.AITrackException(functionName, cex);
+                        }
+                        if (oex.Message.Contains("403 (Forbidden)"))
+                        {
+                            throw oex;
                         }
                     }
 
