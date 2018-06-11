@@ -3,6 +3,7 @@ import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
 import { FusionService } from '../../../services/fusion.service';
 import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
+import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'd3s-fusion-rule-step-find',
@@ -148,27 +149,44 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
         if (this.settings.Object == 'ArtifactType')
             return this.fusionService.getFindArtifactTypes()
                 .then(r => {
+                    this.settings.TargetField = null;
+                    this.settings.ObjectID = null;
                     this.objects = r;
                     this.validate();
                 });
         if (this.settings.Object == 'TaxonomyType')
            return  this.fusionService.getFindModels()
-                .then(r => {
+               .then(r => {
+                   this.settings.TargetField = null;
+                   this.settings.ObjectID = null;
                     this.objects = r;
                     this.validate();
                 });
+        
         this.validate();
         return Promise.resolve();
     }
 
+    changeGlossarySourceMatchField(): Promise<any> {
+        this.settings.Object = null;
+        this.settings.ObjectID = null;
+        this.settings.TargetField = null;
+        this.validate();
+        return Promise.resolve();
+    }
     changeGlossaryTypeFields(): Promise<any> {
-
+       
+        if (StringHelpers.isNullOrEmpty(this.settings.ObjectID)) {
+            this.validate();
+            return Promise.resolve();
+        }
         this.targetFields = [];
         if (this.settings.Object == 'ArtifactType') {
             return this.fusionService.getFindSourceFields('ArtifactType', this.settings.ObjectID)
                 .then(r => {
                     this.targetFields = r;                    
                     this.showTargetField = true;
+                    this.settings.TargetField = null;
                     this.validate();
                 });
         } else if (this.settings.Object == 'TaxonomyType') {
@@ -176,6 +194,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                 .then(r => {
                     this.targetFields = r;                    
                     this.showTargetField = true;
+                    this.settings.TargetField = null;
                     this.validate();
                 });
         } else {
@@ -188,22 +207,22 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
 
     validate() {
         this.isValid = true;
-        if (this.settings.ObjectSearch == null)
+        if (StringHelpers.isNullOrEmpty(this.settings.ObjectSearch))
             this.isValid = false;
         else if (this.settings.ObjectSearch == 'Fusion') {
-            if (this.settings.FilterField == null || this.settings.ObjectID == null)
+            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.ObjectID ))
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'FusionOwner') {
-            if (this.settings.ObjectID == null)
+            if (StringHelpers.isNullOrEmpty(this.settings.ObjectID ))
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'Glossary') {
-            if (this.settings.FilterField == null || this.settings.Object == null || this.settings.ObjectID == null || !this.settings.TargetField)
+            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.Object) || StringHelpers.isNullOrEmpty(this.settings.ObjectID) || StringHelpers.isNullOrEmpty(this.settings.TargetField))
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'Promotion') {
-            if (this.settings.FilterField == null || this.settings.ObjectID == null)
+            if (StringHelpers.isNullOrEmpty( this.settings.FilterField)  || StringHelpers.isNullOrEmpty(this.settings.ObjectID))
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'ResultFromStep') {
-            if (this.settings.ObjectID == null)
+            if (StringHelpers.isNullOrEmpty(this.settings.ObjectID ))
                 this.isValid = false;
         }
 

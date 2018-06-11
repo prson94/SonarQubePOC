@@ -4,6 +4,7 @@
         <div class="col l6 m6 s12">
             <div class="FieldName" style="display:block">Promotion Type</div>
             <select [(ngModel)]="settings.Object" style="width:100%" (ngModelChange)="changePromotionObjectType()" name="promotetype" #promotetype="ngModel" required>
+                <option></option>
                 <option *ngFor="let i of promotionObjectTypes" [value]="i.value">{{i.text}}</option>
             </select>
             <div class="errorMessage" [hidden]="!showErrors || promotetype.valid">Promotion type is required</div>
@@ -11,6 +12,7 @@
         <div class="col l6 m6 s12">
             <div class="FieldName" style="display:block">Promotion To</div>
             <select [(ngModel)]="settings.ObjectID" style="width:100%" (ngModelChange)="changePromotionObject($event)" name="promoteto" #promoteto="ngModel" required>
+                <option></option>
                 <option *ngFor="let i of promotionObjects" [value]="i.ID">{{i.Name}}</option>
             </select>
             <div class="errorMessage" [hidden]="!showErrors || promoteto.valid">Promotion object is required</div>
@@ -20,6 +22,7 @@
         <div class="col l6 m6 s12">
             <div class="FieldName" style="display:block">Parent Search</div>
             <select [(ngModel)]="settings.ParentObjectSearch" style="width:100%" (ngModelChange)="changeParentSearch()" name="parentsearch" #parentsearch="ngModel" required>
+                <option></option>
                 <option *ngFor="let i of parentSearchTypes" [value]="i.value">{{i.text}}</option>
             </select>
             <div class="errorMessage" [hidden]="!showErrors && parentsearch.valid">Parent search is required</div>

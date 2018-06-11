@@ -1649,6 +1649,7 @@
     <TypeScriptCompile Include="Scripts\app\services\web-analytics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
     <None Include="Scripts\app\tsconfig.aot.json" />
+    <TypeScriptCompile Include="Scripts\app\static\string-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\vendor.ts" />
   </ItemGroup>
   <ItemGroup>

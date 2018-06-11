@@ -3,6 +3,7 @@ import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
 import { FusionService } from '../../../services/fusion.service';
 import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
+import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'd3s-fusion-rule-step-promote',
@@ -59,6 +60,11 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
 
     loadTypes(): Promise<any> {
         this.promotionObjects = [];
+        if (StringHelpers.isNullOrEmpty(this.settings.Object)) {
+            this.validate();
+            return Promise.resolve();
+        }
+        this.settings.ObjectID = null;
         if (this.settings.Object == 'ArtifactType')
             return this.fusionService.getFindArtifactTypes()
                 .then(r => {
@@ -93,6 +99,9 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
                     if (item.ParentID) {
                         if (item.ParentID != 0)
                             this.showPromotionParent = true;
+                            this.settings.ParentObjectSearch = null; //to reset the Parent Search
+                            this.settings.ParentObject = null;
+                            this.settings.ParentObjectID = null;
                     }
                     else {
                         this.showPromotionParent = false;
@@ -160,10 +169,10 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
 
     validate() {
         this.isValid = true;
-        if (this.settings.Object == null || this.settings.ObjectID == null)
+        if (StringHelpers.isNullOrEmpty(this.settings.Object) || StringHelpers.isNullOrEmpty(this.settings.ObjectID))
             this.isValid = false;
         if (this.showPromotionParent) {
-            if (this.settings.ParentObjectSearch == null || this.settings.ParentObjectID == null)
+            if (StringHelpers.isNullOrEmpty(this.settings.ParentObjectSearch )|| StringHelpers.isNullOrEmpty(this.settings.ParentObjectID))
                 this.isValid = false;
         }
         this.isValidChange.emit(this.isValid);

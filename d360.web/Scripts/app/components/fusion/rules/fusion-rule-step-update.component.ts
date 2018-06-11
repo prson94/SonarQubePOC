@@ -3,6 +3,7 @@ import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
 import { FusionService } from '../../../services/fusion.service';
 import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
+import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'd3s-fusion-rule-step-update',
@@ -42,7 +43,7 @@ export class FusionRuleStepUpdateComponent extends FusioRuleStepBaseComponent im
 
     validate() {
         this.isValid = true;
-        if (this.settings.SubjectID == null)
+        if (StringHelpers.isNullOrEmpty(this.settings.SubjectID))
             this.isValid = false;
 
         this.isValidChange.emit(this.isValid);
