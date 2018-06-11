@@ -32,8 +32,8 @@ import * as _ from 'lodash';
         .relation-table tr td {
             border-radius: 0;
         }
-
-        .display-table-title {
+        
+       .display-table-title {
             text-align:center;
             width:100%;
             font-family: "Roboto", Tahoma !important;
@@ -143,7 +143,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                                     //load the then islookup and field values
                                     if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0) {
                                         for (let item of this.model.StructuredDefinition.Then.Conditions) {
-                                            this.loadThenValuesForFieldType(item,false);
+                                           this.loadThenValuesForFieldType(item,false);
                                         }
                                     }
 
@@ -323,6 +323,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             if (selectedFieldType.isLookup) {
                 selectedFieldType.values.unshift({ label: 'Choose...', value: null });
                 item.ValueOptions = selectedFieldType.values;
+                item.IsLookup = selectedFieldType.isLookup;
+            }
+            else if (selectedFieldType.type == 'Boolean') {
+                item.IsBool = true;
+                item.ValueOptions = this.whenBoolTypes;
                 item.IsLookup = selectedFieldType.isLookup;
             }
             else {
