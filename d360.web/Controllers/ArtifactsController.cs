@@ -729,7 +729,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                         Formatting = Newtonsoft.Json.Formatting.None
                     };
                 }
-                var filters = GetFilterValuesFromRequest(Request);
+                var filters = GetFilterValuesFromRequest(Request,true);
 
                 int total;
                 //var results = Company.GetDynamicAssets(assetType, filters, out total, pagenum, pagesize, false, sortDataField, sortOrder, filter);
