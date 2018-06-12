@@ -51,7 +51,7 @@ namespace igx.jobs
                 if (_client == null)
                 {
                     var handler = new HttpClientHandler { UseCookies = false };
-                    _client = new HttpClient(handler);
+                    _client = new HttpClient(handler,false);
                     _client.Timeout = new TimeSpan(1, 0, 0);
                     _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
                 }
@@ -102,12 +102,12 @@ namespace igx.jobs
                         // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
                         if (settings.Count > 0)
                         {
-                            //#if DEBUG
-                            //                                var IDs = new List<int>() { 1, 53, 54, 55 };
-                            //                                mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
-                            //#else
+                            #if DEBUG
+                                                            var IDs = new List<int>() { 1 };
+                                                            mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
+                            #else
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
-                            //#endif
+                            #endif
                             mappingFields = company.Filter<IntegrationAssetTypeFieldItem>(i => i.Active).ToList();
                             mappingRelations = company.Table<IntegrationAssetTypeRelationItem>().ToList();
                             mappingRelationTargets = company.Table<IntegrationAssetTypeRelationItemTarget>().ToList();
@@ -394,14 +394,7 @@ order by A.ID
             {
                 CoreFunction.AITrackException(functionName, ex);
                 log.WriteLine($"General Exception: {ex.GetFullExceptionData()}");
-            }
-            finally
-            {
-                if (Client != null)
-                {
-                    Client.Dispose();
-                }
-            }
+            }            
 
             CoreFunction.AIFlush();
         }
