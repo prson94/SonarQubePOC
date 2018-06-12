@@ -520,6 +520,7 @@ order by A.ID
                 var properties = new Dictionary<string, string>();
                 properties.Add("Uri", uri);
                 properties.Add("Request Body", requestBody);
+                properties.Add("Response", jsonToReturn);
                 CoreFunction.AITrackException(functionName, ex, null, properties);
                 throw ex;
             }
