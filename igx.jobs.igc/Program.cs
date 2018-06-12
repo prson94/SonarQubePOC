@@ -6,6 +6,7 @@ using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
 using d360.model;
+using igx.jobs;
 using igx.jobs.igc;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
@@ -41,6 +42,29 @@ namespace igx.jobs
 #else
         const string timerSettings = "0 */5 * * * *";
 #endif
+
+        private static HttpClient _client = null;
+        public static HttpClient Client
+        {
+            get
+            {
+                if (_client == null)
+                {
+                    var handler = new HttpClientHandler { UseCookies = false };
+                    _client = new HttpClient(handler);
+                    _client.Timeout = new TimeSpan(1, 0, 0);
+                    _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                }
+
+                return _client;
+            }
+        }
+
+        public static string AuthenticationHeaderValue { get; set; } = null;
+
+        public static List<string> SessionCookies { get; set; } = null;
+
+        public static string LogoutUri { get; set; } = null;
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -78,12 +102,12 @@ namespace igx.jobs
                         // Do this call in here so we do not incur the cost of four DB calls for every database unless we absolutely have to.
                         if (settings.Count > 0)
                         {
-//#if DEBUG
-//                                var IDs = new List<int>() { 1, 53, 54, 55 };
-//                                mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
-//#else
+                            //#if DEBUG
+                            //                                var IDs = new List<int>() { 1, 53, 54, 55 };
+                            //                                mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
+                            //#else
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
-//#endif
+                            //#endif
                             mappingFields = company.Filter<IntegrationAssetTypeFieldItem>(i => i.Active).ToList();
                             mappingRelations = company.Table<IntegrationAssetTypeRelationItem>().ToList();
                             mappingRelationTargets = company.Table<IntegrationAssetTypeRelationItemTarget>().ToList();
@@ -92,6 +116,8 @@ namespace igx.jobs
 
                         foreach (var setting in settings)
                         {
+                            AuthenticationHeaderValue = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
+
                             var now = DateTime.UtcNow;
                             var delayStartUntil = setting.DelayStartUntil ?? now;
 
@@ -120,49 +146,7 @@ order by A.ID
 ", new { s = setting.ID }).ToList();
 
                                     IntegrationExecution newExecution = null;
-                                    bool shouldContinue = false;
-
-                                    #region  Authenticate to API to get session.
-
-                                    var sourceAuthString = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
-                                    List<string> cookies = null;
-                                    switch (setting.IntegrationSystem)
-                                    {
-                                        case d360.core.enums.IntegrationSystem.IGC:
-                                            try
-                                            {
-                                                log.WriteLine("Begin getting new IGC session...");
-                                                cookies = GetCookiesFromApi($"{setting.SourceUri}types", sourceAuthString).Result;
-                                                shouldContinue = (cookies != null);
-                                                log.WriteLine("Finished getting new IGC session...");
-                                            }
-                                            catch (HttpRequestException rex)
-                                            {
-                                                if (rex.Message.Contains("403 (Forbidden)"))
-                                                {
-                                                    log.WriteLine($"Failed getting new IGC session...{rex.GetFullExceptionData()}. Waiting for 30 minutes and will retry.");
-                                                    setting.DelayStartUntil = DateTime.UtcNow.AddMinutes(31);
-                                                    company.Update(setting);
-                                                }
-                                                else
-                                                {
-                                                    log.WriteLine($"Failed getting new IGC session...{rex.GetFullExceptionData()}");
-                                                    var properties = new Dictionary<string, string>();
-                                                    properties.Add("Uri", $"{setting.SourceUri}types");
-                                                    CoreFunction.AITrackException(functionName, rex, null, properties);
-                                                }
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                log.WriteLine($"Failed getting new IGC session...{ex.GetFullExceptionData()}");
-                                                var properties = new Dictionary<string, string>();
-                                                properties.Add("Uri", $"{setting.SourceUri}types");
-                                                CoreFunction.AITrackException(functionName, ex, null, properties);
-                                                throw ex;
-                                            }
-                                            break;
-                                    }
-                                    #endregion
+                                    bool shouldContinue = true;
 
                                     if (shouldContinue)
                                     {
@@ -244,12 +228,13 @@ order by A.ID
                                             switch (setting.IntegrationSystem)
                                             {
                                                 case d360.core.enums.IntegrationSystem.IGC:
+                                                    LogoutUri = $"{setting.SourceUri}logout/";
+
                                                     log.WriteLine($"Begin processing IGC asset {item.SourceAssetTypeName}...");
                                                     try
                                                     {
                                                         success = IGC_LoadAssetsByMappingType(
                                                             setting,
-                                                            cookies,
                                                             performDelta,
                                                             now,
                                                             previousAtExecution ?? newAtExecution,
@@ -316,19 +301,6 @@ order by A.ID
                                             }
 
                                             #endregion
-                                        }
-
-                                        if (setting.IntegrationSystem == d360.core.enums.IntegrationSystem.IGC)
-                                        {
-                                            log.WriteLine($"Logging out of IGC...");
-                                            try
-                                            {
-                                                IGC_Logout(setting, cookies);
-                                            }
-                                            catch (Exception loex)
-                                            {
-                                                log.WriteLine($"Unable to log out of IGC: {loex.GetFullExceptionData()}.");
-                                            }
                                         }
 
                                         if (newExecution != null)
@@ -423,6 +395,13 @@ order by A.ID
                 CoreFunction.AITrackException(functionName, ex);
                 log.WriteLine($"General Exception: {ex.GetFullExceptionData()}");
             }
+            finally
+            {
+                if (Client != null)
+                {
+                    Client.Dispose();
+                }
+            }
 
             CoreFunction.AIFlush();
         }
@@ -472,7 +451,7 @@ order by A.ID
             return cookies;
         }
 
-        internal async static Task<T> GetFromApi<T>(HttpClient client, string uri)
+        internal async static Task<T> GetFromApi<T>(string uri)
         {
             var cleanUri = new Uri(uri);
             if (cleanUri.Port != 80 && cleanUri.Port != 443)
@@ -482,11 +461,23 @@ order by A.ID
 
             var jsonRaw = "";
 
+            List<string> cookies = null;
+
             try
             {
-                var response = await client.GetAsync(uri);
+                Client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", AuthenticationHeaderValue);
+
+                var response = await Client.GetAsync(uri);
                 response.EnsureSuccessStatusCode();
                 jsonRaw = await response.Content.ReadAsStringAsync();
+
+                cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
+                           from cv in c.Value
+                           select cv
+                ).ToList();
+                Client.DefaultRequestHeaders.Remove("Authorization");
+                Client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
+
                 response.Dispose();
             }
             catch (Exception ex)
@@ -496,19 +487,37 @@ order by A.ID
                 CoreFunction.AITrackException(functionName, ex, null, properties);
                 throw ex;
             }
+            finally
+            {
+                if (!string.IsNullOrEmpty(LogoutUri))
+                {
+                    var logout = Client.GetAsync(LogoutUri).Result;
+                    Client.DefaultRequestHeaders.Remove("Cookie");
+                }
+            }
 
             return JsonConvert.DeserializeObject<T>(jsonRaw, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
         }
 
-        static async Task<T> PostJsonToApiAsync<T>(HttpClient client, string uri, string requestBody)
+        static async Task<T> PostJsonToApiAsync<T>(string uri, string requestBody)
         {
             var jsonToReturn = "";
+            List<string> cookies = null;
 
             try
             {
-                var response = await client.PostAsync(uri, new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json"));
+                Client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", AuthenticationHeaderValue);
+                var response = await Client.PostAsync(uri, new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json"));
                 response.EnsureSuccessStatusCode();
                 jsonToReturn = await response.Content.ReadAsStringAsync();
+
+                cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
+                           from cv in c.Value
+                           select cv
+                ).ToList();
+                Client.DefaultRequestHeaders.Remove("Authorization");
+                Client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
+
                 response.Dispose();
 
                 return JsonConvert.DeserializeObject<T>(jsonToReturn, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
@@ -521,52 +530,18 @@ order by A.ID
                 CoreFunction.AITrackException(functionName, ex, null, properties);
                 throw ex;
             }
-        }
-
-        static async Task<string> PostJsonToApiAsync(HttpClient client, string uri, string requestBody)
-        {
-            var jsonToReturn = "";
-
-            try
+            finally
             {
-                var response = await client.PostAsync(uri, new StringContent(requestBody));
-                response.EnsureSuccessStatusCode();
-                jsonToReturn = await response.Content.ReadAsStringAsync();
-                response.Dispose();
-
-                return jsonToReturn;
-            }
-
-            catch (Exception ex)
-            {
-                var properties = new Dictionary<string, string>();
-                properties.Add("Uri", uri);
-                properties.Add("Request Body", requestBody);
-                CoreFunction.AITrackException(functionName, ex, null, properties);
-                throw ex;
+                if (!string.IsNullOrEmpty(LogoutUri))
+                {
+                    var logout = Client.GetAsync(LogoutUri).Result;
+                    Client.DefaultRequestHeaders.Remove("Cookie");
+                }
             }
         }
 
 #endregion
 
-        public static void IGC_Logout(IntegrationSetting setting, List<string> cookies)
-        {
-            using (var handler = new HttpClientHandler { UseCookies = false })
-            {
-                using (var client = new HttpClient(handler))
-                {
-                    client.Timeout = new TimeSpan(1, 0, 0);
-                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-                    if (cookies != null)
-                    {
-                        client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
-
-                        var logout = GetFromApi<string>(client, $"{setting.SourceUri}logout/").Result;
-                    }
-                }
-            }
-        }
 
         /// <summary>
         /// Synchronizes a specific type of asset from IGC with the customer's environment, based off a serieis of field, relationship, and ownership mappings.
@@ -582,7 +557,6 @@ order by A.ID
         /// <returns>An asynchronous boolean to indicate whether the process was successful or not.</returns>
         public static bool IGC_LoadAssetsByMappingType(
             IntegrationSetting setting, 
-            List<string> cookies,
             bool checkForChangesOnly, 
             DateTime now, 
             IntegrationExecutionAssetType execution,
@@ -601,8 +575,6 @@ order by A.ID
             var assets = new BulkAssetImport();
             var relationships = new BulkRelationshipImport();
             var ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-
-            var sourceAuthString = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
 
             DateTime? currentParsedUnvalidatedDate = null;
 
@@ -950,201 +922,183 @@ order by A.ID
             //First, get the type definition of the asset type, to pull enum values.
             var url = $"{setting.SourceUri}types/{mapping.SourceAssetTypeName}?showEditProperties=true";
 
-            using (var handler = new HttpClientHandler { UseCookies = false })
+            try
             {
-                using (var client = new HttpClient(handler))
+                var igcType = GetFromApi<IgcTypeModel>(url).Result;
+
+                if (igcType != null)
                 {
-                    client.Timeout = new TimeSpan(1, 0, 0);
-                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-                    if (cookies != null)
+                    igcType.EditInfo.Properties.ForEach(p =>
                     {
-                        client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
-                    }
-                    else
-                    {
-                        client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", sourceAuthString);
-                    }
+                        if (p.Type.Name == "enum")
+                        {
+                            if (p.Type.Values != null)
+                            {
+                                enumFields.Add(p.Name);
 
+                                enumValues.AddRange(p.Type.Values.Select(i => new EnumResolutionModel
+                                {
+                                    PropertyName = p.Name,
+                                    Code = i.Code,
+                                    DisplayValue = i.DisplayName
+                                }));
+                            }
+                        }
+                    });
+                }
+            }
+            catch (HttpRequestException rex)
+            {
+                if (rex.Message.Contains("403 (Forbidden)"))
+                {
+                    throw rex;
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex);
+            }
+
+            try
+            {
+                url = $"{setting.SourceUri}search/";
+
+                //The raw sql connection to use for the specific company.
+                var companyConnnectionString = $"Server={cs.Server};Database=D3S_{cs.CompanyID};User ID={cs.Username};Password={cs.Password}";
+                var cnn = new SqlConnection(companyConnnectionString);
+
+                //Perform search using POST method.
+                var postModel = new IgcPostSearchRequestModel
+                {
+                    begin = previouslyProcessCount,
+                    sorts = new List<IgcPostSearchRequestSortModel>() {
+                        new IgcPostSearchRequestSortModel { ascending = true, property = "modified_on" },
+                        new IgcPostSearchRequestSortModel { ascending = true, property = "created_on" }
+                    }
+                };
+
+                #region Figure out page size
+
+                var pageSize = 500;
+                if (mapping.PageSize.HasValue)
+                    pageSize = mapping.PageSize.Value;
+                else
+                    pageSize = setting.PageSize;
+                postModel.pageSize = pageSize;
+
+                #endregion
+
+                postModel.types.Add(mapping.SourceAssetTypeName);
+
+                postModel.properties.AddRange(fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
+                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
+
+                if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
+                if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
+
+                var min = checkForChangesOnly ?
+                    (ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0))) :
+                    0;
+                var max = ConvertDateToUnixTimeMilliseconds(now);
+
+                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
+                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
+
+                execution.IsFullRefresh = !checkForChangesOnly;
+
+                var shouldContinue = true;
+                var hasError = false;
+                while (shouldContinue)
+                {
                     try
                     {
-                        var igcType = GetFromApi<IgcTypeModel>(client, url).Result;
+                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
 
-                        if (igcType != null)
+                        if (models != null)
                         {
-                            igcType.EditInfo.Properties.ForEach(p =>
+                            // Write the IGC total if we have not already done so.
+                            if (execution.CurrentSourceAssetCount <= 0)
                             {
-                                if (p.Type.Name == "enum")
-                                {
-                                    if (p.Type.Values != null)
-                                    {
-                                        enumFields.Add(p.Name);
+                                execution.CurrentSourceAssetCount = models.paging.numTotal;
+                                execution.CurrentTargetAssetCount = 0;
+                                company.Update(execution);
+                            }
 
-                                        enumValues.AddRange(p.Type.Values.Select(i => new EnumResolutionModel
-                                        {
-                                            PropertyName = p.Name,
-                                            Code = i.Code,
-                                            DisplayValue = i.DisplayName
-                                        }));
-                                    }
-                                }
-                            });
-                        }
-                    }
-                    catch (HttpRequestException rex)
-                    {
-                        if (rex.Message.Contains("403 (Forbidden)"))
-                        {
-                            client.Dispose();
-                            throw rex;
+                            if (models.items.Count > 0)
+                            {
+                                // Create the execution asset records.
+                                var executionAssets = new List<IntegrationExecutionAsset>();
+                                parse(models.items, true, executionAssets);
+                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
+
+                                // Now parse the data fully.
+                                executionAssets = new List<IntegrationExecutionAsset>();
+                                parse(models.items, false, executionAssets);
+                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
+
+                                var executionRelationItems = relationships.Select(i => new IntegrationExecutionRelationItem { ExecutionID = execution.ExecutionID, IntersectTypeID = i.IntersectTypeID, SubjectSourceID = i.SubjectSourceID, ObjectSourceID = i.ObjectSourceID }).ToList();
+                                cnn.BulkExecutionRelationItemLoad(setting.TargetResourceID, executionRelationItems);
+                            }
+
+                            // Should we do this again, since we have not completed the paged dataset.
+                            shouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                            postModel.begin = models.paging.end + 1;
+
+                            SendIncrementalSetToGovern(cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
+
+                            // Re-initialize.
+                            assets = new BulkAssetImport();
+                            relationships = new BulkRelationshipImport();
+                            ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
                         }
                     }
                     catch (Exception ex)
                     {
-                        CoreFunction.AITrackException(functionName, ex);
-                    }
-
-                    try
-                    {
-                        url = $"{setting.SourceUri}search/";
-
-                        //The raw sql connection to use for the specific company.
-                        var companyConnnectionString = $"Server={cs.Server};Database=D3S_{cs.CompanyID};User ID={cs.Username};Password={cs.Password}";
-                        var cnn = new SqlConnection(companyConnnectionString);
-
-                        //Perform search using POST method.
-                        var postModel = new IgcPostSearchRequestModel
+                        shouldContinue = false;
+                        success = false;
+                        hasError = true;
+                        if (ex.Message.Contains("403 (Forbidden)"))
                         {
-                            begin = previouslyProcessCount,
-                            sorts = new List<IgcPostSearchRequestSortModel>() {
-                                new IgcPostSearchRequestSortModel { ascending = true, property = "modified_on" },
-                                new IgcPostSearchRequestSortModel { ascending = true, property = "created_on" }
-                            }
-                        };
-
-                        #region Figure out page size
-
-                        var pageSize = 500;
-                        if (mapping.PageSize.HasValue)
-                            pageSize = mapping.PageSize.Value;
-                        else
-                            pageSize = setting.PageSize;
-                        postModel.pageSize = pageSize;
-
-                        #endregion
-
-                        postModel.types.Add(mapping.SourceAssetTypeName);
-
-                        postModel.properties.AddRange(fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
-                        postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
-                        postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
-                        postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
-
-                        if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
-                        if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
-
-                        var min = checkForChangesOnly ?
-                            (ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0))) :
-                            0;
-                        var max = ConvertDateToUnixTimeMilliseconds(now);
-
-                        postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
-                        postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
-
-                        execution.IsFullRefresh = !checkForChangesOnly;
-
-                        var shouldContinue = true;
-                        var hasError = false;
-                        while (shouldContinue)
-                        {
-                            try
-                            {
-                                var models = PostJsonToApiAsync<IgcDynamicArrayModels>(client, url, JsonConvert.SerializeObject(postModel)).Result;
-
-                                if (models != null)
-                                {
-                                    // Write the IGC total if we have not already done so.
-                                    if (execution.CurrentSourceAssetCount <= 0)
-                                    {
-                                        execution.CurrentSourceAssetCount = models.paging.numTotal;
-                                        execution.CurrentTargetAssetCount = 0;
-                                        company.Update(execution);
-                                    }
-
-                                    // Create the execution asset records.
-                                    var executionAssets = new List<IntegrationExecutionAsset>();
-                                    parse(models.items, true, executionAssets);
-                                    cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
-
-                                    // Now parse the data fully.
-                                    executionAssets = new List<IntegrationExecutionAsset>();
-                                    parse(models.items, false, executionAssets);
-                                    cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
-
-                                    var executionRelationItems = relationships.Select(i => new IntegrationExecutionRelationItem { ExecutionID = execution.ExecutionID, IntersectTypeID = i.IntersectTypeID, SubjectSourceID = i.SubjectSourceID, ObjectSourceID = i.ObjectSourceID }).ToList();
-                                    cnn.BulkExecutionRelationItemLoad(setting.TargetResourceID, executionRelationItems);
-
-                                    // Should we do this again, since we have not completed the paged dataset.
-                                    shouldContinue = (models.paging.numTotal > models.paging.end + 1);
-                                    postModel.begin = models.paging.end + 1;
-
-                                    SendIncrementalSetToGovern(client, cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
-
-                                    // Re-initialize.
-                                    assets = new BulkAssetImport();
-                                    relationships = new BulkRelationshipImport();
-                                    ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                shouldContinue = false;
-                                success = false;
-                                hasError = true;
-                                if (ex.Message.Contains("403 (Forbidden)"))
-                                {
-                                    throw ex;
-                                }
-                                else
-                                {
-                                    execution.ErrorMessage = ex.GetFullExceptionData();
-                                    CoreFunction.AITrackException(functionName, ex);
-                                }
-                            }
-                        }
-
-                        if (assets.Count > 0)
-                        {
-                            success = SendIncrementalSetToGovern(client, cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
+                            throw ex;
                         }
                         else
                         {
-                            success = true; // Nothing left to post.
-                        }
-
-                        if (success & !hasError)
-                        {
-                            mapping.LastSynchOn = now;
+                            execution.ErrorMessage = ex.GetFullExceptionData();
+                            CoreFunction.AITrackException(functionName, ex);
                         }
                     }
-                    catch (Exception oex)
-                    {
-                        try
-                        {
-                            execution.ErrorMessage += oex.GetFullExceptionData();
-                            company.Update(execution);
-                        }
-                        catch (Exception cex)
-                        {
-                            CoreFunction.AITrackException(functionName, cex);
-                        }
-                        if (oex.Message.Contains("403 (Forbidden)"))
-                        {
-                            throw oex;
-                        }
-                    }
+                }
 
-                    client.Dispose(); // Now displose of the HTTPClient object we are using for all requests.
+                if (assets.Count > 0)
+                {
+                    success = SendIncrementalSetToGovern(cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
+                }
+                else
+                {
+                    success = true; // Nothing left to post.
+                }
+
+                if (success & !hasError)
+                {
+                    mapping.LastSynchOn = now;
+                }
+            }
+            catch (Exception oex)
+            {
+                try
+                {
+                    execution.ErrorMessage += oex.GetFullExceptionData();
+                    company.Update(execution);
+                }
+                catch (Exception cex)
+                {
+                    CoreFunction.AITrackException(functionName, cex);
+                }
+                if (oex.Message.Contains("403 (Forbidden)"))
+                {
+                    throw oex;
                 }
             }
 
@@ -1152,7 +1106,7 @@ order by A.ID
         }
 
         public static bool SendIncrementalSetToGovern(
-            HttpClient client, SqlConnection cnn, 
+            SqlConnection cnn, 
             int companyID, string companyDomain, int resourceID, 
             IntegrationAssetType mapping, BulkAssetImport assets, BulkRelationshipImport relationships, D3sOwnershipItemsModel owners)
         {
