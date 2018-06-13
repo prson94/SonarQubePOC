@@ -1525,23 +1525,54 @@ order by wi.StartedOn desc";
 	                string_agg(r.FirstName + ' ' + r.LastName, ', ') as Resources 
                 from
                 (
-	                select distinct 
+	                select distinct top 10
 		                d.FirstName, d.LastName 
 	                from ResponsibilityDetails d
 	                where ResponsibilityTypeID  = @id
                 ) r";
 
-            foreach(dynamic result in results)
+            try
             {
-                if (result.CurrentStepID != null && result.Settings != null && result.ActivityType != null)
+                foreach (dynamic result in results)
                 {
-                    var settings = XmlToDynamic(result.Settings);
-                    int resId = 0;
-                    switch((WorkflowActivityType)result.ActivityType)
+                    if (result.CurrentStepID != null && result.Settings != null && result.ActivityType != null)
                     {
-                        case WorkflowActivityType.Form:
-                            if (settings.SendFormEmail != null && (bool)settings.SendFormEmail == true)
-                            {
+                        var settings = XmlToDynamic(result.Settings);
+                        int resId = 0;
+                        switch ((WorkflowActivityType)result.ActivityType)
+                        {
+                            case WorkflowActivityType.Form:
+                                if (settings.SendFormEmail != null && (bool)settings.SendFormEmail == true)
+                                {
+                                    if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
+                                    {
+                                        if (settings.ResponsibilityTypeID is Newtonsoft.Json.Linq.JArray)
+                                        {
+                                            if (int.TryParse(settings.ResponsibilityTypeID[0].Value, out int d))
+                                                resId = d;
+                                        }
+                                        else if (int.TryParse(settings.ResponsibilityTypeID.Value, out int d))
+                                            resId = d;
+
+                                        if (resId > 0)
+                                        {
+                                            var resources = Company.Query<string>(responsibilitySql, new { id = resId });
+                                            result.ResponsibleUser = resources.FirstOrDefault();
+                                        }
+
+                                    }
+                                    else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
+                                    {
+                                        result.ResponsibleUser = settings.MessageToUser;
+                                    }
+                                    else if (settings.MessageRecipientType == EmailTaskRecipientType.Initiator)
+                                    {
+                                        result.ResponsibleUser = result.StartedBy;
+                                    }
+
+                                }
+                                break;
+                            case WorkflowActivityType.EmailNotification:
                                 if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
                                 {
                                     if (settings.ResponsibilityTypeID is Newtonsoft.Json.Linq.JArray)
@@ -1557,49 +1588,25 @@ order by wi.StartedOn desc";
                                         var resources = Company.Query<string>(responsibilitySql, new { id = resId });
                                         result.ResponsibleUser = resources.FirstOrDefault();
                                     }
-
                                 }
                                 else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
                                 {
-                                    result.ResponsibleUser = settings.MessageToUser; 
+                                    result.ResponsibleUser = settings.MessageToUser;
                                 }
                                 else if (settings.MessageRecipientType == EmailTaskRecipientType.Initiator)
                                 {
                                     result.ResponsibleUser = result.StartedBy;
                                 }
-                                    
-                            }
-                            break;
-                        case WorkflowActivityType.EmailNotification:
-                            if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
-                            {
-                                if (settings.ResponsibilityTypeID is Newtonsoft.Json.Linq.JArray)
-                                {
-                                    if (int.TryParse(settings.ResponsibilityTypeID[0].Value, out int d))
-                                        resId = d;
-                                }
-                                else if (int.TryParse(settings.ResponsibilityTypeID.Value, out int d))
-                                    resId = d;
-
-                                if (resId > 0)
-                                {
-                                    var resources = Company.Query<string>(responsibilitySql, new { id = resId });
-                                    result.ResponsibleUser = resources.FirstOrDefault();
-                                }
-                            }
-                            else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
-                            {
-                                result.ResponsibleUser = settings.MessageToUser;
-                            }
-                            else if (settings.MessageRecipientType == EmailTaskRecipientType.Initiator)
-                            {
-                                result.ResponsibleUser = result.StartedBy;
-                            }
-                            break;
-                        default:
-                            break;
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
+            }
+             catch (Exception ex)
+            {
+
             }
 
             #endregion
