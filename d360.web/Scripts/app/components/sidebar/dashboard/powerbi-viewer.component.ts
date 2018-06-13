@@ -51,6 +51,7 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
                 type: 'report',
                 accessToken: this.powerBIDetails.AccessToken,
                 embedUrl: this.powerBIDetails.Report.embedUrl,
+                tokenType: 1,
                 id: this.powerBIDetails.Report.id,
                 settings: {
                     filterPaneEnabled: true,

@@ -5,7 +5,7 @@ using d360.model;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using Microsoft.PowerBI.Api;
-using Microsoft.PowerBI.Api.V1;
+using Microsoft.PowerBI.Api.V2;
 using Microsoft.PowerBI.Security;
 using Microsoft.Rest;
 using Newtonsoft.Json.Linq;
@@ -18,6 +18,9 @@ using System.Web.Mvc;
 using System.Xml.Linq;
 using System.Data.Entity;
 using System.Net;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using System.Configuration;
+
 
 namespace d360.web.Controllers
 {
@@ -31,6 +34,12 @@ namespace d360.web.Controllers
         { }
 
         #endregion
+
+        private static readonly string pbiUsername = ConfigurationManager.AppSettings["pbiUsername"];
+        private static readonly string pbiPassword = ConfigurationManager.AppSettings["pbiPassword"];
+        private static readonly string pbiAuthorityUrl = "https://login.windows.net/common/oauth2/authorize/";
+        private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
+        private static readonly string pbiUrl = "https://api.powerbi.com";
 
         private IPowerBIClient CreatePowerBIClient(string accessKey)
         {
@@ -47,27 +56,52 @@ namespace d360.web.Controllers
         public async Task<JsonNetResult> GetPowerBITokens(string reportId)
         {
             var companySettings = Community.GetCompanySettings();
-            var workspaceCollectionName = string.Empty;
-            var workspaceId = string.Empty;
-            var accessKey = string.Empty;
+            var groupId = string.Empty;
+            var clientId = string.Empty;
+            
+            companySettings.TryGetValue("PowerBIClientId", out clientId);
+            companySettings.TryGetValue("PowerBIGroupId", out groupId);
 
-            companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
-            companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
-            companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
+          //  clientId = "2ec97ecb-f620-40ba-a109-afcd2e89be0f";
+        //    groupId = "a2705381-baaa-4ca7-b739-befd4ddd1a33";
+            
+            // Create a user password cradentials.
+            var credential = new UserPasswordCredential(pbiUsername, pbiPassword);
 
-            if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
-                throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
+            // Authenticate using created credentials
+            var authenticationContext = new AuthenticationContext(pbiAuthorityUrl);
+            var authenticationResult = await authenticationContext.AcquireTokenAsync(pbiResourceUrl, clientId, credential);
 
-            using (var client = CreatePowerBIClient(accessKey))
+            if (authenticationResult == null)
             {
-                var reportsResponse = await client.Reports.GetReportsAsync(workspaceCollectionName, workspaceId);
-                var report = reportsResponse.Value.FirstOrDefault(r => r.Id == reportId);
-                var embedToken = PowerBIToken.CreateReportEmbedToken(workspaceCollectionName, workspaceId, report.Id);
+                throw new Exception("authentication failed");
+            }
 
+            var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
+
+            using (var client = new PowerBIClient(new Uri(pbiUrl), tokenCredentials))
+            {
+                var reportsResponse = await client.Reports.GetReportsAsync(groupId);               
+                var report = reportsResponse.Value.FirstOrDefault(r => r.Id == reportId);
+
+                if(report == null)
+                {
+                    throw new Exception("No such report");
+                }
+
+                Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest(accessLevel: "view");
+
+                var tokenResponse = await client.Reports.GenerateTokenInGroupAsync(groupId, report.Id, generateTokenRequestParameters);
+
+                if (tokenResponse == null)
+                {
+                    throw new Exception("Failed to generate embed token.");                    
+                }
+                                
                 var viewModel = new PowerBIReportViewModel
                 {
                     Report = report,
-                    AccessToken = embedToken.Generate(accessKey)
+                    AccessToken = tokenResponse.Token
                 };
 
                 return new JsonNetResult { Data = viewModel, Formatting = Newtonsoft.Json.Formatting.None };

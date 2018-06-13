@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Xml.Linq;
+using System.Configuration;
 
 namespace d360.web.Controllers
 {    
@@ -561,7 +562,7 @@ namespace d360.web.Controllers
         }
 
         [HttpDelete, Route("dynamicedit/delete/{objectType}/{objectID:int}"), ValidateInput(false)]
-        public JsonResult DynamicDelete(string objectType, int objectID)
+        public async Task<JsonResult> DynamicDelete(string objectType, int objectID)
         {            
             FormCollection form = new FormCollection();
             form.Add("ID", objectID.ToString());
@@ -613,7 +614,7 @@ namespace d360.web.Controllers
                 case "REFERENCEITEMTYPE":
                     return DeleteReferenceItemType(form);
                 case "REPORT":
-                    return DeleteReport(form);
+                    return await DeleteReport(form);
                 case "REPORTTILE":
                     return DeleteReportTile(form);
                 case "RULE":
@@ -14265,8 +14266,14 @@ order by TP.TextPath";
             }
         }
 
+        private static readonly string pbiUsername = ConfigurationManager.AppSettings["pbiUsername"];
+        private static readonly string pbiPassword = ConfigurationManager.AppSettings["pbiPassword"];
+        private static readonly string pbiAuthorityUrl = "https://login.windows.net/common/oauth2/authorize/";
+        private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
+        private static readonly string pbiUrl = "https://api.powerbi.com";
+
         [HttpDelete, Route("DeleteReport")]
-        public JsonResult DeleteReport(FormCollection form)
+        public async Task<JsonResult> DeleteReport(FormCollection form)
         {
             try
             {
@@ -14280,18 +14287,20 @@ order by TP.TextPath";
                 if(model.ReportType == "powerbi" && !string.IsNullOrEmpty(model.PowerBIDatasetID))
                 {
                     var companySettings = Community.GetCompanySettings();
-                    var workspaceCollectionName = string.Empty;
-                    var workspaceId = string.Empty;
-                    var accessKey = string.Empty;
 
-                    companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
-                    companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
-                    companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
+                    var groupId = string.Empty;
+                    var clientId = string.Empty;
 
-                    if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
+                    companySettings.TryGetValue("PowerBIClientId", out clientId);
+                    companySettings.TryGetValue("PowerBIGroupId", out groupId);
+                    
+                    if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
                         throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
-
-                    PowerBI.DeleteDataset(accessKey, workspaceCollectionName, workspaceId, model.PowerBIDatasetID);
+                    try
+                    {
+                        await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, model.PowerBIDatasetID);
+                    }
+                    catch { } // ok we cant delete the report delete the reference to it at least
                 }
 
                 Company.Delete<Report>(model);
@@ -14324,23 +14333,23 @@ order by TP.TextPath";
                     throw new Exception("Please specify a valid username and password.");
 
                 var companySettings = Community.GetCompanySettings();
-                var workspaceCollectionName = string.Empty;
-                var workspaceId = string.Empty;
-                var accessKey = string.Empty;
+                var groupId = string.Empty;
+                var clientId = string.Empty;
 
-                companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
-                companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
-                companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
+                companySettings.TryGetValue("PowerBIClientId", out clientId);
+                companySettings.TryGetValue("PowerBIGroupId", out groupId);
+
+                if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
+                    throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
 
                 // if the workspace id is null create a new one and update the companysettings
-                workspaceId = await checkPowerBIValidWorkspace(workspaceId, accessKey, workspaceCollectionName);
-
-
-                if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
+                groupId = await checkPowerBIValidWorkspace(groupId, clientId);
+                
+                if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
                     throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
 
                 //save password in this workspace for all ds's
-                await PowerBI.UpdateConnectionCredentials(accessKey, workspaceCollectionName, workspaceId, user, pwd);
+                await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, user, pwd);
 
                 return jsonSuccess("Power BI Credentials successfully updated", "", "add", HttpStatusCode.Created);
                 
@@ -14489,57 +14498,55 @@ order by TP.TextPath";
             }
         }
 
-        private async Task<string> checkPowerBIValidWorkspace(string workspaceId, string accessKey, string workspaceCollectionName)
+        private async Task<string> checkPowerBIValidWorkspace(string groupId, string clientId)
         {
-            workspaceId = (workspaceId ?? "").Trim();
+            groupId = (groupId ?? "").Trim();
 
-            if (string.IsNullOrEmpty(workspaceId) && !string.IsNullOrEmpty(accessKey) && !string.IsNullOrEmpty(workspaceCollectionName))
-            {
-                var res = await PowerBI.CreateWorkspace(accessKey, workspaceCollectionName);
+             if (string.IsNullOrEmpty(groupId) && !string.IsNullOrEmpty(clientId))
+             {                
+                var groupName = $"D3S{Company.CurrentCompanyID}";
+                var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
 
-                var workspaceSetting = Community.Filter<CompanySetting>(i => i.SettingID == 15 && i.CompanyID == Company.CurrentCompanyID).FirstOrDefault();
+                var workspaceSetting = Community.Filter<CompanySetting>(i => i.SettingID == 56 && i.CompanyID == Company.CurrentCompanyID).FirstOrDefault();
 
                 if (workspaceSetting == null)
                 {
-                    Community.Add<CompanySetting>(new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 15, Value = res.WorkspaceId });
+                    Community.Add<CompanySetting>(new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 56, Value = res.Id });
                 }
                 else
-                {
-                    workspaceSetting.Value = res.WorkspaceId;
+                 {
+                     workspaceSetting.Value = res.Id;
 
-                    Community.Update<CompanySetting>(workspaceSetting);
-                }
+                     Community.Update<CompanySetting>(workspaceSetting);
+                 }
 
-                return res.WorkspaceId;
-            }
+                 return res.Id;
+             }
 
-            return workspaceId;
+            return groupId;            
         }
 
-        private async Task<Microsoft.PowerBI.Api.V1.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
+        private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
         {
             var companySettings = Community.GetCompanySettings();
-            var workspaceCollectionName = string.Empty;
-            var workspaceId = string.Empty;
-            var accessKey = string.Empty;
+            var groupId = string.Empty;
+            var clientId = string.Empty;
 
-            companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
-            companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
-            companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
+            companySettings.TryGetValue("PowerBIClientId", out clientId);
+            companySettings.TryGetValue("PowerBIGroupId", out groupId);
 
-            // if the workspace id is null create a new one and update the companysettings
-            workspaceId = await checkPowerBIValidWorkspace(workspaceId, accessKey, workspaceCollectionName);
-            
-
-            if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
+            if (string.IsNullOrEmpty(clientId))
                 throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
 
+            // if the workspace id is null create a new one and update the companysettings
+            groupId = await checkPowerBIValidWorkspace(groupId, clientId);
+            
             // if an existing one exists delete it
             if (!string.IsNullOrEmpty(datasetId))
-                await PowerBI.DeleteDataset(accessKey, workspaceCollectionName, workspaceId, datasetId);
+                await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, datasetId);
 
 
-            return await PowerBI.ImportPbix(accessKey, workspaceCollectionName, workspaceId, name, file.InputStream);
+            return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, file.InputStream);
         }
 
 
