@@ -197,6 +197,17 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return Promise.all(promises).then(() => { });
     }
 
+    // Clear When Filter array when "Applies To Entire Type" selected
+
+    private clearWhen(): void {
+
+        if (this.model.StructuredDefinition.When) {
+            this.model.StructuredDefinition.When.splice(0, this.model.StructuredDefinition.When.length);
+        }
+
+    }
+
+
     private addWhen(): void {
         let whenItem: ResponsibilityTypeRelationRuleDefinitionWhenItem = new ResponsibilityTypeRelationRuleDefinitionWhenItem();
         whenItem.CheckType = "F";

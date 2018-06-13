@@ -63,7 +63,7 @@ from	Asset A
             string obj = "";
             string uniqueIdField = "ID";
 
-            if (rule.StructuredDefinition != null)
+            if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null))
             {
                 if (rule.StructuredDefinition.Then.Object == "OrganizationType")
                 {

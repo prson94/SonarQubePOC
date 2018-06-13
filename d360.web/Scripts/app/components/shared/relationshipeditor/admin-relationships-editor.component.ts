@@ -3,6 +3,7 @@ import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipDetail } from '../../../models/relationship.model';
+import { ViewEncapsulation } from '@angular/core';
 
 @Component({
     selector: 'd3s-admin-relationships-editor',
@@ -16,16 +17,16 @@ import { RelationshipDetail } from '../../../models/relationship.model';
                         <div class="row">
                             <div class="col l4 m4 s12">
                                 <div class="FieldName">Subject</div>
-                                <p-dropdown filter="true" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="editedRelationship.Subject" [disabled]="editedRelationship.LimitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
+                                <p-dropdown filter="true" appendTo="body" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="editedRelationship.Subject" [disabled]="editedRelationship.LimitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
                             </div>
                             <div class="col l4 m4 s12">
                                 <div class="FieldName">Predicate</div>
-                                <p-dropdown filter="true" name="predicate" #predicate="ngModel" [options]="predicates" [(ngModel)]="editedRelationship.Predicate" [disabled]="!canChangePredicate" required (ngModelChange)="editedRelationship.Predicate=$event;predicateChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
+                                <p-dropdown filter="true" appendTo="body" name="predicate" #predicate="ngModel" [options]="predicates" [(ngModel)]="editedRelationship.Predicate" [disabled]="!canChangePredicate" required (ngModelChange)="editedRelationship.Predicate=$event;predicateChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
                             </div>
                             <div class="col l4 m4 s12">
                                 <d3s-loading [isLoading]="isLoadingObject"></d3s-loading>
                                 <div *ngIf="!isLoadingObject" class="FieldName">Object</div>
-                                <p-dropdown *ngIf="!isLoadingObject" filter="true" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="editedRelationship.LimitedChangesOnly" required [style]="{ 'width': '100%' }"></p-dropdown>
+                                <p-dropdown *ngIf="!isLoadingObject" filter="true" appendTo="body" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="editedRelationship.LimitedChangesOnly" required [style]="{ 'width': '100%' }"></p-dropdown>
                             </div>
                         </div>
 
@@ -55,7 +56,23 @@ import { RelationshipDetail } from '../../../models/relationship.model';
                     </form>
                 </div>
                 `,
+
+    // Having three dropdowns in compact space gives ugly and unusable dropdown panels...esp for long dropdown items
+    // insert custom styling using Angular Default View Encapsulation
+    // appendTo="body" was added to the dropdowns to address Edge issues leaving the panels show allover.
+    // This fix should address the correct left position
+
+    encapsulation: ViewEncapsulation.None,
+    styles: [
+        `
+            .ui-dropdown-panel {
+                max-width: 300px;
+            }
+        `
+    ],
+
     providers: [RelationshipsService],
+
 })
 
 export class AdminRelationshipsEditor {
