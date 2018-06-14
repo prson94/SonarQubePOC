@@ -1522,14 +1522,22 @@ order by wi.StartedOn desc";
 
             var responsibilitySql = @"
                 select 
-	                string_agg(r.FirstName + ' ' + r.LastName, ', ') as Resources 
+	                string_agg(r.FirstName + ' ' + r.LastName, ', ') + case when max(cnt) > 10 then '...' else '' end as Resources 
                 from
                 (
 	                select distinct top 10
 		                d.FirstName, d.LastName 
 	                from ResponsibilityDetails d
 	                where ResponsibilityTypeID  = @id
-                ) r";
+                ) r
+				cross apply 
+                (
+					select count(*) as cnt from 
+                    (
+					    select distinct FirstName, LastName  from ResponsibilityDetails
+					    where ResponsibilityTypeID = @id
+                    ) x
+				) c";
 
             try
             {
