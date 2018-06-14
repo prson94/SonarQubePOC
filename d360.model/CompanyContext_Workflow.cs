@@ -650,7 +650,10 @@ namespace d360.model
         {
             Console.WriteLine("DEBUG - DELETING ITEM.");
 
-            Delete(objectInfo.Object, objectInfo.ObjectID);
+            if (objectInfo.Object == SystemObjects.Intersect)
+                DeleteRelationship(objectInfo.ObjectID);
+            else
+                Delete(objectInfo.Object, objectInfo.ObjectID);
         }
 
         private void UpdateItemRelationship(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
