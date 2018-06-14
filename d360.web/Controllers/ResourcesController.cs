@@ -138,17 +138,11 @@ namespace d360.web.Controllers
 
                         sql = $@"
 select	A.ID,
-		A.Name,
-		A.Description,
-		A.TextPath,
-		A.Status,
-		V.Name as SubjectArea,
         {columns}
         FD.CurrentScore,
         {lastColumn}
 from	Artifact A 
         {followOrOwnSql} 
-        inner join TaxonomyType V on V.ID = A.TaxonomyTypeID and A.ArtifactTypeID = {id} 
         {joins}";
                         break;
                     #endregion
@@ -161,9 +155,6 @@ from	Artifact A
 
                         sql = $@"
 select	A.ID,
-		A.Name,
-		A.Description,
-		A.TextPath,
         {columns}
         FD.CurrentScore,
         {lastColumn}
