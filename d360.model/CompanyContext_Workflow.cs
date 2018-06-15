@@ -769,8 +769,7 @@ namespace d360.model
                 sql = "delete [intersect] where subject = @obj and subjectid = @objectid and intersecttypeid = @intersectTypeId";
             else
                 sql = "delete [intersect] where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
-
-            Query<int>(sql, new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId });
+            Database.Connection.Execute(sql, new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId });
         }
 
         private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
@@ -790,7 +789,7 @@ namespace d360.model
                     //delete the value
                     var sql = "delete field where objectid = @id and objecttype = @objectType and fieldtypeid = @fieldTypeId";
 
-                    Query<int>(sql, new { id = objectInfo.ObjectID, objectType = objectInfo.Object.ToString(), fieldTypeId = item.FieldID });
+                    Database.Connection.Execute(sql, new { id = objectInfo.ObjectID, objectType = objectInfo.Object.ToString(), fieldTypeId = item.FieldID });
 
                 }
                 else
