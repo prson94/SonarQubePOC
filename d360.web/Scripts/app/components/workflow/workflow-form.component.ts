@@ -23,7 +23,7 @@ import { ISubscription } from 'rxjs/Subscription';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div class="row" *ngIf="!isLoading">
                         <div class="col s12">
-                            <div class="tile tile-detail" *ngIf="!isCompleted && isUserAllowedToComplete">                        
+                            <div class="tile tile-detail" *ngIf="!isCompleted && isUserAllowedToComplete && !isItemDeleted">                        
                                 <header>{{title}}</header>
                                 <div class="form-instructions" *ngIf="objectType != 'Issue'">The following form is for the [<b>{{typeName}}</b>] named [<b><d3s-preview-tooltip [objectType]="objectType" [objectId]="objectID"><a [routerLink]="objectUrl">{{objectName}}</a></d3s-preview-tooltip></b>].  <span [innerHtml]="description"></span></div>
                                 <div class="form-instructions" *ngIf="objectType == 'Issue'">The following form is for the [<b><d3s-preview-tooltip [objectType]="objectType" [objectId]="objectID">{{issueTypeName}}</d3s-preview-tooltip></b>] action raised on [<b><d3s-preview-tooltip [objectType]="issueObject" [objectId]="issueObjectID">{{issueObjectName}}</d3s-preview-tooltip></b>].  <span [innerHtml]="description"></span></div>
@@ -131,6 +131,16 @@ import { ISubscription } from 'rxjs/Subscription';
                                     </div>
                                 </div>
                             </div>
+                            <div *ngIf="isItemDeleted" class="tile tile-detail">
+                                <header>{{title}}</header>
+                                <div class="row">
+                                    <div class="col s12">The item for this form has been deleted.</div>
+                                    <div class="col s12">&nbsp;</div>
+                                    <div class="col s12">
+                                        <button pButton *ngIf="hasCloseButton" type="button" (click)="close();" label="Close" style="width: 150px;"></button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>                                               
                 `,
@@ -156,6 +166,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
     private isUserAllowedToComplete: boolean = false;
+    private isItemDeleted: boolean = false;
     private isReassignEnabled: boolean = false;
     private reassignType: string;
     private reassignAvailableTypes = [];
@@ -226,6 +237,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.fields = res.Fields;
                 this.isLoading = false;
                 this.isCompleted = res.IsCompleted;
+                this.isItemDeleted = res.IsItemDeleted;
                 this.objectName = res.ObjectName;
                 this.objectType = res.ObjectType;    
                 this.objectID = res.ObjectID;    
