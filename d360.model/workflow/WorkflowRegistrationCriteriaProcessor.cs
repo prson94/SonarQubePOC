@@ -55,7 +55,7 @@ namespace d360.model.workflow
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObject = "", int issueObjectId = -1)
+        private static bool EvaluateObject(CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1)
         {
             //since field and object events come in separately, we need to skip eval in some cases to prevent duplicate runs
             //1. There is a change condition on the workflow, and no change fields are present: Ignore the initial object event and wait for the field event to come in
@@ -107,11 +107,11 @@ namespace d360.model.workflow
                 }
                 else if((item.ContextualFieldID ?? "").ToLower() == "issueobject")
                 {
-                    if (!item.IsValueMatch(issueObject)) return false;
+                    if (!item.IsValueMatch(issueObjectType)) return false;
                 }
                 else if ((item.ContextualFieldID ?? "").ToLower() == "issueobjectid")
                 {
-                    if (!item.IsValueMatch(issueObjectId.ToString())) return false;
+                    if (!item.IsValueMatch(issueObjectTypeId.ToString())) return false;
                 }
                 else if(item.VersionStepId > 0)
                 {

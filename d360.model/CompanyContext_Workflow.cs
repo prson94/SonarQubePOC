@@ -56,7 +56,7 @@ namespace d360.model
 
             Console.WriteLine($"DEBUG - TESTING TO SEE IF ${objectInfo.Object} - {objectInfo.ObjectID} IS VALID FOR WORKFLOW {workflowName}");
 
-            string issueObject = "";
+            string issueObjectType = "";
             int issueObjectId = -1;
 
             if(objectInfo.Object == SystemObjects.Issue)
@@ -72,11 +72,11 @@ namespace d360.model
                     return false;
                 }
 
-                issueObject = issueDetail.Object;
-                issueObjectId = issueDetail.ObjectID;
+                issueObjectType = issueDetail.ObjectType;
+                issueObjectId = issueDetail.ObjectTypeID;
             }
 
-            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, (objectInfo.Score.HasValue ? objectInfo.Score.Value : -1), objectInfo.ChangedFieldIds, issueObject, issueObjectId))
+            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, (objectInfo.Score.HasValue ? objectInfo.Score.Value : -1), objectInfo.ChangedFieldIds, issueObjectType, issueObjectId))
             {
                 Console.WriteLine("DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 
