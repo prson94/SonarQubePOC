@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials } from '../models/resource.model';
+import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData } from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -99,6 +99,13 @@ export class ResourcesService extends BaseService {
             .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getResourceItems(uri: string): Promise<MulitSelectResourceData> {
+        return this.http.get(uri)
+            .toPromise()
+            .then(response => <MulitSelectResourceData>response.json())
             .catch(err => this.handleError(err));
     }
 }

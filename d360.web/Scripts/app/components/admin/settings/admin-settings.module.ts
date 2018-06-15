@@ -20,6 +20,7 @@ import { AdminSiteMenuPermissionsComponent } from './admin-site-menu-permissions
 import { AdminHomeComponent } from './admin-home.component';
 
 import { AdminSettingsRoutingModule } from './admin-settings.routes';
+import { D3SSharedModule } from '../../shared/shared.module';
 
 import {
     ButtonModule,
@@ -52,6 +53,7 @@ import {
         TilesModule,
         ShortcutModule,
         IconPickerModule,
+        D3SSharedModule,
     ],
     declarations: [
 //        IconPickerComponent,

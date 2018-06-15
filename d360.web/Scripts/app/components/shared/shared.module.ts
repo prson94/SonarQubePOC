@@ -45,6 +45,7 @@ import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
 import { TakeSurveyComponent } from './take-survey.component';
 import { UserListComponent } from './user-list.component';
+import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.component';
 
 
 @NgModule({
@@ -60,7 +61,8 @@ import { UserListComponent } from './user-list.component';
         StructureTile,
         SynonymsTile,
         TakeSurveyComponent,                 
-        UserListComponent,        
+        UserListComponent,
+        ResourceMultiSelectGridComponent,
     ],
     exports: [                                                                                                                       
         FusionFiltersComponent,         
@@ -71,7 +73,8 @@ import { UserListComponent } from './user-list.component';
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,                        
         TakeSurveyComponent,              
-        UserListComponent,         
+        UserListComponent,    
+        ResourceMultiSelectGridComponent,
         ]
     , imports: [
         CommonModule,

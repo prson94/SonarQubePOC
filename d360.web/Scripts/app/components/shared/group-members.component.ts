@@ -4,18 +4,21 @@ import { GroupService } from '../../services/group.service';
 import { FormMode, FormHelper, SelectItem } from '../../models/form.model';
 import { BaseComponent } from '../shared/base.component';
 import { JsonResult } from '../../models/jsonresult.model';
+import { EditorField } from '../../models/editor-field.model';
+import * as _ from 'lodash';
+import { ResourcesService } from '../../services/resources.service';
 
 @Component({
     selector: 'd3s-group-members',
     templateUrl: './group-members.component.html',
-    providers: [GroupService]
+    providers: [GroupService, ResourcesService]
 })
 
 export class GroupMembersComponent extends BaseComponent implements OnChanges {
     @Input() groupId: number;
     @Input() groupName: string;
     @Input() title: string = 'Members';
-
+    field: EditorField;
     private groupItems = new Array<GroupResourceInfo>();
     private selectedRow = new GroupResourceInfo();    
     private formMode: FormMode = FormMode.Default;
@@ -42,6 +45,10 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         if (!this.groupId) {
             return;
         }
+        this.field = new EditorField();
+        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}`; 
+        this.field.FieldName = "resources";
+        this.field.MultiSelect = true;
         this.isLoading = true;
         this.groupService.getGroupResourceList(this.groupId)
             .then(d => {
@@ -57,19 +64,26 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     }
 
     save() {
-        if (this.selectedResource == "")
-            return;
+
+        if (!(this.field.Value != null && this.field.Value.length > 0)) return;
+
         this.isLoading = true;
+        let resources: ResourceGroup[] = [];
         try {
-            var rg = new ResourceGroup();
-            rg.GroupID = this.groupId;
-            rg.IsOwner = false;
-            rg.ResourceID = parseInt(this.selectedResource);
+            this.field.Value.forEach(x => {
+                var rg = new ResourceGroup();
+                rg.GroupID = this.groupId;
+                rg.IsOwner = false;
+                rg.ResourceID = parseInt(x.split('|')[1]);
+                resources.push(rg);
+
+            })
+
         } catch (e) {
             this.isLoading = false;
         }
 
-        this.groupService.postResourceGroup(rg)
+        this.groupService.postResourceGroup(resources)
             .then(r => {
                 this.load();
                 this.formMode = FormMode.Default;
@@ -81,13 +95,12 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
     add(): void {
         this.isLoading = true;
-        this.groupService.getGroupUserList(this.groupId)
-            .then(d => {
-                this.resourceList = d.resourceList;                
-                FormHelper.mapSelectItems(this.resourceList);                
-                this.formMode = FormMode.Adding;
-                this.isLoading = false;
-            });
+        this.field = new EditorField();
+        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}`; 
+        this.field.FieldName = "resources";
+        this.field.MultiSelect = true;
+        this.formMode = FormMode.Adding;
+
     }
 
 

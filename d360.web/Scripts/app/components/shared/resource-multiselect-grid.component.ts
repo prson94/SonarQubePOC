@@ -1,0 +1,147 @@
+﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges } from '@angular/core';
+
+
+import * as _ from 'lodash';
+import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
+import { SortOrder } from '../../models/enums.model';
+import { EditorField } from '../../models/editor-field.model';
+import { BaseComponent } from './base.component';
+import { UriBasedService } from '../../services/uri-based.service';
+import { ResourcesService } from '../../services/resources.service';
+import { LazyLoadEvent } from 'primeng/primeng';
+import { GridFilterExpression } from '../../models/grid-definition.model';
+import { SimpleChanges } from '@angular/core/src/metadata/lifecycle_hooks';
+
+
+export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => ResourceMultiSelectGridComponent),
+    multi: true
+};
+
+@Component({
+    selector: 'd3s-resource-multiselect-grid',
+    template: ` 
+               
+                <span >
+                    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" (keypress)="ref.markForCheck()">
+                    <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" [globalFilter]="gb" #dt scrollable="true" scrollWidth="100%" lazy="true" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);"  (onLazyLoad)="lazyLoad($event)" [rowsPerPageOptions]="defaultPagingOptions">
+                        <p-column [style]="{'width':'38px'}" [selectionMode]="multiple ?'multiple' : 'single'"></p-column>
+                        <p-column field="Text" sortable="true"  header="Name"></p-column>  
+                        <p-column *ngIf="showResourceType" field="Type" sortable="true"  header="Resource Type"></p-column>
+                        <p-column *ngIf="showToolTip" [style]="{ 'width': '5%' }">
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <d3s-preview-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]" icon="info"></d3s-preview-tooltip>
+                                </div>
+                            </ng-template>
+                        </p-column>
+                        <p-footer>
+                            <d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
+                            <div *ngIf="showSelectedSummary && selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">Selected Items:
+                                <p *ngIf="selectedItems && selectedItems.length > 0"><span *ngFor="let item of selectedItems;let last = last" >{{last?item.Text:item.Text +','}} </span></p>
+                            </div>
+                        </p-footer>
+                     </p-dataTable>
+                </span>
+                `,
+    providers: [RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR],
+    changeDetection: ChangeDetectionStrategy.OnPush, 
+})
+
+export class ResourceMultiSelectGridComponent extends BaseComponent implements OnInit, OnChanges,ControlValueAccessor  {   
+    
+   @Input("field") field: EditorField;
+    @Input() multiple: boolean = true;
+    @Input() showToolTip: boolean = true;
+    @Input() showSelectedSummary: boolean = true;
+    @Input() showResourceType: boolean= false;
+    value: any; //stores the values array bound back to the ngform.
+
+    totalRecords: number;
+    rowsPerPage: number = 10;
+    currentPageNumber: number = 0;
+    sortField: string = undefined;
+    sortOrder: SortOrder = SortOrder.None;
+    globalfilter: string;
+
+    items: any[];
+    selectedItems: any;
+
+    public onModelChange: Function = () => { };
+
+    public onModelTouched: Function = () => { };
+
+    constructor(private resourceService:ResourcesService, private ref: ChangeDetectorRef) {
+        super();
+    }
+
+    ngOnInit() {
+        
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if ((changes["field"].previousValue != undefined) &&
+            (changes["field"].currentValue.TypeaheadUri != changes["field"].previousValue.TypeaheadUri)) {
+            this.load();
+        }
+    }
+    private load() {
+        this.isLoading = true;
+       
+        this.sortField = this.sortField == undefined ? "" : this.sortField;
+        this.globalfilter = this.globalfilter == undefined ? "" : this.globalfilter;
+        
+        let url = `${this.field.TypeaheadUri}&pagenum=${this.currentPageNumber}&pagesize=${this.rowsPerPage}&sortdatafield=${this.sortField}&sortorder=${this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Ascending ? "asc" : "desc")}&gbfilter=${this.globalfilter}`;
+        
+        this.resourceService.getResourceItems(url).
+            then(data => {
+                this.isLoading = false;
+                this.items = data.results;
+                this.totalRecords = data.total;
+                this.ref.markForCheck();
+            });
+    }
+
+    private lazyLoad(event: LazyLoadEvent) {
+        this.sortOrder = event.sortOrder;
+        this.sortField = event.sortField;
+        this.rowsPerPage = event.rows;
+        this.currentPageNumber = event.first / event.rows;
+        this.globalfilter = event.globalFilter;
+        this.load();
+    }
+
+    private handleItemSelection(event) {
+        if (this.multiple) {
+            this.selectedItems = event;
+            var items = [];
+            for (let item of event) {
+                items.push(item.Value);
+            }
+            this.value = _.cloneDeep(items);
+            this.onModelChange(this.value);
+        }
+        else {
+            var items = [];
+            items.push(event.Value);
+            var sel = [];
+            sel.push(event);
+            this.selectedItems = sel;
+            this.value = _.cloneDeep(items);
+            this.onModelChange(this.value);
+        }
+    }
+
+    writeValue(value: any): void {
+        this.value = value;
+    }
+
+    registerOnChange(fn: Function): void {
+        this.onModelChange = fn;
+    }
+
+    registerOnTouched(fn: Function): void {
+        this.onModelTouched = fn;
+    }
+};

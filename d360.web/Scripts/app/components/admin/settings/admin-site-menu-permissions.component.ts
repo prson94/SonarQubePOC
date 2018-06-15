@@ -5,10 +5,12 @@ import { SiteMenuService } from '../../../services/site-menu.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
+import { EditorField } from '../../../models/editor-field.model';
+import { ResourcesService } from '../../../services/resources.service';
 
 @Component({
     selector: 'd3s-admin-site-menu-permissions',
-    providers: [SiteMenuService],
+    providers: [SiteMenuService, ResourcesService],
     template: `
 <div [ngSwitch]="formMode">
     <div *ngSwitchCase="FormMode.Default">
@@ -50,15 +52,10 @@ import { FormMode } from '../../../models/form.model';
                 <header>
                     &nbsp;
                 </header>
-                <div class="FieldName">
-                    Choose a group or resource
-                </div>
                 <div>
-                    <select [(ngModel)]="selection" style="min-width: 200px;">
-                        <option *ngFor="let p of permissionItems" [value]="p.value">{{p.label}}</option>
-                    </select>
+                    <d3s-resource-multiselect-grid [multiple]="field.MultiSelect" [(ngModel)]="field.Value" showToolTip="false"  ngDefaultControl [field]="field" [showResourceType]="true" ></d3s-resource-multiselect-grid>  
                     <button pButton type="button" label="Cancel" (click)="selection = null; formMode = FormMode.Default; onModeChange.emit(this.formMode);"></button>
-                    <button pButton type="button" label="Add" (click)="add()" [disabled]="selection == null"></button>
+                    <button pButton type="button" label="Add" (click)="add()" [disabled]="field.Value == null || field.Value.length==0"></button>
                 </div>
             </div>
         </div>
@@ -88,8 +85,9 @@ export class AdminSiteMenuPermissionsComponent extends AdminBaseComponent implem
     @Input() siteNav: SiteNav;
     @Output() siteNavChange = new EventEmitter();
     @Output() onModeChange = new EventEmitter();
+    field: EditorField;
 
-    formMode = FormMode.Default;
+    public formMode = FormMode.Default;
     FormMode = FormMode;
 
     permissionItems: any[] = [];
@@ -109,20 +107,22 @@ export class AdminSiteMenuPermissionsComponent extends AdminBaseComponent implem
     }
 
     add() {
-        let p: SiteNavPermission = new SiteNavPermission();
-        p.SiteNavID = this.siteNav.ID;
-        p.Object = this.selection.split('|')[0];
-        p.ObjectID = +this.selection.split('|')[1];
-        p.Name = this.permissionItems.find(i => i.value == this.selection).label;
-
-        console.log(p, this.permissionItems);
-
-        this.siteNav.Permissions.push(p);
+        this.field.Value.forEach(x => {
+            let p: SiteNavPermission = new SiteNavPermission();
+            p.SiteNavID = this.siteNav.ID;
+            p.Object = x.split('|')[0];
+            p.ObjectID = +x.split('|')[1];
+            p.Name = x.split('|')[2];
+           
+            let d = this.siteNav.Permissions.filter(x => x.ObjectID == p.ObjectID && x.Object == p.Object);
+            if (d == null || d.length==0) 
+                this.siteNav.Permissions.push(p);
+        });
         this.siteNavChange.emit(this.siteNav);
         this.formMode = FormMode.Default;
         this.onModeChange.emit(this.formMode);
-        this.selection = null;
-        
+
+        delete this.field;
     }
 
     delete(item: SiteNavPermission) {
@@ -143,14 +143,12 @@ export class AdminSiteMenuPermissionsComponent extends AdminBaseComponent implem
         let id = 0;
         if (item != null)
             id = item.ID;
-        return this.siteMenuService.getSiteNavPermissionsList(id)
-            .then(r => {
-                this.permissionItems = [];
-                r.forEach(i => {
-                    let ix = this.siteNav.Permissions.findIndex(p => p.Object + '|' + p.ObjectID.toString() == i.value);
-                    if (ix < 0)
-                        this.permissionItems.push(i);
-                });
-            });
+
+        this.field = new EditorField(); 
+        this.field.TypeaheadUri = `navigation/permissions/get/list?id=${id}`;
+        this.field.FieldName = "resources";
+        this.field.MultiSelect = true;
+        return Promise.resolve();
+        
     }
 }

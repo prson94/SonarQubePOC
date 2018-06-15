@@ -54,7 +54,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     editedMenuItem: SiteNav = null;
     oldFolderItems: SiteNav[] = [];
     oldFolderName;
-   
+
+    IsMenuPermissionsAdding: boolean= false;
     permissionMode: FormMode = FormMode.Default;
 
     constructor(
@@ -329,5 +330,11 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                 item.Permissions = r;
                 this.isLoading = false;
             });
+    }
+
+    menuPermissionsOnModeChange($event) {
+        this.permissionMode = $event;
+        this.IsMenuPermissionsAdding = ($event == FormMode.Adding);
+       
     }
 }

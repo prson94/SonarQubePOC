@@ -23,6 +23,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { ResponsibilityItemForm } from './responsibility-item.form';
+import { D3SSharedModule } from '../shared.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -35,6 +36,7 @@ import { ResponsibilityItemForm } from './responsibility-item.form';
         SharedDeleteFormModule,
         SharedFormMessageModule,
         SharedGridPagingInfoModule,
+        D3SSharedModule,
 
         //prime
         ButtonModule,

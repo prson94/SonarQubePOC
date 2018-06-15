@@ -8887,15 +8887,15 @@ namespace d360.web.Controllers
         }
 
         [HttpPost, AjaxValidateAntiForgeryToken,  ValidateInput(false), ActionName("ResourceGroup"), Route("ResourceGroup")]
-        public JsonResult PostResourceGroup(ResourceGroup model)
+        public JsonResult PostResourceGroup(ResourceGroup[] model)
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Group, model.GroupID, Claim.Update))
+                if (!Company.HasPermission(SystemObjects.Group, model[0].GroupID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                Company.Add(model);
-                return jsonSuccess("User successfully assigned.", model.ResourceID.ToString(), "add", HttpStatusCode.Created);
+               foreach(var m in model)
+                Company.Add(m);
+                return jsonSuccess("User successfully assigned.", model[0].ResourceID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -8908,19 +8908,45 @@ namespace d360.web.Controllers
             }
         }
 
+      
         [HttpGet, Route("GetGroupUserList"), NonNullableParameters]
-        public JsonResult GetGroupUserList(int id)
+        public JsonNetResult GetGroupUserList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder,string gbfilter)
         {
-            if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update)) return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
-            if (!Company.Any<Group>(i => i.ID == id)) return jsonException("No group exists for the specified ID.", HttpStatusCode.NotFound);
 
-            var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
-            var resList = GetCompanyResources()
-                .Where(i => !currentGroupUsers.Contains(i.ResourceID))
-                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName }).ToList().Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() }).ToList();
-            //resList.Insert(0, new SelectListItem { Text = "Please select", Value = "" });
+            string querySql;
+            var dbArgs = new Dapper.DynamicParameters();
 
-            return Json(new { resourceList = resList }, JsonRequestBehavior.AllowGet);
+            querySql = @"
+			select  r.LastName + ', ' + r.FirstName as Text,  'Resource|' + cast(r.ResourceID as varchar)  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
+			where r.status ='Active'  
+			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID)";
+            dbArgs.Add("id", id);
+
+            if (!string.IsNullOrEmpty(gbfilter))
+            {
+                querySql = string.Format(@"select * from ({0}) gb where  [Text] like   @gbfilter + '%'", querySql);
+                dbArgs.Add("gbfilter", gbfilter);
+            }
+            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            int totalCount = Company.Query<int>(countSql, dbArgs).First();
+
+
+
+            sql = applySortSuffix(sql, sortDataField, sortOrder, "Text", "asc");
+            sql = applyPagingSuffix(sql, pagenum, pagesize);
+
+            var query = Company.Query<dynamic>(sql, dbArgs);
+
+
+
+            return new JsonNetResult
+            {
+                Data = new { total = totalCount, results = query },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
         }
 
         #endregion
@@ -14807,6 +14833,64 @@ order by TP.TextPath";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+        [HttpGet, Route("Responsibility/Resources"), NonNullableParameters]
+        public JsonNetResult ResponsibilityResources(long assetID, int resTypeId, int pagenum, int pagesize, string sortDataField, string sortOrder,string gbfilter)
+        {
+            string querySql;
+            var dbArgs = new Dapper.DynamicParameters();
+
+            if (resTypeId == 0)
+            {
+                querySql = @"
+                    select  Text as [Text],  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
+						(
+							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
+							where   not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id) 
+							union all
+							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
+							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)
+						) as Sub
+                    ";
+            }else
+            {
+                querySql = @"
+                    select  Text as [Text],  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
+						(
+							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
+							where   not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id and ResponsibilityTypeID=@responsibilityTypeID) 
+							union all
+							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
+							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID)
+						) as Sub
+                    ";
+                dbArgs.Add("responsibilityTypeID", resTypeId);
+            }
+            dbArgs.Add("assetID", assetID);
+
+            if (!string.IsNullOrEmpty(gbfilter))
+            {
+                querySql = string.Format(@"select * from ({0}) gb where  [Text] like   @gbfilter + '%'  or [Type] like   @gbfilter + '%'", querySql);
+                dbArgs.Add("gbfilter", gbfilter);
+            }
+
+
+            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            int totalCount = Company.Query<int>(countSql, dbArgs).First();
+
+            sql = applySortSuffix(sql, sortDataField, sortOrder, "Text", "asc");
+            sql = applyPagingSuffix(sql, pagenum, pagesize);
+
+            var query = Company.Query<dynamic>(sql, dbArgs);
+
+            return new JsonNetResult
+            {
+                Data = new { total = totalCount, results = query },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
         [HttpGet, Route("Responsibility"), NonNullableParameters]
         public JsonNetResult Responsibility(long assetID, long? overrideID)
@@ -14827,7 +14911,7 @@ order by TP.TextPath";
                 responsibilityTypes = Company.GetAllowedResponsibilityTypesByAsset(assetID).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
                 responsibility = new ResponsibilityTypeRelationOverrideItem { AssetID = assetID };
             }
-
+            responsibilityTypes.Insert(0, new SelectListItem() { Text = "", Value = "" });
             responsibilityDetails = Company.Filter<ResponsibilityDetail>(i => i.AssetID == assetID).ToList<ResponsibilityDetail>();
             return new JsonNetResult
             {

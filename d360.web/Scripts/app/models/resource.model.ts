@@ -60,3 +60,8 @@ export class FollowingDetailForResource {
     OpenEventCount: number;
     Url: string;
 }
+
+export class MulitSelectResourceData {
+    results: any;
+    total: number;
+}

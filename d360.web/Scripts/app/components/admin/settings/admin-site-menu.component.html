@@ -69,11 +69,11 @@
                 </div>
             </div>
             <div class="row" style="padding-bottom:15px;">
-                <d3s-admin-site-menu-permissions [(siteNav)]="selection" (onModeChange)="permissionMode = $event">
+                <d3s-admin-site-menu-permissions [(siteNav)]="selection" (onModeChange)="menuPermissionsOnModeChange($event)">
                 </d3s-admin-site-menu-permissions>
             </div>
             <div class="row" style="margin-top:15px;">
-                <div class="col s12">
+                <div class="col s12"  *ngIf="!IsMenuPermissionsAdding">
                     <button pButton type="button" label="Save" (click)="save()" [disabled]="selection == null || selection.Title == null || selection.Title == '' || permissionMode != FormMode.Default || (selection.IsCustom && (folderItems == null || folderItems.length < 1))"></button>
                     <button pButton type="button" label="Cancel" (click)="cancel()"></button>
                 </div>
@@ -137,15 +137,15 @@
                 </div>
             </div>
             <div class="row"  style="padding-bottom:15px;">
-                <d3s-admin-site-menu-permissions [(siteNav)]="newFolder" (onModeChange)="permissionMode = $event">
+                <d3s-admin-site-menu-permissions [(siteNav)]="newFolder" (onModeChange)="menuPermissionsOnModeChange($event)">
                 </d3s-admin-site-menu-permissions>
             </div>
             <div class="row">
-                <div class="col s12">
+                 <div class="col s12" *ngIf="!IsMenuPermissionsAdding">
                     <button pButton type="button" label="Save" (click)="save()" [disabled]="newFolder == null || newFolder.Name == null || newFolder.Name == '' || newFolderItems == null || newFolderItems.length < 1 || permissionMode != FormMode.Default"></button>
                     <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
                 </div>
-            </div>
+            </div> 
         </div>
     </div>
 </div>

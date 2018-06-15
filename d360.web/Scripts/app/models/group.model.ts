@@ -8,9 +8,9 @@ export interface IGroupService {
     putGroup(group: Group): Promise<JsonResult>; 
     postGroup(group: Group): Promise<JsonResult>;
     deleteGroup(id: number): Promise<JsonResult>;
-    postResourceGroup(resourceGroup: ResourceGroup): Promise<JsonResult>;
+    postResourceGroup(resourceGroup: ResourceGroup[]): Promise<JsonResult>;
     deleteResourceGroup(groupID: number, resourceID: number): Promise<JsonResult>;
-    getGroupUserList(id: number): Promise<JsonResult>;
+    getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Promise<JsonResult>;
 }
 
 

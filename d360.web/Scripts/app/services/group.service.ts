@@ -53,8 +53,8 @@ export class GroupService extends BaseService implements IGroupService {
             .catch(err => this.handleError(err));
     }
 
-    postResourceGroup(resourceGroup: ResourceGroup): Promise<JsonResult> {
-        return this.http.post('form/ResourceGroup', resourceGroup)
+    postResourceGroup(resourceGroups: ResourceGroup[]): Promise<JsonResult> {
+        return this.http.post('form/ResourceGroup', resourceGroups)
             .toPromise()
             .then(response => <JsonResult>response.json())
             .catch(err => this.handleError(err));
@@ -67,8 +67,8 @@ export class GroupService extends BaseService implements IGroupService {
             .catch(err => this.handleError(err));
     }
 
-    getGroupUserList(id: number): Promise<any> {
-        return this.http.get(`form/GetGroupUserList?id=${id}`)
+    getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Promise<any> {
+        return this.http.get(`form/GetGroupUserList?id=${id}&pagenum=${pagenum}&pagesize=${pagesize}&sortdatafield=${sortDataField}&sortorder=${sortOrder}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

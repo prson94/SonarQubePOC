@@ -395,7 +395,7 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-        
+
         #region Permissions
 
         [HttpGet, Route("permissions/get/list/{id:int}")]
@@ -417,6 +417,51 @@ namespace d360.web.Controllers
             return new JsonNetResult
             {
                 Data = results,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+
+        [HttpGet, Route("permissions/get/list")]
+        public JsonNetResult GetSiteNavPermissionList(int id , int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
+        {
+            var dbArgs = new Dapper.DynamicParameters();
+            var querySql = @"
+                    select Text,  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
+						(
+							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
+							where not exists (select 1 from SiteNavPermission where object='Group' and siteNavId =@id and objectId=g.id) 
+							union all
+							select  r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
+							where r.status ='Active' and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) 
+						) as Sub
+                    ";
+
+            if (!string.IsNullOrEmpty(gbfilter))
+            {
+                querySql = string.Format(@"select * from ({0}) gb where  [Text] like   @gbfilter + '%'  or [Type] like   @gbfilter + '%'", querySql);
+                dbArgs.Add("gbfilter", gbfilter);
+            }
+
+            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+          
+           dbArgs.Add("id", id);
+
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            int totalCount = Company.Query<int>(countSql, dbArgs).First();
+
+
+            sql = applySortSuffix(sql, sortDataField, sortOrder, "Text", "asc");
+            sql = applyPagingSuffix(sql, pagenum, pagesize);
+
+            var query = Company.Query<dynamic>(sql, dbArgs);
+
+           
+            return new JsonNetResult
+            {
+                Data = new { total= totalCount, results = query },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
