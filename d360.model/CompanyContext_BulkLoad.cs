@@ -417,6 +417,9 @@ order by	ColumnIndex", new { id });
                         customFieldTypeMap[item.ID] = col.ColumnIndex;
                     }
                 }
+
+                // call the proc to get lookup values for any custom values
+                await Database.Connection.ExecuteAsync("exec[bulkload].[UpdateDynamicLookupFieldColumns] @loadId", new { loadId = loadId });
             }
 
             var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
@@ -545,11 +548,15 @@ order by	ColumnIndex", new { id });
 
                         if (val != null && !string.IsNullOrWhiteSpace(val.Value))
                         {
-                            var existingField = Fields.Where(x => x.ObjectType == "Intersect" && x.ObjectID == intersectId).FirstOrDefault();
+                            var existingField = Fields.Where(x => x.ObjectType == "Intersect" && x.ObjectID == intersectId && x.FieldTypeID == ft.ID).FirstOrDefault();
+                            var value = val.Value;
+
+                            if (ft.Type == "Lookup" && val.LookupObjectID.HasValue)
+                                value = val.LookupObjectID.ToString();
 
                             if (existingField != null)
                             {
-                                existingField.Value = val.Value;
+                                existingField.Value = value;
                             }
                             else
                             {
@@ -558,7 +565,7 @@ order by	ColumnIndex", new { id });
                                     FieldTypeID = ft.ID,
                                     ObjectID = intersectId,
                                     ObjectType = "Intersect",
-                                    Value = val.Value
+                                    Value = value
                                 });
                             }
                         }
