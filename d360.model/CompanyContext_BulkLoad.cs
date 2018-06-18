@@ -433,7 +433,7 @@ order by	ColumnIndex", new { id });
 
                 int intersectId = (operation == BulkRelationshipOperation.Relate) ?
                     RelateObjects(rowData, objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID, customFieldTypes, customFieldTypeMap) :
-                    (await UnrelateObjects(objectId, subjectId, intersectType.Object.Replace("Type", ""), intersectType.Subject.Replace("Type", ""), intersectType.ID)); 
+                    (await UnrelateObjects(objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID)); 
                 
                 // update status for this item
                 var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = 1, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
