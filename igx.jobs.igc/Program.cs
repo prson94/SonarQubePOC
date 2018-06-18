@@ -1016,7 +1016,7 @@ order by A.ID
                             // Write the IGC total if we have not already done so.
                             if (execution.CurrentSourceAssetCount <= 0)
                             {
-                                execution.CurrentSourceAssetCount = models.paging.numTotal;
+                                execution.CurrentSourceAssetCount = (models.paging != null) ? models.paging.numTotal : 0;
                                 execution.CurrentTargetAssetCount = 0;
                                 company.Update(execution);
                             }
