@@ -39,7 +39,8 @@ namespace d360.web.Controllers
                     i.ColumnOrder,
                     i.SortOrder,
                     ObjectType = i.Object,
-                    i.ObjectID
+                    i.ObjectID,
+                    i.Type
                 });
 
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };

@@ -184,7 +184,8 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
         if (this.settings.Object == 'ArtifactType') {
             return this.fusionService.getFindSourceFields('ArtifactType', this.settings.ObjectID)
                 .then(r => {
-                    this.targetFields = r;                    
+                    let t = r.filter(x => x.Type != "ComplexRelationLookup" && x.Type != "OwnershipLookup")
+                    this.targetFields = t;                    
                     this.showTargetField = true;
                     this.settings.TargetField = null;
                     this.validate();
@@ -192,7 +193,8 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
         } else if (this.settings.Object == 'TaxonomyType') {
             return this.fusionService.getFindSourceFields('TaxonomyType', this.settings.ObjectID)
                 .then(r => {
-                    this.targetFields = r;                    
+                    this.targetFields = r;       
+                    console.log(r);
                     this.showTargetField = true;
                     this.settings.TargetField = null;
                     this.validate();
