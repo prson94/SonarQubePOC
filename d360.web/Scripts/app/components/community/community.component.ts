@@ -22,10 +22,15 @@ const Highcharts = require('highcharts/highstock.src');
             <div class="col l6 m12 s12">
                 <div class="tile tile-detail">   
                     <header>User's Responsibilities</header>
-                    <chart [options]="responsibilitiesPie">
-                        <series (click)="onPieClick($event)">
-                        </series>
-                    </chart>
+                    <div *ngIf="isLoading">
+                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                    </div>
+                    <div [hidden]="isLoading">
+                        <chart [options]="responsibilitiesPie">
+                            <series (click)="onPieClick($event)">
+                            </series>
+                        </chart>
+                    </div>
                 </div>
             </div>
             <div class="col l6 m12 s12" *ngIf="selectedResponsibilityId">

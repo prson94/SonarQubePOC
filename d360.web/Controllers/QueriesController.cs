@@ -77,21 +77,16 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
         public JsonNetResult GetResponsibilityTypeBreakdown()
         {
             var query = Company.Query<dynamic>(@"
-select		RD.ResponsibilityTypeID,
-			RD.ResponsibilityTypeName as ResponsibilityType,
-			count(1) as [Count]
-from		(
-			select		RD.ResponsibilityTypeID,
-						RD.ResponsibilityTypeName,
-						RD.ResourceID
-			from		ResponsibilityDetails RD
-						inner join reporting.Global_Resource R on R.ResourceID = RD.ResourceID
-			group by	RD.ResponsibilityTypeID,
-						RD.ResponsibilityTypeName,
-						RD.ResourceID
-			) RD
-group by	RD.ResponsibilityTypeID,
-			RD.ResponsibilityTypeName");
+                select 
+	                R.ID as ResponsibilityTypeID, 
+	                R.[Name] as ResponsibilityType, 
+	                sum(D.[Count]) as [Count] 
+                from ResponsibilityType R
+                cross apply (
+	                select 1 as [Count] 
+	                from ResponsibilityDetails D 
+	                where D.ResponsibilityTypeID = R.ID group by ResourceID) D
+                group by R.ID, R.[Name]");
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
