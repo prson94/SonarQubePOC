@@ -194,7 +194,6 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
             return this.fusionService.getFindSourceFields('TaxonomyType', this.settings.ObjectID)
                 .then(r => {
                     this.targetFields = r;       
-                    console.log(r);
                     this.showTargetField = true;
                     this.settings.TargetField = null;
                     this.validate();
