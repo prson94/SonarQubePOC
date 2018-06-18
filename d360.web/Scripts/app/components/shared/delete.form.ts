@@ -32,7 +32,7 @@ export class DeleteForm  {
     }
 
     public delete(): void {
-        if (this.isLoading)
+       if (this.isLoading)
             return;
         var headers = new Headers();
         headers.append('Content-Type', 'application/json');
@@ -41,8 +41,7 @@ export class DeleteForm  {
         switch (this.method.toLowerCase()) {
             case 'callback':
                 this.callback(this.itemId);
-                this.isLoading = false;
-                break;
+                 break;
             case 'post':
                 this.http.post(this.uri, JSON.stringify(this.model), { headers: headers })
                     .map(data => data.json())
