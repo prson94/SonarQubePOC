@@ -460,23 +460,24 @@ order by A.ID
             {
                 Client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", AuthenticationHeaderValue);
 
-                var response = await Client.GetAsync(uri);
-                response.EnsureSuccessStatusCode();
-                jsonRaw = await response.Content.ReadAsStringAsync();
+                using (var response = await Client.GetAsync(uri))
+                {
+                    jsonRaw = await response.Content.ReadAsStringAsync();
 
-                cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
-                           from cv in c.Value
-                           select cv
-                ).ToList();
-                Client.DefaultRequestHeaders.Remove("Authorization");
-                Client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
-
-                response.Dispose();
+                    cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
+                               from cv in c.Value
+                               select cv
+                    ).ToList();
+                    Client.DefaultRequestHeaders.Remove("Authorization");
+                    Client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
+                }
+                
             }
             catch (Exception ex)
             {
                 var properties = new Dictionary<string, string>();
                 properties.Add("Uri", uri);
+                properties.Add("Response", jsonRaw);
                 CoreFunction.AITrackException(functionName, ex, null, properties);
                 throw ex;
             }
@@ -500,18 +501,18 @@ order by A.ID
             try
             {
                 Client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", AuthenticationHeaderValue);
-                var response = await Client.PostAsync(uri, new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json"));
-                response.EnsureSuccessStatusCode();
-                jsonToReturn = await response.Content.ReadAsStringAsync();
 
-                cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
-                           from cv in c.Value
-                           select cv
-                ).ToList();
-                Client.DefaultRequestHeaders.Remove("Authorization");
-                Client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
+                using (var response = await Client.PostAsync(uri, new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json")))
+                {
+                    jsonToReturn = await response.Content.ReadAsStringAsync();
 
-                response.Dispose();
+                    cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
+                               from cv in c.Value
+                               select cv
+                    ).ToList();
+                    Client.DefaultRequestHeaders.Remove("Authorization");
+                    Client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
+                }
 
                 return JsonConvert.DeserializeObject<T>(jsonToReturn, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
             }
