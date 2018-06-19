@@ -10,6 +10,9 @@ namespace d360.core.entities
         public long ExecutionID { get; set; }
 
         [DataMember]
+        public int SynchedAssetTypeID { get; set; }
+
+        [DataMember]
         public string SubjectSourceID { get; set; }
 
         [DataMember]
