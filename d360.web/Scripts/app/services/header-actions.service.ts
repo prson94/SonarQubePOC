@@ -1,6 +1,7 @@
 ﻿import { Injectable, EventEmitter } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Favorite } from '../models/favorite.model';
+import { HeaderActions } from '../models/header.model';
 
 declare var CompanySettings;
 
@@ -15,6 +16,12 @@ export class HeaderActionsService {
     showShoppingCart: boolean = false;
     showHomePage: boolean = true;
 
+    private headerActionsSource = new Subject<HeaderActions>();
+    public onHeaderActionsChange$ = this.headerActionsSource.asObservable();
+
+    public setCurrentHeaderActions(actions: HeaderActions) {
+        this.headerActionsSource.next(actions);
+    }
     // Observable sources
     private onFavoritesChangeSource = new Subject();
     public onFavoritesChanges$ = this.onFavoritesChangeSource.asObservable();

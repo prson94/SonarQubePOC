@@ -45,6 +45,7 @@ export class HeaderActionsComponent {
     private favItems: Favorite[] = [];
     private currentObject: string;
     private currentObjectId: number;
+    private headerActionsSub;
 
     private controlWidth = 0;
 
@@ -103,6 +104,10 @@ export class HeaderActionsComponent {
             this.showShoppingCart = true;
         }
 
+        this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe(x => {
+            this.headerActionsService.showFollow = x.showFollow;
+        });
+
     }
 
     private calculateControlWidth() {
@@ -123,6 +128,7 @@ export class HeaderActionsComponent {
         this.routerSub.unsubscribe();
         this.subFavorites.unsubscribe();
         this.subObjectChange.unsubscribe();
+        this.headerActionsSub.unsubscribe();
     }
 }
 

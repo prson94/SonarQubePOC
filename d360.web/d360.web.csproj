@@ -1344,6 +1344,7 @@
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\custom-api.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\header.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\metrics.model.ts" />

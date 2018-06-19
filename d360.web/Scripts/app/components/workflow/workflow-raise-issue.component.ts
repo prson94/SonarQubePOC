@@ -17,6 +17,8 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { Tag } from '../../models/tag.model';
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { HeaderActions } from '../../models/header.model';
 
 declare var CompanySettings;
 
@@ -92,7 +94,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         private objectDetailService: ObjectDetailService,
         private location: Location,
         protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,        
+        protected headerBreadcrumbService: HeaderBreadcrumbService,  
+        private headerActionsService: HeaderActionsService,
         webAnalyticsService: WebAnalyticsService,
         rightSidebarService: RightSidebarService) {
         super();
@@ -102,7 +105,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Take Action');
-
+        this.showHideFollow(false);
         if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.id)
             this.objectID = this.headerBreadcrumbService.currentObject.id;
 
@@ -119,9 +122,16 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     ngOnDestroy(): void {
+        this.showHideFollow(true);
         if (this.searchSub) this.searchSub.unsubscribe();
     }
-    
+
+    private showHideFollow(show: boolean) {
+        let headerActions: HeaderActions = new HeaderActions();
+        headerActions.showFollow = show;
+        this.headerActionsService.setCurrentHeaderActions(headerActions);
+    }
+
     private loadDetails(objectId, objectType) {        
         if (objectId == undefined || objectType == undefined) return Promise.resolve();
         this.isLoading = true;

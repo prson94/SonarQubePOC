@@ -3,6 +3,9 @@ import { BaseComponent } from '../base.component';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ArtifactService } from '../../../services/artifacts.service';
+import { HeaderActions } from '../../../models/header.model';
+import { HeaderActionsService } from '../../../services/header-actions.service';
+import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
 
 @Component({
     selector: 'd3s-object-governance',    
@@ -57,7 +60,7 @@ import { ArtifactService } from '../../../services/artifacts.service';
     providers: [ArtifactService, ObjectStatisticsService]
 })
 
-export class ObjectGovernanceComponent extends BaseComponent implements OnChanges {
+export class ObjectGovernanceComponent extends BaseComponent implements OnChanges,OnDestroy {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;
@@ -73,6 +76,7 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
     showStatus: boolean = false;
         
     constructor(protected objectStatisticsService: ObjectStatisticsService,
+        private headerActionsService: HeaderActionsService,
         protected artifactService: ArtifactService
     ) {
         super();
@@ -81,6 +85,10 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.objectType && this.objectID)
             this.load();
+    }
+
+    ngOnDestroy(): void {
+        this.showHideFollow(true);
     }
 
     load() {
@@ -100,7 +108,14 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
 
     }
 
+    private showHideFollow(show: boolean) {
+        let headerActions: HeaderActions = new HeaderActions();
+        headerActions.showFollow = show;
+        this.headerActionsService.setCurrentHeaderActions(headerActions);
+    }
+
     private hasActiveTab() {
+        this.showHideFollow(!this.showIssueDetails);
         return this.showBoardDetails || this.showHealthDetails || this.showIssueDetails;
     }
 

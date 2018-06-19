@@ -8,6 +8,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
 import { StepType, WorkflowActivityType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { HeaderActions } from '../../models/header.model';
 
 
 @Component({
@@ -93,12 +95,14 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         rightSidebarService: RightSidebarService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
+        private headerActionsService: HeaderActionsService,
         protected workflowService: WorkflowService
     ) {
         super();
     }
 
     ngOnInit() {
+        this.showHideFollow(false);
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow Item Status'));
 
@@ -134,7 +138,14 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
             });
     }
 
+    private showHideFollow(show: boolean) {
+        let headerActions: HeaderActions = new HeaderActions();
+        headerActions.showFollow = show;
+        this.headerActionsService.setCurrentHeaderActions(headerActions);
+    }
+
     ngOnDestroy() {
+        this.showHideFollow(true);
         this.sub.unsubscribe();
     }
     
