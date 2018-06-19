@@ -295,6 +295,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private loadDataType(value: string): Promise<void> {
+        
         let promises = [];
         if (value == null)
             return Promise.resolve();
@@ -420,7 +421,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         let id = parseInt(value.split('|')[1]);
         let type = value.split('|')[0];
 
-        this.model.FieldType.LookupDisplayFormat = "";
+        if (this.model.FieldType.LookupObjectID != id && this.model.FieldType.LookupObjectType != type)
+            this.model.FieldType.LookupDisplayFormat = "";
 
         this.model.FieldType.LookupObjectID = id;
         this.model.FieldType.LookupObjectType = type;
