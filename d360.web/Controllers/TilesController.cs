@@ -73,22 +73,22 @@ namespace d360.web.Controllers
         [Route("ResponsibilityBreakdownByResource"), NonNullableParameters]
         public async Task<JsonNetResult> ResponsibilityBreakdownByResource(int id, int? responsibilityTypeID)
         {
-            var sql = $@"            
-select		RD.Type,
-			RD.TypeID,
-			{QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
-			count(1) as [Count]
-from		ResponsibilityDetails RD
-			inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @r";
-            if (responsibilityTypeID.HasValue)
-            {
-                sql += " where RD.ResponsibilityTypeID = @rt ";
-            }
-            sql += $@"
-group by    RD.Type, 
-            RD.TypeID, 
-            { QueryConstants.HighLevelTypeCaseStatement} + T.Name 
-order by    { QueryConstants.HighLevelTypeCaseStatement} + T.Name";
+
+            var sql = $@"
+            select D.[Type], D.TypeID, D.[Count],
+			{QueryConstants.HighLevelTypeCaseStatement} + T.[Name] as TypeName
+			 from
+			(
+				select	[Type], TypeID, count(1) as [Count]
+				from		ResponsibilityDetails RD
+				where		RD.ResourceID = @r
+							{(responsibilityTypeID.HasValue ? "and RD.ResponsibilityTypeID = @rt" : "")}
+
+                group by	RD.[Type], RD.TypeID					    
+			) D
+			inner join AssetType T on T.[Object] = D.[Type] and T.ObjectID = D.TypeID
+			order by {QueryConstants.HighLevelTypeCaseStatement} + T.[Name];
+            ";
 
             var query = await Company.QueryAsync<dynamic>(sql, new { r = id, rt = responsibilityTypeID });
 
