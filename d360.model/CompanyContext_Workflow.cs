@@ -1304,6 +1304,12 @@ namespace d360.model
                                 value = (string)field.Attribute("displayvalue");
                             }
 
+                            if((fieldType ?? "").ToUpper() == "DATE")
+                            {
+                                if (DateTime.TryParse(value, out DateTime dt))
+                                    value = dt.ToShortDateString();
+                            }
+
                             sb.Append($"<b>{fieldName}</b> {value}<br>");
                         }
                     }
