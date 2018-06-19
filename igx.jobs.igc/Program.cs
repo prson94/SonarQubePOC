@@ -103,8 +103,8 @@ namespace igx.jobs
                         if (settings.Count > 0)
                         {
                             #if DEBUG
-                                                            var IDs = new List<int>() { 1 };
-                                                            mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
+                            var IDs = new List<int>() { 46 };
+                            mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
                             #else
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
                             #endif
@@ -1001,6 +1001,12 @@ order by A.ID
                 postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
                 postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
 
+                //If starting from beginning, you are effectively doing a full refresh.
+                if (min == 0)
+                {
+                    checkForChangesOnly = false;
+                }
+
                 execution.IsFullRefresh = !checkForChangesOnly;
 
                 var shouldContinue = true;
@@ -1009,7 +1015,22 @@ order by A.ID
                 {
                     try
                     {
-                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
+                        IgcDynamicArrayModels models = null;
+
+                        try
+                        {
+                            models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
+                        }
+                        catch (Exception postEx)
+                        {
+                            execution.ErrorMessage += $"{postEx.GetFullExceptionData()}; ";
+                            company.Update(execution);
+                            if (postEx.Message.Contains("403 (Forbidden)"))
+                            {
+                                throw postEx;
+                            }
+                            postModel.begin = postModel.begin + postModel.pageSize;
+                        }
 
                         if (models != null)
                         {
@@ -1033,7 +1054,7 @@ order by A.ID
                                 parse(models.items, false, executionAssets);
                                 cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
 
-                                var executionRelationItems = relationships.Select(i => new IntegrationExecutionRelationItem { ExecutionID = execution.ExecutionID, IntersectTypeID = i.IntersectTypeID, SubjectSourceID = i.SubjectSourceID, ObjectSourceID = i.ObjectSourceID }).ToList();
+                                var executionRelationItems = relationships.Select(i => new IntegrationExecutionRelationItem { ExecutionID = execution.ExecutionID, SynchedAssetTypeID = execution.SynchedAssetTypeID, IntersectTypeID = i.IntersectTypeID, SubjectSourceID = i.SubjectSourceID, ObjectSourceID = i.ObjectSourceID }).ToList();
                                 cnn.BulkExecutionRelationItemLoad(setting.TargetResourceID, executionRelationItems);
                             }
 
