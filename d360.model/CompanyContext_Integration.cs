@@ -1067,6 +1067,7 @@ when not matched by target then
             var relationTable = new System.Data.DataTable();
 
             relationTable.Columns.Add("ExecutionID", typeof(long));
+            relationTable.Columns.Add("SynchedAssetTypeID", typeof(int));
             relationTable.Columns.Add("SubjectSourceID", typeof(string));
             relationTable.Columns.Add("ObjectSourceID", typeof(string));
             relationTable.Columns.Add("IntersectTypeID", typeof(int));
@@ -1075,6 +1076,7 @@ when not matched by target then
             {
                 var row = relationTable.NewRow();
                 row["ExecutionID"] = a.ExecutionID;
+                row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
                 row["SubjectSourceID"] = a.SubjectSourceID;
                 row["ObjectSourceID"] = a.ObjectSourceID;
                 row["IntersectTypeID"] = a.IntersectTypeID;
@@ -1094,6 +1096,7 @@ when not matched by target then
                     cnn.Execute(@"
                         create table #IntegrationRelationTable (
 	                        ExecutionID bigint NOT NULL,
+                            SynchedAssetTypeID int NULL,
 	                        SubjectSourceID nvarchar(250) NOT NULL,
 	                        ObjectSourceID nvarchar(250) NOT NULL,
 	                        IntersectTypeID int NOT NULL
@@ -1108,6 +1111,7 @@ when not matched by target then
                     assetBulkCopy.BulkCopyTimeout = 3600;
 
                     assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
                     assetBulkCopy.ColumnMappings.Add("SubjectSourceID", "SubjectSourceID");
                     assetBulkCopy.ColumnMappings.Add("ObjectSourceID", "ObjectSourceID");
                     assetBulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
@@ -1118,20 +1122,22 @@ when not matched by target then
 merge into  [integration].[ExecutionRelationItem] T
 using       (
             select      ExecutionID,
+                        SynchedAssetTypeID,
                         IntersectTypeID,
                         SubjectSourceID,
                         ObjectSourceID
             from        #IntegrationRelationTable
             ) S
 on          (
-                S.ExecutionID = T.ExecutionID and 
+                S.ExecutionID = T.ExecutionID and
+                S.SynchedAssetTypeID = T.SynchedAssetTypeID and
                 S.IntersectTypeID = T.IntersectTypeID and 
                 S.SubjectSourceID = T.SubjectSourceID and 
                 S.ObjectSourceID = T.ObjectSourceID
             )
 when not matched by target then
-    insert  (ExecutionID, IntersectTypeID, SubjectSourceID, ObjectSourceID)
-    values  (S.ExecutionID, S.IntersectTypeID, S.SubjectSourceID, S.ObjectSourceID);",
+    insert  (ExecutionID, SynchedAssetTypeID, IntersectTypeID, SubjectSourceID, ObjectSourceID)
+    values  (S.ExecutionID, S.SynchedAssetTypeID, S.IntersectTypeID, S.SubjectSourceID, S.ObjectSourceID);",
     transaction: trans, commandTimeout: 1200);
 
                     trans.Commit();
