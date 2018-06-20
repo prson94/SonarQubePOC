@@ -6937,11 +6937,6 @@ where v.id = {0}", id)).FirstOrDefault();
         {
             var sType = type.ToString();
 
-            if (targetType == SystemObjects.ResourceType)
-            {
-                targetType = SystemObjects.Resource;
-            }
-
             var joins = "";
             var columns = "";
             
