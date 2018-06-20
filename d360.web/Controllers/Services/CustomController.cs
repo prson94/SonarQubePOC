@@ -153,104 +153,18 @@ namespace d360.web.Controllers.Services
     [RoutePrefix("services/custom"), Authorize]
     public class CustomController : BaseApiController
     {
-        public string CertificateCommonName { get; set; }
-        public bool ValidateWithClientCertificate { get; set; }
-
+        
         #region DI
 
         public CustomController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
-            var sReq = "CustomApiClientCertificateRequired";
-            var sCn = "CustomApiClientCertificateCommonName";
-            var customApiSettings = community.GetCompanySettings().Where(i => i.Key == sReq || i.Key == sCn).ToList();
-            ValidateWithClientCertificate = bool.Parse(customApiSettings.First(i => i.Key == sReq).Value);
-            CertificateCommonName = customApiSettings.First(i => i.Key == sCn).Value;
+            
         }
 
         #endregion
 
-        #region X509 Check
-
-        public void ValidateX509IfRequired(HttpRequestMessage request, out HttpStatusCode status, out string statusMessage)
-        {
-            status = HttpStatusCode.OK;
-            statusMessage = "";
-
-            if (ValidateWithClientCertificate)
-            {
-                X509Certificate2 clientCertificate = null;
-                try
-                {
-                    //***** 1. Get a Client Certificate from the Http context or http header ****/
-                    clientCertificate = request.GetClientCertificate();
-                    if (clientCertificate == null)
-                    {
-                        var clientCertificateInHeader = request.GetHeader("X-ARR-ClientCert");
-                        if (!string.IsNullOrEmpty(clientCertificateInHeader))
-                        {
-                            try
-                            {
-                                var clientCertBytes = Convert.FromBase64String(clientCertificateInHeader);
-                                clientCertificate = new X509Certificate2(clientCertBytes);
-                            }
-                            catch
-                            {
-                                status = HttpStatusCode.Forbidden;
-                                statusMessage = "Invalid certificate. It may not be formatted correctly.";
-                                //return request.CreateErrorResponse(
-                                //    HttpStatusCode.Forbidden,
-                                //    "Invalid certificate. It may not be formatted correctly.");
-                            }
-                        }
-                    }
-
-                    if (clientCertificate != null) //***** 2. Perform clientCertificate null validation check ****/
-                    {
-                        try
-                        {
-                            //***** 3. If the clientCertificate is not null, then Validate the incoming certificate CN with the allowed CN ****/
-                            var isValidCert = IsValidClientCertificate(clientCertificate);
-
-                            if (!isValidCert)  //***** 4. If it is a valid Certificate, then invoke next middleware ****/
-                            {
-                                status = HttpStatusCode.Forbidden;
-                                statusMessage = "Invalid client certificate.";
-                            }
-                        }
-                        catch (Exception ex) //***** 6. Any exception throw 403??? Not sure, this is valid case ****/
-                        {
-                            status = HttpStatusCode.Forbidden;
-                            statusMessage = "Invalid client certificate.";
-                        }
-                    }
-                    else //***** 7. If the clientCertificate is null, then return 403 status code ****
-                    {
-                        status = HttpStatusCode.Forbidden;
-                        statusMessage = "No client certificate found.";
-                    }
-
-                }
-                finally
-                {
-                    clientCertificate?.Dispose();
-                }
-            }
-
-        }
-
-        private bool IsValidClientCertificate(X509Certificate2 certificate)
-        {
-            var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
-
-            if (string.IsNullOrEmpty(commonName)) return false;
-
-            //Compare the incoming Certificate CN with the allowed Certificate CN.
-            return commonName.Equals(CertificateCommonName);
-        }
-
-        #endregion
-
+        
         #region Error Handling Helper
 
         private HttpResponseMessage CreateCustomApiError(HttpStatusCode status, string message)
@@ -276,13 +190,7 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{service}/{endpoint}/{version}/{entityFormat}/{key}")]
         public HttpResponseMessage GetSingletonBasedOnRoute(string service, string endpoint, string version, string entityFormat, string key)
         {
-            HttpStatusCode certificateStatus;
-            string certificateStatusMessage;
-            ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
-
-            if (certificateStatus != HttpStatusCode.OK)
-                return CreateCustomApiError(certificateStatus, certificateStatusMessage);
-
+            
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -460,13 +368,7 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{service}/{endpoint}/{version}/{*entityFormat}")]
         public HttpResponseMessage GetCollectionBasedOnRoute(string service, string endpoint, string version, string entityFormat)
         {
-            HttpStatusCode certificateStatus;
-            string certificateStatusMessage;
-            ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
-
-            if (certificateStatus != HttpStatusCode.OK)
-                return CreateCustomApiError(certificateStatus, certificateStatusMessage);
-
+            
             try
             {
                 if (Request.RequestUri.ToString().Length > 16000)
@@ -1370,14 +1272,7 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{service}/{endpoint}/{version}/version")]        
         public HttpResponseMessage GetEndpointVersion(string service, string endpoint, string version)
         {
-            HttpStatusCode certificateStatus;
-            string certificateStatusMessage;
-            ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
-
-            if (certificateStatus != HttpStatusCode.OK)
-            {
-                return CreateCustomApiError(certificateStatus, certificateStatusMessage);
-            }
+            
 
             try
             {
@@ -1454,14 +1349,7 @@ namespace d360.web.Controllers.Services
         [AllowAnonymous, HttpGet, Route("{service}/{endpoint}/{version}/health")]
         public HttpResponseMessage GetEndpointHealth(string service, string endpoint, string version)
         {
-            HttpStatusCode certificateStatus;
-            string certificateStatusMessage;
-            ValidateX509IfRequired(Request, out certificateStatus, out certificateStatusMessage);
-
-            if (certificateStatus != HttpStatusCode.OK)
-            {
-                return CreateCustomApiError(certificateStatus, certificateStatusMessage);
-            }
+            
 
             try
             {
