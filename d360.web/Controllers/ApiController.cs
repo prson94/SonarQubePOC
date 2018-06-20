@@ -6686,9 +6686,8 @@ where v.id = {0}", id)).FirstOrDefault();
                         list.Add(ei);
                     }
                     break;
-                case SystemObjects.Artifact:
-                    //var aItems = Company.Filter<Artifact>(i => i.ArtifactTypeID == id);
-                    var sql = "select a.*,d.DisplayValue  from artifact a inner join asset ast on (a.id = ast.objectid and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where a.ArtifactTypeID = @id";
+                case SystemObjects.Artifact:                    
+                    var sql = "select a.ID,d.DisplayValue  from artifact a inner join asset ast on (a.id = ast.objectid and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where a.ArtifactTypeID = @id";
                     var aItems = Company.Query<dynamic>(sql, new { id = id });
 
                     if (!string.IsNullOrEmpty(prefix))
