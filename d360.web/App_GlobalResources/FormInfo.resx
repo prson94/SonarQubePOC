@@ -405,6 +405,9 @@
   <data name="Policy_Error_Delete_ExistingRulesPresent" xml:space="preserve">
     <value>You may not remove this policy as there are existing rules assigned to it.</value>
   </data>
+  <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
+    <value>The Responsibility Then Filter value is required</value>
+  </data>
   <data name="SynonymType_Remove" xml:space="preserve">
     <value>Removing this synonym type will permanently remove all synonyms associated with this type.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?</value>
   </data>

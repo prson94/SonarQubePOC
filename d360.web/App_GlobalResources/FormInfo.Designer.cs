@@ -925,6 +925,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Responsibility Then Filter value is required.
+        /// </summary>
+        public static string Responsibility_Then_Filter_Value_Required {
+            get {
+                return ResourceManager.GetString("Responsibility_Then_Filter_Value_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Removing this synonym type will permanently remove all synonyms associated with this type.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
         /// </summary>
         public static string SynonymType_Remove {

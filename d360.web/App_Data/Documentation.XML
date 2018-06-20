@@ -1278,6 +1278,11 @@
               Looks up a localized string similar to Removing this level will alter the level name of all policies at this level..
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.Responsibility_Then_Filter_Value_Required">
+            <summary>
+              Looks up a localized string similar to The Responsibility Then Filter value is required.
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.SynonymType_Remove">
             <summary>
               Looks up a localized string similar to Removing this synonym type will permanently remove all synonyms associated with this type.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.

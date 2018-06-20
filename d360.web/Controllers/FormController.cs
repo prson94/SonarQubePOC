@@ -15702,6 +15702,10 @@ order by DN.DisplayValue");
                 existing.IsVisible = model.IsVisible;
 
                 existing.SetRawFromDefinition();
+                if (existing.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_Filter_Value_Required);
+                }
 
                 Company.Update(existing);
 
