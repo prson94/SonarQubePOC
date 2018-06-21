@@ -730,9 +730,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
             }
             else
             {
-                dbArgs.Add("allValuesFilter", "0", System.Data.DbType.String, System.Data.ParameterDirection.Input);
-                dbArgs.Add("simpleFilter", $"{wildcardValue(simpleFilter)}", System.Data.DbType.String, System.Data.ParameterDirection.Input);
-                //dbArgs.Add("simpleFilter", $"\"{simpleFilter}*\"", System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                dbArgs.Add("simpleFilter", $"{wildcardValue(simpleFilter)}", System.Data.DbType.String, System.Data.ParameterDirection.Input);             
 
                 var simpleFilterIDs = string.Join(",", selectFields.Select(i => i.ID));
                 var fieldFromRelationshipAssets = selectFields.Any(i => i.Type == "FieldFromRelationship") ? $@"union
@@ -748,7 +746,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
 				                                    or (I.[Subject] = O.[Object] and I.SubjectID = O.ObjectID))
 		                                    inner join Asset A on A.[Object] = case when I.[Object] = O.[Object] and I.ObjectID = O.ObjectID then I.[Subject] else I.[Object] end 
 			                                    and A.ObjectID = case when I.[Object] = O.[Object] and I.ObjectID = O.ObjectID then I.SubjectID else I.ObjectID end
-                                    where	(SF.FormattedValue like @simpleFilter OR SF.Value = @allValuesFilter)
+                                    where	(SF.FormattedValue like @simpleFilter)
 		                                    group by A.ID
 		                            ) SF on SF.AssetID = A.ID" : "";
 
@@ -762,7 +760,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
 		                            from	Field SF{tableHints} 
                                     cross apply [dbo].[GetArtifactParentByAssetID](AssetID) PID 
 		                            where	FieldTypeID in ({simpleFilterIDs})				                            
-                                            and (FormattedValue like @simpleFilter OR Value = @allValuesFilter OR PID.ParentDisplayValue like @simpleFilter)
+                                            and (FormattedValue like @simpleFilter OR PID.ParentDisplayValue like @simpleFilter)
                                     group by AssetID
 		                            {joinInfo} 
                                    {fieldFromRelationshipAssets}");
@@ -776,7 +774,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
 		                            select	AssetID
 		                            from	Field SF{tableHints}                                             
 		                            where	FieldTypeID in ({simpleFilterIDs})
-                                            and (FormattedValue like @simpleFilter OR Value = @allValuesFilter)
+                                            and (FormattedValue like @simpleFilter)
                                     group by AssetID                                    
                                     {simpleFilterFieldJoin}");
                 }
