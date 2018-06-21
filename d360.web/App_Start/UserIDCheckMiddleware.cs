@@ -161,9 +161,6 @@ from	Resource R
             return u;
         }
 
-        const string auth0Domain = "https://jerrie.auth0.com/"; // Your Auth0 domain
-        const string auth0Audience = "https://rs256.test.api"; // Your API Identifier
-
         public async Task Invoke(IDictionary<string, object> environment)
         {
             IOwinContext context = new OwinContext(environment);
@@ -172,14 +169,13 @@ from	Resource R
 
             var companyID = context.Get<int>("CompanyID");
 
-            var apiCredentials = context.Request.Headers["Authorization"];
-            var clientCertificateInHeader = context.Request.Headers["X-ARR-ClientCert"];
+            var apiCredentials = context.Request.Headers["Authorization"];            
             var token = string.Empty;
 
             var cachedUsers = Users;
-
+            
             // llyods custom auth depends on ceriticate and JWT token
-            if(!string.IsNullOrEmpty(apiCredentials) && !string.IsNullOrEmpty(clientCertificateInHeader))
+            if (!string.IsNullOrEmpty(apiCredentials) && apiCredentials.ToUpper().Contains("BEARER"))
             {
                 // load the certificate info                
                 var certificateCommonName = await getCertificateCommonName(context);
@@ -368,7 +364,12 @@ where S.ID = 54")).FirstOrDefault();
             try
             {
                 //***** 1. Get a Client Certificate from the Http context or http header ****/
-                //clientCertificate = context.Connection.ClientCertificate;
+                //   clientCertificate = context.Request.c.ClientCertificate;
+                
+                if (System.Web.HttpContext.Current != null && System.Web.HttpContext.Current.Request != null && System.Web.HttpContext.Current.Request.ClientCertificate != null) {
+                    X509Certificate2 cert = new X509Certificate2(System.Web.HttpContext.Current.Request.ClientCertificate.Certificate);
+                }
+                
                 if (clientCertificate == null)
                 {
                     var clientCertificateInHeader = context.Request.Headers["X-ARR-ClientCert"];
