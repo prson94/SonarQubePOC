@@ -6,6 +6,7 @@ using Microsoft.Owin;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -108,14 +109,14 @@ namespace d360.web
             _next = next;
         }
 
-        public List<usercompany> Users
+        public ConcurrentBag<usercompany> Users
         {
             get {
                 var cache = new MemoryCachingProvider();// RedisCachingProvider();
-                var users = cache.GetItem<List<usercompany>>("Users");
+                var users = cache.GetItem<ConcurrentBag<usercompany>>("Users");
                 if (users == null)
                 {
-                    users = new List<usercompany>();
+                    users = new ConcurrentBag<usercompany>();
                 }
                 return users;
             }
@@ -125,7 +126,7 @@ namespace d360.web
             }
         }
 
-        usercompany loadUserFromDatabase(int companyID, string apiKey = null, string apiSecret = null, string apiReadOnlyKey = null, string username = null)
+        usercompany LoadUserFromDatabase(int companyID, string apiKey = null, string apiSecret = null, string apiReadOnlyKey = null, string username = null)
         {
             usercompany u = null;
 
@@ -209,7 +210,7 @@ from	Resource R
 
                             if (claimToken != null && !string.IsNullOrEmpty(claimToken.Upn))
                             {
-                                u = loadUserFromDatabase(companyID, null, null, null, claimToken.Upn);
+                                u = LoadUserFromDatabase(companyID, null, null, null, claimToken.Upn);
                                 if (u != null)
                                 {
                                     cachedUsers.Add(u);
@@ -228,7 +229,7 @@ from	Resource R
                     u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.APIPrivateKey == authValues[1] && i.APIPublicKey == authValues[0]);
                     if (u == null)
                     {
-                        u = loadUserFromDatabase(companyID, apiKey: authValues[0], apiSecret: authValues[1]);
+                        u = LoadUserFromDatabase(companyID, apiKey: authValues[0], apiSecret: authValues[1]);
                         if (u != null)
                         {
                             cachedUsers.Add(u);
@@ -258,7 +259,7 @@ from	Resource R
                     u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.APIReadOnlyAccessToken == token);
                     if (u == null)
                     {
-                        u = loadUserFromDatabase(companyID, apiReadOnlyKey: token);
+                        u = LoadUserFromDatabase(companyID, apiReadOnlyKey: token);
                         if (u != null)
                         {
                             cachedUsers.Add(u);
@@ -273,7 +274,7 @@ from	Resource R
                 u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.Username == context.Request.User.Identity.Name.ToLower());
                 if (u == null)
                 {
-                    u = loadUserFromDatabase(companyID, username: context.Request.User.Identity.Name.ToLower());
+                    u = LoadUserFromDatabase(companyID, username: context.Request.User.Identity.Name.ToLower());
                     if (u != null)
                     {
                         cachedUsers.Add(u);
@@ -315,7 +316,6 @@ from	Resource R
 
         private async Task<string> getCertificateCommonName(IOwinContext context)
         {
-            var sCn = "CustomApiClientCertificateCommonName";
             var companyId = context.Get<int>("CompanyID");
             var cnName = "";
             var key = $"CustomApiClientCertificateCommonName{companyId}";

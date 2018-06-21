@@ -10,6 +10,10 @@
 # Ignore .cer files
 *.cer
 
+# Ignore .pubxml files
+*.pubxml
+
+
 # Ignore all files in the Temp sub-folder
 \node_modules
 \WebJob1

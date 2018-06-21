@@ -36,15 +36,26 @@ namespace igx.jobs
 
     public static class IgcIntegration
     {
-        const string functionName = "IGC_Integration";
+        
 #if DEBUG
         const string timerSettings = "*/5 * * * * *";
 #else
         const string timerSettings = "0 */5 * * * *";
 #endif
 
-        private static HttpClient _client = null;
-        public static HttpClient Client
+        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
+        {
+            var engine = new IgcIntegrationEngine();
+            engine.Run(log);
+        }
+    }
+
+    public class IgcIntegrationEngine
+    {
+        const string functionName = "IGC_Integration";
+
+        private HttpClient _client = null;
+        public HttpClient Client
         {
             get
             {
@@ -60,13 +71,13 @@ namespace igx.jobs
             }
         }
 
-        public static string AuthenticationHeaderValue { get; set; } = null;
+        public string AuthenticationHeaderValue { get; set; } = null;
 
-        public static List<string> SessionCookies { get; set; } = null;
+        public List<string> SessionCookies { get; set; } = null;
 
-        public static string LogoutUri { get; set; } = null;
+        public string LogoutUri { get; set; } = null;
 
-        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
+        public void Run(TextWriter log)
         {
             try
             {
@@ -76,7 +87,7 @@ namespace igx.jobs
                 var Security = new UriSecurityContextProvider { IsAdministrator = true, ResourceID = 0 };
                 var Community = new CommunityContext(Caching, Queue, Security);
 #if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 126).ToList();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 122).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -103,7 +114,7 @@ namespace igx.jobs
                         if (settings.Count > 0)
                         {
                             #if DEBUG
-                            var IDs = new List<int>() { 46 };
+                            var IDs = new List<int>() { 1, 2, 3, 4, 5 };
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
                             #else
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
@@ -401,7 +412,7 @@ order by A.ID
 
 #region Generic
 
-        public static long ConvertDateToUnixTimeMilliseconds(DateTime? date = null)
+        long ConvertDateToUnixTimeMilliseconds(DateTime? date = null)
         {
             long epoch = 0;
 
@@ -413,7 +424,7 @@ order by A.ID
             return epoch;
         }
 
-        internal async static Task<List<string>> GetCookiesFromApi(string uri, string authorization)
+        async Task<List<string>> GetCookiesFromApi(string uri, string authorization)
         {
             var cleanUri = new Uri(uri);
             if (cleanUri.Port != 80 && cleanUri.Port != 443)
@@ -444,7 +455,7 @@ order by A.ID
             return cookies;
         }
 
-        internal async static Task<T> GetFromApi<T>(string uri)
+        async Task<T> GetFromApi<T>(string uri)
         {
             var cleanUri = new Uri(uri);
             if (cleanUri.Port != 80 && cleanUri.Port != 443)
@@ -493,7 +504,7 @@ order by A.ID
             return JsonConvert.DeserializeObject<T>(jsonRaw, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
         }
 
-        static async Task<T> PostJsonToApiAsync<T>(string uri, string requestBody)
+        async Task<T> PostJsonToApiAsync<T>(string uri, string requestBody)
         {
             var jsonToReturn = "";
             List<string> cookies = null;
@@ -550,7 +561,7 @@ order by A.ID
         /// <param name="relations">The asset relationship mappings.</param>
         /// <param name="roles">The asset role mappings.</param>
         /// <returns>An asynchronous boolean to indicate whether the process was successful or not.</returns>
-        public static bool IGC_LoadAssetsByMappingType(
+        bool IGC_LoadAssetsByMappingType(
             IntegrationSetting setting, 
             bool checkForChangesOnly, 
             DateTime now, 
@@ -965,12 +976,16 @@ order by A.ID
                 //Perform search using POST method.
                 var postModel = new IgcPostSearchRequestModel
                 {
-                    begin = previouslyProcessCount,
-                    sorts = new List<IgcPostSearchRequestSortModel>() {
+                    begin = previouslyProcessCount
+                };
+
+                if (mapping.AllowChangeDetection)
+                {
+                    postModel.sorts = new List<IgcPostSearchRequestSortModel>() {
                         new IgcPostSearchRequestSortModel { ascending = true, property = "modified_on" },
                         new IgcPostSearchRequestSortModel { ascending = true, property = "created_on" }
-                    }
-                };
+                    };
+                }
 
                 #region Figure out page size
 
@@ -990,16 +1005,19 @@ order by A.ID
                 postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
                 postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
 
-                if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
-                if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
-
                 var min = checkForChangesOnly ?
                     (ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0))) :
                     0;
                 var max = ConvertDateToUnixTimeMilliseconds(now);
 
-                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
-                postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
+                if (mapping.AllowChangeDetection)
+                {
+                    if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
+                    if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
+
+                    postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
+                    postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
+                }
 
                 //If starting from beginning, you are effectively doing a full refresh.
                 if (min == 0)
@@ -1062,7 +1080,7 @@ order by A.ID
                             shouldContinue = (models.paging.numTotal > models.paging.end + 1);
                             postModel.begin = models.paging.end + 1;
 
-                            SendIncrementalSetToGovern(cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
+                            SendIncrementalSetToGovern(cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, execution.ExecutionID, mapping, assets, relationships, ownershipTopModel);
 
                             // Re-initialize.
                             assets = new BulkAssetImport();
@@ -1089,7 +1107,7 @@ order by A.ID
 
                 if (assets.Count > 0)
                 {
-                    success = SendIncrementalSetToGovern(cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, mapping, assets, relationships, ownershipTopModel);
+                    success = SendIncrementalSetToGovern(cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, execution.ExecutionID, mapping, assets, relationships, ownershipTopModel);
                 }
                 else
                 {
@@ -1121,9 +1139,10 @@ order by A.ID
             return success;
         }
 
-        public static bool SendIncrementalSetToGovern(
+        bool SendIncrementalSetToGovern(
             SqlConnection cnn, 
             int companyID, string companyDomain, int resourceID, 
+            long executionID,
             IntegrationAssetType mapping, BulkAssetImport assets, BulkRelationshipImport relationships, D3sOwnershipItemsModel owners)
         {
             bool successfulPost = true;
@@ -1217,6 +1236,8 @@ order by A.ID
                     {
                         var ownerImport = new BulkOwnerImport { UserIdFieldName = owners.UserIdFieldName };
                         ownerImport.Items = owners.Items.Select(i => new OwnerImportRequest { RoleName = i.RoleName, SourceID = i.SourceID, UserId = i.UserId }).ToList();
+                        var executionRoles = ownerImport.Items.Select(i => new IntegrationExecutionRoleItem { ExecutionID = executionID, SynchedAssetTypeID = mapping.ID, RoleName = i.RoleName, SourceID = i.SourceID, UserIdentifier = i.UserId }).ToList();
+                        cnn.BulkExecutionRoleItemLoad(resourceID, executionRoles);
                         var ownerResults = cnn.BulkOwnersImport(resourceID, ownerImport);
                     }
                 }

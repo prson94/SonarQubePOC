@@ -20,10 +20,11 @@ namespace d360.model
         public DbSet<IntegrationExecution> IntegrationExecutions { get; set; }
 
         public DbSet<IntegrationExecutionAsset> IntegrationExecutionAssets { get; set; }
+        public DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
 
         public DbSet<IntegrationExecutionRelationItem> IntegrationExecutionRelationItems { get; set; }
 
-        public DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
+        public DbSet<IntegrationExecutionRoleItem> IntegrationExecutionRoleItems { get; set; }
 
         public DbSet<IntegrationSetting> IntegrationSettings { get; set; }
 
@@ -1150,6 +1151,92 @@ when not matched by target then
             }
         }
 
+        public static void BulkExecutionRoleItemLoad(this SqlConnection cnn, int currentResourceID, List<IntegrationExecutionRoleItem> executionRoles)
+        {
+            var relationTable = new System.Data.DataTable();
+
+            relationTable.Columns.Add("ExecutionID", typeof(long));
+            relationTable.Columns.Add("SynchedAssetTypeID", typeof(int));
+            relationTable.Columns.Add("SourceID", typeof(string));
+            relationTable.Columns.Add("RoleName", typeof(string));
+            relationTable.Columns.Add("UserIdentifier", typeof(string));
+
+            executionRoles.ForEach(a =>
+            {
+                var row = relationTable.NewRow();
+                row["ExecutionID"] = a.ExecutionID;
+                row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
+                row["SourceID"] = a.SourceID;
+                row["RoleName"] = a.RoleName;
+                row["UserIdentifier"] = a.UserIdentifier;
+                relationTable.Rows.Add(row);
+            });
+
+            if (cnn.State != System.Data.ConnectionState.Open)
+                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+
+            using (var trans = cnn.BeginTransaction())
+            {
+                try
+                {
+                    cnn.Execute("DROP TABLE IF EXISTS #IntegrationRoleTable", transaction: trans);
+
+                    cnn.Execute(@"
+                        create table #IntegrationRoleTable (
+	                        ExecutionID bigint NOT NULL,
+                            SynchedAssetTypeID int NULL,
+	                        SourceID nvarchar(250) NOT NULL,
+	                        RoleName nvarchar(250) NOT NULL,
+	                        UserIdentifier nvarchar(250) NOT NULL
+                        )", transaction: trans);
+
+                    cnn.Execute(@"CREATE CLUSTERED INDEX IX_TempIntegrationRoleTable ON #IntegrationRoleTable ( ExecutionID, SynchedAssetTypeID, SourceID, RoleName )", transaction: trans);
+
+                    var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
+
+                    assetBulkCopy.BatchSize = relationTable.Rows.Count;
+                    assetBulkCopy.DestinationTableName = "#IntegrationRoleTable";
+                    assetBulkCopy.BulkCopyTimeout = 3600;
+
+                    assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
+                    assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
+                    assetBulkCopy.ColumnMappings.Add("RoleName", "RoleName");
+                    assetBulkCopy.ColumnMappings.Add("UserIdentifier", "UserIdentifier");
+
+                    assetBulkCopy.WriteToServer(relationTable);
+
+                    cnn.Execute($@"
+merge into  [integration].[ExecutionRoleItem] T
+using       (
+            select      ExecutionID,
+                        SynchedAssetTypeID,
+                        SourceID,
+                        RoleName,
+                        UserIdentifier
+            from        #IntegrationRoleTable
+            ) S
+on          (
+                S.ExecutionID = T.ExecutionID and
+                S.SynchedAssetTypeID = T.SynchedAssetTypeID and
+                S.SourceID = T.SourceID and 
+                S.RoleName = T.RoleName
+            )
+when not matched by target then
+    insert  (ExecutionID, SynchedAssetTypeID, SourceID, RoleName, UserIdentifier)
+    values  (S.ExecutionID, S.SynchedAssetTypeID, S.SourceID, S.RoleName, S.UserIdentifier);",
+    transaction: trans, commandTimeout: 1200);
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
+        }
 
         public static void ProcessUnresolvedRelationships(this SqlConnection cnn)
         {
