@@ -15738,6 +15738,10 @@ order by DN.DisplayValue");
             try
             {
                 model.SetRawFromDefinition();
+                if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_Filter_Value_Required);
+                }
                 Company.Add(model);
 
                 if (model.ApplyToType)
