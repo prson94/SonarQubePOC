@@ -125,7 +125,7 @@ namespace d360.web.Controllers
             {
                 getDynamicFieldJoinStatements(id, type.Replace("Type", ""), out joins, out columns, false, true);
                 string followOrOwnSql = "";
-                string lastColumn = (follow) ? "FD.OpenEventCount" : "FD.[Role], FD.ContextItems as [Context]";
+                string lastColumn = (follow) ? "FD.OpenEventCount" : "FD.ResponsibilityTypeName as [Role], FD.Context as [Context]";
 
                 switch (type)
                 {
@@ -134,12 +134,11 @@ namespace d360.web.Controllers
                         #region
                         followOrOwnSql = (follow) ?
                             $"inner join FollowDetail FD on FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID" :
-                            $"inner join ResponsibilityDetailForResource FD on FD.ResponsibleObjectType = 'Resource' and FD.ResponsibleObjectID = {resourceID} and FD.ObjectType = '{type.Replace("'", "''")}' and FD.ObjectTypeID = {id} and FD.ObjectID = A.ID";
-
+                            $"inner join ResponsibilityDetails FD on FD.SecurityAsset = 'R' and FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID";
                         sql = $@"
 select	A.ID,
         {columns}
-        FD.CurrentScore,
+        dbo.GetObjectStatisticScore('Artifact', A.ID) as CurrentScore,
         {lastColumn}
 from	Artifact A 
         {followOrOwnSql} 
@@ -151,12 +150,11 @@ from	Artifact A
                         #region
                         followOrOwnSql = (follow) ?
                             $"inner join FollowDetail FD on FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID" :
-                            $"inner join ResponsibilityDetailForResource FD on FD.ResponsibleObjectType = 'Resource' and FD.ResponsibleObjectID = {resourceID} and FD.ObjectType = '{type.Replace("'", "''")}' and FD.ObjectTypeID = {id} and FD.ObjectID = A.ID";
-
+                            $"inner join ResponsibilityDetails FD on FD.SecurityAsset = 'R' and FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID";
                         sql = $@"
 select	A.ID,
         {columns}
-        FD.CurrentScore,
+        dbo.GetObjectStatisticScore('Taxonomy', A.ID) as CurrentScore,
         {lastColumn}
 from	Taxonomy A 
         {followOrOwnSql} and A.TaxonomyTypeID = {id} 
@@ -167,7 +165,18 @@ from	Taxonomy A
                         #region
                         sql = (follow) ? 
                             $"select  Name, TextPath, Description, TypeName, CurrentScore, OpenEventCount from FollowDetail where ResourceID = {resourceID} and Type = '{type.Replace("'", "''")}' and TypeID = {id}" :
-                            $"select ObjectName as Name, ObjectTypeName as Type, [Role], ContextItems as [Context], CurrentScore from ResponsibilityDetailForResource FD where ResponsibleObjectType = 'Resource' and ResponsibleObjectID = {resourceID} and ObjectType = '{type.Replace("'", "''")}' and ObjectTypeID = {id}";
+                            $@"select 
+
+    D.DisplayValue as [Name], 
+		T.Name as Type, 
+		R.Context, 
+		dbo.GetObjectStatisticScore(A.Object, A.ObjectID) as CurrentScore
+from ResponsibilityDetails R
+inner
+join Asset A on A.Object = R.Object and A.ObjectID = R.ObjectID
+cross apply GetAssetDisplayValueById(A.ID) D
+inner join AssetType T on T.Object = R.Type and T.ObjectID = R.TypeID
+where SecurityAsset = 'R' and ResourceID = {resourceID} and Type = '{type.Replace("'", "''")}' and TypeID = {id}";
                         break;
                         #endregion
                 }
