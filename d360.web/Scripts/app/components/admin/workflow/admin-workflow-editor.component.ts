@@ -142,7 +142,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                                 this.conditions = this.model.Event.ConditionObject.Condition;
                         }
                     })
-                    .then(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType))
+                    .then(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType, true))
                     .then(r => {
                         //need to apply names to loaded conditions
                         r.forEach(t => {
