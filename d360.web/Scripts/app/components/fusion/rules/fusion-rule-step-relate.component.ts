@@ -3,7 +3,6 @@ import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
 import { FusionService } from '../../../services/fusion.service';
 import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
-import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'd3s-fusion-rule-step-relate',
@@ -65,12 +64,10 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
     }
 
     changeObjectSearch() {
-        this.settings.ObjectID = null;
         this.changeSearch('Object');
     }
 
     changeSubjectSearch() {
-        this.settings.SubjectID = null;
         this.changeSearch('Subject');
     }
 
@@ -96,13 +93,13 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
     validate() {
         this.isValid = true;
 
-        if (StringHelpers.isNullOrEmpty(this.settings.IntersectType))
+        if (this.settings.IntersectType == null)
             this.isValid = false;
-        if (StringHelpers.isNullOrEmpty(this.settings.SubjectSearch) || StringHelpers.isNullOrEmpty(this.settings.ObjectSearch))
+        if (this.settings.SubjectSearch == null || this.settings.ObjectSearch == null)
             this.isValid = false;
-        if (this.settings.SubjectSearch != null && this.settings.SubjectSearch != 'Self' && StringHelpers.isNullOrEmpty(this.settings.SubjectID ))
+        if (this.settings.SubjectSearch != null && this.settings.SubjectSearch != 'Self' && this.settings.SubjectID == null)
             this.isValid = false;
-        if (this.settings.ObjectSearch != null && this.settings.ObjectSearch != 'Self' && StringHelpers.isNullOrEmpty(this.settings.ObjectID))
+        if (this.settings.ObjectSearch != null && this.settings.ObjectSearch != 'Self' && this.settings.SubjectID == null)
             this.isValid = false;
 
         this.isValidChange.emit(this.isValid);

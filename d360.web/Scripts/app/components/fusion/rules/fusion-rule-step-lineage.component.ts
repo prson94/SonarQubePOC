@@ -3,7 +3,6 @@ import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
 import { FusionService } from '../../../services/fusion.service';
 import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
-import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'd3s-fusion-rule-step-lineage',
@@ -53,9 +52,9 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
 
     validate() {
         this.isValid = true;
-        if (StringHelpers.isNullOrEmpty(this.settings.Role)
-            || StringHelpers.isNullOrEmpty(this.settings.SubjectID)
-            || StringHelpers.isNullOrEmpty(this.settings.ObjectID))
+        if (this.settings.Role == null
+            || this.settings.SubjectID == null
+            || this.settings.ObjectID == null)
             this.isValid = false;
 
         this.isValidChange.emit(this.isValid);

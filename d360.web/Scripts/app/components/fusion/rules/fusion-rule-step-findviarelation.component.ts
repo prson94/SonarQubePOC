@@ -3,7 +3,6 @@ import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
 import { FusionService } from '../../../services/fusion.service';
 import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
-import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'd3s-fusion-rule-step-findviarelation',
@@ -56,9 +55,9 @@ export class FusionRuleStepFindViaRelationComponent extends FusioRuleStepBaseCom
 
     validate() {
         this.isValid = true;
-        if (StringHelpers.isNullOrEmpty(this.settings.IntersectType) || StringHelpers.isNullOrEmpty(this.settings.Search))
+        if (this.settings.IntersectType == null || this.settings.Search == null)
             this.isValid = false;
-        if (this.settings.Search != null && this.settings.Search != 'Self' && StringHelpers.isNullOrEmpty(this.settings.ID))
+        if (this.settings.Search != null && this.settings.Search != 'Self' && this.settings.ID == null) 
             this.isValid = false;
         this.isValidChange.emit(this.isValid);
     }
