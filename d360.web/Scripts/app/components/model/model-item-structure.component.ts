@@ -24,7 +24,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
     template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail" *ngIf="!isLoading">                            
-                    <header *ngIf="!showDelete && !showEditor">{{model?.DisplayValue}}
+                    <header *ngIf="!showDelete && !showEditor">{{model?.Name}}
                         &nbsp; <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                                                
                     <div *ngIf="!showDelete && !showEditor && model && model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
