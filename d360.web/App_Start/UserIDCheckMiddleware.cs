@@ -366,8 +366,8 @@ where S.ID = 54")).FirstOrDefault();
                 //***** 1. Get a Client Certificate from the Http context or http header ****/
                 //   clientCertificate = context.Request.c.ClientCertificate;
                 
-                if (System.Web.HttpContext.Current != null && System.Web.HttpContext.Current.Request != null && System.Web.HttpContext.Current.Request.ClientCertificate != null) {
-                    X509Certificate2 cert = new X509Certificate2(System.Web.HttpContext.Current.Request.ClientCertificate.Certificate);
+                if (System.Web.HttpContext.Current != null && System.Web.HttpContext.Current.Request != null && System.Web.HttpContext.Current.Request.ClientCertificate != null && System.Web.HttpContext.Current.Request.ClientCertificate.Count > 0) {
+                    clientCertificate = new X509Certificate2(System.Web.HttpContext.Current.Request.ClientCertificate.Certificate);
                 }
                 
                 if (clientCertificate == null)
