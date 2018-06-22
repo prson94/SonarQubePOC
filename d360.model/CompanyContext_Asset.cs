@@ -759,7 +759,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                         inner join (
 		                            select	SF.AssetID
 		                            from	Field SF{tableHints}                                     
-                                    inner join[utility].[ArtifactAssetParent] arp on SF.Asset = arp.AssetID cross apply [dbo].[GetArtifactDisplayValue](arp.ParentAssetID) parp
+                                    inner join[utility].[ArtifactAssetParent] arp on SF.AssetID = arp.AssetID cross apply [dbo].[GetArtifactDisplayValue](arp.ParentAssetID) parp
                                     where	FieldTypeID in ({simpleFilterIDs})				                            
                                             and (FormattedValue like @simpleFilter OR parp.DisplayValue like @simpleFilter)
                                     group by SF.AssetID
