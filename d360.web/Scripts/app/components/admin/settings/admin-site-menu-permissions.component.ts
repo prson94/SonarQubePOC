@@ -132,7 +132,7 @@ export class AdminSiteMenuPermissionsComponent extends AdminBaseComponent implem
     }
 
     addPermission() {
-        this.loadPermissionsList()
+        this.loadPermissionsList(this.siteNav)
             .then(() => {
                 this.formMode = FormMode.Adding;
                 this.onModeChange.emit(this.formMode);
@@ -141,7 +141,7 @@ export class AdminSiteMenuPermissionsComponent extends AdminBaseComponent implem
 
     loadPermissionsList(item: SiteNav = null): Promise<any> {
         let id = 0;
-        if (item != null)
+        if (item && item.ID)
             id = item.ID;
 
         this.field = new EditorField(); 
