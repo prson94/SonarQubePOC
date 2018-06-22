@@ -223,8 +223,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
     private isValid(): boolean {
         return !(StringHelpers.isNullOrEmpty(this.resouceAssigned) ||
-            StringHelpers.isNullOrEmpty(this.model.selectedResponsibilityType) ||
-            StringHelpers.isNullOrEmpty(this.model.responsibility.Context) );
+            StringHelpers.isNullOrEmpty(this.model.selectedResponsibilityType));
           
     }
 
