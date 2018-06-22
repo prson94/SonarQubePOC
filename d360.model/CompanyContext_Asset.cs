@@ -565,8 +565,9 @@ left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_R.Subject = A.
             if (parentIntersectType != null)
             {
                 parentOuterSqlColumn = @"ParentID, Parent, ParentUrl,";
-                parentSqlColumn = @"PID.ParentID, PID.ParentDisplayValue as Parent, PID.ParentUrl, ";
-                parentSqlJoin = @" cross apply [dbo].[GetArtifactParentByAssetID](A.ID) PID";
+                parentSqlColumn = @"arp.ParentArtifactID as ParentID, parp.DisplayValue as Parent, '' as ParentUrl, ";
+                //parentSqlJoin = @" cross apply [dbo].[GetArtifactParentByAssetID](A.ID) PID";
+                parentSqlJoin = @" inner join [utility].[ArtifactAssetParent] arp on a.id = arp.assetid cross apply [dbo].[GetArtifactDisplayValue](arp.ParentAssetID) parp";
             }
 
             #endregion
@@ -756,12 +757,12 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                     
                     filterJoinList.Add($@"
                         inner join (
-		                            select	AssetID
-		                            from	Field SF{tableHints} 
-                                    cross apply [dbo].[GetArtifactParentByAssetID](AssetID) PID 
-		                            where	FieldTypeID in ({simpleFilterIDs})				                            
-                                            and (FormattedValue like @simpleFilter OR PID.ParentDisplayValue like @simpleFilter)
-                                    group by AssetID
+		                            select	SF.AssetID
+		                            from	Field SF{tableHints}                                     
+                                    inner join[utility].[ArtifactAssetParent] arp on SF.Asset = arp.AssetID cross apply [dbo].[GetArtifactDisplayValue](arp.ParentAssetID) parp
+                                    where	FieldTypeID in ({simpleFilterIDs})				                            
+                                            and (FormattedValue like @simpleFilter OR parp.DisplayValue like @simpleFilter)
+                                    group by SF.AssetID
 		                            {joinInfo} 
                                    {fieldFromRelationshipAssets}");
                 }
