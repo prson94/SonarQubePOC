@@ -913,18 +913,6 @@
     <Content Include="fonts\fontawesome-webfont.ttf" />
     <Content Include="fonts\fontawesome-webfont.eot" />
     <EmbeddedResource Include="d3s-signing.pfx" />
-    <None Include="Properties\PublishProfiles\UI - Client Development - AU - East.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Client Development - IN - Central.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Client Development - UK - South.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Client Development - US - East.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Nightly - US  - East.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Production - AU - East.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Production - India - Pune.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Production - UK - London.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Client Development - US - Central.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Client Development - EU - North.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Production - US - Central.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Production - EU - North.pubxml" />
     <Content Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.html" />
     <Content Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\admin-governance.component.html" />
@@ -941,8 +929,6 @@
     <None Include="Content\styles\Root.less" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <None Include="Properties\PublishProfiles\UI - Uat - AU - East.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Uat - EU - North.pubxml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -957,12 +943,7 @@
     <Content Include="Views\Shared\Anonymous.cshtml" />
     <Content Include="Views\Authentication\Register.cshtml" />
     <Content Include="Views\Shared\GenericError.cshtml" />
-    <None Include="Properties\PublishProfiles\UI - Uat - IN - Central.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Uat - UK - South.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Uat - US - Central.pubxml" />
-    <None Include="Properties\PublishProfiles\UI - Uat - US - East.pubxml" />
     <Content Include="Views\Shared\Terms.cshtml" />
-    <None Include="Properties\PublishProfiles\UI- Production - US - East.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1004,6 +985,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\themes\base\images\" />
+    <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">
