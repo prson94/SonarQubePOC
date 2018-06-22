@@ -2993,3 +2993,36 @@ From
 )
 GO
 
+-- update fusion rule promotion steps where old name was hard coded name field
+    update rsm
+    set rsm.TargetFieldTypeID = ft.id
+from 
+    fusion.rulestepmapping rsm
+    inner join fusion.rulestepsetting rss_o on rss_o.rulestepid = rsm.rulestepid and rss_o.name = 'Object' and rss_o.name = 'Object' and rsm.targetfieldtypeid = 0 and rsm.targetfieldname = 'Name'
+    inner join fusion.rulestepsetting rss_oi on rss_oi.rulestepid = rsm.rulestepid and rss_oi.name = 'ObjectID'
+    inner join fieldtype ft on ft.object = rss_o.value and ft.objectid = rss_oi.value and ft.name = 'Name'
+-- update fusion rule promotion steps where old desc was hard coded name field
+    update rsm
+    set rsm.TargetFieldTypeID = ft.id
+from 
+    fusion.rulestepmapping rsm
+    inner join fusion.rulestepsetting rss_o on rss_o.rulestepid = rsm.rulestepid and rss_o.name = 'Object' and rss_o.name = 'Object' and rsm.targetfieldtypeid = 0 and rsm.targetfieldname = 'Description'
+    inner join fusion.rulestepsetting rss_oi on rss_oi.rulestepid = rsm.rulestepid and rss_oi.name = 'ObjectID'
+    inner join fieldtype ft on ft.object = rss_o.value and ft.objectid = rss_oi.value and ft.name = 'Description'
+-- update fusion rule promotion steps where old taxonomytypeid was hard coded
+update rsm 
+    set rsm.TargetFieldTypeID = ft.id 
+from 
+    fusion.rulestepmapping rsm 
+    inner join fusion.rulestepsetting rss_o on rss_o.rulestepid = rsm.rulestepid and rss_o.name = 'Object' and rss_o.name = 'Object' and rsm.targetfieldtypeid = 0 and rsm.targetfieldname = 'TaxonomyTypeID' 
+    inner join fusion.rulestepsetting rss_oi on rss_oi.rulestepid = rsm.rulestepid and rss_oi.name = 'ObjectID' 
+    inner join fieldtype ft on ft.object = rss_o.value and ft.objectid = rss_oi.value and ft.name = 'SubjectArea' 
+-- update constant values for subject area to there list values
+update rsm 
+set rsm.constantvalue = flv.[value] 
+from 
+fusion.rulestepmapping rsm 
+inner join fusion.rulestepsetting rss_o on rss_o.rulestepid = rsm.rulestepid and rss_o.name = 'Object' and rss_o.name = 'Object' and rsm.targetfieldname = 'TaxonomyTypeID'  and rsm.IsConstantValue = 1
+inner join fusion.rulestepsetting rss_oi on rss_oi.rulestepid = rsm.rulestepid and rss_oi.name = 'ObjectID' 
+inner join fieldtype ft on ft.object = rss_o.value and ft.objectid = rss_oi.value and ft.name = 'SubjectArea' 
+inner join fieldlookupvalue flv on ft.id = flv.fieldtypeid and flv.text = rsm.constantvalue

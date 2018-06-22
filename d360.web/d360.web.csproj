@@ -944,6 +944,7 @@
     <Content Include="Views\Authentication\Register.cshtml" />
     <Content Include="Views\Shared\GenericError.cshtml" />
     <Content Include="Views\Shared\Terms.cshtml" />
+    <None Include="Properties\PublishProfiles\US - East - Nightly.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -985,7 +986,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\themes\base\images\" />
-    <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">
