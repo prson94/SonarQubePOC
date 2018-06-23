@@ -1,4 +1,247 @@
-﻿CREATE NONCLUSTERED INDEX [IX_CacheAssetResponsibility_RuleID_Include] ON [cache].[AssetResponsibility]([RuleID] ASC) INCLUDE([OverrideItemID]);
+﻿CREATE TABLE [integration].[ExecutionRoleItem](
+	[ID] [uniqueidentifier] NOT NULL,
+	[ExecutionID] [bigint] NOT NULL,
+	[SourceID] [nvarchar](250) NOT NULL,
+	[RoleName] [nvarchar](250) NOT NULL,
+	[UserIdentifier] [nvarchar](250) NOT NULL,
+	[SynchedAssetTypeID] [int] NOT NULL,
+	CONSTRAINT [PK_IntegrationExecutionRoleItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+ALTER TABLE [integration].[ExecutionRoleItem] ADD  CONSTRAINT [DF_IntegrationExecutionRoleItem_ID]  DEFAULT (newid()) FOR [ID]
+GO
+
+ALTER TABLE [integration].[ExecutionRoleItem] ADD  CONSTRAINT [DF_IntegrationExecutionRoleItem_SynchedAssetTypeID]  DEFAULT ((0)) FOR [SynchedAssetTypeID]
+GO
+
+ALTER TABLE [integration].[ExecutionRoleItem]  WITH CHECK ADD  CONSTRAINT [FK_IntegrationExecutionRoleItem_IntegrationExecution] FOREIGN KEY([ExecutionID]) REFERENCES [integration].[Execution] ([ID])
+GO
+
+ALTER TABLE [integration].[ExecutionRoleItem] CHECK CONSTRAINT [FK_IntegrationExecutionRoleItem_IntegrationExecution]
+GO
+
+ALTER procedure [integration].[ProcessDeletions]
+as
+begin
+
+	DROP TABLE IF EXISTS #fullSynched
+
+	create table #fullSynched (ExecutionID bigint, SynchedAssetTypeID int, CurrentSourceAssetCount int, SourceProcessedCount int)
+	insert into #fullSynched
+		select		E.ExecutionID,
+					E.SynchedAssetTypeID,
+					E.CurrentSourceAssetCount,
+					count(1) as SourceProcessedCount
+		from		integration.ExecutionAssetType E
+					inner join	(
+								select		Max(ExecutionID) as ExecutionID,
+											SynchedAssetTypeID
+								from		integration.ExecutionAssetType
+								where		IsFullRefresh = 1
+											and CompletedOn is not null
+								group by	SynchedAssetTypeID
+								) ME on ME.ExecutionID = E.ExecutionID and ME.SynchedAssetTypeID = E.SynchedAssetTypeID
+					inner join integration.ExecutionAsset A on A.ExecutionID = E.ExecutionID and A.SynchedAssetTypeID = E.SynchedAssetTypeID and E.ProcessedDelete = 0
+--where		E.SynchedAssetTypeID = 1
+		group by	E.ExecutionID,
+					E.SynchedAssetTypeID,
+					E.CurrentSourceAssetCount
+	/*
+	select	* 
+	from	#fullSynched
+	*/
+	DROP TABLE IF EXISTS #roles
+
+	create table #roles (ResponsibilityTypeID int, AssetID bigint, SecurityAssetID int)
+	insert into #roles 
+		select	distinct
+				RT.ID as ResponsibilityTypeID,
+				A.ID as AssetID,
+				F.ObjectID as SecurityAssetID
+		from	integration.ExecutionRoleItem R
+				inner join	(
+							select		max(ExecutionID) as ExecutionID,
+										SynchedAssetTypeID,
+										SourceID,
+										RoleName
+							from		integration.ExecutionRoleItem
+							group by	SynchedAssetTypeID,
+										SourceID,
+										RoleName
+							) MR on MR.ExecutionID = R.ExecutionID and MR.SynchedAssetTypeID = R.SynchedAssetTypeID and MR.SourceID = R.SourceID and MR.RoleName = R.RoleName
+				inner join Asset A on A.SourceID = R.SourceID
+				inner join Field F on F.ObjectType = 'Resource' and F.Value = R.UserIdentifier and F.FieldTypeID in (select ID from FieldType where Object = 'ResourceType' and ObjectID = 1 and Name = 'UserId')
+				inner join ResponsibilityType RT on RT.Name = R.RoleName
+
+	delete	T
+	from	ResponsibilityTypeRelationOverrideItem T
+			left join #roles S on S.ResponsibilityTypeID = T.ResponsibilityTypeID and S.AssetID = T.AssetID and T.SecurityAsset = 'R' and S.SecurityAssetID = T.SecurityAssetID
+	where	S.AssetID is null
+			and T.AssetID in (select AssetID from #roles)
+
+	--Get the Intersect.ID to delete. These are the ones that are no longer present after a full refresh.
+	delete [Intersect] where ID in (
+		select	I.ID
+		from	[Intersect] I
+				inner join	(
+							select	R.IntersectTypeID
+							from	integration.ExecutionRelationItem R
+									inner join #fullSynched E on E.ExecutionID = R.ExecutionID			
+							group by R.IntersectTypeID
+							) E on E.IntersectTypeID = I.IntersectTypeID
+				inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+				inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+				left join (
+					select	R.IntersectTypeID,
+							R.SubjectSourceID,
+							R.ObjectSourceID
+					from	integration.ExecutionRelationItem R
+							inner join #fullSynched E on E.ExecutionID = R.ExecutionID			
+				) SI on SI.IntersectTypeID = I.IntersectTypeID and SI.SubjectSourceID = S.SourceID and SI.ObjectSourceID = O.SourceID 
+		where SI.IntersectTypeID is null
+	)
+
+	-- Get the full list of assets, whether processed in the last full-synch executions or not.
+	DROP TABLE IF EXISTS #targetAssets
+	create table #targetAssets (ExecutionID bigint, SynchedAssetTypeID int, AssetID bigint, [Level] int)
+
+	-- First, get ones where there is no level to deal with, AND have no default value field to worry about.
+	insert into #targetAssets
+		select		F.ExecutionID,
+					F.SynchedAssetTypeID,
+					A.ID,
+					null
+		from		#fullSynched F
+					inner join integration.SynchedAssetType T on T.ID = F.SynchedAssetTypeID
+					inner join Asset A on A.AssetTypeID = T.AssetTypeID
+		where		T.[Level] is null
+					and F.SynchedAssetTypeID not in (
+						select	distinct 
+								SynchedAssetTypeID
+						from	integration.SynchedAssetTypeFieldItem 
+						where	ConsiderWhenDeleting = 1
+					)
+		order by	F.SynchedAssetTypeID
+
+	-- Next, get ones where there is no level to deal with, and HAVE a default value field to worry about.
+	insert into #targetAssets
+		select		F.ExecutionID,
+					F.SynchedAssetTypeID,
+					A.ID,
+					null
+		from		#fullSynched F
+					inner join integration.SynchedAssetType T on T.ID = F.SynchedAssetTypeID
+					inner join Asset A on A.AssetTypeID = T.AssetTypeID
+					cross apply (
+						select	IA.ID as AssetID
+						from	Asset IA
+								inner join integration.SynchedAssetTypeFieldItem FI on FI.ConsiderWhenDeleting = 1 and FI.SynchedAssetTypeID = F.SynchedAssetTypeID and IA.AssetTypeID = T.AssetTypeID
+								inner join FieldType IFT on IFT.AssetTypeID = IA.AssetTypeID and IFT.Name = FI.TargetField
+								inner join Field F on F.FieldTypeID = IFT.ID and F.Value = FI.DefaultValue and F.AssetID = IA.ID and IA.ID = A.ID
+					) EF
+		where		T.[Level] is null
+					and F.SynchedAssetTypeID in (
+						select	distinct 
+								SynchedAssetTypeID
+						from	integration.SynchedAssetTypeFieldItem 
+						where	ConsiderWhenDeleting = 1
+					)
+		order by	F.SynchedAssetTypeID
+
+	-- Next, get ones where there is a level to deal with, and no default value to consider.
+	insert into #targetAssets
+		select		F.ExecutionID,
+					F.SynchedAssetTypeID,
+					A.ID,
+					L.Level
+		from		#fullSynched F
+					inner join integration.SynchedAssetType T on T.ID = F.SynchedAssetTypeID
+					inner join Asset A on A.AssetTypeID = T.AssetTypeID
+					cross apply dbo.GetAssetLevelById(A.ID) L
+		where		L.[Level] = T.[Level]
+					and F.SynchedAssetTypeID not in (
+						select	distinct 
+								SynchedAssetTypeID
+						from	integration.SynchedAssetTypeFieldItem 
+						where	ConsiderWhenDeleting = 1
+					)
+		order by	F.SynchedAssetTypeID,
+					L.Level
+
+	-- Last, get ones where there is a level to deal with, and HAS default value to consider.
+	insert into #targetAssets
+		select		F.ExecutionID,
+					F.SynchedAssetTypeID,
+					A.ID,
+					L.Level
+		from		#fullSynched F
+					inner join integration.SynchedAssetType T on T.ID = F.SynchedAssetTypeID
+					inner join Asset A on A.AssetTypeID = T.AssetTypeID
+					cross apply dbo.GetAssetLevelById(A.ID) L
+		where		L.[Level] = T.[Level]
+					and F.SynchedAssetTypeID in (
+						select	distinct 
+								SynchedAssetTypeID
+						from	integration.SynchedAssetTypeFieldItem 
+						where	ConsiderWhenDeleting = 1
+					)
+		order by	F.SynchedAssetTypeID,
+					L.Level
+
+	--select * from #targetAssets
+
+	-- Get the full list of assets that were not present in the last successful full synch, so we can delete them.
+	DROP TABLE IF EXISTS #deletes
+	create table #deletes (ID int identity, AssetID bigint, Object varchar(50), ObjectID int)
+
+	--First, get the deletes where there is no level.
+	insert into #deletes
+		select		A.ID,
+					A.Object,
+					A.ObjectID
+		from		#targetAssets T
+					inner join Asset A on A.ID = T.AssetID
+					left join integration.ExecutionAsset EA on EA.ExecutionID = T.ExecutionID and EA.SynchedAssetTypeID = T.SynchedAssetTypeID and A.SourceID = EA.SourceID
+		where		T.Level is null
+					and EA.SourceID is null
+
+	--Next, get the deletes where there is a valid level.
+	insert into #deletes
+		select		A.ID,
+					A.Object,
+					A.ObjectID
+		from		#targetAssets T
+					inner join Asset A on A.ID = T.AssetID
+					cross apply dbo.GetAssetLevelById(A.ID) L
+					left join integration.ExecutionAsset EA on EA.ExecutionID = T.ExecutionID and EA.SynchedAssetTypeID = T.SynchedAssetTypeID and A.SourceID = EA.SourceID
+		where		EA.SourceID is null
+					and T.Level is not null
+					and L.Level = T.Level
+		order by	T.[Level] desc
+
+
+	declare @current int = 1,
+			@max int,
+			@o varchar(50),
+			@oID int
+	select	@max = coalesce(max(ID),0) from #deletes
+	while	@current <= @max
+	begin
+		select	@o = Object, @oID = ObjectID from #deletes where ID  = @current
+		exec DeleteObject @o, @oID, 0
+		set		@current = @current + 1
+	end
+
+	--Finally, mark these full refreshed records as having been processed for deletes.
+	update	T
+	set		T.ProcessedDelete = 1
+	from	integration.ExecutionAssetType T
+			inner join #fullSynched S on S.ExecutionID = T.ExecutionID and S.SynchedAssetTypeID = T.SynchedAssetTypeID
+end
+GO
+
+CREATE NONCLUSTERED INDEX [IX_CacheAssetResponsibility_RuleID_Include] ON [cache].[AssetResponsibility]([RuleID] ASC) INCLUDE([OverrideItemID]);
 GO
 
 ALTER TABLE [dbo].[CommentVote] DROP CONSTRAINT [FK_Comment_ID]
@@ -3001,6 +3244,7 @@ from
     inner join fusion.rulestepsetting rss_o on rss_o.rulestepid = rsm.rulestepid and rss_o.name = 'Object' and rss_o.name = 'Object' and rsm.targetfieldtypeid = 0 and rsm.targetfieldname = 'Name'
     inner join fusion.rulestepsetting rss_oi on rss_oi.rulestepid = rsm.rulestepid and rss_oi.name = 'ObjectID'
     inner join fieldtype ft on ft.object = rss_o.value and ft.objectid = rss_oi.value and ft.name = 'Name'
+GO
 -- update fusion rule promotion steps where old desc was hard coded name field
     update rsm
     set rsm.TargetFieldTypeID = ft.id
@@ -3009,6 +3253,7 @@ from
     inner join fusion.rulestepsetting rss_o on rss_o.rulestepid = rsm.rulestepid and rss_o.name = 'Object' and rss_o.name = 'Object' and rsm.targetfieldtypeid = 0 and rsm.targetfieldname = 'Description'
     inner join fusion.rulestepsetting rss_oi on rss_oi.rulestepid = rsm.rulestepid and rss_oi.name = 'ObjectID'
     inner join fieldtype ft on ft.object = rss_o.value and ft.objectid = rss_oi.value and ft.name = 'Description'
+GO
 -- update fusion rule promotion steps where old taxonomytypeid was hard coded
 update rsm 
     set rsm.TargetFieldTypeID = ft.id 
@@ -3017,6 +3262,7 @@ from
     inner join fusion.rulestepsetting rss_o on rss_o.rulestepid = rsm.rulestepid and rss_o.name = 'Object' and rss_o.name = 'Object' and rsm.targetfieldtypeid = 0 and rsm.targetfieldname = 'TaxonomyTypeID' 
     inner join fusion.rulestepsetting rss_oi on rss_oi.rulestepid = rsm.rulestepid and rss_oi.name = 'ObjectID' 
     inner join fieldtype ft on ft.object = rss_o.value and ft.objectid = rss_oi.value and ft.name = 'SubjectArea' 
+GO
 -- update constant values for subject area to there list values
 update rsm 
 set rsm.constantvalue = flv.[value] 
@@ -3026,3 +3272,88 @@ inner join fusion.rulestepsetting rss_o on rss_o.rulestepid = rsm.rulestepid and
 inner join fusion.rulestepsetting rss_oi on rss_oi.rulestepid = rsm.rulestepid and rss_oi.name = 'ObjectID' 
 inner join fieldtype ft on ft.object = rss_o.value and ft.objectid = rss_oi.value and ft.name = 'SubjectArea' 
 inner join fieldlookupvalue flv on ft.id = flv.fieldtypeid and flv.text = rsm.constantvalue
+GO
+
+create VIEW [utility].[ArtifactAssetParentIntermediate]
+WITH SCHEMABINDING  
+AS  
+    select    a_o.ID as AssetID,         
+                     I.ObjectID as ParentArtifactID
+       from
+              dbo.[Intersect] I
+              inner join dbo.Asset a_o on I.[Object] = a_o.[Object] and I.[ObjectID] = a_o.ObjectID       
+              inner join dbo.[IntersectType] IT on I.IntersectTypeID = IT.ID
+              inner join dbo.[Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3            
+       where I.[Object] = 'Artifact'
+GO
+
+
+CREATE UNIQUE CLUSTERED INDEX [INDX_ArtifactAssetParentIntermediate_AssetID_ParentArtifactID] ON [utility].[ArtifactAssetParentIntermediate]
+(
+       [AssetID] ASC,       
+       [ParentArtifactID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+GO
+
+
+create VIEW [utility].[ArtifactAssetParent]
+WITH SCHEMABINDING  
+AS  
+    select    
+              aim.AssetID,
+              aim.ParentArtifactID,
+              IA.ID as ParentAssetID
+       from [utility].[ArtifactAssetParentIntermediate] aim
+              inner join dbo.Asset IA on IA.Object = 'Artifact' and aim.ParentArtifactID = IA.ObjectID   
+GO
+
+alter table integration.SynchedAssetType add [Level] int null
+GO
+alter table integration.ExecutionAssetType alter column [ErrorMessage] nvarchar(max) null
+GO
+ALTER TABLE [integration].[ExecutionRelationItem] add [SynchedAssetTypeID] INT CONSTRAINT [DF_IntegrationExecutionRelationItem_SynchedAssetTypeID] DEFAULT ((0)) NOT NULL
+GO
+
+----54 only
+DROP INDEX [IX_Asset_AssetTypeID] ON [dbo].[Asset];
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID_Include] ON [dbo].[Asset]([AssetTypeID] ASC) INCLUDE([ID], [Object], [ObjectID]);
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Intersect_Subject_Object_Include]
+    ON [dbo].[Intersect]([Subject] ASC, [Object] ASC, [SubjectID] ASC)
+    INCLUDE([ID]);
+GO
+
+CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationItem_SecurityAsset]
+    ON [dbo].[ResponsibilityTypeRelationItem]([SecurityAsset] ASC)
+    INCLUDE([SecurityAssetID]);
+GO
+
+CREATE UNIQUE CLUSTERED INDEX [IDEX_IntersectAsset_ObjectAsset_Predicate_IntersectType]
+    ON [utility].[IntersectAsset]([ID] ASC, [ObjectAssetID] ASC, [PredicateType] ASC, [IntersectTypeID] ASC);
+GO
+
+drop view [dbo].[Relationship_test]
+GO
+--------------
+
+DROP INDEX [IX_CacheAssetResponsibility_Asset] ON [cache].[AssetResponsibility];
+GO
+
+CREATE NONCLUSTERED INDEX [IX_CacheAssetResponsibility_RuleID_OverrideItemID]
+    ON [cache].[AssetResponsibility]([RuleID] ASC, [OverrideItemID] ASC)
+    INCLUDE([Overriden]);
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Intersect_Subject_Object_Include]
+    ON [dbo].[Intersect]([Subject] ASC, [Object] ASC, [SubjectID] ASC)
+    INCLUDE([ID]);
+GO
+
+CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationItem_SecurityAsset]
+    ON [dbo].[ResponsibilityTypeRelationItem]([SecurityAsset] ASC)
+    INCLUDE([SecurityAssetID]);
+GO
+

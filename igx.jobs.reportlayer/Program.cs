@@ -503,6 +503,8 @@ from    Issue i
 
                         selectSql = @"
 select	A.ID as FusionAttributeID,
+		A.SourceID,
+		O.ID as AssetID,
         A.ParentID as ParentFusionAttributeID,
         A.TextPath as FusionAttributePath,
         A.Name as FusionAttribute,
@@ -514,6 +516,7 @@ select	A.ID as FusionAttributeID,
         FAT.FusionTypeID,
         FT.Name as FusionType
 from	FusionAttribute A
+		inner join Asset O on O.Object = 'FusionAttribute' and O.ObjectID = A.ID
         inner join Fusion F on F.ID = A.FusionID
         inner join FusionAttributeType FAT on FAT.ID = A.FusionAttributeTypeID
         inner join FusionType FT on FT.ID = FAT.FusionTypeID";

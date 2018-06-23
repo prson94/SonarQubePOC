@@ -49,6 +49,18 @@ namespace igx.jobs.responsibilityruleprocessor
 
                         company.OpenWithRetry(RetryPolicy.DefaultFixed);
 
+                        try
+                        {
+                            company.Execute("delete ResponsibilityTypeRelationItem where RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
+                            company.Execute("delete ResponsibilityTypeRelationTypeItem where RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
+                        }
+                        catch (Exception dex)
+                        {
+                            CoreFunction.AITrackException(functionName, dex, c.CompanyID);
+                            log.WriteLine($"Company [{c.CompanyID}]: [{dex.GetFullExceptionData()}]");
+                            CoreFunction.AIFlush();
+                        }
+
                         var items = company.Query<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule").ToList();
 
                         if (items.Count > 0)
@@ -90,11 +102,6 @@ namespace igx.jobs.responsibilityruleprocessor
                                 CoreFunction.AIFlush();
                             }
                         }
-                        //else
-                        //{
-                        //    CoreFunction.AITrackEvent(functionName, $"Item count is 0", null, c.CompanyID);
-                        //    CoreFunction.AIFlush();
-                        //}
                     }
                     catch (Exception ex)
                     {
