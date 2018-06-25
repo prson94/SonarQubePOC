@@ -15462,6 +15462,31 @@ where	[Object] = @type
 		and Type not in ({ftTypeRemoveString})
 for json auto, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString(), id }).ToList();
 
+            if (type == SystemObjects.OrganizationType)
+            {
+                fieldTypes = Company.Query<string>($@"
+select	FT.ID as value,
+		T.[Name] + ' :: ' + FriendlyName as label,
+		FT.Type as [type],
+		case FT.Type
+			when 'Lookup' then cast(1 as bit)
+			else cast(0 as bit) 
+		end as isLookup,
+		(
+		select	cast(value as varchar) as [value],
+				Text as label 
+		from	FieldLookupValue
+		where	FieldTypeID = FT.ID
+		for json auto
+		) as [values]
+from	FieldType FT
+inner join OrganizationType T on T.ID = FT.ObjectID and T.[State] = 1
+where	[Object] = @type
+		and Type not in ({ftTypeRemoveString})
+order by T.[Name] + ' :: ' + FriendlyName
+for json auto, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString() }).ToList();
+            }
+
             var groupFieldTypes = new List<string>();
             if (type == SystemObjects.GroupType)
             {
