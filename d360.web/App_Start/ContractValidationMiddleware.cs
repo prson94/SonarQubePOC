@@ -149,8 +149,7 @@ namespace d360.web
                     var contractsValidated = await getValidationStatus(companyId, resourceId);
                     context.Set<bool>("ContractsValidated", contractsValidated);
                 }
-
-                throw new Exception("test");
+                
             }
             catch(Exception e)
             {
