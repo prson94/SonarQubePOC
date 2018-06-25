@@ -14834,38 +14834,52 @@ order by TP.TextPath";
             }
         }
         [HttpGet, Route("Responsibility/Resources"), NonNullableParameters]
-        public JsonNetResult ResponsibilityResources(long assetID, int resTypeId, int pagenum, int pagesize, string sortDataField, string sortOrder,string gbfilter)
+        public JsonNetResult ResponsibilityResources(long assetID, int resTypeId,string secAssettype,int secAssetTypeid, int pagenum, int pagesize, string sortDataField, string sortOrder,string gbfilter)
         {
             string querySql;
+            string hideUsersSql = "";
             var dbArgs = new Dapper.DynamicParameters();
 
+            if (HideData3SixtyUsers())
+            {
+                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com')";
+            }
             if (resTypeId == 0)
             {
                 querySql = @"
-                    select  Text as [Text],  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
-						(
-							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
+                            select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
 							where   not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)
-						) as Sub
-                    ";
-            }else
+							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)";
+                querySql += hideUsersSql;
+            }
+            else
             {
+                if (secAssettype=="R")
+                {
+                    dbArgs.Add("resourceId", secAssetTypeid);
+                    dbArgs.Add("groupId", -1);
+                }
+                else
+                {
+                    dbArgs.Add("resourceId", -1);
+                    dbArgs.Add("groupId", secAssetTypeid);
+                }
                 querySql = @"
-                    select  Text as [Text],  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
-						(
-							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
-							where   not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id and ResponsibilityTypeID=@responsibilityTypeID) 
+                    		select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
+							where   not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id and ResponsibilityTypeID=@responsibilityTypeID
+                                and SecurityAssetId <> @groupId) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID)
-						) as Sub
-                    ";
+							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID
+                            and ResourceID <> @resourceId)";
+                querySql += hideUsersSql;
                 dbArgs.Add("responsibilityTypeID", resTypeId);
             }
             dbArgs.Add("assetID", assetID);
+
+            querySql = string.Format(@"select  Text as [Text],  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from ({0}) as  Sub", querySql);
 
             if (!string.IsNullOrEmpty(gbfilter))
             {
@@ -15507,6 +15521,13 @@ for json path, WITHOUT_ARRAY_WRAPPER
             }
 
             var resourceFieldTypes = new List<string>();
+            var hideUsersSql = "";
+            
+            if (HideData3SixtyUsers())
+            {
+                hideUsersSql = " and (Email not like '%@data3sixty.com' and Email not like '%@infogix.com')";
+            }
+
             if (type == SystemObjects.ResourceType)
             {
                 resourceFieldTypes = Company.Query<string>($@"
@@ -15517,9 +15538,9 @@ for json path, WITHOUT_ARRAY_WRAPPER
 				(
 				select	cast(ResourceID as varchar) as [value],
 						LastName + ', ' + FirstName as label 
-				from	reporting.Global_Resource
-				where	Status = 'Active'
-				order by LastName + ', ' + FirstName
+				from	reporting.Global_Resource 
+				where	Status = 'Active' " + hideUsersSql +
+				@"order by LastName + ', ' + FirstName
 				for json auto
 				) as [values]
 for json path, WITHOUT_ARRAY_WRAPPER

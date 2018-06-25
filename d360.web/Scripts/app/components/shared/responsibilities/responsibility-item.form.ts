@@ -101,30 +101,32 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     }
 
 
-
+    private getAssetType(resource): string{
+        let atype;
+        switch (resource) {
+            case "Group":
+            case "G":
+                atype = "G";
+                break;
+            case "User":
+            case "Resource":
+            case "R":
+                atype = "R";
+                break;
+            case "Organization":
+            case "O":
+                atype = "O";
+                break;
+            default:
+                atype = null;
+                break;
+        }
+        return atype;
+    }
     private save(): void {
         try {
-            debugger;
-            switch (this.model.selectedResource.split('|')[0]) {
-                case "Group":
-                case "G":
-                    this.itemToSave.SecurityAsset = "G";
-                    break;
-                case "User":
-                case "Resource":
-                case "R":
-                    this.itemToSave.SecurityAsset = "R";
-                    break;
-                case "Organization":
-                case "O":
-                    this.itemToSave.SecurityAsset = "O";
-                    break;
-                default:
-                    this.itemToSave.SecurityAsset = null;
-                    break;
-            }
-
-  
+     
+            this.itemToSave.SecurityAsset = this.getAssetType(this.model.selectedResource.split('|')[0]);
             this.itemToSave.SecurityAssetID = parseInt(this.model.selectedResource.split('|')[1]);
             this.itemToSave.ResponsibilityTypeID = parseInt(this.model.selectedResponsibilityType);
             this.itemToSave.Context = this.model.responsibility.Context;
@@ -157,12 +159,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                             this.checkD[i].ResponsibilityTypeID == this.itemToSave.ResponsibilityTypeID) {
 
                             this.itemToSave.ID = this.checkD[i].OverrideItemID;
-                            //this.responsibilityService.putResponsibility(this.itemToSave)
-                            //    .then(data => {
-                            //        this.isLoading = false;
-                            //        this.showMessageForResult(this.messagesService, data);
-                            //        this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
-                            //    });
+                          
                             var securityAssetDisplayNameForError = "user";
                             switch (this.itemToSave.SecurityAsset) {
                                 case "G":
@@ -193,13 +190,22 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
     private showResourceGrid() {
         let resTypeId;
-        if (StringHelpers.isNullOrEmpty(this.model.selectedResponsibilityType))
+        let securityAsset;
+        let securityAssetId;
+        if (StringHelpers.isNullOrEmpty(this.model.selectedResponsibilityType) &&
+            StringHelpers.isNullOrEmpty(this.model.selectedResource)) {
             resTypeId = 0
-        else
+            securityAsset ="" ;
+            securityAssetId = 0;
+        }
+        else {
+            securityAsset = this.getAssetType(this.model.selectedResource.split('|')[0]);
+            securityAssetId = this.model.selectedResource.split('|')[1];
             resTypeId = this.model.selectedResponsibilityType;
+        }
         console.log(resTypeId);
         this.field = new EditorField();
-        this.field.TypeaheadUri = `form/Responsibility/Resources?assetID=${this.item.AssetID}&resTypeId=${resTypeId}`;
+        this.field.TypeaheadUri = `form/Responsibility/Resources?assetID=${this.item.AssetID}&resTypeId=${resTypeId}&secAssetType=${securityAsset}&secAssetTypeid=${securityAssetId}`;
         this.field.FieldName = "resources";
         this.field.MultiSelect = false;
         this.field.Value = [];
