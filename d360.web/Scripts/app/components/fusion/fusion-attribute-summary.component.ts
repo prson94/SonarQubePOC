@@ -54,8 +54,16 @@ import { StateService } from '../../services/state.service';
                                     </p-column>
                                 </ng-template>
                             </ng-container>
+                            <p-footer>
+	                            <d3s-grid-paging-info *ngIf="dt && dt.totalRecords" [totalRecords]="dt?.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
+                                <div *ngIf="dt && dt.totalRecords && columns && columns.length>8">
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                </div>
+                            </p-footer>
                         </p-dataTable>                   
-                        <div class="center" style="font-weight:bold"><d3s-grid-paging-info *ngIf="dt && dt.totalRecords" [totalRecords]="dt?.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></div>
+                        
                     </span>
                     <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="newActionName" [objectID]="fusionAttributeTypeId" objectType="FusionAttribute" [title]="'Item'" [selection]="fusionAttribute" [rowID]="'ID'" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 </div>
