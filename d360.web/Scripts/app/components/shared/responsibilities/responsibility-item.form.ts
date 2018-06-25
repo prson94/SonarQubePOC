@@ -71,9 +71,9 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                  this.onLoadComplete.emit({ item: this.item });
                 this.isLoading = false;
             });
-        if (StringHelpers.isNullOrEmpty(this.resouceAssigned)) {
-            this.showResourceGrid();
-        }
+        //if (StringHelpers.isNullOrEmpty(this.resouceAssigned)) {
+        //  //  this.showResourceGrid();
+        //}
     }
 
     private setResouceAssigned() {
@@ -189,21 +189,28 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     }
 
     private showResourceGrid() {
+        debugger;
         let resTypeId;
         let securityAsset;
         let securityAssetId;
-        if (StringHelpers.isNullOrEmpty(this.model.selectedResponsibilityType) &&
-            StringHelpers.isNullOrEmpty(this.model.selectedResource)) {
+        let selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
+        let selectedResource = this.model == null ? "" : this.model.selectedResource;
+        if (StringHelpers.isNullOrEmpty(selectedRespType)) {
             resTypeId = 0
-            securityAsset ="" ;
+        }
+        else {
+            resTypeId = this.model.selectedResponsibilityType;
+        }
+
+        if (StringHelpers.isNullOrEmpty(selectedResource)) {
+            securityAsset = "";
             securityAssetId = 0;
         }
         else {
             securityAsset = this.getAssetType(this.model.selectedResource.split('|')[0]);
             securityAssetId = this.model.selectedResource.split('|')[1];
-            resTypeId = this.model.selectedResponsibilityType;
         }
-        console.log(resTypeId);
+
         this.field = new EditorField();
         this.field.TypeaheadUri = `form/Responsibility/Resources?assetID=${this.item.AssetID}&resTypeId=${resTypeId}&secAssetType=${securityAsset}&secAssetTypeid=${securityAssetId}`;
         this.field.FieldName = "resources";

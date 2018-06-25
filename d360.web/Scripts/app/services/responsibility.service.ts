@@ -28,13 +28,13 @@ export class ResponsibilityService extends BaseService implements IResponsibilit
 
                 if (model.responsibility.SecurityAsset)
                     model.selectedResource = model.responsibility.SecurityAsset + '|' + model.responsibility.SecurityAssetID;
-                else if (model.resources && model.resources.length > 0)
-                    model.selectedResource = model.resources[0].value;
+                //else if (model.resources && model.resources.length > 0)
+                //    model.selectedResource = model.resources[0].value;
 
                 if (model.responsibility.ResponsibilityTypeID)
                     model.selectedResponsibilityType = model.responsibility.ResponsibilityTypeID.toString();
-                else if (model.responsibilityTypes && model.responsibilityTypes.length > 0)
-                    model.selectedResponsibilityType = model.responsibilityTypes[0].value;
+                //else if (model.responsibilityTypes && model.responsibilityTypes.length > 0)
+                //    model.selectedResponsibilityType = model.responsibilityTypes[0].value;
 
                 return model;
             })

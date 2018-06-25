@@ -439,7 +439,7 @@ namespace d360.web.Controllers
 
             if (!string.IsNullOrEmpty(gbfilter))
             {
-                querySql = string.Format(@"select * from ({0}) gb where  [Text] like   @gbfilter + '%'  or [Type] like   @gbfilter + '%'", querySql);
+                querySql = string.Format(@"select * from ({0}) gb where  [Text] like '%' +   @gbfilter + '%'  or [Type] like   @gbfilter + '%'", querySql);
                 dbArgs.Add("gbfilter", gbfilter);
             }
 

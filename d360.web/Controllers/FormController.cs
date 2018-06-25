@@ -8924,7 +8924,7 @@ namespace d360.web.Controllers
 
             if (!string.IsNullOrEmpty(gbfilter))
             {
-                querySql = string.Format(@"select * from ({0}) gb where  [Text] like   @gbfilter + '%'", querySql);
+                querySql = string.Format(@"select * from ({0}) gb where  [Text] like '%' +   @gbfilter + '%'", querySql);
                 dbArgs.Add("gbfilter", gbfilter);
             }
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
@@ -14883,7 +14883,7 @@ order by TP.TextPath";
 
             if (!string.IsNullOrEmpty(gbfilter))
             {
-                querySql = string.Format(@"select * from ({0}) gb where  [Text] like   @gbfilter + '%'  or [Type] like   @gbfilter + '%'", querySql);
+                querySql = string.Format(@"select * from ({0}) gb where  [Text] like '%' +   @gbfilter + '%'  or [Type] like   @gbfilter + '%'", querySql);
                 dbArgs.Add("gbfilter", gbfilter);
             }
 
