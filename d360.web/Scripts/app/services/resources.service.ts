@@ -53,8 +53,11 @@ export class ResourcesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getResponsibilitiesByResourceByType(type: string, id: number, targetType: string, targetId: number): Promise<ResponsibilityDetailForResource[]> {
-        return this.http.get(`api/${type}/${id}/ownership/${targetType}/${targetId}`)
+    getResponsibilitiesByResourceByType(type: string, id: number, targetType: string, targetId: number, responsibilityTypeId: number = null): Promise<ResponsibilityDetailForResource[]> {
+        let uri = `api/${type}/${id}/ownership/${targetType}/${targetId}`;
+        if (responsibilityTypeId != null && responsibilityTypeId > 0)
+            uri += `?responsibilityTypeId=${responsibilityTypeId}`;
+        return this.http.get(uri)
             .toPromise()
             .then(response => <ResponsibilityDetailForResource[]>response.json())
             .catch(err => this.handleError(err));

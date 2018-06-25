@@ -4110,29 +4110,32 @@ order by C.TextPath";
         
 
         [Route("resources/{resourceID:int}/ownership/{type}/{id:int}")]
-        public IEnumerable<dynamic> GetResponsibilitiesByResourceByType(int resourceID, SystemObjects type, int id)
+        public IEnumerable<dynamic> GetResponsibilitiesByResourceByType(int resourceID, SystemObjects type, int id, int? responsibilityTypeId = null)
         {
-            return Company.Query<dynamic>(@"
-select	RD.SecurityAsset,
-		RD.SecurityAssetID,
-		RD.SecurityAssetName,
-		RD.ResourceID,
-		RD.ResponsibilityTypeID,
-		RD.Type,
-		RD.TypeID,
-		T.Name as TypeName,
-		RD.Object,
-		RD.ObjectID,
-		utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
-		RD.ResponsibilityTypeName,
-		case RD.SecurityAsset
-			when 'G' then 'Via Group'
-			when 'O' then 'Via Organization'
-			else ''
-		end as Via,
-        RD.Context
-from	ResponsibilityDetails RD
-		inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @o and T.ObjectID = @id", new { resourceID, o = type.ToString(), id });
+
+            var sql = $@"select	RD.SecurityAsset,
+		        RD.SecurityAssetID,
+		        RD.SecurityAssetName,
+		        RD.ResourceID,
+		        RD.ResponsibilityTypeID,
+		        RD.Type,
+		        RD.TypeID,
+		        T.Name as TypeName,
+		        RD.Object,
+		        RD.ObjectID,
+		        utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
+		        RD.ResponsibilityTypeName,
+		        case RD.SecurityAsset
+			        when 'G' then 'Via Group'
+			        when 'O' then 'Via Organization'
+			        else ''
+		        end as Via,
+                RD.Context
+        from	ResponsibilityDetails RD
+		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @o and T.ObjectID = @id
+        {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? $"where RD.ResponsibilityTypeID = {(int)responsibilityTypeId}" : "")}";
+
+            return Company.Query<dynamic>(sql, new { resourceID, o = type.ToString(), id });
         }
 
 

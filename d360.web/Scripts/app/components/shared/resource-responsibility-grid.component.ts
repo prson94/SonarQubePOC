@@ -32,6 +32,7 @@ export class ResourceResponsibilityGridComponent implements OnChanges {
     @Input() Id: number;
     @Input() objectId: number;
     @Input() objectType: string;
+    @Input() responsibilityTypeId: number = null;
     @Input() type: string;
     @Input() simpleFilter: boolean = false;
     isLoading = false;
@@ -48,7 +49,7 @@ export class ResourceResponsibilityGridComponent implements OnChanges {
 
     load() {
         this.isLoading = true;
-        this.resourcesService.getResponsibilitiesByResourceByType(this.type, this.Id, this.objectType, this.objectId)
+        this.resourcesService.getResponsibilitiesByResourceByType(this.type, this.Id, this.objectType, this.objectId, this.responsibilityTypeId)
             .then(r => {
                 this.items = r;
                 //FormHelper.convertToNgUrl(this.items, 'ObjectUrl');

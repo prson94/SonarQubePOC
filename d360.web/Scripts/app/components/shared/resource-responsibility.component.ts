@@ -24,7 +24,15 @@ declare var CurrentResourceID;
                         </div>                        
                     </div>
                     <div class="col l9 s12">       
-                        <d3s-resource-responsibility-grid-component *ngIf="selected != null" [simpleFilter]="showFilter" [type]="'resources'" [Id]="resourceId" [objectType]="selected.Type" [objectId]="selected.TypeID"></d3s-resource-responsibility-grid-component>
+                        <d3s-resource-responsibility-grid-component 
+                            *ngIf="selected != null" 
+                            [simpleFilter]="showFilter" 
+                            [type]="'resources'" 
+                            [Id]="resourceId" 
+                            [objectType]="selected.Type" 
+                            [objectId]="selected.TypeID" 
+                            [responsibilityTypeId]="responsibilityTypeId">
+                        </d3s-resource-responsibility-grid-component>
                     </div>                    
                 </div>
             `
