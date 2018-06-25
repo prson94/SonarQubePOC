@@ -254,18 +254,6 @@ ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
    ON  [dbo].[FieldType] 
    AFTER INSERT,UPDATE
 AS 
-
-		IF ((COLUMNS_UPDATED() & 1073741824)=1073741824)
-		begin
-			insert into [dbo].[Testing_FieldTypeIn]
-				select  * from  inserted
-		end
-		else
-		begin
-			insert into [dbo].[Testing_FieldTypeOut]
-				select  * from inserted
-		end 
-
 		UPDATE	F
 		set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 		FROM	Field F
@@ -3277,14 +3265,13 @@ GO
 create VIEW [utility].[ArtifactAssetParentIntermediate]
 WITH SCHEMABINDING  
 AS  
-    select    a_o.ID as AssetID,         
-                     I.ObjectID as ParentArtifactID
-       from
-              dbo.[Intersect] I
-              inner join dbo.Asset a_o on I.[Object] = a_o.[Object] and I.[ObjectID] = a_o.ObjectID       
-              inner join dbo.[IntersectType] IT on I.IntersectTypeID = IT.ID
-              inner join dbo.[Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3            
-       where I.[Object] = 'Artifact'
+    select	a_o.ID as AssetID,		
+			I.SubjectID as ParentArtifactID
+	from	dbo.[Intersect] I
+			inner join dbo.Asset a_o on I.[Object] = a_o.[Object] and I.[ObjectID] = a_o.ObjectID	
+			inner join dbo.[IntersectType] IT on I.IntersectTypeID = IT.ID
+			inner join dbo.[Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3
+	where	I.[Object] = 'Artifact'
 GO
 
 
@@ -3295,16 +3282,15 @@ CREATE UNIQUE CLUSTERED INDEX [INDX_ArtifactAssetParentIntermediate_AssetID_Pare
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 GO
 
-
+--drop view [utility].[ArtifactAssetParent]
 create VIEW [utility].[ArtifactAssetParent]
 WITH SCHEMABINDING  
 AS  
-    select    
-              aim.AssetID,
-              aim.ParentArtifactID,
-              IA.ID as ParentAssetID
-       from [utility].[ArtifactAssetParentIntermediate] aim
-              inner join dbo.Asset IA on IA.Object = 'Artifact' and aim.ParentArtifactID = IA.ObjectID   
+    select	aim.AssetID,
+			aim.ParentArtifactID,
+			IA.ID as ParentAssetID
+	from	[utility].[ArtifactAssetParentIntermediate] aim
+			inner join dbo.Asset IA on IA.Object = 'Artifact' and aim.ParentArtifactID = IA.ObjectID
 GO
 
 alter table integration.SynchedAssetType add [Level] int null

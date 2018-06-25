@@ -130,10 +130,12 @@ namespace d360.web
         {
             usercompany u = null;
 
-            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            try
             {
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                var baseSql = @"
+                using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+                {
+                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    var baseSql = @"
 select	C.*,
         R.APIPrivateKey,
         R.APIPublicKey,
@@ -143,20 +145,25 @@ select	C.*,
 from	Resource R
 		inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @com";
 
-                if (!string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiSecret))
-                {
-                    u = cnn.Query<usercompany>(baseSql + @" and R.APIPublicKey = @pub and R.APIPrivateKey = @pri", new { com = companyID, pri = apiSecret, pub = apiKey }).FirstOrDefault();
-                }
-                else if (!string.IsNullOrEmpty(apiReadOnlyKey))
-                {
-                    u = cnn.Query<usercompany>(baseSql + @" and R.APIReadOnlyAccessToken = @token", new { com = companyID, token = apiReadOnlyKey }).FirstOrDefault();
-                }
-                else if (!string.IsNullOrEmpty(username))
-                {
-                    u = cnn.Query<usercompany>(baseSql + @" and lower(ltrim(rtrim(R.Username))) = @username", new { com = companyID, username }).FirstOrDefault();
-                }
+                    if (!string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiSecret))
+                    {
+                        u = cnn.Query<usercompany>(baseSql + @" and R.APIPublicKey = @pub and R.APIPrivateKey = @pri", new { com = companyID, pri = apiSecret, pub = apiKey }).FirstOrDefault();
+                    }
+                    else if (!string.IsNullOrEmpty(apiReadOnlyKey))
+                    {
+                        u = cnn.Query<usercompany>(baseSql + @" and R.APIReadOnlyAccessToken = @token", new { com = companyID, token = apiReadOnlyKey }).FirstOrDefault();
+                    }
+                    else if (!string.IsNullOrEmpty(username))
+                    {
+                        u = cnn.Query<usercompany>(baseSql + @" and lower(ltrim(rtrim(R.Username))) = @username", new { com = companyID, username }).FirstOrDefault();
+                    }
 
-                cnn.Close();
+                    cnn.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"UserIDCheckMiddleware: {ex.GetFullExceptionData()}");
             }
 
             return u;
@@ -213,7 +220,10 @@ from	Resource R
                                 u = LoadUserFromDatabase(companyID, null, null, null, claimToken.Upn);
                                 if (u != null)
                                 {
-                                    cachedUsers.Add(u);
+                                    if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                                    {
+                                        cachedUsers.Add(u);
+                                    }
                                     Users = cachedUsers;
                                 }
                             }
@@ -232,7 +242,10 @@ from	Resource R
                         u = LoadUserFromDatabase(companyID, apiKey: authValues[0], apiSecret: authValues[1]);
                         if (u != null)
                         {
-                            cachedUsers.Add(u);
+                            if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                            {
+                                cachedUsers.Add(u);
+                            }
                             Users = cachedUsers;
                         }
                     }
@@ -262,7 +275,10 @@ from	Resource R
                         u = LoadUserFromDatabase(companyID, apiReadOnlyKey: token);
                         if (u != null)
                         {
-                            cachedUsers.Add(u);
+                            if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                            {
+                                cachedUsers.Add(u);
+                            }
                             Users = cachedUsers;
                         }
                     }
@@ -277,7 +293,10 @@ from	Resource R
                     u = LoadUserFromDatabase(companyID, username: context.Request.User.Identity.Name.ToLower());
                     if (u != null)
                     {
-                        cachedUsers.Add(u);
+                        if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                        {
+                            cachedUsers.Add(u);
+                        }
                         Users = cachedUsers;
                     }
                 }
@@ -291,10 +310,17 @@ from	Resource R
             }
             else
             {
-                if (!string.IsNullOrEmpty(apiCredentials))          Trace.TraceWarning("Could not locate the user with API credentials of: {0}", apiCredentials);
-                if (!string.IsNullOrEmpty(token))                   Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
-                if (context.Request.User.Identity.IsAuthenticated)  Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
-                if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated) return;
+                try
+                {
+                    if (!string.IsNullOrEmpty(apiCredentials)) Trace.TraceWarning("Could not locate the user with API credentials of: {0}", apiCredentials);
+                    if (!string.IsNullOrEmpty(token)) Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
+                    if (context.Request.User.Identity.IsAuthenticated) Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
+                    if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated) return;
+                }
+                catch (Exception  ex)
+                {
+                    Trace.TraceError($"UserIDCheckMiddleware - {ex.GetFullExceptionData()}");
+                }
             }
 
             await _next.Invoke(environment);
