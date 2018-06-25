@@ -332,6 +332,7 @@ from	Resource R
             {
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
+                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     cnName = (await cnn.QueryAsync<string>(@"select coalesce(C.Value, S.DefaultValue) as Value
 from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = 4
 where S.ID = 54")).FirstOrDefault();

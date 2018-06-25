@@ -2,6 +2,7 @@
 using d360.extensions.caching;
 using Dapper;
 using Microsoft.Owin;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using NetTools;
 using System;
 using System.Collections.Generic;
@@ -62,15 +63,16 @@ namespace d360.web
 
             if (dict == null)
             {
-                var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                cnn.Open();
-                dict = (await cnn.QueryAsync<CompanyIpSetting>(@"select	D.UrlPrefix,
+                using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+                {
+                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    dict = (await cnn.QueryAsync<CompanyIpSetting>(@"select	D.UrlPrefix,
 		coalesce(S.Value, '<ips />') as Value 
 from	Company C 
 		inner join CompanyDomainSetting D on D.CompanyID = C.ID
 		left join CompanySetting S on S.CompanyID = C.ID and S.SettingID = 4")).ToDictionary(k => k.UrlPrefix, v => v.Ranges);
-                cnn.Close();
-                cnn.Dispose();
+                    
+                }
                 cache.SetItem(key, dict, true, 1);
             }
             return dict;

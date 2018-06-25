@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.extensions.caching;
 using Dapper;
 using Microsoft.Owin;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -113,6 +114,7 @@ namespace d360.web
                 {
                     try
                     {
+                        comm.OpenWithRetry(RetryPolicy.DefaultProgressive);
                         var res = comm.Query<string>(@"select 'server=' + s.Server + ';Database=D3S_' + cast(@companyId as varchar) + ';User ID=' + s.Username + ';Password='+ s.Password + ';MultipleActiveResultSets=True;' from Company c
                                 inner join DatabaseServer s on s.ID = c.DatabaseServerID 
                                 where c.ID = @companyId", new { companyId }).FirstOrDefault();

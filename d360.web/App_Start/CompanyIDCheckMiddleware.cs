@@ -9,6 +9,7 @@ using System.Linq;
 using System.Web.Caching;
 using d360.extensions.caching;
 using System.Diagnostics;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace d360.web
 {
@@ -34,11 +35,11 @@ namespace d360.web
 
             if (dict == null)
             {
-                var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                cnn.Open();
-                dict = (await cnn.QueryAsync<cd>("select CompanyID, UrlPrefix from CompanyDomainSetting")).ToDictionary(k => k.UrlPrefix, v => v.CompanyID);
-                cnn.Close();
-                cnn.Dispose();
+                using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+                {
+                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    dict = (await cnn.QueryAsync<cd>("select CompanyID, UrlPrefix from CompanyDomainSetting")).ToDictionary(k => k.UrlPrefix, v => v.CompanyID);                                        
+                }
                 cache.SetItem(key, dict, true, 5);
             }
             return dict;
