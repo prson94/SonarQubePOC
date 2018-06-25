@@ -177,102 +177,123 @@ from	Resource R
 
             var companyID = context.Get<int>("CompanyID");
 
-            var apiCredentials = context.Request.Headers["Authorization"];            
-            var token = string.Empty;
-
-            var cachedUsers = Users;
-            
-            // llyods custom auth depends on ceriticate and JWT token
-            if (!string.IsNullOrEmpty(apiCredentials) && apiCredentials.ToUpper().Contains("BEARER"))
+            try
             {
-                // load the certificate info                
-                var certificateCommonName = await getCertificateCommonName(context);
-                
-                //validate the certificate first
-                if (!ValidateX509IfRequired(context, certificateCommonName)) return;  // end pipeline if no valid cert with error code set within
 
-                // certificate is valid at this point we just get the user from the jwt token
-                var authParts = apiCredentials.Split(' ');
+                var apiCredentials = context.Request.Headers["Authorization"];
+                var token = string.Empty;
 
-                if (authParts.Length == 2)
+                var cachedUsers = Users;
+
+                // llyods custom auth depends on ceriticate and JWT token
+                if (!string.IsNullOrEmpty(apiCredentials) && apiCredentials.ToUpper().Contains("BEARER"))
                 {
-                    var jwtToken = authParts[1];
-                    
-                    var tokenParts = jwtToken.Split('.');
+                    // load the certificate info                
+                    var certificateCommonName = await getCertificateCommonName(context);
 
-                    if (tokenParts.Length != 2 || tokenParts.Length != 3) // element 0 is head and 1 is payload
+                    //validate the certificate first
+                    if (!ValidateX509IfRequired(context, certificateCommonName)) return;  // end pipeline if no valid cert with error code set within
+
+                    // certificate is valid at this point we just get the user from the jwt token
+                    var authParts = apiCredentials.Split(' ');
+
+                    if (authParts.Length == 2)
                     {
+                        var jwtToken = authParts[1];
 
-                        var jwtPayloadString = tokenParts[1];
+                        var tokenParts = jwtToken.Split('.');
 
-                        if (!string.IsNullOrEmpty(jwtPayloadString))
+                        if (tokenParts.Length != 2 || tokenParts.Length != 3) // element 0 is head and 1 is payload
                         {
-                            
-                            var decodeJwtPayload = DecodeToken(jwtPayloadString);
-                            
-                            var claimToken = Newtonsoft.Json.JsonConvert.DeserializeObject<JwtToken>(decodeJwtPayload);
 
-                            // if the token in expired please leave
-                            if (!ValidateTokenLifeTime(context, claimToken)) return;
+                            var jwtPayloadString = tokenParts[1];
 
-                            if (claimToken != null && !string.IsNullOrEmpty(claimToken.Upn))
+                            if (!string.IsNullOrEmpty(jwtPayloadString))
                             {
-                                u = LoadUserFromDatabase(companyID, null, null, null, claimToken.Upn);
-                                if (u != null)
+
+                                var decodeJwtPayload = DecodeToken(jwtPayloadString);
+
+                                var claimToken = Newtonsoft.Json.JsonConvert.DeserializeObject<JwtToken>(decodeJwtPayload);
+
+                                // if the token in expired please leave
+                                if (!ValidateTokenLifeTime(context, claimToken)) return;
+
+                                if (claimToken != null && !string.IsNullOrEmpty(claimToken.Upn))
                                 {
-                                    if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                                    u = LoadUserFromDatabase(companyID, null, null, null, claimToken.Upn);
+                                    if (u != null)
                                     {
-                                        cachedUsers.Add(u);
+                                        if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                                        {
+                                            cachedUsers.Add(u);
+                                        }
+                                        Users = cachedUsers;
                                     }
-                                    Users = cachedUsers;
                                 }
                             }
                         }
                     }
                 }
-            }
-            else if (!string.IsNullOrEmpty(apiCredentials))
-            {
-                var authValues = apiCredentials.Split(';');
-                if (authValues.Length == 2)
+                else if (!string.IsNullOrEmpty(apiCredentials))
                 {
-                    u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.APIPrivateKey == authValues[1] && i.APIPublicKey == authValues[0]);
-                    if (u == null)
+                    var authValues = apiCredentials.Split(';');
+                    if (authValues.Length == 2)
                     {
-                        u = LoadUserFromDatabase(companyID, apiKey: authValues[0], apiSecret: authValues[1]);
-                        if (u != null)
+                        u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.APIPrivateKey == authValues[1] && i.APIPublicKey == authValues[0]);
+                        if (u == null)
                         {
-                            if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                            u = LoadUserFromDatabase(companyID, apiKey: authValues[0], apiSecret: authValues[1]);
+                            if (u != null)
                             {
-                                cachedUsers.Add(u);
+                                if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                                {
+                                    cachedUsers.Add(u);
+                                }
+                                Users = cachedUsers;
                             }
-                            Users = cachedUsers;
                         }
                     }
                 }
-            }
-            else
-            {
-                var keyPair = context.Request.Query.FirstOrDefault(i => i.Key == "oauth2_access_token");
-                if (keyPair.Value != null)
-                {
-                    token = keyPair.Value.First();
-                }
                 else
                 {
-                    keyPair = context.Request.Query.FirstOrDefault(i => i.Key == "key");
+                    var keyPair = context.Request.Query.FirstOrDefault(i => i.Key == "oauth2_access_token");
                     if (keyPair.Value != null)
                     {
                         token = keyPair.Value.First();
                     }
+                    else
+                    {
+                        keyPair = context.Request.Query.FirstOrDefault(i => i.Key == "key");
+                        if (keyPair.Value != null)
+                        {
+                            token = keyPair.Value.First();
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.APIReadOnlyAccessToken == token);
+                        if (u == null)
+                        {
+                            u = LoadUserFromDatabase(companyID, apiReadOnlyKey: token);
+                            if (u != null)
+                            {
+                                if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                                {
+                                    cachedUsers.Add(u);
+                                }
+                                Users = cachedUsers;
+                            }
+                        }
+                    }
                 }
 
-                if (!string.IsNullOrEmpty(token))
+                if (context.Request.User.Identity.IsAuthenticated)
                 {
-                    u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.APIReadOnlyAccessToken == token);
+                    u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.Username == context.Request.User.Identity.Name.ToLower());
                     if (u == null)
                     {
-                        u = LoadUserFromDatabase(companyID, apiReadOnlyKey: token);
+                        u = LoadUserFromDatabase(companyID, username: context.Request.User.Identity.Name.ToLower());
                         if (u != null)
                         {
                             if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
@@ -283,44 +304,39 @@ from	Resource R
                         }
                     }
                 }
-            }
 
-            if (context.Request.User.Identity.IsAuthenticated)
-            {
-                u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.Username == context.Request.User.Identity.Name.ToLower());
-                if (u == null)
+                if (u != null)
                 {
-                    u = LoadUserFromDatabase(companyID, username: context.Request.User.Identity.Name.ToLower());
-                    if (u != null)
+                    context.Set("IsAdministrator", u.IsAdministrator);
+                    context.Set("ResourceID", u.ResourceID);
+                    context.Request.User = new System.Security.Principal.GenericPrincipal(new System.Security.Principal.GenericIdentity(u.ResourceID.ToString(), "ID"), null);
+                }
+                else
+                {
+                    try
                     {
-                        if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
-                        {
-                            cachedUsers.Add(u);
-                        }
-                        Users = cachedUsers;
+                        if (!string.IsNullOrEmpty(apiCredentials)) Trace.TraceWarning("Could not locate the user with API credentials of: {0}", apiCredentials);
+                        if (!string.IsNullOrEmpty(token)) Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
+                        if (context.Request.User.Identity.IsAuthenticated) Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
+                        if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated) return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceError($"UserIDCheckMiddleware - {ex.GetFullExceptionData()}");
                     }
                 }
             }
+            catch (Exception e)
+            {
+                //log error
+                var properties = new Dictionary<string, string>
+                {
+                    {"Middleware","UserIDCheckMiddleware" },
+                    {"companyID", companyID.ToString() }
+                };
+                var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();
 
-            if (u != null)
-            {
-                context.Set("IsAdministrator", u.IsAdministrator);
-                context.Set("ResourceID", u.ResourceID);
-                context.Request.User = new System.Security.Principal.GenericPrincipal(new System.Security.Principal.GenericIdentity(u.ResourceID.ToString(), "ID"), null);
-            }
-            else
-            {
-                try
-                {
-                    if (!string.IsNullOrEmpty(apiCredentials)) Trace.TraceWarning("Could not locate the user with API credentials of: {0}", apiCredentials);
-                    if (!string.IsNullOrEmpty(token)) Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
-                    if (context.Request.User.Identity.IsAuthenticated) Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
-                    if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated) return;
-                }
-                catch (Exception  ex)
-                {
-                    Trace.TraceError($"UserIDCheckMiddleware - {ex.GetFullExceptionData()}");
-                }
+                telemetry.TrackException(e, properties);
             }
 
             await _next.Invoke(environment);

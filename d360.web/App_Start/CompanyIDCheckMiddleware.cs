@@ -49,27 +49,42 @@ namespace d360.web
         {
             IOwinContext context = new OwinContext(environment);
             var host = context.Request.Headers["Host"];
-            if (host.Contains(".data3sixty"))
+            try
             {
-                host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
-            }
-            //else
-            //{
-            //    host = "demo.dev";
-            //}
+                if (host.Contains(".data3sixty"))
+                {
+                    host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
+                }
+                //else
+                //{
+                //    host = "demo.dev";
+                //}
 
-            var dict = await loadCache();
+                var dict = await loadCache();
 
-            if (dict.ContainsKey(host))
-            {
-                context.Request.Set("CompanyDomain", host);
-                context.Request.Set("CompanyID", dict[host]);
+                if (dict.ContainsKey(host))
+                {
+                    context.Request.Set("CompanyDomain", host);
+                    context.Request.Set("CompanyID", dict[host]);
+                }
+                else
+                {
+                    context.Response.Write(string.Format("Company [{0}] Not Found", host));
+                    Trace.TraceWarning("Could not locate the company with host address of: {0}", host);
+                    return;
+                }
             }
-            else
+            catch (Exception e)
             {
-                context.Response.Write(string.Format("Company [{0}] Not Found", host));
-                Trace.TraceWarning("Could not locate the company with host address of: {0}", host);
-                return;
+                //log error
+                var properties = new Dictionary<string, string>
+                {
+                    {"Middleware","CompanyIDCheckMiddleware" },
+                    {"Host", host }
+                };
+                var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();
+
+                telemetry.TrackException(e, properties);
             }
             await _next.Invoke(environment);
         }

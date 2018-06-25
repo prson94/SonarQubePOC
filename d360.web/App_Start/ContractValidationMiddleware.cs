@@ -135,18 +135,38 @@ namespace d360.web
         public async Task Invoke(IDictionary<string, object> environment)
         {
             IOwinContext context = new OwinContext(environment);
+            int companyId = 0;
+            int resourceId = 0;
 
-            var resourceId = context.Get<int>("ResourceID");
-            var companyId = context.Get<int>("CompanyID");
-
-            if (context.Request.User.Identity.IsAuthenticated)
+            try
             {
+                resourceId = context.Get<int>("ResourceID");
+                companyId = context.Get<int>("CompanyID");
 
-                var contractsValidated = await getValidationStatus(companyId, resourceId);
-                context.Set<bool>("ContractsValidated", contractsValidated);
+                if (context.Request.User.Identity.IsAuthenticated)
+                {
+
+                    var contractsValidated = await getValidationStatus(companyId, resourceId);
+                    context.Set<bool>("ContractsValidated", contractsValidated);
+                }
+
+                throw new Exception("test");
             }
-
-
+            catch(Exception e)
+            {
+                //log error                
+                var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();                
+                var properties = new Dictionary<string, string>
+                {
+                    {"Middleware","ContractValidationMiddleware" },
+                    {"CompanyID", companyId.ToString() },
+                    {"ResourceID", resourceId.ToString() }
+                };
+                telemetry.TrackException(e, properties);
+                                
+                // set validated as true since we cant figure
+                context.Set<bool>("ContractsValidated", true);
+            }
 
             await _next.Invoke(environment);
         }

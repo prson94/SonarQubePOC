@@ -82,55 +82,71 @@ from	Company C
         {
             IOwinContext context = new OwinContext(environment);
             var host = context.Request.Headers["Host"];
-            if (host.Contains(".data3sixty"))
+            try
             {
-                host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
-            }
-            //else
-            //{
-            //    host = "demo.dev";
-            //}
-            Trace.TraceInformation("Host is : {0}", host);
-
-            var dict = await loadCache();
-
-            if (dict.ContainsKey(host))
-            {
-                if (!host.Contains("-d3s") && !host.Contains("-igx")) // If d3s url, automatically allow the user as they are a Data3Sixty employee.
+                if (host.Contains(".data3sixty"))
                 {
-                    var ranges = dict[host];
-                    if (ranges.Count > 0)
+                    host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
+                }
+                //else
+                //{
+                //    host = "demo.dev";
+                //}
+                Trace.TraceInformation("Host is : {0}", host);
+
+                var dict = await loadCache();
+
+                if (dict.ContainsKey(host))
+                {
+                    if (!host.Contains("-d3s") && !host.Contains("-igx")) // If d3s url, automatically allow the user as they are a Data3Sixty employee.
                     {
-                        Trace.TraceInformation("Range Count is: {0}", ranges.Count);
-
-                        var currentIp = context.Environment["server.RemoteIpAddress"].ToString(); //.Request.RemoteIpAddress;
-                        bool isCurrentIpAllowed = false;
-
-                        foreach (var range in ranges)
+                        var ranges = dict[host];
+                        if (ranges.Count > 0)
                         {
-                            Trace.TraceInformation("{0} - {1}", range.Start, range.End);
+                            Trace.TraceInformation("Range Count is: {0}", ranges.Count);
 
-                            var rangeTest = IPAddressRange.Parse(string.Format("{0} - {1}", range.Start, range.End));
-                            isCurrentIpAllowed = rangeTest.Contains(IPAddress.Parse(currentIp));
+                            var currentIp = context.Environment["server.RemoteIpAddress"].ToString(); //.Request.RemoteIpAddress;
+                            bool isCurrentIpAllowed = false;
 
-                            if (isCurrentIpAllowed) break;
-                        }
+                            foreach (var range in ranges)
+                            {
+                                Trace.TraceInformation("{0} - {1}", range.Start, range.End);
 
-                        if (!isCurrentIpAllowed)
-                        {
-                            context.Response.Write(string.Format("IP Address [{0}] Not Allowed", currentIp));
-                            return;
+                                var rangeTest = IPAddressRange.Parse(string.Format("{0} - {1}", range.Start, range.End));
+                                isCurrentIpAllowed = rangeTest.Contains(IPAddress.Parse(currentIp));
+
+                                if (isCurrentIpAllowed) break;
+                            }
+
+                            if (!isCurrentIpAllowed)
+                            {
+                                context.Response.Write(string.Format("IP Address [{0}] Not Allowed", currentIp));
+                                return;
+                            }
                         }
                     }
-                }
 
-                context.Response.Headers.AppendValues("Platform", new string[] { "Data3Sixty" });
+                    context.Response.Headers.AppendValues("Platform", new string[] { "Data3Sixty" });
+                }
+                else
+                {
+                    Trace.TraceWarning("Could not locate the company with host address of: {0}", host);
+                    return;
+                }
             }
-            else
+            catch (Exception e)
             {
-                Trace.TraceWarning("Could not locate the company with host address of: {0}", host);
-                return;
+                //log error
+                var properties = new Dictionary<string, string>
+                {
+                    {"Middleware","IpRestrictionMiddleware" },
+                    {"Host", host }
+                };
+                var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();
+                
+                telemetry.TrackException(e, properties);                
             }
+
 
             await _next.Invoke(environment);
         }
