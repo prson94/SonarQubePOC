@@ -808,7 +808,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                     selectFields
                         .Where(i => i.SortOrder != 0)
                         .OrderBy(i => i.SortOrder)
-                        .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i.Type) : GetFieldTypeSort($"Field{i.ID}", true, i.Type)))
+                        .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i.Type) : GetFieldTypeSort($"{i.ID}", true, i.Type)))
                 );
 
                 if (string.IsNullOrEmpty(orderFieldString))
