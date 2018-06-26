@@ -121,7 +121,7 @@ import { ISubscription } from 'rxjs/Subscription';
                                     </div>
                                 </div>
                             </div>                           
-                            <div *ngIf="!isUserAllowedToComplete" class="tile tile-detail">
+                            <div *ngIf="!isUserAllowedToComplete && !isCompleted && !isItemDeleted" class="tile tile-detail">
                                 <header>{{title}}</header>
                                 <div class="row">
                                     <div class="col s12">You currently do not have access to complete this form.</div>
@@ -131,7 +131,7 @@ import { ISubscription } from 'rxjs/Subscription';
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="isItemDeleted" class="tile tile-detail">
+                            <div *ngIf="isItemDeleted && !isCompleted" class="tile tile-detail">
                                 <header>{{title}}</header>
                                 <div class="row">
                                     <div class="col s12">The item for this form has been deleted.</div>
