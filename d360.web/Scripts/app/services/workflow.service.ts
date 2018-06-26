@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, Response, ResponseContentType } from '@angular/http';
 import {
     IssueInfo,
     WorkflowStatusDetails,
@@ -363,7 +363,23 @@ export class WorkflowService extends BaseService {
             uri += `?filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
         }
 
-        window.location.assign(uri);
+
+        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe((data: Response) => this.downloadFile(data, 'excel.xlsx'));  
+    }
+
+    downloadFile(data: Response, filename: string) {
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data.blob());
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
 
     getWorkflowOpenActions(types: string) {
