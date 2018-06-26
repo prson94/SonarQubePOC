@@ -1299,7 +1299,30 @@ namespace d360.model
                             var value = (string)field.Attribute("value");
                             var fieldType = (string)field.Attribute("fieldtype");
 
-                            if((fieldType ?? "").ToUpper() == "LIST")
+
+                            if ((fieldType ?? "").ToUpper() == "RELATIONSHIPTYPE")
+                            {
+                                value = (string)field.Attribute("displayvalue");
+
+                                if (value != null)
+                                {
+                                    List<string> objects = value.Split(',').ToList();
+                                    List<string> objectNames = new List<string>();
+
+                                    foreach (string o in objects)
+                                    {
+                                        var type = o.Split('|')[0];
+                                        if (int.TryParse(o.Split('|')[1], out var id))
+                                        {
+                                            objectNames.Add(GetObjectDetail(type.Replace("Type",""), id).Name);
+                                        }
+                                    }
+
+                                    value = string.Join(", ", objectNames);
+                                }   
+                            }
+
+                            if ((fieldType ?? "").ToUpper() == "LIST")
                             {
                                 value = (string)field.Attribute("displayvalue");
                             }
