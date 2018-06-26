@@ -983,15 +983,21 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             assetTable.Columns.Add("SourceID", typeof(string));
             assetTable.Columns.Add("SynchedAssetTypeID", typeof(int));
 
+            var loadedAssetIDs = new List<string>();
             assets.ForEach(a =>
             {
-                var row = assetTable.NewRow();
-                row["ExecutionID"] = a.ExecutionID;
-                row["RawObject"] = a.RawObject;
-                row["SourceID"] = a.SourceID;
-                row["ErrorMessages"] = a.ErrorMessages;
-                row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
-                assetTable.Rows.Add(row);
+                if (!loadedAssetIDs.Contains(a.SourceID))
+                {
+                    loadedAssetIDs.Add(a.SourceID);
+
+                    var row = assetTable.NewRow();
+                    row["ExecutionID"] = a.ExecutionID;
+                    row["RawObject"] = a.RawObject;
+                    row["SourceID"] = a.SourceID;
+                    row["ErrorMessages"] = a.ErrorMessages;
+                    row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
+                    assetTable.Rows.Add(row);
+                }
             });
 
             if (cnn.State != System.Data.ConnectionState.Open)

@@ -75,20 +75,22 @@ namespace d360.web.Controllers
         {
 
             var sql = $@"
-            select D.[Type], D.TypeID, D.[Count],
-			{QueryConstants.HighLevelTypeCaseStatement} + T.[Name] as TypeName
-			 from
-			(
-				select	[Type], TypeID, count(1) as [Count]
-				from		ResponsibilityDetails RD
-				where		RD.ResourceID = @r
-							{(responsibilityTypeID.HasValue ? "and RD.ResponsibilityTypeID = @rt" : "")}
-
-                group by	RD.[Type], RD.TypeID					    
-			) D
-			inner join AssetType T on T.[Object] = D.[Type] and T.ObjectID = D.TypeID
-			order by {QueryConstants.HighLevelTypeCaseStatement} + T.[Name];
-            ";
+		select		{QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
+					C.[Type],
+					C.TypeID,
+					count(1) as [Count]
+		from		[cache].[AssetResponsibility] C
+					inner join AssetType T on T.Object = C.Type and T.ObjectID = C.TypeID
+					left join dbo.OrganizationResource OrRe on C.SecurityAsset = 'O' and OrRe.OrganizationID = C.SecurityAssetID
+					left join dbo.Organization Org on C.SecurityAsset = 'O' and Org.ID = OrRe.OrganizationID
+					left join dbo.ResourceGroup ReGr on C.SecurityAsset = 'G' and ReGr.GroupID = C.SecurityAssetID
+		where		C.IsVisible = 1 and C.Overriden = 0 
+                    {(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}	
+					and coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) = @r
+		group by	{QueryConstants.HighLevelTypeCaseStatement} + T.Name,
+					C.[Type],
+					C.TypeID,
+					coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID);";
 
             var query = await Company.QueryAsync<dynamic>(sql, new { r = id, rt = responsibilityTypeID });
 
@@ -103,7 +105,7 @@ select		RD.Type,
 			RD.TypeID,
 			{QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
 			count(1) as [Count]
-from		ResponsibilityDetails RD 
+from		[cache].[AssetResponsibility] RD 
 			inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @id
 group by    RD.Type, 
             RD.TypeID, 

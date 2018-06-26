@@ -114,121 +114,42 @@ namespace d360.web.Controllers
 
         #region Exports
 
-        string getSqlStatement(int resourceID, string type, int id, bool follow)
-        {
-            var joins = "";
-            var columns = "";
-            string sql = "";
-
-            SystemObjects enumValueValidation;
-            if (Enum.TryParse<SystemObjects>(type, out enumValueValidation))
-            {
-                getDynamicFieldJoinStatements(id, type.Replace("Type", ""), out joins, out columns, false, true);
-                string followOrOwnSql = "";
-                string lastColumn = (follow) ? "FD.OpenEventCount" : "FD.ResponsibilityTypeName as [Role], FD.Context as [Context]";
-
-                switch (type)
-                {
-                    case "Artifact":
-                    case "ArtifactType":
-                        #region
-                        followOrOwnSql = (follow) ?
-                            $"inner join FollowDetail FD on FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID" :
-                            $"inner join ResponsibilityDetails FD on FD.SecurityAsset = 'R' and FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID";
-                        sql = $@"
-select	A.ID,
-        {columns}
-        dbo.GetObjectStatisticScore('Artifact', A.ID) as CurrentScore,
-        {lastColumn}
-from	Artifact A 
-        {followOrOwnSql} 
-        {joins}";
-                        break;
-                    #endregion
-                    case "Taxonomy":
-                    case "TaxonomyType":
-                        #region
-                        followOrOwnSql = (follow) ?
-                            $"inner join FollowDetail FD on FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID" :
-                            $"inner join ResponsibilityDetails FD on FD.SecurityAsset = 'R' and FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID";
-                        sql = $@"
-select	A.ID,
-        {columns}
-        dbo.GetObjectStatisticScore('Taxonomy', A.ID) as CurrentScore,
-        {lastColumn}
-from	Taxonomy A 
-        {followOrOwnSql} and A.TaxonomyTypeID = {id} 
-        {joins}";
-                        break;
-                    #endregion
-                    default:
-                        #region
-                        sql = (follow) ? 
-                            $"select  Name, TextPath, Description, TypeName, CurrentScore, OpenEventCount from FollowDetail where ResourceID = {resourceID} and Type = '{type.Replace("'", "''")}' and TypeID = {id}" :
-                            $@"select 
-
-    D.DisplayValue as [Name], 
-		T.Name as Type, 
-		R.Context, 
-		dbo.GetObjectStatisticScore(A.Object, A.ObjectID) as CurrentScore
-from ResponsibilityDetails R
-inner
-join Asset A on A.Object = R.Object and A.ObjectID = R.ObjectID
-cross apply GetAssetDisplayValueById(A.ID) D
-inner join AssetType T on T.Object = R.Type and T.ObjectID = R.TypeID
-where SecurityAsset = 'R' and ResourceID = {resourceID} and Type = '{type.Replace("'", "''")}' and TypeID = {id}";
-                        break;
-                        #endregion
-                }
-            }
-
-            return sql;
-        }
-
         [HttpGet, Route("{resourceID:int}/following/{type}/{id:int}.xlsx")]
         public FileResult ExportFollowsByResourceByType(int resourceID, string type, int id)
         {
             var document = new SLDocument();
             document.AddWorksheet("Items");
 
-            string sql = getSqlStatement(resourceID, type, id, true);
+            string sql = @"
+select	TextPath as [Path],
+		A.ID as AssetID
+from	FollowDetail F
+		inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID and F.ResourceID = @r
+		and F.[Type] = @type
+		and F.TypeID = @id";
 
-            if (!string.IsNullOrEmpty(sql))
+            var query = Company.Query<dynamic>(sql, new { r = resourceID, type, id });
+
+            #region Create the list sheet
+
+            #region Header
+
+            document.SetCellValue(1, 0, "Asset ID");
+            document.SetCellValue(1, 1, "Asset Path");
+
+            #endregion
+
+            int r = 1;
+            foreach (var item in query)
             {
-                // The data reader.
-                var query = Company.Read(sql);
-                var metafields = query.GetSchemaTable();
-
-                #region Create the list sheet
-
-                #region Header
-
-                for (int i = 0; i < metafields.Rows.Count; i++)
-                {
-                    document.SetCellValue(1, i, (string)metafields.Rows[i]["ColumnName"]);
-                }
-
-                #endregion
-
-                int r = 1;
-                while (query.Read())
-                {
-                    r++;
-                    for (int i = 0; i < metafields.Rows.Count; i++)
-                    {
-                        document.SetCellValue(r, i, query[i].ToString());
-                    }
-                }
-
-                metafields = null;
-                query.Dispose();
-
-                #endregion
+                r++;
+                document.SetCellValue(r, 0, item.AssetID);
+                document.SetCellValue(r, 1, item.Path);
             }
-            else
-            {
-                document.SetCellValue(1, 1, "Invalid value for type parameter. Please check your URI.");
-            }
+
+            query = null;
+
+            #endregion
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
@@ -241,44 +162,44 @@ where SecurityAsset = 'R' and ResourceID = {resourceID} and Type = '{type.Replac
             var document = new SLDocument();
             document.AddWorksheet("Items");
 
-            string sql = getSqlStatement(resourceID, type, id, false);
+            string sql = @"
+select		R.Name as ResponsibilityType,
+			C.AssetID,
+			TP.TextPath as [Path]
+from		[cache].[AssetResponsibility] C
+			inner join ResponsibilityType R on R.ID = C.ResponsibilityTypeID and C.Type = @type and C.TypeID = @id
+			cross apply [dbo].GetAssetTextPathById(C.AssetID, ' / ') TP
+			left join dbo.OrganizationResource OrRe on C.SecurityAsset = 'O' and OrRe.OrganizationID = C.SecurityAssetID
+			left join dbo.Organization Org on C.SecurityAsset = 'O' and Org.ID = OrRe.OrganizationID
+			left join dbo.ResourceGroup ReGr on C.SecurityAsset = 'G' and ReGr.GroupID = C.SecurityAssetID
+where		C.IsVisible = 1 and C.Overriden = 0
+			and coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) = @r
+";
 
-            if (!string.IsNullOrEmpty(sql))
+            var query = Company.Query<dynamic>(sql, new { r = resourceID, type, id });
+
+            #region Create the list sheet
+
+            #region Header
+
+            document.SetCellValue(1, 0, "Responsibility Type");
+            document.SetCellValue(1, 1, "Asset ID");
+            document.SetCellValue(1, 2, "Asset Path");
+
+            #endregion
+
+            int r = 1;
+            foreach(var item in query)
             {
-                // The data reader.
-                var query = Company.Read(sql);
-                var metafields = query.GetSchemaTable();
-
-                #region Create the list sheet
-
-                #region Header
-
-                for (int i = 0; i < metafields.Rows.Count; i++)
-                {
-                    document.SetCellValue(1, i, (string)metafields.Rows[i]["ColumnName"]);
-                }
-
-                #endregion
-
-                int r = 1;
-                while (query.Read())
-                {
-                    r++;
-                    for (int i = 0; i < metafields.Rows.Count; i++)
-                    {
-                        document.SetCellValue(r, i, query[i].ToString());
-                    }
-                }
-
-                metafields = null;
-                query.Dispose();
-
-                #endregion
+                r++;
+                document.SetCellValue(r, 0, item.ResponsibilityType);
+                document.SetCellValue(r, 1, item.AssetID);
+                document.SetCellValue(r, 2, item.Path);
             }
-            else
-            {
-                document.SetCellValue(1, 1, "Invalid value for type parameter. Please check your URI.");
-            }
+
+            query = null;
+
+            #endregion
 
             var stream = new MemoryStream();
             document.SaveAs(stream);

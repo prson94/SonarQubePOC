@@ -77,16 +77,25 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
         public JsonNetResult GetResponsibilityTypeBreakdown()
         {
             var query = Company.Query<dynamic>(@"
-                select 
-	                R.ID as ResponsibilityTypeID, 
-	                R.[Name] as ResponsibilityType, 
-	                sum(D.[Count]) as [Count] 
-                from ResponsibilityType R
-                cross apply (
-	                select 1 as [Count] 
-	                from ResponsibilityDetails D 
-	                where D.ResponsibilityTypeID = R.ID group by ResourceID) D
-                group by R.ID, R.[Name]");
+select		OC.ResponsibilityTypeID,
+			R.Name as ResponsibilityType,
+			count(1) as [Count] 
+from		(
+			select		C.ResponsibilityTypeID,
+						coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) as ResourceID
+			from		[cache].[AssetResponsibility] C
+						left join dbo.OrganizationResource OrRe on C.SecurityAsset = 'O' and OrRe.OrganizationID = C.SecurityAssetID
+						left join dbo.Organization Org on C.SecurityAsset = 'O' and Org.ID = OrRe.OrganizationID
+						left join dbo.ResourceGroup ReGr on C.SecurityAsset = 'G' and ReGr.GroupID = C.SecurityAssetID
+			where		C.IsVisible = 1 and C.Overriden = 0
+						and coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) is not null
+			group by	C.ResponsibilityTypeID,
+						coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID)
+			) OC
+			inner join ResponsibilityType R on R.ID = OC.ResponsibilityTypeID
+
+group by	OC.ResponsibilityTypeID,
+			R.Name");
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -95,19 +104,31 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
         public JsonNetResult GetResourcesByResponsibilityType(int id)
         {
             var query = Company.Query<dynamic>(@"
-select		RD.ResourceID,
+select		OC.ResourceID,
 			R.FirstName,
 			R.LastName,
-			RD.ResponsibilityTypeID,
-			count(1) as OwnedItemCount
-from		ResponsibilityDetails RD
-			inner join reporting.Global_Resource R on R.ResourceID = RD.ResourceID
-where		RD.ResponsibilityTypeID = @id
-group by	RD.ResourceID,
+			OC.ResponsibilityTypeID,
+			sum(OC.[Count]) as OwnedItemCount
+from		(
+			select		C.ResponsibilityTypeID,
+						coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) as ResourceID,
+                        count(1) as [Count]
+			from		[cache].[AssetResponsibility] C
+						left join dbo.OrganizationResource OrRe on C.SecurityAsset = 'O' and OrRe.OrganizationID = C.SecurityAssetID
+						left join dbo.Organization Org on C.SecurityAsset = 'O' and Org.ID = OrRe.OrganizationID
+						left join dbo.ResourceGroup ReGr on C.SecurityAsset = 'G' and ReGr.GroupID = C.SecurityAssetID
+			where		C.IsVisible = 1 and C.Overriden = 0
+						and C.ResponsibilityTypeID = @id
+						and coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) is not null
+			group by	C.ResponsibilityTypeID,
+						coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID)
+			) OC
+			inner join reporting.Global_Resource R on R.ResourceID = OC.ResourceID
+group by	OC.ResourceID,
 			R.FirstName,
 			R.LastName,
-			RD.ResponsibilityTypeID
-order by	R.LastName, R.FirstName", new { id = id }).ToList();
+			OC.ResponsibilityTypeID
+order by	R.LastName, R.FirstName", new { id }).ToList();
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
