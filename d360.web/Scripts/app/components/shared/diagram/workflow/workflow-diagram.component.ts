@@ -458,6 +458,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         //forms can always link, even backwards creating a cycle
         if (fromNode.data.activityType == WorkflowActivityType.Form && fromNode.data.key != toNode.data.key)
             return true;
+        if (toNode.data.activityType == WorkflowActivityType.Form && fromNode.data.key != toNode.data.key)
+            return true;
 
         //console.log(`from node ${fromNode.data.key} to node ${toNode.data.key}`);
 
@@ -471,6 +473,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             let nodes = [];
             links.forEach(l => {
                 let node = this.diagram.model.findNodeDataForKey((<any>l).to);
+                //a form step is part of this cycle, so it's valid
+                if (node.activityType == WorkflowActivityType.Form) { 
+                    nodes = [];
+                    return;
+                }
                 //console.log(`link from ${(<any>l).from} to ${(<any>l).to}`, node);
                 if (node.key == fromNode.data.key) { //we found a cycle
                     hasCycle = true;
