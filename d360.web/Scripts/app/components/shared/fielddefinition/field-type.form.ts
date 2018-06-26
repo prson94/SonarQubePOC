@@ -319,10 +319,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'fieldfromrelationship':
                 try {
                     if (this.model.cardinalRelationship) {
-                        promises.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship));
+                        promises.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship, this.model.FieldType.LookupObjectFieldTypeID));
                     }
                     else if (this.lookups.Field_CardinalRelationships.length > 0) {
-                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalRelationships[0].value));
+                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalRelationships[0].value, this.model.FieldType.LookupObjectFieldTypeID));
+
                     }
                 } catch (e) {
                     console.log(e);
@@ -407,7 +408,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.LookupObjectType = null;
                 break;
         }
-        return Promise.all(promises).then(() => { });
+        return Promise.all(promises).then(() => {
+        });
     }
 
     // called when the lookup type field is changed
@@ -452,7 +454,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.LookupObjectType = "IntersectType";
     }
 
-    private cardinalFieldFromRelationshipSelected(value: number): Promise<any> {
+    private cardinalFieldFromRelationshipSelected(value: number, fieldTypeId: number = null): Promise<any> {
         if (value == undefined) {
             console.log("[ERROR] - Intersect TYPE IS UNDEFINED", value);
             return Promise.resolve();
@@ -465,7 +467,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.fieldsService.getRelationObjectFields(this.objectType, this.objectID, value)
             .then(d => {
                 this.fieldsFromRelation = d;
-                if (this.fieldsFromRelation.length > 0)
+                if (fieldTypeId != null)
+                    this.model.FieldType.LookupObjectFieldTypeID = fieldTypeId
+                else if (this.fieldsFromRelation.length > 0)
                     this.model.FieldType.LookupObjectFieldTypeID = this.fieldsFromRelation[0].value;
                 else
                     this.model.FieldType.LookupObjectFieldTypeID = null;
