@@ -430,8 +430,7 @@ namespace d360.web.Controllers.Services
     where   A.AssetTypeID = @id";
 
                 var sql = @"
-    select  D.[Key] as id,
-            O.UpdatedOn as last_modified
+    select  D.[Key] as id
             {0}
     from    AssetApiModel A
             inner join Asset O on O.ID = A.ID
