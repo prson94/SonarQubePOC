@@ -3603,7 +3603,7 @@ namespace d360.web.Controllers
                 { "North American Phone", @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },                
                 { "Internal Url", @"^$|\b(http(s)?:\/\/){1}([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
                 { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
-                { "US Zip Code", @"^(?!00000)(?<zip>(?<zip5>\d{5})(?:[ -](?=\d))?(?<zip4>\d{4})?)$" }
+                { "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
             };
             var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList()
                     .Where(i => !i.ReadOnly)
