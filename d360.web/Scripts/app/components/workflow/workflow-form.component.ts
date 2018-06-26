@@ -25,7 +25,11 @@ import { ISubscription } from 'rxjs/Subscription';
                         <div class="col s12">
                             <div class="tile tile-detail" *ngIf="!isCompleted && isUserAllowedToComplete && !isItemDeleted">                        
                                 <header>{{title}}</header>
-                                <div class="form-instructions" *ngIf="objectType != 'Issue'">The following form is for the [<b>{{typeName}}</b>] named [<b><d3s-preview-tooltip [objectType]="objectType" [objectId]="objectID"><a [routerLink]="objectUrl">{{objectName}}</a></d3s-preview-tooltip></b>].  <span [innerHtml]="description"></span></div>
+                                <div class="form-instructions" *ngIf="objectType != 'Issue'">The following form is for the [<b>{{typeName}}</b>] named [<b>
+                                    <d3s-preview-tooltip [objectType]="objectType" [objectId]="objectID">
+                                        <a *ngIf="objectUrl != null" [routerLink]="objectUrl">{{objectName}}</a>
+                                        <span *ngIf="objectUrl == null">{{objectName}}</span>
+                                    </d3s-preview-tooltip></b>].  <span [innerHtml]="description"></span></div>
                                 <div class="form-instructions" *ngIf="objectType == 'Issue'">The following form is for the [<b><d3s-preview-tooltip [objectType]="objectType" [objectId]="objectID">{{issueTypeName}}</d3s-preview-tooltip></b>] action raised on [<b><d3s-preview-tooltip [objectType]="issueObject" [objectId]="issueObjectID">{{issueObjectName}}</d3s-preview-tooltip></b>].  <span [innerHtml]="description"></span></div>
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
                                     <div class="row">   
@@ -213,7 +217,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     get objectUrl() {
-        return '/' +SiteUrlHelpers.getObjectUrl(this.objectType, this.objectID, this.objectTypeID);
+        let path = SiteUrlHelpers.getObjectUrl(this.objectType, this.objectID, this.objectTypeID); 
+        return path == null ? null : '/' + path; 
     }
 
     private onSubmit() {
