@@ -117,8 +117,8 @@ namespace igx.jobs.fusionruleprocessor
 #endif
 
             // check the counts by hash
-          //  var duplicateHashes = await company.QueryAsync(@"select KeyHash, count(ObjectID) from #promotionKeyHash group by KeyHash having count(ObjectID) > 1");
-
+            //var duplicateHashes = await company.QueryAsync(@"select KeyHash, count(ObjectID) from #promotionKeyHash group by KeyHash having count(ObjectID) > 1");
+            
             //remove items with same key that are not the first row partitioned by keyhash.
             await company.ExecuteAsync(@"delete from #fields where id in(select objectid from(
 	                                                                        select KeyHash,ObjectID,rn =Row_number() over(partition by KeyHash order by ObjectID) from #promotionKeyHash where keyhash in(
@@ -126,7 +126,11 @@ namespace igx.jobs.fusionruleprocessor
 	                                                                            ) a where a.rn > 1
                                                             )");
 
-          
+#if DEBUG
+            await PrintTempTableContents(company, Log, "fields");
+#endif
+
+
         }
         private async Task<int> GetPromotionParentChildRelationshipID(SqlConnection company)
         {

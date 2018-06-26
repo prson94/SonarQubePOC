@@ -40,7 +40,7 @@ namespace igx.jobs.fusionruleprocessor
         }
 
         protected async Task PerformPostPromote(SqlConnection company, int promoteToObjectID, string promoteToObject)
-        {
+        {            
             var sql = @"insert into #fieldValues
                             select distinct
 	                            p.ObjectType as ObjectType,
@@ -52,10 +52,10 @@ namespace igx.jobs.fusionruleprocessor
                                 inner join #promotedItems p on (f.Id = p.AttributeId)
 	                            inner join fieldtype ft on (f.TargetFieldName = ft.Name and ft.[Object] = @targetType and ft.[ObjectId] = @objectParentId)                            
                             where
-	                            f.ObjectType = @objectParentType
+	                            f.ObjectType = @objectParentType and f.RuleStepId = @stepId
                         ";
 
-            await company.ExecuteAsync(sql, new { objectParentType = Rule.ObjectType.Replace("Type", ""), targetType = promoteToObject, objectParentId = promoteToObjectID }, commandTimeout: EXECUTION_TIMEOUT);
+            await company.ExecuteAsync(sql, new { stepId = Step.ID, objectParentType = Rule.ObjectType.Replace("Type", ""), targetType = promoteToObject, objectParentId = promoteToObjectID }, commandTimeout: EXECUTION_TIMEOUT);
 
 #if DEBUG
             await PrintTempTableContents(company, Log, "fieldvalues");
@@ -199,7 +199,7 @@ namespace igx.jobs.fusionruleprocessor
             if (PromoteToParentChildIntersectTypeID <= 0)
             {
                 sql = @"insert into #promotedItems 
-                            select
+                            select distinct
 	                            ftemp.ID,
                                 ftemp.ObjectType,
                                 f.[objectID],
