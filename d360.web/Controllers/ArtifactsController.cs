@@ -86,8 +86,7 @@ from	AssetDetail A
         {joins} 
 where   A.Type = 'ArtifactType' 
         and A.TypeID = @id 
-        and A.[State] = 1 
-        and A.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})";
+        and A.[State] = 1 ";
 
             #endregion
 
@@ -103,8 +102,8 @@ where   A.Type = 'ArtifactType'
             }
 
             var type = Company.GetById<ArtifactType>(id);
-            
-            sql = string.Format(@"select * from ({0}) A", sql);
+
+            sql = $"select * from ({sql}) A where not exists (select 1 from cache.NoRead where ResourceID = {Company.CurrentResourceID} and AssetID = A.ID)";
 
             sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: fields);
             
