@@ -13,7 +13,11 @@
             <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" />
             <p-dataTable #dt [globalFilter]="gb" [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" (onRowDblclick)="onDoubleClick($event)">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="ResponsibilityTypeName" header="Responsibility" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'200px'}" [filter]="!showSimpleFilter"></p-column>
+                <p-column field="ResponsibilityTypeName" header="Responsibility" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'200px'}" [filter]="!showSimpleFilter">
+                    <ng-template let-item="rowData" pTemplate type="body">
+                        <d3s-preview-tooltip objectType="ResponsibilityType" [objectId]="item.ResponsibilityTypeID">{{item.ResponsibilityTypeName}}</d3s-preview-tooltip>
+                    </ng-template>
+                </p-column>
                 <p-column field="LastName" header="Resource" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter" [style]="{'min-width':'200px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
                         <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.FirstName}} {{item.LastName}}</d3s-preview-tooltip>

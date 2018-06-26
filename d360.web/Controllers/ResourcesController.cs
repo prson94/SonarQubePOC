@@ -615,23 +615,29 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         desc = Company.Query<string>(desSql, new { ty = objectType, id = objectID }).FirstOrDefault();
                         typeName = "Model Type";
                     }
-
-                        if (objectType == "Fusion")
+                    else  if (objectType == "Fusion")
                     {
                         var fusionSql = @"select f.name from fusion f 
                                             where f.id=@id";
                         var fusionName = Company.Query<string>(fusionSql, new { id = objectID }).FirstOrDefault();
                         dispName = fusionName;
                     }
-
-                    if ((objectType == "Artifact") || (objectType == "Taxonomy") || (objectType == "FusionAttribute"))
+                    else if ((objectType == "Artifact") || (objectType == "Taxonomy") || (objectType == "FusionAttribute"))
                     {
                         string query = string.Format("[dbo].[GetAssetHierarchy] {0}, '{1}'", objectID, objectType);
                         levels = Company.Query<TooltipFieldLevelPathModel>(query).ToList<TooltipFieldLevelPathModel>();
                     }
+                    else if (objectType == "ResponsibilityType")
+                    {
+                        typeName = "Responsibility Type";
+                        
+                        var responbility = Company.GetById<ResponsibilityType>(objectID);
+                        dispName = responbility?.Name;
+                        desc = responbility?.Description;
+                    }
                 }
 
-                return Json(new { ShowTooltip = show, AssetID = (det != null ? det.AssetID : -1), DisplayName = dispName, TypeName = typeName, Url = (det != null ? $"/{det.Url}" : ""), Levels=levels, FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
+                return Json(new { ShowTooltip = show, AssetID = (det != null ? det.AssetID : -1), DisplayName = dispName, TypeName = typeName, Url = ((det != null && det.Url !=null) ? $"/{det.Url}" : ""), Levels=levels, FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
