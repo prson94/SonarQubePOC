@@ -71,7 +71,7 @@ export class BaseComponent {
     /*permissions functionality */
 
     loadPermissions(permissionsService: PermissionsService, objectType: string, objectID: number) {
-        permissionsService.getPermissions(objectID, objectType)
+        return permissionsService.getPermissions(objectID, objectType)
             .then(result => {
                 this.permissions = result;
             });
