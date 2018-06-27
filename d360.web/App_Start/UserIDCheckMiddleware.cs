@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.extensions.caching;
 using Dapper;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Owin;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
@@ -188,11 +189,20 @@ from	Resource R
                 // llyods custom auth depends on ceriticate and JWT token
                 if (!string.IsNullOrEmpty(apiCredentials) && apiCredentials.ToUpper().Contains("BEARER"))
                 {
+                    var jwtTelemetry = new Microsoft.ApplicationInsights.TelemetryClient();
+
+                    jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"Creds : {apiCredentials}", SeverityLevel = SeverityLevel.Verbose });
+
                     // load the certificate info                
                     var certificateCommonName = await getCertificateCommonName(context);
 
                     //validate the certificate first
-                    if (!ValidateX509IfRequired(context, certificateCommonName)) return;  // end pipeline if no valid cert with error code set within
+                    if (!ValidateX509IfRequired(context, certificateCommonName))
+                    {
+                        jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"Authentication denied invalid x509", SeverityLevel = SeverityLevel.Verbose });
+
+                        return;  // end pipeline if no valid cert with error code set within
+                    }
 
                     // certificate is valid at this point we just get the user from the jwt token
                     var authParts = apiCredentials.Split(' ');
@@ -216,7 +226,12 @@ from	Resource R
                                 var claimToken = Newtonsoft.Json.JsonConvert.DeserializeObject<JwtToken>(decodeJwtPayload);
 
                                 // if the token in expired please leave
-                                if (!ValidateTokenLifeTime(context, claimToken)) return;
+                                if (!ValidateTokenLifeTime(context, claimToken))
+                                {
+                                    jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"Authentication jwt validate token lifetime failed", SeverityLevel = SeverityLevel.Verbose });
+
+                                    return;
+                                }
 
                                 if (claimToken != null && !string.IsNullOrEmpty(claimToken.Upn))
                                 {
@@ -406,9 +421,10 @@ where S.ID = 54")).FirstOrDefault();
             X509Certificate2 clientCertificate = null;
             try
             {
+                var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();
                 //***** 1. Get a Client Certificate from the Http context or http header ****/
                 //   clientCertificate = context.Request.c.ClientCertificate;
-                
+
                 if (System.Web.HttpContext.Current != null && System.Web.HttpContext.Current.Request != null && System.Web.HttpContext.Current.Request.ClientCertificate != null && System.Web.HttpContext.Current.Request.ClientCertificate.Count > 0) {
                     clientCertificate = new X509Certificate2(System.Web.HttpContext.Current.Request.ClientCertificate.Certificate);
                 }
@@ -435,6 +451,8 @@ where S.ID = 54")).FirstOrDefault();
                         //***** 5. Return 403 if it is not a valid Certificate ****/
                         {
                             //Do your logging if required.
+                            telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateX509IfRequired : Failed due to invalid cert names do not match {certificateCommonName}", SeverityLevel = SeverityLevel.Verbose });
+
 
                             //Stop the pipeline here.
                             context.Response.StatusCode = 403;
@@ -444,6 +462,7 @@ where S.ID = 54")).FirstOrDefault();
                     catch (Exception ex) //***** 6. Any exception throw 403??? Not sure, this is valid case ****/
                     {
                         //Do your logging here.
+                        telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateX509IfRequired : Failed due to exception {ex.Message}", SeverityLevel = SeverityLevel.Verbose });
 
                         //What to do with exceptions in middleware?
                         context.Response.WriteAsync(ex.Message);
@@ -454,6 +473,7 @@ where S.ID = 54")).FirstOrDefault();
                 else //***** 7. If the clientCertificate is null, then return 403 status code ****
                 {
                     //Do your logging here.
+                    telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateX509IfRequired : Failed due to missing certificate", SeverityLevel = SeverityLevel.Verbose });
 
                     context.Response.StatusCode = 403;
                     return false;
