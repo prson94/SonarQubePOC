@@ -330,6 +330,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         let selectedFieldType = this.thenFieldTypes.find(f => f.value == item.FieldTypeID.toString());
         if (clearValue !== undefined && clearValue === true) item.Value = "";
         if (selectedFieldType) {
+            item.IsBool = false;
             item.FieldTypeName = selectedFieldType.label;
             if (selectedFieldType.isLookup) {
                 selectedFieldType.values.unshift({ label: 'Choose...', value: null });
