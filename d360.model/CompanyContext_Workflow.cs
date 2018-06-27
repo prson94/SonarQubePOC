@@ -232,7 +232,7 @@ namespace d360.model
                 switch ((registration.Object ?? "").ToUpper())
                 {
                     case "ARTIFACTTYPE":
-                        var artifacts = Query<dynamic>(sql, new { obj = "Artifact", id = registration.ObjectID });                        
+                        var artifacts = Query<dynamic>(sql, new { obj = "Artifact", id = registration.ObjectID }).ToList();                        
                         foreach (var artifact in artifacts)
                         {
                             if (await CreateWorkflowItem(registration.TypeID,
@@ -252,7 +252,7 @@ namespace d360.model
                         break;
                     case "TAXONOMYTYPE":
                         
-                        var taxonomies = Query<dynamic>(sql, new { obj = "Taxonomy", id = registration.ObjectID });
+                        var taxonomies = Query<dynamic>(sql, new { obj = "Taxonomy", id = registration.ObjectID }).ToList();
                                                 
                         foreach (var taxonomy in taxonomies)
                         {

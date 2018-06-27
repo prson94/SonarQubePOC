@@ -27,8 +27,14 @@ namespace igx.jobs.scheduledworkflowprocessor
     public static class ScheduledWorkflowProcessor
     {
         const string functionName = "Workflow_ProcessSchedule";
+        
+
+#if DEBUG
+        const string timerSettings = "*/10 * * * * *";
+#else
         const string timerSettings = "0 */15 * * * *";
-        //const string timerSettings = "*/10 * * * * *";
+#endif
+
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
         {
@@ -36,6 +42,11 @@ namespace igx.jobs.scheduledworkflowprocessor
             {
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
+
+#if DEBUG
+                companies = d360.utils.company.CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
+                companies = companies.Where(x => x.CompanyID == 4).ToList();
+#endif
 
                 companies.ForEach(c =>
                 {
