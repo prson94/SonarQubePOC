@@ -917,7 +917,7 @@ OPTION (RECOMPILE)";
             else if ((datatype ?? "").ToUpper() == "DATE")
                 return " CAST( [" + fieldName + "] AS date) " + (ascending ? "ASC" : "DESC");
             else if ((datatype ?? "").ToUpper() == "DECIMAL")
-                return " CAST( [" + fieldName + "] AS DECIMAL(18, 4)) " + (ascending ? "ASC" : "DESC");
+                return " TRY_CONVERT( DECIMAL(18, 4),  [" + fieldName + "]) " + (ascending ? "ASC" : "DESC");
 
             return " [" + fieldName + "] " + (ascending ? "ASC" : "DESC"); ;
         }
