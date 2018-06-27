@@ -25,7 +25,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                
                 <span >
                     <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" (keypress)="ref.markForCheck()">
-                    <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" [globalFilter]="gb" #dt scrollable="true" scrollWidth="100%" lazy="true" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);"  (onLazyLoad)="lazyLoad($event)" [rowsPerPageOptions]="defaultPagingOptions">
+                    <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" [globalFilter]="gb" #dt scrollable="true" scrollWidth="100%" lazy="true" [totalRecords]="totalRecords" [value]="items" [selectionMode]="multiple ?'multiple' : 'single'" [rows]="rowsPerPage" paginator="true" pageLinks="3" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);"  (onLazyLoad)="lazyLoad($event)" [rowsPerPageOptions]="defaultPagingOptions">
                         <p-column [style]="{'width':'38px'}" [selectionMode]="multiple ?'multiple' : 'single'"></p-column>
                         <p-column field="Text" sortable="true"  header="Name"></p-column>  
                         <p-column *ngIf="showResourceType" field="Type" sortable="true"  header="Resource Type"></p-column>
