@@ -91,6 +91,6 @@ export class ResourceResponsibilityComponent implements OnChanges {
     }
 
     export() {
-        this.resourcesService.exportResponsibilitiesByResourceByType(this.resourceId, this.selected.Type, this.selected.TypeID);
+        this.resourcesService.exportResponsibilitiesByResourceByType(this.resourceId, this.selected.Type, this.selected.TypeID, this.responsibilityTypeId);
     }
 }

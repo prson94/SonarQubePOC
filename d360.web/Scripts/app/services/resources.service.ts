@@ -75,8 +75,11 @@ export class ResourcesService extends BaseService {
         window.location.assign(`/resources/${resourceID}/following/${type}/${id}.xlsx`);      
     }
 
-    exportResponsibilitiesByResourceByType(resourceID: number, type: string, id: number) {
-        window.location.assign(`/resources/${resourceID}/ownership/${type}/${id}.xlsx`);   
+    exportResponsibilitiesByResourceByType(resourceID: number, type: string, id: number, responsibilityTypeId: number = null) {
+        let uri = `/resources/${resourceID}/ownership/${type}/${id}.xlsx`
+        if (responsibilityTypeId != null && responsibilityTypeId > 0)
+            uri += `?responsibilityTypeId=${responsibilityTypeId}`;
+        window.location.assign(uri);   
     }
 
     getMyCredentials(): Promise<ResourceAPICredentials> {

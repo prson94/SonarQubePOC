@@ -157,15 +157,20 @@ from	FollowDetail F
         }
 
         [HttpGet, Route("{resourceID:int}/ownership/{type}/{id:int}.xlsx")]
-        public FileResult ExportResponsibilitiesByResourceByType(int resourceID, string type, int id)
+        public FileResult ExportResponsibilitiesByResourceByType(int resourceID, string type, int id, int? responsibilityTypeId = null)
         {
             var document = new SLDocument();
             document.AddWorksheet("Items");
 
-            string sql = @"
+            string sql = $@"
 select		R.Name as ResponsibilityType,
 			C.AssetID,
-			TP.TextPath as [Path]
+			TP.TextPath as [Path],
+			case C.SecurityAsset
+			        when 'G' then 'Via Group'
+			        when 'O' then 'Via Organization'
+			        else ''
+		        end as Via
 from		[cache].[AssetResponsibility] C
 			inner join ResponsibilityType R on R.ID = C.ResponsibilityTypeID and C.Type = @type and C.TypeID = @id
 			cross apply [dbo].GetAssetTextPathById(C.AssetID, ' / ') TP
@@ -174,6 +179,7 @@ from		[cache].[AssetResponsibility] C
 			left join dbo.ResourceGroup ReGr on C.SecurityAsset = 'G' and ReGr.GroupID = C.SecurityAssetID
 where		C.IsVisible = 1 and C.Overriden = 0
 			and coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) = @r
+            {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? $" and C.ResponsibilityTypeID = {(int)responsibilityTypeId}" : "" )}
 ";
 
             var query = Company.Query<dynamic>(sql, new { r = resourceID, type, id });
@@ -182,9 +188,10 @@ where		C.IsVisible = 1 and C.Overriden = 0
 
             #region Header
 
-            document.SetCellValue(1, 0, "Responsibility Type");
-            document.SetCellValue(1, 1, "Asset ID");
-            document.SetCellValue(1, 2, "Asset Path");
+            document.SetCellValue(1, 1, "Responsibility Type");
+            document.SetCellValue(1, 2, "Asset ID");
+            document.SetCellValue(1, 3, "Asset Path");
+            document.SetCellValue(1, 4, "Via");
 
             #endregion
 
@@ -192,9 +199,10 @@ where		C.IsVisible = 1 and C.Overriden = 0
             foreach(var item in query)
             {
                 r++;
-                document.SetCellValue(r, 0, item.ResponsibilityType);
-                document.SetCellValue(r, 1, item.AssetID);
-                document.SetCellValue(r, 2, item.Path);
+                document.SetCellValue(r, 1, item.ResponsibilityType);
+                document.SetCellValue(r, 2, item.AssetID);
+                document.SetCellValue(r, 3, item.Path);
+                document.SetCellValue(r, 4, item.Via);
             }
 
             query = null;
