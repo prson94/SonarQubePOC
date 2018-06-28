@@ -689,7 +689,7 @@ namespace d360.model
                 if (intersectType == null)
                     throw new Exception($"ERROR - INVALID INTERSECT TYPE ID SPECIFIED.  PLEASE CHECK THE SETTINGS ASSOCIATED WITH THE RELATIONSHIP UPDATE ACTION OF THE CURRENT WORKFLOW. INTERSECT TYPE ID IS [{intersectTypeId}]");
 
-                var isSubject = intersectType.SubjectID == objectInfo.ObjectID && intersectType.Subject == objectInfo.Object.ToString();
+                var isSubject = intersectType.SubjectID == objectInfo.ObjectTypeID && intersectType.Subject == objectInfo.ObjectType.ToString();
 
                 if (item.ClearValue)
                 {
