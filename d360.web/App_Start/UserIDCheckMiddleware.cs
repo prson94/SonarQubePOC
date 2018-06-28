@@ -391,8 +391,8 @@ from	Resource R
                 {
                     cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     cnName = (await cnn.QueryAsync<string>(@"select coalesce(C.Value, S.DefaultValue) as Value
-from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = 4
-where S.ID = 54")).FirstOrDefault();
+from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @cId
+where S.ID = 54",new { cId = companyId })).FirstOrDefault();
                 }
 
                 //stick in cache
