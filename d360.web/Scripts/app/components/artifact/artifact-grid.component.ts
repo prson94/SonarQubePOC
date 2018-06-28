@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { LazyLoadEvent, DataTable } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
@@ -14,6 +14,8 @@ import { BaseComponent } from '../shared/base.component';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { ObjectDetailService } from '../../services/object-detail.service';
+import { Subject } from 'rxjs/Subject';
+import { Observable } from "rxjs/Observable";
 
 @Component({
     selector: 'd3s-artifact-grid',
@@ -31,7 +33,7 @@ import { ObjectDetailService } from '../../services/object-detail.service';
                         <a [href]="itemUrl" target="_blank">Open in new window</a>
                     </div>
                     <div class="col s12" *ngIf="showGridSimpleFilter">                                                
-                        <input type="text" *ngIf="topLevelFilters.length ==0" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
+                        <input type="text" *ngIf="topLevelFilters.length ==0" pInputText style="width: 100%;" maxlength="200" (keyup)="simpleSearch.next($event)" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                         <d3s-artifact-top-level-filter *ngIf="topLevelFilters.length > 0" 
                             [(filters)]="stateService.artifactTypeFilters.filters" 
                             [fields]="topLevelFilters"                             
@@ -112,6 +114,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
+    @ViewChild('dt') dt: DataTable;
 
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
@@ -138,13 +141,13 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showDelete: boolean = false;
     showEditor: boolean = false;
     isLoading: boolean = false;
-
-    simpleSearchID: number = 0;
-
+    
     selected: any = null;
     itemUrl: string;
 
     theDeleteCallback: Function;
+
+    public simpleSearch = new Subject<any>();
 
     constructor(private headerActionsService: HeaderActionsService,
         private messagesService: MessagesService,
@@ -158,6 +161,14 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     ) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
+        var me = this;
+        const subscription = this.simpleSearch
+            .map(event => event.target.value)
+            .debounceTime(1000)
+            .distinctUntilChanged()
+            .flatMap(search => Observable.of(search).delay(500))
+            .subscribe(data => { this.doSimpleSearch(me.dt, me.isLoading); });
+    
     }
 
     get showGridSimpleFilter(): boolean {
@@ -168,7 +179,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         if (changes['artifactType'] && this.artifactType != null) {            
             this.load();
         }
-
+        
         //clear out the filters if the artifacttype is different
         this.stateService.resetArtifactTypeFilterIfRequired(this.artifactType.ID);
     }
@@ -229,12 +240,11 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }    
     getData() {        
         this.isLoading = true;
-        this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners)
-            .then(result => {
+        this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners).debounceTime(3000)
+            .subscribe(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;
-                if (this.items && this.items.length > 0) this.selected = this.items[0];
-                this.simpleSearchID = 0;                
+                if (this.items && this.items.length > 0) this.selected = this.items[0];                
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
             });
@@ -325,27 +335,12 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.getData();
     }
 
-    private checkSimpleSearchEnter(event, dt: DataTable) {
-        if (event.keyCode == 13) this.doSimpleSearch(dt);
-        else {
-            if (this.simpleSearchID > 0) {
-                window.clearTimeout(this.simpleSearchID);
-                this.simpleSearchID = 0;
-            }
-            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);
-        }
-    }
-
-    private doSimpleSearch(dt: DataTable) {
-        if (this.isLoading) {
-            if (this.simpleSearchID > 0) {
-                window.clearTimeout(this.simpleSearchID);
-                this.simpleSearchID = 0;
-            }
-            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds); //check back in a few search is ongoing
+    private doSimpleSearch(dt: DataTable, isLoading: boolean) {
+        
+        if (isLoading) {            
             return;
         }
-        this.isLoading = true;
+        isLoading = true;
         if (dt) dt.reset();        
     }
     

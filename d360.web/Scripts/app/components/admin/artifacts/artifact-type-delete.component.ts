@@ -53,7 +53,7 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
         this.artifactTypeService.getArtifactTypeDetails(this.artifactTypeId).then(result=>{
             this.artifactType = result;            
         });        
-        this.artifactService.getArtifacts(this.artifactTypeId, 10, 1, '', SortOrder.Ascending).then(result => {
+        this.artifactService.getArtifacts(this.artifactTypeId, 10, 1, '', SortOrder.Ascending).subscribe(result => {
             this.count = result.total;
         })
     }

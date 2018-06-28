@@ -9,17 +9,18 @@ import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterField
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { AssetDetail } from '../models/asset.model';
+import { Observable } from "rxjs/Observable";
 
 @Injectable()
 export class ArtifactService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getArtifacts(artifactTypeId: number, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression[], attributes?: GridAttributeFilterExpression[], simpleFilter?: string, owner?: GridOwnerFilter): Promise<Artifacts> {
+    getArtifacts(artifactTypeId: number, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression[], attributes?: GridAttributeFilterExpression[], simpleFilter?: string, owner?: GridOwnerFilter): Observable<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/ArtifactsByType?id=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
-        if (filters != undefined) {            
+        if (filters != undefined) {
 
             //#region regular fields
 
@@ -36,13 +37,13 @@ export class ArtifactService extends BaseService {
 
             //#region related filter fields
             let rellFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Relation);
-            
+
             count = 0;
 
             uri += '&relfilterscount=' + rellFilters.length;
 
             for (let filter of rellFilters) {
-                uri += `&relfilterdatafield${count}=${filter.field.replace("Field","")}&relfiltercondition${count}=${filter.condition}&relfiltervalue${count}=${filter.value}`;
+                uri += `&relfilterdatafield${count}=${filter.field.replace("Field", "")}&relfiltercondition${count}=${filter.condition}&relfiltervalue${count}=${filter.value}`;
                 count++;
             }
             //#endregion
@@ -54,7 +55,7 @@ export class ArtifactService extends BaseService {
             uri += '&hidfilterscount=' + hidFilters.length;
 
             for (let filter of hidFilters) {
-                uri += `&hidfilterdatafield${count}=${filter.field.replace("Field","")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${encodeURIComponent(filter.value)}`;
+                uri += `&hidfilterdatafield${count}=${filter.field.replace("Field", "")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${encodeURIComponent(filter.value)}`;
                 count++;
             }
             //#endregion
@@ -68,7 +69,7 @@ export class ArtifactService extends BaseService {
             for (let att of attributes) {
                 uri += `&att_typeid_${count}=${att.attributeType}&att_value_${count}=${att.attributeSearchValue}`;
                 count++;
-            }            
+            }
         }
 
         if (relationships != undefined) {
@@ -86,14 +87,17 @@ export class ArtifactService extends BaseService {
             uri += `&filter=${encodeURIComponent(simpleFilter)}`;
         }
 
-        if (owner != undefined) {            
+        if (owner != undefined) {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
-
-        return this.http.get(uri)        
-            .toPromise()
-            .then(response => <Artifacts>response.json())
-            .catch(err => this.handleError(err));        
+        
+        return this.http.get(uri)
+            .map(response => {
+                return response.json()
+            })
+            .map(item => { return <Artifacts>item })
+            .catch(err => this.handleError(err));
+        
     }   
 
     getArtifactByParentAndArtifactType(parentId: number, artifactTypeId: number, filter: string, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder): Promise<Artifacts> {
