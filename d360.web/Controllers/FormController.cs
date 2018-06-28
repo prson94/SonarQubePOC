@@ -3568,6 +3568,7 @@ namespace d360.web.Controllers
             ).ToList();
 
             var Field_Relationships = allRelationships
+                .Where(x=>x.PredicateType != PredicateType.InterTypeHierarchy)
                 .Select(i => new {
                     title = ((i.Subject == sType && i.SubjectID == id) ? 
                         $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" : 
