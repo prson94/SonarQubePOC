@@ -668,44 +668,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
-    //no longer used? can we remove this?
-    private validate(): boolean {
-        let valid = true;
-        this.errorMessage = '';
-        
-        switch (this.model.FieldType.Type.toLowerCase()) {
-            case 'fusionlookup':
-                if (this.model.FusionItems == null || this.model.FusionItems.length < 1) {
-                    this.errorMessage = "Please add at least one fusion item";
-                    valid = false;
-                } else {
-                    this.model.FusionItems.forEach(i => {
-                        if (i.SourceFusionAttributeType == null || (i.ReferenceType != 1 && i.TargetFusionAttributeType == null)) {
-                            this.errorMessage = "One or more fusion items is missing a source or target type.";
-                            valid = false;
-                        }
-                    });
-                }
-                break;
-            case 'text':
-                if (this.model.FieldType.MinimumLength != null && this.model.FieldType.MaximumLength != null) {
-                    if (this.model.FieldType.MinimumLength > this.model.FieldType.MaximumLength) {
-                        this.errorMessage = "Minimum length cannot be greater than maximum length."
-                        valid = false;
-                    }
-                }
-
-                break;
-            case 'filteredlookup':
-                if (this.filteredLookup == null || this.filteredLookup == '') {
-                    this.errorMessage = "Please select a lookup list.";
-                    valid = false;
-                }
-                break;
-        }
-        return valid;
-    }
-
     private valid(): boolean {
         let valid = true;
 

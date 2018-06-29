@@ -3980,7 +3980,7 @@ namespace d360.web.Controllers
                             });
                             if (r.DisplayFields == null)
                                 r.DisplayFields = new List<FieldTypeItemDisplayFieldEditorModel>();
-                            foreach (var f in r.DisplayFields.Where(i => i.Show || !string.IsNullOrEmpty(i.FilterValue)))
+                            foreach (var f in r.DisplayFields.Where(i => i.Show || !string.IsNullOrEmpty(i.FilterValue) || (i.SortOrder.HasValue && i.SortOrder != 0)))
                             {
                                 fields.Add(new FieldLookupFieldItem
                                 {
@@ -4601,7 +4601,7 @@ namespace d360.web.Controllers
                             });
                             if (r.DisplayFields == null)
                                 r.DisplayFields = new List<FieldTypeItemDisplayFieldEditorModel>();
-                            foreach(var f in r.DisplayFields.Where(i => i.Show || !string.IsNullOrEmpty(i.FilterValue)))
+                            foreach(var f in r.DisplayFields.Where(i => i.Show || !string.IsNullOrEmpty(i.FilterValue) || (i.SortOrder.HasValue && i.SortOrder != 0)))
                             {
                                 fields.Add(new FieldLookupFieldItem
                                 {
