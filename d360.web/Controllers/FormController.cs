@@ -3786,7 +3786,7 @@ namespace d360.web.Controllers
         {
             var nameUpper = name.ToUpper();
 
-            if (nameUpper == "PARENTID")  throw new Exception("Use of a field type with the name " + name + " is prohibited.");
+            if (nameUpper == "PARENTID" || nameUpper == "DATABASE")  throw new Exception("Use of a field type with the name " + name + " is prohibited.");
         }
 
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFieldType")]
