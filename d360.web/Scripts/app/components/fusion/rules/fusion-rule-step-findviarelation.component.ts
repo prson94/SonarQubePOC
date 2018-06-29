@@ -8,7 +8,7 @@ import { TreeNode, Column } from 'primeng/primeng';
     selector: 'd3s-fusion-rule-step-findviarelation',
     templateUrl: './fusion-rule-step-findviarelation.component.html',
     providers: [FusionService] 
-})
+}) 
 
 export class FusionRuleStepFindViaRelationComponent extends FusioRuleStepBaseComponent implements OnInit {
     @Input() fusionID: number;

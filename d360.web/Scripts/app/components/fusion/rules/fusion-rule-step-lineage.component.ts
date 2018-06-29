@@ -17,7 +17,7 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
     @Input() settings: any;
     @Input() showErrors = false;
     @Input() isValid = false;
-    @Output() isValidChange = new EventEmitter();
+    @Output() isValidChange = new EventEmitter(); 
 
     @Output() settingsChange = new EventEmitter();
 

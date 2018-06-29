@@ -1,6 +1,6 @@
 ﻿<form #ruleStepRelate="ngForm">
     <div class="row">
-        <div class="col l4 m12 s12">
+        <div class="col l4 m12 s12"> 
             <div class="FieldName" style="display:block">Relationship Type</div>
             <select [(ngModel)]="settings.IntersectType" style="width:100%" name="intersecttype" #intersecttype="ngModel" required (ngModelChange)="validate()">
                 <option *ngFor="let i of relations" [value]="i.ID">{{i.Name}}</option>

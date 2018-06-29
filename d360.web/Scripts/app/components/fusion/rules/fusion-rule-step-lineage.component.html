@@ -15,7 +15,7 @@
                 <option *ngFor="let i of steps" [value]="i.ID">{{i.Description}}</option>
             </select>
             <div class="errorMessage" [hidden]="!showErrors || source.valid">Source is required</div>
-        </div>
+        </div> 
         <div class="col l6 m6 s12">
             <div class="FieldName" style="display:block">Target From Step (Business Relation)</div>
             <select [(ngModel)]="settings.ObjectID" style="width:100%" name="target" #target="ngModel" required (ngModelChange)="validate()">

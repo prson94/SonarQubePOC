@@ -3,12 +3,13 @@ import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
 import { FusionService } from '../../../services/fusion.service';
 import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
+import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'd3s-fusion-rule-step-find',
     templateUrl: './fusion-rule-step-find.component.html',
     providers: [FusionService] 
-})
+}) 
 
 export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent implements OnInit {
     @Input() fusionID: number;
@@ -62,8 +63,8 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                 this.loadFusionOwners();
                 break;
             case "Glossary":
-                this.changeGlossaryType()
-                    .then(() => this.changeGlossaryTypeFields());
+                this.changeGlossaryType(false)
+                    .then(() => this.changeGlossaryTypeFields(false));
                 break;
             case "Promotion":
                 this.fusionService.getFindAttributeTypes()
@@ -143,7 +144,11 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
             });
     }
 
-    changeGlossaryType(): Promise<any> {
+    changeGlossaryType(fromControl:boolean): Promise<any> {
+        if (fromControl) {
+            this.settings.TargetField = null;
+            this.settings.ObjectID = null;
+        }
         this.objects = [];
         if (this.settings.Object == 'ArtifactType')
             return this.fusionService.getFindArtifactTypes()
@@ -153,16 +158,30 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                 });
         if (this.settings.Object == 'TaxonomyType')
            return  this.fusionService.getFindModels()
-                .then(r => {
+               .then(r => {
                     this.objects = r;
                     this.validate();
                 });
+        
         this.validate();
         return Promise.resolve();
     }
 
-    changeGlossaryTypeFields(): Promise<any> {
+    changeGlossarySourceMatchField(): Promise<any> {
+        this.settings.Object = null;
+        this.settings.ObjectID = null;
+        this.settings.TargetField = null;
+        this.validate();
+        return Promise.resolve();
+    }
+    changeGlossaryTypeFields(fromControl:boolean): Promise<any> {
 
+        if (StringHelpers.isNullOrEmpty(this.settings.ObjectID)) {
+            this.validate();
+            return Promise.resolve();
+        }
+        if (fromControl)
+            this.settings.TargetField = null;
         this.targetFields = [];
         if (this.settings.Object == 'ArtifactType') {
             return this.fusionService.getFindSourceFields('ArtifactType', this.settings.ObjectID)
@@ -190,22 +209,22 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
 
     validate() {
         this.isValid = true;
-        if (this.settings.ObjectSearch == null)
+        if (StringHelpers.isNullOrEmpty(this.settings.ObjectSearch))
             this.isValid = false;
         else if (this.settings.ObjectSearch == 'Fusion') {
-            if (this.settings.FilterField == null || this.settings.ObjectID == null)
+            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.ObjectID ))
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'FusionOwner') {
-            if (this.settings.ObjectID == null)
+            if (StringHelpers.isNullOrEmpty(this.settings.ObjectID ))
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'Glossary') {
-            if (this.settings.FilterField == null || this.settings.Object == null || this.settings.ObjectID == null || !this.settings.TargetField)
+            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.Object) || StringHelpers.isNullOrEmpty(this.settings.ObjectID) || StringHelpers.isNullOrEmpty(this.settings.TargetField))
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'Promotion') {
-            if (this.settings.FilterField == null || this.settings.ObjectID == null)
+            if (StringHelpers.isNullOrEmpty( this.settings.FilterField)  || StringHelpers.isNullOrEmpty(this.settings.ObjectID))
                 this.isValid = false;
         } else if (this.settings.ObjectSearch == 'ResultFromStep') {
-            if (this.settings.ObjectID == null)
+            if (StringHelpers.isNullOrEmpty(this.settings.ObjectID ))
                 this.isValid = false;
         }
 

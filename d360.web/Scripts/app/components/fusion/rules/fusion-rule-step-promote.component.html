@@ -16,7 +16,7 @@
             <div class="errorMessage" [hidden]="!showErrors || promoteto.valid">Promotion object is required</div>
         </div>
     </div>
-    <div class="row" *ngIf="showPromotionParent">
+    <div class="row" *ngIf="showPromotionParent"> 
         <div class="col l6 m6 s12">
             <div class="FieldName" style="display:block">Parent Search</div>
             <select [(ngModel)]="settings.ParentObjectSearch" style="width:100%" (ngModelChange)="changeParentSearch()" name="parentsearch" #parentsearch="ngModel" required>
