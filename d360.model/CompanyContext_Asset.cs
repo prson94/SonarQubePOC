@@ -610,7 +610,7 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
 
                             dbArgs.Add($"parentFilterVal{filterIndex}", f.RawValue);
 
-                            filterWhereList.Add($"PID.ParentDisplayValue = @parentFilterVal{filterIndex}");
+                            filterWhereList.Add($"parp.DisplayValue = @parentFilterVal{filterIndex}");
                         }
                         else
                         {
