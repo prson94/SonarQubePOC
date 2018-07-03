@@ -5,6 +5,7 @@ import { FusionService } from '../../../services/fusion.service';
 import { GridColumn } from '../../../models/grid-definition.model';
 import { BaseComponent } from '../../shared/base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { MessagesService } from '../../../services/messages.service';
 
 @Component({
     selector: 'd3s-fusion-configuration-tile',
@@ -19,6 +20,8 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
     formMode: FormModeConfig = FormModeConfig.Default;
     FormModeConfig = FormModeConfig;
 
+    theDeleteTypeCallback: Function;
+
     fusionConfigurations: any[];
     selectedRow: any;
 
@@ -28,8 +31,9 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
 
     columns: GridColumn[];
 
-    constructor(private router: Router, private fusionService: FusionService) {
-        super();
+    constructor(private router: Router, private fusionService: FusionService, protected messagesService: MessagesService) {
+        super();        
+        this.theDeleteTypeCallback = this.deleteFusionConfig.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
@@ -57,6 +61,15 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
                 this.fusionConfigurations = data;
                 this.selectedRow = this.fusionConfigurations[0];
                 this.isLoading = false;
+            });
+    }
+
+    deleteFusionConfig(id: number) {
+        this.fusionService.deleteFusionConfiguration(id).
+            then(result => {
+                this.formMode = FormModeConfig.Default;                
+                this.showMessageForResult(this.messagesService, result);
+                this.load();
             });
     }
 

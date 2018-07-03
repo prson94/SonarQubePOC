@@ -76,11 +76,12 @@
         </d3s-dynamic-editor>
     </div>
     <div *ngSwitchCase="FormModeConfig.Deleting">
-        <d3s-delete-form [uri]="'form/DeleteFusionByID?id='+selectedRow.ID"
-                         [method]="'delete'"
-                         [prompt]="'Are you sure you want to delete this fusion configuration?'"
-                         (onCancel)="formMode = FormModeConfig.Default;"
-                         (onDeleteComplete)="formMode = FormModeConfig.Default; load();">
+        <d3s-delete-form 
+                        [callback]="theDeleteTypeCallback"
+                        [itemId]="selectedRow?.ID"
+                        [method]="'callback'"
+                        [prompt]="'Are you sure you want to delete this fusion configuration?'"
+                        (onCancel)="formMode = FormModeConfig.Default;">
         </d3s-delete-form>
     </div>
     <div *ngSwitchCase="FormModeConfig.Scheduling">

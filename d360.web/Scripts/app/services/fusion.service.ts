@@ -155,6 +155,10 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    deleteFusionConfiguration(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'fusionconfiguration', id);
+    }
+
     deleteFusionConfigurationSchedule(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'fusionschedule', id);
     }

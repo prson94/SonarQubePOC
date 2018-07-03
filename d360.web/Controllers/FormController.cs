@@ -583,6 +583,8 @@ namespace d360.web.Controllers
                     return DeleteCustomSynonym(form);
                 case "ENDPOINT":
                     return DeleteCustomAPIEndPoint(form);
+                case "FUSIONCONFIGURATION":
+                    return DeleteFusion(form);
                 case "FUSIONQUERYATTRIBUTE":
                     return DeleteFusionQueryAttribute(form);
                 case "FUSIONATTRIBUTETYPECUSTOMQUERY":
@@ -4939,6 +4941,11 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.Fusion, model.ID, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
+                //check if the fusion config has data, if so dont allow the delete and popup a friendly message
+
+                if(Company.FusionAttributes.Any(x=>x.FusionID == model.ID))
+                    return jsonException("The selected fusion configuration contains data, and therefore cannot be deleted.", HttpStatusCode.Forbidden);
+
                 Company.Delete<Fusion>(model);
                 return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -4952,15 +4959,7 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpDelete, Route("DeleteFusionByID"), NonNullableParameters]
-        public JsonResult DeleteFusionByID(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteFusion(form);
-        }
-
+        
         [HttpPut, ValidateInput(false), Route("EditFusion")]
         public JsonResult EditFusion(FormCollection form)//(int typeID, int id, FusionAttributeType model)
         {
