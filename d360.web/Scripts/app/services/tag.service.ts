@@ -10,8 +10,10 @@ export class TagService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getTags(phrase: string): Observable<Tag[]> {
-        return this.http.get(`api/tagsuggestions?phrase=${phrase}`)
+    getTags(phrase: string, excludeObjects: string = ''): Observable<Tag[]> {
+        let url = `api/tagsuggestions?phrase=${phrase}&excludeObjects=${excludeObjects}`;
+        
+        return this.http.get(url)
             .map(response => {
                     return response.json()})
             .map(item => { return <Tag[]> item})

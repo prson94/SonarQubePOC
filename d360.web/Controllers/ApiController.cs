@@ -4707,23 +4707,17 @@ where    A.RuleID = @id", new { id });
         #region Comment Tag Suggestions
 
         [HttpGet, Route("tagsuggestions")]
-        public IEnumerable<TagSuggestionModel> TagSuggestions(string phrase)
+        public IEnumerable<TagSuggestionModel> TagSuggestions(string phrase, string excludeObjects = "")
         {
             if (string.IsNullOrWhiteSpace(phrase))
                 return new List<TagSuggestionModel>();
 
             Dapper.DynamicParameters dbParams = new DynamicParameters();
 
-            /*var sql = @"select 
-	                                c.[Object], 
-	                                c.ObjectID, 
-	                                c.TextPath, 
-	                                c.Url, 
-	                                c.ObjectTypeName, 
-	                                c.IconForeColor, 
-	                                c.IconBackColor
-                                from cache.ObjectDetails c                                 
-                                where c.[Object] not in ('Intersect','FusionAttribute') and (c.Name like @beginsWith or (len(@val) > 2 and c.Name like @contains))";*/
+            List<string> objectsToExclude = new List<string> { "FusionAttribute" };
+
+            if (!string.IsNullOrEmpty(excludeObjects)) objectsToExclude.AddRange(excludeObjects.Split(','));
+        
             var sql = @"select 
 										c.[Object], 
 										c.ObjectID, 
@@ -4734,11 +4728,12 @@ where    A.RuleID = @id", new { id });
 										c.BackColor as IconBackColor
 									from [dbo].assetdetail c   
 									cross apply [dbo].getAssetUrl(c.[object],c.ObjectID, c.TypeID) cU                              
-									where c.[Object] != 'FusionAttribute' and (c.DisplayValue like @beginsWith or (len(@val) > 2 and c.DisplayValue like @contains))";
+									where c.[Object] not in @exclude and (c.DisplayValue like @beginsWith or (len(@val) > 2 and c.DisplayValue like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
             dbParams.Add("val", $"{phrase}%");
             dbParams.Add("contains", $"%{phrase}%");
+            dbParams.Add("exclude", objectsToExclude);
 
             return Company.Query<TagSuggestionModel>(sql,dbParams);            
         }
