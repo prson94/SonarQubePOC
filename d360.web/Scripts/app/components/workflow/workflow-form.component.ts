@@ -290,7 +290,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private search(event) {
-       this.searchSub= this.tagService.getTags(event.query)
+       this.searchSub= this.tagService.getTags(event.query,'Resource')
             .debounceTime(400)
             .subscribe(data => {
             this.terms = data;
