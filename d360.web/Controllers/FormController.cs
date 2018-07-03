@@ -1398,7 +1398,10 @@ namespace d360.web.Controllers
                 {
                     if (model.AssetType != null && model.AssetType.ObjectID > 0)
                     {
-                        var parents = Company.Query<PrimeSelectItem>("select ObjectID as value, Name as label from assettype where [object] = 'ReferenceItemType' and objectid != @id order by Name", new { id = model.AssetType.ObjectID }).ToList();
+                        var parents = Company.Query<PrimeSelectItem>(@"select a.ObjectID as value, a.Name as label from  assettype a where a.[object] = 'ReferenceItemType'  and a.objectid != @id
+                                                                    and  not exists(
+                                                                    select  1 from IntersectType i where i.object = 'ReferenceItemType' and i.SubjectId = @id and i.objectid = a.objectid)
+                                                                    order by Name", new { id = model.AssetType.ObjectID }).ToList();
                         model.Parents = parents;
                     }
                     else
