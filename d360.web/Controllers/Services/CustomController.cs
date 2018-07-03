@@ -329,7 +329,7 @@ namespace d360.web.Controllers.Services
                     XElement xLinks = DynamicHelper.GetXElement("Links", namespaces, xAsset); 
                     XElement link = DynamicHelper.GetXElement("link", namespaces, xLinks);
 
-                    link.Add(DynamicHelper.GetXElement("rel", namespaces, link, JsonResultLinkModel.CANO), DynamicHelper.GetXElement("href", namespaces, link, canoUri));
+                    link.Add(new XAttribute("rel", JsonResultLinkModel.CANO), new XAttribute("href", canoUri));
 
                     xLinks.Add(link);
                     xAsset.Add(xLinks);
@@ -370,7 +370,7 @@ namespace d360.web.Controllers.Services
         {
             
             try
-            {
+            {                
                 if (Request.RequestUri.ToString().Length > 16000)
                     return CreateCustomApiError(HttpStatusCode.NotFound, "Request URI must not exceed 16,000 characters.");
 
@@ -1228,19 +1228,19 @@ namespace d360.web.Controllers.Services
                     var xLinks = DynamicHelper.GetXElement("Links", namespaces, CollectionWrapper);
 
                     var link = DynamicHelper.GetXElement("link", namespaces, xLinks);
-                    link.Add(DynamicHelper.GetXElement("rel", namespaces, link, JsonResultLinkModel.CANO), DynamicHelper.GetXElement("href", namespaces, link, canoUri));
+                    link.Add(new XAttribute("rel", JsonResultLinkModel.CANO), new XAttribute("href", canoUri));
                     xLinks.Add(link);
                         
                     if (showNextLink)
                     {
                         link = DynamicHelper.GetXElement("link", namespaces, xLinks);
-                        link.Add(DynamicHelper.GetXElement("rel", namespaces, link, JsonResultLinkModel.NEXT), DynamicHelper.GetXElement("href", namespaces, link, nextUri));
+                        link.Add(new XAttribute("rel", JsonResultLinkModel.NEXT), new XAttribute("href", nextUri));
                         xLinks.Add(link);
                     }
                     if (showPrevLink)
                     {
                         link = DynamicHelper.GetXElement("link", namespaces, xLinks);
-                        link.Add(DynamicHelper.GetXElement("rel", namespaces, link, JsonResultLinkModel.PREV), DynamicHelper.GetXElement("href", namespaces, link, prevUri));
+                        link.Add(new XAttribute("rel", JsonResultLinkModel.PREV), new XAttribute("href", prevUri));
                         xLinks.Add(link);
                     }
 
