@@ -253,10 +253,11 @@ namespace d360.web.Controllers.Services
                 var assetTypeId = config.First().AssetType.ID;
                 var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
 
-                if (assetType != null && assetType.Object == "ReferenceItemType")
+                // gov=4840 lloyds changed there mind they dont want this after all
+                /*if (assetType != null && assetType.Object == "ReferenceItemType")
                 {
                     columnSql += ", D.[Key] as [Code]";
-                }
+                }*/
 
                 
                 foreach (var f in config)
@@ -742,10 +743,11 @@ namespace d360.web.Controllers.Services
                 var assetTypeId = config.First().AssetType.ID;
                 var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
 
-                if (assetType != null && assetType.Object == "ReferenceItemType")
+                // gov-4840 lloyds doesnt want this after all
+               /* if (assetType != null && assetType.Object == "ReferenceItemType")
                 {
                     columnSql += ", D.[Key] as [Code]";
-                }
+                }*/
                 
 
                 foreach (var f in config)
