@@ -756,7 +756,7 @@ namespace d360.web.Controllers.Services
                     {
                         case "Boolean":
                             fieldDataType = "bit";
-                            fieldDbType = System.Data.DbType.Binary;
+                            fieldDbType = System.Data.DbType.Byte;
                             break;
                         case "Date":
                             fieldDataType = "date";
@@ -859,7 +859,19 @@ namespace d360.web.Controllers.Services
                                 var singleValueFilter = filter as SingleValueFilterModel;
 
                                 fieldFilterSql += $"({formattedValueColumnSql} {@operator} @{filter.FieldName})";
-                                dbArgs.Add($"@{filter.FieldName}", singleValueFilter.Value, fieldDbType);
+
+                                // TRUE / FALSE DATA TYPE HANDLING
+                                if(fieldDbType == System.Data.DbType.Byte)
+                                {
+                                    if((singleValueFilter.Value ?? "").ToUpper() == "TRUE")
+                                        dbArgs.Add($"@{filter.FieldName}", 1, fieldDbType);
+                                    else if((singleValueFilter.Value ?? "").ToUpper() == "FALSE")
+                                        dbArgs.Add($"@{filter.FieldName}", 0, fieldDbType);
+                                    else
+                                        dbArgs.Add($"@{filter.FieldName}", singleValueFilter.Value, fieldDbType);
+                                }
+                                else
+                                    dbArgs.Add($"@{filter.FieldName}", singleValueFilter.Value, fieldDbType);
                             }
                             else if (filter is MultiValueFilterModel)
                             {
@@ -1259,7 +1271,7 @@ namespace d360.web.Controllers.Services
 
                 #endregion End: Collection endpoint processing
             }
-            catch (Exception)
+            catch (Exception r)
             {
                 return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
             }
