@@ -19,6 +19,7 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Microsoft.ApplicationInsights;
 
 namespace d360.web.Controllers.Services
 {
@@ -351,8 +352,10 @@ namespace d360.web.Controllers.Services
 
                 //return Request.CreateResponse<string>($"Service: {service}, Endpoint: {endpoint}, Version: {version}, Entity: {entityFormat}, Key: {key}");
             }
-            catch (Exception)
-            {                
+            catch (Exception r)
+            {
+                SendException(r, new Dictionary<string, string>());
+
                 return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
             }
         }
@@ -1273,6 +1276,8 @@ namespace d360.web.Controllers.Services
             }
             catch (Exception r)
             {
+                SendException(r, new Dictionary<string,string>());
+
                 return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
             }
         }
