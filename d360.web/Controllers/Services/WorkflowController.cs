@@ -722,7 +722,7 @@ order by wi.StartedOn desc";
         [Route("changetypes"), HttpGet]
         public List<ChangeTypeInfo> GetChangeTypes()
         {
-            return ChangeType.Add.GetList();
+            return ChangeType.Add.GetList().Where(x=>x.ID != ChangeType.ScoreUpdate).ToList();
         }
 
         [Route("transitiontypes"), HttpGet]
