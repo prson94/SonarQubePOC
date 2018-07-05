@@ -721,7 +721,11 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[ObjectName] 
 			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name],
+		case 
+			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.ObjectCardinality
+			else IT.SubjectCardinality
+		end as Cardinality
 from	IntersectTypeDetail IT 
 		left join [Predicate] P on P.ID = IT.PredicateID
 		cross apply (
