@@ -54,7 +54,7 @@ from	Asset A
             #endregion
         }
 
-        public static IEnumerable<SecurityResult> GetThenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule)
+        public static IEnumerable<SecurityResult> GetThenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers=false)
         {
             string thenSql = "";
 
@@ -62,7 +62,7 @@ from	Asset A
             string whenSuffix = "";
             string obj = "";
             string uniqueIdField = "ID";
-
+            
             if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null))
             {
                 if (rule.StructuredDefinition.Then.Object == "OrganizationType")
@@ -129,6 +129,10 @@ from	reporting.Global_Resource O ";
                 if (obj == "Resource")
                 {
                     whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.Status = 'Active'";
+                    if (IsHideData3SixtyUsers)
+                    {
+                        whenSuffix += " and (O.Email not like '%@data3sixty.com' and O.Email not like '%@infogix.com')";
+                    }
                 }
             }
 

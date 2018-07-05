@@ -15431,7 +15431,7 @@ order by TP.TextPath";
             if (!Company.CurrentResourceIsAdmin)
                 return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
 
-            var results = Company.Database.Connection.GetThenResults(rule);
+            var results = Company.Database.Connection.GetThenResults(rule,this.HideData3SixtyUsers());
             return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
