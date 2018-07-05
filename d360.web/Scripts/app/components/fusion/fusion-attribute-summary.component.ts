@@ -13,14 +13,14 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StateService } from '../../services/state.service';
 
 @Component({
-    selector: 'd3s-fusion-attribute-summary',
+    selector: 'd3s-fusion-attribute-summary',    
     template: `                 
                 <div class="tile tile-detail" style="position:initial">
                     <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading && !showEditor">
                         <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
-                        <p-dataTable #dt resizableColumns="true" columnResizeMode="fit" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="stateService.fusionFilters.rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                        
+                        <p-dataTable #dt resizableColumns="true" columnResizeMode="fit" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="stateService.fusionFilters.rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions" [style]="{'padding-bottom':'80px'}">                                                        
                            <p-column [style]="{width:'30px',cursor:'default'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
@@ -55,12 +55,7 @@ import { StateService } from '../../services/state.service';
                                 </ng-template>
                             </ng-container>
                             <p-footer>
-	                            <d3s-grid-paging-info *ngIf="dt && dt.totalRecords" [totalRecords]="dt?.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
-                                <div *ngIf="dt && dt.totalRecords && columns && columns.length>8">
-                                    <br/>
-                                    <br/>
-                                    <br/>
-                                </div>
+	                            <d3s-grid-paging-info *ngIf="dt && dt.totalRecords" [totalRecords]="dt?.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>                                
                             </p-footer>
                         </p-dataTable>                   
                         
