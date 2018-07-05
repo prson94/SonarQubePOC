@@ -37,9 +37,15 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
     rule: FusionRule;
 
     showPromotionParent: boolean = false;
+    
     steps: any[] = [];
     promotionObjects: any[] = [];
     parents: any[] = [];
+
+
+    private get disableTypeChange(): boolean {
+        return this.ruleStepID > 0;
+    }
 
     constructor(private fusionService: FusionService) {
         super();

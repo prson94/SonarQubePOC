@@ -10,7 +10,7 @@
         </div>
         <div class="col l6 m6 s12">
             <div class="FieldName" style="display:block">Promotion To</div>
-            <select [(ngModel)]="settings.ObjectID" style="width:100%" (ngModelChange)="changePromotionObject($event)" name="promoteto" #promoteto="ngModel" required>
+            <select [(ngModel)]="settings.ObjectID" style="width:100%" (ngModelChange)="changePromotionObject($event)" name="promoteto" #promoteto="ngModel" required [disabled]="disableTypeChange">
                 <option *ngFor="let i of promotionObjects" [value]="i.ID">{{i.Name}}</option>
             </select>
             <div class="errorMessage" [hidden]="!showErrors || promoteto.valid">Promotion object is required</div>
