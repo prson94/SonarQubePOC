@@ -439,9 +439,9 @@ order by	ColumnIndex", new { id });
                     (await UnrelateObjects(objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID)); 
                 
                 // update status for this item
-                var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = 1, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
+                var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = @status, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
 
-                await QueryAsync<int>(statusSql, new { objectId = intersectId, msg = BulkLoadStatusMsg, loadId = loadId, rowIndex = currentRowIndex });
+                await QueryAsync<int>(statusSql, new { objectId = intersectId, msg = BulkLoadStatusMsg, loadId = loadId, rowIndex = currentRowIndex, status = (intersectId > 0 ? 1 : 0) });
                 
                 //next row
                 currentRowIndex++;
