@@ -190,7 +190,7 @@ where		C.IsVisible = 1 and C.Overriden = 0
 
             document.SetCellValue(1, 1, "Responsibility Type");
             document.SetCellValue(1, 2, "Asset ID");
-            document.SetCellValue(1, 3, "Asset Path");
+            document.SetCellValue(1, 3, "Name");
             document.SetCellValue(1, 4, "Via");
 
             #endregion
