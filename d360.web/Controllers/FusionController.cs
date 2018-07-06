@@ -338,67 +338,7 @@ with h as	(
 
 select * from h where ID <> @t order by h.[Level] desc;
 ";
-        /*
-        string parentSql = @"
-with h as	(
-			select	A.ObjectID as ID,
-					P.ParentID,
-                    A.Name,
-					0 as [Level]
-			from	AssetType A
-					outer apply	(
-								select	SubjectID as ParentID
-								from	IntersectType I
-										inner join [Predicate] P on P.ID = I.PredicateID and P.Type = 3 and I.Subject = A.Object and I.Object = A.Object and I.ObjectID = A.ObjectID 
-					) P
-			where	A.Object = 'FusionAttributeType' and A.ObjectID = @t
 
-			union all
-
-			select	A.ObjectID as ID,
-					P.ParentID,
-                    A.Name,
-					C.[Level] + 1 as [Level]
-			from	AssetType A
-					inner join h as C on A.Object = 'FusionAttributeType' and A.ObjectID = C.ParentID
-					outer apply	(
-								select	SubjectID as ParentID
-								from	IntersectType I
-										inner join [Predicate] P on P.ID = I.PredicateID and P.Type = 3 and I.Subject = A.Object and I.Object = A.Object and I.ObjectID = A.ObjectID 
-					) P
-			)
-
-select * from h where ID <> @t order by h.[Level] desc;";*/
-
-        //THIS IS LOOKING AT NEW INTERSECT LOGIC. TO BE ADDED IN LATER RELEASE.
-        //        string parentSql = @"
-        //with h as	(
-        //			select	I.ID as IntersectTypeID,
-        //					I.SubjectID,
-        //					I.ObjectID,
-        //                    A.Name,
-        //					0 as [Level]
-        //			from	AssetType A
-        //					left join IntersectTypeDetail I on I.Object = 'FusionAttributeType' and I.ObjectID = @t and I.PredicateType = 3
-        //			where	A.Object = 'FusionAttributeType' and A.ObjectID = @t
-
-        //			union all
-
-        //			select	I.ID as IntersectTypeID,
-        //					I.SubjectID,
-        //					I.ObjectID,
-        //                    A.Name,
-        //					C.[Level] + 1 as [Level]
-        //			from	AssetType A
-        //					inner join h as C on A.Object = 'FusionAttributeType' and A.ObjectID = C.SubjectID 
-        //					outer apply (
-        //						select	ID, SubjectID, ObjectID
-        //						from	IntersectTypeDetail 
-        //						where	Object = 'FusionAttributeType' and ObjectID = A.ObjectID and PredicateType = 3
-        //					) I
-        //			)
-
-        //select * from h order by h.[Level] asc;";
 
         internal class SqlFieldModel
         {
@@ -429,8 +369,9 @@ select * from h where ID <> @t order by h.[Level] desc;";*/
             parents.ForEach(i =>
             {
                 var thisJoin = ((int)i.Level == 1) ?
-                    $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = A.ParentID" :
+                    $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = A.ParentID and P{i.Level}.Deleted = 0" :
                     $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = P{i.Level - 1}.ParentID";
+                
 
                 sqlFieldModels.Add(new SqlFieldModel
                 {
@@ -442,36 +383,7 @@ select * from h where ID <> @t order by h.[Level] desc;";*/
 
                 });
             });
-
-            //THIS IS LOOKING AT NEW INTERSECT LOGIC. TO BE ADDED IN LATER RELEASE.
-            //for (var i = 0; i < parents.Count; i++)
-            //{
-            //    var intersectTypeID = (int?)parents[i].IntersectTypeID;
-            //    var level = (int)parents[i].Level;
-
-            //    if (intersectTypeID.HasValue)
-            //    {
-            //        var columnName = parents[i+1].Name;
-            //        var subjectID = (int)parents[i].SubjectID;
-            //        var objectID = (int)parents[i].ObjectID;
-
-            //        var thisJoin = $" inner join [Intersect] P{level} on P{level}.Subject = 'FusionAttribute' and P{level}.Object = 'FusionAttribute'" +
-            //            $" inner join IntersectType PT{level} on PT{level}.ID = P{level}.IntersectTypeID and PT{level}.SubjectID = {subjectID} and PT{level}.ObjectID = {objectID}" +
-            //            $" inner join FusionAttribute PF{level} on PF{level}.ID = P{level}.SubjectID and P{level}.ObjectID = " +
-            //            ((level == 0) ? $"A.ID" : $"P{level - 1}.SubjectID");
-
-            //        sqlFieldModels.Add(new SqlFieldModel
-            //        {
-            //            FieldColumnName = $"Parent{subjectID}",
-            //            FieldName = $"PF{level}.Name as Parent{subjectID}",
-            //            FieldFriendlyName = columnName,
-            //            FieldJoin = thisJoin,
-            //            JoinOrder = -level,
-
-            //        });
-            //    }
-            //}
-
+            
             #endregion
 
             sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "ID", FieldName = "A.ID", FieldFriendlyName = "ID" });
@@ -629,52 +541,12 @@ where   A.FusionID = @f
             parents.OrderBy(i => i.Level).ToList().ForEach(i =>
             {
                 var thisJoin = ((int)i.Level == 1) ?
-                    $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = A.ParentID" :
+                    $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = A.ParentID and P{i.Level}.Deleted = 0" :
                     $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = P{i.Level - 1}.ParentID";
 
                 parentQueryJoinText += thisJoin;
             });
-
-            //THIS IS LOOKING AT NEW INTERSECT LOGIC. TO BE ADDED IN LATER RELEASE.
-            //var parentFilterColumnText = "";
-            //var parentQueryColumnText = "";
-            //var parentQueryJoinText = "";
-
-            //var parentFilterPresent = parents.Count > 1 && filterFields.Any(i => i.StartsWith("Parent"));
-            //for (var i = 0; i < parents.Count; i++)
-            //{
-            //    var intersectTypeID = (int?)parents[i].IntersectTypeID;
-            //    var level = (int)parents[i].Level;
-
-            //    if (intersectTypeID.HasValue)
-            //    {
-            //        var columnName = parents[i + 1].Name;
-            //        var subjectID = (int)parents[i].SubjectID;
-            //        var objectID = (int)parents[i].ObjectID;
-
-            //        var thisJoin = $" inner join [Intersect] P{level} on P{level}.Subject = 'FusionAttribute' and P{level}.Object = 'FusionAttribute'" +
-            //            $" inner join IntersectType PT{level} on PT{level}.ID = P{level}.IntersectTypeID and PT{level}.SubjectID = {subjectID} and PT{level}.ObjectID = {objectID}" +
-            //            $" inner join FusionAttribute PF{level} on PF{level}.ID = P{level}.SubjectID and P{level}.ObjectID = " +
-            //            ((level == 0) ? $"A.ID" : $"P{level - 1}.SubjectID");
-
-            //        parentQueryJoinText += thisJoin;
-
-            //        var thisColumn = $", PF{level}.Name as Parent{subjectID}";
-            //        parentQueryColumnText += thisColumn;
-            //        if (parentFilterPresent)
-            //        {
-            //            parentFilterColumnText += thisColumn;
-            //        }
-            //        else
-            //        {
-            //            if (filterFields.Contains($"Parent{subjectID}"))
-            //            {
-            //                parentFilterColumnText += thisColumn;
-            //            }
-            //        }
-            //    }
-            //}
-
+                        
             #endregion
 
             if (columns.Contains("[type]"))
