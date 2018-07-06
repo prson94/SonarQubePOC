@@ -1,0 +1,3413 @@
+/*<meta />*/
+
+@namespace MadCap url(http://www.madcapsoftware.com/Schemas/MadCap.xsd);
+
+h1
+{
+	margin-top: 0;
+	font-weight: normal;
+	font-style: normal;
+	background-color: #ffffff;
+	text-decoration: none;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #007e9c;
+	margin: 0;
+	font-size: 160%;
+	margin-bottom: 30px;
+	font-family: Arial, sans-serif;
+	color: #028ccb;
+}
+
+li
+{
+	font-size: 100%;
+	padding-top: 5;
+	font-family: Arial, sans-serif;
+	margin-bottom: 10px;
+}
+
+li p
+{
+	padding: 0;
+	margin: 0 0 .5em 0;
+	font-family: Arial, sans-serif;
+}
+
+li.legend
+{
+	
+}
+
+ul.Bullet_1 > li::marker
+{
+	list-style-image: none;
+	font-family: Arial, sans-serif;
+}
+
+html
+{
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+}
+
+h1.ChapterHeading
+{
+	border-left-style: none;
+	border-left-width: 1px;
+	border-right-style: none;
+	border-right-width: 1px;
+	border-top-style: none;
+	border-top-width: 1px;
+	border-bottom-style: none;
+	border-bottom-width: 1px;
+	font-size: 170%;
+	margin-top: 50px;
+	margin-bottom: 20px;
+}
+
+p
+{
+	mc-hyphenate: never;
+	font-size: 100%;
+	overflow: hidden;
+	margin: 0;
+	padding-bottom: 0;
+	margin-top: 5px;
+	font-family: Arial, sans-serif;
+	margin-bottom: 10px;
+}
+
+p.Note
+{
+	background-repeat: no-repeat;
+	color: #007e9c;
+	color: #000000;
+	background-position-y: center;
+	margin-bottom: 10px;
+	margin-top: 20px;
+	mc-auto-number-format: '{b} {color #028ccb}Note: {/color} {/b} ';
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-left-color: #028ccb;
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-right-color: #028ccb;
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-top-color: #028ccb;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #028ccb;
+	padding-left: 39px;
+	padding-right: 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+	background-image: url('../Images/Template/NoteIconTransparent-SW18112015.png');
+}
+
+p.Code
+{
+	mc-hyphenate: never;
+	font-family: 'Courier New', monospace;
+	margin-bottom: 0;
+}
+
+body
+{
+	font-size: 100%;
+	mc-hyphenate: never;
+	max-width: 100%;
+	margin: 50px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 30px;
+	margin-right: 30px;
+	overflow: auto;
+	font-family: Arial, sans-serif;
+}
+
+h3
+{
+	font-weight: normal;
+	font-style: normal;
+	margin: 0;
+	margin-bottom: 10px;
+	mc-heading-level: 3;
+	font-size: 115%;
+	padding-top: 0;
+	font-family: Arial, sans-serif;
+	color: #028ccb;
+	margin-top: 30px;
+}
+
+h2
+{
+	font-weight: normal;
+	font-style: normal;
+	overflow: hidden;
+	margin: 0;
+	font-size: 140%;
+	font-family: Arial, sans-serif;
+	color: #028ccb;
+	margin-top: 50px;
+	margin-bottom: 20px;
+}
+
+p.Caution
+{
+	color: #000000;
+	font-variant: normal;
+	mc-auto-number-format: '{b} {color #ff6600}Caution: {/color} {/b} ';
+	background-repeat: no-repeat;
+	background-position-x: 5px;
+	background-position-y: center;
+	font-size: 100%;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+	padding-left: 35px;
+	padding-right: 5px;
+	padding-top: 6px;
+	padding-bottom: 6px;
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-left-color: #ff6600;
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-right-color: #ff6600;
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-top-color: #ff6600;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #ff6600;
+	margin: 0px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	background-image: url('../Images/Template/warning16-SW27052015.png');
+}
+
+td.TableWarning
+{
+	font-weight: bold;
+	font-style: normal;
+	font-variant: small-caps;
+	font-size: 11pt;
+	font-family: Calibri;
+	color: #000000;
+	background-color: #ed1c24;
+	vertical-align: middle;
+	text-align: center;
+	padding-left: 0px;
+	padding-right: 0cm;
+	padding-top: 0cm;
+	padding-bottom: 0px;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+}
+
+td.TableCaution
+{
+	font-weight: bold;
+	font-style: normal;
+	font-variant: small-caps;
+	font-size: 11pt;
+	font-family: Calibri;
+	color: #000000;
+	background-color: #ff8000;
+	background-position-y: 0;
+	background-position-x: center;
+	text-align: center;
+	padding-left: 0px;
+	padding-right: 0em;
+	padding-top: 0cm;
+	vertical-align: middle;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+}
+
+td.Table_Body
+{
+	font-size: 11pt;
+	border-left-style: none;
+	border-left-width: 0px;
+	border-left-color: #ffffff;
+	border-right-style: none;
+	border-right-width: 0px;
+	border-right-color: #ffffff;
+	border-top-style: none;
+	border-top-width: 0px;
+	border-top-color: #ffffff;
+	border-bottom-style: none;
+	border-bottom-width: 0px;
+	border-bottom-color: #ffffff;
+	padding-left: 4px;
+	padding-right: 4px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	font-family: Arial, sans-serif;
+}
+
+td.Table_Code
+{
+	font-size: 11pt;
+	font-family: 'Courier New';
+	background-color: #d3d3d3;
+	text-align: center;
+	vertical-align: middle;
+	padding-left: 1em;
+	padding-right: 1.5em;
+	padding-top: 1cm;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+}
+
+MadCap|variable
+{
+	color: #000000;
+	background-color: #ffffff;
+	font-weight: normal;
+	font-style: normal;
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+}
+
+MadCap|variable.LS_PageNumber
+{
+	font-weight: normal;
+	font-style: normal;
+	font-size: 9pt;
+	color: #028ccb;
+	background-color: transparent;
+}
+
+td.PrerequisiteBullet
+{
+	text-align: center;
+	vertical-align: middle;
+	font-weight: bold;
+	font-style: normal;
+	font-size: 11pt;
+	font-family: Calibri;
+	color: #000000;
+	background-color: #d3d3d3;
+	padding-left: 2em;
+	padding-right: 1.5em;
+	padding-top: 1cm;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+}
+
+td.UnorderedList
+{
+	font-size: 11pt;
+	font-family: Calibri;
+	color: #000000;
+	background-color: #d3d3d3;
+	font-weight: bold;
+	font-style: normal;
+	text-align: center;
+	vertical-align: middle;
+	padding-left: 1em;
+	padding-right: 1.5em;
+	padding-top: 1cm;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+}
+
+td.OneStepBullet
+{
+	text-align: center;
+	vertical-align: middle;
+	font-weight: bold;
+	font-style: normal;
+	font-size: 11pt;
+	font-family: Calibri;
+	background-color: #d3d3d3;
+	padding-left: 1em;
+	padding-right: 1.500em;
+	padding-top: 1cm;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+}
+
+td.NumberedList
+{
+	font-weight: bold;
+	font-style: normal;
+	text-align: center;
+	vertical-align: middle;
+	font-size: 11pt;
+	color: #000000;
+	background-color: #d3d3d3;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	padding-top: 1cm;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+}
+
+td.ResultStep
+{
+	background-color: #d3d3d3;
+	font-weight: bold;
+	font-style: normal;
+	font-size: 11pt;
+	font-family: Calibri;
+	text-align: center;
+	vertical-align: middle;
+	padding-left: 1em;
+	padding-right: 1.5em;
+	padding-top: 1cm;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+}
+
+MadCap|variable.FooterTitle
+{
+	font-weight: normal;
+	font-style: normal;
+	font-size: 11pt;
+	color: #000000;
+	background-color: #ffffff;
+}
+
+MadCap|glossaryProxy
+{
+	color: #000000;
+	border-top-width: 0px;
+	margin-top: 0px;
+	background-color: #ffffff;
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+}
+
+MadCap|snippetText
+{
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+}
+
+MadCap|glossaryTerm
+{
+	color: #000000;
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+	font-weight: normal;
+	font-style: italic;
+}
+
+td.GlossaryLink
+{
+	text-align: center;
+	vertical-align: middle;
+	font-weight: bold;
+	font-style: italic;
+	font-size: 11pt;
+	font-family: Calibri;
+	background-color: #d3d3d3;
+	padding-left: 1.001em;
+	padding-right: 1.5em;
+	padding-top: 1cm;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+}
+
+div.GlossaryPageTerm
+{
+	font-size: 100%;
+	font-weight: bold;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+div.GlossaryPageHeading
+{
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #007e9c;
+	font-family: Arial, sans-serif;
+	color: #028ccb;
+	margin-bottom: 10 px;
+	margin-top: 20 px;
+	font-weight: normal;
+}
+
+MadCap|indexProxy
+{
+	color: #000000;
+	border-top-width: 0px;
+	border-top-color: #ffffff;
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+}
+
+p.Index1
+{
+	margin-top: 2.5em;
+	margin-bottom: 2.5em;
+	float: left;
+}
+
+p.IndexHeading
+{
+	text-align: left;
+	color: #007e9c;
+	border-left-style: none;
+	border-left-width: 1px;
+	border-right-style: none;
+	border-right-width: 1px;
+	border-top-style: none;
+	border-top-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	font-family: Calibri, 'Lucida Sans', sans-serif;
+}
+
+MadCap|tocProxy
+{
+	border-top-color: #ffffff;
+	border-top-width: 0px;
+	border-top-style: hidden;
+	padding-top: 0.5cm;
+}
+
+p.TOC1
+{
+	text-align: left;
+	top: 1cm;
+	vertical-align: 1cm;
+	color: #000000;
+	line-height: 1cm;
+	margin-top: 0.5cm;
+}
+
+p.TOC2
+{
+	text-align: left;
+	text-indent: 1cm;
+	margin-left: 0.500cm;
+}
+
+p.TOC3
+{
+	text-align: left;
+	text-indent: 1cm;
+	vertical-align: 1cm;
+	margin-left: 1cm;
+}
+
+p.MiniTOC2
+{
+	margin-left: 2cm;
+}
+
+MadCap|xref.Link_NoPageNumber
+{
+	mc-format: '{paratext}';
+	text-decoration: underline;
+	font-weight: normal;
+	font-style: normal;
+	color: #0000d0;
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+}
+
+h1.LowerHeadNoNumber
+{
+	font-size: 16pt;
+}
+
+h2.NewTopicSameCH
+{
+	
+}
+
+h4
+{
+	font-weight: normal;
+	font-style: normal;
+	margin: 0px;
+	margin-bottom: 10px;
+	font-size: 100%;
+	mc-heading-level: 4;
+	margin-top: 30px;
+	font-family: Arial, sans-serif;
+	color: #028ccb;
+}
+
+p.Indent40px
+{
+	margin-left: 40px;
+}
+
+p.Indent70px
+{
+	margin-left: 70px;
+}
+
+td.Table_Body_Code
+{
+	font-size: 11pt;
+	padding-left: 4px;
+	padding-right: 4px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+	font-family: Arial, sans-serif;
+}
+
+p.Indent60px
+{
+	margin-left: 60px;
+}
+
+p.Indent30px
+{
+	margin-left: 30px;
+}
+
+p.Indent80px
+{
+	margin-left: 80px;
+	font-size: 100%;
+	font-family: Calibri, 'Lucida Sans Unicode', sans-serif;
+}
+
+p.Indent90px
+{
+	margin-left: 90px;
+	font-size: 100%;
+	font-family: Calibri, 'Lucida Sans Unicode', sans-serif;
+}
+
+p.Indent20px
+{
+	margin-left: 20px;
+	font-family: Calibri, 'Lucida Sans Unicode', sans-serif;
+	font-size: 100%;
+}
+
+p.Indent100px
+{
+	margin-left: 100px;
+	font-family: Calibri, 'Lucida Sans', sans-serif;
+}
+
+a.Hyperlink
+{
+	text-decoration: underline;
+	font-weight: normal;
+	font-style: normal;
+	color: #0000d0;
+	font-size: 100%;
+}
+
+p.Indent50px
+{
+	margin-left: 50px;
+}
+
+p.TOC4
+{
+	text-align: left;
+	margin-left: 1.5cm;
+}
+
+p.TOC5
+{
+	margin-left: 2cm;
+}
+
+td.RN_New
+{
+	font-family: Calibri;
+	font-variant: small-caps;
+	color: #ec952b;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	border-bottom-width: .5em;
+	font-size: 11pt;
+	font-weight: normal;
+	font-style: normal;
+}
+
+td.RN_Fix
+{
+	font-variant: small-caps;
+	font-size: 11pt;
+	color: #0aab2b;
+	font-weight: normal;
+	font-style: normal;
+	font-family: Arial, sans-serif;
+}
+
+td.RN_KnownIssue
+{
+	font-variant: small-caps;
+	font-size: 11pt;
+	font-family: Calibri;
+	color: #ff0000;
+}
+
+div.GlossaryPageDefinition
+{
+	margin-left: 0;
+	margin-bottom: 20px;
+}
+
+h1.FrontMatter
+{
+	mc-heading-level: 0;
+}
+
+h3.FrontMatter
+{
+	mc-heading-level: 0;
+}
+
+p.Example
+{
+	mc-auto-number-position: inside-head;
+	padding-bottom: 10px;
+	mc-auto-number-format: '{b}{color: #028ccb}EXAMPLE: {/color}{/b}  ';
+}
+
+ul.ResultBulletPageBreak
+{
+	page-break-before: always;
+	font-size: 100%;
+}
+
+td.Example
+{
+	text-decoration: none;
+	font-size: 11pt;
+	font-family: Calibri;
+	color: #007e9c;
+	font-variant: normal;
+	font-weight: bold;
+	font-style: normal;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	padding-top: 1em;
+	border-left-style: ridge;
+	border-left-width: 1px;
+	border-right-style: ridge;
+	border-right-width: 1px;
+	border-top-style: ridge;
+	border-top-width: 1px;
+	border-bottom-style: ridge;
+	border-bottom-width: 1px;
+}
+
+ul.PrerequisiteBullet
+{
+	font-size: 100%;
+	list-style-image: url('../Images/Template/checkmark-transparent-eh08032016.png');
+}
+
+ul.OneStep > li::marker
+{
+	content: '◊';
+	font-family: Arial, sans-serif;
+}
+
+ul.ResultBullet
+{
+	font-size: 100%;
+	list-style-image: url('../Images/Template/ResultStep.png');
+}
+
+ul.ResultBullet > li::marker
+{
+	content: '»';
+	font-family: Arial, sans-serif;
+}
+
+td.PrerequisiteBullet
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.UnorderedList
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.OneStepBullet
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.NumberedList
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.ResultStep
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+MadCap|variable.FooterTitle
+{
+	
+}
+
+td.GlossaryLink
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+MadCap|xref.Link_NoPageNumber
+{
+	
+}
+
+p.Indent40px
+{
+	
+}
+
+p.Indent70px
+{
+	
+}
+
+td.Table_Body_Code
+{
+	color: #000000;
+	font-family: Arial, Verdana, sans-serif;
+	text-align: left;
+	padding: 4px;
+	text-indent: 0px;
+	font: Arial;
+	font-size: 10pt;
+}
+
+p.Indent60px
+{
+	
+}
+
+p.Indent20px
+{
+	margin-bottom: .5em;
+	margin-top: .5em;
+	font-family: Arial, Verdana, sans-serif;
+	color: #000000;
+	font: Arial;
+	font-size: 10pt;
+}
+
+p.Indent100px
+{
+	margin-bottom: .5em;
+	margin-top: .5em;
+	font-family: Arial, Verdana, sans-serif;
+	color: #000000;
+	font: Arial;
+	font-size: 10pt;
+}
+
+a.Hyperlink
+{
+	
+}
+
+td.RN_New
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.RN_Fix
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	text-align: left;
+}
+
+td.RN_KnownIssue
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	text-align: left;
+}
+
+p.CodeExample
+{
+	font-family: 'Courier New', monospace;
+	border: solid 1px #000000;
+	padding: 5px;
+}
+
+hr
+{
+	height: 1px;
+	border: solid 1px #c0c0c0;
+	border-left-style: none;
+	border-right-style: none;
+	border-top-style: none;
+}
+
+ul.ResultBulletPageBreak > li::marker
+{
+	font-family: Arial, sans-serif;
+}
+
+ul.Bullet_1
+{
+	
+}
+
+td
+{
+	page-break-inside: avoid;
+}
+
+MadCap|glossaryTerm.Hyperlink
+{
+	color: #0000ff;
+	font-weight: normal;
+	text-decoration: underline;
+}
+
+MadCap|pageFooter
+{
+	color: #696969;
+	font-family: Arial, sans-serif;
+	font-size: 80%;
+	text-align: left;
+}
+
+@media print
+{
+	h1
+	{
+		font-size: 20pt;
+		margin-top: 0;
+		font-weight: normal;
+		font-style: normal;
+		background-color: #ffffff;
+		text-decoration: none;
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+		border-bottom-color: #007e9c;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	li
+	{
+		font-size: 11pt;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	ul.Bullet_1 > li::marker
+	{
+		list-style-image: none;
+	}
+
+	html
+	{
+		font-size: 11pt;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	h1.ChapterHeading
+	{
+		border-left-style: none;
+		border-left-width: 1px;
+		border-right-style: none;
+		border-right-width: 1px;
+		border-top-style: none;
+		border-top-width: 1px;
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+		border-bottom-color: #007e9c;
+		mc-auto-number-format: 'CH:{chapnum}. ';
+	}
+
+	p
+	{
+		font-size: 11pt;
+		mc-hyphenate: never;
+		orphans: 3;
+		widows: 3;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	p.Note
+	{
+		background-repeat: no-repeat;
+		mc-auto-number-format: '{b} {color #007e9c}Note: {/color} {/b} ';
+		border-top-left-radius: 5px;
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+		border-bottom-left-radius: 5px;
+		padding-left: 35px;
+		padding-right: 5px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+		border-left-style: solid;
+		border-left-width: 1px;
+		border-left-color: #007e9c;
+		border-right-style: solid;
+		border-right-width: 1px;
+		border-right-color: #007e9c;
+		border-top-style: solid;
+		border-top-width: 1px;
+		border-top-color: #007e9c;
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+		border-bottom-color: #007e9c;
+	}
+
+	p.Code
+	{
+		mc-hyphenate: never;
+		font-family: monospace, 'Courier New';
+	}
+
+	body
+	{
+		font-size: 11pt;
+		margin: 0px;
+		margin-bottom: 10px;
+		margin-right: 10px;
+		margin-top: 13px;
+		margin-left: 10px;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	h3
+	{
+		font-size: 14pt;
+		font-weight: normal;
+		font-style: normal;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	td.TableWarning
+	{
+		font-weight: bold;
+		font-style: normal;
+		font-variant: small-caps;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #ed1c24;
+		vertical-align: middle;
+		text-align: center;
+		padding-left: 0px;
+		padding-right: 0cm;
+		padding-top: 0cm;
+		padding-bottom: 0px;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.TableCaution
+	{
+		font-weight: bold;
+		font-style: normal;
+		font-variant: small-caps;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #ff8000;
+		background-position-y: 0;
+		background-position-x: center;
+		text-align: center;
+		padding-left: 0px;
+		padding-right: 0em;
+		padding-top: 0cm;
+		vertical-align: middle;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.Table_Body
+	{
+		font-size: 11pt;
+		font-family: Calibri;
+		border-left-style: none;
+		border-left-width: 0px;
+		border-left-color: #ffffff;
+		border-right-style: none;
+		border-right-width: 0px;
+		border-right-color: #ffffff;
+		border-top-style: none;
+		border-top-width: 0px;
+		border-top-color: #ffffff;
+		border-bottom-style: none;
+		border-bottom-width: 0px;
+		border-bottom-color: #ffffff;
+		padding-left: 4px;
+		padding-right: 4px;
+		padding-top: 4px;
+		padding-bottom: 4px;
+	}
+
+	td.Table_Code
+	{
+		font-size: 11pt;
+		font-family: 'Courier New';
+		background-color: #d3d3d3;
+		text-align: center;
+		vertical-align: middle;
+		padding-left: 1em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	MadCap|variable
+	{
+		color: #000000;
+		background-color: #ffffff;
+		font-weight: normal;
+		font-style: normal;
+		font-size: 11pt;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	MadCap|variable.LS_PageNumber
+	{
+		font-weight: normal;
+		font-style: normal;
+		font-size: 9pt;
+		color: #028ccb;
+		background-color: transparent;
+	}
+
+	td.PrerequisiteBullet
+	{
+		text-align: center;
+		vertical-align: middle;
+		font-weight: bold;
+		font-style: normal;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #d3d3d3;
+		padding-left: 2em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.UnorderedList
+	{
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #d3d3d3;
+		font-weight: bold;
+		font-style: normal;
+		text-align: center;
+		vertical-align: middle;
+		padding-left: 1em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.OneStepBullet
+	{
+		text-align: center;
+		vertical-align: middle;
+		font-weight: bold;
+		font-style: normal;
+		font-size: 11pt;
+		font-family: Calibri;
+		background-color: #d3d3d3;
+		padding-left: 1em;
+		padding-right: 1.500em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.NumberedList
+	{
+		font-weight: bold;
+		font-style: normal;
+		text-align: center;
+		vertical-align: middle;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #d3d3d3;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.ResultStep
+	{
+		background-color: #d3d3d3;
+		font-weight: bold;
+		font-style: normal;
+		font-size: 11pt;
+		font-family: Calibri;
+		text-align: center;
+		vertical-align: middle;
+		padding-left: 1em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	MadCap|variable.FooterTitle
+	{
+		font-weight: normal;
+		font-style: normal;
+		background-color: #ffffff;
+		color: #878b8e;
+		font-size: 9pt;
+	}
+
+	MadCap|glossaryProxy
+	{
+		font-size: 11pt;
+		color: #000000;
+		border-top-style: hidden;
+		border-top-width: 0px;
+		margin-top: 0px;
+		background-color: #ffffff;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	MadCap|snippetText
+	{
+		font-size: 11pt;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	MadCap|glossaryTerm
+	{
+		font-weight: bold;
+		font-style: italic;
+		font-size: 11pt;
+		color: #000000;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	td.GlossaryLink
+	{
+		text-align: center;
+		vertical-align: middle;
+		font-weight: bold;
+		font-style: italic;
+		font-size: 11pt;
+		font-family: Calibri;
+		background-color: #d3d3d3;
+		padding-left: 1.001em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	div.GlossaryPageTerm
+	{
+		color: #1c78bc;
+	}
+
+	div.GlossaryPageHeading
+	{
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+		border-bottom-color: #007e9c;
+		color: #007e9c;
+	}
+
+	MadCap|indexProxy
+	{
+		font-size: 11pt;
+		color: #000000;
+		border-top-width: 0px;
+		border-top-color: #ffffff;
+	}
+
+	p.Index1
+	{
+		margin-top: 2.5em;
+		margin-bottom: 2.5em;
+		float: left;
+	}
+
+	p.IndexHeading
+	{
+		font-family: Calibri;
+		text-align: left;
+		color: #007e9c;
+		border-left-style: none;
+		border-left-width: 1px;
+		border-right-style: none;
+		border-right-width: 1px;
+		border-top-style: none;
+		border-top-width: 1px;
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+	}
+
+	MadCap|tocProxy
+	{
+		border-top-color: #ffffff;
+		border-top-width: 0px;
+		border-top-style: hidden;
+		padding-top: 0.5cm;
+	}
+
+	p.TOC1
+	{
+		text-align: left;
+		top: 1cm;
+		vertical-align: 1cm;
+		color: #000000;
+		line-height: 1cm;
+		margin-top: 0.5cm;
+	}
+
+	p.TOC2
+	{
+		text-align: left;
+		text-indent: 1cm;
+		margin-left: 0.500cm;
+	}
+
+	p.TOC3
+	{
+		text-align: left;
+		text-indent: 1cm;
+		vertical-align: 1cm;
+		margin-left: 1cm;
+	}
+
+	p.MiniTOC2
+	{
+		margin-left: 2cm;
+	}
+
+	MadCap|xref.Link_NoPageNumber
+	{
+		font-size: 11pt;
+		text-decoration: underline;
+		font-weight: normal;
+		font-style: normal;
+		color: #0000d0;
+		mc-format: '{paratext}';
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	h1.LowerHeadNoNumber
+	{
+		font-size: 16pt;
+	}
+
+	h2.NewTopicSameCH
+	{
+		mc-auto-number-format: '{chapnum}.{secnum} ';
+	}
+
+	h4
+	{
+		font-weight: normal;
+		font-style: normal;
+		font-size: 12pt;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	p.Indent40px
+	{
+		margin-left: 40px;
+	}
+
+	p.Indent70px
+	{
+		margin-left: 70px;
+	}
+
+	td.Table_Body_Code
+	{
+		font-size: 11pt;
+		font-family: 'Courier New';
+		padding-left: 4px;
+		padding-right: 4px;
+		padding-top: 4px;
+		padding-bottom: 4px;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	p.Indent60px
+	{
+		margin-left: 60px;
+	}
+
+	p.Indent30px
+	{
+		margin-left: 30px;
+	}
+
+	p.Indent80px
+	{
+		margin-left: 80px;
+		font-size: 11pt;
+		font-family: Calibri;
+	}
+
+	p.Indent90px
+	{
+		font-size: 11pt;
+		font-family: Calibri;
+		margin-left: 90px;
+	}
+
+	p.Indent20px
+	{
+		font-family: Calibri;
+		margin-left: 20px;
+		font-size: 11pt;
+	}
+
+	p.Indent100px
+	{
+		font-size: 11pt;
+		font-family: Calibri;
+		margin-left: 100px;
+	}
+
+	a.Hyperlink
+	{
+		font-size: 11pt;
+		text-decoration: underline;
+		font-weight: normal;
+		font-style: normal;
+		color: #0000d0;
+	}
+
+	p.Indent50px
+	{
+		margin-left: 50px;
+	}
+
+	p.TOC4
+	{
+		text-align: left;
+		margin-left: 1.5cm;
+	}
+
+	p.TOC5
+	{
+		margin-left: 2cm;
+	}
+
+	td.RN_New
+	{
+		font-family: Calibri;
+		font-variant: small-caps;
+		color: #ec952b;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+		font-size: 11pt;
+		font-weight: normal;
+		font-style: normal;
+	}
+
+	td.RN_Fix
+	{
+		font-variant: small-caps;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #0aab2b;
+		font-weight: normal;
+		font-style: normal;
+	}
+
+	td.RN_KnownIssue
+	{
+		font-variant: small-caps;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #ff0000;
+	}
+
+	div.GlossaryPageDefinition
+	{
+		margin-left: 0;
+	}
+
+	h1.FrontMatter
+	{
+		mc-heading-level: 0;
+	}
+
+	h3.FrontMatter
+	{
+		mc-heading-level: 0;
+	}
+
+	ul.ResultBulletPageBreak
+	{
+		font-size: 11pt;
+		color: #000000;
+		page-break-before: always;
+	}
+
+	td.Example
+	{
+		text-decoration: none;
+		font-size: 11pt;
+		color: #007e9c;
+		font-variant: normal;
+		font-weight: bold;
+		font-style: normal;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		padding-top: 1em;
+		border-left-style: ridge;
+		border-left-width: 1px;
+		border-right-style: ridge;
+		border-right-width: 1px;
+		border-top-style: ridge;
+		border-top-width: 1px;
+		border-bottom-style: ridge;
+		border-bottom-width: 1px;
+	}
+
+	ul.PrerequisiteBullet
+	{
+		list-style-image: url('../Images/Template/CheckMark-EH24112014.png');
+	}
+
+	ul
+	{
+		font-size: 11pt;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	td
+	{
+		font-size: 11pt;
+		vertical-align: top;
+	}
+
+	a
+	{
+		font-size: 11pt;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	tbody
+	{
+		font-size: 11pt;
+	}
+
+	code
+	{
+		font-size: 11pt;
+		font-family: monospace, 'Courier New';
+	}
+
+	ul.OneStep
+	{
+		
+	}
+
+	p.Caution
+	{
+		font-size: 11pt;
+		border-top-left-radius: 5px;
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+		border-bottom-left-radius: 5px;
+		padding-left: 35px;
+		padding-right: 5px;
+		padding-top: 6px;
+		padding-bottom: 6px;
+		border-left-style: solid;
+		border-left-width: 1px;
+		border-left-color: #ff6600;
+		border-right-style: solid;
+		border-right-width: 1px;
+		border-right-color: #ff6600;
+		border-top-style: solid;
+		border-top-width: 1px;
+		border-top-color: #ff6600;
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+		border-bottom-color: #ff6600;
+	}
+
+	img
+	{
+		margin-bottom: 0px;
+	}
+
+	MadCap|xref.RelLinkPageNumber
+	{
+		font-size: 11pt;
+		mc-format: '{u}{color blue}{paratext}{/color}{/u} {pageref}';
+		text-decoration: none;
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	p.ImageNumber
+	{
+		border-left-style: solid;
+		border-left-width: 0px;
+		border-right-style: solid;
+		border-right-width: 0px;
+		border-top-style: solid;
+		border-top-width: 0px;
+		border-bottom-style: solid;
+		border-bottom-width: 0px;
+		border-top-left-radius: 0px;
+		border-top-right-radius: 0px;
+		border-bottom-right-radius: 0px;
+		border-bottom-left-radius: 0px;
+		padding-left: 0px;
+		padding-right: 0px;
+		padding-top: 0px;
+		padding-bottom: 0px;
+		mc-auto-number-format: '({n+}) ';
+	}
+
+	li.ListIndent
+	{
+		font-size: 11pt;
+		margin-left: 50px;
+	}
+
+	h2
+	{
+		mc-auto-number-format: 'CH:{chapnum}.{n+} ';
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	li p
+	{
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	MadCap|xref
+	{
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	ul.ResultBullet
+	{
+		font-size: 11pt;
+	}
+
+	ol
+	{
+		margin-left: 20px;
+	}
+}
+
+ul.PrerequisiteBullet > li > ul
+{
+	list-style-image: none;
+	font-family: Arial, sans-serif;
+}
+
+ul.OneStep > li::marker
+{
+	content: '◊';
+}
+
+ul.ResultBullet
+{
+	
+}
+
+ul.ResultBullet > li::marker
+{
+	content: '»';
+}
+
+td.PrerequisiteBullet
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.UnorderedList
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.OneStepBullet
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.NumberedList
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.ResultStep
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+MadCap|variable.FooterTitle
+{
+	
+}
+
+td.GlossaryLink
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+MadCap|xref.Link_NoPageNumber
+{
+	
+}
+
+p.Indent40px
+{
+	
+}
+
+p.Indent70px
+{
+	
+}
+
+td.Table_Body_Code
+{
+	color: #000000;
+	font-family: Arial, Verdana, sans-serif;
+	text-align: left;
+	padding: 4px;
+	text-indent: 0px;
+	font: Arial;
+	font-size: 10pt;
+}
+
+p.Indent60px
+{
+	
+}
+
+a.Hyperlink
+{
+	
+}
+
+td.RN_New
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+}
+
+td.RN_Fix
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	text-align: left;
+}
+
+td.RN_KnownIssue
+{
+	font-size: .7em;
+	font-family: Verdana, Arial, Helvetica, Sans Serif;
+	margin-left: 0em;
+	padding-left: 1.5em;
+	padding-right: 1em;
+	border-bottom-width: .5em;
+	border-left-width: .5em;
+	border-right-width: .5em;
+	border-top-width: .5em;
+	text-align: left;
+}
+
+@media non-print
+{
+	h1
+	{
+		margin-top: 0;
+		background-color: #ffffff;
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+		border-bottom-color: #007e9c;
+		font-size: 170%;
+		border: none;
+	}
+
+	li
+	{
+		
+	}
+
+	li.legend
+	{
+		
+	}
+
+	ul.Bullet_1 > li::marker
+	{
+		list-style-image: none;
+	}
+
+	html
+	{
+		
+	}
+
+	h1.ChapterHeading
+	{
+		color: #007e9c;
+		color: device-cmyk(1,0.19,0,0.39);
+		border-left-style: none;
+		border-right-style: none;
+		border-top-style: none;
+		border-bottom-style: none;
+		border-bottom-width: 0px;
+		border-bottom-color: #007e9c;
+	}
+
+	p
+	{
+		margin: 0;
+	}
+
+	p.Note
+	{
+		background-repeat: no-repeat;
+		border-left-style: solid;
+		border-left-width: 1px;
+		border-left-color: #007e9c;
+		border-right-style: solid;
+		border-right-width: 1px;
+		border-right-color: #007e9c;
+		border-top-style: solid;
+		border-top-width: 1px;
+		border-top-color: #007e9c;
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+		border-bottom-color: #007e9c;
+		border-top-left-radius: 5px;
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+		border-bottom-left-radius: 5px;
+		padding-left: 50px;
+		padding-right: 5px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+	}
+
+	p.Code
+	{
+		font-family: monospace, 'Courier New';
+	}
+
+	body
+	{
+		max-width: 100%;
+	}
+
+	h3
+	{
+		mc-heading-level: 4;
+		margin-bottom: 10px;
+	}
+
+	h2
+	{
+		mc-auto-number-format: '{chapnum}.{n+} ';
+		margin-bottom: 15px;
+		margin-top: 0px;
+	}
+
+	td.TableWarning
+	{
+		font-weight: bold;
+		font-style: normal;
+		font-variant: small-caps;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #ed1c24;
+		vertical-align: middle;
+		text-align: center;
+		padding-left: 0px;
+		padding-right: 0cm;
+		padding-top: 0cm;
+		padding-bottom: 0px;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.TableCaution
+	{
+		font-weight: bold;
+		font-style: normal;
+		font-variant: small-caps;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #ff8000;
+		background-position-y: 0;
+		background-position-x: center;
+		text-align: center;
+		padding-left: 0px;
+		padding-right: 0em;
+		padding-top: 0cm;
+		vertical-align: middle;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.Table_Body
+	{
+		font-size: 11pt;
+		font-family: Calibri;
+		border-left-style: none;
+		border-left-width: 0px;
+		border-left-color: #ffffff;
+		border-right-style: none;
+		border-right-width: 0px;
+		border-right-color: #ffffff;
+		border-top-style: none;
+		border-top-width: 0px;
+		border-top-color: #ffffff;
+		border-bottom-style: none;
+		border-bottom-width: 0px;
+		border-bottom-color: #ffffff;
+		padding-left: 4px;
+		padding-right: 4px;
+		padding-top: 4px;
+		padding-bottom: 4px;
+	}
+
+	td.Table_Code
+	{
+		font-size: 11pt;
+		font-family: 'Courier New';
+		background-color: #d3d3d3;
+		text-align: center;
+		vertical-align: middle;
+		padding-left: 1em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	MadCap|variable
+	{
+		background-color: #ffffff;
+		font-weight: normal;
+		font-style: normal;
+	}
+
+	MadCap|variable.LS_PageNumber
+	{
+		font-weight: normal;
+		font-style: normal;
+		background-color: #ffffff;
+		font-size: 9pt;
+		color: #878b8e;
+	}
+
+	td.PrerequisiteBullet
+	{
+		text-align: center;
+		vertical-align: middle;
+		font-weight: bold;
+		font-style: normal;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #d3d3d3;
+		padding-left: 2em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.UnorderedList
+	{
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #d3d3d3;
+		font-weight: bold;
+		font-style: normal;
+		text-align: center;
+		vertical-align: middle;
+		padding-left: 1em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.OneStepBullet
+	{
+		text-align: center;
+		vertical-align: middle;
+		font-weight: bold;
+		font-style: normal;
+		font-size: 11pt;
+		font-family: Calibri;
+		background-color: #d3d3d3;
+		padding-left: 1em;
+		padding-right: 1.500em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.NumberedList
+	{
+		font-weight: bold;
+		font-style: normal;
+		text-align: center;
+		vertical-align: middle;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #000000;
+		background-color: #d3d3d3;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	td.ResultStep
+	{
+		background-color: #d3d3d3;
+		font-weight: bold;
+		font-style: normal;
+		font-size: 11pt;
+		font-family: Calibri;
+		text-align: center;
+		vertical-align: middle;
+		padding-left: 1em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	MadCap|variable.FooterTitle
+	{
+		font-weight: normal;
+		font-style: normal;
+		font-size: 11pt;
+		color: #000000;
+		background-color: #ffffff;
+	}
+
+	MadCap|glossaryProxy
+	{
+		border-top-style: hidden;
+		border-top-width: 0px;
+		margin-top: 0px;
+		background-color: #ffffff;
+	}
+
+	MadCap|snippetText
+	{
+		
+	}
+
+	MadCap|glossaryTerm
+	{
+		font-weight: bold;
+		font-style: italic;
+	}
+
+	td.GlossaryLink
+	{
+		text-align: center;
+		vertical-align: middle;
+		font-weight: bold;
+		font-style: italic;
+		font-size: 11pt;
+		font-family: Calibri;
+		background-color: #d3d3d3;
+		padding-left: 1.001em;
+		padding-right: 1.5em;
+		padding-top: 1cm;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	div.GlossaryPageTerm
+	{
+		color: #000000;
+	}
+
+	div.GlossaryPageHeading
+	{
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+		border-bottom-color: #007e9c;
+		color: #007e9c;
+	}
+
+	MadCap|indexProxy
+	{
+		border-top-width: 0px;
+		border-top-color: #ffffff;
+	}
+
+	p.Index1
+	{
+		margin-top: 2.5em;
+		margin-bottom: 2.5em;
+		float: left;
+	}
+
+	p.IndexHeading
+	{
+		font-family: Calibri;
+		text-align: left;
+		color: #007e9c;
+		border-left-style: none;
+		border-left-width: 1px;
+		border-right-style: none;
+		border-right-width: 1px;
+		border-top-style: none;
+		border-top-width: 1px;
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+	}
+
+	MadCap|tocProxy
+	{
+		border-top-color: #ffffff;
+		border-top-width: 0px;
+		border-top-style: hidden;
+		padding-top: 0.5cm;
+	}
+
+	p.TOC1
+	{
+		text-align: left;
+		top: 1cm;
+		vertical-align: 1cm;
+		color: #000000;
+		line-height: 1cm;
+		margin-top: 0.5cm;
+	}
+
+	p.TOC2
+	{
+		text-align: left;
+		text-indent: 1cm;
+		margin-left: 0.500cm;
+	}
+
+	p.TOC3
+	{
+		text-align: left;
+		text-indent: 1cm;
+		vertical-align: 1cm;
+		margin-left: 1cm;
+	}
+
+	p.MiniTOC2
+	{
+		margin-left: 2cm;
+	}
+
+	MadCap|xref.Link_NoPageNumber
+	{
+		mc-format: '{paratext}';
+		text-decoration: underline;
+		font-weight: normal;
+		font-style: normal;
+		color: #0000d0;
+		font-size: 100%;
+	}
+
+	h1.LowerHeadNoNumber
+	{
+		font-size: 16pt;
+	}
+
+	h2.NewTopicSameCH
+	{
+		
+	}
+
+	h4
+	{
+		
+	}
+
+	p.Indent40px
+	{
+		margin-left: 40px;
+	}
+
+	p.Indent70px
+	{
+		margin-left: 70px;
+	}
+
+	td.Table_Body_Code
+	{
+		font-size: 11pt;
+		font-family: 'Courier New';
+		padding-left: 4px;
+		padding-right: 4px;
+		padding-top: 4px;
+		padding-bottom: 4px;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+	}
+
+	p.Indent60px
+	{
+		margin-left: 60px;
+	}
+
+	p.Indent30px
+	{
+		margin-left: 30px;
+	}
+
+	p.Indent20px
+	{
+		font-family: Calibri;
+		margin-left: 20px;
+		font-size: 11pt;
+	}
+
+	p.Indent100px
+	{
+		font-size: 11pt;
+		font-family: Calibri;
+		margin-left: 100px;
+	}
+
+	a.Hyperlink
+	{
+		text-decoration: underline;
+		font-weight: normal;
+		font-style: normal;
+	}
+
+	p.Indent50px
+	{
+		margin-left: 50px;
+	}
+
+	p.TOC4
+	{
+		text-align: left;
+		margin-left: 1.5cm;
+	}
+
+	p.TOC5
+	{
+		margin-left: 2cm;
+	}
+
+	td.RN_New
+	{
+		font-family: Calibri;
+		font-variant: small-caps;
+		color: #ec952b;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		border-bottom-width: .5em;
+		font-size: 11pt;
+		font-weight: normal;
+		font-style: normal;
+	}
+
+	td.RN_Fix
+	{
+		font-variant: small-caps;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #0aab2b;
+		font-weight: normal;
+		font-style: normal;
+	}
+
+	td.RN_KnownIssue
+	{
+		font-variant: small-caps;
+		font-size: 11pt;
+		font-family: Calibri;
+		color: #ff0000;
+	}
+
+	ul.PrerequisiteBullet
+	{
+		list-style-image: url('../Images/Template/checkmark_black-EH18032015.png');
+	}
+
+	ul
+	{
+		margin-bottom: 10px;
+	}
+
+	code
+	{
+		
+	}
+
+	table
+	{
+		font-family: Arial, sans-serif;
+	}
+
+	tbody
+	{
+		font-family: Arial, sans-serif;
+	}
+
+	MadCap|xref
+	{
+		
+	}
+
+	a
+	{
+		font-family: Arial, sans-serif;
+	}
+
+	td
+	{
+		
+	}
+
+	p.Caution
+	{
+		
+	}
+
+	ul.ResultBullet
+	{
+		font-size: 100%;
+	}
+
+	MadCap|breadcrumbsProxy
+	{
+		font-weight: normal;
+		font-style: italic;
+		font-size: 75%;
+		font-family: 'Source Sans Pro';
+		border-bottom-style: none;
+		border-bottom-width: 0px;
+	}
+
+	ul.PrerequisiteBullet
+	{
+		list-style-image: url('../Images/checkmark_black-EH18032015.png');
+	}
+
+	ul.PrerequisiteBullet > li > ul
+	{
+		list-style-image: none;
+	}
+
+	ul.OneStep > li::marker
+	{
+		content: '◊';
+	}
+
+	ul.ResultBullet
+	{
+		
+	}
+
+	ul.ResultBullet > li::marker
+	{
+		content: '»';
+	}
+
+	td.PrerequisiteBullet
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-bottom-width: .5em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+	}
+
+	td.UnorderedList
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-bottom-width: .5em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+	}
+
+	td.OneStepBullet
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-bottom-width: .5em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+	}
+
+	td.NumberedList
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-bottom-width: .5em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+	}
+
+	td.ResultStep
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-bottom-width: .5em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+	}
+
+	MadCap|variable.FooterTitle
+	{
+		
+	}
+
+	td.GlossaryLink
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-bottom-width: .5em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+	}
+
+	MadCap|xref.Link_NoPageNumber
+	{
+		
+	}
+
+	p.Indent40px
+	{
+		
+	}
+
+	p.Indent70px
+	{
+		
+	}
+
+	td.Table_Body_Code
+	{
+		color: #000000;
+		font-family: Arial, Verdana, sans-serif;
+		text-align: left;
+		padding: 4px;
+		text-indent: 0px;
+		font: Arial;
+		font-size: 10pt;
+	}
+
+	p.Indent20px
+	{
+		margin-bottom: .5em;
+		margin-top: .5em;
+		font-family: Arial, Verdana, sans-serif;
+		color: #000000;
+		font: Arial;
+		font-size: 10pt;
+	}
+
+	p.Indent100px
+	{
+		margin-bottom: .5em;
+		margin-top: .5em;
+		font-family: Arial, Verdana, sans-serif;
+		color: #000000;
+		font: Arial;
+		font-size: 10pt;
+	}
+
+	a.Hyperlink
+	{
+		
+	}
+
+	td.RN_New
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-bottom-width: .5em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+	}
+
+	td.RN_Fix
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-bottom-width: .5em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		text-align: left;
+	}
+
+	td.RN_KnownIssue
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		border-bottom-width: .5em;
+		border-left-width: .5em;
+		border-right-width: .5em;
+		border-top-width: .5em;
+		text-align: left;
+	}
+
+	ul.ResultBulletPageBreak
+	{
+		list-style-type: disc;
+	}
+
+	ul.ResultBulletPageBreak > li::marker
+	{
+		font-family: Calibri;
+		font-size: 11pt;
+		font-weight: normal;
+		font-style: normal;
+		content: '»';
+	}
+
+	td.Example
+	{
+		font-size: .7em;
+		font-family: Verdana, Arial, Helvetica, Sans Serif;
+		margin-left: 0em;
+		padding-left: 1.5em;
+		padding-right: 1em;
+		background-color: #bebebe;
+		text-decoration: underline;
+		font-weight: normal;
+		font-style: normal;
+		color: #0000d0;
+		border-left-style: ridge;
+		border-left-width: 1px;
+		border-left-color: ;
+		border-right-style: ridge;
+		border-right-width: 1px;
+		border-right-color: ;
+		border-top-style: ridge;
+		border-top-width: 1px;
+		border-top-color: ;
+		border-bottom-style: ridge;
+		border-bottom-width: 1px;
+		border-bottom-color: ;
+	}
+
+	table.LegendTable
+	{
+		width: 100%;
+		border-spacing: 0px 0px;
+		border-left-style: none;
+		border-left-width: 1px;
+		border-left-color: ;
+		border-right-style: none;
+		border-right-width: 1px;
+		border-right-color: ;
+		border-top-style: none;
+		border-top-width: 1px;
+		border-top-color: ;
+		border-bottom-style: none;
+		border-bottom-width: 1px;
+		border-bottom-color: ;
+	}
+
+	p.ImageCaption
+	{
+		margin-bottom: .5em;
+		margin-top: .5em;
+		color: #007e9c;
+		font-weight: bold;
+		font-size: 10pt;
+	}
+
+	ul
+	{
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	td
+	{
+		font-family: Calibri, Arial, sans-serif;
+	}
+
+	tbody
+	{
+		font-family: Calibri, Arial, sans-serif;
+		font-size: 100%;
+	}
+
+	a
+	{
+		font-size: 100%;
+		font-family: 'Source Sans Pro';
+	}
+
+	code
+	{
+		font-family: monospace, 'Courier New';
+		font-size: 100%;
+	}
+
+	table
+	{
+		font-family: Calibri, Arial, sans-serif;
+		font-size: 100%;
+	}
+
+	MadCap|xref
+	{
+		font-size: 100%;
+		font-family: 'Source Sans Pro';
+	}
+
+	div
+	{
+		mc-hyphenate: never;
+		max-width: 100%;
+		font-size: 100%;
+	}
+
+	p.Or
+	{
+		margin-left: 20px;
+		mc-auto-number-format: '- Or - ';
+	}
+
+	p.Tip
+	{
+		background-repeat: no-repeat;
+		background-position-x: 5px;
+		background-position-y: center;
+		mc-auto-number-format: '{b} {color #007e9c}Tip: {/color} {/b} ';
+		border-top-left-radius: 5px;
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+		border-bottom-left-radius: 5px;
+		padding-left: 35px;
+		padding-right: 5px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+		border-left-style: solid;
+		border-left-width: 1px;
+		border-left-color: #007e9c;
+		border-right-style: solid;
+		border-right-width: 1px;
+		border-right-color: #007e9c;
+		border-top-style: solid;
+		border-top-width: 1px;
+		border-top-color: #007e9c;
+		border-bottom-style: solid;
+		border-bottom-width: 1px;
+		border-bottom-color: #007e9c;
+	}
+
+	p.IssueNumber
+	{
+		color: #007e9c;
+	}
+
+	ul.Bullet_1
+	{
+		font-size: 100%;
+	}
+
+	ul.OneStep
+	{
+		font-size: 100%;
+	}
+
+	a.MCBreadcrumbsLink
+	{
+		font-style: italic;
+		font-size: 100%;
+		font-family: 'Gill Sans MT', Calibri, 'Source Sans Pro', sans-serif;
+	}
+
+	MadCap|breadcrumbsProxy
+	{
+		font-family: 'Source Sans Pro';
+		font-style: italic;
+		font-size: 75%;
+	}
+
+	MadCap|menuProxy
+	{
+		margin-right: 0px;
+	}
+
+	h2.HTML
+	{
+		mc-auto-number-format: '{ }';
+	}
+
+	h1.HTML
+	{
+		font-family: 'Gill Sans MT', Calibri, 'Source Sans Pro', sans-serif;
+	}
+
+	img
+	{
+		margin-bottom: 10px;
+	}
+}
+
+a
+{
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+}
+
+MadCap|miniTocProxy
+{
+	float: right;
+}
+
+MadCap|menuProxy
+{
+	float: right;
+	display: block;
+	mc-master-page: url('../MasterPages/OtherTopics.flmsp');
+}
+
+div
+{
+	
+}
+
+div.Right
+{
+	float: right;
+}
+
+MadCap|xref
+{
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+}
+
+html.MiniTOC
+{
+	mc-master-page: url('../MasterPages/OtherTopics_MiniTOC.flmsp');
+}
+
+h2.HTML
+{
+	font-style: normal;
+	font-size: 140%;
+	overflow: hidden;
+	font-family: 'Gill Sans MT', Calibri, 'Source Sans Pro', sans-serif;
+	margin-bottom: 10px;
+}
+
+h1.HTML
+{
+	border-bottom-style: none;
+}
+
+ul.OneStep
+{
+	padding-bottom: 0px;
+	list-style-image: url('../Images/Template/OneStep-EH19032015.png');
+}
+
+MadCap|breadcrumbsProxy
+{
+	border-bottom-style: none;
+	color: #696969;
+	font-size: 80%;
+	width: auto;
+	padding-top: 0px;
+	float: left;
+	padding-bottom: 0px;
+	margin-bottom: 0px;
+	font-family: Arial, sans-serif;
+}
+
+ul
+{
+	margin: 0;
+	margin-left: 20px;
+	font-size: 100%;
+	padding-bottom: 0;
+	font-family: Arial, sans-serif;
+	margin-top: 0;
+	margin-bottom: 15px;
+}
+
+table
+{
+	margin-bottom: 10px;
+}
+
+img
+{
+	padding: 0px;
+	padding-top: 0px;
+	mc-thumbnail-max-height: auto;
+	overflow: auto;
+	margin-bottom: 0;
+	margin-top: 0;
+}
+
+ol
+{
+	margin: 0;
+	margin-top: 0px;
+	margin-left: 0px;
+	margin-bottom: 20px;
+}
+
+p.Tip
+{
+	color: #000000;
+	background-repeat: no-repeat;
+	background-position-y: center;
+	margin-bottom: 10px;
+	margin-top: 20px;
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-left-color: #028ccb;
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-right-color: #028ccb;
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-top-color: #028ccb;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #028ccb;
+	mc-auto-number-format: '{b} {color #028ccb}Tip: {/color} {/b} ';
+	padding-left: 39px;
+	padding-right: 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+	background-image: url('../Images/Template/tip16-SW27052015.png');
+}
+
+p.IssueNumber
+{
+	color: #007e9c;
+}
+
+MadCap|xref.RelLinkPageNumber
+{
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	mc-format: '{color blue}{u}{paratext}{/u}{/color}';
+	text-decoration: none;
+	font-family: Arial, sans-serif;
+}
+
+p.ImageCaption
+{
+	color: #007e9c;
+}
+
+li.ListIndent
+{
+	font-size: 100%;
+	margin-bottom: 15px;
+	mc-hyphenate: never;
+	margin-left: 60px;
+}
+
+MadCap|conceptLink
+{
+	mc-help-control-display: list;
+	mc-label: 'Related topics';
+	color: #000000;
+	font-weight: bold;
+}
+
+p.Or
+{
+	mc-auto-number-format: '- Or - ';
+	padding-left: 30px;
+	margin-bottom: 10px;
+	margin-top: 10px;
+}
+
+h4.FrontMatter
+{
+	mc-heading-level: 0;
+}
+
+img.ListSpacing
+{
+	padding-bottom: 0px;
+	padding-top: 10px;
+}
+
+img.LargeImages
+{
+	mc-thumbnail: popup;
+	mc-thumbnail-max-height: 48px;
+}
+
+MadCap|relationshipsHeading
+{
+	font-weight: 100;
+	mc-help-control-display: list;
+	mc-label: 'Related topics:';
+	font-size: 80%;
+}
+
+MadCap|relationshipsItem
+{
+	mc-help-control-display: list;
+	font-size: 100%;
+}
+
+MadCap|relationshipsProxy
+{
+	border: none 1px #696969;
+	border-bottom-color: #ffffff;
+	float: none;
+}
+
+MadCap|relationshipsHeading.task
+{
+	font-size: 100%;
+	font-weight: normal;
+	mc-label: 'Related topics';
+}
+
+MadCap|relationshipsHeading.reference
+{
+	font-size: 100%;
+	font-weight: normal;
+	mc-label: 'FAQs';
+}
+
+MadCap|relationshipsHeading.concept
+{
+	font-size: 100%;
+	font-weight: normal;
+	mc-label: 'Related concepts';
+}
+
+MadCap|topicToolbarProxy
+{
+	float: right;
+	padding: 0px;
+	border-spacing: 0;
+	vertical-align: top;
+	padding-top: 0px;
+}
+
+MadCap|dropDownHead
+{
+	color: #000000;
+}
+
+MadCap|dropDownHotspot
+{
+	font-size: 90%;
+	color: #0000ff;
+	text-decoration: underline;
+	margin-bottom: 10px;
+}
+
+div.GlossaryPageEntry
+{
+	font-weight: bold;
+	margin-bottom: 10 px;
+	margin-top: 20 px;
+}
+
+a.GlossaryPageTerm
+{
+	font-weight: bold;
+}
+
+h4.Indented
+{
+	margin-left: 40px;
+}
+
+h4.FrontMatterIndented
+{
+	mc-heading-level: 0;
+	margin-left: 40px;
+}
+
+MadCap|helpControlMenuItem
+{
+	font-family: Arial, sans-serif;
+}
+
+MadCap|slideshowCaption
+{
+	font-family: Arial, sans-serif;
+}
+
+code
+{
+	font-family: 'Courier New', monospace;
+	font-size: 100%;
+}
+
+pre
+{
+	font-family: 'Courier New', monospace;
+}
+
+@media only screen and (max-width: 764px)
+{
+	p.CodeExample
+	{
+		font-family: 'Courier New', monospace;
+		border: solid 1px #000000;
+	}
+}
+
+.indent1
+{
+	
+}
+
+.indent2
+{
+	
+}
+
+code.indent1
+{
+	
+}
+
+p.CodeIndent1
+{
+	font-family: 'Courier New', monospace;
+	margin-left: 70px;
+	margin-bottom: 0;
+	margin-top: 0;
+}
+
+p.CodeIndent2
+{
+	font-family: 'Courier New', monospace;
+	margin-left: 150px;
+	margin-bottom: 0;
+	margin-top: 0;
+}
+
+p.CodeIndent3
+{
+	font-family: 'Courier New', monospace;
+	margin-bottom: 0;
+	margin-top: 0;
+	margin-left: 220px;
+}
+
+h3.parameters
+{
+	font-weight: normal;
+	font-style: normal;
+	color: #007e9c;
+	color: device-cmyk(1,0.19,0,0.39);
+	margin: 0;
+	mc-heading-level: 3;
+	font-size: 115%;
+	font-family: Calibri, 'Lucida Sans', sans-serif;
+	margin-top: 30px;
+	padding-top: 0;
+	margin-bottom: -10px;
+}
+
+p.CodeIndent4
+{
+	font-family: 'Courier New', monospace;
+	margin-bottom: 0;
+	margin-top: 0;
+	margin-left: 300px;
+}
+
+p.CodeIndent5
+{
+	font-family: 'Courier New', monospace;
+	margin-bottom: 0;
+	margin-top: 0;
+	margin-left: 360px;
+}
+
+p.CodeIndent6
+{
+	font-family: 'Courier New', monospace;
+	margin-bottom: 0;
+	margin-top: 0;
+	margin-left: 400px;
+}
+
+p.Video
+{
+	background-repeat: no-repeat;
+	color: #007e9c;
+	color: #000000;
+	background-position-y: center;
+	margin-bottom: 10px;
+	margin-top: 20px;
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	padding-right: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+	border-bottom-color: #012339;
+	border-left-color: #012339;
+	border-right-color: #012339;
+	border-top-color: #012339;
+	background-image: url('../Images/Template/play-video.png');
+	margin-left: 0;
+	mc-auto-number-format: '{b} {color #012339}Video: {/color} {/b} ';
+	padding-left: 39px;
+	padding-bottom: 5px;
+	padding-top: 5px;
+}
+
+img.img-inline
+{
+	padding: 0px;
+	padding-top: 0px;
+	mc-thumbnail-max-height: auto;
+	overflow: auto;
+	vertical-align: baseline;
+	margin-bottom: 0;
+	margin-top: -10px;
+	padding-right: 8px;
+	padding-left: 8px;
+}
+
+img.img-vpadded
+{
+	padding: 0px;
+	padding-top: 0px;
+	mc-thumbnail-max-height: auto;
+	overflow: auto;
+	margin-bottom: 10px;
+	margin-top: 10px;
+}
+
+img.img-inline-header
+{
+	padding: 0px;
+	padding-top: 0px;
+	mc-thumbnail-max-height: auto;
+	overflow: auto;
+	margin-bottom: 0;
+	padding-right: 8px;
+	vertical-align: text-top;
+	padding-left: 0;
+	margin-top: -6px;
+}
+
+ol.ol-list-padded
+{
+	margin: 0;
+	margin-left: 0px;
+	margin-bottom: 20px;
+	list-style-type: lower-alpha;
+	margin-top: 10px;
+}
+
+ul.ul-top-padding
+{
+	margin: 0;
+	margin-left: 20px;
+	font-size: 100%;
+	padding-bottom: 0;
+	font-family: Arial, sans-serif;
+	margin-bottom: 15px;
+	margin-top: 10px;
+}
+
+ol.ol-top-padding
+{
+	margin: 0;
+	margin-left: 0px;
+	margin-bottom: 20px;
+	margin-top: 10px;
+}
+

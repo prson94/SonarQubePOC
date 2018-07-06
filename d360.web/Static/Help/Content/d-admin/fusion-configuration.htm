@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide|Configuring data ingestion with Fusion">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Creating a Fusion configuration</title>
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
+        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        </script>
+    </head>
+    <body>
+        <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/fusion-configuration.htm">Open topic with navigation</a>
+        </p>
+        <h2><a name="Creating2"></a>Creating a Fusion configuration</h2>
+        <p>Once you have created a fusion type, the next step is to create a fusion configuration.</p>
+        <ol>
+            <li value="1">From the <b>Administration</b> menu on the left of the screen, select <b>Fusion</b>.</li>
+            <li value="2">On the <b>Fusion</b> page, click the <b>Add</b> button in the top right corner of the <b>Configurations</b> panel:<p>&#160;</p><p><img src="../Resources/Images/admin/fusion4.png" title="Fusion configuration" alt="Fusion configuration" style="max-width: 800px;" /></p></li>
+            <li value="3">In the <b>New Fusion Configuration</b> panel, enter a <b>Name </b>.</li>
+            <li value="4">Optionally, enter a <b>Description</b>.</li>
+            <li value="5">Optionally, select  <b>Manual Process?</b>. If this option is selected, a spreadsheet upload icon is displayed in the sidebar on the <b>Fusion</b> page. This allows you to upload Fusion attribute content (similar to a bulk load operation).<p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>If the Fusion agent is running, the <b>Manual Process?</b> option also marks the configuration as not available which prevents any scheduled executions from running.</p></li>
+            <li value="6">Select <b>Enabled?</b>. <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>If you do not select <b>Enabled?</b>, the configuration will not execute.</p></li>
+            <li value="7">From the <b>Interval Type</b> list, select an interval option. Choose from: <ul class="ul-top-padding"><li value="1">Minute(s)</li><li value="2">Hour(s)</li></ul></li>
+            <li value="8">
+                <p>In the <b>Interval</b> field, enter an appropriate integer for the interval timing, e.g. enter <code>1 </code>to run the configuration once every hour or minute.</p>
+                <p class="Caution" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #ff6600;&quot; class=&quot;mcFormatColor&quot;&gt;Caution: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #ff6600;" class="mcFormatColor">Caution: </span> </b> </span></span>When configuring this connection, it is important to keep in mind how the connection will affect the entire system. It is highly recommended that you schedule jobs with a reasonable interval, taking into account how often data is updated. Infogix Data3Sixty Govern is scheduled to execute a job prior to the start of the business day so that data is current with the previous day's business processing. While it is possible to schedule this job to execute every minute, it is highly discouraged, as this can adversely affect system performance.</p>
+            </li>
+            <li value="9">From the <b>Owners</b> list,  select <code>Application : Infogix Data3Sixty</code>. This is an internal owner that facilitates the data flow in Infogix Data3Sixty.</li>
+            <li value="10">Click <b>Save</b> to create your new fusion configuration. Any custom fields that you created for the fusion type should be visible. </li>
+        </ol>
+        <p><b style="color: #ff0000;">[TODO: UI no longer matches the existing integration guide. There are no Environment Name, Instance URL or Tenant ID fields. Do these options need to be configured elsewhere?]</b>
+        </p>
+        <p>&#160;</p>
+        <p>Next topic: <a href="fusion-rule.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Creating a Fusion rule</a></p>
+        <p>&#160;</p>
+    </body>
+</html>

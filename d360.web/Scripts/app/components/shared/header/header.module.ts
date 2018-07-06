@@ -21,6 +21,7 @@ import { HeaderBreadcrumbComponent } from './header-breadcrumb.component';
 import { HeaderTypeaheadSearchComponent } from './header-typeahead-search.component';
 import { HeaderFavoritesComponent } from './header-favorites.component';
 import { HeaderFollowComponent } from './header-follow.component';
+import { HeaderHelpComponent } from './header-help.component';
 import { HeaderComponent } from './header.component';
 import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { HeaderShoppingCartComponent } from './header-shopping-cart.component';
@@ -48,6 +49,7 @@ import { HeaderProfileComponent } from './header-profile.component';
         HeaderBreadcrumbItemComponent,
         HeaderBreadcrumbComponent,
         HeaderTypeaheadSearchComponent,
+        HeaderHelpComponent,
         HeaderFavoritesComponent,
         HeaderFollowComponent,
         HeaderComponent,

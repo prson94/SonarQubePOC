@@ -84,6 +84,10 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
 
+    //static content routes
+    static SITE_URL_STATIC_USER_GUIDE = "static/help/Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
+    static SITE_URL_STATIC_ADMIN_GUIDE = "static/help/Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
+
     static getDefaultRoute() {
         if (ResourceHomePage != null && ResourceHomePage != "" && ResourceHomePage != '/') {
             return ResourceHomePage;

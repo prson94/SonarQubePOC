@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Establishing responsibilities</title>
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
+        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        </script>
+    </head>
+    <body>
+        <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/establishing-responsibilities.htm">Open topic with navigation</a>
+        </p>
+        <h1 class="ChapterHeading">Establishing responsibilities</h1>
+        <p>A responsibility in <b>Infogix Data3Sixty</b> can be thought of as a user role. Responsibility Types identify the types of responsibility and to what objects those responsibilities are relevant to. It can indicate ownership or other responsibilities related to those objects they are assigned, including workflows.</p>
+        <p>&#160;</p>
+        <p>There are 3 steps to enabling  users or groups to own or access certain objects:</p>
+        <ul>
+            <li value="1">Step 1 - Define a responsibility, see <a href="#Creating" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Creating a new responsibility type</a>.</li>
+            <li value="2">Step 2 - Indicate the permissions of the responsibility on the associated objects, see <a href="assigning-permissions.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Assigning permissions</a>.</li>
+            <li value="3">Step 3 - Assign users or groups to the responsibility, see <a href="granting-entitlements-by-rule.htm#Assignin" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Assigning users or groups to responsibilities</a>.</li>
+        </ul>
+        <h3>Overview of the Responsibility Types page</h3>
+        <p>
+            <img src="../Resources/Images/admin/responsibility-types_800x247.png" title="Responsibility Types" alt="Responsibility Types" style="width: 800;height: 247;" />
+        </p>
+        <h4 class="FrontMatter">1. Administration menu</h4>
+        <p>To open the <b>Responsibility Types</b> page, click the <b>Administration</b> icon on the left of the screen, then select <b>Responsibilities</b>.</p>
+        <h4 class="FrontMatter">2. Responsibility types</h4>
+        <p>The <b>Responsibility Types</b> panel lists the default <b>Infogix Data3Sixty</b> user roles, as well as any new responsibility types you have created, see <a href="#Creating" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Creating a new responsibility type</a>.</p>
+        <h4 class="FrontMatter">3. Assigned assets</h4>
+        <p>When you highlight a responsibility, you will see the corresponding assets that belong to that responsibility in the panel on the right of the screen.</p>
+        <h4>4. Ownership rules</h4>
+        <p>From the <b>Rules</b> panel you can assign access to assets to users or groups. </p>
+        <h2><a name="Creating"></a>Creating a new responsibility type</h2>
+        <p>There are three default responsibilities:</p>
+        <ul>
+            <li value="1"><b>Business Owner</b> - Arbiter of the definition of a data asset.</li>
+            <li value="2"><b>Data Steward</b> - Responsible for the management and fitness of data assets.</li>
+            <li value="3"><b>Technical Custodian</b> - Responsible for the technical environment and database structure.</li>
+        </ul>
+        <p>&#160;</p>
+        <p>You can use these default responsibilities in your <b>Infogix Data3Sixty</b> setup, or you can edit them to match specific titles in use at your organization. Or, you can create a completely new responsibility type:</p>
+        <p>&#160;</p>
+        <ol>
+            <li value="1">Click the <b>Add</b> button in the top right corner of the <b>Responsibility Types</b> panel.<p>&#160;</p><p><img src="../Resources/Images/admin/add-responsibility.png" /></p></li>
+            <li value="2">In the <b>Add Role</b> panel, enter a <b>Name</b> for the new responsibility type, for example, "Report Viewer".</li>
+            <li value="3">From the <b>Responsibility Allocated To</b> list, select the assets that you want to associate with the selected role. For example, you may want to make anyone who is assigned the role of "Report Viewer" responsible for Report artifacts.</li>
+            <li value="4">In the <b>Description</b> field, type an overview of the responsibility, for example, "Individual is able to view reports". </li>
+            <li value="5">Click <b>Save</b> to submit your changes.</li>
+        </ol>
+        <p>You can assign permissions to a responsibility to indicate whether a person who has that responsibility can simply view the items that they are responsible for, or whether they can create them, update them or delete them, see <a href="assigning-permissions.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Assigning permissions</a>.</p>
+        <p>&#160;</p>
+        <p>&#160;</p>
+    </body>
+</html>

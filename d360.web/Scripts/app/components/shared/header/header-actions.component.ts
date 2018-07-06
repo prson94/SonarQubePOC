@@ -19,7 +19,7 @@ declare var CompanySettings;
                     <li *ngIf="headerActionsService.showFavorite && !isAdminUrl" style="cursor: pointer"><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
                     <li *ngIf="headerActionsService.showFavorite && !isAdminUrl" style="cursor: pointer"><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
                     <li *ngIf="headerActionsService.showFollow  && !isAdminUrl" style="cursor: pointer"><d3s-header-follow></d3s-header-follow></li>                    
-                    <li *ngIf="headerActionsService.showHelp"><a routerLink="help" class="help" title="Get help!"><i class="fa fa-question-circle"></i></a></li>
+                    <li *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
                     <li *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
                     <li *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
                     <li><a href="/slo" title="Sign out"><i class="fa fa-sign-out"></i></a></li>

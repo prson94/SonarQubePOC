@@ -1,0 +1,601 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<MadCapLog Protocol="2" Description="MadCap Flare 2018 Generated Govern help.fltar" Date="2018-07-05T16:10:54.8178263+01:00">
+    <Messages>Compiling target Govern help...
+Removing previously generated content...
+Error validating conditional expression: Unrecognized tag: Default.ToImport
+Loading skin info...
+Gathering Glossary information...
+Gathering Auto-index information...
+Loading Master TOC...
+Processing Master TOC...
+Collecting linked (merged) help system info...
+Generating Glossary...
+Collecting source files...
+Processing source files...
+Processing CSS: Resources\TableStyles\PatternedRows.css...
+Generating output files...
+Processing topic: c-user-guide\user-guide.htm...
+Processing CSS: Resources\Stylesheets\Default_Lavastorm.css...
+Missing linked source file: C:\Perforce\lavastorm\src\trunk\doc\flare\infogix-help-source\Content\Resources\Images\checkmark_black-EH18032015.png
+Missing linked source file: C:\Perforce\lavastorm\src\trunk\doc\flare\infogix-help-source\Content\Resources\MasterPages\OtherTopics_MiniTOC.flmsp
+Missing linked source file: C:\Perforce\lavastorm\src\trunk\doc\flare\infogix-help-source\Content\Resources\Images\Template\OneStep-EH19032015.png
+Generated c-user-guide\user-guide.htm
+Processing topic: c-user-guide\ui-overview.htm...
+Generated c-user-guide\ui-overview.htm
+Processing topic: c-user-guide\intro-to-assets.htm...
+Generated c-user-guide\intro-to-assets.htm
+Processing topic: c-user-guide\artifacts.htm...
+Generated c-user-guide\artifacts.htm
+Processing topic: c-user-guide\browsing-artifacts.htm...
+Generated c-user-guide\browsing-artifacts.htm
+Processing topic: c-user-guide\browsing-home.htm...
+Generated c-user-guide\browsing-home.htm
+Processing topic: c-user-guide\filtering-exporting-assets.htm...
+Generated c-user-guide\filtering-exporting-assets.htm
+Processing topic: c-user-guide\searching-assets.htm...
+Generated c-user-guide\searching-assets.htm
+Processing topic: c-user-guide\inspecting-assets.htm...
+Generated c-user-guide\inspecting-assets.htm
+Processing topic: c-user-guide\adding-artifacts.htm...
+Generated c-user-guide\adding-artifacts.htm
+Processing topic: c-user-guide\developing-artifacts.htm...
+Generated c-user-guide\developing-artifacts.htm
+Processing topic: c-user-guide\assigning-ownership.htm...
+Generated c-user-guide\assigning-ownership.htm
+Processing topic: c-user-guide\defining-relationships.htm...
+Generated c-user-guide\defining-relationships.htm
+Processing topic: c-user-guide\models.htm...
+Generated c-user-guide\models.htm
+Processing topic: c-user-guide\browsing-models.htm...
+Generated c-user-guide\browsing-models.htm
+Processing topic: c-user-guide\editing-models.htm...
+Generated c-user-guide\editing-models.htm
+Processing topic: c-user-guide\grouping-using-models.htm...
+Generated c-user-guide\grouping-using-models.htm
+Processing topic: c-user-guide\ownership-via-models.htm...
+Generated c-user-guide\ownership-via-models.htm
+Processing topic: c-user-guide\quality-rules.htm...
+Generated c-user-guide\quality-rules.htm
+Processing topic: c-user-guide\browsing-quality-rules.htm...
+Generated c-user-guide\browsing-quality-rules.htm
+Processing topic: c-user-guide\editing-quality-rules.htm...
+Generated c-user-guide\editing-quality-rules.htm
+Processing topic: c-user-guide\relating-quality-rules.htm...
+Generated c-user-guide\relating-quality-rules.htm
+Processing topic: c-user-guide\policies.htm...
+Generated c-user-guide\policies.htm
+Processing topic: c-user-guide\browsing-policies.htm...
+Generated c-user-guide\browsing-policies.htm
+Processing topic: c-user-guide\editing-policies.htm...
+Generated c-user-guide\editing-policies.htm
+Processing topic: c-user-guide\relating-policies.htm...
+Generated c-user-guide\relating-policies.htm
+Processing topic: c-user-guide\following-workflows.htm...
+Generated c-user-guide\following-workflows.htm
+Processing topic: c-user-guide\collaborating-on-assets.htm...
+Generated c-user-guide\collaborating-on-assets.htm
+Processing topic: c-user-guide\community.htm...
+Generated c-user-guide\community.htm
+Processing topic: c-user-guide\following-assets.htm...
+Generated c-user-guide\following-assets.htm
+Processing topic: c-user-guide\discussing-assets.htm...
+Generated c-user-guide\discussing-assets.htm
+Processing topic: c-user-guide\raising-issues.htm...
+Generated c-user-guide\raising-issues.htm
+Processing topic: c-user-guide\impact-analysis.htm...
+Generated c-user-guide\impact-analysis.htm
+Processing topic: c-user-guide\inspecting-lineage.htm...
+Generated c-user-guide\inspecting-lineage.htm
+Processing topic: d-admin\business-lineage.htm...
+Generated d-admin\business-lineage.htm
+Processing topic: d-admin\bulk-load-template.htm...
+Generated d-admin\bulk-load-template.htm
+Processing topic: d-admin\admin-intro.htm...
+Generated d-admin\admin-intro.htm
+Processing topic: d-admin\managing-users-groups.htm...
+Generated d-admin\managing-users-groups.htm
+Processing topic: d-admin\configuring-active-directory.htm...
+Generated d-admin\configuring-active-directory.htm
+Processing topic: d-admin\azure-active-directory.htm...
+Generated d-admin\azure-active-directory.htm
+Processing topic: d-admin\managing-users.htm...
+Generated d-admin\managing-users.htm
+Processing topic: d-admin\managing-groups.htm...
+Generated d-admin\managing-groups.htm
+Processing topic: d-admin\establishing-responsibilities.htm...
+Generated d-admin\establishing-responsibilities.htm
+Processing topic: d-admin\assigning-permissions.htm...
+Generated d-admin\assigning-permissions.htm
+Processing topic: d-admin\granting-entitlements-by-rule.htm...
+Generated d-admin\granting-entitlements-by-rule.htm
+Processing topic: d-admin\establishing-metamodel.htm...
+Generated d-admin\establishing-metamodel.htm
+Processing topic: d-admin\establishing-artifacts.htm...
+Generated d-admin\establishing-artifacts.htm
+Processing topic: d-admin\defining-fields.htm...
+Generated d-admin\defining-fields.htm
+Processing topic: d-admin\establishing-attributes.htm...
+Generated d-admin\establishing-attributes.htm
+Processing topic: c-user-guide\reference-lists.htm...
+Generated c-user-guide\reference-lists.htm
+Processing topic: c-user-guide\browsing-reference-lists.htm...
+Generated c-user-guide\browsing-reference-lists.htm
+Processing topic: c-user-guide\creating-editing-reference-lists.htm...
+Generated c-user-guide\creating-editing-reference-lists.htm
+Processing topic: c-user-guide\using-reference-lists.htm...
+Generated c-user-guide\using-reference-lists.htm
+Processing topic: d-admin\establishing-models.htm...
+Generated d-admin\establishing-models.htm
+Processing topic: d-admin\establishing-policies.htm...
+Generated d-admin\establishing-policies.htm
+Processing topic: d-admin\establishing-predicates.htm...
+Generated d-admin\establishing-predicates.htm
+Processing topic: d-admin\establishing-relationships.htm...
+Generated d-admin\establishing-relationships.htm
+Processing topic: d-admin\establishing-rules.htm...
+Generated d-admin\establishing-rules.htm
+Processing topic: d-admin\establishing-workflows.htm...
+Generated d-admin\establishing-workflows.htm
+Processing topic: d-admin\workflow-form.htm...
+Generated d-admin\workflow-form.htm
+Processing topic: d-admin\configuring-action-types.htm...
+Generated d-admin\configuring-action-types.htm
+Processing topic: d-admin\fusion.htm...
+Generated d-admin\fusion.htm
+Processing topic: d-admin\fusion-type.htm...
+Generated d-admin\fusion-type.htm
+Processing topic: d-admin\fusion-configuration.htm...
+Generated d-admin\fusion-configuration.htm
+Processing topic: d-admin\fusion-rule.htm...
+Generated d-admin\fusion-rule.htm
+Processing topic: d-admin\installing-fusion-agent.htm...
+Generated d-admin\installing-fusion-agent.htm
+Processing topic: d-admin\fusion-agent-configuration.htm...
+Generated d-admin\fusion-agent-configuration.htm
+Processing topic: d-admin\customizing-govern.htm...
+Generated d-admin\customizing-govern.htm
+Processing topic: a-shared\legal-notice.htm...
+Generated a-shared\legal-notice.htm
+Generating output skins...
+Generating synonyms file...
+Generating alias file...
+Generating alias file: Missing topic: /Content/H_GettingStarted/getting-started.htm
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/agg-ex.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/agg-filter.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/agg.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/append-excel.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/band-by-deviation.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/band-by-strata.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/brd-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/bundler.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/bypass.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/calculate-workdays.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/cat.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/change-fields.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/change-metadata.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/checkpoint.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/cleanse-string-fields.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/clock.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/compare-data-sets.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/compare-multiple-data-sets.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/complex-lookup.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/composite.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/convert-tabular-xml.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/csv-data.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/csv-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/data-analyzer.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/data-converter.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/date-range-filter.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/date-range-lookup.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/db-clean-loader.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/db-execute.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/db-query.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/db-store.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/db-truncate.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/decision-forest.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/decrypt-fields.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/deep-x-ref.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/delimited-data.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/delimited-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/dimensional-aggregator.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/dimensional-analysis.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/directory-list.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/do-while-conditional.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/do-while.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/download-for-sharepoint-2010.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/download-for-sharepoint.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/dummy-input.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/duplicate-detection.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/encrypt-fields.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/erp-connector.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/excel-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/excel-options.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/expand-from-list.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/extract-erp-metadata.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/extract-pattern.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/extract-prefixed-fields.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/filter-by-date-range.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/filter-by-dates-within-time-period.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/filter-by-group.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/filter.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/fixed-format-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/folder-list-for-sharepoint-2010.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/folder-list-for-sharepoint.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/ftp-get.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/fuzzy-join.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/fuzzy-x-ref.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/get-metadata.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/get-mongodb-data.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/hash-split.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/hdfs-download.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/head.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/hierarchical-clustering.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/histogram.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/histogram-plus-.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/hive-join.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/hive-metadata-query.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/hive-sample.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/http.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/input-raw.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/input-static.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/interval-inspection.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/java.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/jdbc-execute.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/jdbc-query.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/jdbc-store.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-inner.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-left-inner.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-left.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-right-inner.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-right.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/json-data.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/k-means-advisor.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/k-means-clustering.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/lae-properties.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/lavastorm-get-for-salesforce.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/dataverse-metadata-for-salesforce.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/lavastorm-query-for-salesforce.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/lavastorm-transact-for-salesforce.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/linear-regression-diagnostics.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/linear-regression.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/load-csv-file-with-1-additional-column.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/logistic-regression-diagnostics.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/logistic-regression.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/lookup.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/make-r-safe-fieldnames.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/market-basket-analysis.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/market-basket-miner.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/meta-check.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/modify-field-prefix.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/more-or-less-or-equal-date-filter.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/multi-format-date-conversion-(with-2d-checks).html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/multi-format-date-conversion.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/multiple-brd-files.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/multiple-way-data-profiling.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/n-period-date-filter.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/net-present-value.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/oracle-tnsnames.ora-analyzer.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-brd-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-delimited.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-excel.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-fixed.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-html.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-xml.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/path-enabler.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/percent-rank.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/pivot-data-to-names.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/pivot-names-to-data.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/pivot-table.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/power-r-read-delimited-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/power-r-read-sas-data-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/power-r-stats-over-calendar-period.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/power-r.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/predict-decision-forest.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/python-filter.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/python.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/query-for-mongodb.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/quick-acquisition.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/r-library-package-download.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/reduce-to-list.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/remove-duplicates.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/replace-text.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/sample.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/select-fields.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/send-e-mail.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/sleep.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/sort.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/spark-download.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/spark-end-session.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-field-by-delimiters.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/spark-filter.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/spark-java-submit.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/spark-sort.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/spark-start-session.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-by-group.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-by-pattern.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-by-search.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-string.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/standard-deviation.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/static-data.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/string-based-lookup.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/switch.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/tabular-xml-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/tail.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/top-or-bottom-n-records.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/trim-fields.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/unbundler.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/update-for-mongodb.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/updatepythontoserver.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/url-query-builder.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/xml-data.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/xmlpy-file.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/x-ref-metadata.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/x-ref.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/ftp-put.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/hdfs-upload.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/lavastorm-update-for-salesforce.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-for----tibco-spotfire.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-raw.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-static.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-tableau.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-to-qlikview--or--sense.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/predict-linear-regression.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/predict-logistic-regression.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/predict-quantile-regression.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/quantile-regression.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/quick-stats.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/rolling-statistics.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/send-email-plus-.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/spark-sample.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/spark-upload.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/three-way-data-profiling.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/threshold-test.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/time-series-diagnostics.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/time-series-forecast.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/two-way-data-profiling.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/upload-for-sharepoint-2010.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/upload-for-sharepoint.html
+Generating alias file: Missing topic: /Content/G_BRAINscript/script-help.htm
+Generating alias file: Missing topic: /Content/F_Node_Help/node-help.htm
+Generating alias file: Missing topic: /Content/D_Sys_Admin/Lavastorm for system administrators.htm
+Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/spark-sql-query.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/dynamic-split-string.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/spark-agg.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/spark-join.html
+Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/spark-data-viewer.html
+Generating final TOC...
+Generating language strings...
+Generating concept and keyword anchors in output files...
+Generating Index...
+Generating Concepts...
+Generating Template Topics...
+Resolving links in output files...
+Generating Search Database...
+Writing search entry cache...
+Generating final output...
+Image icon-print.png was not found.
+Generated Default.htm
+Saving result set...
+Ignored Compiler Warnings: 217
+Output generated in 43 second(s).
+
+Done
+Saving log to "C:\Perforce\lavastorm\src\trunk\doc\flare\infogix-help-source\Output\ehughes\Govern help\Govern help.mclog"
+</Messages>
+    <Warnings>
+        <LogEntry Message="Error validating conditional expression: Unrecognized tag: Default.ToImport" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="10052" />
+        <LogEntry File="../../../Content/Resources/Stylesheets/Default_Lavastorm.css" Message="Missing linked source file: C:\Perforce\lavastorm\src\trunk\doc\flare\infogix-help-source\Content\Resources\Images\checkmark_black-EH18032015.png" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="10001" />
+        <LogEntry File="../../../Content/Resources/Stylesheets/Default_Lavastorm.css" Message="Missing linked source file: C:\Perforce\lavastorm\src\trunk\doc\flare\infogix-help-source\Content\Resources\MasterPages\OtherTopics_MiniTOC.flmsp" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="10001" />
+        <LogEntry File="../../../Content/Resources/Stylesheets/Default_Lavastorm.css" Message="Missing linked source file: C:\Perforce\lavastorm\src\trunk\doc\flare\infogix-help-source\Content\Resources\Images\Template\OneStep-EH19032015.png" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="10001" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/H_GettingStarted/getting-started.htm" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/agg-ex.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/agg-filter.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/agg.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/append-excel.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/band-by-deviation.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/band-by-strata.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/brd-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/bundler.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/bypass.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/calculate-workdays.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/cat.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/change-fields.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/change-metadata.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/checkpoint.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/cleanse-string-fields.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/clock.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/compare-data-sets.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/compare-multiple-data-sets.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/complex-lookup.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/composite.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/convert-tabular-xml.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/csv-data.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/csv-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/data-analyzer.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/data-converter.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/date-range-filter.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/date-range-lookup.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/db-clean-loader.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/db-execute.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/db-query.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/db-store.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/db-truncate.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/decision-forest.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/decrypt-fields.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/deep-x-ref.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/delimited-data.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/delimited-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/dimensional-aggregator.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/dimensional-analysis.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/directory-list.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/do-while-conditional.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/do-while.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/download-for-sharepoint-2010.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/download-for-sharepoint.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/dummy-input.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/duplicate-detection.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/encrypt-fields.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/erp-connector.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/excel-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/excel-options.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/expand-from-list.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/extract-erp-metadata.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/extract-pattern.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/extract-prefixed-fields.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/filter-by-date-range.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/filter-by-dates-within-time-period.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/filter-by-group.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/filter.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/fixed-format-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/folder-list-for-sharepoint-2010.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/folder-list-for-sharepoint.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/ftp-get.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/fuzzy-join.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/fuzzy-x-ref.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/get-metadata.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/get-mongodb-data.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/hash-split.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/hdfs-download.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/head.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/hierarchical-clustering.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/histogram.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/histogram-plus-.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/hive-join.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/hive-metadata-query.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/hive-sample.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/http.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/input-raw.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/input-static.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/interval-inspection.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/java.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/jdbc-execute.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/jdbc-query.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/jdbc-store.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-inner.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-left-inner.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-left.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-right-inner.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join-right.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/join.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/json-data.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/k-means-advisor.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/k-means-clustering.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/lae-properties.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/lavastorm-get-for-salesforce.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/dataverse-metadata-for-salesforce.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/lavastorm-query-for-salesforce.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/lavastorm-transact-for-salesforce.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/linear-regression-diagnostics.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/linear-regression.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/load-csv-file-with-1-additional-column.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/logistic-regression-diagnostics.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/logistic-regression.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/lookup.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/make-r-safe-fieldnames.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/market-basket-analysis.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/market-basket-miner.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/meta-check.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/modify-field-prefix.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/more-or-less-or-equal-date-filter.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/multi-format-date-conversion-(with-2d-checks).html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/multi-format-date-conversion.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/multiple-brd-files.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/multiple-way-data-profiling.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/n-period-date-filter.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/net-present-value.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/oracle-tnsnames.ora-analyzer.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-brd-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-delimited.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-excel.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-fixed.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-html.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-xml.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/path-enabler.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/percent-rank.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/pivot-data-to-names.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/pivot-names-to-data.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/pivot-table.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/power-r-read-delimited-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/power-r-read-sas-data-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/power-r-stats-over-calendar-period.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/power-r.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/predict-decision-forest.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/python-filter.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/python.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/query-for-mongodb.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/quick-acquisition.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/r-library-package-download.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/reduce-to-list.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/remove-duplicates.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/replace-text.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/sample.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/select-fields.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/send-e-mail.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/sleep.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/sort.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/spark-download.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/spark-end-session.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-field-by-delimiters.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/spark-filter.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/spark-java-submit.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/spark-sort.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/spark-start-session.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-by-group.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-by-pattern.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-by-search.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split-string.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/split.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/standard-deviation.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/static-data.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/string-based-lookup.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/switch.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/tabular-xml-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/tail.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/top-or-bottom-n-records.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/trim-fields.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/unbundler.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/update-for-mongodb.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/updatepythontoserver.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Interfaces_and_Adapters/url-query-builder.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/xml-data.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/xmlpy-file.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Metadata_and_Structure/x-ref-metadata.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/x-ref.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/ftp-put.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/hdfs-upload.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/lavastorm-update-for-salesforce.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-for----tibco-spotfire.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-raw.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-static.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-tableau.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/output-to-qlikview--or--sense.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/predict-linear-regression.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/predict-logistic-regression.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/predict-quantile-regression.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/quantile-regression.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/quick-stats.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/rolling-statistics.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/send-email-plus-.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/spark-sample.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/spark-upload.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/three-way-data-profiling.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/threshold-test.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/time-series-diagnostics.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/time-series-forecast.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Profiling_and_Patterns/two-way-data-profiling.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/upload-for-sharepoint-2010.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Publishing/upload-for-sharepoint.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/G_BRAINscript/script-help.htm" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/node-help.htm" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/D_Sys_Admin/Lavastorm for system administrators.htm" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Acquisition/spark-sql-query.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/dynamic-split-string.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Aggregation_and_Transformation/spark-agg.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Correlation/spark-join.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry Message="Generating alias file: Missing topic: /Content/F_Node_Help/Logistics/spark-data-viewer.html" LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20016" />
+        <LogEntry File="../../../Project/Skins/infogix-skin.flskn" Message="Image icon-print.png was not found." LineIndex="-1" CharIndex="-1" Subsystem="Compiler" Target="Govern help" ErrorID="20011" />
+    </Warnings>
+    <Errors />
+</MadCapLog>

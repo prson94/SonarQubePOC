@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide|Establishing the metamodel">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Establishing predicates</title>
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
+        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        </script>
+    </head>
+    <body>
+        <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/establishing-predicates.htm">Open topic with navigation</a>
+        </p>
+        <h1 class="ChapterHeading">Establishing predicates</h1>
+        <p>Many of the assets that you establish in <b>Infogix Data3Sixty</b> have links to other artifacts in the system. These links are referred to as Relationships, see <a href="establishing-relationships.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Establishing relationships</a>.</p>
+        <p>To frame the relationship, a predicate is used. A predicate is the term that links the two sides of a relationship. For example, take the two artifact types; "Report" and "Business Term", say you have a Report which contains a particular Business Term, then "Report contains Business Term" is an example of a relationship. The term that links the two artifacts, the predicate, in this case is "contains".</p>
+        <p>For every relationship, the inverse of the predicate must also be true. In the case of our example, "Report contains Business Term", this could also be written as "Business Term is contained in Report". Another common predicate is a synonym.</p>
+        <p>Each predicate is also assigned a <b>Functional Type</b> which controls its behavior in <b>Infogix Data3Sixty</b>. One of the most commonly used functional types is <b>Grammatic Assocation</b> which is used for synonyms, antonyms or grammatically similar terms.</p>
+        <p>&#160;</p>
+        <ol>
+            <li value="1">Click the <b>Administration</b> icon on the left of the screen and select <b>Predicates</b>.</li>
+            <li value="2">Click the <b>Add</b> icon in the top right corner to enter a new predicate.</li>
+            <li value="3">In the <b>New Predicate</b> screen, type a <b>Name</b> for your new predicate, e.g. <code>Contains</code>.</li>
+            <li value="4">Type the <b>Inverse</b> of the predicate, e.g. <code>Is contained in</code>.</li>
+            <li value="5">Select a <b>Functional Type</b>, e.g. <code>Data Lineage</code>.</li>
+            <li value="6">Click <b>Save</b> to create the new predicate.</li>
+        </ol>
+        <p>&#160;</p>
+        <p>You can then create relationships between artifacts, using predicates that you have created to frame the link between the two objects, see <a href="establishing-relationships.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Establishing relationships</a>. </p>
+        <p>&#160;</p>
+        <p>To edit a predicate, click the pencil icon to the right of the predicate which you want to modify.</p>
+        <p>&#160;</p>
+    </body>
+</html>

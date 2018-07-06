@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title></title>
+        <link href="../../Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
+        <link rel="shortcut icon" href="../Images/Template/favicon.png" type="image/png" />
+    </head>
+    <body><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <MadCap:breadcrumbsProxy style="padding-top: 0px;padding-bottom: 0px;border-bottom-style: none;border-bottom-width: 1px;border-bottom-color: black;" />
+                                    </td>
+                                    <td>
+                                        <MadCap:topicToolbarProxy style="mc-topic-toolbar-items: PreviousTopic NextTopic;" data-mc-skin="/Project/Skins/Lavastorm_Topic_Toolbar.flskn" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <MadCap:bodyProxy />
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display:scroll;position:fixed;bottom:5px;right:5px;" href="#top" title="Back to top"><img src="../Images/Template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
