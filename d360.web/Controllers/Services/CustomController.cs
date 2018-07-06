@@ -316,7 +316,7 @@ namespace d360.web.Controllers.Services
                     //json._links.Add(new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO });
                     //return Request.CreateResponse(HttpStatusCode.OK, json, "application/json");
 
-                    ((IDictionary<string, Object>)asset).Add("_links", new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO });
+                    ((IDictionary<string, Object>)asset).Add("_links", new List<JsonResultLinkModel> { new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO } });
 
                     return Request.CreateResponse(HttpStatusCode.OK, asset as object, "application/json");
                 }
