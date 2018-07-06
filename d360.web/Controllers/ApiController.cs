@@ -882,7 +882,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     {
                         if (fusionIDPresent)
                         {
-                            var parentFilterValues = Company.Query<string>(@"select Name from FusionAttribute where FusionID = @f and FusionAttributeTypeID = @t group by Name order by Name", new { f = fusionID, t = i.ID }).ToList();
+                            var parentFilterValues = Company.Query<string>(@"select Name from FusionAttribute where FusionID = @f and FusionAttributeTypeID = @t and Deleted = 0 group by Name order by Name", new { f = fusionID, t = i.ID }).ToList();
                             filterColumns.Add(new GridFilterColumn { text = i.Name, datafield = $"Parent{i.ID}", filtertype = GridColumn.COLUMN_TYPE_DROPDOWN, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filteritems = parentFilterValues });
                             columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", filteritems = new List<string>() });
                         }
