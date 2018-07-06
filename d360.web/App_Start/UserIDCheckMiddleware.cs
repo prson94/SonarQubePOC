@@ -11,10 +11,15 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using IdentityModel;
+using IdentityModel.Client;
 
 namespace d360.web
 {
@@ -193,61 +198,30 @@ from	Resource R
 
                     jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"Creds : {apiCredentials}", SeverityLevel = SeverityLevel.Verbose });
 
-                    // load the certificate info                
-                    var certificateCommonName = await getCertificateCommonName(context);
-
-                    //validate the certificate first
-                    if (!ValidateX509IfRequired(context, certificateCommonName))
-                    {
-                        jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"Authentication denied invalid x509", SeverityLevel = SeverityLevel.Verbose });
-
-                        return;  // end pipeline if no valid cert with error code set within
-                    }
-
-                    // certificate is valid at this point we just get the user from the jwt token
                     var authParts = apiCredentials.Split(' ');
 
                     if (authParts.Length == 2)
                     {
                         var jwtToken = authParts[1];
 
-                        var tokenParts = jwtToken.Split('.');
+                        var claim = await ValidateJwt(jwtToken, context, jwtTelemetry);
 
-                        if (tokenParts.Length != 2 || tokenParts.Length != 3) // element 0 is head and 1 is payload
+                        if (claim != null && claim.Identity != null &&  !string.IsNullOrEmpty(claim.Identity.Name))
                         {
-
-                            var jwtPayloadString = tokenParts[1];
-
-                            if (!string.IsNullOrEmpty(jwtPayloadString))
+                            jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {claim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
+                            u = LoadUserFromDatabase(companyID, null, null, null, claim.Identity.Name);
+                            if (u != null)
                             {
-
-                                var decodeJwtPayload = DecodeToken(jwtPayloadString);
-
-                                var claimToken = Newtonsoft.Json.JsonConvert.DeserializeObject<JwtToken>(decodeJwtPayload);
-
-                                // if the token in expired please leave
-                                if (!ValidateTokenLifeTime(context, claimToken))
+                                if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
                                 {
-                                    jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"Authentication jwt validate token lifetime failed", SeverityLevel = SeverityLevel.Verbose });
-
-                                    return;
+                                    cachedUsers.Add(u);
                                 }
-
-                                if (claimToken != null && !string.IsNullOrEmpty(claimToken.Upn))
-                                {
-                                    u = LoadUserFromDatabase(companyID, null, null, null, claimToken.Upn);
-                                    if (u != null)
-                                    {
-                                        if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
-                                        {
-                                            cachedUsers.Add(u);
-                                        }
-                                        Users = cachedUsers;
-                                    }
-                                }
+                                Users = cachedUsers;
                             }
                         }
+
                     }
+                    
                 }
                 else if (!string.IsNullOrEmpty(apiCredentials))
                 {
@@ -357,28 +331,90 @@ from	Resource R
             await _next.Invoke(environment);
         }
 
-        private bool ValidateTokenLifeTime(IOwinContext context, JwtToken claimToken)
+        public const string Authority = "http://localhost:5000";
+        
+
+        private static async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context, Microsoft.ApplicationInsights.TelemetryClient telemetry)
         {
-            //if(LifetimeValidator(token.Nbf, token.Exp))
-            //Add code to validate the lifetime of the token.
-            
-            if(claimToken.Exp < DateTimeOffset.Now.ToUnixTimeSeconds())
+            string authority = await getJwtAuthority(context);
+
+            telemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Authority : {authority}", SeverityLevel = SeverityLevel.Verbose });
+
+            telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Starting", SeverityLevel = SeverityLevel.Verbose });
+
+            if(string.IsNullOrEmpty(authority))
             {
-                context.Response.StatusCode = 403; // token expired
-                return false;
+                telemetry.TrackTrace(new TraceTelemetry { Message = $"Jwt Authority Uri is not set cannot continue", SeverityLevel = SeverityLevel.Verbose });
+
+                return null;
             }
 
-            return true;
+            // read discovery document to find issuer and key material            
+            var disco = await DiscoveryClient.GetAsync(authority);
+
+
+            if (disco == null)
+            {
+                telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response is null.", SeverityLevel = SeverityLevel.Verbose });
+
+                return null;
+            }
+
+            if (disco.KeySet == null)
+            {
+                telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response included no keys.", SeverityLevel = SeverityLevel.Verbose });
+
+                return null;
+            }
+
+            var keys = new List<SecurityKey>();
+            foreach (var webKey in disco.KeySet.Keys)
+            {
+                var e = Base64Url.Decode(webKey.E);
+                var n = Base64Url.Decode(webKey.N);
+
+                var key = new RsaSecurityKey(new RSAParameters { Exponent = e, Modulus = n })
+                {
+                    KeyId = webKey.Kid
+                };
+
+                keys.Add(key);
+            }
+
+            telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Done", SeverityLevel = SeverityLevel.Verbose });
+
+            var parameters = new TokenValidationParameters
+            {
+                ValidIssuer = disco.Issuer,
+                ValidAudience = "mvc.manual",
+                IssuerSigningKeys = keys,
+
+                NameClaimType = "upn",
+                //RoleClaimType = JwtClaimTypes.Role,                
+                
+                RequireSignedTokens = true
+            };
+
+            var handler = new JwtSecurityTokenHandler();
+            handler.InboundClaimTypeMap.Clear();
+
+            telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateToken Start", SeverityLevel = SeverityLevel.Verbose });
+
+            var user = handler.ValidateToken(jwt, parameters, out var token);
+
+            telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateToken Done", SeverityLevel = SeverityLevel.Verbose });
+
+            return user;
         }
 
-        private async Task<string> getCertificateCommonName(IOwinContext context)
+        private static async Task<string> getJwtAuthority(IOwinContext context)
         {
             var companyId = context.Get<int>("CompanyID");
             var cnName = "";
-            var key = $"CustomApiClientCertificateCommonName{companyId}";
+            var key = $"JWTAuthority{companyId}";
 
             // try the cache
-            var cache = new MemoryCachingProvider();            
+            var cache = new MemoryCachingProvider();
             if (cache != null)
             {
                 cnName = cache.GetItem<string>(key);
@@ -392,7 +428,7 @@ from	Resource R
                     cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     cnName = (await cnn.QueryAsync<string>(@"select coalesce(C.Value, S.DefaultValue) as Value
 from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @cId
-where S.ID = 54",new { cId = companyId })).FirstOrDefault();
+where S.ID = 54", new { cId = companyId })).FirstOrDefault();
                 }
 
                 //stick in cache
@@ -405,101 +441,5 @@ where S.ID = 54",new { cId = companyId })).FirstOrDefault();
 
             return cnName;
         }
-
-        public static string DecodeToken(string encodedToken)
-        {
-            byte[] data = Convert.FromBase64String(encodedToken);
-            string decodedString = Encoding.UTF8.GetString(data);
-            return decodedString;
-        }
-
-        #region X509 Check
-
-        public bool ValidateX509IfRequired(IOwinContext context, string certificateCommonName)
-        {
-            // Do something with context near the beginning of request processing.
-            X509Certificate2 clientCertificate = null;
-            try
-            {
-                var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();
-                //***** 1. Get a Client Certificate from the Http context or http header ****/
-                //   clientCertificate = context.Request.c.ClientCertificate;
-
-                if (System.Web.HttpContext.Current != null && System.Web.HttpContext.Current.Request != null && System.Web.HttpContext.Current.Request.ClientCertificate != null && System.Web.HttpContext.Current.Request.ClientCertificate.Count > 0) {
-                    clientCertificate = new X509Certificate2(System.Web.HttpContext.Current.Request.ClientCertificate.Certificate);
-                }
-                
-                if (clientCertificate == null)
-                {
-                    var clientCertificateInHeader = context.Request.Headers["X-ARR-ClientCert"];
-                    if (!string.IsNullOrEmpty(clientCertificateInHeader))
-                    {
-                        var clientCertBytes = Convert.FromBase64String(clientCertificateInHeader);
-                        clientCertificate = new X509Certificate2(clientCertBytes);
-                    }
-                }
-
-                if (clientCertificate != null) //***** 2. Perform clientCertificate null validation check ****/
-                {
-                    try
-                    {
-                        //***** 3. If the clientCertificate is not null, then Validate the incoming certificate CN with the allowed CN ****/
-                        var isValidCert = IsValidClientCertificate(clientCertificate, certificateCommonName);
-
-
-                        if (!isValidCert)  //***** 4. If it is a valid Certificate, then invoke next middleware ****/
-                        //***** 5. Return 403 if it is not a valid Certificate ****/
-                        {
-                            //Do your logging if required.
-                            telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateX509IfRequired : Failed due to invalid cert names do not match {certificateCommonName}", SeverityLevel = SeverityLevel.Verbose });
-
-
-                            //Stop the pipeline here.
-                            context.Response.StatusCode = 403;
-                            return false;
-                        }
-                    }
-                    catch (Exception ex) //***** 6. Any exception throw 403??? Not sure, this is valid case ****/
-                    {
-                        //Do your logging here.
-                        telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateX509IfRequired : Failed due to exception {ex.Message}", SeverityLevel = SeverityLevel.Verbose });
-
-                        //What to do with exceptions in middleware?
-                        context.Response.WriteAsync(ex.Message);
-                        context.Response.StatusCode = 403;
-                        return false;
-                    }
-                }
-                else //***** 7. If the clientCertificate is null, then return 403 status code ****
-                {
-                    //Do your logging here.
-                    telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateX509IfRequired : Failed due to missing certificate", SeverityLevel = SeverityLevel.Verbose });
-
-                    context.Response.StatusCode = 403;
-                    return false;
-                }
-
-            }
-            finally
-            {
-                clientCertificate?.Dispose();
-            }
-
-            return true;
-
-        }
-
-        private bool IsValidClientCertificate(X509Certificate2 certificate, string certificateCommonName)
-        {
-            var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
-
-            if (string.IsNullOrEmpty(commonName)) return false;
-
-            //Compare the incoming Certificate CN with the allowed Certificate CN.
-            return commonName.Equals(certificateCommonName);
-        }
-
-        #endregion
-
     }
 }
