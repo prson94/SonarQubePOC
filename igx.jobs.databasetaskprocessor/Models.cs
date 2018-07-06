@@ -62,6 +62,7 @@ namespace igx.jobs.databasetaskprocessor
         public string ErrorMessage { get; set; }
         public int NumberOfRetries { get; set; }
         public short Priority { get; set; }
+        public long AssetID { get; set; }
     }
 
     public static class Sql

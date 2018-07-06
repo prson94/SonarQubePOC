@@ -68,7 +68,7 @@ namespace igx.jobs.databasetaskprocessor
         }
 
         const string functionName = "DatabaseTask_ProcessScheduled";
-        const string timerSettings = "*/10 * * * * *";
+        const string timerSettings = "*/1 * * * * *";
         
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
@@ -76,7 +76,10 @@ namespace igx.jobs.databasetaskprocessor
             try
             {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
-                //companies = companies.Where(x => x.CompanyID == 4).ToList();
+
+#if DEBUG
+                companies = companies.Where(x => x.CompanyID == 4).ToList();
+#endif
 
                 companies.Shuffle(); //Randomize
 
@@ -99,7 +102,7 @@ namespace igx.jobs.databasetaskprocessor
 
                             #region Indexer Func
 
-                            Func<SqlConnection, string, int, string, string> resolveIndexItem = (companyConnection, o, oid, a) =>
+                            Func<SqlConnection, string, int, string, long, string> resolveIndexItem = (companyConnection, o, oid, a, givenAssetId) =>
                             {
                                 ObjectDetail detail = null;
                                 Dictionary<string, string> fields = new Dictionary<string, string>();
@@ -244,7 +247,8 @@ namespace igx.jobs.databasetaskprocessor
                                         break;
                                     case "D":   //Delete
                                     var delete = new RemoveFromIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName                                
-                                    if (o == "Artifact" && assetId > 0) delete.ItemUniqueID = assetId.ToString();
+                                        if (o == "Artifact" && givenAssetId > 0) delete.ItemUniqueID = givenAssetId.ToString();
+                                        if (o == "Artifact" && assetId > 0) delete.ItemUniqueID = assetId.ToString();
                                         indexCollectionModel.Deletes.Add(delete);
                                         break;
                                 }
@@ -290,12 +294,12 @@ from    [queue].[Task] T
                                                 #region
                                                 addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom);
 
-                                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A");
+                                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
                                                     break;
                                             #endregion
                                             case "Delete":
                                                 #region
-                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D");
+                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
                                                     break;
                                             #endregion
                                             case "EventTopicNotification":
@@ -450,7 +454,7 @@ from    [queue].[Task] T
                                             #endregion
                                             case "ObjectIndex":
                                                 #region
-                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom);
+                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
                                                     break;
                                             #endregion
                                             case "Update":
@@ -458,7 +462,7 @@ from    [queue].[Task] T
                                                 addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom);
 
                                                     if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
-                                                        resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
+                                                        resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
                                                     break;
                                                 #endregion
                                         }
