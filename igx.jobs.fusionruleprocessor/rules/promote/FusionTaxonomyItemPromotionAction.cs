@@ -42,6 +42,9 @@ namespace igx.jobs.fusionruleprocessor
                 }
             }
 
+            // validate that the input items doesnt have duplicated key fields
+            await ValidatePromotionItems(company, itemsToPromote, keyFields);
+
             // figure out which taxonomy already exist and put them in the items to promote table
             await DetermineExisting(company, keyFields);
 

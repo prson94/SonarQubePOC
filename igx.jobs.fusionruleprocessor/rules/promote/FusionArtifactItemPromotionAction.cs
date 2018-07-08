@@ -82,56 +82,6 @@ namespace igx.jobs.fusionruleprocessor
             await PerformPostPromote(company, PromoteToObjectID, PromoteToObject);            
         }
 
-        private async Task ValidatePromotionItems(SqlConnection company, List<int> itemsToPromote, IEnumerable<string> keyFields)
-        {
-            // generate key field hashes for each of the items and store them in a temp table
-
-            // look for duplicates
-            await company.ExecuteAsync(@"IF OBJECT_ID('tempdb..#promotionKeyHash') IS NOT NULL
-			                                DROP TABLE #promotionKeyHash;
-
-		                                create table #promotionKeyHash (                                            			                                
-			                                ObjectID int,
-                                            KeyHash varchar(250)
-		                                );
-                                ");
-
-            // determine item parents
-            await company.ExecuteAsync(@"insert into #promotionKeyHash
-		                        select		ObjectID,
-					                        CONVERT(
-						                        varchar(32), 
-						                        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
-						                        2) as FieldHash
-		                        from		(
-			                        select	top 100000000	FV.TargetFieldTypeID as FieldTypeID,
-						                        coalesce(FV.Value, '') as Value,
-						                        FV.ID as ObjectID
-			                        from		#fields FV
-			                        where		FV.TargetFieldTypeID in (select id from fieldtype where [object] = @obj and [objectid] = @objId and name in @keyFields)
-			                        order by	FV.ID,FV.TargetFieldTypeID
-		                        ) A group by A.ObjectID", new { keyFields, obj = PromoteToObject , objId = PromoteToObjectID });
-
-#if DEBUG
-            await PrintTempTableContents(company, Log, "promotionKeyHash");
-#endif
-
-            // check the counts by hash
-            //var duplicateHashes = await company.QueryAsync(@"select KeyHash, count(ObjectID) from #promotionKeyHash group by KeyHash having count(ObjectID) > 1");
-            
-            //remove items with same key that are not the first row partitioned by keyhash.
-            await company.ExecuteAsync(@"delete from #fields where id in(select objectid from(
-	                                                                        select KeyHash,ObjectID,rn =Row_number() over(partition by KeyHash order by ObjectID) from #promotionKeyHash where keyhash in(
-		                                                                        select KeyHash from #promotionKeyHash group by KeyHash having count(ObjectID) > 1)
-	                                                                            ) a where a.rn > 1
-                                                            )");
-
-#if DEBUG
-            await PrintTempTableContents(company, Log, "fields");
-#endif
-
-
-        }
         private async Task<int> GetPromotionParentChildRelationshipID(SqlConnection company)
         {
             var sql = "select it.ID from intersecttype it inner join [predicate] pid on pid.id = it.predicateid  where [subject] = 'ArtifactType' and [object] = 'ArtifactType' and pid.type = 3 and it.objectid = @id";
@@ -315,7 +265,7 @@ namespace igx.jobs.fusionruleprocessor
 								from
 									#fields ftemp                                    
                                 where
-                                    not exists(select 1 from #promotedItems tmp where tmp.attributeID = ftemp.ID) and not exists(select 1 from [fusion].rulepromotion where ruleid = @ruleid and rulestepid = @rulestepid and attributeid = ftemp.ID)									
+                                    not exists(select 1 from #promotedItems tmp where tmp.attributeID = ftemp.ID) 
 			                    ) S
 	                    ON      (1 != 1)
 	                    WHEN NOT MATCHED THEN

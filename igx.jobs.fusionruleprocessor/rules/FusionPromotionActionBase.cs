@@ -200,38 +200,34 @@ namespace igx.jobs.fusionruleprocessor
             {
                 sql = @"insert into #promotedItems 
                             select distinct
-	                            ftemp.ID,
-                                ftemp.ObjectType,
-                                f.[objectID],
-                                f.[objectType]
+	                            ph.ObjectID,
+                                cast(@objectType as varchar(20)),
+                                ad.[objectID],
+                                ad.[object]
                             from	
-	                            #fields ftemp
-	                            inner join field f on (ftemp.TargetFieldTypeID = f.FieldTypeID and ftemp.Value = f.FormattedValue)
-                            where
-	                            ftemp.TargetFieldName in @keyFields;";
+                                #promotionKeyHash ph
+                                inner join assetdetail ad on ph.keyhash = ad.keyhash";
 
-                await company.ExecuteAsync(sql, new { keyFields = keyFields }, commandTimeout: EXECUTION_TIMEOUT);
+                await company.ExecuteAsync(sql, new { objectType = Rule.ObjectType.Replace("Type", "") }, commandTimeout: EXECUTION_TIMEOUT);
 
                 return;
             }
 
 
                 sql = @"insert into #promotedItems 
-                            select
-	                            ftemp.ID,
-                                ftemp.ObjectType,
-                                f.[objectID],
-                                f.[objectType]
+                             select distinct
+	                            ph.ObjectID,
+                                cast(@objectType as varchar(20)),
+                                ad.[objectID],
+                                ad.[object]
                             from	
-	                            #fields ftemp
-	                            inner join field f on (ftemp.TargetFieldTypeID = f.FieldTypeID and ftemp.Value = f.FormattedValue)
-                                inner join #promotionParents p on (ftemp.ID = p.ObjectID)
-                                inner join [intersect] i on (i.IntersectTypeID = @it and i.objectid = f.[objectID] and i.object = f.[objecttype] and i.subjectid = p.ParentID and i.subject = f.objecttype)
-                            where
-	                            ftemp.TargetFieldName in @keyFields;";
+                                #promotionKeyHash ph
+                                inner join assetdetail ad on ph.keyhash = ad.keyhash
+                                inner join #promotionParents p on (ph.ObjectID = p.ObjectID)
+                                inner join [intersect] i on (i.IntersectTypeID = @it and i.objectid = ad.[objectID] and i.object = ad.[object] and i.subjectid = p.ParentID and i.subject = ad.object)";
 
 
-            await company.ExecuteAsync(sql, new { keyFields = keyFields, it = PromoteToParentChildIntersectTypeID }, commandTimeout: EXECUTION_TIMEOUT);
+            await company.ExecuteAsync(sql, new { objectType = Rule.ObjectType.Replace("Type",""), it = PromoteToParentChildIntersectTypeID }, commandTimeout: EXECUTION_TIMEOUT);
 
             return;
         }
@@ -239,6 +235,58 @@ namespace igx.jobs.fusionruleprocessor
         protected async Task<int> GetNewItemCount(SqlConnection company)
         {
             return await (company.ExecuteScalarAsync<int>("select count(1) from #promotedItems;"));
+        }
+
+
+        protected async Task ValidatePromotionItems(SqlConnection company, List<int> itemsToPromote, IEnumerable<string> keyFields)
+        {
+            // generate key field hashes for each of the items and store them in a temp table
+
+            // look for duplicates
+            await company.ExecuteAsync(@"IF OBJECT_ID('tempdb..#promotionKeyHash') IS NOT NULL
+			                                DROP TABLE #promotionKeyHash;
+
+		                                create table #promotionKeyHash (                                            			                                
+			                                ObjectID int,
+                                            KeyHash varchar(250)
+		                                );
+                                ");
+
+            // determine item parents
+            await company.ExecuteAsync(@"insert into #promotionKeyHash
+		                        select		ObjectID,
+					                        CONVERT(
+						                        varchar(32), 
+						                        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+						                        2) as FieldHash
+		                        from		(
+			                        select	top 100000000	FV.TargetFieldTypeID as FieldTypeID,
+						                        coalesce(FV.Value, '') as Value,
+						                        FV.ID as ObjectID
+			                        from		#fields FV
+			                        where		FV.TargetFieldTypeID in (select id from fieldtype where [object] = @obj and [objectid] = @objId and name in @keyFields)
+			                        order by	FV.ID,FV.TargetFieldTypeID
+		                        ) A group by A.ObjectID", new { keyFields, obj = PromoteToObject, objId = PromoteToObjectID });
+
+#if DEBUG
+            await PrintTempTableContents(company, Log, "promotionKeyHash");
+#endif
+
+            // check the counts by hash
+            //var duplicateHashes = await company.QueryAsync(@"select KeyHash, count(ObjectID) from #promotionKeyHash group by KeyHash having count(ObjectID) > 1");
+
+            //remove items with same key that are not the first row partitioned by keyhash.
+            await company.ExecuteAsync(@"delete from #fields where id in(select objectid from(
+	                                                                        select KeyHash,ObjectID,rn =Row_number() over(partition by KeyHash order by ObjectID) from #promotionKeyHash where keyhash in(
+		                                                                        select KeyHash from #promotionKeyHash group by KeyHash having count(ObjectID) > 1)
+	                                                                            ) a where a.rn > 1
+                                                            )");
+
+#if DEBUG
+            await PrintTempTableContents(company, Log, "fields");
+#endif
+
+
         }
     }
 }
