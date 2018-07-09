@@ -7,8 +7,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     <a><i class="fa fa-question-circle" style="color:#d32f2f"></i></a>
                     <div class="search-child header-search-panel" style="background-color: white; padding: 0; width: 175px">
                        <ul>
-                            <li style="width:100%;padding:10px;display:inline-block"><a [href]="userGuide">User Guide</a></li>
-                            <li style="width:100%;padding:10px;display:inline-block"><a [href]="adminGuide">Admin Guide</a></li>
+                            <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="userGuide">User Guide</a></li>
+                            <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="adminGuide">Admin Guide</a></li>
                        </ul>
                     </div>
                 <span>`,
