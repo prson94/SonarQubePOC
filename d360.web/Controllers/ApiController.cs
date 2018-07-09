@@ -8108,8 +8108,7 @@ from	    TaxonomyType FAT
                                         e.ID as EntityID
                                     from api.EndpointVersion v
                                     inner join api.Entity e on v.id = e.endpointversionid
-                                    where v.endpointid = @id", new { id = endpointId }).ToList();
-            //return Company.ApiEndpointVersions.Where(x => x.EndpointID == endpointId).ToList();
+                                    where v.endpointid = @id", new { id = endpointId }).ToList();            
         }
 
         [Route("custom/version/{versionId:int}/fields")]
@@ -8119,13 +8118,26 @@ from	    TaxonomyType FAT
 
             if (entity == null) return null;
             
-            return Company.Query<dynamic>(@"select 
-	                                    eft.*,
-                                        ft.Name,
-                                        ft.Type
-                                    from api.entityfieldtype eft
-                                    inner join fieldtype ft on ft.id = eft.fieldtypeid                                    
-                                    where eft.entityid = @id", new { id = entity.ID }).ToList();
+            var types = DataType.Text.GetDataTypeInfoList();
+          
+            var fields = Company.Query<dynamic>(@"select 
+                                           eft.*,
+                                           ft.Name,
+                                           ft.Type
+                                       from api.entityfieldtype eft
+                                       inner join fieldtype ft on ft.id = eft.fieldtypeid                                    
+                                       where eft.entityid = @id", new { id = entity.ID }).ToList();
+
+            foreach (var field in fields)
+            {
+                var t = types.FirstOrDefault(x => x.Name == field.Type);
+
+                if (t != null)
+                    field.Type = t.Description;
+            }
+
+            return fields;
+
         }
 
         [Route("custom/version/{versionId:int}/uritypes")]
