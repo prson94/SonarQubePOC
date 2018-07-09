@@ -51,4 +51,11 @@ namespace d360.core.entities
         public string TargetObject { get; set; }
         public List<int> TargetObjectIDs { get; set; }
     }
+
+    public class UiRequestRelationshipFieldFilterValue : UiRequestFilterValue
+    {
+        public int FieldTypeID { get; set; }
+        public string Condition { get; set; }
+        public string Value { get; set; }
+    }
 }

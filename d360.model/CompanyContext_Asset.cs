@@ -727,6 +727,26 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                             });
                         }
                     }
+
+                    if (filter is UiRequestRelationshipFieldFilterValue)
+                    {
+                        var f = filter as UiRequestRelationshipFieldFilterValue;
+                        var paramPrefix = $"RelField{f.FieldTypeID}";
+                        var tableAlias = $"RF{f.FieldTypeID}";
+                        var cond = "";
+
+                        dbArgs.Add($"{paramPrefix}Value", f.Value);
+
+                        if (f.Condition == "CONTAINS")
+                            cond = $"'%' + @{paramPrefix}Value + '%'";
+                        else
+                            cond = $"@{paramPrefix}Value + '%'";
+
+                        filterJoinList.Add($@"
+                                inner join [Field] [{tableAlias}]{tableHints} on [{tableAlias}].FieldTypeId = {f.FieldTypeID} and [{tableAlias}].Value like {cond}
+                                inner join [Intersect] [I{tableAlias}]{tableHints} on [I{tableAlias}].ID = [{tableAlias}].ObjectID and (([I{tableAlias}].[Subject] = A.[Object] and [I{tableAlias}].SubjectID = A.ObjectID) or ([I{tableAlias}].Object = A.[Object] and [I{tableAlias}].ObjectID = A.ObjectID))
+                            ");
+                    }
                 }
             }
             else

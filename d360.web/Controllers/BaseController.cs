@@ -1713,15 +1713,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             var query = Request.Params;
             var filters = new List<UiRequestFilterValue>();
 
-            int filterscount = 0;
+            int relfilterscount = 0;
 
             #region Hidden Filters
 
             if (applyHiddenFilters)
             {
-                if (int.TryParse(query["hidfilterscount"], out filterscount))
+                if (int.TryParse(query["hidfilterscount"], out relfilterscount))
                 {
-                    for (int i = 0; i < filterscount; i++)
+                    for (int i = 0; i < relfilterscount; i++)
                     {
                         var fField = query["hidfilterdatafield" + i];
                         var fCondition = query["hidfiltercondition" + i];
@@ -1740,16 +1740,16 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     }
                 }
 
-                filterscount = 0; // Reset
+                relfilterscount = 0; // Reset
             }
 
             #endregion
 
             #region Field Filters
 
-            if (int.TryParse(query["filterscount"], out filterscount))
+            if (int.TryParse(query["filterscount"], out relfilterscount))
             {
-                for (int i = 0; i < filterscount; i++)
+                for (int i = 0; i < relfilterscount; i++)
                 {
                     var fField = query["filterdatafield" + i];
                     var fCondition = query["filtercondition" + i];
@@ -1858,6 +1858,23 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         //                            });
                         //                        }
                         //                    }
+                    }
+                }
+            }
+
+            if (int.TryParse(query["relfilterscount"], out  relfilterscount) && relfilterscount > 0)
+            {
+                for (var i = 0; i < relfilterscount; i++)
+                {
+
+                    if (int.TryParse(query["relfilterdatafield" + i], out int fieldTypeId))
+                    {
+                        filters.Add(new UiRequestRelationshipFieldFilterValue
+                        {
+                            FieldTypeID = fieldTypeId,
+                            Condition = query.AllKeys.Any(k => k == $"relfiltercondition{i}") ? query[$"relfiltercondition{i}"] : "",
+                            Value = query.AllKeys.Any(k => k == $"relfiltervalue{i}")  ? query[$"relfiltervalue{i}"] : ""
+                        });
                     }
                 }
             }
