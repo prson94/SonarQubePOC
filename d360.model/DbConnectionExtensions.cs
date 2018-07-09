@@ -149,6 +149,13 @@ from	reporting.Global_Resource O ";
             
         }
 
+        public static int UpdateFieldMove(this DbConnection cnn, FieldType toField,FieldType fromField ,int currentResourceID)
+        {
+            string updateSql = $" Update fieldtype set ColumnOrder ={toField.ColumnOrder},UpdatedBy = {currentResourceID} where Id={toField.ID};";
+            if (fromField!=null)
+            updateSql += $" Update fieldtype set ColumnOrder ={fromField.ColumnOrder},UpdatedBy = {currentResourceID} where Id={fromField.ID};";
+            return cnn.Execute(updateSql);
+        }
         public static IEnumerable<EndResult> GetProcessedResponsibilityRuleResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule)
         {
             if (rule.StructuredDefinition == null)

@@ -105,32 +105,26 @@ namespace d360.web.Controllers
                 var fieldToMove = list.SingleOrDefault(i => i.ID == fieldTypeID);
 
                 var maxPosition = list.Count;
-                
+
                 var currentPosition = fieldToMove.ColumnOrder;
-                var newPosition = (direction == "up") ? 
-                    (currentPosition > 0 ? currentPosition - 1 : 0) : 
+                var newPosition = (direction == "up") ?
+                    (currentPosition > 0 ? currentPosition - 1 : 0) :
                     (currentPosition < maxPosition ? currentPosition + 1 : maxPosition);
 
                 fieldToMove.ColumnOrder = newPosition;
 
-                // Get list of available sort values for this list size
-                var sorts = new List<int>();
-                for (var i = 1; i <= maxPosition; i++)
-                {
-                    if (i != newPosition)
-                    {
-                        sorts.Add(i);
-                    }
-                }
 
-                foreach (var f in list.Where(i => i.Name != fieldToMove.Name).OrderBy(i => i.ColumnOrder))
+                var fieldFromMove = list.SingleOrDefault(i => i.ColumnOrder == newPosition && i.ID != fieldTypeID);
+                if (fieldFromMove != null && fieldFromMove.ID != 0)
                 {
-                    f.ColumnOrder = sorts[0];
-                    sorts.RemoveAt(0);
+                    fieldFromMove.ColumnOrder = currentPosition;
+                    Company.Database.Connection.UpdateFieldMove(fieldToMove,fieldFromMove,Company.CurrentResourceID );
                 }
-                Company.ObjectContext.CommandTimeout = 180;
-                //((IObjectContextAdapter)this.context).ObjectContext.CommandTimeout = 180;
-                Company.SaveChanges();//.SaveFieldTypes(type, id, list); 
+                else
+                {
+                    Company.Database.Connection.UpdateFieldMove(fieldToMove,null, Company.CurrentResourceID);
+                }
+ 
 
                 code = HttpStatusCode.OK;
                 message = successMessage;
