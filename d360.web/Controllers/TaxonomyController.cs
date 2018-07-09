@@ -59,12 +59,13 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 order by A.
 select	A.ObjectID as ID, P.SubjectID as ParentID, A.TypeID as TaxonomyTypeID,
         A.ID as AssetID,  
         {columns} 
-        A.DisplayValue, 
+        D.DisplayValue, 
 hch.HasChildren--,
         --dbo.GetAssetLevelScalar(A.ID,4) as [Level]
-from	AssetDetail A        
+from	AssetWithType A        
         {joins} 
         cross apply [dbo].[GetAssetHasChildrenByAssetID](a.id,4) hch
+        cross apply dbo.GetAssetDisplayValueById(A.ID)  D  
 		outer apply (
 					select	I.SubjectID
 					from	[Intersect] I
@@ -74,9 +75,9 @@ from	AssetDetail A
 where   A.Type = 'TaxonomyType' 
         and A.TypeID = @id 
         and A.[State] = 1 
-        and A.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) 
+        and not exists (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID} and A.ID =AssetID ) 
 order by DisplayValue ";
-
+ 
             var models = Company.Query<dynamic>(sql, new { id });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };

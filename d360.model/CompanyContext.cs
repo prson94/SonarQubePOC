@@ -2908,8 +2908,8 @@ select @err";
                         //    break;
                     }
 
-                    Caching.RemoveItem(key(TAXONOMY_BY_TYPE_PREFIX_KEY, o.TaxonomyTypeID));
-                    Caching.RemoveItem(key(TAXONOMYDETAIL_BY_TYPE_PREFIX_KEY, o.TaxonomyTypeID));
+                    //Caching.RemoveItem(key(TAXONOMY_BY_TYPE_PREFIX_KEY, o.TaxonomyTypeID));
+                    //Caching.RemoveItem(key(TAXONOMYDETAIL_BY_TYPE_PREFIX_KEY, o.TaxonomyTypeID));
                 }
                 #endregion
 
