@@ -13382,6 +13382,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 //check if the reference list is the parent of any other reference item types
                 if (Company.TypeHasChildren(SystemObjects.ReferenceItemType, id)) throw new Exception("The selected Reference List Is the parent to one or more Reference List(s).  Please delete those first.");
 
+                if (Company.Filter<FieldType>(x => x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == id).Count() > 0)
+                    throw new ConflictException("The ReferenceItemType could not be removed", "One or more fields used as a list on a Field Type");
+
                 if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
