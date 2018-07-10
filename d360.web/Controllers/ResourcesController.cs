@@ -186,7 +186,7 @@ where		C.Type = @type
 
             #region Header
 
-            document.SetCellValue(1, 1, "Responsibility Type");
+            document.SetCellValue(1, 1, "Role");
             document.SetCellValue(1, 2, "Asset ID");
             document.SetCellValue(1, 3, "Name");
             document.SetCellValue(1, 4, "Via");
