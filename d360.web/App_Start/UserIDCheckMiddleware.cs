@@ -20,6 +20,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using IdentityModel;
 using IdentityModel.Client;
+using System.Configuration;
 
 namespace d360.web
 {
@@ -332,7 +333,11 @@ from	Resource R
         }
 
         public const string Authority = "http://localhost:5000";
-        
+        private static readonly bool jwtDiscoveryValidateIssuerName = (ConfigurationManager.AppSettings["jwtDiscoveryValidateIssuerName"] ?? "").ToUpper() == "TRUE";
+        private static readonly bool jwtValidateAudience = (ConfigurationManager.AppSettings["jwtValidateAudience"] ?? "").ToUpper() == "TRUE";
+        private static readonly bool jwtRequireExpirationTime = (ConfigurationManager.AppSettings["jwtRequireExpirationTime"] ?? "").ToUpper() == "TRUE";
+        private static readonly bool jwtValidateLifetime = (ConfigurationManager.AppSettings["jwtValidateLifetime"] ?? "").ToUpper() == "TRUE";
+
 
         private static async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context, Microsoft.ApplicationInsights.TelemetryClient telemetry)
         {
@@ -348,14 +353,21 @@ from	Resource R
 
                 return null;
             }
-
-            // read discovery document to find issuer and key material            
-            var disco = await DiscoveryClient.GetAsync(authority);
-
+            var di = new DiscoveryClient(authority);
+            di.Policy.ValidateIssuerName = jwtDiscoveryValidateIssuerName;
+            var disco = await di.GetAsync();
+            
 
             if (disco == null)
             {
                 telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response is null.", SeverityLevel = SeverityLevel.Verbose });
+
+                return null;
+            }
+
+            if (disco.IsError)
+            {                
+                telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response indicated error(s). {disco.Error}", SeverityLevel = SeverityLevel.Verbose });
 
                 return null;
             }
@@ -384,16 +396,24 @@ from	Resource R
             telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Done", SeverityLevel = SeverityLevel.Verbose });
 
             var parameters = new TokenValidationParameters
-            {
-                ValidIssuer = disco.Issuer,
-                ValidAudience = "mvc.manual",
-                IssuerSigningKeys = keys,
-
-                NameClaimType = "upn",
-                //RoleClaimType = JwtClaimTypes.Role,                
-                
-                RequireSignedTokens = true
+            {                
+                NameClaimType = "upn",                
             };
+
+            // The signing key must match!
+            parameters.ValidateIssuerSigningKey = true;
+            parameters.IssuerSigningKeys = keys;
+            parameters.RequireSignedTokens = true;
+
+            // Validate the JWT Issuer (iss) claim
+            parameters.ValidateIssuer = true;
+            parameters.ValidIssuer = disco.Issuer;
+
+            // Validate the token expiry
+            parameters.ValidateLifetime = jwtValidateLifetime;
+            parameters.RequireExpirationTime = jwtRequireExpirationTime;
+
+            parameters.ValidateAudience = jwtValidateAudience;
 
             var handler = new JwtSecurityTokenHandler();
             handler.InboundClaimTypeMap.Clear();
