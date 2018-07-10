@@ -2375,6 +2375,7 @@ namespace d360.web.Controllers
                 Column = 1,
                 FieldName = "ObjectTypeInfo",
                 Name = "Type",
+                Required=true,
                 FieldType = DataType.Lookup.ToString(),
                 Items = Company.GetAvailableAllocationOptions(at)
                     .Select(i => new SelectListItem
