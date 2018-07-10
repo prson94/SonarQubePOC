@@ -6682,9 +6682,9 @@ where v.id = {0}", id)).FirstOrDefault();
         }
 
         [Route("{type}/{id:int}/fieldlookup")]
-        public EditableFieldLookupList GetEditableFieldLookupData(SystemObjects type, int id, int take = 10000)
+        public List<dynamic> GetEditableFieldLookupData(SystemObjects type, int id, int take = 10000)
         {
-            var list = new EditableFieldLookupList();
+            var list = new List<dynamic>();
             string prefix = "";
             var qs = Request.GetQueryNameValuePairs();
             if (qs.Any(i => i.Key == "prefix"))
@@ -6706,14 +6706,17 @@ where v.id = {0}", id)).FirstOrDefault();
                     }
                     foreach (var item in atItems)
                     {
-                        var ei = new EditableFieldLookupItem();
-                        ei.Add("ID", item.ID);
-                        ei.Add("Name", item.Name);
+                        var ei = new
+                        {
+                            ID = item.ID,
+                            Name = item.Name
+                        };
+
                         list.Add(ei);
                     }
                     break;
                 case SystemObjects.Artifact:                    
-                    var sql = "select a.ID,d.DisplayValue  from artifact a inner join asset ast on (a.id = ast.objectid and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where a.ArtifactTypeID = @id";
+                    var sql = "select a.ID,d.DisplayValue  from artifact a inner join asset ast on (a.id = ast.objectid and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where a.ArtifactTypeID = @id order by d.DisplayValue";
                     var aItems = Company.Query<dynamic>(sql, new { id = id });
 
                     if (!string.IsNullOrEmpty(prefix))
@@ -6726,9 +6729,12 @@ where v.id = {0}", id)).FirstOrDefault();
                     }
                     foreach (var item in aItems)
                     {
-                        var ei = new EditableFieldLookupItem();
-                        ei.Add("ID", item.ID);
-                        ei.Add("Name", item.DisplayValue);
+                        var ei = new
+                        {
+                            ID = item.ID,
+                            Name = item.DisplayValue
+                        };
+
                         list.Add(ei);
                     }
                     break;
@@ -6739,9 +6745,11 @@ where v.id = {0}", id)).FirstOrDefault();
                     dItems = dItems.Take(take);
                     foreach (var item in dItems)
                     {
-                        var ei = new EditableFieldLookupItem();
-                        ei.Add("ID", item.ID);
-                        ei.Add("Name", item.Name);
+                        var ei = new
+                        {
+                            ID = item.ID,
+                            Name = item.Name
+                        };
                         list.Add(ei);
                     }
                     break;
@@ -6751,9 +6759,11 @@ where v.id = {0}", id)).FirstOrDefault();
                     imItems = imItems.OrderBy(i => i.TextPath).Take(take);
                     foreach (var item in imItems)
                     {
-                        var ei = new EditableFieldLookupItem();
-                        ei.Add("ID", item.ID);
-                        ei.Add("Name", item.TextPath);
+                        var ei = new
+                        {
+                            ID = item.ID,
+                            Name = item.TextPath
+                        };
                         list.Add(ei);
                     }
                     break;
@@ -6763,14 +6773,16 @@ where v.id = {0}", id)).FirstOrDefault();
                     imtItems = imtItems.OrderBy(i => i.TextPath).Take(take);
                     foreach (var item in imtItems)
                     {
-                        var ei = new EditableFieldLookupItem();
-                        ei.Add("ID", item.ID);
-                        ei.Add("Name", item.TextPath);
+                        var ei = new
+                        {
+                            ID = item.ID,
+                            Name = item.TextPath
+                        };
                         list.Add(ei);
                     }
                     break;
             }
-            return list;
+            return list;            
         }
 
         [Route("{type}/{id:int}/fields")]

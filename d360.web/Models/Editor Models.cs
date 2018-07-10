@@ -265,10 +265,7 @@ namespace d360.web.Models
 
     [DataContract(Name = "item", Namespace = constants.NAMESPACE)]
     public class EditableFieldLookupItem : Dictionary<string, object> { }
-
-    [DataContract(Name = "list", Namespace = constants.NAMESPACE)]
-    public class EditableFieldLookupList : List<EditableFieldLookupItem> { }
-
+    
     public class FieldTypeItemDisplayFieldEditorModel
     {
         public int FieldTypeID { get; set; }
