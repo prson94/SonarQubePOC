@@ -460,7 +460,8 @@ from	reporting.Global_Resource O ";
             updateSql += $" Update fieldtype set ColumnOrder ={fromField.ColumnOrder},UpdatedBy = {currentResourceID} where Id={fromField.ID};";
             return cnn.Execute(updateSql);
         }
-        public static IEnumerable<EndResult> GetProcessedResponsibilityRuleResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule)
+
+        public static IEnumerable<EndResult> GetProcessedResponsibilityRuleResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
         {
             if (rule.StructuredDefinition == null)
             {
