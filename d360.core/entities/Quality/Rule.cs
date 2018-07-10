@@ -37,8 +37,8 @@ namespace d360.core.entities
             Visible = true;
         }
 
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string DisplayValue { get; set; }
+        //[DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        //public string DisplayValue { get; set; }
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string KeyHash { get; set; }

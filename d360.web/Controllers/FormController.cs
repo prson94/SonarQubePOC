@@ -3497,9 +3497,9 @@ namespace d360.web.Controllers
                     break;
                 case SystemObjects.RuleType:
                     list.AddRange(
-                        Company.Filter<Rule>(i => i.RuleTypeID == id)
+                        Company.Filter<AssetDetail>(i => i.Type == type.ToString() && i.TypeID == id)
                         .OrderBy(i => i.DisplayValue)
-                        .Select(i => new ListIntItem { title = i.DisplayValue, value = i.ID })
+                        .Select(i => new ListIntItem { title = i.DisplayValue, value = i.ObjectID })
                     );
                     break;
                 case SystemObjects.TaxonomyType:

@@ -4678,6 +4678,8 @@ where   A.RuleTypeID = @id and A.[Visible] = 1
         public HttpResponseMessage GetRuleImplementation(int id)
         {
             var row = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType);
+            var rule = Company.AssetDetails.FirstOrDefault(i => i.Object == SystemObjects.Rule.ToString() && i.ObjectID == row.RuleID);
+
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
                     { "ID", row.ID },
@@ -4685,7 +4687,7 @@ where   A.RuleTypeID = @id and A.[Visible] = 1
                     { "SourceID", row.SourceID },
                     { "SourceUri", row.SourceUri },
                     { "RuleID", row.RuleID },
-                    { "RuleName", row.Rule.DisplayValue },
+                    { "RuleName", rule?.DisplayValue ?? "" },
                     { "RuleTypeID", row.Rule.RuleTypeID },
                     { "RuleTypeName", row.Rule.RuleType.Name },
                     { "CreatedOn", row.CreatedOn.GetValueOrDefault() },
