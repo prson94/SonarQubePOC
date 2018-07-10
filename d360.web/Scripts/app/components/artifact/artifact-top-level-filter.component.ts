@@ -16,6 +16,12 @@ import { FieldsService } from '../../services/fields.service';
                                         <span *ngSwitchCase="'dropdownlist'">                                            
                                             <p-multiSelect [name]="field.datafield" [options]="field.filteritems | arraySelectItemPipe" [ngModel]="field.value" (ngModelChange)="field.value=$event;enableParentFilters(field);" [style]="{width:'100%'}" [disabled]="field.disabled"></p-multiSelect>
                                         </span>           
+                                        <span *ngSwitchCase="'checkbox'">                                                                                        
+                                            <select [name]="field.datafield"  [ngModel]="field.value" (ngModelChange)="field.value=$event;enableParentFilters(field);" [disabled]="field.disabled" style="width: 100%">
+                                                <option></option>
+                                                <option *ngFor="let i of field.filteritems" [value]="i">{{i}}</option>
+                                            </select>
+                                        </span>  
                                         <span *ngSwitchCase="'datetimeinput'">                            
                                             <p-calendar [(ngModel)]="field.value" [name]="field.datafield" [dateFormat]="getLocaleDateString()"></p-calendar>
                                         </span>
