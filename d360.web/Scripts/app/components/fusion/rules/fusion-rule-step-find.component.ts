@@ -8,8 +8,8 @@ import { StringHelpers } from '../../../static/string-helpers';
 @Component({
     selector: 'd3s-fusion-rule-step-find',
     templateUrl: './fusion-rule-step-find.component.html',
-    providers: [FusionService] 
-}) 
+    providers: [FusionService]
+})
 
 export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent implements OnInit {
     @Input() fusionID: number;
@@ -20,7 +20,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     @Input() isValid = false;
     @Output() isValidChange = new EventEmitter();
 
-    @Output() settingsChange = new EventEmitter(); 
+    @Output() settingsChange = new EventEmitter();
 
     showTargetField = false;
     findParent = false;
@@ -28,7 +28,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     searchTypes: any[] = [
         { value: "Fusion", text: "Fusion" },
         { value: "FusionOwner", text: "Fusion Owner" },
-        { value: "Glossary", text: "Glossary" },        
+        { value: "Glossary", text: "Glossary" },
         { value: "ResultFromStep", text: "Result From Step" }
     ];
 
@@ -49,7 +49,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
 
     ngOnInit() {
         let s = this.settings;
-        
+
         //Clear out irrelevant properties for this type of step.
         this.removeIrrelevantSettings(this.settings, "Find");
 
@@ -157,12 +157,12 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                     this.validate();
                 });
         if (this.settings.Object == 'TaxonomyType')
-           return  this.fusionService.getFindModels()
-               .then(r => {
+            return  this.fusionService.getFindModels()
+                .then(r => {
                     this.objects = r;
                     this.validate();
                 });
-        
+
         this.validate();
         return Promise.resolve();
     }
@@ -187,7 +187,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
             return this.fusionService.getFindSourceFields('ArtifactType', this.settings.ObjectID)
                 .then(r => {
                     let t = r.filter(x => x.Type != "ComplexRelationLookup" && x.Type != "OwnershipLookup")
-                    this.targetFields = t;                    
+                    this.targetFields = t;
                     this.showTargetField = true;
                     this.validate();
                 });
@@ -195,7 +195,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
             return this.fusionService.getFindSourceFields('TaxonomyType', this.settings.ObjectID)
                 .then(r => {
                     let t = r.filter(x => x.Type != "ComplexRelationLookup" && x.Type != "OwnershipLookup")
-                    this.targetFields = t;       
+                    this.targetFields = t;
                     this.showTargetField = true;
                     this.validate();
                 });

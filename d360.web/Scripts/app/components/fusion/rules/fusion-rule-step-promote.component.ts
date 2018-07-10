@@ -8,13 +8,13 @@ import { StringHelpers } from '../../../static/string-helpers';
 @Component({
     selector: 'd3s-fusion-rule-step-promote',
     templateUrl: './fusion-rule-step-promote.component.html',
-    providers: [FusionService] 
+    providers: [FusionService]
 })
 
 export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent implements OnInit {
     @Input() fusionID: number;
     @Input() ruleID: number;
-    @Input() ruleStepID: number = 0; 
+    @Input() ruleStepID: number = 0;
     @Input() settings: any;
     @Input() showErrors = false;
     @Input() isValid = false;
@@ -37,7 +37,7 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
     rule: FusionRule;
 
     showPromotionParent: boolean = false;
-    
+
     steps: any[] = [];
     promotionObjects: any[] = [];
     parents: any[] = [];
@@ -52,7 +52,7 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
     }
 
     ngOnInit() {
-        
+
         //Clear out irrelevant properties for this type of step.
         this.removeIrrelevantSettings(this.settings, "Promote");
         this.loadTypes()
@@ -61,12 +61,12 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
                     this.switchParentSearch();
                 });
             });
-        
+
     }
 
     loadTypes(): Promise<any> {
         this.promotionObjects = [];
-       if (this.settings.Object == 'ArtifactType')
+        if (this.settings.Object == 'ArtifactType')
             return this.fusionService.getFindArtifactTypes()
                 .then(r => {
                     this.promotionObjects = r;
@@ -101,7 +101,7 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
                     if (item.ParentID) {
                         if (item.ParentID != 0)
                             this.showPromotionParent = true;
-                   }
+                  }
                     else {
                         this.showPromotionParent = false;
                         this.settings.ParentObjectSearch = null;

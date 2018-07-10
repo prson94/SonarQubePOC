@@ -3,11 +3,12 @@ import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
 import { FusionService } from '../../../services/fusion.service';
 import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
+import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'd3s-fusion-rule-step-lineage',
     templateUrl: './fusion-rule-step-lineage.component.html',
-    providers: [FusionService] 
+    providers: [FusionService]
 })
 
 export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent implements OnInit {
@@ -17,7 +18,7 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
     @Input() settings: any;
     @Input() showErrors = false;
     @Input() isValid = false;
-    @Output() isValidChange = new EventEmitter(); 
+    @Output() isValidChange = new EventEmitter();
 
     @Output() settingsChange = new EventEmitter();
 
@@ -52,9 +53,9 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
 
     validate() {
         this.isValid = true;
-        if (this.settings.Role == null
-            || this.settings.SubjectID == null
-            || this.settings.ObjectID == null)
+        if (StringHelpers.isNullOrEmpty(this.settings.Role)
+            || StringHelpers.isNullOrEmpty(this.settings.SubjectID)
+            || StringHelpers.isNullOrEmpty(this.settings.ObjectID))
             this.isValid = false;
 
         this.isValidChange.emit(this.isValid);
