@@ -37,6 +37,11 @@ namespace d360.core.entities
         [DataMember]
         public bool ProcessedDelete { get; set; }
 
+        [DataMember]
+        public string RawDefinition { get; set; }
+
+        [DataMember]
+        public string EnumFieldValues { get; set; }
 
         [IgnoreDataMember, ForeignKey("ExecutionID")]
         public virtual IntegrationExecution Execution { get; set; }

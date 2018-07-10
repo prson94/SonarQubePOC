@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -68,8 +69,8 @@ namespace d360.model
             {
                 editRightsColumnStatement = ", IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete ";
                 editRightsJoinStatement = $@"
-left join cache.AssetEdit S_E{tableHints} on S_E.ResourceID = @r and S_E.AssetID = A.ID 
-left join cache.AssetDelete S_D{tableHints} on S_D.ResourceID = @r and S_D.AssetID = A.ID ";
+outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID and ResourceID = @r and (PermissionsBitMask & {(int)Permission.DeleteAsset}) = {(int)Permission.DeleteAsset}) S_E 
+outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID and ResourceID = @r and (PermissionsBitMask & {(int)Permission.DeleteAsset}) = {(int)Permission.DeleteAsset}) S_D";
             }
 
             #endregion
@@ -281,7 +282,7 @@ end as {columnName} ");
                             dbArgs.Add($"{paramPrefix}SA", securityAsset);
                             dbArgs.Add($"{paramPrefix}SAID", o.SecurityAssetID);
                             dbArgs.Add($"{paramPrefix}RTID", o.ResponsibilityTypeID);
-                            whereList.Add($"A.ID in (select AssetID from ResponsibilityDetails where SecurityAsset = @{paramPrefix}SA and SecurityAssetID = @{paramPrefix}SAID and ResponsibilityTypeID = @{paramPrefix}RTID )");
+                            whereList.Add($"A.ID in (select AssetID from ResponsibilityDetail where SecurityAsset = @{paramPrefix}SA and SecurityAssetID = @{paramPrefix}SAID and ResponsibilityTypeID = @{paramPrefix}RTID )");
 
                             index++;
                         }
@@ -435,7 +436,7 @@ from	Asset A{tableHints}
         {filterJoinString} 
 where   A.AssetTypeID = @atID 
         and A.State = 1
-        and A.ID not in (select AssetID from cache.NoRead where ResourceID = @r) 
+        and A.ID not in (select AssetID from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r) 
 {whereString} 
 OPTION (RECOMPILE)";
             }
@@ -461,7 +462,7 @@ from	Asset A{tableHints}
         {editRightsJoinStatement} 
 where   A.AssetTypeID = @atID 
         and A.State = 1  
-        and A.ID not in (select AssetID from cache.NoRead where ResourceID = @r) 
+        and A.ID not in (select AssetID from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r) 
         {whereString}
 ORDER BY {orderFieldString}
 OFFSET({pageNumber}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY 
@@ -500,10 +501,10 @@ OPTION (RECOMPILE)";
 
             if (!CurrentResourceIsAdmin)
             {
-                editRightsColumnStatement = " IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete, ";
+                editRightsColumnStatement = " IIF(S_E.[Count] = 0, 0, 1) as P_CanEdit, IIF(S_D.[Count] = 0, 0, 1) as P_CanDelete, ";
                 editRightsJoinStatement = $@"
-left join cache.AssetEdit S_E{tableHints} on S_E.ResourceID = @r and S_E.AssetID = A.ID 
-left join cache.AssetDelete S_D{tableHints} on S_D.ResourceID = @r and S_D.AssetID = A.ID ";
+cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and AssetID = A.ID and PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
+cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and AssetID = A.ID and PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
             }
 
             #endregion
@@ -688,7 +689,7 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                     break;
                             }
 
-                            filterWhereList.Add($"A.ID in (select AssetID from ResponsibilityDetails{tableHints} where SecurityAsset = '{securityAsset}' and SecurityAssetID = {o.SecurityAssetID} and ResponsibilityTypeID = {o.ResponsibilityTypeID} )");
+                            filterWhereList.Add($"A.ID in (select AssetID from ResponsibilityDetail{tableHints} where SecurityAsset = '{securityAsset}' and SecurityAssetID = {o.SecurityAssetID} and ResponsibilityTypeID = {o.ResponsibilityTypeID} )");
 
                             index++;
                         }
@@ -869,7 +870,7 @@ from	Asset A{tableHints}
         {filterJoinString}         
 where	A.AssetTypeID = @atID
 		and A.State = 1
-        and not exists (select 1 from cache.NoRead where ResourceID = @r and AssetID = A.ID)
+        and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and AssetID = A.ID)
         {filterWhereString}
 OPTION (RECOMPILE)";
 
@@ -914,7 +915,7 @@ from	(
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
 						{fieldFromRelationshipJoinStatement} 
-                where   not exists (select 1 from cache.NoRead where ResourceID = @r and AssetID = A.ID)
+                where   not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and AssetID = A.ID)
                         {filterWhereString}
 				) A
 		pivot	(

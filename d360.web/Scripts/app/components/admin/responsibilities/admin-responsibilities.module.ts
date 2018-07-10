@@ -19,7 +19,9 @@ import { AdminModule } from '../admin.module';
 import { AdminGovernanceComponent } from './admin-governance.component';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
 import { ResponsibilityRulesComponent } from './responsibility-rules.component';
+
 import { ResponsibilityRuleForm } from './responsibility-rule.form';
+
 import { AdminResponsibilitiesRoutingModule } from './admin-responsibilities.routes';
 
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
@@ -35,9 +37,11 @@ import {
     TooltipModule,
     DataTableModule,
 } from 'primeng/primeng';
+import { ResponsibilityTypeRelation } from '../../../models/responsibility-type.model';
 
 @NgModule({
-    imports: [CommonModule,
+    imports: [
+        CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
         HttpModule,

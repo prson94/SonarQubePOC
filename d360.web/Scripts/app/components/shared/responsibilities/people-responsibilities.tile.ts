@@ -27,7 +27,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     private isDeleting = false;
     private isAdding = false;
 
-    constructor(private responsibilityService: ResponsibilityService, private permissionsService: PermissionsService,private router: Router) {
+    constructor(private responsibilityService: ResponsibilityService, private permissionsService: PermissionsService, private router: Router) {
         super();
     }
 
@@ -72,7 +72,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     add(): void {
         this.addingRow = new ResponsibilityItemDetail();
         this.addingRow.AssetID = this.assetID;
-        //this.addingRow.OverrideItemID = this.overrideItemID;
+        //this.addingRow.OverrideID = this.overrideItemID;
         this.isAdding = true;
     }
 

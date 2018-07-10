@@ -407,9 +407,9 @@ namespace d360.web.Controllers.Services
             if (model.Links == null)
                 return Json<dynamic>(new { type = "error", title = "Error", message = "Model is missing link data." });
 
-            bool canCreate = Company.HasPermission(model.Object, model.ObjectID, Claim.Create, ClaimObject.Relationship);
-            bool canUpdate = Company.HasPermission(model.Object, model.ObjectID, Claim.Update, ClaimObject.Relationship);
-            bool canDelete = Company.HasPermission(model.Object, model.ObjectID, Claim.Delete, ClaimObject.Relationship);
+            bool canCreate = Company.HasAssetPermission(model.Object, model.ObjectID, Permission.ModifyAsset);
+            bool canUpdate = Company.HasAssetPermission(model.Object, model.ObjectID, Permission.ModifyAsset);
+            bool canDelete = Company.HasAssetPermission(model.Object, model.ObjectID, Permission.DeleteAsset);
 
             try
             {

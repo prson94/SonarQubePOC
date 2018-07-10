@@ -3,6 +3,7 @@ import { CommonModule }       from '@angular/common';
 
 import { DropdownItemToSelectItemPipe } from './dropdown-to-selectitem.pipe';
 import { ModelTypePipe } from './model-type.pipe';
+import { PermissionFilterPipe } from './permission-filter.pipe';
 import { ScoreDisplayPipe } from './score-display.pipe';
 import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
 import { TreeSearchPipe } from './tree-search.pipe';
@@ -16,6 +17,7 @@ import { SafeHtmlPipe } from './safe-html.pipe';
         TreeSearchPipe,
         DropdownItemToSelectItemPipe,
         ModelTypePipe,
+        PermissionFilterPipe,
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
         SafeHtmlPipe
@@ -25,6 +27,7 @@ import { SafeHtmlPipe } from './safe-html.pipe';
         TreeSearchPipe,
         DropdownItemToSelectItemPipe,
         ModelTypePipe,
+        PermissionFilterPipe,
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
         SafeHtmlPipe

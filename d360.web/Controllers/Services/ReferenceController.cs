@@ -39,7 +39,7 @@ namespace d360.web.Controllers.Services
         [Route("{typeID:int}/items"), HttpPost]
         public HttpResponseMessage AddItemToList(int typeID, Dictionary<string, string> model)
         {
-            if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Create, ClaimObject.Root))
+            if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, typeID, Permission.ModifyAsset))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add an item to this list.");
 
             ReferenceItem item = null;
@@ -103,7 +103,7 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Update, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this reference list.");
 
                 return (Company.SaveOrUpdate(list) > 0) ?
@@ -131,7 +131,7 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, id, Permission.DeleteAsset))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this item.");
 
                 var itemToRemove = Company.GetById<ReferenceItem>(id);
@@ -166,7 +166,7 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Delete, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.ReferenceItemType, id, Permission.DeleteAsset))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this reference list.");
 
                 var listToRemove = Company.GetById<ReferenceItemType>(id);
@@ -203,7 +203,7 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, id, Permission.ModifyAsset))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this item.");
 
                 var item = Company.GetById<ReferenceItem>(id);
@@ -254,7 +254,7 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.ModifyAsset))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this list.");
 
                 var listToUpdate = Company.GetById<ReferenceItemType>(id);

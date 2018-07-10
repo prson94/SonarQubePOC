@@ -2,7 +2,7 @@
     <div>
         <header>
             {{title}}
-            <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="add();" *ngIf="!isEditing && !isAdding && !isDeleting" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+            <d3s-tile-actions [hasAdd]="hasModifyResponsibilitiesPermissions()" (addClick)="add();" *ngIf="!isEditing && !isAdding && !isDeleting" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
     </div>
     <div *ngIf="isLoading" style="width:100%; text-align:center;">
@@ -18,9 +18,9 @@
                         <d3s-preview-tooltip objectType="ResponsibilityType" [objectId]="item.ResponsibilityTypeID">{{item.ResponsibilityTypeName}}</d3s-preview-tooltip>
                     </ng-template>
                 </p-column>
-                <p-column field="LastName" header="Resource" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter" [style]="{'min-width':'200px'}">
+                <p-column field="ResourceName" header="Resource" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter" [style]="{'min-width':'200px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.FirstName}} {{item.LastName}}</d3s-preview-tooltip>
+                        <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.ResourceName}}</d3s-preview-tooltip>
                     </ng-template>
                 </p-column>
                 <p-column field="SecurityAssetName" header="Via Group" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'200px'}" [filter]="!showSimpleFilter">
@@ -33,21 +33,21 @@
                         <div *ngIf="item.Context" [innerHtml]="item.Context"></div>
                     </ng-template>
                 </p-column>
-                <p-column field="OverrideItemID" [hidden]="true">
+                <p-column field="OverrideID" [hidden]="true">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <div>{{item.OverrideItemID}}</div>
+                        <div>{{item.OverrideID}}</div>
                     </ng-template>
                 </p-column>
                 <p-column [style]="{'width':'40px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <div *ngIf="item.OverrideItemID && hasRootUpdatePermissions()" class="RowTools">
+                        <div *ngIf="item.OverrideID && hasModifyResponsibilitiesPermissions()" class="RowTools">
                             <a (click)="selectedRow = item; edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                         </div>
                     </ng-template>
                 </p-column>
                 <p-column [style]="{'width':'40px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <div *ngIf="item.OverrideItemID && hasRootDeletePermissions()" class="RowTools">
+                        <div *ngIf="item.OverrideID && hasDeleteResponsibilitiesPermissions()" class="RowTools">
                             <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </ng-template>
@@ -58,10 +58,10 @@
             <d3s-responsibility-item-form [item]="selectedRow" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
         </div>
         <div *ngIf="isDeleting" style="padding:15px;">
-            <d3s-delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.OverrideItemID"
+            <d3s-delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.OverrideID"
                          [method]="'delete'"
-                         [prompt]="'Are you sure you want to delete the ' + selectedRow.ResponsibilityTypeName + ' ' + selectedRow.FirstName + ' ' + selectedRow.LastName + '?'"
-                         (onDeleteSuccess)="confirmDeleteRow(selectedRow.OverrideItemID)"
+                         [prompt]="'Are you sure you want to delete the ' + selectedRow.ResponsibilityTypeName + ' ' + selectedRow.ResourceName + '?'"
+                         (onDeleteSuccess)="confirmDeleteRow(selectedRow.OverrideID)"
                          (onCancel)="isDeleting=false;">
             </d3s-delete-form>
         </div>

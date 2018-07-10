@@ -4,23 +4,23 @@ import { HeaderActionsService } from '../../services/header-actions.service';
 import { DetailRow, DetailField, DetailModel, IObjectDetailService } from '../../models/object-detail.model';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';
-import { Permission } from '../../models/permission.model'
 import { NymType } from '../../models/object-detail.model';
+import { ResponsibilityTypeRelationPermission } from '../../models/responsibility-type.model';
 
 @Component({
     selector: 'd3s-object-definition-tile',
     template: `
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div *ngIf="!showEditor && !isLoading">
-                        <header>&nbsp;<d3s-tile-actions [hasEdit]="hasRootUpdatePermissions()" (editClick)="showEditor=true"></d3s-tile-actions></header>
+                        <header>&nbsp;<d3s-tile-actions [hasEdit]="hasModifyAssetPermissions()" (editClick)="showEditor=true"></d3s-tile-actions></header>
                         <simple-accordion header="Definition" [active]="true">
                             <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
                         </simple-accordion>
                         <simple-accordion header="{{nym.Name}} ({{synonyms.itemCount}})" [active]="false" *ngFor="let nym of nymTypes">
-                            <d3s-synonyms-tile #synonyms [predicateId]="nym.ID" [predicateName]="nym.Name" [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasRelationshipCreatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-synonyms-tile>
+                            <d3s-synonyms-tile #synonyms [predicateId]="nym.ID" [predicateName]="nym.Name" [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasModifyRelationshipsPermissions()" [hasDelete]="hasDeleteRelationshipsPermissions()"></d3s-synonyms-tile>
                         </simple-accordion>
                         <simple-accordion header="Attributes ({{attributes.itemCount}})" [active]="false" *ngIf="hasAttributes">
-                            <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasAttributeCreatePermissions()" [hasEdit]="hasAttributeUpdatePermissions()" [hasDelete]="hasAttributeDeletePermissions"></d3s-attributes-tile>
+                            <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasModifyAttributesPermissions()" [hasEdit]="hasModifyAttributesPermissions()" [hasDelete]="hasDeleteAttributesPermissions"></d3s-attributes-tile>
                         </simple-accordion>                     
             </div>
             <d3s-dynamic-editor *ngIf="showEditor"
@@ -50,7 +50,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
     private showEditor: boolean = false;;
         
-    @Input() objectPermissions: Permission[] = [];
+    @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
 
     constructor(private objectDetailService: ObjectDetailService, private headerActionsService: HeaderActionsService) {
         super();

@@ -106,8 +106,6 @@
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeFieldItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetType.cs" />
-    <Compile Include="entities\Integration\IntegrationExecutionRoleItem.cs" />
-    <Compile Include="entities\Integration\IntegrationExecutionRelationItem.cs" />
     <Compile Include="entities\Integration\IntegrationUnresolvedRelationItem.cs" />
     <Compile Include="entities\Integration\IntegrationExecutionAsset.cs" />
     <Compile Include="entities\Integration\IntegrationExecutionAssetType.cs" />
@@ -255,7 +253,6 @@
     <Compile Include="entities\Views\IntersectTypeDetail.cs" />
     <Compile Include="entities\Report.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeObjectClaim.cs" />
-    <Compile Include="entities\Security\ResponsibilityTypeClaim.cs" />
     <Compile Include="entities\Security\ResponsibilityType.cs" />
     <Compile Include="entities\Glossary\Artifact.cs" />
     <Compile Include="entities\Glossary\ArtifactType.cs" />
@@ -303,10 +300,6 @@
     <Compile Include="entities\Transitive\MostActiveUserReportModel.cs" />
     <Compile Include="entities\Transitive\MicroModels.cs" />
     <Compile Include="entities\Transitive\RenderTemplateModel.cs" />
-    <Compile Include="entities\Transitive\ResponsibilityTypeClaimDetail.cs" />
-    <Compile Include="entities\Views\DomainAllocationDetail.cs" />
-    <Compile Include="entities\Views\ResponsibilityTypeObjectClaimDetail.cs" />
-    <Compile Include="entities\Views\SecurityDetail.cs" />
     <Compile Include="entities\Views\RelationshipAggregate.cs" />
     <Compile Include="entities\Views\ResponsibilityDetail.cs" />
     <Compile Include="entities\Views\AttributeDetail.cs" />
@@ -315,15 +308,13 @@
     <Compile Include="entities\Views\FieldWithRelation.cs" />
     <Compile Include="entities\Views\FieldTypeWithRelation.cs" />
     <Compile Include="entities\Transitive\ObjectDetail.cs" />
-    <Compile Include="entities\Views\TaxonomyDetail.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="entities\Workflow\DiagramModels.cs" />
     <Compile Include="entities\Workflow\Models.cs" />
     <Compile Include="entities\Workflow\WorkflowItemAssignment.cs" />
     <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
     <Compile Include="enums\ApiUriType.cs" />
     <Compile Include="enums\BulkRelationshipOperation.cs" />
+    <Compile Include="enums\Permission.cs" />
     <Compile Include="enums\EnvironmentLevel.cs" />
     <Compile Include="enums\FusionRuleFindSearchType.cs" />
     <Compile Include="enums\FusionRuleRelateSearchType.cs" />
@@ -387,7 +378,6 @@
     <Compile Include="exceptions\UnauthorizedException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="queue\CacheInfo.cs" />
     <Compile Include="queue\EventInfo.cs" />
     <Compile Include="queue\BulkLoadInfo.cs" />
     <Compile Include="queue\IndexObjectModel.cs" />

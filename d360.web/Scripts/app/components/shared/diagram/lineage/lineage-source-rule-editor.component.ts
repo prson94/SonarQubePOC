@@ -12,7 +12,7 @@ import {
     SourceRuleSource,
 } from '../../../../models/lineage.model';
 import { BaseComponent } from '../../base.component';
-import { Permission } from '../../../../models/permission.model';
+import { ResponsibilityTypeRelationPermission } from '../../../../models/responsibility-type.model';
 
 @Component({
     selector: 'd3s-lineage-source-rule-editor',
@@ -86,7 +86,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
 
     model: MapSequenceModel;
     items: SourceRuleItem[] = [];
-    permissions: Permission[] = [];
+    //permissions: ResponsibilityTypeRelationPermission[] = [];
 
     isLoading = false;
 
@@ -188,8 +188,8 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
 
     save() {
        
-        let permCreate = this.permissions.find(p => p.ClaimObject == 'Relationship' && p.Claim == 'Create');
-        let permEdit = this.permissions.find(p => p.ClaimObject == 'Relationship' && p.Claim == 'Update');
+        let permCreate = this.hasModifyRelationshipsPermissions();
+        let permEdit = this.hasModifyRelationshipsPermissions();
 
         if (!permEdit || !permCreate)
             return;

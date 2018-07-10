@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.model;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -103,7 +104,7 @@ where   A.Type = 'ArtifactType'
 
             var type = Company.GetById<ArtifactType>(id);
 
-            sql = $"select * from ({sql}) A where not exists (select 1 from cache.NoRead where ResourceID = {Company.CurrentResourceID} and AssetID = A.ID)";
+            sql = $"select * from ({sql}) A where not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and AssetID = A.ID)";
 
             sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: fields);
             
@@ -223,7 +224,7 @@ from	AssetDetail A
 where   A.Type = 'ArtifactType' 
         and A.TypeID = @id 
         and A.[State] = 1 
-        and A.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})";
+        and A.ID not in ({GetNoReadSqlStatement()})";
 
             #endregion
 
@@ -697,7 +698,7 @@ from	AssetDetail O
         inner join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = O.Object and PI.SubjectID = @p and PI.ObjectID = O.ObjectID and PI.PredicateType = 3 
         inner join AssetDetail P on P.Object = PI.Subject and P.ObjectID = PI.SubjectID 
 where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1 
-        and O.ID not in (select AssetID from cache.NoRead where ResourceID = " + Company.CurrentResourceID + @")";
+        and O.ID not in (" + GetNoReadSqlStatement() + ")";
             var model = processDynamicResults(
                 sql, Request,
                 "ArtifactType", childArtifactTypeID,

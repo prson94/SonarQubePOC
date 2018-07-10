@@ -1,9 +1,7 @@
 ﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
 import { DiagramService } from '../../../../services/diagram.service';
 import { MessagesService } from '../../../../services/messages.service';
-import { PermissionsService } from '../../../../services/permissions.service';
 import { BaseComponent } from '../../base.component';
-import { Permission } from '../../../../models/permission.model';
 import {
     LineageEditorTechnicalRow,
     LineageEditorRow,
@@ -14,6 +12,8 @@ import {
 } from '../../../../models/lineage.model';
 
 import * as _ from 'lodash';
+import { ResponsibilityTypeRelationPermission } from '../../../../models/responsibility-type.model';
+import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 
 @Component({
     selector: 'd3s-lineage-technical-editor',
@@ -31,7 +31,7 @@ import * as _ from 'lodash';
 
 `
     ],
-    providers: [DiagramService]
+    providers: [DiagramService, ResponsibilityTypeService]
 })
 
 export class LineageTechnicalEditorComponent extends BaseComponent implements OnInit {
@@ -41,7 +41,7 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
     @Output() onSaveComplete = new EventEmitter();
     @Output() onSaveSuccess = new EventEmitter();
 
-    permissions: Permission[] = [];
+    //permissions: ResponsibilityTypeRelationPermission[] = [];
     lineage: LineageEditorTechnicalRow[] = [];
     mapItems: LineageEditorRow[] = [];
     model: LineageEditorTechnicalModel;
@@ -56,19 +56,16 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
     view: LineageView = LineageView.Technical;
 
 
-    constructor(private diagramService: DiagramService, protected messagesService: MessagesService, protected permissionsService: PermissionsService) {
+    constructor(private diagramService: DiagramService, protected messagesService: MessagesService, protected responsibilityTypeService: ResponsibilityTypeService) {
         super();
     }
 
     ngOnInit() {
         this.load();
-        this.permissionsService.getPermissions(this.objectId, this.object)
-            .then(data => {
-                this.permissions = data;
-            });
-        //this.model = new LineageEditorModel();
-        //this.model.Focal = this.object;
-        //this.model.FocalID = this.objectId;
+        //this.responsibilityTypeService.getRelationsByObjectType(this.object, this.objectId)
+        //    .then(data => {
+        //        this.permissions = data;
+        //    });
     }
 
     load() {

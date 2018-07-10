@@ -193,6 +193,21 @@ namespace igx.jobs.igc
 
     #endregion
 
+    public class RelationshipAction
+    {
+        //IntersectTypeID, IntersectID, [Action]
+        public int IntersectTypeID { get; set; }
+        public int IntersectID { get; set; }
+        public string Action { get; set; }
+    }
+
+
+    public class ExecutionAssetType
+    {
+        public long ExecutionID { get; set; }
+        public int SynchedAssetTypeID { get; set; }
+    }
+
     public class D3sOwnershipItemsModel
     {
         public string UserIdFieldName { get; set; }

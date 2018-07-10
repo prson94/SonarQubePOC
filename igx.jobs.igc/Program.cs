@@ -48,6 +48,12 @@ namespace igx.jobs
             var engine = new IgcIntegrationEngine();
             engine.Run(log);
         }
+
+        //public static void RunViaQueue([QueueTrigger("%IntegrationQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
+        //{
+        //    var engine = new IgcIntegrationEngine();
+        //    engine.Run(log);
+        //}
     }
 
     public class IgcIntegrationEngine
@@ -114,7 +120,7 @@ namespace igx.jobs
                         if (settings.Count > 0)
                         {
                             #if DEBUG
-                            var IDs = new List<int>() { 1, 2, 3, 4, 5 };
+                            var IDs = new List<int>() { 1 }; //, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
                             #else
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
@@ -124,6 +130,8 @@ namespace igx.jobs
                             mappingRelationTargets = company.Table<IntegrationAssetTypeRelationItemTarget>().ToList();
                             mappingRoles = company.Table<IntegrationAssetTypeRoleItem>().ToList();
                         }
+
+                        var executionIDs = new List<ExecutionAssetType>(); //To loop through to synch deletions.
 
                         foreach (var setting in settings)
                         {
@@ -176,7 +184,7 @@ order by A.ID
                                                 if (newExecution == null)
                                                 {
                                                     // Initialize the new execution record on the first pass where we actually need a new one.
-                                                    newExecution = new IntegrationExecution { StartedOn = now };
+                                                    newExecution = new IntegrationExecution { StartedOn = DateTime.UtcNow }; // now
                                                     company.Add(newExecution);
                                                 }
 
@@ -323,73 +331,72 @@ order by A.ID
 
                                         #region Process unresolved relationships and process workflows around them
 
-                                        try
-                                        {
-                                            log.WriteLine($"Begin processing unresolved relationships.");
-                                            var unResolvedRelationResults = company.ProcessUnresolvedRelationships();
-                                            if (unResolvedRelationResults != null)
-                                            {
-                                                var events = new List<EventInfo>();
-                                                foreach (var r in unResolvedRelationResults)
-                                                {
-                                                    if (r.Action == "INSERT" && r.IntersectID != null)
-                                                    {
-                                                        events.Add(new EventInfo
-                                                        {
-                                                            CompanyID = c.CompanyID,
-                                                            DomainPrefix = c.UrlPrefix,
-                                                            ResourceID = setting.TargetResourceID,
-                                                            Action = ChangeType.Add,
-                                                            Object = new EventObjectInfo
-                                                            {
-                                                                Object = SystemObjects.Intersect,
-                                                                ObjectType = SystemObjects.IntersectType,
-                                                                ObjectID = r.IntersectID,
-                                                                ObjectTypeID = r.IntersectTypeID
-                                                            }
-                                                        });
-                                                        if (events.Count > 50)
-                                                        {
-                                                            Queue.CreateTopicMessages(events);
-                                                            events.Clear();
-                                                        }
-                                                    }
-                                                }
+                                        //try
+                                        //{
+                                        //    log.WriteLine($"Begin processing unresolved relationships.");
+                                        //    var unResolvedRelationResults = company.ProcessUnresolvedRelationships();
+                                        //    if (unResolvedRelationResults != null)
+                                        //    {
+                                        //        var events = new List<EventInfo>();
+                                        //        foreach (var r in unResolvedRelationResults)
+                                        //        {
+                                        //            if (r.Action == "INSERT" && r.IntersectID != null)
+                                        //            {
+                                        //                events.Add(new EventInfo
+                                        //                {
+                                        //                    CompanyID = c.CompanyID,
+                                        //                    DomainPrefix = c.UrlPrefix,
+                                        //                    ResourceID = setting.TargetResourceID,
+                                        //                    Action = ChangeType.Add,
+                                        //                    Object = new EventObjectInfo
+                                        //                    {
+                                        //                        Object = SystemObjects.Intersect,
+                                        //                        ObjectType = SystemObjects.IntersectType,
+                                        //                        ObjectID = r.IntersectID,
+                                        //                        ObjectTypeID = r.IntersectTypeID
+                                        //                    }
+                                        //                });
+                                        //                if (events.Count > 50)
+                                        //                {
+                                        //                    Queue.CreateTopicMessages(events);
+                                        //                    events.Clear();
+                                        //                }
+                                        //            }
+                                        //        }
 
-                                                if (events.Count > 0)
-                                                {
-                                                    Queue.CreateTopicMessages(events);
-                                                }
-                                            }
-                                            log.WriteLine($"End processing unresolved relationships.");
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                                        }
+                                        //        if (events.Count > 0)
+                                        //        {
+                                        //            Queue.CreateTopicMessages(events);
+                                        //        }
+                                        //    }
+                                        //    log.WriteLine($"End processing unresolved relationships.");
+                                        //}
+                                        //catch (Exception ex)
+                                        //{
+                                        //    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                                        //}
 
                                         #endregion
                                     }
                                 }
-
                             }
                         }
 
                         #region Process deletes
 
-                        if (settings.Count > 0)
-                        {
-                            try
-                            {
-                                log.WriteLine($"Begin processing deletions.");
-                                company.ProcessIntegrationAssetDeletions();
-                                log.WriteLine($"End processing deletions.");
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-                        }
+                        //if (settings.Count > 0)
+                        //{
+                        //    try
+                        //    {
+                        //        log.WriteLine($"Begin processing deletions.");
+                        //        company.ProcessIntegrationAssetDeletions();
+                        //        log.WriteLine($"End processing deletions.");
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        //    }
+                        //}
 
                         #endregion
                     }
@@ -928,12 +935,15 @@ order by A.ID
             //First, get the type definition of the asset type, to pull enum values.
             var url = $"{setting.SourceUri}types/{mapping.SourceAssetTypeName}?showEditProperties=true";
 
+            #region Get type definition
+
             try
             {
                 var igcType = GetFromApi<IgcTypeModel>(url).Result;
 
                 if (igcType != null)
                 {
+                    execution.RawDefinition = JsonConvert.SerializeObject(igcType);
                     igcType.EditInfo.Properties.ForEach(p =>
                     {
                         if (p.Type.Name == "enum")
@@ -951,6 +961,11 @@ order by A.ID
                             }
                         }
                     });
+                    if (enumValues.Count > 0)
+                    {
+                        execution.EnumFieldValues = JsonConvert.SerializeObject(enumValues);
+                    }
+                    company.Update(execution);
                 }
             }
             catch (HttpRequestException rex)
@@ -965,6 +980,8 @@ order by A.ID
                 CoreFunction.AITrackException(functionName, ex);
             }
 
+            #endregion
+
             try
             {
                 url = $"{setting.SourceUri}search/";
@@ -974,10 +991,7 @@ order by A.ID
                 var cnn = new SqlConnection(companyConnnectionString);
 
                 //Perform search using POST method.
-                var postModel = new IgcPostSearchRequestModel
-                {
-                    begin = previouslyProcessCount
-                };
+                var postModel = new IgcPostSearchRequestModel();
 
                 if (mapping.AllowChangeDetection)
                 {
@@ -989,32 +1003,32 @@ order by A.ID
 
                 #region Figure out page size
 
-                var pageSize = 500;
-                if (mapping.PageSize.HasValue)
-                    pageSize = mapping.PageSize.Value;
-                else
-                    pageSize = setting.PageSize;
-                postModel.pageSize = pageSize;
+                //var pageSize = 2500;
+                //if (mapping.PageSize.HasValue)
+                //    pageSize = mapping.PageSize.Value;
+                //else
+                //    pageSize = setting.PageSize;
+                //postModel.pageSize = pageSize;
+
+                postModel.pageSize = 2500;
 
                 #endregion
 
                 postModel.types.Add(mapping.SourceAssetTypeName);
 
-                postModel.properties.AddRange(fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
-                postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
-                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
-                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
+                #region Delta or Full Refresh
 
                 var min = checkForChangesOnly ?
                     (ConvertDateToUnixTimeMilliseconds(mapping.LastSynchOn ?? new DateTime(1970, 1, 1, 0, 0, 0))) :
                     0;
                 var max = ConvertDateToUnixTimeMilliseconds(now);
 
+#if DEBUG
+                min = 0;
+#endif
+
                 if (mapping.AllowChangeDetection)
                 {
-                    if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
-                    if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
-
                     postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
                     postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
                 }
@@ -1027,28 +1041,27 @@ order by A.ID
 
                 execution.IsFullRefresh = !checkForChangesOnly;
 
+                #endregion
+
                 var shouldContinue = true;
-                var hasError = false;
+
+                #region Fields Request
+
+                postModel.begin = previouslyProcessCount;
+                postModel.properties.Clear();
+                postModel.properties.AddRange(fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                if (mapping.AllowChangeDetection)
+                {
+                    if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
+                    if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
+                }
+                
+                //var hasError = false;
                 while (shouldContinue)
                 {
                     try
                     {
-                        IgcDynamicArrayModels models = null;
-
-                        try
-                        {
-                            models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
-                        }
-                        catch (Exception postEx)
-                        {
-                            execution.ErrorMessage += $"{postEx.GetFullExceptionData()}; ";
-                            company.Update(execution);
-                            if (postEx.Message.Contains("403 (Forbidden)"))
-                            {
-                                throw postEx;
-                            }
-                            postModel.begin = postModel.begin + postModel.pageSize;
-                        }
+                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
 
                         if (models != null)
                         {
@@ -1062,62 +1075,228 @@ order by A.ID
 
                             if (models.items.Count > 0)
                             {
-                                // Create the execution asset records.
-                                var executionAssets = new List<IntegrationExecutionAsset>();
-                                parse(models.items, true, executionAssets);
-                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
+                                var list = new List<IntegrationExecutionAsset>();
+                                //parse(models.items, false, list);
+                                foreach (var obj in models.items.Children())
+                                {
+                                    var executionAsset = new IntegrationExecutionAsset
+                                    {
+                                        ExecutionID = execution.ExecutionID,
+                                        SynchedAssetTypeID = execution.SynchedAssetTypeID,
+                                        SourceID = obj["_id"].Value<string>(),
+                                        RawObject = obj.ToString(Formatting.None)
+                                    };
+                                    list.Add(executionAsset);
+                                }
 
-                                // Now parse the data fully.
-                                executionAssets = new List<IntegrationExecutionAsset>();
-                                parse(models.items, false, executionAssets);
-                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, executionAssets);
-
-                                var executionRelationItems = relationships.Select(i => new IntegrationExecutionRelationItem { ExecutionID = execution.ExecutionID, SynchedAssetTypeID = execution.SynchedAssetTypeID, IntersectTypeID = i.IntersectTypeID, SubjectSourceID = i.SubjectSourceID, ObjectSourceID = i.ObjectSourceID }).ToList();
-                                cnn.BulkExecutionRelationItemLoad(setting.TargetResourceID, executionRelationItems);
+                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, list);
                             }
 
                             // Should we do this again, since we have not completed the paged dataset.
                             shouldContinue = (models.paging.numTotal > models.paging.end + 1);
                             postModel.begin = models.paging.end + 1;
-
-                            SendIncrementalSetToGovern(cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, execution.ExecutionID, mapping, assets, relationships, ownershipTopModel);
-
-                            // Re-initialize.
-                            assets = new BulkAssetImport();
-                            relationships = new BulkRelationshipImport();
-                            ownershipTopModel = new D3sOwnershipItemsModel { UserIdFieldName = "UserID", Items = new List<D3sOwnershipModel>() };
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception postEx)
                     {
-                        shouldContinue = false;
-                        success = false;
-                        hasError = true;
-                        if (ex.Message.Contains("403 (Forbidden)"))
+                        execution.ErrorMessage += $"{postEx.GetFullExceptionData()}; ";
+                        company.Update(execution);
+                        if (postEx.Message.Contains("403 (Forbidden)"))
                         {
-                            throw ex;
+                            throw postEx;
                         }
-                        else
-                        {
-                            execution.ErrorMessage = ex.GetFullExceptionData();
-                            CoreFunction.AITrackException(functionName, ex);
-                        }
+                        postModel.begin = postModel.begin + postModel.pageSize;
                     }
                 }
 
-                if (assets.Count > 0)
+                #endregion
+
+                #region Relations request
+
+                postModel.begin = previouslyProcessCount;
+                postModel.properties.Clear();
+                postModel.properties.AddRange(relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField));
+                if (mapping.AllowChangeDetection)
                 {
-                    success = SendIncrementalSetToGovern(cnn, cs.CompanyID, cs.UrlPrefix, setting.TargetResourceID, execution.ExecutionID, mapping, assets, relationships, ownershipTopModel);
-                }
-                else
-                {
-                    success = true; // Nothing left to post.
+                    if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
+                    if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
                 }
 
-                if (success & !hasError)
+                shouldContinue = true;
+                //var hasError = false;
+                while (shouldContinue)
                 {
-                    mapping.LastSynchOn = now;
+                    try
+                    {
+                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
+
+                        if (models != null)
+                        {
+                            if (models.items.Count > 0)
+                            {
+                                var list = new List<IntegrationExecutionAsset>();
+                                foreach (var obj in models.items.Children())
+                                {
+                                    var executionAsset = new IntegrationExecutionAsset
+                                    {
+                                        ExecutionID = execution.ExecutionID,
+                                        SynchedAssetTypeID = execution.SynchedAssetTypeID,
+                                        SourceID = obj["_id"].Value<string>(),
+                                        RawObject = obj.ToString(Formatting.None)
+                                    };
+                                    list.Add(executionAsset);
+                                }
+                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, list, "RawRelationships");
+                            }
+
+                            // Should we do this again, since we have not completed the paged dataset.
+                            shouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                            postModel.begin = models.paging.end + 1;
+                        }
+                    }
+                    catch (Exception postEx)
+                    {
+                        execution.ErrorMessage += $"{postEx.GetFullExceptionData()}; ";
+                        company.Update(execution);
+                        if (postEx.Message.Contains("403 (Forbidden)"))
+                        {
+                            throw postEx;
+                        }
+                        postModel.begin = postModel.begin + postModel.pageSize;
+                    }
                 }
+
+                #endregion
+
+                #region Ownership request
+
+                postModel.begin = previouslyProcessCount;
+                postModel.properties.Clear();
+                postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
+                //postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
+                if (mapping.AllowChangeDetection)
+                {
+                    if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
+                    if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
+                }
+
+                shouldContinue = true;
+                //var hasError = false;
+                while (shouldContinue)
+                {
+                    try
+                    {
+                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
+
+                        if (models != null)
+                        {
+                            if (models.items.Count > 0)
+                            {
+                                var list = new List<IntegrationExecutionAsset>();
+                                foreach (var obj in models.items.Children())
+                                {
+                                    var executionAsset = new IntegrationExecutionAsset
+                                    {
+                                        ExecutionID = execution.ExecutionID,
+                                        SynchedAssetTypeID = execution.SynchedAssetTypeID,
+                                        SourceID = obj["_id"].Value<string>(),
+                                        RawObject = obj.ToString(Formatting.None)
+                                    };
+                                    list.Add(executionAsset);
+                                }
+                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, list, "RawResponsibilitites");
+                            }
+
+                            // Should we do this again, since we have not completed the paged dataset.
+                            shouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                            postModel.begin = models.paging.end + 1;
+                        }
+                    }
+                    catch (Exception postEx)
+                    {
+                        execution.ErrorMessage += $"{postEx.GetFullExceptionData()}; ";
+                        company.Update(execution);
+                        if (postEx.Message.Contains("403 (Forbidden)"))
+                        {
+                            throw postEx;
+                        }
+                        postModel.begin = postModel.begin + postModel.pageSize;
+                    }
+                }
+
+                #endregion
+
+                var queue = new AzureQueueSource();
+
+                // Section 0 : Asset
+                cnn.ProcessExecutionAssetType<dynamic>(execution.ExecutionID, execution.SynchedAssetTypeID, mapping.AssetTypeID, setting.TargetResourceID, 0);
+
+                // Section 1 : Fields
+                cnn.ProcessExecutionAssetType<dynamic>(execution.ExecutionID, execution.SynchedAssetTypeID, mapping.AssetTypeID, setting.TargetResourceID, 1);
+
+                // Section 2 : Relationships
+                var relationshipActions = cnn.ProcessExecutionAssetType<RelationshipAction>(execution.ExecutionID, execution.SynchedAssetTypeID, mapping.AssetTypeID, setting.TargetResourceID, 2);
+
+                var events = new List<EventInfo>();
+
+                if (mapping.TriggerTopicMessage)
+                {
+                    int lastIntersectID = 0;
+
+                    foreach (var relationshipAction in relationshipActions)
+                    {
+                        var changeType = ChangeType.Add;
+
+                        switch (relationshipAction.Action)
+                        {
+                            case "D":
+                                changeType = ChangeType.Delete;
+                                break;
+                            case "U":
+                                changeType = ChangeType.Update;
+                                break;
+                        }
+
+                        // Check to make sure we do not send multiple workflows out for the same intersect ID.
+                        if (relationshipAction.IntersectID != lastIntersectID)
+                        {
+                            events.Add(new EventInfo
+                            {
+                                CompanyID = company.CurrentCompanyID,
+                                DomainPrefix = cs.UrlPrefix,
+                                ResourceID = setting.TargetResourceID,
+                                Action = changeType,
+                                Object = new EventObjectInfo
+                                {
+                                    Object = SystemObjects.Intersect,
+                                    ObjectType = SystemObjects.IntersectType,
+                                    ObjectID = relationshipAction.IntersectID,
+                                    ObjectTypeID = relationshipAction.IntersectTypeID
+                                }
+                            });
+                        }
+
+                        if (events.Count > 50)
+                        {
+                            queue.CreateTopicMessages(events);
+                            events.Clear();
+                        }
+
+                        lastIntersectID = relationshipAction.IntersectID;
+                    }
+                }
+
+                if (events.Count > 0)
+                {
+                    queue.CreateTopicMessages(events);
+                    events.Clear();
+                }
+
+                // Section 3 : Responsibilities
+                cnn.ProcessExecutionAssetType<dynamic>(execution.ExecutionID, execution.SynchedAssetTypeID, mapping.AssetTypeID, setting.TargetResourceID, 3);
+
+                success = true;
+                mapping.LastSynchOn = now;
             }
             catch (Exception oex)
             {
@@ -1137,157 +1316,6 @@ order by A.ID
             }
 
             return success;
-        }
-
-        bool SendIncrementalSetToGovern(
-            SqlConnection cnn, 
-            int companyID, string companyDomain, int resourceID, 
-            long executionID,
-            IntegrationAssetType mapping, BulkAssetImport assets, BulkRelationshipImport relationships, D3sOwnershipItemsModel owners)
-        {
-            bool successfulPost = true;
-
-            var queue = new AzureQueueSource();
-
-            // If any items to send to server.
-            if (assets.Count > 0)
-            {
-                try
-                {
-                    var assetResults = cnn.BulkAssetsImport(resourceID, (SystemObjects)Enum.Parse(typeof(SystemObjects), mapping.Object), mapping.ObjectID.Value, assets);
-
-                    if (assetResults != null)
-                    {
-                        var assetErrorMessage = string.Join(". ", assetResults.Where(r => !r.Success).Select(r => $"{r.SourceID} : {r.Message}"));
-                        if (!string.IsNullOrEmpty(assetErrorMessage))
-                        {
-                            CoreFunction.AITrackEvent(functionName, "Bulk Import Assets", new Dictionary<string, string>() { { "Error", assetErrorMessage } }, companyID);
-                        }
-                        
-                        #region Cycle through the return results from the database, and update the results collection to send back to the caller.
-
-                        var events = new List<EventInfo>();
-                        var sObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), mapping.Object.Replace("Type", ""));
-                        var sObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), mapping.Object);
-                        assetResults.ForEach(d =>
-                        {
-                            if (string.IsNullOrEmpty(d.Message))
-                            {
-                                if (mapping.TriggerTopicMessage && d.Success)
-                                {
-                                    events.Add(new EventInfo
-                                    {
-                                        CompanyID = companyID,
-                                        DomainPrefix = companyDomain,
-                                        ResourceID = resourceID,
-                                        Action = d.IsNew ? ChangeType.Add : ChangeType.Update,
-                                        Object = new EventObjectInfo { Object = sObject, ObjectType = sObjectType, ObjectID = d.ObjectID, ObjectTypeID = mapping.ObjectID.Value }
-                                    });
-
-                                    if (events.Count > 50)
-                                    {
-                                        queue.CreateTopicMessages(events);
-                                        events.Clear();
-                                    }
-                                }
-                            }
-                        });
-
-                        if (mapping.TriggerTopicMessage && events.Count > 0)
-                        {
-                            queue.CreateTopicMessages(events);
-                        }
-
-                        #endregion
-                    }
-                }
-                catch (Exception ex)
-                {
-                    successfulPost = false;
-                    CoreFunction.AITrackException(functionName, ex);
-                }
-            }
-
-            // If any owners to send to server.
-            if (owners.Items.Count > 0)
-            {
-                var uniqueUsers = owners.Items
-                    .Where(i => !string.IsNullOrEmpty(i.UserFullName) && !string.IsNullOrEmpty(i.UserId))
-                    .Select(i => new { i.UserFullName, i.UserId })
-                    .Distinct()
-                    .ToList();
-
-                // Populate the UserIDs that are missing, based can be looked up by user's full name. TODO: Confirm this logic, as it may not be correct if two or more user's have the same name.
-                foreach (var item in owners.Items.Where(i => string.IsNullOrEmpty(i.UserId)))
-                {
-                    var match = uniqueUsers.FirstOrDefault(i => i.UserFullName == item.UserFullName);
-                    if (match != null)
-                    {
-                        item.UserId = match.UserId;
-                    }
-                }
-
-                //Now, remove any users whose internal ID cannot be resolved.
-                owners.Items.RemoveAll(i => string.IsNullOrEmpty(i.UserId));
-
-                try
-                {
-                    if (owners.Items.Count > 0)
-                    {
-                        var ownerImport = new BulkOwnerImport { UserIdFieldName = owners.UserIdFieldName };
-                        ownerImport.Items = owners.Items.Select(i => new OwnerImportRequest { RoleName = i.RoleName, SourceID = i.SourceID, UserId = i.UserId }).ToList();
-                        var executionRoles = ownerImport.Items.Select(i => new IntegrationExecutionRoleItem { ExecutionID = executionID, SynchedAssetTypeID = mapping.ID, RoleName = i.RoleName, SourceID = i.SourceID, UserIdentifier = i.UserId }).ToList();
-                        cnn.BulkExecutionRoleItemLoad(resourceID, executionRoles);
-                        var ownerResults = cnn.BulkOwnersImport(resourceID, ownerImport);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                }
-            }
-
-            // If any relationships to send to server.
-            if (relationships.Count > 0)
-            {
-                try
-                {
-                    var relationshipResults = cnn.BulkRelationshipsImport(resourceID, relationships);
-                    if (relationshipResults != null)
-                    {
-                        var events = new List<EventInfo>();
-                        relationshipResults.ForEach(r => {
-                            if (mapping.TriggerTopicMessage && r.IsNew == true && r.IntersectID != null)
-                            {
-                                events.Add(new EventInfo
-                                {
-                                    CompanyID = companyID,
-                                    DomainPrefix = companyDomain,
-                                    ResourceID = resourceID,
-                                    Action = ChangeType.Add,
-                                    Object = new EventObjectInfo { Object = SystemObjects.Intersect, ObjectType = SystemObjects.IntersectType, ObjectID = r.IntersectID, ObjectTypeID = r.IntersectTypeID }
-                                });
-                                if (events.Count > 50)
-                                {
-                                    queue.CreateTopicMessages(events);
-                                    events.Clear();
-                                }
-                            }
-                        });
-
-                        if (mapping.TriggerTopicMessage && events.Count > 0)
-                        {
-                            queue.CreateTopicMessages(events);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex);
-                }
-            }
-
-            return successfulPost;
         }
     }
 }

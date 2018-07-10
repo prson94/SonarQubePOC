@@ -168,7 +168,21 @@ namespace d360.web.Controllers
                    select r
                 );
         }
-        
+
+        //[Route("responsibilities/{type}/{id:int}")]
+        //internal IQueryable<dynamic> GetResponsibilities(SystemObjects type, int id)
+        //{
+        //    return Company.Query<dynamic>(
+        //        QueryConstants.ResponsibilityList,
+        //        new { ObjectType = type.ToString(), ObjectID = id }
+        //    ).AsQueryable();
+        //}
+
+        internal string GetNoReadSqlStatement(string identifier = null)
+        {
+            return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
+        }
+
         internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {
             var telemetry = new TelemetryClient();
@@ -426,6 +440,11 @@ namespace d360.web.Controllers
         }
 
         #endregion
+
+        internal string GetNoReadSqlStatement(string identifier = null)
+        {
+            return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
+        }
 
         internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, int? minLength, int? maxLength, string validationMessage = "")
         {
@@ -1012,7 +1031,7 @@ namespace d360.web.Controllers
                     var ids = user.Split('|');
                     if (ids.Length == 2)
                     {
-                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.AssetID = {idColumn} and RD{index}.SecurityAsset = 'R' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
+                        joins += $" inner join ResponsibilityDetail RD{index} on (RD{index}.AssetID = {idColumn} and RD{index}.SecurityAsset = 'R' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
                         index++;
                     }
                 }
@@ -1025,7 +1044,7 @@ namespace d360.web.Controllers
                     var ids = group.Split('|');
                     if (ids.Length == 2)
                     {
-                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.AssetID = {idColumn} and RD{index}.SecurityAsset = 'G' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
+                        joins += $" inner join ResponsibilityDetail RD{index} on (RD{index}.AssetID = {idColumn} and RD{index}.SecurityAsset = 'G' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
                         index++;
                     }
                 }
@@ -1085,32 +1104,10 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    columns += "S_E.P_CanEdit, S_D.P_CanDelete, ";
+                    columns += "IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete, ";
                     joins += $@"
-        cross apply (
-					select	case 
-								when count(1) > 0 then 1
-								else 0
-							end as P_CanEdit
-					from	SecurityDetail 
-					where	(
-							(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
-							(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
-							) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
-					) S_E
-        cross apply (
-					select	case 
-								when count(1) > 0 then 1
-								else 0
-							end as P_CanDelete
-					from	SecurityDetail 
-					where	(
-							(IsType = 0 and Object = A.Object and ObjectID = A.ObjectID) OR 
-							(IsType = 1 and Object = A.Type and ObjectID = A.TypeID)
-							) and Claim = 3 and ClaimObject = 1 and ResponsibleObjectID = {Company.CurrentResourceID}
-					) S_D ";
-                    //columns += $" (select count(1) from securitydetail p_sd_edit where ({innerIdColumn} = p_sd_edit.ObjectID and p_sd_edit.Object = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
-                    //columns += $" (select count(1) from securitydetail p_sd_delete where ({innerIdColumn} = p_sd_delete.ObjectID and p_sd_delete.Object = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
+outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID and ResourceID = {Company.CurrentResourceID} and (PermissionsBitMask & {(int)Permission.ModifyAsset}) = {(int)Permission.ModifyAsset}) S_E 
+outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID and ResourceID = {Company.CurrentResourceID} and (PermissionsBitMask & {(int)Permission.DeleteAsset}) = {(int)Permission.DeleteAsset}) S_D ";
                 }
             }
 

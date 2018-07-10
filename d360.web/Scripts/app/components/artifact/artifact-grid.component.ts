@@ -25,7 +25,7 @@ import { Observable } from "rxjs/Observable";
                     <i *ngIf="artifactType && artifactType.Description" class="fa" [ngClass]="{'fa-plus-square-o':!showArtifactDetails,'fa-minus-square-o':showArtifactDetails}" aria-hidden="true" style="padding-right:5px;cursor:pointer;font-size:12px" title="Details" (click)="toggleArtifactDetail()" (mouseenter)="showArtifactDetails=true"></i>
                     {{artifactType?.Name}}
                     {{titlePostfix}}
-                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="!artifactType.HasCustomExportTemplates" [hasCustomExport]="artifactType.HasCustomExportTemplates" (addClick)="add()" (customExportClick)="customExport()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
+                    <d3s-tile-actions [hasAdd]="showAddButton && hasModifyAssetPermissions()" [hasExport]="!artifactType.HasCustomExportTemplates" [hasCustomExport]="artifactType.HasCustomExportTemplates" (addClick)="add()" (customExportClick)="customExport()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
                     <div (click)="toggleArtifactDetail()" *ngIf="showArtifactDetails && artifactType && artifactType.Description" [innerHtml]="artifactType.Description | safeHtml" style="text-transform:none;font-size:12px;font-weight:normal;margin-left:20px"></div>
                 </header>                    
                 <div class="row" *ngIf="!showDelete && !showEditor && !isEditing">                    

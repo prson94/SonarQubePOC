@@ -75,7 +75,7 @@ from	AssetWithType A
 where   A.Type = 'TaxonomyType' 
         and A.TypeID = @id 
         and A.[State] = 1 
-        and not exists (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID} and A.ID =AssetID ) 
+        and A.ID not in ({GetNoReadSqlStatement()}) 
 order by DisplayValue ";
  
             var models = Company.Query<dynamic>(sql, new { id });

@@ -3,7 +3,6 @@ import { DiagramService } from '../../../../services/diagram.service';
 import { MessagesService } from '../../../../services/messages.service';
 import { PermissionsService } from '../../../../services/permissions.service';
 import { BaseComponent } from '../../base.component';
-import { Permission } from '../../../../models/permission.model';
 import {
     LineageEditorRow,
     AutoCompleteItem,
@@ -12,6 +11,7 @@ import {
     LineageEditorMode,
 } from '../../../../models/lineage.model';
 import * as _ from 'lodash';
+import { ResponsibilityTypeRelationPermission } from '../../../../models/responsibility-type.model';
 
 @Component({
     selector: 'd3s-lineage-business-editor',
@@ -39,7 +39,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
     @Output() onSaveComplete = new EventEmitter();
     @Output() onSaveSuccess = new EventEmitter();
 
-    permissions: Permission[] = [];
+    //permissions: ResponsibilityTypeRelationPermission[] = [];
     lineage: LineageEditorRow[] = [];
     model: LineageEditorModel;
     queryResults: AutoCompleteItem[] = [];

@@ -51,8 +51,7 @@ namespace igx.jobs.responsibilityruleprocessor
 
                         try
                         {
-                            company.Execute("delete ResponsibilityTypeRelationItem where RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
-                            company.Execute("delete ResponsibilityTypeRelationTypeItem where RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
+                            company.ClearInvalidRelationRuleResults();
                         }
                         catch (Exception dex)
                         {
@@ -61,46 +60,13 @@ namespace igx.jobs.responsibilityruleprocessor
                             CoreFunction.AIFlush();
                         }
 
-                        var items = company.Query<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule").ToList();
-
-                        if (items.Count > 0)
+                        try
                         {
-                            var errorList = string.Empty;
-
-                            items.ForEach(i => {
-                                try
-                                {
-                                    i.SetDefinitionFromRaw();
-
-                                    if (i.ApplyToType)
-                                    {
-                                        var typeResults = company.GetProcessedResponsibilityRuleTypeResults(i).ToList();
-                                        company.SaveResponsibilityRuleTypeResults(typeResults, true, i.ID);
-                                        typeResults = null;
-                                    }
-                                    else
-                                    {
-                                        var itemResults = company.GetProcessedResponsibilityRuleResults(i).ToList();
-                                        company.SaveResponsibilityRuleResults(itemResults, true, i.ID);
-                                        itemResults = null;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    errorList += $"Company [{c.CompanyID}] for Object [{i.Object} {i.ObjectID}]: [{ex.GetFullExceptionData()}]; ";
-                                }
-                            });
-
-                            // Build cache.SecurityProcessor
-                            company.Execute("exec cache.SecurityProcessor 4, 1, 0", commandTimeout: 1200);
-                            log.WriteLine("Re-built cache.AssetResponsibility for company {0}.", c.CompanyID);
-
-                            if (!string.IsNullOrEmpty(errorList))
-                            {
-                                CoreFunction.AITrackException(functionName, new ApplicationException($"The following errors occurred: {errorList}"), c.CompanyID);
-                                //log.Error(errorList);
-                                CoreFunction.AIFlush();
-                            }
+                            company.ProcessResponsibilityRelationRules();
+                        }
+                        catch (Exception ex)
+                        {
+                            log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
                         }
                     }
                     catch (Exception ex)

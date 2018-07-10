@@ -4,9 +4,10 @@ import { SelectItem } from 'primeng/primeng';
 import { ReportsService} from '../../../services/reports.service';
 import { Report, ReportType } from '../../../models/report.model';
 import { DropdownOption } from '../../../models/dropdown.model';
-import { ClaimsService } from '../../../services/claims.service';
 
 import * as _ from 'lodash';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
+import { parse } from 'path';
 
 declare var CompanySettings;
 
@@ -82,7 +83,7 @@ declare var CompanySettings;
                     </form>                           
                 </div>
                 `,
-    providers: [ReportsService, ClaimsService],
+    providers: [ReportsService, ResponsibilityTypeService],
 })
 
 export class AdminDashboardsEditor {
@@ -102,7 +103,7 @@ export class AdminDashboardsEditor {
     
     constructor(
         private reportsService: ReportsService,
-        private claimsService: ClaimsService
+        private responsibilityTypeService: ResponsibilityTypeService
     ) {        
         this.reportTypes.push({ value:"legacy", title:"Default" });
         this.reportTypes.push({ value:"powerbi", title:"PowerBI" });
@@ -165,12 +166,13 @@ export class AdminDashboardsEditor {
         let ot = object[0];
         if (!ot.endsWith("Type"))
             ot += "Type";
-        this.claimsService.getClaims(Number(object[1]), ot).
+        let otid: number = +object[1];
+        this.responsibilityTypeService.getRelationsByObjectType(ot, otid).
             then(res => {
                 this.responsibilities = [];
                 res.forEach(o => {
                     this.responsibilities.push({
-                        label: o.Name,
+                        label: o.ResponsibilityTypeName,
                         value: o.ResponsibilityTypeID
                     });                    
                 });

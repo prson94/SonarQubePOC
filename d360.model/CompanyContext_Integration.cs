@@ -1,15 +1,13 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.enums.Workflow;
-using d360.core.queue;
 using Dapper;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace d360.model
 {
@@ -20,11 +18,8 @@ namespace d360.model
         public DbSet<IntegrationExecution> IntegrationExecutions { get; set; }
 
         public DbSet<IntegrationExecutionAsset> IntegrationExecutionAssets { get; set; }
+
         public DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
-
-        public DbSet<IntegrationExecutionRelationItem> IntegrationExecutionRelationItems { get; set; }
-
-        public DbSet<IntegrationExecutionRoleItem> IntegrationExecutionRoleItems { get; set; }
 
         public DbSet<IntegrationSetting> IntegrationSettings { get; set; }
 
@@ -41,24 +36,22 @@ namespace d360.model
         public DbSet<IntegrationUnresolvedRelationItem> IntegrationUnresolvedRelationItems { get; set; }
 
         #endregion
-
-        #region Engine Methods
-
-        public IEnumerable<dynamic> ProcessUnresolvedRelationships()
-        {
-            return Database.Connection.Query<dynamic>(@"exec integration.ProcessUnresolvedRelationships", commandTimeout: 1200);
-        }
-
-        public void ProcessIntegrationAssetDeletions()
-        {
-            Database.Connection.Execute(@"exec integration.ProcessDeletions", commandTimeout: 1200);
-        }
-
-        #endregion
     }
 
     public static class ConnectionExtensions
     {
+        public static IEnumerable<T> ProcessExecutionAssetType<T>(this SqlConnection cnn, long executionID, int synchedAssetTypeID, int assetTypeID, int resourceID, int section)
+        {
+            if (cnn.State != System.Data.ConnectionState.Open)
+                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+            return cnn.Query<T>(
+                "exec integration.ProcessExecutionAssetType @executionID, @synchedAssetTypeID, @assetTypeID, @resourceID, @section",
+                new { executionID, synchedAssetTypeID, assetTypeID, resourceID, section},
+                commandTimeout: 7200
+                );
+        }
+
         public static List<dynamic> BulkOwnersImport(this SqlConnection cnn, int currentResourceID, BulkOwnerImport import)
         {
             var ownerTable = new System.Data.DataTable();
@@ -973,7 +966,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             return retResults;
         }
 
-        public static void BulkExecutionAssetLoad(this SqlConnection cnn, int currentResourceID, List<IntegrationExecutionAsset> assets)
+        public static void BulkExecutionAssetLoad(this SqlConnection cnn, int currentResourceID, List<IntegrationExecutionAsset> assets, string targetJsonColumn = "RawObject")
         {
             var assetTable = new System.Data.DataTable();
 
@@ -1052,10 +1045,10 @@ on          (
             )
 when matched then
     update set
-            T.RawObject = S.RawObject,
+            T.{targetJsonColumn} = S.RawObject,
             T.ErrorMessages = S.ErrorMessages
 when not matched by target then
-    insert  (ExecutionID, SynchedAssetTypeID, SourceID, RawObject, ErrorMessages)
+    insert  (ExecutionID, SynchedAssetTypeID, SourceID, {targetJsonColumn}, ErrorMessages)
     values  (S.ExecutionID, S.SynchedAssetTypeID, S.SourceID, S.RawObject, S.ErrorMessages);",
     transaction: trans, commandTimeout: 1200);
 
@@ -1067,186 +1060,6 @@ when not matched by target then
                     throw ex;
                 }
             }
-        }
-
-        public static void BulkExecutionRelationItemLoad(this SqlConnection cnn, int currentResourceID, List<IntegrationExecutionRelationItem> executionRelations)
-        {
-            var relationTable = new System.Data.DataTable();
-
-            relationTable.Columns.Add("ExecutionID", typeof(long));
-            relationTable.Columns.Add("SynchedAssetTypeID", typeof(int));
-            relationTable.Columns.Add("SubjectSourceID", typeof(string));
-            relationTable.Columns.Add("ObjectSourceID", typeof(string));
-            relationTable.Columns.Add("IntersectTypeID", typeof(int));
-
-            executionRelations.ForEach(a =>
-            {
-                var row = relationTable.NewRow();
-                row["ExecutionID"] = a.ExecutionID;
-                row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
-                row["SubjectSourceID"] = a.SubjectSourceID;
-                row["ObjectSourceID"] = a.ObjectSourceID;
-                row["IntersectTypeID"] = a.IntersectTypeID;
-                relationTable.Rows.Add(row);
-            });
-
-            if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-
-            using (var trans = cnn.BeginTransaction())
-            {
-                try
-                {
-                    cnn.Execute("DROP TABLE IF EXISTS #IntegrationRelationTable", transaction: trans);
-
-                    cnn.Execute(@"
-                        create table #IntegrationRelationTable (
-	                        ExecutionID bigint NOT NULL,
-                            SynchedAssetTypeID int NULL,
-	                        SubjectSourceID nvarchar(250) NOT NULL,
-	                        ObjectSourceID nvarchar(250) NOT NULL,
-	                        IntersectTypeID int NOT NULL
-                        )", transaction: trans);
-
-                    cnn.Execute(@"CREATE CLUSTERED INDEX IX_TempIntegrationRelationTable ON #IntegrationRelationTable ( ExecutionID ASC, IntersectTypeID, SubjectSourceID ASC, ObjectSourceID ASC )", transaction: trans);
-
-                    var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
-
-                    assetBulkCopy.BatchSize = relationTable.Rows.Count;
-                    assetBulkCopy.DestinationTableName = "#IntegrationRelationTable";
-                    assetBulkCopy.BulkCopyTimeout = 3600;
-
-                    assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
-                    assetBulkCopy.ColumnMappings.Add("SubjectSourceID", "SubjectSourceID");
-                    assetBulkCopy.ColumnMappings.Add("ObjectSourceID", "ObjectSourceID");
-                    assetBulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
-
-                    assetBulkCopy.WriteToServer(relationTable);
-
-                    cnn.Execute($@"
-merge into  [integration].[ExecutionRelationItem] T
-using       (
-            select      ExecutionID,
-                        SynchedAssetTypeID,
-                        IntersectTypeID,
-                        SubjectSourceID,
-                        ObjectSourceID
-            from        #IntegrationRelationTable
-            ) S
-on          (
-                S.ExecutionID = T.ExecutionID and
-                S.SynchedAssetTypeID = T.SynchedAssetTypeID and
-                S.IntersectTypeID = T.IntersectTypeID and 
-                S.SubjectSourceID = T.SubjectSourceID and 
-                S.ObjectSourceID = T.ObjectSourceID
-            )
-when not matched by target then
-    insert  (ExecutionID, SynchedAssetTypeID, IntersectTypeID, SubjectSourceID, ObjectSourceID)
-    values  (S.ExecutionID, S.SynchedAssetTypeID, S.IntersectTypeID, S.SubjectSourceID, S.ObjectSourceID);",
-    transaction: trans, commandTimeout: 1200);
-
-                    trans.Commit();
-                }
-                catch (Exception ex)
-                {
-                    trans.Rollback();
-                    throw ex;
-                }
-            }
-        }
-
-        public static void BulkExecutionRoleItemLoad(this SqlConnection cnn, int currentResourceID, List<IntegrationExecutionRoleItem> executionRoles)
-        {
-            var relationTable = new System.Data.DataTable();
-
-            relationTable.Columns.Add("ExecutionID", typeof(long));
-            relationTable.Columns.Add("SynchedAssetTypeID", typeof(int));
-            relationTable.Columns.Add("SourceID", typeof(string));
-            relationTable.Columns.Add("RoleName", typeof(string));
-            relationTable.Columns.Add("UserIdentifier", typeof(string));
-
-            executionRoles.ForEach(a =>
-            {
-                var row = relationTable.NewRow();
-                row["ExecutionID"] = a.ExecutionID;
-                row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
-                row["SourceID"] = a.SourceID;
-                row["RoleName"] = a.RoleName;
-                row["UserIdentifier"] = a.UserIdentifier;
-                relationTable.Rows.Add(row);
-            });
-
-            if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-
-            using (var trans = cnn.BeginTransaction())
-            {
-                try
-                {
-                    cnn.Execute("DROP TABLE IF EXISTS #IntegrationRoleTable", transaction: trans);
-
-                    cnn.Execute(@"
-                        create table #IntegrationRoleTable (
-	                        ExecutionID bigint NOT NULL,
-                            SynchedAssetTypeID int NULL,
-	                        SourceID nvarchar(250) NOT NULL,
-	                        RoleName nvarchar(250) NOT NULL,
-	                        UserIdentifier nvarchar(250) NOT NULL
-                        )", transaction: trans);
-
-                    cnn.Execute(@"CREATE CLUSTERED INDEX IX_TempIntegrationRoleTable ON #IntegrationRoleTable ( ExecutionID, SynchedAssetTypeID, SourceID, RoleName )", transaction: trans);
-
-                    var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
-
-                    assetBulkCopy.BatchSize = relationTable.Rows.Count;
-                    assetBulkCopy.DestinationTableName = "#IntegrationRoleTable";
-                    assetBulkCopy.BulkCopyTimeout = 3600;
-
-                    assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
-                    assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
-                    assetBulkCopy.ColumnMappings.Add("RoleName", "RoleName");
-                    assetBulkCopy.ColumnMappings.Add("UserIdentifier", "UserIdentifier");
-
-                    assetBulkCopy.WriteToServer(relationTable);
-
-                    cnn.Execute($@"
-merge into  [integration].[ExecutionRoleItem] T
-using       (
-            select      ExecutionID,
-                        SynchedAssetTypeID,
-                        SourceID,
-                        RoleName,
-                        UserIdentifier
-            from        #IntegrationRoleTable
-            ) S
-on          (
-                S.ExecutionID = T.ExecutionID and
-                S.SynchedAssetTypeID = T.SynchedAssetTypeID and
-                S.SourceID = T.SourceID and 
-                S.RoleName = T.RoleName
-            )
-when not matched by target then
-    insert  (ExecutionID, SynchedAssetTypeID, SourceID, RoleName, UserIdentifier)
-    values  (S.ExecutionID, S.SynchedAssetTypeID, S.SourceID, S.RoleName, S.UserIdentifier);",
-    transaction: trans, commandTimeout: 1200);
-
-                    trans.Commit();
-                }
-                catch (Exception ex)
-                {
-                    trans.Rollback();
-                    throw ex;
-                }
-            }
-        }
-
-        public static void ProcessUnresolvedRelationships(this SqlConnection cnn)
-        {
-            cnn.Execute(@"exec integration.ProcessUnresolvedRelationships");
         }
 
     }

@@ -11,6 +11,24 @@ export interface IResponsibilityTypeService {
     getResponsibilityTypesByObject(type: string, id: number): Promise<any>;
 }
 
+export enum Permission {
+    ReadAsset = 1,
+    ModifyAsset = 2,
+    DeleteAsset = 4,
+
+    ReadAttributes = 8,
+    ModifyAttributes = 16,
+    DeleteAttributes = 32,
+
+    ReadResponsibilities = 64,
+    ModifyResponsibilities = 128,
+    DeleteResponsibilities = 256,
+
+    ReadRelationships = 512,
+    ModifyRelationships = 1024,
+    DeleteRelationships = 2048
+}
+
 export class ResponsibilityType {
     ID: number;
     Name: string;
@@ -24,8 +42,41 @@ export class ResponsibilityType {
 
 export class ResponsibilityTypeRelation {
     ResponsibilityTypeID: number;
+    ResponsibilityTypeName: string;
+    AssetTypeName: string;
+    AssetTypeID: number;
     ObjectType: string;
     ObjectID: number;
+    PermissionsBitMask: number;
+    Permissions: ResponsibilityTypeRelationPermission[] = [];
+}
+
+export class ResponsibilityTypeRelation_FormData {
+    AllocationOptions: ResponsibilityTypeRelationAllocationOption[] = [];
+    PermissionOptions: ResponsibilityTypeRelationPermission[] = [];
+}
+
+export class ResponsibilityTypeRelationAllocationOption {
+    ID: number;
+    Path: string;
+}
+
+export class ResponsibilityTypeRelationPermission {
+    Value: number;
+    ID: string;
+    Category: string;
+    Name: string;
+    Description: number;
+    Selected: boolean;
+
+    static hasPermission(permissions: ResponsibilityTypeRelationPermission[], p: Permission): boolean {
+
+        let index = permissions.findIndex(i => i.Value == p);
+
+        if (index >= 0 && index < permissions.length) return true;
+
+        return false;
+    }
 }
 
 export enum ResponsibilityTypeGroup {

@@ -38,6 +38,7 @@ import {
     SharedModule,    
     TreeTableModule,
 } from 'primeng/primeng';
+import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
 
 
 @NgModule({
@@ -71,7 +72,9 @@ import {
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
         SharedAssetTypeEditorModule,
-        
+
+        AdminResponsibilitiesModule,
+
         SharedObjectDetailsModule,       
         SharedFieldDefinitionModule,
         SharedResponsibilitiesModule,

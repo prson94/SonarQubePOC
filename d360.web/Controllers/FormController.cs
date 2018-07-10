@@ -150,49 +150,6 @@ namespace d360.web.Controllers
             }
         }
 
-        void deleteObjectStyle(SystemObjects type, int id)
-        {
-            var sType = type.ToString();
-            Company.Delete<ObjectStyle>(i => i.ObjectType == sType && i.ObjectID == id);
-
-        }
-
-        List<EditableField> loadStatusField(List<EditableField> list, SystemObjects type, string value, int row, int column)
-        {
-            var f = new EditableField
-            {
-                Row = row,
-                Column = column,
-                FieldName = "Status",
-                Name = "Status",
-                FieldType = DataType.Lookup.ToString(),
-                Value = value,
-                Required = true
-            };
-
-            var statusList = new List<SelectListItem>();
-            switch (type)
-            {
-                case SystemObjects.Artifact:
-                    statusList.Add(new SelectListItem { Text = "Draft", Value = "Draft" });
-                    statusList.Add(new SelectListItem { Text = "Under Review", Value = "Under Review" });
-                    statusList.Add(new SelectListItem { Text = "Certified", Value = "Certified" });
-                    statusList.Add(new SelectListItem { Text = "Archived", Value = "Archived" });
-                    break;
-                case SystemObjects.Policy:
-                    statusList.Add(new SelectListItem { Text = "Draft", Value = "Draft" });
-                    statusList.Add(new SelectListItem { Text = "Active", Value = "Active" });
-                    statusList.Add(new SelectListItem { Text = "Retired", Value = "Retired" });
-                    break;
-            }
-            f.Items.AddRange(statusList);
-
-            list.Add(f);
-
-
-            return list;
-        }
-
         #endregion
 
         #region Parse Methods
@@ -802,7 +759,7 @@ namespace d360.web.Controllers
         [Route("Artifact_AddFields"), NonNullableParameters]
         public JsonResult Artifact_AddFields(int at, int p)
         {
-            if (!Company.HasPermission(SystemObjects.ArtifactType, at, Claim.Create, ClaimObject.Root))
+            if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, at, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -816,7 +773,7 @@ namespace d360.web.Controllers
             ).SingleOrDefault();
 
             list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
-            list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
+            //list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
 
             if (intersectType != null)
             {
@@ -824,7 +781,6 @@ namespace d360.web.Controllers
                 var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {intersectType.SubjectID}").OrderBy(i => i.Text).ToList();
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents });
             }
-
             
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 1);
 
@@ -835,7 +791,7 @@ namespace d360.web.Controllers
         [Route("Artifact_DeleteFields"), NonNullableParameters]
         public JsonResult Artifact_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Delete, ClaimObject.Root))
+            if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -849,7 +805,7 @@ namespace d360.web.Controllers
         [Route("Artifact_EditFields"), NonNullableParameters]
         public JsonResult Artifact_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Update, ClaimObject.Root))
+            if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -921,7 +877,7 @@ namespace d360.web.Controllers
                 int typeID = parseIntField(form, "ArtifactTypeID");
                 var type = Company.GetById<ArtifactType>(typeID);
 
-                if (!Company.HasPermission(SystemObjects.ArtifactType, typeID, Claim.Create, ClaimObject.Root))
+                if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (type == null) throw new NotFoundException("artifact type");
@@ -967,7 +923,7 @@ namespace d360.web.Controllers
 
                 var id = parseIntField(form, "ID");
 
-                if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Delete, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.Artifact, id);
@@ -994,7 +950,7 @@ namespace d360.web.Controllers
 
                 var id = parseIntField(form, "ID");
 
-                if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var model = Company.GetById<Artifact>(id, i => i.ArtifactType);
@@ -1166,7 +1122,7 @@ namespace d360.web.Controllers
         [Route("ArtifactType_DeleteFields"), NonNullableParameters]
         public JsonResult ArtifactType_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
+            if (!Company.HasAssetPermission(SystemObjects.ArtifactType, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -1183,7 +1139,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<ArtifactType>(id);
                 if (model == null) throw new NotFoundException("artifact type");
 
-                if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
+                if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var intersectType = Company.Filter<IntersectType>(i =>
@@ -1439,7 +1395,7 @@ namespace d360.web.Controllers
                 if (!Enum.TryParse<SystemObjects>(model.AssetType.Object, out ot))
                     throw new GenericException(HttpStatusCode.BadRequest, "Missing Object Type", "No valid type provided. Please check your request and try again.");
 
-                if (!Company.HasPermission(ot, 0, Claim.Create, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Add, FormInfo.Permisions_Error_Add);
 
                 switch (ot)
@@ -1623,7 +1579,7 @@ namespace d360.web.Controllers
                 if (!Enum.TryParse<SystemObjects>(model.AssetType.Object, out ot))
                     throw new GenericException(HttpStatusCode.BadRequest, "Missing Object Type", "No valid type provided. Please check your request and try again.");
 
-                if (!Company.HasPermission(ot, model.AssetType.ObjectID, Claim.Update))
+                if (!Company.HasAssetTypePermission(ot, model.AssetType.ObjectID, Permission.ModifyAsset))
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Edit, FormInfo.Permisions_Error_Edit);
 
                 switch (ot)
@@ -1835,7 +1791,7 @@ namespace d360.web.Controllers
                 if (!Enum.TryParse<SystemObjects>(at.Object, out ot))
                     throw new GenericException(HttpStatusCode.BadRequest, "Missing Object Type", "No valid type provided. Please check your request and try again.");
 
-                if (!Company.HasPermission(ot, at.ObjectID, Claim.Update))
+                if (!Company.CurrentResourceIsAdmin)
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Delete, FormInfo.Permisions_Error_Delete);
 
                 var parentPredicateType = PredicateType.InterTypeHierarchy;
@@ -1956,6 +1912,9 @@ namespace d360.web.Controllers
                     ObjectID = parseIntField(form, "ObjectID")
                 };
 
+                if (!Company.HasAssetPermission(a.ObjectType, a.ObjectID, Permission.ModifyAttributes))
+                    throw new UnauthorizedException(FormInfo.Permisions_Error_Add, FormInfo.Permisions_Error_Add);
+
                 if (!string.IsNullOrEmpty(form["ParentID"]))
                 {
                     a.ParentID = parseIntField(form, "ParentID");
@@ -1966,12 +1925,12 @@ namespace d360.web.Controllers
                 var loader = new FieldLoader();
                 var fields = loader.GetFormDynamicFieldValues(SystemObjects.Attribute, a.ID, Company.GetFieldTypesByObject(SystemObjects.AttributeType, typeID).ToList(), form, Server);
 
-                Company.SaveOrUpdate<d360.core.entities.Attribute>(a, fields);
+                Company.SaveOrUpdate(a, fields);
 
                 dynamic custom = new
                 {
                     AttributeTypeID = typeID,
-                    ObjectID = a.ObjectID,
+                    a.ObjectID,
                     Object = a.ObjectType,
                     ObjectType = "AttributeType",
                     ObjectTypeID = typeID,
@@ -2008,9 +1967,16 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException("attribute");
 
                 var id = parseIntField(form, "ID");
-                Company.Delete<core.entities.Attribute>(i => i.ID == id);
+                var attr = Company.GetById<d360.core.entities.Attribute>(id);
+                if (attr == null)
+                    throw new NotFoundException("attribute");
 
-                return jsonSuccess(Resources.FormInfo.Delete_Attribute_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
+                if (!Company.HasAssetPermission(attr.ObjectType, attr.ObjectID, Permission.DeleteAttributes))
+                    throw new UnauthorizedException(FormInfo.Permisions_Error_Delete, FormInfo.Permisions_Error_Delete);
+
+                Company.Delete(attr);
+
+                return jsonSuccess(FormInfo.Delete_Attribute_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -2034,15 +2000,18 @@ namespace d360.web.Controllers
                 var model = Company.GetById<d360.core.entities.Attribute>(id);
                 if (model == null) throw new NotFoundException("attribute");
 
+                if (!Company.HasAssetPermission(model.ObjectType, model.ObjectID, Permission.ModifyAttributes))
+                    throw new UnauthorizedException(FormInfo.Permisions_Error_Edit, FormInfo.Permisions_Error_Edit);
+
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Attribute, model.ID, Company.GetFieldTypesByObject(SystemObjects.AttributeType, model.AttributeTypeID).ToList(), form, Server, false);
 
-                Company.SaveOrUpdate<core.entities.Attribute>(model, fields);
+                Company.SaveOrUpdate(model, fields);
 
                 dynamic custom = new
                 {
-                    AttributeTypeID = model.AttributeTypeID,
-                    ObjectID = model.ObjectID,
+                    model.AttributeTypeID,
+                    model.ObjectID,
                     Object = model.ObjectType,
                     ObjectType = "AttributeType",
                     ObjectTypeID = model.AttributeTypeID,
@@ -2075,7 +2044,7 @@ namespace d360.web.Controllers
         [Route("AttributeType_DeleteFields"), NonNullableParameters]
         public JsonResult AttributeType_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.AttributeType, id, Claim.Delete))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -2095,10 +2064,10 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.AttributeType, 0, Claim.Create, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_AttributeType);
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_AttributeType);
 
                 var a = new AttributeType
                 {
@@ -2123,9 +2092,9 @@ namespace d360.web.Controllers
                     }
                 }
 
-                Company.SaveOrUpdate<AttributeType>(a);
+                Company.SaveOrUpdate(a);
 
-                return jsonSuccess(Resources.FormInfo.Add_AttributeType_Confirmation, a.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = a.ParentID, Name = a.Name });
+                return jsonSuccess(FormInfo.Add_AttributeType_Confirmation, a.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = a.ParentID, Name = a.Name });
             }
             catch (BaseException ex)
             {
@@ -2143,18 +2112,18 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_AttributeType);
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_AttributeType);
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<AttributeType>(id);
-                if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_AttributeType);
+                if (model == null) throw new NotFoundException(FormInfo.NoFormData_AttributeType);
 
-                if (!Company.HasPermission(SystemObjects.AttributeType, id, Claim.Delete))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
                                 
                 Company.Delete(SystemObjects.AttributeType, id);
 
-                return jsonSuccess(Resources.FormInfo.Delete_AttributeType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormInfo.Delete_AttributeType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -2172,13 +2141,13 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_AttributeType);
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_AttributeType);
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<AttributeType>(id);
-                if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_AttributeType);
+                if (model == null) throw new NotFoundException(FormInfo.NoFormData_AttributeType);
 
-                if (!Company.HasPermission(SystemObjects.AttributeType, id, Claim.Update))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
@@ -2195,9 +2164,9 @@ namespace d360.web.Controllers
                     }
                 }
 
-                Company.SaveOrUpdate<AttributeType>(model);
+                Company.SaveOrUpdate(model);
 
-                return jsonSuccess(Resources.FormInfo.Edit_AttributeType_Confirmation, id.ToString(), "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Name = model.Name });
+                return jsonSuccess(FormInfo.Edit_AttributeType_Confirmation, id.ToString(), "edit", HttpStatusCode.OK, new { model.ParentID, model.Name });
             }
             catch (BaseException ex)
             {
@@ -2223,7 +2192,8 @@ namespace d360.web.Controllers
         public JsonResult AttributeTypeCategory_AddFields()
         {
             var o = new AttributeTypeCategory();
-            if (!Company.HasPermission(SystemObjects.ArtifactType, 0, Claim.Create, ClaimObject.Root))
+
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -2238,7 +2208,7 @@ namespace d360.web.Controllers
         [Route("AttributeTypeCategory_DeleteFields"), NonNullableParameters]
         public JsonResult AttributeTypeCategory_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -2251,7 +2221,7 @@ namespace d360.web.Controllers
         [Route("AttributeTypeCategory_EditFields"), NonNullableParameters]
         public JsonResult AttributeTypeCategory_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Update))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -2273,7 +2243,7 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.AttributeTypeCategory, 0, Claim.Create, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("attribute type category");
@@ -2311,20 +2281,20 @@ namespace d360.web.Controllers
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("attribute type category");
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<AttributeTypeCategory>(id);
                 if (model == null) throw new NotFoundException("attribute type category");
 
-                if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
                 Company.Delete(model);
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    model.Name,
                     action = "delete",
                     Context = form["_context"]
                 };
@@ -2347,23 +2317,23 @@ namespace d360.web.Controllers
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("attribute type category");
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<AttributeTypeCategory>(id);
                 if (model == null) throw new NotFoundException("attribute type category");
 
-                if (!Company.HasPermission(SystemObjects.AttributeTypeCategory, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
-                Company.Update<AttributeTypeCategory>(model);
+                Company.Update(model);
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    model.Name,
                     action = "edit",
                     Context = form["_context"]
                 };
@@ -2397,8 +2367,7 @@ namespace d360.web.Controllers
             var type = Company.GetById<AttributeType>(at);
 
             var relation = new AttributeTypeRelation();
-
-
+            
             list.Add(new EditableField { FieldName = "AttributeTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
             list.Add(new EditableField
             {
@@ -2463,6 +2432,9 @@ namespace d360.web.Controllers
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 if (form.HasKeys())
                 {
                     int typeID = parseIntField(form, "AttributeTypeID");
@@ -2475,7 +2447,7 @@ namespace d360.web.Controllers
                     var value = form["ObjectTypeInfo"].Split('|');
 
 
-                    Company.Add<AttributeTypeRelation>(new AttributeTypeRelation {
+                    Company.Add(new AttributeTypeRelation {
                         AttributeType = type,
                         AllowMultipleEntries = parseBooleanField(form, "AllowMultipleEntries"),
                         ObjectType = value[0],
@@ -2511,13 +2483,15 @@ namespace d360.web.Controllers
         [HttpDelete, Route("DeleteAttributeTypeRelationWithUri"), NonNullableParameters]
         public JsonResult DeleteAttributeTypeRelationWithUri(int AttributeTypeID, string ObjectType, int ObjectID)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
             var form = new FormCollection();
             form.Add("AttributeTypeID", AttributeTypeID.ToString());
             form.Add("ObjectType", ObjectType);
             form.Add("ObjectID", ObjectID.ToString());
 
             return DeleteAttributeTypeRelation(form);
-            
         }
 
         [HttpDelete, Route("DeleteAttributeTypeRelation")]
@@ -2525,6 +2499,9 @@ namespace d360.web.Controllers
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 var at = parseIntField(form, "AttributeTypeID");
                 var ot = form["ObjectType"];
                 var oid = parseIntField(form, "ObjectID");
@@ -2549,6 +2526,9 @@ namespace d360.web.Controllers
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var at = parseIntField(form, "AttributeTypeID");
                 var value = form["ObjectTypeInfo"].Split('|');
                 var ot = value[0];
@@ -2607,6 +2587,9 @@ namespace d360.web.Controllers
         [HttpPut, ValidateInput(false), Route("UpdateStyleCustomizations")]
         public JsonResult UpdateStyleCustomizations(string css)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
             //delete the old css file
             try
             {
@@ -2655,12 +2638,6 @@ namespace d360.web.Controllers
         [Route("CompanySettings")]
         public JsonNetResult CompanySettings()
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                return null;
-            }
-
             var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
             var model = new CompanySettingsEditorModel();
             model.DisableCommunityPosting = (settings.Any(i => i.SettingID == 1) ? bool.Parse(settings.Single(i => i.SettingID == 1).Value) : false);
@@ -2671,8 +2648,6 @@ namespace d360.web.Controllers
             model.DefaultRoute = (settings.Any(i => i.SettingID == 22) ? settings.Single(i => i.SettingID == 22).Value : "");
             model.EnableSearchExactMatch = (settings.Any(i => i.SettingID == 23) ? bool.Parse(settings.Single(i => i.SettingID == 23).Value) : false);
             model.ShowDefaultHelpVideos = (settings.Any(i => i.SettingID == 35) ? bool.Parse(settings.Single(i => i.SettingID == 35).Value) : true);
-
-           
 
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2714,7 +2689,7 @@ namespace d360.web.Controllers
             {
                 if (formModel == null) throw new NoFormDataException("company settings");
 
-                // Permisisons validation.
+                // Permissions validation.
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
@@ -2975,7 +2950,6 @@ namespace d360.web.Controllers
 
         private void updateCompanySetting(List<CompanySetting> settings, int settingID, string value)
         {
-
             var setting = settings.FirstOrDefault(i => i.SettingID == settingID);
             if (setting == null)
             {
@@ -3665,12 +3639,12 @@ namespace d360.web.Controllers
                         {
                             filteredLookupItems.Add(new
                             {
-                                ID = i.ID,
-                                Object = i.Object,
-                                ObjectID = i.ObjectID,
+                                i.ID,
+                                i.Object,
+                                i.ObjectID,
                                 DisplayFields = (i.FieldTypeFilteredLookupDisplayFields != null) ? i.FieldTypeFilteredLookupDisplayFields.Select(df => new { value = $"{df.FieldTypeID}|{df.FieldTypeName}", Filter = df.Filter, Show = df.Show, SortOrder = df.SortOrder }).ToList() : null,
-                                HideHeader = i.HideHeader,
-                                HideFooter = i.HideFooter
+                                i.HideHeader,
+                                i.HideFooter
                             });
                         }
                     }
@@ -3769,14 +3743,11 @@ namespace d360.web.Controllers
         [Route("FieldType_DeleteFields"), NonNullableParameters]
         public JsonResult FieldType_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.FieldType, id, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            //if (Company.Table<FieldWithRelation>().Any(i => i.FieldTypeID == id))
-            //    return jsonException(FormInfo.FieldType_Error_Used, HttpStatusCode.Forbidden);
-
             var list = new List<EditableField>();
             var a = Company.GetById<FieldType>(id);
+
+            if (!Company.HasAssetTypePermission(a.Object, a.ObjectID, Permission.ModifyAsset))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
@@ -3799,7 +3770,7 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(model.FieldType.Object, model.FieldType.ObjectID, Claim.Update))
+                if (!Company.HasAssetTypePermission(model.FieldType.Object, model.FieldType.ObjectID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 int maxColumnOrder = 0;
@@ -3815,7 +3786,7 @@ namespace d360.web.Controllers
                 var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
                 if (!nameRegex.IsMatch(model.FieldType.Name))
                 {
-                    throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
+                    throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
 
                 if (!string.IsNullOrEmpty(model.FieldType.Name) && (model.FieldType.Name).ToUpper().Equals("ID"))
@@ -3857,7 +3828,7 @@ namespace d360.web.Controllers
                         #region
                         if (string.IsNullOrEmpty(model.FieldType.LookupDisplayFormat))
                         {
-                            throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
+                            throw new ConflictException("Error Occurred!", $"{FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
                         }
                         Company.Add<FieldType>(model.FieldType);
                         break;
@@ -4092,7 +4063,7 @@ namespace d360.web.Controllers
                         break;
                 }
 
-                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.FieldType.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(FormInfo.Add_FieldType_Confirmation, model.FieldType.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -4110,19 +4081,19 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
 
                 var id = parseIntField(form, "ID");
 
                 var model = Company.GetById<FieldType>(id);
                 if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
 
-                if (!Company.HasPermission(model.Object, model.ObjectID, Claim.Update))
+                if (!Company.HasAssetTypePermission(model.Object, model.ObjectID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete(SystemObjects.FieldType, id);
+                Company.Delete(model);
 
-                return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormInfo.Delete_FieldType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -4179,9 +4150,9 @@ namespace d360.web.Controllers
                 var ft = Company.GetById<FieldType>(model.FieldType.ID);
                 var used = Company.Any<Field>(i => i.FieldTypeID == ft.ID);
 
-                if (ft == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
+                if (ft == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
 
-                if (!Company.HasPermission(ft.Object, ft.ObjectID, Claim.Update))
+                if (!Company.HasAssetTypePermission(ft.Object, ft.ObjectID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var val = model.Validation();
@@ -4193,7 +4164,7 @@ namespace d360.web.Controllers
                 var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
                 if (!nameRegex.IsMatch(model.FieldType.Name))
                 {
-                    throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
+                    throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
 
            
@@ -4579,7 +4550,7 @@ namespace d360.web.Controllers
                         ft.LookupEditFormat = model.FieldType.LookupEditFormat;
                         if (string.IsNullOrEmpty(model.FieldType.LookupDisplayFormat))
                         {
-                            throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
+                            throw new ConflictException("Error Occurred!", $"{FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
                         }
 
                         //Clean up previous stuff
@@ -4747,7 +4718,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FieldType>(ft);
 
-                return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, ft.ID.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(FormInfo.Edit_FieldType_Confirmation, ft.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -4776,8 +4747,8 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var type = Company.GetById<FusionType>(ft);
 
-            if (!Company.HasPermission(SystemObjects.FusionType, ft, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            if (!Company.HasAssetTypePermission(SystemObjects.FusionType, ft, Permission.ModifyAsset))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var fusion = new Fusion();
 
@@ -4813,7 +4784,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.GetById<Fusion>(id);
 
-            if (!Company.HasPermission(SystemObjects.Fusion, id, Claim.Delete))
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -4828,7 +4799,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.GetById<Fusion>(id, i => i.FusionOwners);
 
-            if (!Company.HasPermission(SystemObjects.Fusion, id, Claim.Update))
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -4885,7 +4856,7 @@ namespace d360.web.Controllers
                 var type = Company.GetById<FusionType>(typeID);
                 if (type == null) throw new NotFoundException("fusion type");
 
-                if (!Company.HasPermission(SystemObjects.FusionType, typeID, Claim.Update))
+                if (!Company.HasAssetTypePermission(SystemObjects.FusionType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var rawOwners = parseTextField(form, "Owners");
@@ -4938,7 +4909,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<Fusion>(parseIntField(form, "ID"));
                 if (model == null) throw new NotFoundException("configuration");
 
-                if (!Company.HasPermission(SystemObjects.Fusion, model.ID, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.ID, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 //check if the fusion config has data, if so dont allow the delete and popup a friendly message
@@ -4970,7 +4941,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<Fusion>(parseIntField(form, "ID"), i => i.FusionOwners);
                 if (model == null) throw new NotFoundException("configuration");
 
-                if (!Company.HasPermission(SystemObjects.Fusion, model.ID, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.ID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var rawOwners = parseTextField(form, "Owners");
@@ -5060,6 +5031,9 @@ namespace d360.web.Controllers
         {
             try
             {
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, r.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 var rule = new FusionRule
                 {
                     Enabled = r.Enabled,
@@ -5071,7 +5045,7 @@ namespace d360.web.Controllers
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                Company.Add<FusionRule>(rule);
+                Company.Add(rule);
                 Company.SaveChanges();
 
                 //automatically add all items for query attribute types
@@ -5083,7 +5057,7 @@ namespace d360.web.Controllers
                     item.ObjectID = null;
                     item.RuleID = rule.ID;
 
-                    Company.Add<FusionRuleItem>(item);
+                    Company.Add(item);
                 }
 
                 return jsonSuccess("Items marked for auto-promotion", "0", "add", HttpStatusCode.Created);
@@ -5115,7 +5089,10 @@ namespace d360.web.Controllers
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                Company.Add<FusionRule>(item);
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, item.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                Company.Add(item);
 
                 return jsonSuccess("Items marked for auto-promotion", "0", "add", HttpStatusCode.Created);
             }
@@ -5137,8 +5114,14 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
                 var id = parseIntField(form, "ID");
+                var rule = Company.GetById<FusionRule>(id);
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 Company.Delete<FusionRuleItem>(i => i.RuleID == id);
-                Company.Delete<FusionRule>(i => i.ID == id);
+                Company.Delete(rule);
+
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -5197,6 +5180,9 @@ namespace d360.web.Controllers
                 var model = Company.GetById<FusionRule>(r.ID);
                 if (model == null) throw new NotFoundException("promotion rule");
 
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var type = model.ObjectType;
 
                 model.Enabled = r.Enabled;
@@ -5208,7 +5194,7 @@ namespace d360.web.Controllers
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;
 
-                Company.Update<FusionRule>(model);
+                Company.Update(model);
 
                 if (model.ObjectType != type)
                 {
@@ -5226,9 +5212,6 @@ namespace d360.web.Controllers
                         Company.Add(item);
                     }
                 }
-                    
-
-               
 
                 return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -5253,6 +5236,9 @@ namespace d360.web.Controllers
                 var model = Company.GetById<FusionRule>(parseIntField(form, "ID"));
                 if (model == null) throw new NotFoundException("promotion rule");
 
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 model.Enabled = parseBooleanField(form, "Enabled");
                 model.Description = parseTextField(form, "Description");
                 model.FusionID = parseIntField(form, "FusionID");
@@ -5262,7 +5248,7 @@ namespace d360.web.Controllers
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;
 
-                Company.Update<FusionRule>(model);
+                Company.Update(model);
 
                 return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -5443,8 +5429,8 @@ namespace d360.web.Controllers
             if (rule == null)
                 return null;
 
-            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
-                return null;
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
+                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var editorModel = new FusionRuleFilterEditorModel { FusionRuleID = id, All = false };
 
@@ -5476,6 +5462,9 @@ namespace d360.web.Controllers
                 int ruleID = form.FusionRuleID;
                 var rule = Company.GetById<FusionRule>(ruleID);
 
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 var filter = new FusionRuleFilter { RuleID = ruleID, Name = form.Name, Items = form.Items, All = form.All };
                 var fieldsXml = new XElement("fields");
                 filter.Items.ForEach(f =>
@@ -5488,8 +5477,7 @@ namespace d360.web.Controllers
                 });
                 filter.FieldsDocument = fieldsXml;
                 filter.Sql = getFusionRuleFilterSql(form, false);
-
-
+                
                 Company.Add(filter);
 
                 if (rule != null)
@@ -5521,8 +5509,8 @@ namespace d360.web.Controllers
             if (filter == null)
                 return null;
 
-            if (!Company.HasPermission(SystemObjects.Fusion, filter.FusionRule.FusionID, Claim.Create))
-                return null;
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, filter.FusionRule.FusionID, Permission.ModifyAsset))
+                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var editorModel = new FusionRuleFilterEditorModel { FusionRuleID = filter.RuleID, ID = filter.ID, Name = filter.Name, All = filter.All };
 
@@ -5560,10 +5548,13 @@ namespace d360.web.Controllers
         {
             try
             {
-                var filter = Company.GetById<FusionRuleFilter>(form.ID.Value);
+                var filter = Company.GetById<FusionRuleFilter>(form.ID.Value, i => i.FusionRule);
 
                 if (filter != null)
                 {
+                    if (!Company.HasAssetPermission(SystemObjects.Fusion, filter.FusionRule.FusionID, Permission.ModifyAsset))
+                        return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                     filter.Items = form.Items;
 
                     var fieldsXml = new XElement("fields");
@@ -5655,14 +5646,16 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
                 var id = parseIntField(form, "ID");
-                var filter = Company.GetById<FusionRuleFilter>(id);
+                var filter = Company.GetById<FusionRuleFilter>(id, i => i.FusionRule);
                 if (filter != null)
                 {
-                    var rule = Company.GetById<FusionRule>(filter.RuleID);
-                    if (rule != null)
+                    if (!Company.HasAssetPermission(SystemObjects.Fusion, filter.FusionRule.FusionID, Permission.ModifyAsset))
+                        return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                    if (filter.FusionRule != null)
                     {
-                        rule.UpdatedBy = Company.CurrentResourceID;
-                        rule.UpdatedOn = DateTime.UtcNow;
+                        filter.FusionRule.UpdatedBy = Company.CurrentResourceID;
+                        filter.FusionRule.UpdatedOn = DateTime.UtcNow;
                     }
                     Company.Delete(filter);
                 }
@@ -5717,8 +5710,8 @@ namespace d360.web.Controllers
             if (rule == null)
                 return null;
 
-            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
-                return null;
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
+                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var editorModel = new FusionRuleItemEditorModel
             {
@@ -5744,6 +5737,10 @@ namespace d360.web.Controllers
             {
                 int ruleID = form.RuleID;
                 var rule = Company.GetById<FusionRule>(ruleID);
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 bool allSelected = form.AllSelected;
                 List<string> attributes = new List<string>();
 
@@ -5752,11 +5749,9 @@ namespace d360.web.Controllers
 
                 if(attributes.Count == 0 && allSelected)
                 {
-                    {
-                        Company.Set<FusionRuleItem>().Add(
-                            new FusionRuleItem { RuleID = ruleID, ObjectID = null, ObjectType = form.ObjectType }
-                            );
-                    }
+                    Company.Set<FusionRuleItem>().Add(
+                        new FusionRuleItem { RuleID = ruleID, ObjectID = null, ObjectType = form.ObjectType }
+                    );
                 }
                 else
                 {
@@ -5772,7 +5767,7 @@ namespace d360.web.Controllers
                         if (!existing)
                             Company.Set<FusionRuleItem>().Add(
                                 new FusionRuleItem { RuleID = ruleID, ObjectID = attributeID, ObjectType = form.ObjectType }
-                                );
+                            );
                     });
                 }
 
@@ -5804,11 +5799,15 @@ namespace d360.web.Controllers
             {
                 var ruleID = parseIntField(form, "RuleID");
                 var rule = Company.GetById<FusionRule>(ruleID);
-                if (rule != null)
-                {
-                    rule.UpdatedBy = Company.CurrentResourceID;
-                    rule.UpdatedOn = DateTime.UtcNow;
-                }
+
+                if (rule == null)
+                    throw new NotFoundException("fusion rule");
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                rule.UpdatedBy = Company.CurrentResourceID;
+                rule.UpdatedOn = DateTime.UtcNow;
 
                 var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
                 if (fusionAttributeIDs.Count == 0)
@@ -5853,18 +5852,20 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
                 var id = parseIntField(form, "ID");
-                var item = Company.GetById<FusionRuleItem>(id);
-                if (item != null)
-                {
-                    var rule = Company.GetById<FusionRule>(item.RuleID);
-                    if (rule != null)
-                    {
-                        rule.UpdatedBy = Company.CurrentResourceID;
-                        rule.UpdatedOn = DateTime.UtcNow;
-                    }
-                    Company.FusionRuleItem.Remove(item);
-                    Company.SaveChanges();
-                }
+                var item = Company.GetById<FusionRuleItem>(id, i => i.FusionRule);
+
+                if (item == null)
+                    throw new NotFoundException("fusion rule item");
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, item.FusionRule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                item.FusionRule.UpdatedBy = Company.CurrentResourceID;
+                item.FusionRule.UpdatedOn = DateTime.UtcNow;
+
+                Company.FusionRuleItem.Remove(item);
+                Company.SaveChanges();
+
                 return jsonSuccess("Target item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -5930,6 +5931,12 @@ namespace d360.web.Controllers
 
                 var rule = Company.GetById<FusionRule>(ruleID);
 
+                if (rule == null)
+                    throw new NotFoundException("fusion rule");
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 var item = new FusionRuleStep
                 {
                     Action = s.Action,
@@ -5951,14 +5958,10 @@ namespace d360.web.Controllers
                 {
                     if (!string.IsNullOrEmpty(setting.Value))
                     {
-                        Company.Add<FusionRuleStepSetting>(new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = setting.Key,
-                            Value = setting.Value
-                        });
+                        Company.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = setting.Key, Value = setting.Value });
                     }
                 }
+
                 Company.SaveChanges();
 
                 return jsonSuccess("New Fusion Rule Step Added", "0", "add", HttpStatusCode.Created);
@@ -6655,7 +6658,11 @@ namespace d360.web.Controllers
 
                 var rule = Company.GetById<FusionRule>(ruleID);
 
-                if (rule == null) return null;
+                if (rule == null)
+                    throw new NotFoundException("fusion rule");
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var step = rule.FusionRuleSteps.First(x => x.ID == ruleStepID);
 
@@ -6680,12 +6687,7 @@ namespace d360.web.Controllers
                 {
                     if (!string.IsNullOrEmpty(setting.Value))
                     {
-                        Company.Add<FusionRuleStepSetting>(new FusionRuleStepSetting
-                        {
-                            RuleStepID = step.ID,
-                            Name = setting.Key,
-                            Value = setting.Value
-                        });
+                        Company.Add(new FusionRuleStepSetting { RuleStepID = step.ID, Name = setting.Key, Value = setting.Value });
                     }
                 }
                 Company.SaveChanges();
@@ -6708,14 +6710,18 @@ namespace d360.web.Controllers
         {
             var direction = moveUp ? "UP" : "DOWN";
             var currentRule = Company.GetById<FusionRule>(ruleID);
+
+            if (currentRule == null)
+                throw new NotFoundException("fusion rule");
+
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, currentRule.FusionID, Permission.ModifyAsset))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
             var itemToMove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
             int currentStepNumber = itemToMove.Step;
 
-            if (currentRule != null)
-            {
-                currentRule.UpdatedBy = Company.CurrentResourceID;
-                currentRule.UpdatedOn = DateTime.UtcNow;
-            }
+            currentRule.UpdatedBy = Company.CurrentResourceID;
+            currentRule.UpdatedOn = DateTime.UtcNow;
 
             if (string.Compare(direction, "UP", true) == 0)
             {
@@ -7030,13 +7036,13 @@ namespace d360.web.Controllers
         [HttpGet, Route("GetAddFusionRuleStepMapping"), NonNullableParameters]
         public JsonNetResult GetAddFusionRuleStepMapping(int id)
         {
-            var ruleStep = Company.GetById<FusionRuleStep>(id);
+            var ruleStep = Company.GetById<FusionRuleStep>(id, i => i.FusionRule);
 
             if (ruleStep == null)
-                return null;
+                throw new NotFoundException("fusion rule step");
 
-            if (!Company.HasPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Claim.Create))
-                return null;
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Permission.ModifyAsset))
+                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var editorModel = new FusionRuleStepMappingEditorModel
             {
@@ -7062,14 +7068,12 @@ namespace d360.web.Controllers
             {
                 var model = new FusionRuleStepMapping
                 {
-                    RuleStepID = map.RuleStepID
+                    RuleStepID = map.RuleStepID,
+                    SourceFieldName = map.SourceFieldName,
+                    SourceFieldTypeID = map.SourceFieldTypeID,
+                    TargetFieldName = map.TargetFieldName,
+                    TargetFieldTypeID = map.TargetFieldTypeID
                 };
-
-                model.SourceFieldName = map.SourceFieldName;
-                model.SourceFieldTypeID = map.SourceFieldTypeID;
-                model.TargetFieldName = map.TargetFieldName;
-                model.TargetFieldTypeID = map.TargetFieldTypeID;
-
 
                 if (map.IsConstantValue)
                 {
@@ -7084,11 +7088,14 @@ namespace d360.web.Controllers
                     model.ConstantValue = string.Empty;
                 }
 
-                Company.Add<FusionRuleStepMapping>(model);
+                Company.Add(model);
 
                 var ruleStep = Company.GetById<FusionRuleStep>(model.RuleStepID, i => i.FusionRule);
                 if (ruleStep != null)
                 {
+                    if (!Company.HasAssetPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Permission.ModifyAsset))
+                        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                     ruleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
                     ruleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
                     Company.SaveChanges();
@@ -7152,11 +7159,14 @@ namespace d360.web.Controllers
                     model.ConstantValue = string.Empty;
                 }
 
-                Company.Add<FusionRuleStepMapping>(model);
+                Company.Add(model);
 
                 var ruleStep = Company.GetById<FusionRuleStep>(model.RuleStepID, i => i.FusionRule);
                 if (ruleStep != null)
                 {
+                    if (!Company.HasAssetPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Permission.ModifyAsset))
+                        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                     ruleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
                     ruleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
                     Company.SaveChanges();
@@ -7183,21 +7193,23 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
                 var id = parseIntField(form, "ID");
                 var ruleStepID = parseIntField(form, "RuleStepID");
-                var currentRule = Company.GetById<FusionRule>(id);//, i => i.FusionRuleSteps);
+                var currentRule = Company.GetById<FusionRule>(id);
+
+                if (currentRule == null)
+                    throw new NotFoundException("fusion rule");
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, currentRule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 var itemToRemove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
 
-                if (itemToRemove == null) throw new Exception("Fusion Rule Step not found.");                                
+                if (itemToRemove == null) throw new Exception("Fusion Rule Step not found.");                     
 
-                Company.ObjectContext.DeleteObject(itemToRemove);
+                Company.Delete(itemToRemove);
 
-                if (currentRule != null)
-                {
-                    currentRule.UpdatedBy = Company.CurrentResourceID;
-                    currentRule.UpdatedOn = DateTime.UtcNow;
-                }
-
-                Company.SaveChanges();
-
+                currentRule.UpdatedBy = Company.CurrentResourceID;
+                currentRule.UpdatedOn = DateTime.UtcNow;
+                    
                 //update the step numbers 
                 var steps = currentRule.FusionRuleSteps.OrderBy(x => x.Step);
 
@@ -7238,7 +7250,16 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
                 var id = parseIntField(form, "ID");
-                Company.Delete<FusionRuleStepMapping>(i => i.ID == id);
+
+                var mapping = Company.GetById<FusionRuleStepMapping>(id, i => i.FusionRuleStep.FusionRule);
+
+                if (mapping == null)
+                    throw new NotFoundException("field mapping");
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, mapping.FusionRuleStep.FusionRule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(mapping);
                 return jsonSuccess("Mapping successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -7288,9 +7309,13 @@ namespace d360.web.Controllers
         {
             try
             {
-
                 var model = Company.GetById<FusionRuleStepMapping>(map.ID, i => i.FusionRuleStep.FusionRule);
-                if (model == null) throw new NotFoundException("field mapping");
+
+                if (model == null)
+                    throw new NotFoundException("field mapping");
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionRuleStep.FusionRule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.SourceFieldName = map.SourceFieldName;
                 model.SourceFieldTypeID = map.SourceFieldTypeID;
@@ -7311,7 +7336,7 @@ namespace d360.web.Controllers
                 model.FusionRuleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
                 model.FusionRuleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
 
-                Company.Update<FusionRuleStepMapping>(model);
+                Company.Update(model);
 
                 return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -7334,7 +7359,12 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException("field mapping");
 
                 var model = Company.GetById<FusionRuleStepMapping>(parseIntField(form, "ID"), i => i.FusionRuleStep.FusionRule);
-                if (model == null) throw new NotFoundException("field mapping");
+                
+                if (model == null)
+                    throw new NotFoundException("field mapping");
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionRuleStep.FusionRule.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var source = form["Source"].Split('|');
                 var target = form["Target"].Split('|');
@@ -7371,7 +7401,7 @@ namespace d360.web.Controllers
                 model.FusionRuleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
                 model.FusionRuleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
 
-                Company.Update<FusionRuleStepMapping>(model);
+                Company.Update(model);
 
                 return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -7397,7 +7427,7 @@ namespace d360.web.Controllers
         [Route("FusionType_AddFields")]
         public JsonResult FusionType_AddFields()
         {
-            if (!Company.HasPermission(SystemObjects.FusionType, 0, Claim.Create))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -7416,7 +7446,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.GetById<FusionType>(id);
 
-            if (!Company.HasPermission(SystemObjects.FusionType, a.ID, Claim.Delete))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -7431,7 +7461,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.GetById<FusionType>(id);
 
-            if (!Company.HasPermission(SystemObjects.FusionType, a.ID, Claim.Update))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var style = Company.GetObjectStyle(SystemObjects.FusionType, id);
@@ -7453,18 +7483,16 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.FusionType, 0, Claim.Create))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                //   if (!form.HasKeys()) throw new NoFormDataException("fusion type");
 
                 var model = new FusionType
                 {
-                    Description = fusion.Description, //parseTextField(form, "Description"),
-                    Name = fusion.Name //parseTextField(form, "Name", null, true)
+                    Description = fusion.Description,
+                    Name = fusion.Name
                 };
 
-                Company.Add<FusionType>(model);
+                Company.Add(model);
 
                 if (style != null)
                     upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
@@ -7483,24 +7511,21 @@ namespace d360.web.Controllers
         }
 
         [HttpDelete, Route("DeleteFusionType")]
-        public JsonResult DeleteFusionType(FormCollection form)//(int typeID, int id)
+        public JsonResult DeleteFusionType(FormCollection form)
         {
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("fusion type");
 
                 var model = Company.GetById<FusionType>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("fusion type");
 
-                if (!Company.HasPermission(SystemObjects.FusionType, model.ID, Claim.Delete))
+                if (model == null)
+                    throw new NotFoundException("fusion type");
+
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.FusionType, model.ID);
-                //if (Company.Filter<FusionAttributeType>(i => i.FusionTypeID == model.ID).Count() > 0)
-                //    return jsonException(FormInfo.FusionType_Remove, HttpStatusCode.Conflict);
-
-                //Company.Delete<FusionType>(model);
-                //deleteObjectStyle(SystemObjects.FusionType, model.ID);
 
                 return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -7529,18 +7554,16 @@ namespace d360.web.Controllers
         {
             try
             {
-               // if (!form.HasKeys()) throw new NoFormDataException("fusion type");
-
                 var model = Company.GetById<FusionType>(fusion.ID);
                 if (model == null) throw new NotFoundException("fusion type");
 
-                if (!Company.HasPermission(SystemObjects.FusionType, model.ID, Claim.Update, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Description = fusion.Description; // parseTextField(form, "Description");
-                model.Name = fusion.Name;  //parseTextField(form, "Name", null, true);
+                model.Description = fusion.Description;
+                model.Name = fusion.Name;
 
-                Company.Update<FusionType>(model);
+                Company.Update(model);
                 if (style != null)
                     upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
 
@@ -7570,7 +7593,7 @@ namespace d360.web.Controllers
         [Route("FusionAttributeType_AddFields"), NonNullableParameters]
         public JsonResult FusionAttribute_AddFields(int fat, int f)
         {
-            if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Create))
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, f, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -7591,11 +7614,13 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.GetById<FusionAttribute>(id, i => i.FusionAttributeType);
 
-            if (!Company.HasPermission(SystemObjects.Fusion, a.FusionID, Claim.Update))
+            if (a == null)
+                return jsonException("Fusion attribute not found.", HttpStatusCode.BadRequest, "Not found");
+
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, a.FusionID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            //list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             
             list = (
                 loadDynamicFields(
@@ -7629,10 +7654,9 @@ namespace d360.web.Controllers
 
                 if (model == null) throw new NotFoundException("Fusion Attribute");
 
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-
+                
                 var sType = SystemObjects.FusionAttribute.ToString();
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.FusionAttribute, model.ID, Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, model.FusionAttributeTypeID).ToList(), form, Server, false);
@@ -7668,7 +7692,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<FusionAttributeTypeCustomQuery>(id);
                 if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
 
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(model);
@@ -7690,18 +7714,16 @@ namespace d360.web.Controllers
         public JsonResult AddFusionAttributeTypeCustomQuery(FormCollection form)
         {
             try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, 0, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
+            {                
                 var a = new FusionAttributeTypeCustomQuery
                 {
                     FusionID = parseIntField(form, "FusionID"),
                     FusionAttributeTypeID = parseIntField(form, "FusionAttributeTypeID"),
                     Query = parseTextField(form, "Query")
                 };
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, a.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 // only allow select
                 var valid = Company.IsValidReportingQuery(a.Query);
@@ -7737,7 +7759,7 @@ namespace d360.web.Controllers
 
                 if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
 
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.FusionAttributeTypeID = parseIntField(form, "FusionAttributeTypeID");
@@ -7795,7 +7817,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<FusionQueryAttributeType>(parseIntField(form, "ID"));
                 if (model == null) throw new NotFoundException("fusion attibute type");
 
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var sql = parseTextField(form, "Query");
@@ -7812,7 +7834,7 @@ namespace d360.web.Controllers
                 model.Name = parseTextField(form, "Name");
                 model.DisplayFormat = parseTextField(form, "DisplayFormat");
                 model.Query = sql;
-                Company.Update<FusionQueryAttributeType>(model);
+                Company.Update(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -7838,7 +7860,7 @@ namespace d360.web.Controllers
                 var type = Company.GetById<Fusion>(fusionID);
                 if (type == null) throw new NotFoundException("fusion configuration");
                                 
-                if (!Company.HasPermission(SystemObjects.Fusion, type.ID, Claim.Create, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, fusionID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var sql = parseTextField(form, "Query");
@@ -7862,11 +7884,11 @@ namespace d360.web.Controllers
                     DisplayFormat = parseTextField(form, "DisplayFormat")
                 };
 
-                Company.Add<FusionQueryAttributeType>(model);
+                Company.Add(model);
 
                 foreach (var column in columns)
                 {
-                    Company.Add<FieldType>(new FieldType
+                    Company.Add(new FieldType
                     {
                         ObjectID = model.ID,
                         Object = SystemObjects.FusionQueryAttributeType.ToString(),
@@ -7903,10 +7925,10 @@ namespace d360.web.Controllers
                 var model = Company.GetById<FusionQueryAttributeType>(parseIntField(form, "ID"));
                 if (model == null) throw new NotFoundException("fusion query attribute type");
 
-                if (!Company.HasPermission(SystemObjects.FusionQueryAttributeType, model.ID, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
                 
-                Company.Delete<FusionQueryAttributeType>(model);
+                Company.Delete(model);
                 return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -7933,13 +7955,13 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException("delete fusion schedule");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.FusionSchedule>(id);
+                var model = Company.GetById<FusionSchedule>(id);
                 if (model == null) throw new NotFoundException("fusion schedule");
 
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<core.entities.FusionSchedule>(i => i.ID == id);
+                Company.Delete(model);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -7960,10 +7982,7 @@ namespace d360.web.Controllers
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("fusionschedule");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, 0, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
+                
                 var a = new FusionSchedule
                 {                    
                     FusionID = parseIntField(form,"FusionID"),
@@ -7975,8 +7994,11 @@ namespace d360.web.Controllers
                     UpdatedBy = Company.CurrentResourceID,
                     UpdatedOn = DateTime.UtcNow
                 };
+
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, a.FusionID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
                 
-                Company.Add<FusionSchedule>(a);
+                Company.Add(a);
 
                 return jsonSuccess("Fusion schedule successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, new { });
             }
@@ -7996,14 +8018,12 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("fusionschedule");
-
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<FusionSchedule>(id);
 
-                if (model == null) throw new NotFoundException("issuetype");
+                if (model == null) throw new NotFoundException("fusion schedule");
 
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.FullRefresh = parseBooleanField(form, "FullRefresh");
@@ -8012,7 +8032,7 @@ namespace d360.web.Controllers
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;
 
-                Company.Update<core.entities.FusionSchedule>(model);
+                Company.Update(model);
 
                 return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -8036,6 +8056,17 @@ namespace d360.web.Controllers
         {
             try
             {
+                var intersect = Company.GetById<Intersect>(id);
+
+                if (intersect == null)
+                    throw new NotFoundException("relationship");
+
+                if (
+                    !Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.DeleteRelationships) ||
+                    !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.DeleteRelationships)
+                    )
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 Company.DeleteRelationship(id);
                 Response.StatusCode = (int)HttpStatusCode.OK;
                 Response.StatusDescription = "Successfully unrelated item.";
@@ -8066,7 +8097,7 @@ namespace d360.web.Controllers
         [Route("IntersectType_DeleteFields"), NonNullableParameters]
         public JsonResult IntersectType_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Delete))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             if (Company.Any<Intersect>(i => i.IntersectTypeID == id))
@@ -8196,6 +8227,9 @@ namespace d360.web.Controllers
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 if (form == null) throw new NoFormDataException("relationship type");
 
                 var subject = form["Subject"];
@@ -8262,7 +8296,7 @@ namespace d360.web.Controllers
                 var id = parseIntField(form, "ID");
                 if (!form.HasKeys()) throw new NoFormDataException("relationship type");
 
-                if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Delete))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 if (Company.Filter<Intersect>(i => i.IntersectTypeID == id).Count() > 0)
@@ -8298,7 +8332,7 @@ namespace d360.web.Controllers
                 var id = int.Parse(form["ID"]);
 
                 // Permisisons validation.
-                if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Update))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var model = Company.GetById<IntersectType>(id);
@@ -8368,7 +8402,7 @@ namespace d360.web.Controllers
         [Route("IssueTypeRelation_AddFields"), NonNullableParameters]
         public JsonResult IssueTypeRelation_AddFields(int issueTypeId)
         {
-            if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -8389,9 +8423,9 @@ namespace d360.web.Controllers
         public JsonResult IssueType_EditFields(int id)
         {
             var list = new List<EditableField>();
-            var a = Company.GetById<core.entities.IssueType>(id);
+            var a = Company.GetById<IssueType>(id);
 
-            if (!Company.HasPermission(SystemObjects.IssueType, a.ID, Claim.Update))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -8404,7 +8438,7 @@ namespace d360.web.Controllers
         [Route("IssueType_AddFields"), NonNullableParameters]
         public JsonResult IssueType_AddFields()
         {
-            if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -8419,9 +8453,9 @@ namespace d360.web.Controllers
         public JsonResult Issue_AddFields(int issueTypeId)
         {            
             var list = new List<EditableField>();
-            var type = Company.GetById<core.entities.IssueType>(issueTypeId);
+            var type = Company.GetById<IssueType>(issueTypeId);
 
-            if (type == null) throw new NotFoundException("issuetype");
+            if (type == null) throw new NotFoundException("issue type");
 
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
 
@@ -8444,9 +8478,9 @@ namespace d360.web.Controllers
                 var desc = parseTextField(form, "ProblemDesc");
                 IssueCriticality criticality =  (IssueCriticality)Enum.Parse(typeof(IssueCriticality), parseTextField(form, "Criticality"));
 
-                var issueType = Company.GetById<core.entities.IssueType>(issueTypeId);
+                var issueType = Company.GetById<IssueType>(issueTypeId);
 
-                if (issueType == null) throw new NoFormDataException("IssueType");
+                if (issueType == null) throw new NoFormDataException("issue type");
 
                 //get the object name
                 var obj = Company.GetObjectDetail(objectType, objectId);
@@ -8488,7 +8522,7 @@ namespace d360.web.Controllers
 
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, model.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), form, Server);
-                Company.SaveOrUpdate<Issue>(model, fields);
+                Company.SaveOrUpdate(model, fields);
 
                 return jsonSuccess("Successfully created issue.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -8509,7 +8543,7 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("IssueType");
@@ -8540,7 +8574,7 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Delete, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (issueTypeID < 1 || assetTypeID < 1) throw new InvalidDataException("IssueTypeRelation");
@@ -8567,12 +8601,12 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("IssueType");
 
-                var model = new core.entities.IssueType
+                var model = new IssueType
                 {
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),  
@@ -8581,11 +8615,11 @@ namespace d360.web.Controllers
                     UpdatedOn = DateTime.UtcNow                    
                 };
 
-                Company.Add<core.entities.IssueType>(model);
+                Company.Add(model);
 
                 if (model.ID > 0)
                 {
-                    Company.Add<FieldType>(new FieldType
+                    Company.Add(new FieldType
                     {
                         ObjectID = model.ID,
                         Object = SystemObjects.IssueType.ToString(),
@@ -8617,22 +8651,22 @@ namespace d360.web.Controllers
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("issuetype");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.IssueType>(id);
+                var model = Company.GetById<IssueType>(id);
 
                 if (model == null) throw new NotFoundException("issuetype");
-
-                if (!Company.HasPermission(SystemObjects.IssueType, model.ID, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = form["Name"];
                 model.Description = form["Description"];
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;
 
-                Company.SaveOrUpdate<core.entities.IssueType>(model);
+                Company.SaveOrUpdate(model);
 
                 return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -8648,26 +8682,24 @@ namespace d360.web.Controllers
         }
 
 
-
         [HttpDelete, Route("DeleteIssueType")]
         public JsonResult DeleteIssueType(FormCollection form)
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("issue type");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.IssueType>(id);
+                var model = Company.GetById<IssueType>(id);
                 if (model == null) throw new NotFoundException("issue type");
-
-                if (!Company.HasPermission(SystemObjects.IssueType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-
+                
                 var typeRelations = Company.IssueTypeRelations.Where(i => i.IssueTypeID == id).ToList();
                 Company.IssueTypeRelations.RemoveRange(typeRelations);
 
-                Company.Delete<core.entities.IssueType>(i => i.ID == id);
+                Company.Delete<IssueType>(i => i.ID == id);
                 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -8692,7 +8724,7 @@ namespace d360.web.Controllers
         [Route("Group_AddFields")]
         public JsonResult Group_AddFields()
         {
-            if (!Company.HasPermission(SystemObjects.Group, 0, Claim.Create))
+            if (!Company.HasAssetTypePermission(SystemObjects.Group, 0, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -8706,9 +8738,9 @@ namespace d360.web.Controllers
                 .ToList()
                 .Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() })
                 .ToList();
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, Name = d360.core.resources.Fields.GroupPrimaryOwner_Name, FieldName = "PrimaryOwnerResourceID", FieldDescription = d360.core.resources.Fields.GroupPrimaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, Name = Fields.GroupPrimaryOwner_Name, FieldName = "PrimaryOwnerResourceID", FieldDescription = Fields.GroupPrimaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList });
             resList.Insert(0, new SelectListItem { Text = "None", Value = "", Group = new SelectListGroup { Name = "" } });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = false, Name = d360.core.resources.Fields.GroupSecondaryOwner_Name, FieldName = "SecondaryOwnerResourceID", FieldDescription = d360.core.resources.Fields.GroupSecondaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = false, Name = Fields.GroupSecondaryOwner_Name, FieldName = "SecondaryOwnerResourceID", FieldDescription = Fields.GroupSecondaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList });
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
@@ -8718,7 +8750,9 @@ namespace d360.web.Controllers
         [Route("Group_AddGroupUserFields"), NonNullableParameters]
         public JsonResult Group_AddGroupUserFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update)) return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
+            if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.ModifyAsset))
+                return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
+
             if (!Company.Any<Group>(i => i.ID == id)) return jsonException("No group exists for the specified ID.", HttpStatusCode.NotFound);
 
             var list = new List<EditableField>();
@@ -8732,8 +8766,6 @@ namespace d360.web.Controllers
             resList.Insert(0, new SelectListItem { Text = "Please select", Value = "" });
             list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ResourceID", Name = "Resource", FieldType = DataType.Lookup.ToString(), Items = resList });
 
-            //list.Add(new EditableField { Row = 1, Column = 2, FieldName = "IsOwner", Name = "Group Owner?", FieldType = DataType.Boolean.ToString() });
-
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -8741,7 +8773,7 @@ namespace d360.web.Controllers
         [Route("Group_DeleteFields"), NonNullableParameters]
         public JsonResult Group_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Group, id, Claim.Delete))
+            if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -8755,10 +8787,10 @@ namespace d360.web.Controllers
         [Route("Group_DeleteGroupUserFields"), NonNullableParameters]
         public JsonResult Group_DeleteGroupUserFields(int groupID, int resourceID)
         {
-            if (!Company.HasPermission(SystemObjects.Group, groupID, Claim.Update)) return jsonException("You do not have permissions to remove users.", HttpStatusCode.Forbidden);
+            if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset)) return jsonException("You do not have permissions to remove users.", HttpStatusCode.Forbidden);
             var group = Company.GetById<Group>(groupID);
             if (group == null) return jsonException("No group exists for the specified ID.", HttpStatusCode.NotFound);
-            if (!Community.Resources.Any(i => i.ID == resourceID)) return jsonException("No user exists for the specified ID.", HttpStatusCode.NotFound);
+            if (!Community.Any<Resource>(i => i.ID == resourceID)) return jsonException("No user exists for the specified ID.", HttpStatusCode.NotFound);
             if (resourceID == group.PrimaryOwnerResourceID) return jsonException("You may not remove this user as they are the group's primary owner.", HttpStatusCode.NotFound);
             if (resourceID == group.SecondaryOwnerResourceID) return jsonException("You may not remove this user as they are the group's secondary owner.", HttpStatusCode.NotFound);
 
@@ -8774,7 +8806,7 @@ namespace d360.web.Controllers
         [Route("Group_EditFields"), NonNullableParameters]
         public JsonResult Group_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update))
+            if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.ModifyAsset))
                 return jsonException("You do not have permissions to edit this.", HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -8792,9 +8824,9 @@ namespace d360.web.Controllers
                 .ToList()
                 .Select(i => new SelectListItem { Group = new SelectListGroup { Name = i.MembershipStatus }, Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() })
                 .ToList();
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, Name = d360.core.resources.Fields.GroupPrimaryOwner_Name, FieldName = "PrimaryOwnerResourceID", FieldDescription = d360.core.resources.Fields.GroupPrimaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList, Value = (a.PrimaryOwnerResourceID.HasValue ? a.PrimaryOwnerResourceID.Value.ToString() : "") });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, Name = Fields.GroupPrimaryOwner_Name, FieldName = "PrimaryOwnerResourceID", FieldDescription = Fields.GroupPrimaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList, Value = (a.PrimaryOwnerResourceID.HasValue ? a.PrimaryOwnerResourceID.Value.ToString() : "") });
             resList.Insert(0, new SelectListItem { Text = "None", Value = "", Group = new SelectListGroup { Name = "" } });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, Name = d360.core.resources.Fields.GroupSecondaryOwner_Name, FieldName = "SecondaryOwnerResourceID", FieldDescription = d360.core.resources.Fields.GroupSecondaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList, Value = (a.SecondaryOwnerResourceID.HasValue ? a.SecondaryOwnerResourceID.Value.ToString() : "") });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, Name = Fields.GroupSecondaryOwner_Name, FieldName = "SecondaryOwnerResourceID", FieldDescription = Fields.GroupSecondaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList, Value = (a.SecondaryOwnerResourceID.HasValue ? a.SecondaryOwnerResourceID.Value.ToString() : "") });
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
@@ -8814,7 +8846,7 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys()) throw new NoFormDataException("group");
 
-                if (!Company.HasPermission(SystemObjects.Group, 0, Claim.Create))
+                if (!Company.HasAssetTypePermission(SystemObjects.Group, 0, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var primaryOwnerResourceID = parseIntField(form, "PrimaryOwnerResourceID");
@@ -8828,15 +8860,15 @@ namespace d360.web.Controllers
                     SecondaryOwnerResourceID = secondaryOwnerResourceID
                 };
 
-                Company.Add<Group>(a);
+                Company.Add(a);
+                Company.Add(new ResourceGroup { GroupID = a.ID, ResourceID = primaryOwnerResourceID, IsOwner = true });
 
-                Company.Add<ResourceGroup>(new ResourceGroup { GroupID = a.ID, ResourceID = primaryOwnerResourceID, IsOwner = true });
                 try
                 {
                     if (secondaryOwnerResourceID.HasValue)
                     {
                         if (!primaryOwnerResourceID.Equals(secondaryOwnerResourceID))
-                            Company.Add<ResourceGroup>(new ResourceGroup { GroupID = a.ID, ResourceID = secondaryOwnerResourceID.Value, IsOwner = true });
+                            Company.Add(new ResourceGroup { GroupID = a.ID, ResourceID = secondaryOwnerResourceID.Value, IsOwner = true });
                     }
                 }
                 catch
@@ -8869,12 +8901,12 @@ namespace d360.web.Controllers
 
                 var id = parseIntField(form, "ID");
                 var resourceID = parseIntField(form, "ResourceID");
-                var owner = false;//bool.Parse(form["IsOwner"]);
+                var owner = false;
 
-                if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                Company.Add<ResourceGroup>(new ResourceGroup { GroupID = id, ResourceID = resourceID, IsOwner = owner });
+                Company.Add(new ResourceGroup { GroupID = id, ResourceID = resourceID, IsOwner = owner });
 
                 return jsonSuccess("User successfully assigned.", resourceID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -8894,10 +8926,12 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Group, model[0].GroupID, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Group, model[0].GroupID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-               foreach(var m in model)
-                Company.Add(m);
+
+                foreach (var m in model)
+                    Company.Add(m);
+
                 return jsonSuccess("User successfully assigned.", model[0].ResourceID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -8934,16 +8968,12 @@ namespace d360.web.Controllers
             var sql = string.Format(@"select * from ({0}) A", querySql);
             countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
             int totalCount = Company.Query<int>(countSql, dbArgs).First();
-
-
-
+            
             sql = applySortSuffix(sql, sortDataField, sortOrder, "Text", "asc");
             sql = applyPagingSuffix(sql, pagenum, pagesize);
 
             var query = Company.Query<dynamic>(sql, dbArgs);
-
-
-
+            
             return new JsonNetResult
             {
                 Data = new { total = totalCount, results = query },
@@ -8966,7 +8996,7 @@ namespace d360.web.Controllers
                 var groupID = parseIntField(form, "GroupID");
                 var resourceID = parseIntField(form, "ResourceID");
 
-                if (!Company.HasPermission(SystemObjects.Group, groupID, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var rg = Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
@@ -8989,7 +9019,7 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Group, groupID, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var rg = Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
@@ -9022,10 +9052,10 @@ namespace d360.web.Controllers
                 var model = Company.GetById<Group>(id);
                 if (model == null) throw new NotFoundException("group");
 
-                if (!Company.HasPermission(SystemObjects.Group, id, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<Group>(model);
+                Company.Delete(model);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -9063,7 +9093,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<Group>(id);
                 if (model == null) throw new NotFoundException("group");
 
-                if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var primaryOwnerResourceID = parseIntField(form, "PrimaryOwnerResourceID");
@@ -9074,19 +9104,19 @@ namespace d360.web.Controllers
                 model.PrimaryOwnerResourceID = primaryOwnerResourceID;
                 model.SecondaryOwnerResourceID = secondaryOwnerResourceID;
 
-                Company.Update<Group>(model);
+                Company.Update(model);
 
                 var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
 
                 if (!currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
                 {
-                    Company.Add<ResourceGroup>(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value, IsOwner = true });
+                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value, IsOwner = true });
                 }
                 if (model.SecondaryOwnerResourceID.HasValue)
                 {
                     if (!currentGroupUsers.Any(o => o == model.SecondaryOwnerResourceID))
                     {
-                        Company.Add<ResourceGroup>(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
+                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
                     }
                 }
 
@@ -9108,7 +9138,7 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Group, 0, Claim.Create))
+                if (!Company.HasAssetTypePermission(SystemObjects.Group, 0, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Add(model);
@@ -9144,20 +9174,14 @@ namespace d360.web.Controllers
         {
             try
             {
-               // if (!form.HasKeys()) throw new NoFormDataException("group");
-
-                //var id = parseIntField(form, "ID");
                 var existing = Company.GetById<Group>(model.ID);
                 if (existing == null) throw new NotFoundException("group");
 
-                if (!Company.HasPermission(SystemObjects.Group, existing.ID, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Group, existing.ID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                //var primaryOwnerResourceID = parseIntField(form, "PrimaryOwnerResourceID");
-                //var secondaryOwnerResourceID = parseNullableIntField(form, "SecondaryOwnerResourceID");
-
-                existing.Name = model.Name;  //parseTextField(form, "Name", null, true);
-                existing.Description = model.Description; // parseTextField(form, "Description");
+                existing.Name = model.Name;
+                existing.Description = model.Description;
                 existing.PrimaryOwnerResourceID = model.PrimaryOwnerResourceID; 
                 existing.SecondaryOwnerResourceID = model.SecondaryOwnerResourceID;
 
@@ -9382,7 +9406,7 @@ from    FusionAttribute A
         and A.TextPath like @phrase
         inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
         inner join Fusion F on F.ID = A.FusionID
-order by A.TextPath", new { phrase, SubjectID = intersect.SubjectID });
+order by A.TextPath", new { phrase, intersect.SubjectID });
 
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -9498,9 +9522,9 @@ for json path");
 
         //    var message = "";
 
-        //    bool canCreate = true;// Company.HasPermission(obj, model.FocalID, Claim.Create);
-        //    bool canUpdate = true;//Company.HasPermission(obj, model.FocalID, Claim.Update);
-        //    bool canDelete = true;//Company.HasPermission(obj, model.FocalID, Claim.Delete);
+        //    bool canCreate = true;// Company.HasPermission(obj, model.FocalID, Permission.ModifyAsset);
+        //    bool canUpdate = true;//Company.HasPermission(obj, model.FocalID, Permission.ModifyAsset);
+        //    bool canDelete = true;//Company.HasPermission(obj, model.FocalID, Permission.DeleteAsset);
 
         //    model.Rules.ForEach(viewRule =>
         //    {
@@ -9764,7 +9788,7 @@ for json path");
         [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateLineage")]
         public JsonNetResult UpdateLineage(LineageEditorModel model)
         {
-            if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Update))
+            if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.ModifyAsset))
                 return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             model.Deletes?.ForEach(d =>
@@ -9878,7 +9902,7 @@ for json path");
         [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateTechnicalLineage")]
         public JsonNetResult UpdateTechnicalLineage(LineageEditorTechnicalModel model)
         {
-            if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Update))
+            if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.ModifyAsset))
                 return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             model.Deletes?.ForEach(d =>
@@ -10072,7 +10096,7 @@ for json path");
         {
             try
             {
-                if (!Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
+                if (!Company.HasAssetPermission(type, id, Permission.ModifyRelationships))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 model.Items.ForEach(m =>
@@ -10502,7 +10526,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("Lookup_AddFields"), NonNullableParameters]
         public JsonResult Lookup_AddFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Create))
+            if (!Company.HasAssetTypePermission(SystemObjects.LookupType, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -10521,7 +10545,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
             var a = Company.GetById<Lookup>(id);
 
-            if (!Company.HasPermission(SystemObjects.LookupType, a.LookupTypeID, Claim.Delete))
+            if (!Company.HasAssetTypePermission(SystemObjects.LookupType, a.LookupTypeID, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -10536,7 +10560,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
             var a = Company.GetById<Lookup>(id);
 
-            if (!Company.HasPermission(SystemObjects.LookupType, a.LookupTypeID, Claim.Update))
+            if (!Company.HasAssetTypePermission(SystemObjects.LookupType, a.LookupTypeID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -10570,7 +10594,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (type == null) throw new NotFoundException("lookup type");
 
-                if (!Company.HasPermission(SystemObjects.LookupType, typeID, Claim.Create))
+                if (!Company.HasAssetTypePermission(SystemObjects.LookupType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var a = new Lookup
@@ -10579,7 +10603,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 };
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, a.ID, Company.GetFieldTypesByObject(SystemObjects.LookupType, typeID).ToList(), form, Server);
-                Company.SaveOrUpdate<Lookup>(a, fields);
+                Company.SaveOrUpdate(a, fields);
 
                 return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -10613,10 +10637,10 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = Company.GetById<Lookup>(id);
                 if (model == null) throw new NotFoundException("Lookup");
 
-                if (!Company.HasPermission(SystemObjects.LookupType, model.LookupTypeID, Claim.Delete))
+                if (!Company.HasAssetTypePermission(SystemObjects.LookupType, model.LookupTypeID, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<Lookup>(model);
+                Company.Delete(model);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -10643,11 +10667,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (model == null) throw new NotFoundException("lookup");
 
-                if (!Company.HasPermission(SystemObjects.LookupType, model.LookupTypeID, Claim.Update))
+                if (!Company.HasAssetTypePermission(SystemObjects.LookupType, model.LookupTypeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, model.ID, Company.GetFieldTypesByObject(SystemObjects.LookupType, model.LookupTypeID).ToList(), form, Server, false);
-                Company.SaveOrUpdate<Lookup>(model, fields);
+                Company.SaveOrUpdate(model, fields);
 
                 return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -10673,7 +10697,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("LookupType_AddFields")]
         public JsonResult LookupType_AddFields()
         {
-            if (!Company.HasPermission(SystemObjects.LookupType, 0, Claim.Create))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -10687,7 +10711,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("LookupType_DeleteFields"), NonNullableParameters]
         public JsonResult LookupType_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Delete))
+            if (!Company.HasAssetTypePermission(SystemObjects.LookupType, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -10701,7 +10725,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("LookupType_EditFields"), NonNullableParameters]
         public JsonResult LookupType_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Update))
+            if (!Company.HasAssetTypePermission(SystemObjects.LookupType, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -10737,7 +10761,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.LookupType, 0, Claim.Create))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("lookup type");
@@ -10747,11 +10771,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     Name = parseTextField(form, "Name")
                 };
 
-                Company.Add<LookupType>(a);
+                Company.Add(a);
 
                 if (a.ID > 0)
                 {
-                    Company.Add<FieldType>(new FieldType
+                    Company.Add(new FieldType
                     {
                         ObjectID = a.ID,
                         Object = SystemObjects.LookupType.ToString(),
@@ -10790,7 +10814,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var id = parseIntField(form, "ID");
 
-                if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Delete))
+                if (!Company.HasAssetTypePermission(SystemObjects.LookupType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.LookupType, id);
@@ -10829,12 +10853,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = Company.GetById<LookupType>(id);
                 if (model == null) throw new NotFoundException("lookup type");
 
-                if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Update))
+                if (!Company.HasAssetTypePermission(SystemObjects.LookupType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
 
-                Company.Update<LookupType>(model);
+                Company.Update(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -10860,8 +10884,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             var list = new List<EditableField>();
             
-            if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            if (!Company.HasAssetPermission(SystemObjects.Map, 0, Permission.ModifyAsset))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var mapTypes = new List<SelectListItem>();            
             
@@ -10883,7 +10907,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
             var a = Company.GetById<core.entities.Map>(id);
 
-            if (!Company.HasPermission(SystemObjects.Map, a.ID, Claim.Update))
+            if (!Company.HasAssetPermission(SystemObjects.Map, a.ID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var mapTypes = new List<SelectListItem>();
@@ -10894,8 +10918,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            //list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name });
-            //list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = a.Transformation });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes, Value = a.MapTypeID.ToString() });            
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -10907,9 +10929,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
                 if (!form.HasKeys()) throw new NoFormDataException("Map");
 
                 var map = new Map
@@ -10923,10 +10942,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                Company.Add<Map>(map);
+                if (!Company.HasAssetTypePermission(SystemObjects.MapType, map.MapTypeID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                Company.Add(map);
 
                 return jsonSuccess("Map successfully allocated.", map.ID.ToString(), "add", HttpStatusCode.Created);
-                
             }
             catch (BaseException ex)
             {
@@ -10947,21 +10968,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("Map");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.Map>(id);
+                var model = Company.GetById<Map>(id);
                 
-                if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.Map, model.ID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
                 
-               // model.Name = parseTextField(form, "Name");
-               // model.Transformation = parseTextField(form, "Transform");                
                 model.MapTypeID = parseIntField(form, "MapType");                
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;
                 
-                Company.Update<Map>(model);
+                Company.Update(model);
 
                 return jsonSuccess("Map successfully updated.", model.ID.ToString(), "update", HttpStatusCode.OK);
-
             }
             catch (BaseException ex)
             {
@@ -10983,13 +11001,13 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("lineage mapping");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.Map>(id);
+                var model = Company.GetById<Map>(id);
                 if (model == null) throw new NotFoundException("mapping");
 
-                if (!Company.HasPermission(SystemObjects.Map, id, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Map, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<core.entities.Map>(i => i.ID == id);
+                Company.Delete(model);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -11543,8 +11561,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                
-
                 MetricItem m = new MetricItem
                 {
                     Name = parseTextField(form, "Name"),
@@ -11556,7 +11572,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (DateTime.TryParse(parseTextField(form, "EffectiveEndDate"), out var end))
                     m.EffectiveEndDate = end;
-
 
                 Company.Add(m);
 
@@ -11765,12 +11780,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var id = parseIntField(form, "ID");
                 var existing = Company.GetById<Organization>(id);
                 if (existing == null) throw new NotFoundException("organization");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 existing.Name = parseTextField(form, "Name");
                 existing.AdministratorEmail = parseTextField(form, "AdministratorEmail");
@@ -11810,11 +11825,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
-                var model = Company.GetById<Organization>(id);
-                if (model == null) throw new NotFoundException("organization");
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                var model = Company.GetById<Organization>(id);
+                if (model == null) throw new NotFoundException("organization");
 
                 //get child records
                 var domains = Company.Filter<OrganizationDomain>(i => i.OrganizationID == model.ID);
@@ -11850,9 +11865,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        
+        }        
 
         #endregion
 
@@ -12059,11 +12072,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
-                var o = Company.GetById<Contract>(id);
-                if (o == null) throw new NotFoundException("contract");
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                var o = Company.GetById<Contract>(id);
+                if (o == null) throw new NotFoundException("contract");
 
                 o.State = State.Deleted;
                 Company.SaveOrUpdate(o);
@@ -12182,12 +12195,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var id = parseIntField(form, "ID");
                 var existing = Company.GetById<OrganizationDomain>(id);
                 if (existing == null) throw new NotFoundException("organization domain");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 existing.Domain = parseTextField(form, "Domain");
 
@@ -12219,11 +12232,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
-                var model = Company.GetById<OrganizationDomain>(id);
-                if (model == null) throw new NotFoundException("organization domain");
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                var model = Company.GetById<OrganizationDomain>(id);
+                if (model == null) throw new NotFoundException("organization domain");
 
                 Company.Delete(model);
 
@@ -12352,12 +12365,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var id = parseIntField(form, "ID");
                 var existing = Company.GetById<OrganizationInvitation>(id);
                 if (existing == null) throw new NotFoundException("organization invitation");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 existing.Email = parseTextField(form, "Email");
 
@@ -12403,11 +12416,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
-                var model = Company.GetById<OrganizationInvitation>(id);
-                if (model == null) throw new NotFoundException("organization invitation");
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                var model = Company.GetById<OrganizationInvitation>(id);
+                if (model == null) throw new NotFoundException("organization invitation");
 
                 Company.Delete(model);
 
@@ -12479,7 +12492,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         public JsonResult Policy_AddFields(int typeID, int? parentID)
         {
             var model = new Policy();
-            if (!Company.HasPermission(SystemObjects.Policy, 0, Claim.Create, ClaimObject.Root))
+            if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, typeID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -12495,7 +12508,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("Policy_DeleteFields"), NonNullableParameters]
         public JsonResult Policy_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Delete))
+            if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -12508,7 +12521,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("Policy_EditFields"), NonNullableParameters]
         public JsonResult Policy_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Update))
+            if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var model = Company.GetById<Policy>(id);
@@ -12560,13 +12573,13 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (type == null) throw new NotFoundException("policy type");
 
-                if (!Company.HasPermission(SystemObjects.PolicyType, typeID, Claim.Create, ClaimObject.Root))
+                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var model = new Policy { PolicyTypeID = typeID };
                                 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
-                Company.SaveOrUpdate<Policy>(model,fields, parentId.GetValueOrDefault());
+                Company.SaveOrUpdate(model,fields, parentId.GetValueOrDefault());
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList();
                 processFormDynamicRelationshipFields(SystemObjects.PolicyType, model.PolicyTypeID, SystemObjects.Policy, model.ID, fieldTypes, form);
                                 
@@ -12634,7 +12647,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = Company.GetById<Policy>(id);
                 if (model == null) throw new NotFoundException("Policy");
 
-                if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.Policy, id);
@@ -12677,7 +12690,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = Company.GetById<Policy>(id);
                 if (model == null) throw new NotFoundException("Policy");
 
-                if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
                                 
                 Company.SaveOrUpdate(model, new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server, false));
@@ -12735,7 +12748,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("PolicyTypeLevel_AddFields"), NonNullableParameters]
         public JsonResult PolicyTypeLevel_AddFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Create))
+            if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var type = Company.GetById<PolicyType>(id);
@@ -12776,7 +12789,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("PolicyTypeLevel_DeleteFields"), NonNullableParameters]
         public JsonResult PolicyTypeLevel_DeleteFields(int id, int level)
         {
-            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
+            if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -12791,7 +12804,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("PolicyTypeLevel_EditFields"), NonNullableParameters]
         public JsonResult PolicyTypeLevel_EditFields(int id, int level)
         {
-            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
+            if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -12817,7 +12830,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
 
-                if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("policy type level");
@@ -12865,10 +12878,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
 
-                if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
+                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level);
+
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -12894,7 +12908,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
                 if (model == null) throw new NotFoundException("policy type level");
 
-                if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
+                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
@@ -13098,7 +13112,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("ReferenceItem_AddFields"), NonNullableParameters]
         public JsonResult ReferenceItem_AddFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Create))
+            if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -13129,7 +13143,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
             var a = Company.GetById<ReferenceItem>(id);
 
-            if (!Company.HasPermission(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID, Claim.Delete))
+            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ID, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -13144,7 +13158,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
             var a = Company.GetById<ReferenceItem>(id);
 
-            if (!Company.HasPermission(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID, Claim.Update))
+            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var row = 1;
@@ -13180,7 +13194,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (type == null) throw new NotFoundException("referenceitemtype");
 
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Create))
+                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var code = form["Code"].ToString();
@@ -13200,8 +13214,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 };
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
-                Company.SaveOrUpdate<ReferenceItem>(a, fields);
-
+                Company.SaveOrUpdate(a, fields);
                 
                 if (!string.IsNullOrEmpty(form["ParentID"]))
                 {
@@ -13235,7 +13248,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = Company.GetById<ReferenceItem>(id);
                 if (model == null) throw new NotFoundException("ReferenceItem");
 
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ID, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.ReferenceItem, id);
@@ -13265,7 +13278,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (model == null) throw new NotFoundException("referenceitem");
 
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var code = form["Code"].ToString();
@@ -13310,7 +13323,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Create, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
@@ -13327,11 +13340,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     CreatedOn = DateTime.UtcNow
                 };
 
-                Company.Add<ReferenceItemType>(model);
+                Company.Add(model);
 
                 if (model.ID > 0)
                 {
-                    Company.Add<FieldType>(new FieldType
+                    Company.Add(new FieldType
                     {
                         ObjectID = model.ID,
                         Object = SystemObjects.ReferenceItemType.ToString(),
@@ -13350,7 +13363,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    model.Name,
                     action = "add",
                     Context = form["_context"]
                 };
@@ -13385,14 +13398,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (Company.Filter<FieldType>(x => x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == id).Count() > 0)
                     throw new ConflictException("The ReferenceItemType could not be removed", "One or more fields used as a list on a Field Type");
 
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Delete))
+                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.ReferenceItemType, model.ID);
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    model.Name,
                     action = "delete",
                     Context = form["_context"]
                 };
@@ -13421,7 +13434,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = Company.GetById<ReferenceItemType>(id);
                 if (model == null) throw new NotFoundException("ReferenceItemType");
 
-                if ((!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Update)))
+                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
@@ -13431,7 +13444,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;
 
-                Company.Update<ReferenceItemType>(model);
+                Company.Update(model);
 
                 dynamic custom = new
                 {
@@ -13465,7 +13478,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("Relationship_AddFields"), NonNullableParameters]
         public JsonResult Relationship_AddFields(int it, SystemObjects type, int id)
         {
-            if (!Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
+            if (!Company.HasAssetPermission(type, id, Permission.ModifyRelationships))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -13667,7 +13680,12 @@ order by D.TextPath";
         [Route("Relationship_DeleteFields"), NonNullableParameters]
         public JsonResult Relationship_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Intersect, id, Claim.Delete, ClaimObject.Root))
+            var intersect = Company.GetById<Intersect>(id);
+
+            if (
+                !Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ModifyRelationships) ||
+                !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ModifyRelationships)
+                )
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -13684,11 +13702,10 @@ order by D.TextPath";
             var relationship = Company.GetById<Intersect>(id, i => i.IntersectType);
             if (relationship == null) return jsonException("Relationship not found.", HttpStatusCode.NotFound);
 
-            if (!Company.HasPermission(relationship.Subject, relationship.SubjectID, Claim.Update, ClaimObject.Relationship) &&
-                !Company.HasPermission(relationship.Object, relationship.ObjectID, Claim.Update, ClaimObject.Relationship))
+            if (!Company.HasAssetPermission(relationship.Subject, relationship.SubjectID, Permission.ModifyRelationships) &&
+                !Company.HasAssetPermission(relationship.Object, relationship.ObjectID, Permission.ModifyRelationships))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
             
-
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
             list = loadDynamicFields(SystemObjects.Intersect.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 1);
@@ -13713,7 +13730,7 @@ order by D.TextPath";
                 var relationshipType = Company.GetById<IntersectType>(typeID);
                 var sourceObject = Company.GetObjectDetail(source, sourceID);
 
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), source), sourceID, Claim.Create, ClaimObject.Relationship))
+                if (!Company.HasAssetPermission(source, sourceID, Permission.ModifyRelationships))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (relationshipType == null) throw new NotFoundException("relationship");
@@ -13779,12 +13796,12 @@ order by D.TextPath";
 
                 if (intersect == null) throw new NotFoundException("relationship");
 
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.Subject), intersect.SubjectID, Claim.Update, ClaimObject.Relationship))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.Object), intersect.ObjectID, Claim.Update, ClaimObject.Relationship))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ModifyRelationships))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                if (!Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ModifyRelationships))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                Company.Update<Intersect>(intersect);
+                Company.Update(intersect);
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
@@ -14139,7 +14156,7 @@ from	AssetDetail A
 where   A.Type = @targetType 
         and A.TypeID = @targetTypeID 
         and A.[State] = 1 
-        and A.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) 
+        and A.ID not in ({GetNoReadSqlStatement()}) 
 order by TP.TextPath"; 
                             
                             break;
@@ -14168,7 +14185,7 @@ order by TP.TextPath";
         [Route("Report_DeleteFields"), NonNullableParameters]
         public JsonResult Report_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Report, id, Claim.Delete))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -14182,7 +14199,7 @@ order by TP.TextPath";
         [Route("PowerBICredentials_AddFields")]
         public JsonResult PowerBICredentials_AddFields()
         {
-            if (!Company.HasPermission(SystemObjects.Report, 0, Claim.Create))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -14202,7 +14219,10 @@ order by TP.TextPath";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
 
                 var objectType = form["ObjectType"].Split('|').ToArray();
 
@@ -14278,7 +14298,7 @@ order by TP.TextPath";
                         }
                     }
 
-                    Company.Add<Report>(model);
+                    Company.Add(model);
 
                     return jsonSuccess("Dashboard successfully created", model.ID.ToString(), "add", HttpStatusCode.Created);
                 }
@@ -14309,11 +14329,14 @@ order by TP.TextPath";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<Report>(id);
-                if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
+                if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
 
                 //delete any power bi reports
                 if(model.ReportType == "powerbi" && !string.IsNullOrEmpty(model.PowerBIDatasetID))
@@ -14335,7 +14358,7 @@ order by TP.TextPath";
                     catch { } // ok we cant delete the report delete the reference to it at least
                 }
 
-                Company.Delete<Report>(model);
+                Company.Delete(model);
 
                 return jsonSuccess("Dashboard successfully deleted", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -14355,7 +14378,10 @@ order by TP.TextPath";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
                 
                 //get username / password
                 var user = parseTextField(form, "Username");
@@ -14402,12 +14428,15 @@ order by TP.TextPath";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<Report>(id);
 
-                if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
+                if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
 
                 var fileCount = HttpContext.Request.Files.Count;
                 var reportType = parseTextField(form, "ReportType");
@@ -14597,9 +14626,9 @@ order by TP.TextPath";
             var list = new List<EditableField>();
             var a = Company.GetById<ReportTile>(id);
 
-            if (!Company.HasPermission(SystemObjects.Report, a.ReportID, Claim.Update))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
+            
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -14614,7 +14643,10 @@ order by TP.TextPath";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
 
                 var model = new ReportTile
                 {
@@ -14645,14 +14677,14 @@ order by TP.TextPath";
                 var valid = Company.IsValidReportingQuery(model.CommandText);
                 if (valid)
                 {
-                    Company.Add<ReportTile>(model);
+                    Company.Add(model);
                 }
                 else
                 {
                     throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
                 }
 
-                return jsonSuccess(Resources.FormInfo.Add_ReportTile_Confirmation, model.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(FormInfo.Add_ReportTile_Confirmation, model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -14670,14 +14702,17 @@ order by TP.TextPath";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ReportTile>(id);
-                if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
-                Company.Delete<ReportTile>(model);
+                if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
+                Company.Delete(model);
 
-                return jsonSuccess(Resources.FormInfo.Delete_ReportTile_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormInfo.Delete_ReportTile_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -14695,12 +14730,15 @@ order by TP.TextPath";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
 
                 var id = parseIntField(form, isNg ? "ID" : "TileID");
                 var model = Company.GetById<ReportTile>(id);
 
-                if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
+                if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
 
                 // Static fields
                 model.Name = parseTextField(form, "Name");
@@ -14728,14 +14766,14 @@ order by TP.TextPath";
                 var valid = Company.IsValidReportingQuery(model.CommandText);
                 if (valid)
                 {
-                    Company.Update<ReportTile>(model);
+                    Company.Update(model);
                 }
                 else
                 {
                     throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
                 }
 
-                return jsonSuccess(Resources.FormInfo.Edit_ReportTile_Confirmation, id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(FormInfo.Edit_ReportTile_Confirmation, id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -14826,6 +14864,9 @@ order by TP.TextPath";
                 var model = Company.GetById<ResponsibilityTypeRelationOverrideItem>(id);
                 if (model == null) throw new NotFoundException("responsibility");
 
+                if (!Company.HasAssetPermission(model.AssetID, Permission.DeleteResponsibilities))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 Company.Delete(model);
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, new { AssetID = model.AssetID });
             }
@@ -14854,10 +14895,10 @@ order by TP.TextPath";
             {
                 querySql = @"
                             select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
-							where   not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id) 
+							where   not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)";
+							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)";
                 querySql += hideUsersSql;
             }
             else
@@ -14874,11 +14915,11 @@ order by TP.TextPath";
                 }
                 querySql = @"
                     		select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
-							where   not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id and ResponsibilityTypeID=@responsibilityTypeID
+							where   not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id and ResponsibilityTypeID=@responsibilityTypeID
                                 and SecurityAssetId <> @groupId) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetails where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID
+							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID
                             and ResourceID <> @resourceId)";
                 querySql += hideUsersSql;
                 dbArgs.Add("responsibilityTypeID", resTypeId);
@@ -14954,6 +14995,9 @@ order by TP.TextPath";
             {
                 try
                 {
+                    if (!Company.HasAssetPermission(r.AssetID, Permission.ModifyResponsibilities))
+                        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                     Company.Add(r);
                 }
                 catch (BaseException ex)
@@ -14974,6 +15018,9 @@ order by TP.TextPath";
                 {
                     model = Company.GetById<ResponsibilityTypeRelationOverrideItem>(r.ID);
                     if (model == null) throw new NotFoundException("responsibility");
+
+                    if (!Company.HasAssetPermission(model.AssetID, Permission.ModifyResponsibilities))
+                        return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                     model.ResponsibilityTypeID = r.ResponsibilityTypeID;
                     model.SecurityAsset = r.SecurityAsset;
@@ -15007,6 +15054,9 @@ order by TP.TextPath";
                 model = Company.GetById<ResponsibilityTypeRelationOverrideItem>(r.ID);
                 if (model == null) throw new NotFoundException("responsibility");
 
+                if (!Company.HasAssetPermission(model.AssetID, Permission.ModifyResponsibilities))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 model.ResponsibilityTypeID = r.ResponsibilityTypeID;
                 model.SecurityAsset = r.SecurityAsset;
                 model.SecurityAssetID = r.SecurityAssetID;
@@ -15039,11 +15089,14 @@ order by TP.TextPath";
         [Route("ResponsibilityType_AddFields")]
         public JsonResult ResponsibilityType_AddFields()
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
             var list = new List<EditableField>();
             var o = new ResponsibilityType();
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAllocationOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAllocationOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -15053,6 +15106,9 @@ order by TP.TextPath";
         [Route("ResponsibilityType_DeleteFields"), NonNullableParameters]
         public JsonResult ResponsibilityType_DeleteFields(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
             var list = new List<EditableField>();
             var a = Company.GetById<ResponsibilityType>(id);
 
@@ -15065,6 +15121,9 @@ order by TP.TextPath";
         [Route("ResponsibilityType_EditFields"), NonNullableParameters]
         public JsonResult ResponsibilityType_EditFields(int id)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
             var list = new List<EditableField>();
             var a = Company.GetById<ResponsibilityType>(id);
 
@@ -15078,7 +15137,7 @@ order by TP.TextPath";
                     Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
                     Selected = selectedAllocations.Any(c => c.ObjectType == i.ObjectType && c.ObjectID == i.ObjectTypeID)
                 }).ToList();
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = allocations });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = allocations });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -15093,6 +15152,9 @@ order by TP.TextPath";
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 var model = Company.GetById<ResponsibilityType>(id);
                 if (model == null) throw new NotFoundException("ownership type");
 
@@ -15120,9 +15182,9 @@ order by TP.TextPath";
             .ToList()
             .Select(i => new
             {
-                ResponsibilityTypeID = i.ResponsibilityTypeID,
-                ObjectID = i.ObjectID,
-                ObjectType = i.ObjectType
+                i.ResponsibilityTypeID,
+                i.ObjectID,
+                i.ObjectType
             }).ToList();
 
 
@@ -15175,6 +15237,9 @@ order by TP.TextPath";
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var existing = Company.GetById<ResponsibilityType>(model.ID);
                 if (existing == null) throw new NotFoundException("ownership type");
 
@@ -15210,9 +15275,10 @@ order by TP.TextPath";
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Add(model);
-                Company.SaveChanges();
 
                 return jsonSuccess("Item successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -15231,59 +15297,43 @@ order by TP.TextPath";
 
         #endregion
 
-        #region ResponsibilityTypeObjectClaim
+        #region ResponsibilityTypeRelation
 
-        #region Form Get/Post
-
-        void loadValueFromCheckbox(FormCollection form, List<ResponsibilityTypeObjectClaim> list, ClaimObject co, Claim c)
+        [HttpGet, ActionName("ResponsibilityTypeRelation_FormData"), Route("ResponsibilityTypeRelation_FormData"), NonNullableParameters]
+        public JsonNetResult GetResponsibilityTypeRelation_FormData()
         {
-            bool value = false;
-            var boxName = string.Format("{0}_{1}", (int)co, (int)c);
-            var stringValue = form[boxName];
-            value = (stringValue == "on" || stringValue == "true");
-            if (value)
-                list.Add(new ResponsibilityTypeObjectClaim
+            var AllocationOptions = Company.Query<dynamic>(@"select A.ID, P.[Path] from AssetType A cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P order by P.[Path]").ToList();
+            var PermissionOptions = Permission.DeleteAsset.GetList(); 
+
+            return new JsonNetResult
+            {
+                Data = new
                 {
-                    Claim = c,
-                    ClaimObject = co,
-                    ObjectType = form["ObjectType"],
-                    ObjectID = parseIntField(form, "ObjectID"),
-                    ResponsibilityTypeID = parseIntField(form, "ResponsibilityTypeID")
-                });
+                    PermissionOptions,
+                    AllocationOptions
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
 
-        [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddResponsibilityTypeClaims")]
-        public JsonResult AddResponsibilityTypeClaims(FormCollection form)
+        [HttpDelete, Route("ResponsibilityTypeRelation"), NonNullableParameters]
+        public JsonResult DeleteResponsibilityTypeRelation(ResponsibilityTypeRelationViewModel model)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("responsibility type object claims");
-                var list = new List<ResponsibilityTypeObjectClaim>();
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                loadValueFromCheckbox(form, list, ClaimObject.Root, Claim.Read);
-                loadValueFromCheckbox(form, list, ClaimObject.Root, Claim.Create);
-                loadValueFromCheckbox(form, list, ClaimObject.Root, Claim.Update);
-                loadValueFromCheckbox(form, list, ClaimObject.Root, Claim.Delete);
+                var er = Company.Filter<ResponsibilityTypeRelation>(i => 
+                    i.ResponsibilityTypeID == model.ResponsibilityTypeID && 
+                    i.ObjectType == model.ObjectType && 
+                    i.ObjectID == model.ObjectID).SingleOrDefault();
 
-                loadValueFromCheckbox(form, list, ClaimObject.Attribute, Claim.Read);
-                loadValueFromCheckbox(form, list, ClaimObject.Attribute, Claim.Create);
-                loadValueFromCheckbox(form, list, ClaimObject.Attribute, Claim.Update);
-                loadValueFromCheckbox(form, list, ClaimObject.Attribute, Claim.Delete);
+                if (er == null) throw new NotFoundException("relation");
 
-                loadValueFromCheckbox(form, list, ClaimObject.Governance, Claim.Read);
-                loadValueFromCheckbox(form, list, ClaimObject.Governance, Claim.Create);
-                loadValueFromCheckbox(form, list, ClaimObject.Governance, Claim.Update);
-                loadValueFromCheckbox(form, list, ClaimObject.Governance, Claim.Delete);
+                //Company.Delete(SystemObjects.ResponsibilityType, id);
 
-                loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Read);
-                loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Create);
-                loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Update);
-                loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Delete);
-
-                Company.ResponsibilityTypeObjectClaims.AddRange(list);
-                Company.SaveChanges();
-
-                return jsonSuccess("Item successfully created.", "0", "add", HttpStatusCode.Created);
+                return jsonSuccess("Item successfully removed.", "0", "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -15296,60 +15346,26 @@ order by TP.TextPath";
             }
         }
 
-        [HttpPut, Route("EditResponsibilityTypeClaims")]
-        public JsonResult EditResponsibilityTypeClaims(FormCollection form)
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResponsibilityTypeRelation"), Route("ResponsibilityTypeRelation")]
+        public JsonResult PostResponsibilityTypeRelation(ResponsibilityTypeRelationViewModel model)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("responsibility type object claims");
-                var list = new List<ResponsibilityTypeObjectClaim>();
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                loadValueFromCheckbox(form, list, ClaimObject.Root, Claim.Read);
-                loadValueFromCheckbox(form, list, ClaimObject.Root, Claim.Create);
-                loadValueFromCheckbox(form, list, ClaimObject.Root, Claim.Update);
-                loadValueFromCheckbox(form, list, ClaimObject.Root, Claim.Delete);
+                var assetType = Company.GetById<AssetType>(model.AssetTypeID);
 
-                loadValueFromCheckbox(form, list, ClaimObject.Attribute, Claim.Read);
-                loadValueFromCheckbox(form, list, ClaimObject.Attribute, Claim.Create);
-                loadValueFromCheckbox(form, list, ClaimObject.Attribute, Claim.Update);
-                loadValueFromCheckbox(form, list, ClaimObject.Attribute, Claim.Delete);
+                if (assetType == null)
+                    return jsonException("Asset Type not found", HttpStatusCode.BadRequest);
 
-                loadValueFromCheckbox(form, list, ClaimObject.Governance, Claim.Read);
-                loadValueFromCheckbox(form, list, ClaimObject.Governance, Claim.Create);
-                loadValueFromCheckbox(form, list, ClaimObject.Governance, Claim.Update);
-                loadValueFromCheckbox(form, list, ClaimObject.Governance, Claim.Delete);
+                var rtr = new ResponsibilityTypeRelation { ObjectID = assetType.ObjectID, ObjectType = assetType.Object, ResponsibilityTypeID = model.ResponsibilityTypeID, PermissionsBitMask = 0 };
 
-                loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Read);
-                loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Create);
-                loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Update);
-                loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Delete);
+                rtr.PermissionsBitMask = model.Permissions.Where(i => i.Selected).Sum(i => i.Value);
 
-                var ObjectType = form["ObjectType"];
-                var ObjectID = parseIntField(form, "ObjectID");
-                var ResponsibilityTypeID = parseIntField(form, "ResponsibilityTypeID");
+                Company.Add(rtr);
 
-                var existingClaims = Company.Filter<ResponsibilityTypeObjectClaim>(i => i.ObjectID == ObjectID && i.ObjectType == ObjectType && i.ResponsibilityTypeID == ResponsibilityTypeID).ToList();
-
-                // Add new that were not present before.
-                foreach (var nc in list)
-                {
-                    if (!existingClaims.Any(i => i.ClaimObject == nc.ClaimObject && i.Claim == nc.Claim))
-                    {
-                        Company.Set<ResponsibilityTypeObjectClaim>().Add(nc);
-                    }
-                }
-                // Remove old that are no longer present.
-                foreach (var ec in existingClaims)
-                {
-                    if (!list.Any(i => i.ClaimObject == ec.ClaimObject && i.Claim == ec.Claim))
-                    {
-                        Company.Set<ResponsibilityTypeObjectClaim>().Remove(ec);
-                    }
-                }
-
-                Company.SaveChanges();
-
-                return jsonSuccess("Item successfully created.", "0", "add", HttpStatusCode.Created);
+                return jsonSuccess("Item successfully created.", model.ResponsibilityTypeID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15362,42 +15378,22 @@ order by TP.TextPath";
             }
         }
 
-        [HttpPut, Route("EditClaimsMatrix"), NonNullableParameters]
-        public JsonResult EditClaimsMatrix(List<ResponsibilityTypeObjectClaim> claims, int objectID, string objectType, int responsibilityTypeID)
+        [HttpPut, ValidateInput(false), ActionName("ResponsibilityTypeRelation"), Route("ResponsibilityTypeRelation")]
+        public JsonResult PutResponsibilityTypeRelation(ResponsibilityTypeRelationViewModel model)
         {
             try
             {
-                if (claims == null) claims = new List<ResponsibilityTypeObjectClaim>();
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                claims.ForEach(c =>
-                {
-                    c.ObjectID = objectID;
-                    c.ObjectType = objectType;
-                    c.ResponsibilityTypeID = responsibilityTypeID;
-                });
+                var existing = Company.Filter<ResponsibilityTypeRelation>(r => r.ObjectType == model.ObjectType && r.ObjectID == model.ObjectID && r.ResponsibilityTypeID == model.ResponsibilityTypeID).SingleOrDefault();
+                if (existing == null) throw new NotFoundException("responsibility type relation");
 
-                var existingClaims = Company.Filter<ResponsibilityTypeObjectClaim>(i => i.ObjectID == objectID && i.ObjectType == objectType && i.ResponsibilityTypeID == responsibilityTypeID).ToList();
+                existing.PermissionsBitMask = model.Permissions.Where(i => i.Selected).Sum(i => i.Value);
 
-                // Add new that were not present before.
-                foreach (var nc in claims)
-                {
-                    if (!existingClaims.Any(i => i.ClaimObject == nc.ClaimObject && i.Claim == nc.Claim))
-                    {
-                        Company.Set<ResponsibilityTypeObjectClaim>().Add(nc);
-                    }
-                }
-                // Remove old that are no longer present.
-                foreach (var ec in existingClaims)
-                {
-                    if (!claims.Any(i => i.ClaimObject == ec.ClaimObject && i.Claim == ec.Claim))
-                    {
-                        Company.Set<ResponsibilityTypeObjectClaim>().Remove(ec);
-                    }
-                }
+                Company.Update(existing);
 
-                Company.SaveChanges();
-
-                return jsonSuccess("Item successfully created.", "0", "add", HttpStatusCode.Created);
+                return jsonSuccess("Item successfully updated.", model.ResponsibilityTypeID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -15409,8 +15405,6 @@ order by TP.TextPath";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        #endregion
 
         #endregion
 
@@ -15434,7 +15428,7 @@ order by TP.TextPath";
             if (!Company.CurrentResourceIsAdmin)
                 return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
 
-            var results = Company.Database.Connection.GetThenResults(rule,this.HideData3SixtyUsers());
+            var results = Company.Database.Connection.GetThenResults(rule); //,this.HideData3SixtyUsers()
             return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -15638,8 +15632,8 @@ order by DN.DisplayValue");
             var list = new List<EditableField>();
             var o = new ResponsibilityType();
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAllocationOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAllocationOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -15674,7 +15668,7 @@ order by DN.DisplayValue");
                     Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
                     Selected = selectedAllocations.Any(c => c.ObjectType == i.ObjectType && c.ObjectID == i.ObjectTypeID)
                 }).ToList();
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = allocations });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = allocations });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -15689,11 +15683,14 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 var model = Company.GetById<ResponsibilityTypeRelationRule>(id);
                 if (model == null) throw new NotFoundException("responsibility type rule");
 
                 Company.Delete(model);
-                //Company.Delete(SystemObjects.ResponsibilityType, id);
+                (Company.Database.Connection as System.Data.SqlClient.SqlConnection).RemoveRelationRuleResultsByRule(id);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -15741,6 +15738,9 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var existing = Company.GetById<ResponsibilityTypeRelationRule>(model.ID);
                 if (existing == null) throw new NotFoundException("ownership type");
 
@@ -15761,15 +15761,8 @@ order by DN.DisplayValue");
 
                 Company.Update(existing);
 
-                if (model.ApplyToType)
-                {
-                    Company.Database.Connection.ProcessAndSaveResponsibilityRuleTypeResults(existing, false);
-                }
-                else
-                {
-                    Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(existing, false);
-                }
-                Company.Database.Connection.Execute("exec cache.SecurityProcessor 4, 5, @id", new { id = existing.ID }, commandTimeout: 1200);
+                // Re-process this rule.
+                (Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(existing.ID);
 
                 return jsonSuccess("Item successfully updated and processed.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -15789,6 +15782,9 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 model.SetRawFromDefinition();
                 if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
                 {
@@ -15796,16 +15792,8 @@ order by DN.DisplayValue");
                 }
                 Company.Add(model);
 
-                if (model.ApplyToType)
-                {
-                    Company.Database.Connection.ProcessAndSaveResponsibilityRuleTypeResults(model, false);
-                }
-                else
-                {
-                    Company.Database.Connection.ProcessAndSaveResponsibilityRuleResults(model, false);
-                }
-
-                Company.Database.Connection.Execute("exec cache.SecurityProcessor 4, 5, @id", new { id = model.ID }, commandTimeout: 1200);
+                // Process this rule.
+                (Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(model.ID);
 
                 return jsonSuccess("Item successfully created and processed.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -15826,8 +15814,8 @@ order by DN.DisplayValue");
 
         #region Resource
 
-        string passwordRegex = Resources.Validation.Password_Regex;
-        string passwordRegexMessage = Resources.Validation.Password_Requirements;
+        string passwordRegex = Validation.Password_Regex;
+        string passwordRegexMessage = Validation.Password_Requirements;
 
         #region Field Generation
 
@@ -16385,6 +16373,9 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 var val = model.Validation();
 
                 if (!val.Valid)
@@ -16430,6 +16421,9 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("response type");
 
                 var id = parseIntField(form, "ID");
@@ -16453,6 +16447,9 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var val = model.Validation();
 
                 if (!val.Valid)
@@ -16532,6 +16529,9 @@ order by DN.DisplayValue");
         [Route("Rule_AddFields")]
         public JsonResult Rule_AddFields(int typeID)
         {
+            if (!Company.HasAssetTypePermission(SystemObjects.RuleType, typeID, Permission.ModifyAsset))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
             var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             
@@ -16556,7 +16556,7 @@ order by DN.DisplayValue");
         {
             var model = Company.GetById<Rule>(id);
 
-            if (!Company.HasPermission(SystemObjects.RuleType, model.RuleTypeID, Claim.Delete))
+            if (!Company.HasAssetPermission(SystemObjects.Rule, model.ID, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -16569,13 +16569,13 @@ order by DN.DisplayValue");
         [Route("Rule_EditFields"), NonNullableParameters]
         public JsonResult Rule_EditFields(int id)
         {
+            if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
             var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             
             var model = Company.GetById<Rule>(id);
-
-            if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, model.RuleTypeID, Claim.Update)))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
 
@@ -16635,6 +16635,9 @@ order by DN.DisplayValue");
                     Threshold = threshold
                 };
 
+                if (!Company.HasAssetTypePermission(SystemObjects.RuleType, model.RuleTypeID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList();
                 Company.SaveOrUpdate<Rule>(model, fields);
@@ -16670,7 +16673,7 @@ order by DN.DisplayValue");
                 var model = Company.GetById<Rule>(id);
                 if (model == null) throw new NotFoundException("Rule");
 
-                if (!Company.HasPermission(SystemObjects.RuleType, model.RuleTypeID, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Rule, model.ID, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.Rule, model.ID);
@@ -16705,7 +16708,7 @@ order by DN.DisplayValue");
                 var model = Company.GetById<Rule>(id);
                 if (model == null) throw new NotFoundException("Rule");
 
-                if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, model.RuleTypeID, Claim.Update)))
+                if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var dimension = parseNullableIntField(form, "RuleDimensionID");
@@ -16758,7 +16761,7 @@ order by DN.DisplayValue");
         public JsonResult RuleDimension_AddFields()
         {
             var model = new RuleDimension();
-            if (!Company.HasPermission(SystemObjects.RuleType, 0, Claim.Create, ClaimObject.Root))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -16774,7 +16777,7 @@ order by DN.DisplayValue");
         [Route("RuleDimension_DeleteFields"), NonNullableParameters]
         public JsonResult RuleDimension_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -16787,7 +16790,7 @@ order by DN.DisplayValue");
         [Route("RuleDimension_EditFields"), NonNullableParameters]
         public JsonResult RuleDimension_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -16807,7 +16810,7 @@ order by DN.DisplayValue");
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.RuleType, 0, Claim.Create, ClaimObject.Root))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
@@ -16820,7 +16823,7 @@ order by DN.DisplayValue");
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                Company.Add<RuleDimension>(model);
+                Company.Add(model);
 
                 dynamic custom = new
                 {
@@ -16847,6 +16850,9 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
 
                 var id = parseIntField(form, "ID");
@@ -16858,14 +16864,11 @@ order by DN.DisplayValue");
                     return jsonException(FormInfo.Delete_Error_Rule_Exist, HttpStatusCode.Forbidden);
                 }
 
-                if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
                 Company.Delete(model);
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    model.Name,
                     action = "delete",
                     Context = form["_context"]
                 };
@@ -16888,14 +16891,14 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<RuleDimension>(id);
                 if (model == null) throw new NotFoundException("RuleDimension");
-
-                if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
@@ -16903,11 +16906,11 @@ order by DN.DisplayValue");
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;
 
-                Company.Update<RuleDimension>(model);
+                Company.Update(model);
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    model.Name,
                     action = "edit",
                     Context = form["_context"]
                 };
@@ -16935,6 +16938,9 @@ order by DN.DisplayValue");
         [Route("RuleImplementation_AddFields")]
         public JsonResult RuleImplementation_AddFields(int ruleID)
         {
+            if (!Company.HasAssetPermission(SystemObjects.Rule, ruleID, Permission.ModifyAsset))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
             var list = new List<EditableField>();
 
             list.Add(new EditableField { FieldType = DataType.Hidden.ToString(), FieldName = "RuleID", Value = ruleID.ToString() });
@@ -16952,7 +16958,7 @@ order by DN.DisplayValue");
         {
             var model = Company.GetById<RuleImplementation>(id);
 
-            if (!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Delete))
+            if (!Company.HasAssetPermission(SystemObjects.Rule, model.RuleID, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -16967,7 +16973,7 @@ order by DN.DisplayValue");
         {
             var model = Company.GetById<RuleImplementation>(id);
 
-            if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Update)))
+            if ((!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset)))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -17010,11 +17016,14 @@ order by DN.DisplayValue");
                     SourceUri = parseTextField(form, "SourceUri")
                 };
 
+                if (!Company.HasAssetPermission(SystemObjects.Rule, model.RuleID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 Company.Add(model);
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    model.Name,
                     action = "add",
                     Context = form["_context"]
                 };
@@ -17043,9 +17052,8 @@ order by DN.DisplayValue");
                 var model = Company.GetById<RuleImplementation>(id);
                 if (model == null) throw new NotFoundException("Rule Implementation");
 
-                if (!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Rule, model.RuleID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
                 
                 //delete rule implementation qualifiters
 
@@ -17080,7 +17088,7 @@ order by DN.DisplayValue");
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    model.Name,
                     action = "delete",
                     Context = form["_context"]
                 };
@@ -17109,11 +17117,10 @@ order by DN.DisplayValue");
                 var model = Company.GetById<RuleImplementation>(id);
                 if (model == null) throw new NotFoundException("Rule Implementation");
 
-                if ((!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Update)) && (!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Update)))
+                if ((!Company.HasAssetPermission(SystemObjects.Rule, model.RuleID, Permission.ModifyAsset)))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
-
                 model.SourceID = parseTextField(form, "SourceID");
                 model.SourceUri = parseTextField(form, "SourceUri");
 
@@ -17121,7 +17128,7 @@ order by DN.DisplayValue");
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    model.Name,
                     action = "edit",
                     Context = form["_context"]
                 };
@@ -17146,9 +17153,12 @@ order by DN.DisplayValue");
                 int implementationID = parseIntField(form, "ID");
                 string implementationName = parseTextField(form, "Name");
 
-                RuleImplementation ExistingImplementation = Company.GetById<RuleImplementation>(implementationID, i => i.Rule.RuleType);
+                var ExistingImplementation = Company.GetById<RuleImplementation>(implementationID, i => i.Rule.RuleType);
 
-                RuleImplementation Model = new RuleImplementation
+                if (!Company.HasAssetPermission(SystemObjects.Rule, ExistingImplementation.RuleID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var Model = new RuleImplementation
                 {
                     RuleID = ExistingImplementation.RuleID,
                     Name = !string.IsNullOrEmpty(implementationName) ? implementationName : ExistingImplementation.Name,
@@ -17157,11 +17167,12 @@ order by DN.DisplayValue");
                 };
                 Company.Add(Model);
 
-                IEnumerable<RuleResultQualifierType> QualifierTypeList = Company.Query<RuleResultQualifierType>(@"select R.*, D.Name as ResolutionObjectName from RuleResultQualifierType R
+                var QualifierTypeList = Company.Query<RuleResultQualifierType>(@"select R.*, D.Name as ResolutionObjectName from RuleResultQualifierType R
                 left join AssetType D on D.[Object] = R.ResolutionObject and D.ObjectID = R.ResolutionObjectID
                 where R.RuleImplementationID = @implementationID
                 order by R.[Order]", new { implementationID });
-                foreach (RuleResultQualifierType qualifierType in QualifierTypeList)
+
+                foreach (var qualifierType in QualifierTypeList)
                 {
                     qualifierType.RuleImplementationID = Model.ID;
                     Company.RuleResultQualifierTypes.Add(qualifierType);
@@ -17170,7 +17181,7 @@ order by DN.DisplayValue");
 
                 dynamic custom = new
                 {
-                    Name = Model.Name,
+                    Model.Name,
                     action = "copy",
                     Context = form["_context"]
                 };
@@ -17201,9 +17212,13 @@ order by DN.DisplayValue");
         {
             try
             {
-                var q = Company.GetById<RuleResultQualifierType>(id);
+                var q = Company.GetById<RuleResultQualifierType>(id, i => i.RuleImplementation);
                 if (q == null)
                     throw new Exception($"Could not find rule qualifier for id '{id}'");
+
+                if (!Company.HasAssetPermission(SystemObjects.Rule, q.RuleImplementation.RuleID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var otherRule = Company.RuleResultQualifierTypes.Where(r => r.RuleImplementationID == q.RuleImplementationID && r.Order == (moveUp ? q.Order - 1 : q.Order + 1)).SingleOrDefault();
                 if (otherRule != null)
                 {
@@ -17225,14 +17240,17 @@ order by DN.DisplayValue");
             {
                 if (model == null)
                     throw new Exception("Supplied model was null");
+
                 model.Order = Company.Count<RuleResultQualifierType>(r => r.RuleImplementationID == model.RuleImplementationID) + 1;
 
                 Company.RuleResultQualifierTypes.Add(model);
                 Company.SaveChanges();
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return jsonException(ex, HttpStatusCode.OK);
             }
+
             return jsonSuccess("Qualifier Type added successfully", model.ID.ToString(), "add", HttpStatusCode.OK);
         }
 
@@ -17243,9 +17261,14 @@ order by DN.DisplayValue");
             {
                 if (model == null)
                     throw new Exception("Supplied model was null");
-                var qualifier = Company.GetById<RuleResultQualifierType>(model.ID);
+
+                var qualifier = Company.GetById<RuleResultQualifierType>(model.ID, i => i.RuleImplementation);
+
                 if (qualifier == null)
                     throw new Exception($"Cannot find qualifier id '{model?.ID}'");
+
+                if (!Company.HasAssetPermission(SystemObjects.Rule, qualifier.RuleImplementation.RuleID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 qualifier.Name = model.Name;
                 qualifier.ResolutionObject = model.ResolutionObject;
@@ -17254,12 +17277,13 @@ order by DN.DisplayValue");
                 qualifier.ResolutionFieldTypeName = model.ResolutionFieldTypeName;
 
                 Company.SaveChanges();
-                
-            } catch(Exception ex)
+
+                return jsonSuccess("Qualifier Type edited successfully", model.ID.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (Exception ex)
             {
                 return jsonException(ex, HttpStatusCode.OK);
             }
-            return jsonSuccess("Qualifier Type edited successfully", model.ID.ToString(), "edit", HttpStatusCode.OK);
         }
 
         [HttpDelete, Route("DeleteQualifierType")]
@@ -17267,9 +17291,13 @@ order by DN.DisplayValue");
         {
             try
             {
-                var qualifier = Company.GetById<RuleResultQualifierType>(id);
+                var qualifier = Company.GetById<RuleResultQualifierType>(id, i => i.RuleImplementation);
                 if (qualifier == null)
                     throw new Exception($"Could not find qualifier type id {id}");
+
+                if (!Company.HasAssetPermission(SystemObjects.Rule, qualifier.RuleImplementation.RuleID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 Company.RuleResultQualifierTypes.Remove(qualifier);
                 Company.SaveChanges();
             }
@@ -17291,14 +17319,14 @@ order by DN.DisplayValue");
         [Route("RuleType_AddFields")]
         public JsonResult RuleType_AddFields()
         {
-            if (!Company.HasPermission(SystemObjects.RuleType, 0, Claim.Create))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
             var a = new RuleType();
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DisplayFormat", Name = Resources.FieldInfo.DisplayFormat_Name, FieldDescription = Resources.FieldInfo.DisplayFormat_Description, FieldType = DataType.Text.ToString(), Value="{Name}", Validations = checkAndAddValidation("DisplayFormat", Resources.FieldInfo.DisplayFormat_Name, true, "", 2, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DisplayFormat", Name = FieldInfo.DisplayFormat_Name, FieldDescription = FieldInfo.DisplayFormat_Description, FieldType = DataType.Text.ToString(), Value="{Name}", Validations = checkAndAddValidation("DisplayFormat", FieldInfo.DisplayFormat_Name, true, "", 2, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
             loadIconFields(list, 3);
 
             a = null;
@@ -17309,7 +17337,7 @@ order by DN.DisplayValue");
         [Route("RuleType_DeleteFields"), NonNullableParameters]
         public JsonResult RuleType_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
+            if (!Company.HasAssetTypePermission(SystemObjects.RuleType, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -17324,7 +17352,7 @@ order by DN.DisplayValue");
         [Route("RuleType_EditFields"), NonNullableParameters]
         public JsonResult RuleType_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
+            if (!Company.HasAssetPermission(SystemObjects.RuleType, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -17332,9 +17360,9 @@ order by DN.DisplayValue");
             var style = Company.GetObjectStyle(SystemObjects.RuleType, id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DisplayFormat", Name = Resources.FieldInfo.DisplayFormat_Name, FieldDescription = Resources.FieldInfo.DisplayFormat_Description, FieldType = DataType.Text.ToString(), Value = a.DisplayFormat, Validations = checkAndAddValidation("DisplayFormat", Resources.FieldInfo.DisplayFormat_Name, true, "", 2, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DisplayFormat", Name = FieldInfo.DisplayFormat_Name, FieldDescription = FieldInfo.DisplayFormat_Description, FieldType = DataType.Text.ToString(), Value = a.DisplayFormat, Validations = checkAndAddValidation("DisplayFormat", FieldInfo.DisplayFormat_Name, true, "", 2, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
             loadIconFields(list, 3, style);
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -17349,7 +17377,7 @@ order by DN.DisplayValue");
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.RuleType, 0, Claim.Create))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("rule type");
@@ -17361,7 +17389,7 @@ order by DN.DisplayValue");
                     Description = parseTextField(form, "Description")
                 };
 
-                Company.Add<RuleType>(a);
+                Company.Add(a);
 
                 Company.Add(new FieldType
                 {
@@ -17406,7 +17434,7 @@ order by DN.DisplayValue");
                 var model = Company.GetById<RuleType>(id);
                 if (model == null) throw new NotFoundException("rule type");
 
-                if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
+                if (!Company.HasAssetTypePermission(SystemObjects.RuleType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.RuleType, id);
@@ -17437,14 +17465,14 @@ order by DN.DisplayValue");
 
                 var style = Company.GetObjectStyle(SystemObjects.RuleType, id);
 
-                if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
+                if (!Company.HasAssetTypePermission(SystemObjects.RuleType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
                 model.DisplayFormat = parseTextField(form, "DisplayFormat");
                 model.Description = parseTextField(form, "Description");
 
-                Company.Update<RuleType>(model);
+                Company.Update(model);
 
                 upsertObjectStyle(SystemObjects.RuleType, model.ID, form, model.Name);
 
@@ -17473,7 +17501,7 @@ order by DN.DisplayValue");
         [Route("ScoreType_DeleteFields"), NonNullableParameters]
         public JsonResult ScoreType_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.ScoreType, id, Claim.Delete))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -17491,7 +17519,7 @@ order by DN.DisplayValue");
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.ScoreType, 0, Claim.Create))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("score type");
@@ -17502,7 +17530,7 @@ order by DN.DisplayValue");
                     Description = parseTextField(form, "Description"),
                 };
 
-                Company.Add<ScoreType>(a);
+                Company.Add(a);
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -17522,16 +17550,16 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("score type");
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ScoreType>(id);
                 if (model == null) throw new NotFoundException("score type");
-
-                if (!Company.HasPermission(SystemObjects.ScoreType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<ScoreType>(model);
+                
+                Company.Delete(model);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -17551,19 +17579,19 @@ order by DN.DisplayValue");
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("score type");
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ScoreType>(id);
                 if (model == null) throw new NotFoundException("score type");
-
-                if (!Company.HasPermission(SystemObjects.ScoreType, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
+                
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
-                Company.Update<ScoreType>(model);
+                Company.Update(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -17588,7 +17616,7 @@ order by DN.DisplayValue");
         [Route("ScoreTypeMetric_DeleteFields"), NonNullableParameters]
         public JsonResult ScoreTypeMetric_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Delete))
+            if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -17814,7 +17842,7 @@ from    [IntersectType] RT
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.ScoreTypeMetric, 0, Claim.Create))
+                if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("score type metric");
@@ -17854,17 +17882,17 @@ from    [IntersectType] RT
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("score type metric");
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ScoreTypeMetric>(id);
                 if (model == null) throw new NotFoundException("score type");
-
-                if (!Company.HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
+                
                 model.Deleted = true;
-                Company.Update<ScoreTypeMetric>(model);
+                Company.Update(model);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -17884,14 +17912,14 @@ from    [IntersectType] RT
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("score type");
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ScoreTypeMetric>(id);
                 if (model == null) throw new NotFoundException("score type");
-
-                if (!Company.HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
@@ -17902,7 +17930,7 @@ from    [IntersectType] RT
                 var version = new ScoreTypeMetricVersion { CheckType = model.CheckType, Configuration = model.Configuration, Description = model.Description, MaximumScore = model.MaximumScore, Name = model.Name, ScoreTypeMetricID = model.ID };
                 Company.Add(version);
 
-                Company.Update<ScoreTypeMetric>(model);
+                Company.Update(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -18418,6 +18446,9 @@ from    [IntersectType] RT
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("survey type");
 
                 var otVal = form["Object"].Split('|').ToList();
@@ -18431,7 +18462,7 @@ from    [IntersectType] RT
                     ObjectID = oid,
                     ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1)
                 };
-                Company.Add<SurveyType>(model);
+                Company.Add(model);
 
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -18451,6 +18482,9 @@ from    [IntersectType] RT
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("survey type");
 
                 var id = parseIntField(form, "ID");
@@ -18480,6 +18514,9 @@ from    [IntersectType] RT
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("survey type");
 
                 var id = parseIntField(form, "ID");
@@ -18489,7 +18526,7 @@ from    [IntersectType] RT
                 model.Name = parseTextField(form, "Name");
                 model.ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1);
 
-                Company.Update<SurveyType>(model);
+                Company.Update(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -18579,9 +18616,6 @@ from    [IntersectType] RT
         [Route("Synonym_AddFields"), NonNullableParameters]
         public JsonResult Synonym_AddFields(string type, int id)
         {
-            //if (!Company.HasPermission(SystemObjects.TaxonomyType, t, Claim.Create))
-            //    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
             var list = new List<EditableField>();
             var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id }).ToList();
             var typeIsSubject = true;
@@ -18603,9 +18637,6 @@ from    [IntersectType] RT
         {
             var detail = Company.GetById<Intersect>(id);
 
-            if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Subject), detail.SubjectID, Claim.Delete, ClaimObject.Relationship))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
             var list = new List<EditableField>();
 
             list.Add(new EditableField { FieldName = "IntersectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
@@ -18623,7 +18654,7 @@ from    [IntersectType] RT
         {
             try
             {
-                if (!Company.HasPermission(model.Object, model.ObjectID, Claim.Create, ClaimObject.Relationship))
+                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.ModifyRelationships))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 // delete any existing allocations
@@ -18688,10 +18719,10 @@ from    [IntersectType] RT
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), model.Object), model.ObjectID, Claim.Create, ClaimObject.Relationship))
+                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Add<Nym>(model);
+                Company.Add(model);
 
                 return jsonSuccess("Synonym " + model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -18711,7 +18742,7 @@ from    [IntersectType] RT
         {
             try
             {
-                if (!Company.HasPermission(model.Type, model.ID, Claim.Create, ClaimObject.Relationship))
+                if (!Company.HasAssetPermission(model.Type, model.ID, Permission.ModifyRelationships))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var synonymSegments = model.Synonym.Split('|');
@@ -18773,7 +18804,7 @@ from    [IntersectType] RT
                 if (detail == null)
                     throw new NullReferenceException("Intersect not found");
 
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Subject), detail.SubjectID, Claim.Delete, ClaimObject.Relationship))
+                if (!Company.HasAssetPermission(detail.Subject, detail.SubjectID, Permission.DeleteRelationships))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 if (detail != null)
@@ -18814,7 +18845,7 @@ from    [IntersectType] RT
                 if (detail == null)
                     throw new NullReferenceException("Custom Synonym not found");
 
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Object), detail.ObjectID, Claim.Delete, ClaimObject.Relationship))
+                if (!Company.HasAssetPermission(detail.Object, detail.ObjectID, Permission.DeleteRelationships))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 if (detail != null)
@@ -18849,7 +18880,7 @@ from    [IntersectType] RT
         [Route("Taxonomy_AddFields"), NonNullableParameters]
         public JsonResult Taxonomy_AddFields(int t, int p)
         {
-            if (!Company.HasPermission(SystemObjects.TaxonomyType, t, Claim.Create))
+            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, t, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -18867,7 +18898,7 @@ from    [IntersectType] RT
         [Route("Taxonomy_DeleteFields"), NonNullableParameters]
         public JsonResult Taxonomy_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Delete))
+            if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -18881,7 +18912,7 @@ from    [IntersectType] RT
         [Route("Taxonomy_EditFields"), NonNullableParameters]
         public JsonResult Taxonomy_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Update))
+            if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -18908,7 +18939,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "0", Selected = (parent == null) });
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = Resources.FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.ID.ToString() : "0") });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.ID.ToString() : "0") });
             list =(
                 loadDynamicFields(
                     SystemObjects.Taxonomy.ToString(),
@@ -18970,7 +19001,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
                 int? parentId = parseNullableIntField(form, "ParentID");
 
-                if (!Company.HasPermission(SystemObjects.TaxonomyType, typeID, Claim.Create))
+                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var model = new Taxonomy { TaxonomyTypeID = typeID };
@@ -19042,12 +19073,13 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 if (!form.HasKeys()) throw new NoFormDataException("taxonomy");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<Taxonomy>(id);
-                if (model == null) throw new NotFoundException("taxonomy");
 
-                if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Delete))
+                if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
+                var model = Company.GetById<Taxonomy>(id);
+                if (model == null) throw new NotFoundException("taxonomy");
+                
                 dynamic custom = new
                 {
                     model.TaxonomyTypeID,
@@ -19081,7 +19113,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
                 if (model == null) throw new NotFoundException("taxonomy");
 
-                if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Update))
+                if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var parentID = parseIntField(form, "ParentID");
@@ -19166,7 +19198,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         [Route("TaxonomyType_DeleteFields"), NonNullableParameters]
         public JsonResult TaxonomyType_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
+            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -19188,7 +19220,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 var model = Company.GetById<TaxonomyType>(id);
                 if (model == null) throw new NotFoundException("taxonomy type");
 
-                if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
+                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.TaxonomyType, id);
@@ -19215,7 +19247,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         [Route("TaxonomyTypeLevel_AddFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeLevel_AddFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Create))
+            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var type = Company.GetById<TaxonomyType>(id);
@@ -19256,7 +19288,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         [Route("TaxonomyTypeLevel_DeleteFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeLevel_DeleteFields(int id, int level)
         {
-            if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
+            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.DeleteAsset))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -19271,7 +19303,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         [Route("TaxonomyTypeLevel_EditFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeLevel_EditFields(int id, int level)
         {
-            if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
+            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -19305,7 +19337,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
 
-                if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Create, ClaimObject.Root))
+                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("taxonomy type level");
@@ -19352,7 +19384,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
 
-                if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
+                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level);
@@ -19381,7 +19413,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 var model = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level).SingleOrDefault();
                 if (model == null) throw new NotFoundException("taxonomy type level");
 
-                if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
+                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
@@ -19414,10 +19446,10 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();            
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "MaxAge", Name = "Cache Max-Age (seconds)", FieldDescription = "", FieldType = DataType.Number.ToString(), Validations = checkAndAddValidation("Number", "MaxAge", true, "(3[2-8][0-9]{2}|39[0-8][0-9]|399[0-9]|[4-9][0-9]{3}|[1-7][0-9]{4}|8[0-3][0-9]{3}|84000)",null,null, "Please enter a cache max-age value between 3,200-84,000 seconds.  ") });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });            
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });            
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -19433,10 +19465,10 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             if(a == null) return jsonException("Cannot find the specified service to edit", HttpStatusCode.NotFound);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix, Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "MaxAge", Name = "Cache Max-Age (seconds)", FieldDescription = "", FieldType = DataType.Number.ToString(), Value = a.MaximumCacheAge.ToString(), Validations = checkAndAddValidation("Number", "MaxAge", true, "(3[2-8][0-9]{2}|39[0-8][0-9]|399[0-9]|[4-9][0-9]{3}|[1-7][0-9]{4}|8[0-3][0-9]{3}|84000)", null,null, "Please enter a cache max-age value between 3,200-84,000 seconds.  ") });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -19447,11 +19479,10 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("service");
-                                
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("service");
 
                 var name = parseTextField(form, "Name");
                 var prefix = parseTextField(form, "URIPrefix");
@@ -19470,8 +19501,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                     MaximumCacheAge = parseIntField(form, "MaxAge")
                 };
 
-                Company.Add<ApiService>(service);
-                
+                Company.Add(service);
 
                 return jsonSuccess("Service successfully created.", service.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -19492,6 +19522,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("service");
 
                 var id = parseIntField(form, "ID");
@@ -19503,7 +19536,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 model.Description = parseTextField(form, "Description");
                 model.MaximumCacheAge = parseIntField(form, "MaxAge");
 
-                Company.Update<ApiService>(model);
+                Company.Update(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -19538,7 +19571,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         public JsonResult CustomAPINamespace_EditFields(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
             var a = Company.ApiNamespaces.Where(x => x.ID == id).FirstOrDefault();
@@ -19558,8 +19591,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("service");
-
-
+                
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
@@ -19580,7 +19612,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                     Namespace = ns
                 };
 
-                Company.Add<ApiNamespace>(apiNamespace);
+                Company.Add(apiNamespace);
 
 
                 return jsonSuccess("Namespace successfully created.", apiNamespace.ID.ToString(), "add", HttpStatusCode.Created);
@@ -19603,6 +19635,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             {
                 if (!form.HasKeys()) throw new NoFormDataException("service");
 
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiNamespace>(id);
                 if (model == null) throw new NotFoundException("api service");
@@ -19610,7 +19645,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 model.Node = parseTextField(form, "Name");
                 model.Namespace = parseTextField(form, "Namespace");
 
-                Company.Update<ApiNamespace>(model);
+                Company.Update(model);
 
                 return jsonSuccess("Namespace successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -19629,15 +19664,14 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         {
             try
             {
-                var id = parseIntField(form, "ID");
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-                var o = Company.GetById<ApiNamespace>(id);
 
-                Company.Delete<ApiNamespace>(o);
+                var id = parseIntField(form, "ID");
+
+                Company.Delete<ApiNamespace>(o => o.ID == id);
+
                 return jsonSuccess("api namespace successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-
             }
             catch (BaseException ex)
             {
@@ -19661,9 +19695,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ServiceID", FieldType = DataType.Hidden.ToString(), Value = serviceId.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -19671,7 +19705,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         public JsonResult CustomAPIServiceEndpoint_EditFields(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
             var a = Company.ApiEndpoints.Where(x => x.ID == id).FirstOrDefault();
@@ -19679,9 +19713,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             if (a == null) return jsonException("Cannot find the specified service endpoint to edit", HttpStatusCode.NotFound);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix, Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = Resources.FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -19693,7 +19727,6 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("endpoint");
-
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -19716,8 +19749,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                     ServiceID = serviceId
                 };
 
-                Company.Add<ApiEndpoint>(endpoint);
-
+                Company.Add(endpoint);
 
                 return jsonSuccess("Service endpoint successfully created.", endpoint.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -19738,6 +19770,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("endpoint");
 
                 var id = parseIntField(form, "ID");
@@ -19748,7 +19783,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 model.UriPrefix = parseTextField(form, "URIPrefix");
                 model.Description = parseTextField(form, "Description");
 
-                Company.Update<ApiEndpoint>(model);
+                Company.Update(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -19801,7 +19836,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         public JsonResult CustomAPIServiceEndpointVersion_EditFields(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
             var a = Company.ApiEndpointVersions.Where(x => x.ID == id).FirstOrDefault();
@@ -19838,7 +19873,6 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             {
                 if (!form.HasKeys()) throw new NoFormDataException("endpoint");
 
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
@@ -19860,7 +19894,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                     EndpointID = endpointId
                 };
 
-                Company.Add<ApiEndpointVersion>(version);
+                Company.Add(version);
 
                 var entity = new ApiEntity
                 {
@@ -19889,6 +19923,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("version");
 
                 var id = parseIntField(form, "ID");
@@ -19899,7 +19936,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 model.MajorVersion = parseIntField(form, "MajorVersion");
                 model.MinorVersion = parseIntField(form, "MinorVersion");
 
-                Company.Update<ApiEndpointVersion>(model);
+                Company.Update(model);
 
                 var assetTypeID = parseIntField(form, "AssetType");
 
@@ -19908,7 +19945,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
                 entity.AssetTypeID = assetTypeID;
 
-                Company.Update<ApiEntity>(entity);
+                Company.Update(entity);
 
                 return jsonSuccess("Version successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -19950,7 +19987,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         public JsonResult CustomAPIVersionUri_EditFields(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
             var a = Company.ApiEntityUris.Where(x => x.ID == id).FirstOrDefault();
@@ -19976,15 +20013,12 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             {
                 if (!form.HasKeys()) throw new NoFormDataException("uri");
 
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var entityId = parseIntField(form, "EntityID");
                 var format = parseTextField(form, "Format");
                 var uriType = (ApiUriType)parseIntField(form, "UriType");
-                
-
 
                 if (string.IsNullOrEmpty(format))
                     return jsonException("API Service Endpoint Version URI format is null", HttpStatusCode.NotFound);
@@ -19996,7 +20030,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                     UriType = uriType
                 };
 
-                Company.Add<ApiEntityUri>(uri);
+                Company.Add(uri);
                 
                 return jsonSuccess("Uri successfully created.", uri.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -20017,6 +20051,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("version");
 
                 var id = parseIntField(form, "ID");
@@ -20026,7 +20063,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 model.Format = parseTextField(form, "Format");
                 model.UriType = (ApiUriType)parseIntField(form, "UriType");                
 
-                Company.Update<ApiEntityUri>(model);
+                Company.Update(model);
                 
                 return jsonSuccess("Version successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -20054,7 +20091,6 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
             //get field types for this entity
             
-
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "EntityID", FieldType = DataType.Hidden.ToString(), Value = entity.ID.ToString() });
             list.Add(new EditableField
@@ -20087,7 +20123,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         public JsonResult CustomAPIVersionField_EditFields(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
                         
             var list = new List<EditableField>();
             var a = Company.ApiEntityFieldTypes.Where(x => x.ID == id).FirstOrDefault();
@@ -20130,7 +20166,6 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             {
                 if (!form.HasKeys()) throw new NoFormDataException("uri");
 
-
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
@@ -20158,7 +20193,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 if (!string.IsNullOrWhiteSpace(xmlFieldNameOverride))
                     field.XmlFieldNameOverride = xmlFieldNameOverride;
 
-                Company.Add<ApiEntityFieldType>(field);
+                Company.Add(field);
 
                 return jsonSuccess("Field successfully created.", field.EntityID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -20181,11 +20216,12 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 var o = Company.GetById<ApiEndpoint>(id);
 
-                Company.Delete<ApiEndpoint>(o);
-                return jsonSuccess("end ponint successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                Company.Delete(o);
 
+                return jsonSuccess("end ponint successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -20205,12 +20241,14 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
                     if (!Company.CurrentResourceIsAdmin)
                         return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                     var o = Company.GetById<ApiService>(id);
                     
-                    Company.Delete<ApiService>(o);
-                    return jsonSuccess("api service successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                    Company.Delete(o);
 
-            } catch (BaseException ex) {
+                    return jsonSuccess("api service successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex) {
                 return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
             }
             catch (Exception ex)
@@ -20228,11 +20266,12 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 var o = Company.GetById<ApiEndpointVersion>(id);
 
-                Company.Delete<ApiEndpointVersion>(o);
-                return jsonSuccess("api endpoint version successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                Company.Delete(o);
 
+                return jsonSuccess("api endpoint version successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -20253,11 +20292,12 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 var o = Company.GetById<ApiEntityUri>(id);
 
-                Company.Delete<ApiEntityUri>(o);
-                return jsonSuccess("api endpoint uri successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                Company.Delete(o);
 
+                return jsonSuccess("api endpoint uri successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -20270,8 +20310,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
             }
         }
         public JsonResult DeleteApiField(FormCollection form)
-        {
-            
+        {            
             try
             {
                 var id = parseIntField(form, "ID");
@@ -20281,7 +20320,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
                                 
-                Company.Delete<ApiEntityFieldType>(o);
+                Company.Delete(o);
                 
                 return jsonSuccess("api field successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -20300,6 +20339,9 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
                 if (!form.HasKeys()) throw new NoFormDataException("field");
 
                 var id = parseIntField(form, "ID");
@@ -20324,7 +20366,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 else
                     model.XmlFieldNameOverride = xmlFieldNameOverride;
 
-                Company.Update<ApiEntityFieldType>(model);
+                Company.Update(model);
                                 
                 return jsonSuccess("Api Field successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -20338,10 +20380,7 @@ new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-
-
-
+        
         #endregion
     }
 }

@@ -27,7 +27,7 @@ import * as _ from 'lodash';
                             <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                        
                                 <div class="col s12">
                                     <header>{{modelGroup}} Rules                                
-                                        <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
+                                        <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
                                     </header>
                                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                                     
                                     <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowClick)="selected=$event.data;showRule(selected);" >                                        
@@ -47,14 +47,14 @@ import * as _ from 'lodash';
                                                 <a><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>                                 
                                             </ng-template>
                                         </p-column>
-                                        <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()">
+                                        <p-column [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions()">
                                             <ng-template let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">
                                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                                 </div>
                                             </ng-template>
                                         </p-column>                            
-                                        <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
+                                        <p-column  [style]="{width:'40px'}" *ngIf="hasDeleteAssetPermissions()">
                                                 <ng-template let-item="rowData" pTemplate type="body">
                                                     <div class="RowTools">                                
                                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    

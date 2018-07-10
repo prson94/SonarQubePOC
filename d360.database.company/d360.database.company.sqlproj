@@ -95,34 +95,12 @@
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="Releases" />
-    <Folder Include="Releases\2018.04.13" />
-    <Folder Include="Releases\2018.04.27" />
-    <Folder Include="Releases\2018.05.11" />
-    <Folder Include="Releases\2018.05.18" />
-    <Folder Include="Releases\2018.05.25" />
-    <Folder Include="Releases\2018.06.07" />
-    <Folder Include="Releases\2018.06.16" />
+    <Folder Include="Releases\2018.07.14" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
     <None Include="DevelopmentCompare.scmp" />
     <None Include="SST-UAT-to-Dev.dcmp" />
-    <None Include="Releases\2018.05.25\1.sql" />
-    <None Include="Releases\2018.06.07\1.sql" />
-    <None Include="Releases\2018.06.16\1.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <Build Include="Releases\2018.04.13\1.Add.sql" />
-    <Build Include="Releases\2018.04.13\2.Conversion.sql" />
-    <Build Include="Releases\2018.04.13\3.Delete.sql" />
-    <Build Include="Releases\2018.04.13\4.FixConstraintNames.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <PreDeploy Include="Releases\2018.04.27\1.Updates.sql" />
-    <None Include="Releases\2018.05.11\1.sql" />
-    <None Include="Releases\2018.05.18\1.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <PostDeploy Include="Releases\2018.04.13\VerificationBeforeStaticColumnDrop.sql" />
+    <None Include="Releases\2018.07.14\1.sql" />
   </ItemGroup>
 </Project>

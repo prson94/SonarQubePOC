@@ -33,8 +33,6 @@ import { AdminComponent } from './admin.component';
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminNymAllocationsComponent } from './admin-nym-allocations.component';
-import { ClaimsTile } from './claims.tile';
-import { ClaimsMatrixPart } from './claims-matrix.part';
 import { SimpleAccordionModule } from "../shared/simple-accordion.part";
 
 @NgModule({
@@ -44,14 +42,11 @@ import { SimpleAccordionModule } from "../shared/simple-accordion.part";
         AdminComponent,                
         AdminLevelListComponent,
         AdminLevelEditorComponent,   
-        AdminNymAllocationsComponent,             
-        ClaimsMatrixPart,
-        ClaimsTile,        
+        AdminNymAllocationsComponent     
     ],
     exports: [
         AdminAllocationComponent,
         AdminClassificationsComponent,
-        ClaimsTile,        
         AdminLevelListComponent,
     ],
     imports: [CommonModule,

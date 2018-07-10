@@ -68,8 +68,8 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                         </div>
                         <div class="row">
                             <div class="col s12">
-                                <div class="tile tile-detail">                                              
-                                    <d3s-claims-tile [objectType]="'RuleType'" [objectID]="selected?.ID" [readonly]="false"></d3s-claims-tile>                 
+                                <div class="tile tile-detail">
+                                    <d3s-responsibility-relations queryType="A" [id]="selected?.AssetTypeID" showAddButton="false" showDeleteButton="false"></d3s-responsibility-relations>
                                 </div>
                             </div>
                         </div>

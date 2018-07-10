@@ -27,19 +27,30 @@ export class ResponsibilityItem {
 
 export class ResponsibilityItemDetail {
     AssetID: number;
-    Object: string;
-    ObjectID: number;
-    OverrideItemID: number;
-    Type: string;
-    TypeID: number;
-    RuleName: string;
+    AssetTypeID: number;
+
+    OverrideID: number;
+
+    RuleID: number;
+
     ResponsibilityTypeID: number;
     ResponsibilityTypeName: string;
-    FirstName: string;
-    LastName: string;
+
+    ResourceName: string;
     ResourceID: number;
+
     SecurityAsset: string;
     SecurityAssetID: number;
     SecurityAssetName: string;
+
     Context: string;
+
+    ApplyToType: boolean;
+    PermissionsBitMask: number;
+    IsVisible: boolean;
+
+    Object: string;
+    ObjectID: number;
+    Type: string;
+    TypeID: number;
 }

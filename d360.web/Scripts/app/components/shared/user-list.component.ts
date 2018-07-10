@@ -18,7 +18,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     providers: [GridDefinitionService, UriBasedService, PermissionsService, ResourcesService, CompanySettingsService],
     template: `                                         
                 <header *ngIf="!showEditor && !showDelete && !showResetPwd">Users
-                    <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export()"></d3s-tile-actions>                            
                 </header>                           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor && !showResetPwd">
@@ -35,21 +35,21 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
                             </ng-template>
                         </p-column>
-                        <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()">
+                        <p-column [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions()">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="item.ResourceID > 0">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </ng-template>
                         </p-column>                            
-                        <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
+                        <p-column  [style]="{width:'40px'}" *ngIf="hasDeleteAssetPermissions()">
                                <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="item.ResourceID > 0">                                
                                     <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                                </ng-template>
                         </p-column>                            
-                            <p-column  [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions() && allowPasswordReset ">
+                            <p-column  [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions() && allowPasswordReset ">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" *ngIf="item.ID>0">                                
                                         <a title="Reset Password" style="cursor:pointer;" (click)="selected=item;showResetPwd=true;"><i class="fa fa-asterisk fa-fw"></i></a>                                    

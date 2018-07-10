@@ -225,8 +225,6 @@ namespace d360.model
 
         public DbSet<ReportTile> ReportTiles { get; set; }
 
-        public DbSet<ResponsibilityTypeObjectClaimDetail> ResponsibilityTypeObjectClaimDetail { get; set; } /* VIEW */
-
         public DbSet<d360.core.entities.Rule> Rules { get; set; }
 
         public DbSet<d360.core.entities.RuleDimension> RuleDimensions { get; set; }
@@ -2775,33 +2773,6 @@ select @err";
                 }
                 #endregion
 
-                #region Business logic : ResponsibilityTypeClaim
-                if (entry.Entity is ResponsibilityTypeClaim)
-                {
-                    var o = entry.Entity as ResponsibilityTypeClaim;
-                    var id = o.ID.ToString();
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<ResponsibilityTypeClaim>(i =>
-                                i.Claim == o.Claim &&
-                                i.ClaimObject == o.ClaimObject &&
-                                i.ResponsibilityTypeID == o.ResponsibilityTypeID
-                                )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<ResponsibilityTypeClaim>(i =>
-                                i.Claim == o.Claim &&
-                                i.ClaimObject == o.ClaimObject &&
-                                i.ResponsibilityTypeID == o.ResponsibilityTypeID &&
-                                i.ID != o.ID
-                                )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
-                            break;
-                    }
-                }
-                #endregion
-
                 #region Business logic : ResponsibilityTypeObjectClaim
                 if (entry.Entity is ResponsibilityTypeObjectClaim)
                 {
@@ -2853,6 +2824,7 @@ select @err";
                 }
 
                 #endregion
+
                 #region Business logic : SurveyType
                 if (entry.Entity is SurveyType)
                 {

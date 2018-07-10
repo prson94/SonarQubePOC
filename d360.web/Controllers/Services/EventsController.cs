@@ -129,7 +129,7 @@ namespace d360.web.Controllers.Services
         [Route("policies/{id:int}"), HttpPost]
         public HttpResponseMessage AddPolicy(int id, Dictionary<string, string> model)
         {
-            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Create, ClaimObject.Root))
+            if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add a policy.");
 
             Policy item = null;
@@ -220,7 +220,7 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.ModifyAsset))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this policy.");
 
                 var item = Company.GetById<Policy>(id);
@@ -311,7 +311,7 @@ namespace d360.web.Controllers.Services
         [Route("rules/{id:int}"), HttpPost]
         public HttpResponseMessage AddRule(int id, RuleModel model)
         {
-            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Create, ClaimObject.Root))
+            if (!Company.HasAssetTypePermission(SystemObjects.RuleType, id, Permission.ModifyAsset))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add a rule.");
 
             Rule item = null;
@@ -408,7 +408,7 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this rule.");
 
                 var item = Company.GetById<Rule>(id);
@@ -508,7 +508,7 @@ namespace d360.web.Controllers.Services
         ]
         public HttpResponseMessage AddRuleResults(int id, List<ResultModel> models)
         {
-            if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
+            if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add results to this rule.");
 
             if (models == null)
@@ -717,7 +717,7 @@ order by I.ID, QT.Name", new { id }).ToList();
         ]
         public HttpResponseMessage AddRuleImplementationResults(int id, int implementationID, List<ResultModel> models)
         {
-            if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
+            if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add results to this rule implementation.");
 
             if (models == null)
@@ -962,7 +962,7 @@ order by A.RunDate desc, A.EffectiveDate desc";
         [Route("implementation/{id:int}"), HttpPost]
         public HttpResponseMessage AddRuleImplementation(int id, RuleImplementationModel model)
         {
-            if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Create, ClaimObject.Root))
+            if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add a rule implementation.");
 
             RuleImplementation impl = new RuleImplementation();

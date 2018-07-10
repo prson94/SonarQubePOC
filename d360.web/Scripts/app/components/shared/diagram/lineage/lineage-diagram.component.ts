@@ -337,9 +337,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private refreshControls(data: any) {
-        this.canAdd = this.hasRelationshipCreatePermissions();
-        this.canEdit = this.hasRelationshipUpdatePermissions();
-        this.canDelete = this.hasRelationshipDeletePermissions();
+        this.canAdd = this.hasModifyRelationshipsPermissions();
+        this.canEdit = this.hasModifyRelationshipsPermissions();
+        this.canDelete = this.hasDeleteRelationshipsPermissions();
 
         this.setSourceValues(data);
         this.toggleTabs(data);
@@ -445,7 +445,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private loadMenuItems() {
         this.menuItems = [];
 
-        //console.log(this.permissions, this.hasRelationshipCreatePermissions());
+        //console.log(this.permissions, this.hasModifyRelationshipsPermissions());
 
         if (this.readonly && (this.canAdd || this.canEdit || this.canDelete)) {
             this.menuItems.push({

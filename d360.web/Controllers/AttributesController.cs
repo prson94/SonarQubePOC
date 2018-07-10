@@ -77,14 +77,14 @@ namespace d360.web.Controllers
                     attributeID = attributeID.Value
                 };
 
-                if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Update, ClaimObject.Attribute))
+                if (permissions.Any(i => (i.ID == Permission.ModifyAttributes)))
                     list.Add(new ToolbarItemNg { Title = "edit attribute", Icon = "pencil",  Action = "edit", Params = p });
-                if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Delete, ClaimObject.Attribute))
+                if (permissions.Any(i => (i.ID == Permission.DeleteAttributes)))
                     list.Add(new ToolbarItemNg { Title = "delete attribute", Icon = "trash-o", Action = "delete", Params = p });
             }
 
             IQueryable<AttributeType> types = null;
-            if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Create, ClaimObject.Attribute))
+            if (permissions.Any(i => (i.ID == Permission.ModifyAttributes)))
             {
                 if (type == SystemObjects.Attribute)
                 {

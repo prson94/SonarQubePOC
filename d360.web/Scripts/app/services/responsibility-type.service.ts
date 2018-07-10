@@ -13,7 +13,8 @@ import {
     ResponsibilityTypeRelationRuleDefinitionWhenItem,
     ResponsibilityTypeRelationRuleDefinitionWhenTestRow,
     ResponsibilityTypeRelationRuleDefinitionThenItem,
-    ResponsibilityTypeRelationRuleDefinitionThenTestRow
+    ResponsibilityTypeRelationRuleDefinitionThenTestRow,
+    ResponsibilityTypeRelation_FormData
 } from '../models/responsibility-type.model';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -89,6 +90,13 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
             .catch(err => this.handleError(err));
     }
 
+    getRelationFormData(): Promise<ResponsibilityTypeRelation_FormData> {
+        return this.http.get(`form/ResponsibilityTypeRelation_FormData`)
+            .toPromise()
+            .then(response => <ResponsibilityTypeRelation_FormData>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getResponsibilityTypesByObject(type: string, id: number): Promise<any> {
         let uri = `api/ownership/${type}/${id}/responsibilitytypes`;
         if (type.toLowerCase() == 'fusion') {
@@ -100,6 +108,49 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
             .then(response => <any>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getRelationsByAssetType(id: number): Promise<ResponsibilityTypeRelation[]> {
+        return this.http.get(`api/ownership/types/asset/${id}/relations`)
+            .toPromise()
+            .then(response => <ResponsibilityTypeRelation[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelationsByObjectType(type: string, id: number): Promise<ResponsibilityTypeRelation[]> {
+        return this.http.get(`api/ownership/${type}/${id}/responsibilitytypes`)
+            .toPromise()
+            .then(response => <ResponsibilityTypeRelation[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelationsByResponsibilityType(id: number): Promise<ResponsibilityTypeRelation[]> {
+        return this.http.get(`api/ownership/types/${id}/relations`)
+            .toPromise()
+            .then(response => <ResponsibilityTypeRelation[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    putRelation(rule: ResponsibilityTypeRelation): Promise<any> {
+        return this.http.put(`form/ResponsibilityTypeRelation`, rule)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postRelation(rule: ResponsibilityTypeRelation): Promise<any> {
+        return this.http.post(`form/ResponsibilityTypeRelation`, rule)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteRelation(rule: ResponsibilityTypeRelation): Promise<any> {
+        return this.http.delete(`form/DeleteResponsibilityTypeRelationByID?id=${rule.AssetTypeID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 
     getResponsibilityTypeRelationRule(id: number): Promise<ResponsibilityTypeRelationRule> {
         return this.http.get(`form/ResponsibilityTypeRelationRule?id=${id}`)

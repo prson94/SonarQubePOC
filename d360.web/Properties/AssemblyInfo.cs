@@ -6,4 +6,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 [assembly: Guid("cd5f22f8-3604-44ec-b330-8b4016a7b8ee")]
 [assembly: InternalsVisibleTo("d360.web")]
-[assembly: AssemblyVersion("2018.06.16.4")]
+[assembly: AssemblyVersion("2018.07.14.*")]

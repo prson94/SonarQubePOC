@@ -77,25 +77,13 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
         public JsonNetResult GetResponsibilityTypeBreakdown()
         {
             var query = Company.Query<dynamic>(@"
-select		OC.ResponsibilityTypeID,
-			R.Name as ResponsibilityType,
+select		ResponsibilityTypeID,
+			ResponsibilityTypeName as ResponsibilityType,
 			count(1) as [Count] 
-from		(
-			select		C.ResponsibilityTypeID,
-						coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) as ResourceID
-			from		[cache].[AssetResponsibility] C
-						left join dbo.OrganizationResource OrRe on C.SecurityAsset = 'O' and OrRe.OrganizationID = C.SecurityAssetID
-						left join dbo.Organization Org on C.SecurityAsset = 'O' and Org.ID = OrRe.OrganizationID
-						left join dbo.ResourceGroup ReGr on C.SecurityAsset = 'G' and ReGr.GroupID = C.SecurityAssetID
-			where		C.IsVisible = 1 and C.Overriden = 0
-						and coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) is not null
-			group by	C.ResponsibilityTypeID,
-						coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID)
-			) OC
-			inner join ResponsibilityType R on R.ID = OC.ResponsibilityTypeID
-
-group by	OC.ResponsibilityTypeID,
-			R.Name");
+from		[dbo].[ResponsibilityDetail]
+where		IsVisible = 1
+group by	ResponsibilityTypeID,
+			ResponsibilityTypeName");
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -110,18 +98,14 @@ select		OC.ResourceID,
 			OC.ResponsibilityTypeID,
 			sum(OC.[Count]) as OwnedItemCount
 from		(
-			select		C.ResponsibilityTypeID,
-						coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) as ResourceID,
+			select		ResponsibilityTypeID,
+						ResourceID,
                         count(1) as [Count]
-			from		[cache].[AssetResponsibility] C
-						left join dbo.OrganizationResource OrRe on C.SecurityAsset = 'O' and OrRe.OrganizationID = C.SecurityAssetID
-						left join dbo.Organization Org on C.SecurityAsset = 'O' and Org.ID = OrRe.OrganizationID
-						left join dbo.ResourceGroup ReGr on C.SecurityAsset = 'G' and ReGr.GroupID = C.SecurityAssetID
-			where		C.IsVisible = 1 and C.Overriden = 0
-						and C.ResponsibilityTypeID = @id
-						and coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) is not null
-			group by	C.ResponsibilityTypeID,
-						coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID)
+			from		ResponsibilityDetail
+			where		IsVisible = 1
+						and ResponsibilityTypeID = @id
+			group by	ResponsibilityTypeID,
+						ResourceID
 			) OC
 			inner join reporting.Global_Resource R on R.ResourceID = OC.ResourceID
 group by	OC.ResourceID,

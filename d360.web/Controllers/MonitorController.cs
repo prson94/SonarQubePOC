@@ -25,47 +25,6 @@ namespace d360.web.Controllers
 
         #region Json
 
-        [Route("policystatusfordate"), NonNullableParameters]
-        public JsonNetResult PolicyStatusForDate(int id, DateTime date)
-        {
-            var sql = @"
-			with PH as	(
-						select	ID,
-								ParentID
-						from	Policy
-						where	ID = @id
-						union all
-						select	C.ID,
-								C.ParentID
-						from	Policy C 
-								inner join PH on C.ParentID = PH.ID
-						)
-
-			select	case 
-				when	exists(
-							SELECT	1
-							FROM	[Event] E
-									INNER JOIN EventGroup G ON E.EventGroupID = G.ID 
-									INNER JOIN [Rule] R on R.ID = G.RuleID
-							where	R.ID in (
-											select	distinct
-													CR.TargetObjectID
-											from	PH
-													inner join cache.Relationships CR on CR.SourceObject = 'Policy' and CR.SourceObjectID = PH.ID and CR.TargetObject = 'Rule'
-											)
-									and E.Date between @minDate and @maxDate 
-									and E.Status <> 'Closed'
-						) then cast(0 as bit)
-				else cast(1 as bit)
-			end as Status";
-            date = date.Date;
-            var minDate = date;
-            var maxDate = date.AddDays(1);
-            var status = Company.Query<bool>(sql, new { id, minDate, maxDate }).SingleOrDefault();
-
-            return new JsonNetResult { Data = new { status }, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
         [Route("rules/{id:int}/results")]
         public JsonNetResult GetRuleResults(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {

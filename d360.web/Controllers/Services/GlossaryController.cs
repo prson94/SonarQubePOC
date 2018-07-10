@@ -186,7 +186,7 @@ from	Artifact A
         {joins}
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
 where   A.ArtifactTypeID = @id 
-        and O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})
+        and O.ID not in ({GetNoReadSqlStatement()})
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id }).ToList();
@@ -369,7 +369,7 @@ from	Artifact A
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         {joins}
 where   A.ID = @id 
-        and O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})
+        and O.ID not in ({GetNoReadSqlStatement()})
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();
@@ -453,7 +453,7 @@ from	Artifact A
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         left join Artifact P on P.ID = A.ParentID 
         {joins}
-where   O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) 
+where   O.ID not in ({GetNoReadSqlStatement()}) 
         and A.ArtifactTypeID = @id ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
@@ -482,7 +482,7 @@ where   O.ID not in (select AssetID from cache.NoRead where ResourceID = {Compan
         [Route("artifacts/{id:int}"), HttpPost]
         public HttpResponseMessage AddArtifact(int id, Dictionary<string, string> model)
         {
-            if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Create, ClaimObject.Root))
+            if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, id, Permission.ModifyAsset))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add an artifact.");
 
             Artifact item = null;
@@ -571,7 +571,7 @@ where   O.ID not in (select AssetID from cache.NoRead where ResourceID = {Compan
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetTypePermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this artifact.");
 
                 var item = Company.GetById<Artifact>(id);
@@ -687,7 +687,7 @@ from	Taxonomy A
         {joins} 
         inner join Asset O on O.Object = 'Taxonomy' and O.ObjectID = A.ID 
         left join Taxonomy P on P.ID = A.ParentID 
-where   O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) 
+where   O.ID not in ({GetNoReadSqlStatement()}) 
         and A.TaxonomyTypeID = @id ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
@@ -704,7 +704,7 @@ where   O.ID not in (select AssetID from cache.NoRead where ResourceID = {Compan
         [Route("models/{id:int}"), HttpPost]
         public HttpResponseMessage AddModel(int id, Dictionary<string, string> model)
         {
-            if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Create, ClaimObject.Root))
+            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add a model of this type.");
 
             Taxonomy item = null;
@@ -793,7 +793,7 @@ where   O.ID not in (select AssetID from cache.NoRead where ResourceID = {Compan
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Update, ClaimObject.Root))
+                if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.ModifyAsset))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this model.");
 
                 var item = Company.GetById<Taxonomy>(id);

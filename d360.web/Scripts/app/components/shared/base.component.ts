@@ -7,10 +7,10 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 
 import { Subscription }   from 'rxjs/Subscription';
-import { Permission } from '../../models/permission.model'
 import { StringConstants } from '../../static/string-constants';
 import { FormHelpers } from '../../static/form-helpers';
 import { JsonResult } from '../../models/jsonresult.model';
+import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
 
 declare var CompanySettings;
 
@@ -19,6 +19,7 @@ export class BaseComponent {
 
     //current object info
     assetID: number;
+    assetTypeID: number;
     objectID: number;
     objectType: string;
     objectName: string;
@@ -43,7 +44,7 @@ export class BaseComponent {
     //permissions
     // Ideally this should be an input so we dont have to copy / past it...
     // child classes that support permissions input....
-    permissions: Permission[] = [];
+    permissions: ResponsibilityTypeRelationPermission[] = [];
 
     //default paging options
     defaultPagingOptions: number[] = [10, 25, 50, 100];
@@ -84,23 +85,19 @@ export class BaseComponent {
             });
     }
 
-    hasPermission(object: string, claim: string) {return Permission.hasPermission(this.permissions, object, claim);}
+    hasPermission(permission: number) { return ResponsibilityTypeRelationPermission.hasPermission(this.permissions, permission);}
 
-    hasCreatePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimCreate);}
-    hasDeletePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimDelete);}
-    hasUpdatePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimUpdate);}    
+    hasModifyResponsibilitiesPermissions(object: string) {return this.hasPermission(Permission.ModifyResponsibilities);}
+    hasDeleteResponsibilitiesPermissions(object: string) { return this.hasPermission(Permission.DeleteResponsibilities);}
 
-    hasRootCreatePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimCreate);}
-    hasRootDeletePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimDelete);}
-    hasRootUpdatePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimUpdate);}
+    hasModifyAssetPermissions() { return this.hasPermission(Permission.ModifyAsset);}
+    hasDeleteAssetPermissions() { return this.hasPermission(Permission.DeleteAsset);}
    
-    hasRelationshipCreatePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimCreate);}
-    hasRelationshipDeletePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimDelete);}
-    hasRelationshipUpdatePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimUpdate);}    
+    hasModifyRelationshipsPermissions() { return this.hasPermission(Permission.ModifyRelationships);}
+    hasDeleteRelationshipsPermissions() { return this.hasPermission(Permission.DeleteRelationships);}  
 
-    hasAttributeCreatePermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimCreate); }
-    hasAttributeDeletePermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimDelete); }
-    hasAttributeUpdatePermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimUpdate); }
+    hasModifyAttributesPermissions() { return this.hasPermission(Permission.ModifyAttributes); }
+    hasDeleteAttributesPermissions() { return this.hasPermission(Permission.DeleteAttributes); }
   
 
     /*end permissions functionality*/
@@ -144,11 +141,24 @@ export class BaseComponent {
         }
     }
 
-    setObjectInfo(objectType: string, objectID: number, objectName?: string, assetID?: number) {
+    setObjectInfo(objectType: string, objectID: number, objectName?: string, assetID?: number, assetTypeID?: number) {
         this.assetID = assetID;
+        this.assetTypeID = assetTypeID;
         this.objectType = objectType;
         this.objectID = objectID;
         if (objectName != undefined) this.objectName = objectName;
+    }
+
+    assetContextUrl(): string {
+        let url = '';
+        if (!this.assetID) return url;
+        return `/item/${this.assetID}`;
+    }
+
+    assetTypeContextUrl(): string {
+        let url = '';
+        if (!this.assetTypeID) return url;
+        return `/type/${this.assetTypeID}`;
     }
 
     objectContextUrl(): string {

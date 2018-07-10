@@ -13,6 +13,7 @@ import {
     EditorModule,
     MultiSelectModule,
     SharedModule,
+    CheckboxModule,
 } from 'primeng/primeng';
 
 import { CoreModule } from '../core.module';
@@ -24,12 +25,16 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { ResponsibilityItemForm } from './responsibility-item.form';
 import { D3SSharedModule } from '../shared.module';
+import { ResponsibilityRelationsComponent } from './responsibility-relations.component';
+import { ResponsibilityRelationForm } from './responsibility-relation.form';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
         HttpModule,
+
         //d3s
         CoreModule,
         TilesModule,
@@ -37,9 +42,11 @@ import { D3SSharedModule } from '../shared.module';
         SharedFormMessageModule,
         SharedGridPagingInfoModule,
         D3SSharedModule,
+        PipesModule,
 
         //prime
         ButtonModule,
+        CheckboxModule,
         DataTableModule,
         DropdownModule,
         InputTextModule,
@@ -49,10 +56,14 @@ import { D3SSharedModule } from '../shared.module';
     ],
     declarations: [
         ResponsibilityItemForm,
-        PeopleResponsibilitiesTile
+        PeopleResponsibilitiesTile,
+        ResponsibilityRelationsComponent,
+        ResponsibilityRelationForm
     ],
     exports: [
-        PeopleResponsibilitiesTile
+        PeopleResponsibilitiesTile,
+        ResponsibilityRelationsComponent,
+        ResponsibilityRelationForm
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

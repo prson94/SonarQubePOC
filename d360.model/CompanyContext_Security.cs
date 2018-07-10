@@ -28,8 +28,6 @@ namespace d360.model
 
         public DbSet<ResponsibilityTypeRelationOverrideItem> ResponsibilityTypeRelationOverrideItems { get; set; }
 
-        public DbSet<ResponsibilityTypeClaim> ResponsibilityTypeClaims { get; set; }
-
         public DbSet<ResponsibilityTypeObjectClaim> ResponsibilityTypeObjectClaims { get; set; }
 
         public DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
@@ -37,8 +35,6 @@ namespace d360.model
         public DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
 
         public DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
-
-        public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
 
         #endregion
 
@@ -66,140 +62,88 @@ order by RT.Name", new { id }).AsQueryable();
             }
         }
 
-        //        public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAssetType(int id)
-        //        {
-        //            try
-        //            {
-        //                return Database.Connection.Query<ResponsibilityType>(@"
-        //select	RT.*
-        //from	ResponsibilityType RT
-        //		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = RT.ID
-        //		inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and T.ID = @id 
-        //order by RT.Name", new { id }).AsQueryable();
-        //            }
-        //            catch (SqlException ex)
-        //            {
-        //                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
-        //            }
-        //            catch
-        //            {
-        //                throw;
-        //            }
-        //        }
-
-        //public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByObject(SystemObjects type, int id)
-        //{
-        //    try
-        //    {
-        //        return Database.Connection.Query<ResponsibilityType>("EXEC GetAllowedResponsibilityTypesByObject @type, @id", new
-        //        {
-        //            type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
-        //            id = id
-        //        }).AsQueryable();
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        throw CheckAndTranslateSqlException(ex, "Responsibility Type");
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        public IQueryable<SecurityDetail> GetPermissions(string type, int typeID, string @object, int objectID)
+        public List<PermissionInfo> GetPermissions(string type, int typeID, string @object, int objectID)
         {
-            return Filter<SecurityDetail>(i => 
-                (
-                    (i.Object == type && i.ObjectID == typeID && i.IsType) || 
-                    (i.Object == @object && i.ObjectID == objectID && !i.IsType)
-                )
-                && i.ResponsibleObjectID == CurrentResourceID
-            );
-        }
+            var permissions = Permission.DeleteAsset.GetList();
 
-        public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int id)
-        {
             var sType = type.ToString();
-            return Filter<SecurityDetail>(i => i.Object == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
+
+            var responsibilityAssignments = Filter<ResponsibilityDetail>(i => 
+            (
+                (i.Object == @object && i.ObjectID == objectID) ||
+                (i.Type == type && i.TypeID == typeID)
+            )
+            && i.ResourceID == CurrentResourceID).Select(i => i.PermissionsBitMask).Distinct().ToList();
+
+            permissions.ForEach(p =>
+            {
+                p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
+            });
+
+            permissions.RemoveAll(i => !i.Selected);
+
+            return permissions;
         }
 
-        //public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int[] id)
-        //{
-        //    var sType = type.ToString();
-        //    return Filter<SecurityDetail>(i => i.ObjectType == sType && id.Contains(i.ObjectID) && i.ResponsibleObjectID == CurrentResourceID);
-        //}
-
-        //public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id)
-        //{
-        //    try
-        //    {
-        //        var sType = type.ToString();
-        //        return Filter<ResponsibilityDetail>(i => i.Object == sType && i.ObjectID == id);
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        throw CheckAndTranslateSqlException(ex, "Responsibility");
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        //public IQueryable<ResponsibilityDetail> GetResponsibilitiesByResource(SystemObjects type, int id)
-        //{
-        //    try
-        //    {
-        //        return Filter<ResponsibilityDetail>(i => i.ResourceID == id);
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        throw CheckAndTranslateSqlException(ex, "Responsibility");
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        //public IQueryable<ResponsibilityDetail> GetResponsibilitiesByType(int id)
-        //{
-        //    try
-        //    {
-        //        return Filter<ResponsibilityDetail>(i => i.ResponsibilityTypeID == id);
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        throw CheckAndTranslateSqlException(ex, "Responsibility");
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        public bool HasClaimInCurrentPermissionList(List<SecurityDetail> list, Claim claim, ClaimObject claimObject = ClaimObject.Root)
+        public List<PermissionInfo> GetPermissions(SystemObjects type, int id)
         {
-            var has = CurrentResourceIsAdmin;
-            if (!has) has = list.Any(i => i.Claim == claim && i.ClaimObject == claimObject);
-            return has;
+            var permissions = Permission.DeleteAsset.GetList();
+
+            var sType = type.ToString();
+
+            var responsibilityAssignments = Filter<ResponsibilityDetail>(i => i.Object == sType && i.ObjectID == id && i.ResourceID == CurrentResourceID).Select(i => i.PermissionsBitMask).Distinct().ToList();
+
+            permissions.ForEach(p =>
+            {
+                p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
+            });
+
+            permissions.RemoveAll(i => !i.Selected);
+
+            return permissions;
         }
 
-        public bool HasPermission(string type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
+        public bool HasAssetPermission(string type, int id, Permission permission)
         {
             bool hasPermission = CurrentResourceIsAdmin;
             if (!hasPermission)
             {
-                hasPermission = Any<SecurityDetail>(i => i.Object == type && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID && i.Claim == claim && i.ClaimObject == claimObject);
+                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where Object = @type and ObjectID = @id and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id }).Single();
             }
 
             return hasPermission;
         }
 
-        public bool HasPermission(SystemObjects type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
+        public bool HasAssetPermission(long id, Permission permission)
         {
-            return HasPermission(type.ToString(), id, claim, claimObject);
+            bool hasPermission = CurrentResourceIsAdmin;
+            if (!hasPermission)
+            {
+                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where AssetID = @id and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { id }).Single();
+            }
+
+            return hasPermission;
+        }
+
+        public bool HasAssetPermission(SystemObjects type, int id, Permission permission)
+        {
+            return HasAssetPermission(type.ToString(), id, permission);
+        }
+
+        public bool HasAssetTypePermission(string type, int id, Permission permission)
+        {
+            bool hasPermission = CurrentResourceIsAdmin;
+            if (!hasPermission)
+            {
+                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where [Type] = @type and TypeID = @id and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id }).Single();
+            }
+
+            return hasPermission;
+        }
+
+        public bool HasAssetTypePermission(SystemObjects type, int id, Permission permission)
+        {
+            return HasAssetPermission(type.ToString(), id, permission);
         }
 
         #endregion

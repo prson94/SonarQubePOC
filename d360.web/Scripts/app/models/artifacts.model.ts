@@ -18,6 +18,7 @@ export class Artifact {
     HasChildArtifacts: boolean;
     ID: number;
     AssetID: number;
+    AssetTypeID: number;
     DisplayValue: string;
     TypeName: string;
     Breadcrumbs: BreadcrumbItem[];

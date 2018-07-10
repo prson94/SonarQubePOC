@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.model;
 using System;
 using System.Collections.Generic;
@@ -742,6 +743,62 @@ namespace d360.web.Models
         public string StartName { get; set; }
         public int? EndID { get; set; }
         public string EndName { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeRelationViewModel
+    {
+        public void LoadPermissionsFromMask()
+        {
+            if (PermissionsBitMask > 0)
+            {
+                var rawList = Permission.DeleteAsset.GetList();
+                if ((PermissionsBitMask & (int)Permission.ReadAsset) == (int)Permission.ReadAsset)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadAsset));
+                if ((PermissionsBitMask & (int)Permission.ModifyAsset) == (int)Permission.ModifyAsset)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.ModifyAsset));
+                if ((PermissionsBitMask & (int)Permission.DeleteAsset) == (int)Permission.DeleteAsset)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteAsset));
+
+                if ((PermissionsBitMask & (int)Permission.ReadAttributes) == (int)Permission.ReadAttributes)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadAttributes));
+                if ((PermissionsBitMask & (int)Permission.ModifyAttributes) == (int)Permission.ModifyAttributes)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.ModifyAttributes));
+                if ((PermissionsBitMask & (int)Permission.DeleteAttributes) == (int)Permission.DeleteAttributes)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteAttributes));
+
+                if ((PermissionsBitMask & (int)Permission.ReadRelationships) == (int)Permission.ReadRelationships)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadRelationships));
+                if ((PermissionsBitMask & (int)Permission.ModifyRelationships) == (int)Permission.ModifyRelationships)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.ModifyRelationships));
+                if ((PermissionsBitMask & (int)Permission.DeleteRelationships) == (int)Permission.DeleteRelationships)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteRelationships));
+
+                if ((PermissionsBitMask & (int)Permission.ReadResponsibilities) == (int)Permission.ReadResponsibilities)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadResponsibilities));
+                if ((PermissionsBitMask & (int)Permission.ModifyResponsibilities) == (int)Permission.ModifyResponsibilities)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.ModifyResponsibilities));
+                if ((PermissionsBitMask & (int)Permission.DeleteResponsibilities) == (int)Permission.DeleteResponsibilities)
+                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteResponsibilities));
+            }
+        }
+
+        [DataMember]
+        public int ResponsibilityTypeID { get; set; }
+        [DataMember]
+        public string ResponsibilityTypeName { get; set; }
+        [DataMember]
+        public string AssetTypeName { get; set; }
+        [DataMember]
+        public int AssetTypeID { get; set; }
+        [DataMember]
+        public string ObjectType { get; set; }
+        [DataMember]
+        public int ObjectID { get; set; }
+        [DataMember]
+        public int PermissionsBitMask { get; set; }
+        [DataMember]
+        public List<PermissionInfo> Permissions { get; set; } = new List<PermissionInfo>();
     }
 
     public class SchemaFieldLookupItemModel

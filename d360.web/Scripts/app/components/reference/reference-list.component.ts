@@ -13,8 +13,8 @@ import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AuthenticationService } from '../../services/authentication.service';
 import { FormMode } from '../../models/form.model';
-import { Permission } from '../../models/permission.model'
 import { StringConstants } from '../../static/string-constants';
+import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
 
 @Component({
     selector: 'd3s-reference-list',
@@ -151,9 +151,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                 this.referenceService.canReadReferenceType(this.selectedReferenceListId)
                     .then(r => {
                         this.canReadSelectedType = r;
-                        this.canAddReferenceItem = this.hasRootCreatePermissions();
-                        this.canEditReferenceItem = this.hasRootUpdatePermissions();
-                        this.canRemoveReferenceItem = this.hasRootDeletePermissions();
+                        this.canAddReferenceItem = this.hasModifyAssetPermissions();
+                        this.canEditReferenceItem = this.hasModifyAssetPermissions();
+                        this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
                     });
             }
         });
@@ -194,10 +194,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.permissionsService.getPermissions(this.selectedReferenceListId, "ReferenceItemType")
             .then(result => {
                 let claims = result;
-                console.log(result);
-                this.canAddReferenceItem = Permission.hasPermission(result, StringConstants.ObjectRoot, StringConstants.ClaimCreate);
-                this.canEditReferenceItem = Permission.hasPermission(result, StringConstants.ObjectRoot, StringConstants.ClaimUpdate);
-                this.canRemoveReferenceItem = Permission.hasPermission(result, StringConstants.ObjectRoot, StringConstants.ClaimDelete);
+                this.canAddReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.ModifyAsset);
+                this.canEditReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.ModifyAsset);
+                this.canRemoveReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.DeleteAsset);
             });
     }
 };

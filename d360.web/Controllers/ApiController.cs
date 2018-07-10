@@ -380,7 +380,7 @@ namespace d360.web.Controllers
                 indx++;
             }
                         
-            var sql = @"select [Object], ObjectID from cache.NoRead where ResourceID = @resId and (" + dynamicSql + ")";
+            var sql = @"select [Object], ObjectID from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @resId and (" + dynamicSql + ")";
 
             dbParams.Add("resId", Company.CurrentResourceID);
 
@@ -1118,9 +1118,9 @@ where   h.ID <> @t order by h.[Level] desc;
         public Dictionary<string, object> GetArtifactType(int typeID)
         {
             var artifactType = Company.GetById<ArtifactType>(typeID);
-            if (artifactType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            if (artifactType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 
-            Dictionary<string, object> model = new Dictionary<string, object>();
+            var model = new Dictionary<string, object>();
 
             model.Add("ID", artifactType.ID);
             model.Add("Name", artifactType.Name);
@@ -1223,7 +1223,7 @@ select  distinct
 			when SecurityAsset = 'G' then 'Group' 
             else [Type] 
         end as [Type]
-from    ResponsibilityDetails 
+from    ResponsibilityDetail
 where   TypeID = @id 
         and [Type] = 'ArtifactType' 
         and IsVisible = 1 
@@ -3290,7 +3290,7 @@ end",
 
             var permissionJoin = $@"
                 inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID ";
-            var permissionsWhere = $" and O{i}.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) ";
+            var permissionsWhere = $" O{i}.ID not in ({GetNoReadSqlStatement()}) ";
             switch (currentObj.ToLower())
             {
                 case "artifact":
@@ -3351,7 +3351,7 @@ end",
                         }
 
                         join.JoinStatement += permissionJoin;
-                        join.WhereStatement += permissionsWhere;
+                        join.WhereStatement += (string.IsNullOrEmpty(permissionsWhere) ? "" : " and ") + permissionsWhere;
                     }
                     else
                     {
@@ -3359,19 +3359,19 @@ end",
                         {
                             case FieldTypeComplexLookupRelationDirection.Back:
                                 join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
-                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : " and " + permissionsWhere;
                                 objColumn = $"I{i}.Subject";
                                 objIDColumn = $"I{i}.SubjectID";
                                 break;
                             case FieldTypeComplexLookupRelationDirection.Forward:
                                 join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
-                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : " and " + permissionsWhere;
                                 objColumn = $"I{i}.Object";
                                 objIDColumn = $"I{i}.ObjectID";
                                 break;
                             default:
                                 join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
-                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                                join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : " and " + permissionsWhere;
                                 objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 break;
@@ -3725,7 +3725,7 @@ from    ReferenceItem R
         inner join Asset O on O.Object = 'ReferenceItem' and O.ObjectID = R.ID 
         {sqlJoins} 
 where   R.ReferenceItemTypeID = {id} 
-        and O.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID})
+        and O.ID not in ({GetNoReadSqlStatement()})
 {sqlOrderBy}";
 
                 results = Company.Query<dynamic>(sqlQuery).Distinct();
@@ -3794,7 +3794,7 @@ select  case
             when count(1) > 0 then cast(1 as bit)
 			else cast(0 as bit)
         end 
-from    ResponsibilityDetails 
+from    ResponsibilityDetail
 where   Object = @type 
 		and ObjectID = @id";
 
@@ -3829,9 +3829,9 @@ SELECT  R.ResponsibilityTypeName,
         'Preview' as ResourceItemContext, 
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
-from    ResponsibilityDetails R
+from    ResponsibilityDetail R
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.Status = 'Active' 
-where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id and R.IsVisible=1";
+where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
@@ -4131,7 +4131,7 @@ order by C.TextPath";
 			        else ''
 		        end as Via,
                 RD.Context
-        from	ResponsibilityDetails RD
+        from	ResponsibilityDetail RD
 		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @o and T.ObjectID = @id
         {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? $"where RD.ResponsibilityTypeID = {(int)responsibilityTypeId}" : "")}";
 
@@ -4161,7 +4161,7 @@ select	RD.SecurityAsset,
 			else ''
 		end as Via,
         RD.Context
-from	ResponsibilityDetails RD
+from	ResponsibilityDetail RD
 		inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID and T.Object = @o and T.ObjectID = @id", new { groupID, o = type.ToString(), id });
         }
 
@@ -4195,30 +4195,53 @@ from	ResponsibilityDetails RD
                 .AsQueryable();
         }
 
-        [Route("ownership/types/{id:int}/claims")]
-        public IQueryable<ResponsibilityTypeClaimDetail> GetClaimsByResponsibilityType(int id)
+        [Route("ownership/types/{id:int}/relations")]
+        public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByResponsibilityType(int id)
         {
-            return Company
-                .Filter<ResponsibilityTypeClaim>(
-                    i => i.ResponsibilityTypeID == id,
-                    i => i.Claim,
-                    i => i.ResponsibilityType
-                )
-                .Select(i => new ResponsibilityTypeClaimDetail
-                {
-                    Claim = i.Claim,
-                    ClaimObject = i.ClaimObject,
-                    ID = i.ID,
-                    ResponsibilityType = i.ResponsibilityType.Name,
-                    ResponsibilityTypeID = i.ResponsibilityTypeID
-                });
+            var list = Company.Query<ResponsibilityTypeRelationViewModel>(@"
+select  R.ResponsibilityTypeID,
+        O.Name as ResponsibilityTypeName,
+        D.Name as AssetTypeName, 
+        D.ID as AssetTypeID,
+        R.ObjectType,
+        R.ObjectID,
+        R.PermissionsBitMask
+from    ResponsibilityTypeRelation R 
+        inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID and O.ID = @id 
+        left join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID",
+            new { id }).ToList();
+
+            list.ForEach(i =>
+            {
+                i.LoadPermissionsFromMask();
+            });
+
+            return list;
         }
 
-        //[Route("ownership/types/{id:int}/usage")]
-        //public IQueryable<ResponsibilitySummaryDetail> GetUsageByResponsibilityType(int id)
-        //{
-        //    return Company.GetResponsibilitiesByType(id);
-        //}
+        [Route("ownership/types/asset/{id:int}/relations")]
+        public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByAssetType(int id)
+        {
+            var list = Company.Query<ResponsibilityTypeRelationViewModel>(@"
+select  R.ResponsibilityTypeID,
+        O.Name as ResponsibilityTypeName,
+        D.Name as AssetTypeName, 
+        D.ID as AssetTypeID,
+        R.ObjectType,
+        R.ObjectID,
+        R.PermissionsBitMask
+from    ResponsibilityTypeRelation R 
+        inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
+        inner join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID and D.ID = @id",
+            new { id }).ToList();
+
+            list.ForEach(i =>
+            {
+                i.LoadPermissionsFromMask();
+            });
+
+            return list;
+        }
 
         [Route("ownership/types/{id:int}/rules")]
         public IEnumerable<dynamic> GetRulesByResponsibilityType(int id)
@@ -4236,15 +4259,6 @@ from    ResponsibilityTypeRelationRule R
             new { id });
         }
 
-        [Route("ownership/{type}/{id:int}/claims")]
-        public IQueryable<ResponsibilityTypeObjectClaimDetail> GetClaimsByObject(SystemObjects type, int id)
-        {
-            var sType = type.ToString();
-            return Company
-                .Filter<ResponsibilityTypeObjectClaimDetail>(
-                    i => i.ObjectType == sType && i.ObjectID == id);
-        }
-
         [Route("ownership/{type}/{id:int}/responsibilitytypes")]
         public HttpResponseMessage GetResponsibilityTypesByObject(SystemObjects type, int id)
         {
@@ -4258,7 +4272,8 @@ from    ResponsibilityTypeRelationRule R
                     i.ResponsibilityTypeID,
                     i.ObjectID,
                     i.ObjectType,
-                    Name = i.ResponsibilityType.Name,
+                    i.ResponsibilityType.Name,
+                    ResponsibilityTypeName = i.ResponsibilityType.Name,
                     Description = i.ResponsibilityType.Description ?? String.Empty
                 })
                 );
@@ -4353,7 +4368,7 @@ from	[Policy] A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-where   OA.ID not in (select AssetID from cache.NoRead where ResourceID = {Company.CurrentResourceID}) ";
+where   OA.ID not in ({GetNoReadSqlStatement()}) ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -4573,11 +4588,24 @@ from    (
         #region Rules
 
         [Route("ruletypes")]
-        public IQueryable<RuleType> GetRuleTypes()
+        public IEnumerable<dynamic> GetRuleTypes()
         {
             if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
 
-            return Company.Table<RuleType>();
+            return Company.Query<dynamic>(@"
+select      ID as AssetTypeID, 
+            ObjectID as ID, 
+            Name, 
+            Description, 
+            CreatedOn, 
+            CreatedBy, 
+            UpdatedOn, 
+            UpdatedBy, 
+            DisplayFormat 
+from        AssetType 
+where       Object = 'RuleType'
+order by    Name
+");
         }
 
         [Route("ruletypes/{id:int}")]
@@ -4626,7 +4654,7 @@ from	[Rule] A
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
 where   A.RuleTypeID = @id and A.[Visible] = 1
-        and O.ID not in (select AssetID from cache.NoRead where ResourceID = @r)", columns, joins);
+        and O.ID not in (" + GetNoReadSqlStatement("@r") + ")", columns, joins);
 
                 //querySql += " OPTION (RECOMPILE)";
 
@@ -6790,7 +6818,7 @@ where v.id = {0}", id)).FirstOrDefault();
         }
 
         [Route("{id:int}/permissionsbyid")]
-        public List<PermissionModel> GetPermissionsObObject(int id)
+        public List<PermissionInfo> GetPermissionsObObject(int id)
         {
             var isAdmin = Company.CurrentResourceIsAdmin;
 
@@ -6803,10 +6831,10 @@ where v.id = {0}", id)).FirstOrDefault();
 
             return GetPermissionsByObject(asset, isAdmin);
         }
-        
+
 
         [Route("{type}/{id:int}/permissions")]
-        public List<PermissionModel> GetPermissionsObObject(SystemObjects type, int id)
+        public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, int id)
         {
             var isAdmin = Company.CurrentResourceIsAdmin;
             AssetDetail asset = null;
@@ -6816,7 +6844,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
                 if (type.IsType())
                 {
-                    return Company.GetPermissions(sType, id, null, 0).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
+                    return Company.GetPermissions(sType, id, null, 0);
                 }
                 else
                 {
@@ -6831,34 +6859,18 @@ where v.id = {0}", id)).FirstOrDefault();
             }
         }
 
-        private List<PermissionModel> GetPermissionsByObject(AssetDetail asset, bool isAdministrator)
+        private List<PermissionInfo> GetPermissionsByObject(AssetDetail asset, bool isAdministrator)
         {
-            List<PermissionModel> permissions = null;
+            List<PermissionInfo> permissions = null;
 
             if (isAdministrator)
             {
-                permissions = new List<PermissionModel>() {
-                    new PermissionModel{ ClaimObject = ClaimObject.Attribute.ToString(), Claim = Claim.Create.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Attribute.ToString(), Claim = Claim.Delete.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Attribute.ToString(), Claim = Claim.Read.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Attribute.ToString(), Claim = Claim.Update.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Governance.ToString(), Claim = Claim.Create.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Governance.ToString(), Claim = Claim.Delete.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Governance.ToString(), Claim = Claim.Read.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Governance.ToString(), Claim = Claim.Update.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Relationship.ToString(), Claim = Claim.Create.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Relationship.ToString(), Claim = Claim.Delete.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Relationship.ToString(), Claim = Claim.Read.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Relationship.ToString(), Claim = Claim.Update.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Root.ToString(), Claim = Claim.Create.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Root.ToString(), Claim = Claim.Delete.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Root.ToString(), Claim = Claim.Read.ToString() },
-                    new PermissionModel{ ClaimObject = ClaimObject.Root.ToString(), Claim = Claim.Update.ToString() }
-                };
+                permissions = Permission.DeleteAsset.GetList();
+                permissions.ForEach(p => { p.Selected = true; });
             }
             else
             {
-                permissions = Company.GetPermissions(asset.Type, asset.TypeID, asset.Object, asset.ObjectID).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
+                permissions = Company.GetPermissions(asset.Type, asset.TypeID, asset.Object, asset.ObjectID);
             }
 
             return permissions;

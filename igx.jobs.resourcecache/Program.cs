@@ -119,7 +119,7 @@ when	not matched by target then
                         try
                         {
                             companyConnection.Execute("delete ResponsibilityTypeRelationOverrideItem where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
-                            companyConnection.Execute("delete ResponsibilityTypeRelationItem where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
+                            companyConnection.Execute("delete ResponsibilityTypeRelationRuleResult where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
                         }
                         catch (Exception ex)
                         {
@@ -128,18 +128,6 @@ when	not matched by target then
                         }
 
                         #endregion
-
-                        // Build cache.NoRead
-                        companyConnection.Execute("exec cache.SecurityProcessor 3, 1, 0", commandTimeout: 1200);
-                        log.WriteLine("Re-built cache.NoRead for company {0}.", c.CompanyID);
-
-                        // Build cache.AssetEdit
-                        companyConnection.Execute("exec cache.SecurityProcessor 2, 1, 0", commandTimeout: 1200);
-                        log.WriteLine("Re-built cache.AssetEdit for company {0}.", c.CompanyID);
-
-                        // Build cache.AssetDelete
-                        companyConnection.Execute("exec cache.SecurityProcessor 1, 1, 0", commandTimeout: 1200);
-                        log.WriteLine("Re-built cache.AssetDelete for company {0}.", c.CompanyID);
 
                         companyConnection.Close();
                         companyConnection.Dispose();

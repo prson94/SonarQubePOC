@@ -1,0 +1,68 @@
+﻿<div *ngIf="isLoading" style="text-align:center;">
+    <i class="fa fa-spinner fa-spin fa-2x"></i>
+</div>
+<div *ngIf="!isLoading">
+    <header>{{actionName}} Responsibility Relation</header>
+    <form (ngSubmit)="onSubmit()" #relationEditor="ngForm">
+        <div class="row">
+            <div class="col s12 form-instructions">
+                Modify your relation using the form below.
+                <div class="form-instructions-error" data-bind="visible: FormInvalid, text: FormValidationMessage">
+                </div>
+            </div>
+        </div>
+        <div class="row" *ngIf="!relation?.AssetTypeID">
+            <div class="col s12">
+                <div id='TypeTip' class="FieldNameRequired">Asset Type</div>
+                <p-dropdown required name="assettype" [options]="commonFormData.AllocationOptions" [ngModel]="relation.AssetTypeID" (onChange)="updateAssetType($event.value)" optionLabel="Path" dataKey="ID" filter="true" [style]="{'width':'98%', 'display' : 'block'}"></p-dropdown>
+                <!--<div [hidden]="assettype.valid || assettype.pristine">Asset type is required</div>-->
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12">
+                <div id='TypeTip' class="FieldNameRequired">Permissions</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col l4 m4 s12">
+                <div *ngFor="let p of commonFormData.PermissionOptions | permissionFilter:'R'">
+                    <p-checkbox [(value)]="p.Value" [(ngModel)]="p.Selected" binary="true" [ngModelOptions]="{standalone: true}" [label]="p.Name"></p-checkbox>
+                    <div class="form-instructions-nospacing" [innerText]="p.Description"></div>
+                </div>
+            </div>
+            <div class="col l4 m4 s12">
+                <div *ngFor="let p of commonFormData.PermissionOptions | permissionFilter:'M'">
+                    <p-checkbox [(value)]="p.Value" [(ngModel)]="p.Selected" binary="true" [ngModelOptions]="{standalone: true}" [label]="p.Name"></p-checkbox>
+                    <div class="form-instructions-nospacing" [innerText]="p.Description"></div>
+                </div>
+            </div>
+            <div class="col l4 m4 s12">
+                <div *ngFor="let p of commonFormData.PermissionOptions | permissionFilter:'D'">
+                    <p-checkbox [(value)]="p.Value" [(ngModel)]="p.Selected" binary="true" [ngModelOptions]="{standalone: true}" [label]="p.Name"></p-checkbox>
+                    <div class="form-instructions-nospacing" [innerText]="p.Description"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12">&nbsp;</div>
+        </div>
+
+        <div class="row" *ngIf="errorMessage != ''">
+            <div class="col s12">
+                <div style="color:red">{{errorMessage}}</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12">
+                <div style="padding-top:10px">
+                    <button pButton type="submit" [disabled]="!relationEditor.form.valid" label="Save"></button>
+                    <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+

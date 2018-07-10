@@ -25,7 +25,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail" *ngIf="!isLoading">                            
                     <header *ngIf="!showDelete && !showEditor">{{model?.Name}}
-                        &nbsp; <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="showAdd()"></d3s-tile-actions>                            
+                        &nbsp; <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                                                
                     <div *ngIf="!showDelete && !showEditor && model && model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
@@ -40,21 +40,21 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item.data"></d3s-dynamic-field-value>                                 
                             </ng-template>
                         </p-column>
-                        <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()" >
+                        <p-column [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions()" >
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showAdd()" *ngIf="model.MaximumDepth > item.data.Level"><i class="fa fa-plus"></i></a>                                        
                                 </div>
                             </ng-template>
                         </p-column>     
-                        <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()" >
+                        <p-column [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions()" >
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </ng-template>
                         </p-column>                            
-                        <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
+                        <p-column  [style]="{width:'40px'}" *ngIf="hasDeleteAssetPermissions()">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
                                     <a *ngIf="!item.children || item.children?.length == 0" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    

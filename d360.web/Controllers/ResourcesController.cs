@@ -163,7 +163,7 @@ from	FollowDetail F
             document.AddWorksheet("Items");
 
             string sql = $@"
-select		R.Name as ResponsibilityType,
+select		C.ResponsibilityTypeName as ResponsibilityType,
 			C.AssetID,
 			TP.TextPath as [Path],
 			case C.SecurityAsset
@@ -171,14 +171,12 @@ select		R.Name as ResponsibilityType,
 			        when 'O' then 'Via Organization'
 			        else ''
 		        end as Via
-from		[cache].[AssetResponsibility] C
-			inner join ResponsibilityType R on R.ID = C.ResponsibilityTypeID and C.Type = @type and C.TypeID = @id
+from		ResponsibilityDetail C
 			cross apply [dbo].GetAssetTextPathById(C.AssetID, ' / ') TP
-			left join dbo.OrganizationResource OrRe on C.SecurityAsset = 'O' and OrRe.OrganizationID = C.SecurityAssetID
-			left join dbo.Organization Org on C.SecurityAsset = 'O' and Org.ID = OrRe.OrganizationID
-			left join dbo.ResourceGroup ReGr on C.SecurityAsset = 'G' and ReGr.GroupID = C.SecurityAssetID
-where		C.IsVisible = 1 and C.Overriden = 0
-			and coalesce(OrRe.ResourceID, ReGr.ResourceID, C.SecurityAssetID) = @r
+where		C.Type = @type 
+			and C.TypeID = @id
+			and C.IsVisible = 1
+			and C.ResourceID = @r
             {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? $" and C.ResponsibilityTypeID = {(int)responsibilityTypeId}" : "" )}
 ";
 

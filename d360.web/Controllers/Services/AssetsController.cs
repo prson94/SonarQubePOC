@@ -71,7 +71,7 @@ namespace d360.web.Controllers.Services
         [HttpPost, Route("{ot}/{otid:int}/bulk")]
         public async Task<HttpResponseMessage> PostBulkAssetsAsync(SystemObjects ot, int otid)
         {
-            if (!Company.HasPermission(ot, otid, Claim.Update, ClaimObject.Root))
+            if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update assets of this type.");
 
             var prefix = "Assets.PostBulkAssetsAsync => ";

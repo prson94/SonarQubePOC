@@ -42,7 +42,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     ngOnInit() {
         this.itemToSave = new ResponsibilityItem();
         this.itemToSave.AssetID = this.item.AssetID;
-        this.itemToSave.ID = this.item.OverrideItemID;
+        this.itemToSave.ID = this.item.OverrideID;
         this.itemToSave.ResponsibilityTypeID = this.item.ResponsibilityTypeID;
         this.itemToSave.SecurityAsset = this.item.SecurityAsset;
         this.itemToSave.SecurityAssetID = this.item.SecurityAssetID;
@@ -158,7 +158,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                             this.checkD[i].SecurityAssetID == this.itemToSave.SecurityAssetID &&
                             this.checkD[i].ResponsibilityTypeID == this.itemToSave.ResponsibilityTypeID) {
 
-                            this.itemToSave.ID = this.checkD[i].OverrideItemID;
+                            this.itemToSave.ID = this.checkD[i].OverrideID;
                           
                             var securityAssetDisplayNameForError = "user";
                             switch (this.itemToSave.SecurityAsset) {

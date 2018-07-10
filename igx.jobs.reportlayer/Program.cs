@@ -442,6 +442,7 @@ SELECT M.[ID] as MapID
 
                         selectSql = @"
 select  A.ObjectID as ID,
+        A.ID as AssetID,
         I.SubjectID as ParentID,
         A.TypeID as ArtifactTypeID,
         A.DisplayValue,
@@ -537,7 +538,8 @@ from	FusionAttribute A
 
                         selectSql = @"
 select  O.ID, 
-	    O.FusionAttributeTypeID, 
+	    F.AssetID,
+        O.FusionAttributeTypeID, 
 	    O.Name, 
 	    O.TextPath, 
 	    F.FieldTypeID, 
@@ -616,7 +618,8 @@ from	FusionQueryAttribute O
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select 	O.ObjectID, 
+select 	O.ID as AssetID,
+        O.ObjectID, 
 	    O.TypeID as ArtifactTypeID, 
 	    O.DisplayValue, 
 	    F.FieldTypeID, 
@@ -642,7 +645,8 @@ where	O.AssetTypeClass = 1";
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select	A.ObjectID as [Taxonomy ID],
+select	A.ID as AssetID,
+        A.ObjectID as [Taxonomy ID],
 		I.SubjectID as ParentID,
         A.TypeID as [Taxonomy Type id],
 		A.DisplayValue,
@@ -675,7 +679,8 @@ where	A.AssetTypeClass = 2";
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select  O.ObjectID as ID, 
+select  O.ID as AssetID,
+        O.ObjectID as ID, 
 	    T.ObjectID as TaxonomyTypeID, 
 	    D.DisplayValue, 
 	    null as TextPath, --TP.TextPath, 
@@ -705,7 +710,8 @@ from	Asset O
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select		A.TypeName as ReferenceItemType,
+select		A.ID as AssetID,
+            A.TypeName as ReferenceItemType,
 			A.TypeID as ReferenceItemTypeID,
 			A.ObjectID as ReferenceItemID,
 			R.Code,
@@ -732,7 +738,8 @@ from		AssetDetail A
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select		I.ReferenceItemTypeID,
+select		F.AssetID,
+            I.ReferenceItemTypeID,
 			I.ID as ReferenceItemID,
 			T.Name as FieldTypeName,
 			T.FriendlyName as FieldTypeFriendlyName,
@@ -808,7 +815,8 @@ with p as (
 			inner join p on I.Subject = 'Policy' and I.SubjectID = p.ID
 )
 
-SELECT  p.[ID] as [PolicyID],
+SELECT  D.ID as AssetID,
+        p.[ID] as [PolicyID],
         p.[ParentID],
         D.DisplayValue,
 		p.TextPath,
@@ -870,8 +878,25 @@ FROM [dbo].[Group]";
                         viewNames.Add(objectName);
 
                         selectSql = @"
-SELECT  * 
-FROM    ResponsibilityDetails";
+SELECT S.AssetID
+      ,S.Object
+      ,S.ObjectID
+      ,S.Type
+      ,S.TypeID
+      ,S.Context
+      ,S.ResponsibilityTypeID
+      ,S.ResponsibilityTypeName
+	  ,R.FirstName
+	  ,R.LastName
+      ,S.ResourceID
+      ,S.SecurityAsset
+      ,S.SecurityAssetID
+      ,S.SecurityAssetName
+      ,S.IsVisible
+      ,S.ApplyToType
+      ,S.OverrideID as OverrideItemID
+      ,[PermissionsBitMask]
+  FROM ResponsibilityDetail S inner join reporting.Global_Resource R on R.ResourceID = S.ResourceID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -966,7 +991,8 @@ from	IntersectDetail O
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select	A.ObjectID as ID,
+select	A.ID as AssetID,
+        A.ObjectID as ID,
 	    A.DisplayValue as Name,
 	    A.TypeID as RuleTypeID,
         A.TypeName as RuleType,
@@ -997,7 +1023,8 @@ from	AssetDetail A
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select 	O.ObjectID as RuleID, 
+select 	O.ID as AssetID,
+        O.ObjectID as RuleID, 
 	    O.DisplayValue as RuleName, 
 	    F.FieldTypeID, 
         FT.Name as FieldName, 
@@ -1024,7 +1051,8 @@ from	AssetDetail O
                         selectSql = @"
 select	R.RuleTypeID,
 		RT.Name as RuleType,
-		I.RuleID,
+		D.ID as AssetID,
+        I.RuleID,
 		D.DisplayValue as [Rule],
 		I.ID as RuleImplementationID,
 		coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)) as RuleImplementation,

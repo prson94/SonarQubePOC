@@ -12,7 +12,7 @@ import { BaseComponent } from '../../shared/base.component';
 
 export class ResponsibilityRulesComponent extends BaseComponent implements OnChanges {
     @Input() id: number;
-    @Input() title: string = 'Rules';
+    @Input() title: string = 'Ownership Rules';
 
     @Input() showAddButton: boolean = true;
     @Input() showEditButton: boolean = true;

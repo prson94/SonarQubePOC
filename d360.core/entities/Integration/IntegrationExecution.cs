@@ -15,6 +15,9 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? CompletedOn { get; set; }
 
+        [DataMember]
+        public bool Archived { get; set; }
+
         [IgnoreDataMember, ForeignKey("ExecutionID")]
         public virtual ICollection<IntegrationExecutionAssetType> ExecutionAssetTypes { get; set; }
     }

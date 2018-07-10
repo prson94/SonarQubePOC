@@ -114,7 +114,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 }
                 this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
 
-                this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.DisplayValue, this.artifact.AssetID);
+                this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.DisplayValue, this.artifact.AssetID, this.artifact.AssetTypeID);
                 this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true, true);
                 if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-sitemap'], `/sidebar/children${this.objectContextUrl()}`));
 

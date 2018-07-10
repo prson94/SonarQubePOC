@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Net;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System.Configuration;
-
+using d360.core.entities.Views;
 
 namespace d360.web.Controllers
 {
@@ -150,16 +150,13 @@ namespace d360.web.Controllers
 
                 var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType != "legacy").Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
 
-                List<core.entities.Views.ResponsibilityDetail> currentUserResponsibilityTypeList = new List<core.entities.Views.ResponsibilityDetail>();
+                List<ResponsibilityDetail> currentUserResponsibilityTypeList = new List<ResponsibilityDetail>();
                 if (!string.IsNullOrEmpty(type) && !type.Contains("Type"))
                     currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
                 else if (type.Contains("Type"))
                     currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.TypeID == id && x.Type == type && x.ResourceID == Company.CurrentResourceID).ToList();
                 else
                     currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
-
-             //   var currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
-                //var currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 
                 var currentUserResponsibilityTypeIDList = new List<int>();
 
