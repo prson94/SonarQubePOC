@@ -48,41 +48,6 @@ namespace igx.jobs.scoreprocessor
                         {
                             company.OpenWithRetry(RetryPolicy.DefaultFixed);
                             company.Execute("metrics.LoadFromStaging", commandTimeout: 1400);
-
-                            //bool processStatus = false;
-                            //var processTask = company.ExecuteAsync("metrics.LoadFromStaging", commandTimeout: 1400);
-                            //processTask.ContinueWith(t =>
-                            //{
-                            //    string exceptionData = "";
-                            //    if (t.Exception != null)
-                            //    {
-                            //        exceptionData = t.Exception.GetFullExceptionData();
-                            //        if (t.Exception.InnerExceptions != null)
-                            //        {
-                            //            foreach (var ex in t.Exception.InnerExceptions)
-                            //            {
-                            //                exceptionData += ex.GetFullExceptionData();
-                            //            }
-                            //        }
-                            //        CoreFunction.AITrackException(functionName, t.Exception, c.CompanyID);
-                            //    }
-
-                            //    if (t.IsCompleted)
-                            //    {
-                            //        if (t.IsFaulted)
-                            //        {
-                            //            CoreFunction.AITrackException(functionName, t.Exception, c.CompanyID);
-                            //        }
-                            //    }
-
-                            //    processStatus = false;
-                            //});
-
-                            //while (processStatus && (processTask.Exception == null))
-                            //{
-                            //    log.WriteLine("Processing scores for company {0}...", c.CompanyID);
-                            //    System.Threading.Thread.Sleep(30000);
-                            //}
                             log.WriteLine("Processed scores for company {0}...", c.CompanyID);
                         }
                     }

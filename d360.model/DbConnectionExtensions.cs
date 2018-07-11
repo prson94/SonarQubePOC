@@ -290,6 +290,45 @@ namespace d360.model
 
                     #endregion
 
+                    #region Merge overrides into final table
+
+                    cnn.Execute(@"
+merge	ResponsibilityTypeRelationRuleResult as T
+using	(
+		select	0 as RuleID,
+				I.ID,
+				I.ResponsibilityTypeID,
+				A.ID as AssetID,
+				A.Object,
+				A.ObjectID,
+				A.AssetTypeID,
+				T.Object as Type,
+				T.ObjectID as TypeID,
+				I.SecurityAsset,
+				I.SecurityAssetID,
+				R.PermissionsBitMask,
+				I.Context
+		from	Asset A
+				inner join AssetType T on T.ID = A.AssetTypeID
+				inner join ResponsibilityTypeRelation R on R.ObjectType = T.Object and R.ObjectID = T.ObjectID
+				inner join ResponsibilityTypeRelationOverrideItem I on I.AssetID = A.ID and I.ResponsibilityTypeID = R.ResponsibilityTypeID
+		) as S 
+on		(
+		S.RuleID = T.RuleID
+		and S.ID = T.OverrideID
+		)
+when	matched then
+update	set
+		T.SecurityAsset = S.SecurityAsset,
+		T.SecurityAssetID = S.SecurityAssetID,
+		T.PermissionsBitMask = S.PermissionsBitMask,
+		T.Context = S.Context
+when	not matched by target then
+		insert (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, PermissionsBitMask, Context, ApplyToType, IsVisible, Overridden, OverrideID)
+		values (S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.AssetTypeID, S.SecurityAsset, S.SecurityAssetID, S.PermissionsBitMask, S.Context, 0, 1, 0, S.ID);", transaction: trans, commandTimeout: 7200);
+
+                    #endregion
+
                     trans.Commit();
                 }
                 catch

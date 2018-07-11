@@ -19,7 +19,7 @@
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                             
-        <p-dataTable #dt [globalFilter]="gb" [value]="rows" selectionMode="single" [(selection)]="selectedRow" (onRowDblclick)="isEditing=showEditButton;" scrollable="false">
+        <p-dataTable #dt [globalFilter]="gb" [value]="rows" selectionMode="single" [(selection)]="selectedRow" (onRowDblclick)="isEditing=showEditButton;" scrollable="false" [rows]="10" [paginator]="true">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
             <p-column *ngIf="queryType === 'R'" field="AssetTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column> <!-- *ngIf="IsResponsibilityTypeView" -->
             <p-column *ngIf="queryType === 'A'" field="ResponsibilityTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column> <!-- *ngIf="IsAssetTypeView" -->

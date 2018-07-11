@@ -2,7 +2,6 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Permission } from '../models/permission.model';
 import { ResponsibilityTypeRelationPermission } from '../models/responsibility-type.model';
 
 @Injectable()

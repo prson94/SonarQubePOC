@@ -15303,8 +15303,33 @@ order by TP.TextPath";
         [HttpGet, ActionName("ResponsibilityTypeRelation_FormData"), Route("ResponsibilityTypeRelation_FormData"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeRelation_FormData()
         {
-            var AllocationOptions = Company.Query<dynamic>(@"select A.ID, P.[Path] from AssetType A cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P order by P.[Path]").ToList();
-            var PermissionOptions = Permission.DeleteAsset.GetList(); 
+            var AllocationOptions = Company.Query<dynamic>(@"
+select	A.ID, 
+		case Object
+			when 'ArtifactType' then 'Artifacts :: '
+			when 'TaxonomyType' then 'Models :: '
+			when 'PolicyType' then 'Policies :: '
+			when 'RuleType' then 'Rules :: '
+			when 'FusionAttributeType' then 'Fusion Attributes :: '
+			when 'FusionType' then 'Fusion Types :: '
+			when 'ReferenceItemType' then 'Reference Item Type :: '
+		end + coalesce(FT.Name+ ' / ','') + P.[Path] as [Path]
+from	AssetType A
+		cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+		left join FusionAttributeType FA on A.Object = 'FusionAttributeType' and FA.ID = A.ObjectID
+		left join FusionType FT on FT.ID = FA.FusionTypeID
+where	Class in (1,2,3,4,6,7,9)
+order by case Object
+			when 'ArtifactType' then 'Artifacts :: '
+			when 'TaxonomyType' then 'Models :: '
+			when 'PolicyType' then 'Policies :: '
+			when 'RuleType' then 'Rules :: '
+			when 'FusionAttributeType' then 'Fusion Attributes :: '
+			when 'FusionType' then 'Fusion Types :: '
+			when 'ReferenceItemType' then 'Reference Item Type :: '
+		end + coalesce(FT.Name+ ' / ','') + P.[Path]
+").ToList();
+            var PermissionOptions = Permission.DeleteAsset.GetList();
 
             return new JsonNetResult
             {

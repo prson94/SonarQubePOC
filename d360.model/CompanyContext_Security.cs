@@ -20,15 +20,11 @@ namespace d360.model
 
         public DbSet<ResourcePasswordReset> ResourcePasswordResets { get; set; }
 
-        //public DbSet<ResponsibilityDetailFor Resource> ResponsibilityDetailForResources { get; set; }        /* VIEW */
-
         public DbSet<ResponsibilityDetail> ResponsibilityDetails { get; set; }                              /* VIEW */
 
         public DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
 
         public DbSet<ResponsibilityTypeRelationOverrideItem> ResponsibilityTypeRelationOverrideItems { get; set; }
-
-        public DbSet<ResponsibilityTypeObjectClaim> ResponsibilityTypeObjectClaims { get; set; }
 
         public DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
 

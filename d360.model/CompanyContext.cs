@@ -2773,37 +2773,6 @@ select @err";
                 }
                 #endregion
 
-                #region Business logic : ResponsibilityTypeObjectClaim
-                if (entry.Entity is ResponsibilityTypeObjectClaim)
-                {
-                    var o = entry.Entity as ResponsibilityTypeObjectClaim;
-                    var id = o.ID.ToString();
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<ResponsibilityTypeObjectClaim>(i =>
-                                i.Claim == o.Claim &&
-                                i.ClaimObject == o.ClaimObject &&
-                                i.ObjectID == o.ObjectID &&
-                                i.ObjectType == o.ObjectType &&
-                                i.ResponsibilityTypeID == o.ResponsibilityTypeID
-                                )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<ResponsibilityTypeObjectClaim>(i => 
-                                i.Claim == o.Claim &&
-                                i.ClaimObject == o.ClaimObject &&
-                                i.ObjectID == o.ObjectID &&
-                                i.ObjectType == o.ObjectType &&
-                                i.ResponsibilityTypeID == o.ResponsibilityTypeID &&
-                                i.ID != o.ID
-                                )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
-                            break;
-                    }
-                }
-                #endregion
-
                 #region Business logic : RuleType
 
                 if (entry.Entity is RuleType)

@@ -15,58 +15,6 @@ CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include]
     INCLUDE([FieldTypeID], [Value], [FormattedValue]);
 GO
 
-alter view [dbo].[SecurityDetail]
-as
-	select	'R' as ResponsibleObjectType,
-			RD.ResourceID as ResponsibleObjectID,
-			RD.Object as Object,
-			RD.ObjectID as ObjectID,
-			cast(0 as bit) as IsType,
-			RTC.Claim,
-			RTC.ClaimObject
-	from	ResponsibilityDetails RD
-			inner join ResponsibilityTypeObjectClaim RTC	on RTC.ResponsibilityTypeID = RD.ResponsibilityTypeID 
-																and RTC.ObjectType = RD.Type 
-																and RTC.ObjectID = RD.TypeID
-	where RD.ApplyToType = 0
-	union all
-		select	distinct 
-		    'R' as ResponsibleObjectType,
-			RD.ResourceID as ResponsibleObjectID,
-			 RD.Type as Object,
-			 RD.TypeID as ObjectID,
-			cast(1 as bit) as IsType,
-			RTC.Claim,
-			RTC.ClaimObject
-	from	ResponsibilityDetails RD
-			inner join ResponsibilityTypeObjectClaim RTC	on RTC.ResponsibilityTypeID = RD.ResponsibilityTypeID 
-																and RTC.ObjectType = RD.Type 
-																and RTC.ObjectID = RD.TypeID
-	where RD.ApplyToType = 1
-GO
-
-alter view [responsibility].[Core]
-as
-	select	distinct 
-			RuleID,
-			ResponsibilityTypeID,
-			Object,
-			ObjectID,
-			AssetID,
-			AssetTypeID,
-			Type,
-			TypeID,
-			SecurityAsset,
-			SecurityAssetID,
-			Context,
-			IsVisible,
-			--Overriden,
-			ApplyToType,
-			OverrideItemID
-	from	cache.AssetResponsibility
-	where	Overriden = 0
-GO
-
 alter procedure [dbo].[GetLineage]
 --declare 
 	@type varchar(50),
@@ -1658,32 +1606,28 @@ ALTER TRIGGER [dbo].[Asset_AfterInsert]
    ON  [dbo].[Asset] 
    AFTER INSERT
 AS 
-       SET NOCOUNT ON;
-       INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], [AssetID])
-        select       'Add', 
-                           I.Object, 
-                           I.ObjectID,
-                           [queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
-                           I.ID
-              from   inserted I where  I.Object not in('FusionAttribute');
-
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom])
+        select	'Add', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)) 
+		from	inserted I where  I.Object not in('FusionAttribute', 'FusionQueryAttribute');
 GO
-
-
 
 ALTER TRIGGER [dbo].[Asset_AfterUpdate]
    ON  [dbo].[Asset] 
    AFTER UPDATE
 AS 
-       SET NOCOUNT ON;
-       INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], [AssetID])
-        select       'Update', 
-                           I.Object, 
-                           I.ObjectID,
-                           [queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.UpdatedBy, 0)),
-                           I.ID
-              from   inserted I where I.Object not in('FusionAttribute')
-go
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom])
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.UpdatedBy, 0)) 
+		from	inserted I where I.Object not in('FusionAttribute','FusionQueryAttribute')
+GO
+
 
 
 -- Migrate from legacy claims / claim objects
@@ -2811,7 +2755,6 @@ GO
 CREATE NONCLUSTERED INDEX IX_ResponsibilityTypeRelationRuleResult_Asset_PermissionsBitMask_SecurityAsset ON ResponsibilityTypeRelationRuleResult (AssetID ASC, PermissionsBitMask ASC, SecurityAsset ASC, SecurityAssetID ASC)
 GO
 
-
 ALTER procedure [dbo].[DeleteObject]
  @ObjTemp varchar(50),
  @ObjectIDTemp int,
@@ -3581,7 +3524,6 @@ begin
 			IF @IsType = 1
 				BEGIN
 					delete ResponsibilityTypeRelation		where ObjectType = @Obj and ObjectID in (select ObjectID from @ht)
-					delete ResponsibilityTypeObjectClaim	where ObjectType = @Obj and ObjectID in (select ObjectID from @ht)
 				END
 			ELSE
 				BEGIN
@@ -3654,7 +3596,8 @@ DROP TABLE [dbo].[ResponsibilityTypeRelationTypeItem_History]
 GO
 DROP VIEW [dbo].[ResponsibilityDetails]
 GO
-
+drop table ResponsibilityTypeObjectClaim
+GO
 DROP VIEW [responsibility].[ClaimCore]
 GO
 
@@ -3662,3 +3605,1376 @@ DROP VIEW [responsibility].[Core]
 GO
 DROP PROCEDURE [cache].[SecurityProcessor]
 GO
+
+drop view [dbo].[SecurityDetail]
+GO
+drop view [dbo].[ResponsibilityTypeObjectClaimDetail]
+GO
+
+
+ALTER PROCEDURE [dbo].[GetCommentCountByFollower]
+--declare
+	@resourceID int,
+	@dateStart datetime = null,
+	@dateEnd datetime = null,
+	@searchPhrase varchar(100) = ''
+--set @resourceID = 1
+AS
+BEGIN
+	SELECT	i.CommentType, 
+			u.[Count], 
+			u.CommentTypeName 
+	FROM	(
+			select	count(1) as [All],
+					sum(case when c.commenttypeid = 2 then 1 else 0 end) as [Discussions],
+					sum(case when c.commenttypeid = 5 then 1 else 0 end) as Issues,
+					sum(case when c.commenttypeid = 6 then 1 else 0 end) as Tasks,
+					sum(case when c.commenttypeid = 7 then 1 else 0 end) as [Red Flags],
+					sum(case when c.commenttypeid = 8 then 1 else 0 end) as [Data Events],
+					sum(case when c.commenttypeid = 9 then 1 else 0 end) as [Challenges]
+			from	Comment c
+			where	c.ID in	(
+					select	CommentID as ID
+					from	FollowDetail f
+							inner join CommentRelation cr on cr.ObjectID = f.ObjectID and cr.ObjectType = f.ObjectType
+					where	f.ResourceID = @resourceId
+					union all
+					select	ID 
+					from	Comment 
+					where	CreatingResourceID = @resourceid
+					union all
+					select	ID 
+					from	comment c2
+							inner join	ResponsibilityDetail o on o.ResourceID = @resourceID and o.Object = c2.OwnerObjectType and o.ObjectID = c2.OwnerObjectID
+					)
+			AND C.isdeleted = 0
+			AND (
+					(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
+					(@dateStart is null and @dateEnd is null)
+				)
+			AND C.ParentID is null
+			AND (
+				coalesce(ltrim(rtrim(@searchPhrase)),'')='' or 
+				lower(Body) like lower('%'+@searchPhrase+'%')
+				)
+			AND case 
+					when c.CreatingResourceID = @resourceID then 1
+					when c.VisibilityID = 2 then 1
+					when c.VisibilityID = 3 then 1
+					when coalesce(c.VisibilityID, 4) = 4  then 1
+					else 0
+				end = 1
+		) t
+		UNPIVOT
+			(	[Count]
+				for [CommentTypeName] in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events], [Challenges])
+			) u
+			inner join
+			(
+			select	* 
+			from	(
+					select	0 as [All],
+							2 as Discussions,
+							5 as Issues,
+							6 as Tasks,
+							7 as [Red Flags],
+							8 as [Data Events],
+							9 as [Challenges]
+					)	t2
+						unpivot
+						(
+						CommentType for CommentTypeName in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events], [Challenges])
+						) u2
+			) i on i.CommentTypeName = u.CommentTypeName
+END
+GO
+
+ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
+   ON  [dbo].[FieldType] 
+   AFTER INSERT,UPDATE
+AS 
+	   --power(2, (31-1)) only the columorder is updated
+		IF (NOT(substring( columns_updated() , 4 , 1 ) & power( 2, 5 ) = power( 2, 5 )) 
+		and (substring( columns_updated() , 4 , 1 ) & power( 2, 6 ) >0))
+		begin
+			
+				INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+						select 'Update', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
+			return
+		end
+		
+
+		UPDATE	F
+		set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+		FROM	Field F
+				inner join inserted FT on FT.ID = F.FieldTypeID and FT.LookupObjectType is not null
+
+		update	FT	
+		set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
+		from	FieldType FT
+				inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is not null
+		
+		--check insert vs update -- 
+		IF (EXISTS (SELECT * FROM DELETED))
+		begin
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Update', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
+		end
+		ELSE IF (NOT EXISTS (SELECT * FROM DELETED))
+		BEGIN
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Add', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
+		END
+GO
+
+
+
+
+ALTER TABLE [dbo].[Intersect] DROP CONSTRAINT [UQ_Intersect]
+GO
+
+DROP INDEX [IX_Intersect_Object_Type_Subject_Include] ON [dbo].[Intersect]
+GO
+
+DROP INDEX [IX_Intersect_Subject_Object_Include] ON [dbo].[Intersect]
+GO
+
+ALTER TABLE [dbo].[Intersect] ADD  CONSTRAINT [UQ_Intersect] UNIQUE NONCLUSTERED 
+(
+	[IntersectTypeID] ASC,
+	[Subject] ASC,
+	[SubjectID] ASC,
+	[Object] ASC,
+	[ObjectID] ASC
+)
+GO
+
+CREATE CLUSTERED INDEX [CIX_Intersect]
+    ON [dbo].[Intersect]([IntersectTypeID] ASC, [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC);
+GO
+
+CREATE FUNCTION [dbo].[GetAssetTypeTextPathById]
+(
+	@Id bigint,
+	@delimiter nvarchar(5)
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	with c as (
+		select	I.SubjectID as ParentID,
+				T.Object,
+				T.ObjectID,
+				cast(T.Name as nvarchar(2500)) as [Path],
+				1 as [Level]
+		from	AssetType T
+				left join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID and I.PredicateID in (select ID from [Predicate] where Type = 3)
+		where	T.ID = @Id
+		union all
+		select	I.SubjectID as ParentID,
+				T.Object,
+				T.ObjectID,
+				cast(T.Name + @delimiter + C.[Path] as nvarchar(2500)) as [Path],
+				C.Level + 1 as Level
+		from	AssetType T
+				inner join c on T.Object = c.Object and T.ObjectID = c.ParentID
+				outer apply (
+							select	SubjectID
+							from	IntersectType 
+							where	Object = T.Object and ObjectID = T.ObjectID and PredicateID in (select ID from [Predicate] where Type = 3)
+							) I
+	)
+
+	select	top 1 
+			@Id as ID,
+			[Path]
+	from	c
+	order by Level desc
+)
+GO
+
+CREATE TABLE [metrics].[StagingResultArchive] (
+	[MapID] [bigint] NOT NULL,
+	[EffectiveDate] [datetime] NOT NULL,
+	[AssetID] [bigint] NOT NULL,
+	[Value] [bit] NOT NULL,
+	CONSTRAINT [PK_MetricStagingResultArchive] PRIMARY KEY NONCLUSTERED 
+	(
+		[MapID] ASC,
+		[EffectiveDate] DESC,
+		[AssetID] ASC
+	)
+)
+GO
+
+
+
+-- IGC STUFF ----------------------------------------------------------------------
+alter table integration.ExecutionAsset add [RawRelationships] NVARCHAR (MAX) NULL
+GO
+alter table integration.ExecutionAsset add [RawResponsibilitites] NVARCHAR (MAX) NULL
+GO
+alter table integration.ExecutionAssetType add [RawDefinition] NVARCHAR (MAX) NULL
+GO
+alter table integration.ExecutionAssetType add [EnumFieldValues] NVARCHAR (MAX) NULL
+GO
+
+alter table integration.Execution add Archived bit constraint DF_IntegrationExecution_Archived default(0) NOT NULL
+GO
+
+CREATE TABLE [integration].[ExecutionUnresolvedRelationItem](
+	ID [uniqueidentifier] NOT NULL,
+	ExecutionID bigint not null,
+	IntersectTypeID int,
+	SourceID nvarchar(250),
+	SubjectAssetTypeID int, SubjectSourceID nvarchar(250), SubjectAssetID bigint, Subject varchar(50), SubjectID int,
+	ObjectAssetTypeID int, ObjectSourceID nvarchar(250), ObjectAssetID bigint, Object varchar(50), ObjectID int,
+	IntersectID int, [Action] char(1),
+	CONSTRAINT [PK_IntegrationExecutionUnresolvedRelationItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+ALTER TABLE [integration].[ExecutionUnresolvedRelationItem] ADD  CONSTRAINT [DF_IntegrationExecutionUnresolvedRelationItem_ID]  DEFAULT (newid()) FOR [ID]
+GO
+
+CREATE INDEX IX_IntegrationExecutionUnresolvedRelationItem_SubjectInfo ON [integration].[ExecutionUnresolvedRelationItem]
+(
+	[ExecutionID] desc,
+	[IntersectTypeID] asc,
+	[SubjectAssetTypeID] asc,
+	[SubjectSourceID] asc
+)
+GO
+
+CREATE INDEX IX_IntegrationExecutionUnresolvedRelationItem_ObjectInfo ON [integration].[ExecutionUnresolvedRelationItem]
+(
+	[ExecutionID] desc,
+	[IntersectTypeID] asc,
+	[ObjectAssetTypeID] asc,
+	[ObjectSourceID] asc
+)
+GO
+
+CREATE INDEX IX_IntegrationExecutionUnresolvedRelationItem_ExecutionAssetInclude ON [integration].[ExecutionUnresolvedRelationItem] ( [ExecutionID] desc ) INCLUDE ( SubjectAssetID, ObjectAssetID )
+GO
+
+CREATE INDEX IX_IntegrationExecutionUnresolvedRelationItem_ExecutionIntersectInclude ON [integration].[ExecutionUnresolvedRelationItem] ( [ExecutionID] desc, IntersectID asc );
+GO
+
+CREATE INDEX IX_IntegrationExecutionAsset_Execution ON [integration].[ExecutionAsset] ( [ExecutionID] desc )
+GO
+
+alter procedure integration.ProcessExecutionAssetType
+--declare	
+	@ExecutionID bigint,
+	@SynchedAssetTypeID int,
+	@AssetTypeID int,
+	@ResourceID int,
+	@Section int --0 = Asset, 1 = Field, 2 = Relationships, 3 = Responsibilities
+--set @ExecutionID = 5178
+--set @SynchedAssetTypeID = 1
+--set @AssetTypeID = 3
+--set @ResourceID = 0
+--set @Section = 1
+as
+begin
+	set nocount on;
+	
+	declare @archived bit = 0
+
+	select	@archived = Archived from integration.Execution where ID = @ExecutionID
+
+	if @archived = 1 
+	begin
+		RAISERROR (N'This exection is marked as Archived and can no longer be processed.', 10, 1);
+	end
+
+	-- BEGIN: CORE ASSET
+	if @Section = 0
+	begin
+
+--declare	 @ExecutionID bigint = 553, @SynchedAssetTypeID int = 5, @AssetTypeID int = 13
+
+		declare	@Object varchar(50),
+				@ObjectID int,
+				@OptionalID int,
+				@TriggerTopicMessage bit,
+				@Level int,
+				@ParentIntersectTypeID int
+
+		select	@Object = [Object],
+				@ObjectID = [ObjectID],
+				@OptionalID = [OptionalID],
+				@TriggerTopicMessage = [TriggerTopicMessage],
+				@Level = [Level]
+		from	integration.SynchedAssetType
+		where	ID = @SynchedAssetTypeID
+
+		select	@ParentIntersectTypeID = IT.ID
+		from	IntersectType IT
+				inner join [Predicate] P on P.ID = IT.PredicateID and IT.Object = @Object and IT.ObjectID = @ObjectID and P.[Type] = case @Object when 'PolicyType' then 4 when 'TaxonomyType' then 4 else 3 end
+
+		drop table if exists #Assets;
+		create table #Assets (AssetTypeID int, AssetID bigint, [Object] varchar(50), ObjectID int, [Type] varchar(50), TypeID int, SourceID nvarchar(250), ParentSourceID nvarchar(250), [Action] char(1), Error nvarchar(max));
+		CREATE CLUSTERED INDEX CIX_TempAssets ON #Assets (SourceID) --INCLUDE ([IsSubject],[SourceID],[ID]);
+
+		--Get distinct list of assets
+		insert into #Assets (AssetTypeID, AssetID, [Object], ObjectID, [Type], TypeID, SourceID)
+			select		A.AssetTypeID, 
+						A.ID,
+						A.Object,
+						A.ObjectID,
+						@Object,
+						@ObjectID,
+						R.SourceID 
+			from		integration.ExecutionAsset R --cross apply OPENJSON(R.RawObject) U
+						left join Asset A on A.AssetTypeID = @AssetTypeID and A.SourceID = R.SourceID
+			where		R.ExecutionID = @ExecutionID 
+						and R.SynchedAssetTypeID = @SynchedAssetTypeID
+						--and U.[key] = 'modified_on'
+			group by	A.AssetTypeID, 
+						A.ID,
+						A.Object,
+						A.ObjectID,
+						R.SourceID;
+
+		drop table if exists #Context;
+		create table #Context (SourceID nvarchar(250), RawValue nvarchar(max), [ParentContextPosition] int);
+
+		insert into #Context
+			select	A.SourceID,
+					RF.[value],
+					F.[ParentContextPosition]
+			from	integration.ExecutionAsset A
+					cross apply OPENJSON(A.RawObject) RF
+					inner join [integration].[SynchedAssetTypeFieldItem] F on F.SynchedAssetTypeID = A.SynchedAssetTypeID and F.SourceField = RF.[key] COLLATE DATABASE_DEFAULT
+					inner join integration.SynchedAssetType SAT on SAT.ID = A.SynchedAssetTypeID
+					left join FieldType FT on FT.AssetTypeID = SAT.AssetTypeID and FT.Name = F.TargetField
+			where	A.ExecutionID = @ExecutionID--145 
+					and A.SynchedAssetTypeID = @SynchedAssetTypeID
+					and RF.[key] = '_context' and F.ArrayValueDelimiter is null;
+
+		BEGIN	-- Process ParentSourceID
+			declare @ParentContextPosition int;
+			select	top 1
+					@ParentContextPosition = [ParentContextPosition]
+			from	#Context
+
+			if @ParentContextPosition = 99
+			begin
+				update	T
+				set		T.ParentSourceID = S.ParentSourceID
+				from	#Assets T
+						inner join	(
+									select		J.SourceID,
+												max(C.[key]) as [key]
+									from		#Context J
+												cross apply OPENJSON(J.RawValue) C
+												cross apply OPENJSON(c.value) with (ParentSourceID nvarchar(500) '$._id') P
+									group by	J.SourceID
+									) MContext on MContext.SourceID = T.SourceID
+						inner join (
+									select		J.SourceID,
+												P.ParentSourceID,
+												C.[key]
+									from		#Context J
+												cross apply OPENJSON(J.RawValue) C
+												cross apply OPENJSON(c.value) with (ParentSourceID nvarchar(500) '$._id') P
+									) S on S.SourceID = T.SourceID and S.[key] = MContext.[key];
+			end
+			else
+			begin
+				update	T
+				set		T.ParentSourceID = S.ParentSourceID
+				from	#Assets T
+						inner join (
+									select		J.SourceID,
+												P.ParentSourceID,
+												C.[key]
+									from		#Context J
+												cross apply OPENJSON(J.RawValue) C
+												cross apply OPENJSON(c.value) with (ParentSourceID nvarchar(500) '$._id') P
+									where		C.[key] = J.[ParentContextPosition]
+									) S on S.SourceID = T.SourceID;
+			end
+		END
+
+--select * from #Assets
+--declare	 @ExecutionID bigint = 553, @SynchedAssetTypeID int = 5, @AssetTypeID int = 13
+
+		--See which assets do not yet exist, that need to be added.
+		update	#Assets
+		set		[Action] = IIF(AssetID is null, 'A', 'U');
+
+		--BEGIN: Deletion query logic. See which ones need to be deleted, IF FULL REFRESH ONLY.
+		declare @DeleteAssetTypeID int
+		select	@DeleteAssetTypeID = AssetTypeID from integration.ExecutionAssetType E inner join integration.SynchedAssetType S on S.ID = E.SynchedAssetTypeID and E.ExecutionID = @ExecutionID and E.SynchedAssetTypeID = @SynchedAssetTypeID and E.IsFullRefresh = 1
+	
+		declare	@HasFieldToConsiderWhenDeleting bit
+
+		select	@HasFieldToConsiderWhenDeleting = case 
+													when count(1) > 0 then cast(1 as bit)
+													else cast(0 as bit)
+												  end
+		from	integration.SynchedAssetTypeFieldItem 
+		where	SynchedAssetTypeID = @SynchedAssetTypeID 
+				and ConsiderWhenDeleting = 1
+			
+		--We get the asset type ID here again so we can verify if this is a full refresh. if not a full refresh, then we skip the query process below.
+		if @DeleteAssetTypeID is not null
+		begin
+			-- First, get ones where there is no level to deal with, AND have no default value field to worry about.
+			insert into #Assets
+				select	D.AssetTypeID,
+						D.ID,
+						D.Object,
+						D.ObjectID,
+						@Object,
+						@ObjectID,
+						D.SourceID,
+						NULL,
+						'D' as [Action],
+						NULL
+				from	Asset D
+						left join #Assets S on S.AssetTypeID = D.AssetTypeID and S.SourceID = D.SourceID
+				where	S.SourceID is null
+						and D.AssetTypeID = @DeleteAssetTypeID
+						and @Level is null
+						and @HasFieldToConsiderWhenDeleting = 0
+				group by D.AssetTypeID, D.ID, D.Object, D.ObjectID, D.SourceID;
+
+			-- Next, get ones where there is no level to deal with, and HAVE a default value field to worry about.
+			insert into #Assets
+				select	D.AssetTypeID,
+						D.ID,
+						D.Object,
+						D.ObjectID,
+						@Object,
+						@ObjectID,
+						D.SourceID,
+						NULL,
+						'D' as [Action],
+						NULL
+				from	Asset D
+						inner join Field CF on CF.AssetID = D.ID
+						inner join FieldType CFT on CFT.AssetTypeID = D.AssetTypeID and CFT.ID = CF.FieldTypeID
+						inner join integration.SynchedAssetTypeFieldItem SF on SF.SynchedAssetTypeID = @SynchedAssetTypeID and SF.ConsiderWhenDeleting = 1 and SF.TargetField = CFT.Name and CF.Value = SF.DefaultValue
+						left join #Assets S on S.AssetTypeID = D.AssetTypeID and S.SourceID = D.SourceID
+				where	S.SourceID is null
+						and D.AssetTypeID = @DeleteAssetTypeID
+						and @Level is null
+						and @HasFieldToConsiderWhenDeleting = 1
+				group by D.AssetTypeID, D.ID, D.Object, D.ObjectID, D.SourceID;
+
+			-- Next, get ones where there is a level to deal with, and no default value to consider.
+			insert into #Assets
+				select	D.AssetTypeID,
+						D.ID,
+						D.Object,
+						D.ObjectID,
+						@Object,
+						@ObjectID,
+						D.SourceID,
+						NULL,
+						'D' as [Action],
+						NULL
+				from	Asset D
+						cross apply dbo.GetAssetLevelById(D.ID) L
+						left join #Assets S on S.AssetTypeID = D.AssetTypeID and S.SourceID = D.SourceID
+				where	S.SourceID is null
+						and D.AssetTypeID = @DeleteAssetTypeID
+						and L.[Level] = @Level
+						and @HasFieldToConsiderWhenDeleting = 0
+				group by D.AssetTypeID, D.ID, D.Object, D.ObjectID, D.SourceID;
+
+			-- Last, get ones where there is a level to deal with, and HAS default value to consider.
+			insert into #Assets
+				select	D.AssetTypeID,
+						D.ID,
+						D.Object,
+						D.ObjectID,
+						@Object,
+						@ObjectID,
+						D.SourceID,
+						NULL,
+						'D' as [Action],
+						NULL
+				from	Asset D
+						cross apply dbo.GetAssetLevelById(D.ID) L
+						inner join Field CF on CF.AssetID = D.ID
+						inner join FieldType CFT on CFT.AssetTypeID = D.AssetTypeID and CFT.ID = CF.FieldTypeID
+						inner join integration.SynchedAssetTypeFieldItem SF on SF.SynchedAssetTypeID = @SynchedAssetTypeID and SF.ConsiderWhenDeleting = 1 and SF.TargetField = CFT.Name and CF.Value = SF.DefaultValue
+						left join #Assets S on S.AssetTypeID = D.AssetTypeID and S.SourceID = D.SourceID
+				where	S.SourceID is null
+						and D.AssetTypeID = @DeleteAssetTypeID
+						and L.[Level] = @Level
+						and @HasFieldToConsiderWhenDeleting = 1
+				group by D.AssetTypeID, D.ID, D.Object, D.ObjectID, D.SourceID;
+		end
+		--END: Deletion query logic.
+
+		BEGIN --Do actual deletes
+			DROP TABLE IF EXISTS #deletes
+			create table #deletes (ID int identity, AssetID bigint, Object varchar(50), ObjectID int)
+			CREATE CLUSTERED INDEX [CIX_TempDeletes] ON #deletes ( ID ASC )
+			
+			insert into #deletes
+				select AssetID, Object, ObjectID from #Assets where [Action] = 'D';
+
+			declare @current int = 1,
+					@max int,
+					@o varchar(50),
+					@oID int
+			select	@max = coalesce(max(ID),0) from #deletes
+			while	@current <= @max
+			begin
+				select	@o = Object, @oID = ObjectID from #deletes where ID  = @current
+				exec DeleteObject @o, @oID, 0
+				set		@current = @current + 1
+			end
+		END
+
+		-- Perform INSERTS and UPDATES
+
+		if @Object = 'ArtifactType'
+		begin
+			insert into Artifact (ArtifactTypeID, SourceID, CreatedBy, UpdatedBy, Visible)
+				select	@ObjectID,
+						SourceID,
+						@ResourceID,
+						@ResourceID,
+						1
+				from	#Assets
+				where	[Action] = 'A'
+
+			if @ParentIntersectTypeID is not null
+			begin
+				insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+					select	@ParentIntersectTypeID as IntersectTypeID,
+							P.Object as Subject, P.ObjectID as SubjectID,
+							C.Object, C.ObjectID,
+							@ResourceID, @ResourceID
+					from	#Assets C
+							inner join Asset P on P.SourceID = C.ParentSourceID
+					where	C.[Action] = 'A'
+			end
+		end
+		if @Object = 'FusionAttributeType'
+		begin
+			insert into FusionAttribute (FusionAttributeTypeID, FusionID, ParentID, SourceID, Name)
+				select	@ObjectID,
+						@OptionalID,
+						P.ObjectID,
+						C.SourceID,
+						RF.[value] as Name
+				from	#Assets C
+						inner join integration.ExecutionAsset EA on EA.ExecutionID = @ExecutionID and EA.SynchedAssetTypeID = @SynchedAssetTypeID and EA.SourceID = C.SourceID
+						cross apply OPENJSON(EA.RawObject) RF
+						left join Asset P on P.SourceID = C.ParentSourceID
+				where	[Action] = 'A'
+						and RF.[key] = '_name'
+
+			if @ParentIntersectTypeID is not null
+			begin
+				insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+					select	@ParentIntersectTypeID as IntersectTypeID,
+							P.Object as Subject, P.ObjectID as SubjectID,
+							C.Object, C.ObjectID,
+							@ResourceID, @ResourceID
+					from	#Assets C
+							inner join Asset P on P.SourceID = C.ParentSourceID
+					where	C.[Action] = 'A'
+			end
+		end
+		if @Object = 'PolicyType'
+		begin
+			insert into [Policy] (PolicyTypeID, SourceID, UpdatedBy, Visible)
+				select	@ObjectID,
+						SourceID,
+						@ResourceID,
+						1
+				from	#Assets
+				where	[Action] = 'A'
+
+			if @ParentIntersectTypeID is not null
+			begin
+				insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+					select	@ParentIntersectTypeID as IntersectTypeID,
+							P.Object as Subject, P.ObjectID as SubjectID,
+							C.Object, C.ObjectID,
+							@ResourceID, @ResourceID
+					from	#Assets C
+							inner join Asset P on P.SourceID = C.ParentSourceID
+					where	C.[Action] = 'A'
+			end
+		end 
+		if @Object = 'ReferenceItemType'
+		begin
+			insert into ReferenceItem (ReferenceItemTypeID, SourceID, CreatedBy, UpdatedBy, Code, Visible)
+				select	@ObjectID,
+						C.SourceID,
+						@ResourceID,
+						@ResourceID,
+						RF.[value],
+						1
+				from	#Assets C
+						inner join integration.ExecutionAsset EA on EA.ExecutionID = @ExecutionID and EA.SynchedAssetTypeID = @SynchedAssetTypeID and EA.SourceID = C.SourceID
+						cross apply OPENJSON(EA.RawObject) RF
+						left join Asset P on P.SourceID = C.ParentSourceID
+				where	[Action] = 'A'
+						and RF.[key] = '_name'
+
+			--if @ParentIntersectTypeID is not null
+			--begin
+			--	insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+			--		select	@ParentIntersectTypeID as IntersectTypeID,
+			--				P.Object as Subject, P.ObjectID as SubjectID,
+			--				C.Object, C.ObjectID,
+			--				@ResourceID, @ResourceID
+			--		from	#Assets C
+			--				inner join Asset P on P.SourceID = C.ParentSourceID
+			--		where	C.[Action] = 'A'
+			--end
+		end
+		if @Object = 'RuleType'
+		begin
+			insert into [Rule] (RuleTypeID, SourceID, CreatedBy, UpdatedBy, Visible)
+				select	@ObjectID,
+						SourceID,
+						@ResourceID,
+						@ResourceID,
+						1
+				from	#Assets
+				where	[Action] = 'A'
+
+			if @ParentIntersectTypeID is not null
+			begin
+				insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+					select	@ParentIntersectTypeID as IntersectTypeID,
+							P.Object as Subject, P.ObjectID as SubjectID,
+							C.Object, C.ObjectID,
+							@ResourceID, @ResourceID
+					from	#Assets C
+							inner join Asset P on P.SourceID = C.ParentSourceID
+					where	C.[Action] = 'A'
+			end
+		end
+		if @Object = 'TaxonomyType'
+		begin
+			insert into Taxonomy (TaxonomyTypeID, SourceID, UpdatedBy, Visible)
+				select	@ObjectID,
+						SourceID,
+						@ResourceID,
+						1
+				from	#Assets
+				where	[Action] = 'A'
+
+			if @ParentIntersectTypeID is not null
+			begin
+				insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+					select	@ParentIntersectTypeID as IntersectTypeID,
+							P.Object as Subject, P.ObjectID as SubjectID,
+							C.Object, C.ObjectID,
+							@ResourceID, @ResourceID
+					from	#Assets C
+							inner join Asset P on P.SourceID = C.ParentSourceID
+					where	C.[Action] = 'A'
+			end
+		end
+
+		-- Update Asset instance info
+		update	T
+		set		T.AssetID = S.ID,
+				T.Object = S.Object,
+				T.ObjectID = S.ObjectID
+		from	#Assets T
+				inner join Asset S on S.AssetTypeID = T.AssetTypeID and S.SourceID = T.SourceID and T.[Action] = 'A' and T.AssetID is null;
+
+		-- Insert parent/child relationships we were not able to resolve.
+		if @ParentIntersectTypeID is not null
+		begin
+			insert into [integration].[ExecutionUnresolvedRelationItem] (
+				ExecutionID, IntersectTypeID, SourceID, 
+				ObjectAssetTypeID, ObjectSourceID, ObjectAssetID, Object, ObjectID,
+				[Action]
+			)
+					select	@ExecutionID,
+							@ParentIntersectTypeID,
+							C.SourceID,
+							@AssetTypeID, C.SourceID, C.AssetID, C.Object, C.ObjectID,
+							C.[Action]
+					from	#Assets C
+					where	C.ParentSourceID not in (select SourceID from Asset);
+		end
+
+		select	SourceID,
+				AssetID,
+				Object,
+				ObjectID,
+				Type,
+				TypeID,
+				[Action]
+		from	#Assets
+		where	[Action] = 'A' and [Action] is not null
+	end
+	-- END: CORE ASSET
+
+	-- BEGIN: FIELDS
+	if @Section = 1
+	begin
+
+		drop table if exists #Field_Step1;
+		create table #Field_Step1 (
+			AssetTypeID int, SourceID nvarchar(250), 
+			AssetID bigint, Object varchar(50), ObjectID int,
+			FieldTypeID int, SourceFieldName nvarchar(250), RawValue nvarchar(max), 
+			[ParentContextPosition] int, [IsArray] bit, DefaultValue nvarchar(250), [ArrayValueDelimiter] varchar(10), [ArrayValueFieldName] varchar(50),
+			NewValue nvarchar(max), [Action] char(1)
+		);
+		--CREATE NONCLUSTERED INDEX IX_TempField_Step1 ON #Field_Step1 ([SynchedAssetTypeRelationItemID],[Type]) INCLUDE ([IsSubject],[SourceID],[ID]);
+
+		insert into #Field_Step1
+			select	SAT.AssetTypeID,
+					EA.SourceID,
+					A.ID, A.Object, A.ObjectID,
+					FT.ID,
+					RF.[key] as FieldName,
+					RF.[value] as FieldValue,
+					F.[ParentContextPosition], 
+					F.[IsArray], 
+					F.DefaultValue, 
+					F.[ArrayValueDelimiter], 
+					F.[ArrayValueFieldName],
+					NULL, NULL
+			from	integration.ExecutionAsset EA
+					cross apply OPENJSON(EA.RawObject) RF
+					inner join [integration].[SynchedAssetTypeFieldItem] F on F.SynchedAssetTypeID = EA.SynchedAssetTypeID and F.SourceField = RF.[key] COLLATE DATABASE_DEFAULT
+					inner join integration.SynchedAssetType SAT on SAT.ID = EA.SynchedAssetTypeID
+					inner join Asset A on A.AssetTypeID = SAT.AssetTypeID and A.SourceID = EA.SourceID
+					left join FieldType FT on FT.AssetTypeID = SAT.AssetTypeID and FT.Name = F.TargetField
+			where	EA.ExecutionID = @ExecutionID--145 
+					and EA.SynchedAssetTypeID = @SynchedAssetTypeID;
+
+		BEGIN	-- Process array value-delimited fields
+			update	T
+			set		NewValue = S.NewValue
+			from	#Field_Step1 T
+					inner join	(
+								select		J.SourceID,
+											J.FieldTypeID,
+											STRING_AGG(P.Val, ' / ')  as NewValue
+											--C.[key]
+								from		#Field_Step1 J
+											cross apply OPENJSON(J.RawValue) C
+											cross apply OPENJSON(c.value) with (Val nvarchar(500) '$._name') P
+								where		SourceFieldName = '_context'
+											and ArrayValueDelimiter is not null
+											and ArrayValueFieldName is not null
+								group by	J.SourceID,
+											J.FieldTypeID
+								) S on S.SourceID = T.SourceID and S.FieldTypeID = T.FieldTypeID;
+		END
+
+		-- Do this BEFORE enum-step.
+		BEGIN	-- Process non-array fields
+			update	#Field_Step1
+			set		NewValue =	case
+									when RawValue is null and DefaultValue is not null then DefaultValue
+									when RawValue is null and DefaultValue is null then null
+									when RawValue = '' and DefaultValue is not null then DefaultValue
+									when RawValue = '' and DefaultValue is null then null
+									else RawValue
+								end
+			where	FieldTypeID is not null
+					and IsArray = 0;
+		END
+
+		BEGIN	-- Process enum-based fields
+			declare @Enums nvarchar(max)
+			select	@Enums = EnumFieldValues from integration.ExecutionAssetType where ExecutionID = @ExecutionID and SynchedAssetTypeID = @SynchedAssetTypeID
+			drop table if exists #EnumValueTable;
+			create table #EnumValueTable (PropertyName nvarchar(250), Code nvarchar(100), DisplayValue nvarchar(500))
+			CREATE CLUSTERED INDEX CIX_TempEnumValueTable ON #EnumValueTable (PropertyName,Code);
+			insert into #EnumValueTable
+				select * from OPENJSON(@Enums) with (PropertyName nvarchar(250) '$.PropertyName', Code nvarchar(100) '$.Code', DisplayValue nvarchar(500) '$.DisplayValue')
+			
+			-- Parse non-array enum fields.
+			update	T
+			set		T.NewValue = S.NewValue
+			from	#Field_Step1 T
+					inner join	(
+								select		SourceID,
+											SourceFieldName,
+											E.DisplayValue as NewValue
+								from		#Field_Step1 J
+											inner join #EnumValueTable E on E.PropertyName = J.SourceFieldName and E.Code = J.RawValue
+								where		FieldTypeID is not null
+											and IsArray = 0
+								) S on S.SourceID = T.SourceID and S.SourceFieldName = T.SourceFieldName;
+
+
+			-- Parse array-based enum fields.
+			update	T
+			set		T.NewValue = S.NewValue
+			from	#Field_Step1 T
+					inner join	(
+								select		SourceID,
+											SourceFieldName,
+											STRING_AGG(E.DisplayValue, ', ') WITHIN GROUP ( ORDER BY E.DisplayValue ASC ) as NewValue
+								from		#Field_Step1 J
+											cross apply OPENJSON(J.RawValue) RV
+											--cross apply OPENJSON(@Enums) with (PropertyName nvarchar(250) '$.PropertyName', Code nvarchar(50) '$.Code', DisplayValue nvarchar(500) '$.DisplayValue') E 
+											inner join #EnumValueTable E on E.PropertyName = J.SourceFieldName and E.Code = RV.value
+								where		FieldTypeID is not null
+											and IsArray = 1
+											and ArrayValueDelimiter is null
+											--and E.PropertyName = J.SourceFieldName
+											--and E.Code = RV.value
+								group by	AssetTypeID,
+											SourceID,
+											SourceFieldName
+								) S on S.SourceID = T.SourceID and S.SourceFieldName = T.SourceFieldName;
+		END
+
+		BEGIN	-- Update modification properties on impacted objects
+			declare @ObjToUpdate varchar(50)
+			create table #ObjectsToUpdateDateOn (Object varchar(50), ObjectID int);
+			CREATE CLUSTERED INDEX CIX_TempObjectsToUpdateDateOn ON #ObjectsToUpdateDateOn (ObjectID);
+			insert into #ObjectsToUpdateDateOn
+				select	N.Object,
+						N.ObjectID
+				from	#Field_Step1 N
+						left join Field E on E.ObjectType = N.Object and E.ObjectID = N.ObjectID and E.FieldTypeID = N.FieldTypeID
+				where	N.FieldTypeID is not null
+						and (
+							(E.ID is not null and N.NewValue <> E.Value)
+							or
+							E.ID is null --Field does not yet exist
+							);
+
+			select	top 1
+					@ObjToUpdate = Object
+			from	#ObjectsToUpdateDateOn
+			
+			if @ObjToUpdate = 'Artifact'
+			begin
+				update	T
+				set		T.[UpdatedBy] = @ResourceID,
+						T.[UpdatedOn] = getutcdate()
+				from	Artifact T
+						inner join #ObjectsToUpdateDateOn S on S.ObjectID = T.ID;
+			end
+
+			if @ObjToUpdate = 'Policy'
+			begin
+				update	T
+				set		T.[UpdatedBy] = @ResourceID,
+						T.[UpdatedOn] = getutcdate()
+				from	[Policy] T
+						inner join #ObjectsToUpdateDateOn S on S.ObjectID = T.ID;
+			end
+
+			if @ObjToUpdate = 'ReferenceItem'
+			begin
+				update	T
+				set		T.[UpdatedBy] = @ResourceID,
+						T.[UpdatedOn] = getutcdate()
+				from	ReferenceItem T
+						inner join #ObjectsToUpdateDateOn S on S.ObjectID = T.ID;
+			end
+
+			if @ObjToUpdate = 'Rule'
+			begin
+				update	T
+				set		T.[UpdatedBy] = @ResourceID,
+						T.[UpdatedOn] = getutcdate()
+				from	[Rule] T
+						inner join #ObjectsToUpdateDateOn S on S.ObjectID = T.ID;
+			end
+
+			if @ObjToUpdate = 'Taxonomy'
+			begin
+				update	T
+				set		T.[UpdatedBy] = @ResourceID,
+						T.[UpdatedOn] = getutcdate()
+				from	Taxonomy T
+						inner join #ObjectsToUpdateDateOn S on S.ObjectID = T.ID;
+			end
+		END
+
+		merge into  Field T
+		using       (
+					select	*
+					from	#Field_Step1
+					where	FieldTypeID is not null
+					) S
+		on          (
+						T.FieldTypeID = S.FieldTypeID and 
+						T.ObjectType = S.Object and
+						T.ObjectID = S.ObjectID
+					)
+		when matched and ( (T.Value <> S.NewValue) OR (T.Value is null) OR (S.NewValue is null and T.Value is not null) ) then
+			update set
+					T.Value = S.NewValue,
+					T.FormattedValue = S.NewValue --utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.FieldValue, S.AllowMultipleValues)
+		when not matched by target then
+			insert  (FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
+			values  (S.FieldTypeID, S.Object, S.ObjectID, S.NewValue, S.NewValue);--utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.FieldValue, S.AllowMultipleValues));
+
+		--select * from #Field_Step1
+	end
+	--END: FIELDS
+
+	--BEGIN: RELATIONSHIPS
+	if @section = 2
+	begin
+		drop table if exists #Rel_Step1;
+		create table #Rel_Step1 (SynchedAssetTypeRelationItemID int, IsSubject bit, SourceID nvarchar(250), [Type] nvarchar(250), ID nvarchar(250));
+		CREATE NONCLUSTERED INDEX IX_TempRel_Step1 ON #Rel_Step1 ([SynchedAssetTypeRelationItemID],[Type]) INCLUDE ([IsSubject],[SourceID],[ID]);
+		insert into #Rel_Step1
+			select	R.ID
+					,R.IsSubject
+					,A.SourceID--,IIF(R.IsSubject=1,A.SourceID,RIIF._id) as SubjectSourceID
+					,RIIF._type
+					,RIIF._id--,IIF(R.IsSubject=0,A.SourceID,RIIF._id) as ObjectSourceID
+			from	integration.ExecutionAsset A
+					cross apply OPENJSON(A.RawRelationships) RF
+					inner join [integration].[SynchedAssetTypeRelationItem] R on R.SynchedAssetTypeID = A.SynchedAssetTypeID and R.[SourceField] = RF.[key] COLLATE DATABASE_DEFAULT and RF.[key] is not null
+					outer apply OPENJSON(RF.[value]) with (items nvarchar(max) '$.items' as json) RIF
+					outer apply OPENJSON(RIF.items) with (_type nvarchar(max) '$._type', _id nvarchar(max) '$._id') RIIF
+			where	A.ExecutionID = @ExecutionID
+					and A.SynchedAssetTypeID = @SynchedAssetTypeID
+					and RIIF._type is not null;
+
+		drop table if exists #Rel_Step2;
+		create table #Rel_Step2 (
+			SourceID nvarchar(250),
+			IntersectTypeID int,
+			SubjectAssetTypeID int, SubjectSourceID nvarchar(250), SubjectAssetID bigint, Subject varchar(50), SubjectID int,
+			ObjectAssetTypeID int, ObjectSourceID nvarchar(250), ObjectAssetID bigint, Object varchar(50), ObjectID int,
+			IntersectID int, [Action] char(1)
+		);
+
+		insert into #Rel_Step2
+			select	S.SourceID
+					,R.IntersectTypeID
+					,ST.ID as SubjectAssetTypeID
+					,IIF(S.IsSubject=1,S.SourceID,S.ID) as SubjectSourceID
+					,SA.ID as SubjectAssetID
+					,SA.Object as Subject
+					,SA.ObjectID as SubjectID
+					,OT.ID as ObjectAssetTypeID
+					,IIF(S.IsSubject=0,S.SourceID,S.ID) as ObjectSourceID
+					,OA.ID as ObjectAssetID
+					,OA.Object as Object
+					,OA.ObjectID as ObjectID
+					,I.ID
+					,IIF(I.ID is null, null, 'N')
+			from	#Rel_Step1 S
+					inner join [integration].[SynchedAssetTypeRelationItemTarget] R on R.[SynchedAssetTypeRelationItemID] = S.SynchedAssetTypeRelationItemID and S.[Type] like R.[SourceAssetType] + '%'
+					inner join IntersectType IT on IT.ID = R.IntersectTypeID
+					inner join AssetType ST on ST.Object = IT.Subject and ST.ObjectID = IT.SubjectID
+					inner join AssetType OT on OT.Object = IT.Object and OT.ObjectID = IT.ObjectID
+					left join Asset SA on SA.AssetTypeID = ST.ID and SA.SourceID = IIF(S.IsSubject=1,S.SourceID,S.ID)
+					left join Asset OA on OA.AssetTypeID = OT.ID and OA.SourceID = IIF(S.IsSubject=0,S.SourceID,S.ID)
+					left join [Intersect] I on I.IntersectTypeID = IT.ID and I.Subject = SA.Object and I.SubjectID = SA.ObjectID and I.Object = OA.Object and I.ObjectID = OA.ObjectID;
+
+		update	#Rel_Step2
+		set		[ACtion] = 'A'
+		where	IntersectID is null;
+
+		drop table if exists #IntersectTypes;
+		create table #IntersectTypes (ID int);
+		insert into #IntersectTypes
+			select		RT.IntersectTypeID
+			from		[integration].[SynchedAssetTypeRelationItemTarget] RT
+						inner join [integration].[SynchedAssetTypeRelationItem] R on R.ID = RT.[SynchedAssetTypeRelationItemID] and R.SynchedAssetTypeID = @SynchedAssetTypeID
+			group by	RT.IntersectTypeID;
+
+		--BEGIN: Query for records we need to delete.
+		insert into #Rel_Step2
+			select	null as SourceID,
+					I.IntersectTypeID,
+					S.AssetTypeID, S.SourceID, S.ID, S.Object, S.ObjectID,
+					O.AssetTypeID, O.SourceID, O.ID, O.Object, O.ObjectID,
+					I.ID, 'D' as [Action]
+			from	[Intersect] I
+					inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID  
+					inner join integration.ExecutionAsset SE on SE.ExecutionID = @ExecutionID and SE.SynchedAssetTypeID = @SynchedAssetTypeID and SE.SourceID = S.SourceID
+					inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+					inner join integration.ExecutionAsset OE on OE.ExecutionID = @ExecutionID and OE.SynchedAssetTypeID = @SynchedAssetTypeID and OE.SourceID = O.SourceID
+					inner join #IntersectTypes SIT on SIT.ID = I.IntersectTypeID
+					left join #Rel_Step2 SI on SI.IntersectID = I.ID
+			where	SI.IntersectID is null;
+		--END: Query for records we need to delete.
+
+		BEGIN	-- Try to process previously unresolved relationships.
+			
+			-- Resolve the missing subject information from these as-yet unresolved relationships.
+			update	U
+			set		U.SubjectAssetID = A.ID,
+					U.Subject = A.Object,
+					U.SubjectID = A.ObjectID
+			from	[integration].[ExecutionUnresolvedRelationItem] U
+					inner join IntersectType IT on U.ExecutionID = @ExecutionID and IT.ID = U.IntersectTypeID and U.SubjectAssetID is null 
+					inner join Asset A on A.AssetTypeID = U.SubjectAssetTypeID and A.SourceID = U.SubjectSourceID;
+
+			-- Resolve the missing object information form these as-yet unresolved relationships.
+			update	U
+			set		U.ObjectAssetID = A.ID,
+					U.Object = A.Object,
+					U.ObjectID = A.ObjectID
+			from	[integration].[ExecutionUnresolvedRelationItem] U
+					inner join IntersectType IT on U.ExecutionID = @ExecutionID and IT.ID = U.IntersectTypeID and U.ObjectAssetID is null 
+					inner join Asset A on A.AssetTypeID = U.ObjectAssetTypeID and A.SourceID = U.ObjectSourceID;
+
+			-- Add to the normal relationship temp table for further processing.
+			insert into #Rel_Step2
+				select	SourceID
+						,IntersectTypeID
+						,SubjectAssetTypeID
+						,SubjectSourceID
+						,SubjectAssetID
+						,Subject
+						,SubjectID
+						,ObjectAssetTypeID
+						,ObjectSourceID
+						,ObjectAssetID
+						,Object
+						,ObjectID
+						,null
+						,[Action]
+				from	[integration].[ExecutionUnresolvedRelationItem]
+				where	ExecutionID = @ExecutionID
+						and (SubjectAssetID is not null OR ObjectAssetID is not null);
+		END
+
+		--begin: Add
+		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+			select	distinct
+					IntersectTypeID,
+					Subject, SubjectID, Object, ObjectID,
+					@ResourceID, @ResourceID
+			from	#Rel_Step2
+			where	[Action] = 'A'
+					and Subject is not null and SubjectID is not null and Object is not null and ObjectID is not null;
+
+		BEGIN	-- Get the new Intersect IDs for added relationships.
+			update	T
+			set		T.IntersectID = S.ID
+			from	#Rel_Step2 T
+					inner join [Intersect] S on T.[Action] = 'A' and S.IntersectTypeID = T.IntersectTypeID and S.Subject = T.Subject and S.SubjectID = T.SubjectID and S.Object = T.Object and S.ObjectID = T.ObjectID;
+
+			update	T
+			set		T.IntersectID = S.ID
+			from	[integration].[ExecutionUnresolvedRelationItem] T
+					inner join [Intersect] S on T.ExecutionID = @ExecutionID and T.[Action] = 'A' and S.IntersectTypeID = T.IntersectTypeID and S.Subject = T.Subject and S.SubjectID = T.SubjectID and S.Object = T.Object and S.ObjectID = T.ObjectID;
+
+			delete	[integration].[ExecutionUnresolvedRelationItem]
+			where	ExecutionID = @ExecutionID and IntersectID is not null;
+		END
+
+		BEGIN	-- Save the relationships I was not able to resolve. For later processing.
+			insert into [integration].[ExecutionUnresolvedRelationItem] (
+				ExecutionID, IntersectTypeID, 
+				SourceID, SubjectAssetTypeID, SubjectSourceID, SubjectAssetID, Subject, SubjectID,
+				ObjectAssetTypeID, ObjectSourceID, ObjectAssetID, Object, ObjectID,
+				IntersectID, [Action]
+			)
+				select	@ExecutionID, R.IntersectTypeID, 
+						R.SourceID, R.SubjectAssetTypeID, R.SubjectSourceID, R.SubjectAssetID, R.Subject, R.SubjectID,
+						R.ObjectAssetTypeID, R.ObjectSourceID, R.ObjectAssetID, R.Object, R.ObjectID,
+						R.IntersectID, R.[Action]
+				from	#Rel_Step2 R
+						left join [integration].[ExecutionUnresolvedRelationItem] EU on EU.ExecutionID = @ExecutionID and EU.IntersectTypeID = R.IntersectTypeID and EU.SourceID = R.SourceID and (EU.SubjectAssetID = R.SubjectAssetID or EU.ObjectAssetID = R.ObjectAssetID) 
+				where	R.[Action] = 'A'
+						and EU.ID is null
+						and R.IntersectID is null;
+		END
+		--end: Add
+
+		BEGIN	-- Delete
+			delete	T
+			from	[Intersect] T
+					inner join #Rel_Step2 S on S.[Action] = 'D' and T.ID = S.IntersectID;
+		END
+
+		--Return results to caller.
+		select		distinct
+					IntersectTypeID, 
+					IntersectID, 
+					[Action] 
+		from		#Rel_Step2 
+		where		[Action] <> 'N' 
+					and [Action] is not null 
+					and IntersectID is not null
+		order by	IntersectID;
+	end
+	--END: RELATIONSHIPS
+
+	--BEGIN: RESPONSIBILITIES
+	if @section = 3
+	begin
+		drop table if exists #Resp_Step1;
+		create table #Resp_Step1 (AssetID bigint, SourceID nvarchar(250), ResponsibilityTypeID int, ResourceIdentifier nvarchar(250), ResourceID int, [Action] char(1), Error varchar(max), OverrideItemID bigint);
+		CREATE NONCLUSTERED INDEX IX_TempResp_Step1_ResourceIdentifier ON #Resp_Step1 (ResourceIdentifier) INCLUDE (AssetID, ResponsibilityTypeID, [Action]);
+		CREATE NONCLUSTERED INDEX IX_TempResp_Step1_ResourceID ON #Resp_Step1 (ResourceID) INCLUDE (AssetID, ResponsibilityTypeID, [Action]);
+		CREATE NONCLUSTERED INDEX IX_TempResp_Step1_ResourceIDAction ON #Resp_Step1 (ResourceID, [Action]) INCLUDE (AssetID, ResponsibilityTypeID);
+		CREATE NONCLUSTERED INDEX IX_TempResp_Step1_DeleteAndUpdateStepIndex ON #Resp_Step1 (ResponsibilityTypeID, AssetID, [Action])
+		CREATE NONCLUSTERED INDEX IX_TempResp_Step1_AddStepIndex ON #Resp_Step1 ([Action])
+
+		insert into #Resp_Step1 (AssetID, SourceID, ResponsibilityTypeID, ResourceIdentifier)
+			select	A.ID as AssetID
+					,E.SourceID
+					,RT.ID as ResponsibilityTypeID
+					,J.value
+			from	integration.ExecutionAsset E
+					cross apply OPENJSON(E.RawResponsibilitites) J--with (_type nvarchar(max) '$._type', _id nvarchar(max) '$._id') J
+					inner join Asset A on A.AssetTypeID = @AssetTypeID and A.SourceID = E.SourceID
+					inner join [integration].[SynchedAssetTypeRoleItem] R on R.SynchedAssetTypeID = E.SynchedAssetTypeID and R.SourceIdField = J.[key] COLLATE DATABASE_DEFAULT
+					inner join ResponsibilityType RT on RT.Name = R.RoleName
+			where	E.ExecutionID = @ExecutionID
+					and E.SynchedAssetTypeID = @SynchedAssetTypeID;
+
+		update	#Resp_Step1
+		set		[Action] = 'D'   -- Delete action
+		where	ResourceIdentifier is null or ResourceIdentifier = '';
+
+		update	T
+		set		T.ResourceID = RE.ResourceID
+		from	#Resp_Step1 T
+				inner join Field F on F.ObjectType = 'Resource' and F.Value = T.ResourceIdentifier and F.FieldTypeID in (select ID from FieldType where Object = 'ResourceType' and ObjectID = 1 and Name = 'UserId')
+				inner join reporting.Global_Resource RE on RE.ResourceID = F.ObjectID;
+
+--select * from #Resp_Step1
+
+		update	#Resp_Step1
+		set		[Error] = 'User could not be found based on identifier.'
+		where	ResourceIdentifier is not null and ResourceIdentifier <> '' and ResourceID is null;
+
+		update	T
+		set		T.[Action] = 'N' -- No action
+		from	#Resp_Step1 T
+				inner join ResponsibilityTypeRelationOverrideItem S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and S.SecurityAsset = 'R' and S.SecurityAssetID = T.ResourceID and T.ResourceID is not null;
+
+		update	T
+		set		T.[Action] = 'U' -- Update action
+		from	#Resp_Step1 T
+				inner join ResponsibilityTypeRelationOverrideItem S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and S.SecurityAsset = 'R' and S.SecurityAssetID <> T.ResourceID
+		where	T.ResourceID is not null
+				and T.[Action] is null;
+
+		update	T
+		set		T.[Action] = 'A' -- Add action
+		from	#Resp_Step1 T
+				left join ResponsibilityTypeRelationOverrideItem S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID
+		where	T.ResourceID is not null
+				and T.[Action] is null
+				and T.AssetID is not null
+				and S.[ID] is null;
+
+		--DELETE
+
+		-- BEGIN: TEMP Fix, until GOV-4809 is deployed.
+		delete	T
+		from	cache.AssetResponsibility T
+				inner join ResponsibilityTypeRelationOverrideItem O on O.ID = T.OverrideItemID
+				inner join #Resp_Step1 S on S.ResponsibilityTypeID = T.ResponsibilityTypeID and S.AssetID = T.AssetID and S.[Action] = 'D' and T.SecurityAsset = 'R';
+		-- END: TEMP Fix, until GOV-4809 is deployed.
+
+		delete	T
+		from	ResponsibilityTypeRelationOverrideItem T
+				inner join #Resp_Step1 S on S.ResponsibilityTypeID = T.ResponsibilityTypeID and S.AssetID = T.AssetID and S.[Action] = 'D' and T.SecurityAsset = 'R';
+		
+		--UPDATE
+		update	T
+		set		T.SecurityAssetID = S.ResourceID
+		from	ResponsibilityTypeRelationOverrideItem T
+				inner join #Resp_Step1 S on S.ResponsibilityTypeID = T.ResponsibilityTypeID and S.AssetID = T.AssetID and S.[Action] = 'U' and T.SecurityAsset = 'R';
+
+		--ADD
+		insert into ResponsibilityTypeRelationOverrideItem (ResponsibilityTypeID, AssetID, SecurityAsset, SecurityAssetID)
+			select	ResponsibilityTypeID, 
+					AssetID,
+					'R' as SecurityAsset,
+					ResourceID
+			from	#Resp_Step1
+			where	[Action] = 'A';
+
+		-- Get the OverrideItemID.
+		update	T
+		set		T.OverrideItemID = S.ID
+		from	#Resp_Step1 T
+				inner join ResponsibilityTypeRelationOverrideItem S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and S.SecurityAsset = 'R' and S.SecurityAssetID = T.ResourceID;
+
+		-- TEMP FIX, TO BE REMOVED AFTER GOV-4809 is deployed
+		merge	cache.AssetResponsibility as T
+		using	(
+				select	0 as RuleID,
+						I.ResponsibilityTypeID,
+						A.ID as AssetID,
+						A.Object,
+						A.ObjectID,
+						A.AssetTypeID,
+						T.Object as Type,
+						T.ObjectID as TypeID,
+						I.ResourceID,
+						I.OverrideItemID
+				from	Asset A
+						inner join AssetType T on T.ID = A.AssetTypeID
+						inner join #Resp_Step1 I on I.AssetID = A.ID and I.[Action] in ('A', 'U')
+				) as S 
+		on		(
+				S.OverrideItemID = T.OverrideItemID
+				and S.RuleID = T.RuleID
+				)
+		when	matched then
+		update	set T.SecurityAsset = 'R',
+					T.SecurityAssetID = S.ResourceID,
+					T.ResponsibilityTypeID = S.ResponsibilityTypeID
+		when	not matched by target then
+				insert (RuleID, ResponsibilityTypeID, AssetID, Object, ObjectID, AssetTypeID, Type, TypeID, SecurityAsset, SecurityAssetID, ApplyToType, IsVisible, Overriden, OverrideItemID)
+				values (S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.Object, S.ObjectID, S.AssetTypeID, S.Type, S.TypeID, 'R', S.ResourceID, 0, 1, 0, S.OverrideItemID);
+	end
+	--END: RESPONSIBILITIES
+
+end
+GO
+-- END IGC STUFF ------------------------------------------------------------------
+
+ALTER PROCEDURE [dbo].[GetReferenceItemValues]	
+	@listid int,
+	@resourceID int	= 0,
+	@useApiName bit = 0
+AS
+BEGIN
+	SET NOCOUNT ON;
+	
+	create table #fieldtypes (ID int, Name nvarchar(250))
+	create table #parentTypes (IntersectTypeID int, Name nvarchar(250), ReferenceListTypeID int, ParentLevel int)
+
+	-- load the fields for this item
+	if @useApiName = 1
+		begin
+			insert into #fieldtypes
+				select ID, [Name] from fieldtype where object = 'ReferenceItemType' and objectid = @listid order by ColumnOrder
+		end
+	else
+		begin
+			insert into #fieldtypes
+				select ID, 'Field' + cast(id as varchar(100)) as [Name] from fieldtype where object = 'ReferenceItemType' and objectid = @listid order by ColumnOrder
+		end
+
+	declare @parentLevel int = 0;
+	declare @currentReferenceListID int = @listid;	
+	-- load the parents for this reference item type
+	while exists (select 1 from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3 and @parentLevel < 20)
+	begin
+		-- need to loop through parent / child relations till we get to the lowest one or loop to many times
+		insert into #parentTypes 
+			select id, subjectname, subjectid, @parentLevel from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3;
+
+		select @currentReferenceListID =subjectid from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3;
+		
+		set @parentLevel = @parentLevel +1;
+	end
+	
+	
+	DECLARE @tsqlSelect nvarchar(max);
+	DECLARE @tsqlFrom nvarchar(max);
+	DECLARE @tsqlWhere nvarchar(max);
+	DECLARE @tsql nvarchar(max);
+
+	set @tsqlSelect = 'select ri.id as [ID] ,ri.code as [Code],o.id as [AssetID]';
+	set @tsqlFrom = ' from [dbo].[referenceitem] ri  inner join Asset O on O.Object = ''ReferenceItem'' and O.ObjectID = ri.ID ';
+	set @tsqlWhere = ' where ri.visible = 1 and ri.referenceitemtypeid = ' + cast(@listid as nvarchar(20));
+	if @resourceID > 0
+	begin
+		set @tsqlWhere = @tsqlWhere + ' and O.ID not in (select AssetID from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = ' +  cast(@resourceID as varchar) + ') ';
+	end	
+
+	DECLARE @name nvarchar(250);
+	DECLARE @id int = 0;
+	DECLARE @intersectTypeId int;
+	DECLARE @parentName nvarchar(250);
+	DECLARE @parentListTypeID int = 0;	
+	DECLARE @index int = 0;
+	DECLARE @previousRelation varchar(200) = 'ri.ID';
+
+	-- generate dynamic sql for each relationship
+	DECLARE relCur CURSOR FOR SELECT IntersectTypeId, Name, ReferenceListTypeID, ParentLevel FROM #parentTypes
+	OPEN relCur
+
+	FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel
+
+	WHILE @@FETCH_STATUS = 0 BEGIN
+	
+		SET @tsqlSelect = @tsqlSelect + ',REL_' + cast(@index as nvarchar(10)) + '.DisplayValue as [Rel' + cast(@parentListTypeID as varchar(20)) + ']';
+        SET @tsqlFrom = @tsqlFrom +' outer apply (
+				    select	ID.DisplayValue, I.SubjectID                            
+				    from	[PredicateIntersect] I
+                            inner join Asset IA on I.Object = ''ReferenceItem'' and I.ObjectID = ' + @previousRelation + ' and IA.Object = ''ReferenceItem'' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
+                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID
+                            cross apply dbo.GetAssetDisplayValueById(IA.ID) ID
+				    ) REL_' + cast(@index as nvarchar(10));
+
+		set @previousRelation = 'REL_' + cast(@index as nvarchar(10)) + '.SubjectID';
+		SET @index = @index + 1;
+		FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel
+	END
+
+	CLOSE relCur    
+	DEALLOCATE relCur
+
+	set @index = 0;
+	-- generate dynamic sql for each field
+	DECLARE cur CURSOR FOR SELECT id, name FROM #fieldtypes
+	OPEN cur
+
+	FETCH NEXT FROM cur INTO @id, @name
+
+	WHILE @@FETCH_STATUS = 0 BEGIN
+		
+		SET @tsqlSelect = @tsqlSelect + ',f'+ cast(@index as nvarchar(10)) + '.formattedvalue as [' + @name + ']';
+		SET @tsqlFrom = @tsqlFrom + ' left outer join [dbo].[field] f' + cast(@index as nvarchar(10)) + ' on (ri.id = f' + cast(@index as nvarchar(10)) + '.objectid and f' + cast(@index as nvarchar(10)) + '.[objecttype] = ''ReferenceItem'' and f' + cast(@index as nvarchar(10)) + '.fieldtypeid = ' + cast(@id as nvarchar(20)) + ')';
+
+		SET @index = @index + 1;
+		FETCH NEXT FROM cur INTO @id, @name
+	END
+
+	CLOSE cur    
+	DEALLOCATE cur
+
+	SET @tsql = @tsqlSelect + @tsqlFrom + @tsqlWhere;
+	print @tsql
+	EXEC sp_executesql @tsql;
+
+END
+GO
+
+--CODE, IF NEEDED TO CLEAN UP DUPLICATES
+/*
+delete [ResponsibilityTypeRelationOverrideItem] where ID in (
+select max(ID) as ID	
+	--,[ResponsibilityTypeID]
+	--,[AssetID]
+	--,[SecurityAsset]
+	--,[SecurityAssetID]
+from [ResponsibilityTypeRelationOverrideItem]
+group by 	[ResponsibilityTypeID],
+	[AssetID],
+	[SecurityAsset],
+	[SecurityAssetID]
+having count(1) > 1
+)
+*/
+ALTER TABLE [dbo].[ResponsibilityTypeRelationOverrideItem] ADD  CONSTRAINT [UQ_ResponsibilityTypeRelationOverrideItem] UNIQUE NONCLUSTERED 
+(
+	[ResponsibilityTypeID],
+	[AssetID],
+	[SecurityAsset],
+	[SecurityAssetID]
+)
+GO
+

@@ -364,7 +364,6 @@
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\PartsController.cs" />
     <Compile Include="Controllers\Services\CommunityController.cs" />
     <Compile Include="Controllers\Services\AssetsController.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
@@ -1982,7 +1981,6 @@
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-style.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\reference.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\relations.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
