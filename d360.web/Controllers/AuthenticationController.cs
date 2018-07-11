@@ -476,12 +476,19 @@ namespace d360.web.Controllers
                             if (cachedRelayState != null)
                             {
                                 var sendToUrl = cachedRelayState.ResourceURL;
-                                if (sendToUrl.Contains("?hashPath=")) sendToUrl = Server.UrlDecode(sendToUrl.Replace("?hashPath=", "#"));
+                                
                                 redirectURL = sendToUrl;
                             }
                         }
-                        catch
+                        catch(Exception e)
                         {
+                            
+                            var properties = new Dictionary<string, string>
+                            {
+                                {"ResourceID",resource.ID.ToString() }                                
+                            };
+                            Telemetry.TrackException(e, properties);
+                            
                             redirectURL = "/#";
                         }
 
