@@ -401,7 +401,7 @@ from	Asset A
             return cnn.Query<ObjectResult>(sql, transaction: trans, commandTimeout: 7200);
         }
 
-        private static string GetThenResultsSql(this DbConnection cnn, ResponsibilityTypeRelationRule rule)
+        private static string GetThenResultsSql(this DbConnection cnn, ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers)
         {
             string thenSql = "";
 
@@ -476,6 +476,10 @@ from	reporting.Global_Resource O ";
                 if (obj == "Resource")
                 {
                     whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.Status = 'Active'";
+                    if (IsHideData3SixtyUsers)
+                    {
+                        whenSuffix += " and (O.Email not like '%@data3sixty.com' and O.Email not like '%@infogix.com')";
+                    }
                 }
             }
 
@@ -484,9 +488,9 @@ from	reporting.Global_Resource O ";
             return thenSql;
         }
 
-        public static IEnumerable<SecurityResult> GetThenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
+        public static IEnumerable<SecurityResult> GetThenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, SqlTransaction trans = null, bool IsHideData3SixtyUsers = false)
         {
-            string sql = cnn.GetThenResultsSql(rule);
+            string sql = cnn.GetThenResultsSql(rule, IsHideData3SixtyUsers);
             return (string.IsNullOrEmpty(sql)) ?
                 new List<SecurityResult>().AsEnumerable() :
                 cnn.Query<SecurityResult>(sql, transaction: trans, commandTimeout: 7200);

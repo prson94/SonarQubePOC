@@ -426,6 +426,13 @@ namespace d360.web.Controllers
         public JsonNetResult GetSiteNavPermissionList(int id , int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
         {
             var dbArgs = new Dapper.DynamicParameters();
+            var hideUsersSql = "";
+
+            if (HideData3SixtyUsers())
+            {
+                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com')";
+            }
+
             var querySql = @"
                     select Text,  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
 						(
@@ -433,9 +440,10 @@ namespace d360.web.Controllers
 							where not exists (select 1 from SiteNavPermission where object='Group' and siteNavId =@id and objectId=g.id) 
 							union all
 							select  r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) 
-						) as Sub
-                    ";
+							where r.status ='Active' and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) "
+                            + hideUsersSql +
+                        ") as Sub";
+                   
 
             if (!string.IsNullOrEmpty(gbfilter))
             {

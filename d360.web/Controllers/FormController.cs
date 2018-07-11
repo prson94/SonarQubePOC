@@ -8954,10 +8954,18 @@ namespace d360.web.Controllers
             string querySql;
             var dbArgs = new Dapper.DynamicParameters();
 
+            var hideUsersSql = "";
+
+            if (HideData3SixtyUsers())
+            {
+                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com')";
+            }
+
             querySql = @"
 			select  r.LastName + ', ' + r.FirstName as Text,  'Resource|' + cast(r.ResourceID as varchar)  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
 			where r.status ='Active'  
-			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID)";
+			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID) "
+            + hideUsersSql;
             dbArgs.Add("id", id);
 
             if (!string.IsNullOrEmpty(gbfilter))
@@ -15454,7 +15462,7 @@ order by case Object
             if (!Company.CurrentResourceIsAdmin)
                 return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
 
-            var results = Company.Database.Connection.GetThenResults(rule); //,this.HideData3SixtyUsers()
+            var results = Company.Database.Connection.GetThenResults(rule,null, this.HideData3SixtyUsers()); 
             return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
