@@ -7764,10 +7764,13 @@ from	    TaxonomyType FAT
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]
         public async Task<HttpResponseMessage> CanReadReferenceItemType(int id)
         {
-            var records = await Company.QueryAsync<dynamic>(@"select 1 from cache.NoRead A
-                inner join ReferenceItem r on r.ID = a.objectID
-                inner join ReferenceItemType t on t.ID = r.ReferenceItemTypeID
-                where a.Object = 'ReferenceItem' and t.ID = @id and ResourceID = @resource", new { id, resource = Company.CurrentResourceID });
+            var records = await Company.QueryAsync<dynamic>(@"
+select	1 
+from	ResponsibilityDetail
+where	Type = 'ReferenceItemType'
+		and TypeID = @id 
+		and PermissionsBitMask & 1 = 0
+		and ResourceID = @resource", new { id, resource = Company.CurrentResourceID });
 
             return Request.CreateResponse(HttpStatusCode.OK, !records.Any());
         }
