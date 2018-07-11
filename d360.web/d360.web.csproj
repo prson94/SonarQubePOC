@@ -420,6 +420,7 @@
     <Compile Include="Controllers\TilesController.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
+    <Compile Include="Models\Attributes\NoCacheAttribute.cs" />
     <Compile Include="Models\Attributes\ValidateContractsAttribute.cs" />
     <Compile Include="Filters\ValidateHttpAntiForgeryTokenAttribute.cs" />
     <Compile Include="Global.asax.cs">

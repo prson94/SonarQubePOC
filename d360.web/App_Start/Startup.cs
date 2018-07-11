@@ -51,6 +51,7 @@ namespace d360.web
             MvcHandler.DisableMvcResponseHeader = true; // Security (by obscurity) disable ASP MVC Version header i.e. X-AspNetMvc-Version:5.2
 
             GlobalFilters.Filters.Add(new AiHandleErrorAttribute());
+            GlobalFilters.Filters.Add(new NoCacheAttribute());
             if (!System.Web.HttpContext.Current.IsDebuggingEnabled)
             {
                 GlobalFilters.Filters.Add(new RequireHttpsAttribute());
