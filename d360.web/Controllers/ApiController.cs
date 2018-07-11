@@ -5719,12 +5719,15 @@ where    A.RuleID = @id", new { id });
                                 }
                             });
                         }
-
+                        
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
+                            columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = rule.GetName(i => i.ID), FieldName = "RuleID", FieldDescription = rule.GetDescription(i => i.ID), Value = $"{rule.ID}" }
+                                },
+                            SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.RuleStatus_Name, FieldName = "Status", FieldDescription = Resources.FieldInfo.RuleStatus_Description, Value = rule.Status.GetDisplayName() }
                                 }
                         });
                     }
