@@ -18962,16 +18962,20 @@ from    [IntersectType] RT
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            var a = Company.GetById<Taxonomy>(id);
+            var a = Company.GetById<Taxonomy>(id, i => i.TaxonomyType);
+
             var parent = Company.GetParentObject<Taxonomy>(a.ID);
 
             var parents = Company.Query<dynamic>(@"
 select	A.ObjectID as ID,
-		P.TextPath as Name
+		P.TextPath as Name,
+		coalesce(X.[Level], 1) as [Level]
 from	Asset A
+        inner join Taxonomy X on X.ID = A.ObjectID
         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'TaxonomyType' and T.ObjectID = @t
-		cross apply dbo.GetAssetTextPathById(A.ID, '/') P",
-new { t = a.TaxonomyTypeID }).Select(i => new { i.ID, i.Name }).ToList();
+		cross apply dbo.GetAssetTextPathById(A.ID, '/') P
+where (x.[Level] + @currentLevel) <= @maxLevel",
+new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyType.MaximumDepth ?? 1 }).Select(i => new { i.ID, i.Name }).ToList();
 
             var thisEntry = parents.FirstOrDefault(i => i.ID == id);
 
