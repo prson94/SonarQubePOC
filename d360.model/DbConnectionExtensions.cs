@@ -396,6 +396,12 @@ when	not matched by target then
             return thenSql;
         }
 
+        public static IEnumerable<ObjectResult> GetWhenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
+        {
+            string sql = cnn.GetWhenResultsSql(rule);
+            return cnn.Query<ObjectResult>(sql, transaction: trans, commandTimeout: 7200);
+        }
+
         public static IEnumerable<SecurityResult> GetThenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction trans = null)
         {
             string sql = cnn.GetThenResultsSql(rule, IsHideData3SixtyUsers);
