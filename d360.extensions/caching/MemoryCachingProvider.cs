@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Web.Caching;
-using d360.extensions;
 using System.Web;
+using System.Collections.Concurrent;
 
 namespace d360.extensions.caching
 {
     public class MemoryCachingProvider: ICachingProvider
-    {
-        //Cache _Cache { get { return HttpContext.Current.Cache;  } }
-
+    {        
         public bool ListItemExists<T, TIdentifier>(string name, TIdentifier id)
         {
             var d = getOrCreateDictionary<T, TIdentifier>(name);
@@ -57,12 +54,9 @@ namespace d360.extensions.caching
 
             if (cachePresent)
             {
-                RemoveItem(name);
-                //HttpContext.Current.Cache[name] = item;
+                RemoveItem(name);            
             }
-            //else
-            //{
-            //}
+            
 
             if (isAbsoluteExpiration)
             {
@@ -87,13 +81,10 @@ namespace d360.extensions.caching
         {
             var obj = HttpContext.Current.Cache.Get(name);
             if (obj != null)
-            {
-                //HttpContext.Current.Cache[name] = list;
+            {            
                 RemoveItem(name);
             }
-            //else
-            //{
-            //}
+            
             if (isAbsoluteExpiration)
             {
                 HttpContext.Current.Cache.Insert(name, list,
@@ -119,15 +110,8 @@ namespace d360.extensions.caching
             if (dictionary.ContainsKey(id))
                 dictionary[id] = item;
             else
-                dictionary.Add(id, item);
-
-            //try
-            //{
-            //    T obj = (T)HttpContext.Current.Cache.Get(name);
-            //    HttpContext.Current.Cache[name] = dictionary;
-            //}
-            //catch
-            //{
+                dictionary.TryAdd(id, item);
+            
                 if (isAbsoluteExpiration)
                 {
                     HttpContext.Current.Cache.Insert(name, dictionary,
@@ -144,21 +128,20 @@ namespace d360.extensions.caching
                         TimeSpan.FromMinutes(expirationMinutes),
                         CacheItemPriority.Default,
                         null);
-                }
-            //}
+                }            
         }
 
-        private SortedDictionary<TIdentifier, T> getOrCreateDictionary<T, TIdentifier>(string name)
+        private ConcurrentDictionary<TIdentifier, T> getOrCreateDictionary<T, TIdentifier>(string name)
         {
             var list = HttpContext.Current.Cache.Get(name);
-            SortedDictionary<TIdentifier, T> dictionary = null;
+            ConcurrentDictionary<TIdentifier, T> dictionary = null;
             if (list != null)
             {
-                dictionary = (SortedDictionary<TIdentifier, T>)list;
+                dictionary = (ConcurrentDictionary<TIdentifier, T>)list;
             }
             else
             {
-                dictionary = new SortedDictionary<TIdentifier, T>();
+                dictionary = new ConcurrentDictionary<TIdentifier, T>();
             }
 
             return dictionary;
