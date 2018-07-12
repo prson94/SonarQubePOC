@@ -136,7 +136,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                 permissions.title = 'Responsibilities'
                 permissions.url = '/sidebar/responsibilities'
                 permissions.dynamicUrlCallback = (() => {
-                    return `/sidebar/responsibilities/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+                    return `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`
                 });
                 this.rightSidebarService.showItem(permissions);
             }

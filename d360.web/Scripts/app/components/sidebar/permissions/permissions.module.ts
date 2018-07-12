@@ -18,6 +18,7 @@ import { PermissionsRoutingModule } from './permissions.routes';
 import { PermissionsComponent } from './permissions.component';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 import { AdminModule } from '../../admin/admin.module';
+import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 
 
 @NgModule({
@@ -29,7 +30,7 @@ import { AdminModule } from '../../admin/admin.module';
 
         //routing 
         PermissionsRoutingModule,
-
+        
         //prime
         ButtonModule,
 
@@ -37,6 +38,7 @@ import { AdminModule } from '../../admin/admin.module';
         CoreModule,
         TilesModule,
         SharedFieldDefinitionModule,
+        SharedResponsibilitiesModule,
         AdminModule,
     ],
     declarations: [

@@ -11,7 +11,7 @@ import { AuthenticationService } from '../../../services/authentication.service'
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <d3s-claims-tile [objectType]="objectType" [objectID]="objectID" [readonly]="false" [title]="title"></d3s-claims-tile>
+                        <d3s-responsibility-relations queryType="A" [id]="assetTypeId" showAddButton="true" showDeleteButton="true"></d3s-responsibility-relations>                        
                     </div>
                 </div>
             </div>
@@ -21,8 +21,7 @@ import { AuthenticationService } from '../../../services/authentication.service'
 
 export class PermissionsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    objectID: number;
-    objectType: string;
+    assetTypeId: number;    
     title: string;
 
     constructor(private objectDetailService: ObjectDetailService,
@@ -38,12 +37,8 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
             this.router.navigateByUrl('/home');
         }
         this.sub = this.route.params.subscribe(params => {
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];
-
-            this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
-                if (res) this.title = 'Permissions for ' + (res.Name ? res.Name : res.DisplayValue);
-            });
+            this.assetTypeId = +params['assetTypeId'];
+   
         });
     }
 
