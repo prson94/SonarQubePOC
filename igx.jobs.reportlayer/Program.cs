@@ -1070,6 +1070,7 @@ from	RuleImplementation I
 		inner join RuleType RT on RT.ID = R.RuleTypeID 
 group by R.RuleTypeID,
 		RT.Name,
+        D.ID,
 		I.RuleID,
 		D.DisplayValue,
 		I.ID,
