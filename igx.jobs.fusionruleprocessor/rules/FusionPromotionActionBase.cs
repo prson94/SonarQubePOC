@@ -50,7 +50,7 @@ namespace igx.jobs.fusionruleprocessor
                             from
 	                            #fields f
                                 inner join #promotedItems p on (f.Id = p.AttributeId)
-	                            inner join fieldtype ft on (f.TargetFieldName = ft.Name and ft.[Object] = @targetType and ft.[ObjectId] = @objectParentId)                            
+	                            inner join fieldtype ft on (f.TargetFieldTypeID = ft.ID and ft.[Object] = @targetType and ft.[ObjectId] = @objectParentId)                            
                             where
 	                            f.ObjectType = @objectParentType and f.RuleStepId = @stepId
                         ";

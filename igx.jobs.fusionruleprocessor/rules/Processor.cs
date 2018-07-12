@@ -269,7 +269,7 @@ namespace igx.jobs.fusionruleprocessor
 					            M.TargetFieldTypeID,
 					            F.FormattedValue
 			            from	[fusion].[RuleStepMapping] M
-					            inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and (M.SourceFieldName not in ('ID', 'Name', 'TextPath') AND M.IsConstantValue = 0)					            
+					            inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and ((M.SourceFieldName is null or M.SourceFieldName not in ('ID', 'Name', 'TextPath')) AND M.IsConstantValue = 0)					            
 					            inner  join FusionAttribute FA on FA.ID in (select id from #items)
 					            inner join FieldType FT on FT.ID = M.SourceFieldTypeID
 					            inner join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'FusionAttribute' and (F.ObjectID = FA.ID OR F.ObjectID = FA.ParentID)
