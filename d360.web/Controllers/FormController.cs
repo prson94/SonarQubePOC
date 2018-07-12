@@ -15424,9 +15424,20 @@ order by case Object
                 var existing = Company.Filter<ResponsibilityTypeRelation>(r => r.ObjectType == model.ObjectType && r.ObjectID == model.ObjectID && r.ResponsibilityTypeID == model.ResponsibilityTypeID).SingleOrDefault();
                 if (existing == null) throw new NotFoundException("responsibility type relation");
 
+                var oldPermissionsMask = existing.PermissionsBitMask;
+
                 existing.PermissionsBitMask = model.Permissions.Where(i => i.Selected).Sum(i => i.Value);
 
                 Company.Update(existing);
+
+                if (oldPermissionsMask != existing.PermissionsBitMask)
+                {
+                    // We need to mass-update the role results.
+                    Company.Execute(
+                        "update ResponsibilityTypeRelationRuleResult set PermissionsBitMask = @m where ResponsibilityTypeID = @r and AssetTypeID = @a", 
+                        new { r = model.ResponsibilityTypeID, a = model.AssetTypeID, m = existing.PermissionsBitMask },
+                        commandTimeout: 120 );
+                }
 
                 return jsonSuccess("Item successfully updated.", model.ResponsibilityTypeID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -15463,7 +15474,7 @@ order by case Object
             if (!Company.CurrentResourceIsAdmin)
                 return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
 
-            var results = Company.Database.Connection.GetThenResults(rule,null, this.HideData3SixtyUsers()); 
+            var results = Company.Database.Connection.GetThenResults(rule, this.HideData3SixtyUsers()); 
             return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
