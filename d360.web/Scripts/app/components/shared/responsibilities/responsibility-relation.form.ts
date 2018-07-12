@@ -52,7 +52,8 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
     private relationPermissions: ResponsibilityTypeRelationPermission[] = [];
 
     private actionName: string = "Add";
-        
+    private inEditModel: boolean = false;
+    private selectedAllocation: ResponsibilityTypeRelationAllocationOption = null;
     private errorMessage: string = "";
 
     constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
@@ -63,16 +64,20 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
         this.load();
     }
 
-    isPermissionSelected(p: Permission) {
-        return ((this.relation.PermissionsBitMask & p) == p);
-    }
-
     private load(): void {
 
         if (this.relation) {
             if (this.relation.ObjectID > 0) {
+                this.inEditModel = true;
                 this.actionName = 'Edit';
-                //this.isLoading = true;   
+
+                //#region Mark the one in use as not used so it will show up in the edit list.
+                let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find(ao => ao.ID === this.relation.AssetTypeID);
+                if (ix) {
+                    ix.IsUsed = false;
+                    this.selectedAllocation = ix;
+                }
+                //#endregion
 
                 //#region Mark permission options as selected based on collection of permissions on resposibility type relation.
                 if (this.relation.Permissions) {
@@ -85,17 +90,17 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                         if (permissionOptionIndex > -1) {
                             op.Selected = true;
                         }
-                        //let permissionOptionIndex: number = this.commonFormData.PermissionOptions.findIndex(po => po.ID === ep.ID);
-                        //if (permissionOptionIndex > -1) {
-                        //    this.commonFormData.PermissionOptions.[permissionOptionIndex].Selected = true;
-                        //}
                     });
                 }
                 //#endregion
 
             } else {
+                this.inEditModel = false;
                 this.actionName = 'Add';
-                //this.isLoading = true;
+
+                this.commonFormData.PermissionOptions.forEach(op => {
+                    op.Selected = false;    // Reset to default.
+                });
             }
         }
     }

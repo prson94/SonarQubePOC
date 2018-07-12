@@ -43,7 +43,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
     constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesService) {
         super();
 
-        this.theDeleteCallback = this.deleteRule.bind(this);
+        this.theDeleteCallback = this.deleteResponsibilityTypeRelation.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -84,9 +84,9 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
                         //#region Remove the already-populated relations from the list of options.
                         this.rows.forEach(e => {
-                            let ix: number = this.commonFormData.AllocationOptions.findIndex(ao => ao.ID === e.AssetTypeID);
-                            if (ix > -1) {
-                                this.commonFormData.AllocationOptions.splice(ix, 1);
+                            let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find(ao => ao.ID === e.AssetTypeID)
+                            if (ix) {
+                                ix.IsUsed = true;
                             }
                         });
                         //#endregion
@@ -102,9 +102,9 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
                         //#region Remove the already-populated relations from the list of options.
                         this.rows.forEach(e => {
-                            let ix: number = this.commonFormData.AllocationOptions.findIndex(ao => ao.ID === e.AssetTypeID);
-                            if (ix > -1) {
-                                this.commonFormData.AllocationOptions.splice(ix, 1);
+                            let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find(ao => ao.ID === e.AssetTypeID)
+                            if (ix) {
+                                ix.IsUsed = true;
                             }
                         });
                         //#endregion
@@ -136,7 +136,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
         this.isEditing = false;
         this.isDeleting = true;
         this.isAdding = false;
-        this.onDelete.emit();
+        //this.onDelete.emit();
     }
     
     editComplete(event) {
@@ -146,7 +146,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
         this.onFieldsChanged.emit();
     }
 
-    deleteRule(id: number) {
+    deleteResponsibilityTypeRelation(id: number) {
         this.responsibilityTypeService.deleteRelation(this.selectedRow).then(res => {
             this.showMessageForResult(this.messagesService, res);
             if (!res.isError){   
@@ -154,7 +154,8 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
                 //let index = this.rows.findIndex(f => f.ID == id);
                 //if (index >= 0 && index < this.rows.length)
                 //    this.rows.splice(index, 1);
-                this.onFieldsChanged.emit();
+                this.onDelete.emit();
+                this.load();
             }
         });        
     }

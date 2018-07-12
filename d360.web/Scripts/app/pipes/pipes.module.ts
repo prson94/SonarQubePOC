@@ -9,6 +9,7 @@ import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
 import { TreeSearchPipe } from './tree-search.pipe';
 import { ArrayToSelectItemPipe } from './array-to-selectitem.pipe';
 import { SafeHtmlPipe } from './safe-html.pipe';
+import { ResponsibilityTypeRelationAllocationOptionFilterPipe } from './responsibilitytypeallocation-filter.pipe';
 
 @NgModule({
     imports: [CommonModule],
@@ -18,6 +19,7 @@ import { SafeHtmlPipe } from './safe-html.pipe';
         DropdownItemToSelectItemPipe,
         ModelTypePipe,
         PermissionFilterPipe,
+        ResponsibilityTypeRelationAllocationOptionFilterPipe,
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
         SafeHtmlPipe
@@ -28,6 +30,7 @@ import { SafeHtmlPipe } from './safe-html.pipe';
         DropdownItemToSelectItemPipe,
         ModelTypePipe,
         PermissionFilterPipe,
+        ResponsibilityTypeRelationAllocationOptionFilterPipe,
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
         SafeHtmlPipe

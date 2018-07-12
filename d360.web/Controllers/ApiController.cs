@@ -380,7 +380,7 @@ namespace d360.web.Controllers
                 indx++;
             }
                         
-            var sql = @"select [Object], ObjectID from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @resId and (" + dynamicSql + ")";
+            var sql = $@"select [Object], ObjectID from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @resId and ({dynamicSql})";
 
             dbParams.Add("resId", Company.CurrentResourceID);
 

@@ -15,7 +15,7 @@
                      [callback]="theDeleteCallback"
                      [itemId]="selectedRow?.ID"
                      [method]="'callback'"
-                     [prompt]="'Are you sure you want to delete the rule [' + [selectedRow?.Name] + ']?'"
+                     [prompt]="'Are you sure you want to delete the responsibility relation between [' + [selectedRow?.AssetTypeName] + '] and [' + [selectedRow?.ResponsibilityTypeName] + ']? This will remove all assigned responsibilities between these two types and cannot be undone.'"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                             

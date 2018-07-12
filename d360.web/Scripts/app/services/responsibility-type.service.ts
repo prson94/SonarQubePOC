@@ -144,8 +144,8 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
             .catch(err => this.handleError(err));
     }
 
-    deleteRelation(rule: ResponsibilityTypeRelation): Promise<any> {
-        return this.http.delete(`form/DeleteResponsibilityTypeRelationByID?id=${rule.AssetTypeID}`)
+    deleteRelation(relation: ResponsibilityTypeRelation): Promise<any> {
+        return this.http.delete(`form/ResponsibilityTypeRelation?responsibilityTypeId=${relation.ResponsibilityTypeID}&type=${relation.ObjectType}&typeId=${relation.ObjectID}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

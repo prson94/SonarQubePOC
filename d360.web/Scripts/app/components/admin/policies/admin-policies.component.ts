@@ -79,7 +79,7 @@ import { MessagesService } from '../../../services/messages.service';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <d3s-responsibility-relations queryType="A" [id]="selected?.AssetTypeID" showAddButton="false" showDeleteButton="false"></d3s-responsibility-relations>
+                                    <d3s-responsibility-relations queryType="A" [id]="selected?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
                                 </div>
                             </div>
                         </div>

@@ -57,6 +57,7 @@ export class ResponsibilityTypeRelation_FormData {
 }
 
 export class ResponsibilityTypeRelationAllocationOption {
+    IsUsed: boolean;
     ID: number;
     Path: string;
 }

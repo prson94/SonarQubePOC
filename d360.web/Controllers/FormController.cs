@@ -15312,7 +15312,8 @@ order by TP.TextPath";
         public JsonNetResult GetResponsibilityTypeRelation_FormData()
         {
             var AllocationOptions = Company.Query<dynamic>(@"
-select	A.ID, 
+select	cast(0 as bit) as IsUsed,
+        A.ID, 
 		case Object
 			when 'ArtifactType' then 'Artifacts :: '
 			when 'TaxonomyType' then 'Models :: '
@@ -15351,21 +15352,21 @@ order by case Object
         }
 
         [HttpDelete, Route("ResponsibilityTypeRelation"), NonNullableParameters]
-        public JsonResult DeleteResponsibilityTypeRelation(ResponsibilityTypeRelationViewModel model)
+        public JsonResult DeleteResponsibilityTypeRelation(int responsibilityTypeId, string type, int typeId)
         {
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                var er = Company.Filter<ResponsibilityTypeRelation>(i => 
-                    i.ResponsibilityTypeID == model.ResponsibilityTypeID && 
-                    i.ObjectType == model.ObjectType && 
-                    i.ObjectID == model.ObjectID).SingleOrDefault();
+                var model = Company.Filter<ResponsibilityTypeRelation>(i => 
+                    i.ResponsibilityTypeID == responsibilityTypeId && 
+                    i.ObjectType == type && 
+                    i.ObjectID == typeId).SingleOrDefault();
 
-                if (er == null) throw new NotFoundException("relation");
+                if (model == null) throw new NotFoundException("responsibility type relation");
 
-                //Company.Delete(SystemObjects.ResponsibilityType, id);
+                Company.RemoveResponsibilityTypeRelation(model);
 
                 return jsonSuccess("Item successfully removed.", "0", "delete", HttpStatusCode.OK);
             }

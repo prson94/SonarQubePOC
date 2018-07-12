@@ -92,14 +92,11 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
             
         }
     }
-    private getResponsibilityTypes(): void {
 
+    private getResponsibilityTypes(): void {
         this.resouceAssigned = "";
         this.showResourceGrid();
-
- 
     }
-
 
     private getAssetType(resource): string{
         let atype;
@@ -123,6 +120,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         }
         return atype;
     }
+
     private save(): void {
         try {
      

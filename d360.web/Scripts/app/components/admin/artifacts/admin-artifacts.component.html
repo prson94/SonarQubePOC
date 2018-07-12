@@ -52,7 +52,7 @@
             <d3s-field-definition-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
-            <d3s-responsibility-relations queryType="A" [id]="selectedRow?.data?.AssetTypeID" showAddButton="false" showDeleteButton="false"></d3s-responsibility-relations>
+            <d3s-responsibility-relations queryType="A" [id]="selectedRow?.data?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
             <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-admin-allocation>

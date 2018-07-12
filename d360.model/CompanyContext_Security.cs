@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.entities.Views;
 using d360.core.enums;
 using Dapper;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.SqlClient;
@@ -140,6 +141,46 @@ order by RT.Name", new { id }).AsQueryable();
         public bool HasAssetTypePermission(SystemObjects type, int id, Permission permission)
         {
             return HasAssetPermission(type.ToString(), id, permission);
+        }
+
+        public void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation)
+        {
+            using (var trans = Database.BeginTransaction())
+            {
+                try
+                {
+                    Database.ExecuteSqlCommand(@"
+    delete	O 
+    from	ResponsibilityTypeRelationOverrideItem O
+		    inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
+		    inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
+
+    delete	O 
+    from	ResponsibilityTypeRelationRuleResult O
+		    inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
+		    inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
+
+    delete	ResponsibilityTypeRelationRule
+    where	ResponsibilityTypeID = @ResponsibilityTypeID
+		    and Object = @ObjectType 
+		    and ObjectID = @ObjectID;
+
+    delete	ResponsibilityTypeRelation
+    where	ResponsibilityTypeID = @ResponsibilityTypeID
+		    and ObjectType = @ObjectType 
+		    and ObjectID = @ObjectID;", 
+            new SqlParameter("@ResponsibilityTypeID", relation.ResponsibilityTypeID),
+            new SqlParameter("@ObjectType", relation.ObjectType),
+            new SqlParameter("@ObjectID", relation.ObjectID)
+            );
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                    throw;
+                }
+            }
         }
 
         #endregion
