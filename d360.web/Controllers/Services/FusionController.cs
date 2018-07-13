@@ -176,9 +176,7 @@ order by C.ParentID, C.[Name]", new { id }).AsQueryable();
         [Route("{id:int}/configurations")]
         public HttpResponseMessage GetConfigurationsByType(int id, bool useFieldName = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration details.");
-
+            
             var joins = "";
             var columns = "";
             getDynamicFieldJoinStatements(id, "Fusion", out joins, out columns, true, useFieldName);
