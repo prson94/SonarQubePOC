@@ -129,7 +129,7 @@ order by RT.Name", new { id }).AsQueryable();
             if (!hasPermission)
             {
                 var assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).Single();
-                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where Object = @type and ObjectID = @id and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id, t = assetTypeID }).Single();
+                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where ( (Object = @type and ObjectID = @id) or (AssetID = 0 and AssetTypeID = @t) ) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id, t = assetTypeID }).Single();
             }
 
             return hasPermission;
@@ -142,7 +142,7 @@ order by RT.Name", new { id }).AsQueryable();
             {
                 var assetTypeID = Query<int>("select AssetTypeID from Asset where ID = @id", new { id }).Single();
                 //return Company.Filter<ResponsibilityDetail>(i => (i.AssetID == assetID || (i.AssetID == 0 && i.AssetTypeID == asset.AssetTypeID)) && i.IsVisible);
-                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where AssetID = @id and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { id, t = assetTypeID }).Single();
+                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where (i.AssetID == @id || (i.AssetID == 0 && i.AssetTypeID == @t)) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { id, t = assetTypeID }).Single();
             }
 
             return hasPermission;
@@ -158,7 +158,7 @@ order by RT.Name", new { id }).AsQueryable();
             bool hasPermission = CurrentResourceIsAdmin;
             if (!hasPermission)
             {
-                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where [Type] = @type and TypeID = @id and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id }).Single();
+                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where [Type] = @type and TypeID = @id and AssetID = 0 and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id }).Single();
             }
 
             return hasPermission;
@@ -166,7 +166,7 @@ order by RT.Name", new { id }).AsQueryable();
 
         public bool HasAssetTypePermission(SystemObjects type, int id, Permission permission)
         {
-            return HasAssetPermission(type.ToString(), id, permission);
+            return HasAssetTypePermission(type.ToString(), id, permission);
         }
 
         public void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation)

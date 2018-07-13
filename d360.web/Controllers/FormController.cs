@@ -13728,7 +13728,7 @@ order by D.TextPath";
 
         #region Form Get/Post
 
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRelationship")]
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRelationship")]
         public JsonResult AddRelationship(FormCollection form)
         {
             try
@@ -13807,10 +13807,9 @@ order by D.TextPath";
 
                 if (intersect == null) throw new NotFoundException("relationship");
 
-                if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ModifyRelationships))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-                if (!Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ModifyRelationships))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ModifyRelationships) &&
+                    !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ModifyRelationships))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Update(intersect);
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
@@ -18976,7 +18975,7 @@ from	Asset A
         inner join Taxonomy X on X.ID = A.ObjectID
         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'TaxonomyType' and T.ObjectID = @t
 		cross apply dbo.GetAssetTextPathById(A.ID, '/') P
-where (coalsece(x.[Level], 1) + @currentLevel) <= @maxLevel",
+where (coalesce(x.[Level], 1) + @currentLevel) <= @maxLevel",
 new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyType.MaximumDepth ?? 1 }).Select(i => new { i.ID, i.Name }).ToList();
 
             var thisEntry = parents.FirstOrDefault(i => i.ID == id);
