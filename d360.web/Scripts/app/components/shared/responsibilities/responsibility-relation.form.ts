@@ -118,31 +118,33 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
     private onSubmit(): any {        
         this.isLoading = true;
 
-        this.relation.Permissions = [];
-        this.commonFormData.PermissionOptions.forEach(po => {
-            if (po.Selected) {
-                this.relation.Permissions.push(po);
-            }
-        });
+        if (this.validate()) {
+            this.relation.Permissions = [];
+            this.commonFormData.PermissionOptions.forEach(po => {
+                if (po.Selected) {
+                    this.relation.Permissions.push(po);
+                }
+            });
         
-        if (this.relation.ObjectID > 0) {
-            this.responsibilityTypeService.putRelation(this.relation)
-                .then(r => {
-                    this.isLoading = false;
-                    this.showMessageForResult(this.messagesService, r);
-                    if (r.type != 'error') {
-                        this.onComplete.emit({ action: 'edit', field: this.relation });
-                    }
-                });
-        } else {
-            this.responsibilityTypeService.postRelation(this.relation)
-                .then(r => {
-                    this.showMessageForResult(this.messagesService, r);
-                    this.isLoading = false;
-                    if (r.type != 'error') {                                                                
-                        this.onComplete.emit({ action: 'add', field: this.relation });
-                    }
-                });
+            if (this.relation.ObjectID > 0) {
+                this.responsibilityTypeService.putRelation(this.relation)
+                    .then(r => {
+                        this.isLoading = false;
+                        this.showMessageForResult(this.messagesService, r);
+                        if (r.type != 'error') {
+                            this.onComplete.emit({ action: 'edit', field: this.relation });
+                        }
+                    });
+            } else {
+                this.responsibilityTypeService.postRelation(this.relation)
+                    .then(r => {
+                        this.showMessageForResult(this.messagesService, r);
+                        this.isLoading = false;
+                        if (r.type != 'error') {                                                                
+                            this.onComplete.emit({ action: 'add', field: this.relation });
+                        }
+                    });
+            }
         }
     }
 
@@ -150,9 +152,10 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
         let valid = true;
         this.errorMessage = '';
 
-        //if (!this.model.Name) {
-        //    valid = false;
-        //}
+        if (!this.relation.AssetTypeID) {
+            valid = false;
+            this.errorMessage += "You must select a valid asset type.";
+        }
 
         return valid;
     }

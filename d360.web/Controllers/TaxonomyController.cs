@@ -76,6 +76,7 @@ where   A.Type = 'TaxonomyType'
         and A.TypeID = @id 
         and A.[State] = 1 
         and A.ID not in ({GetNoReadSqlStatement()}) 
+        and A.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement()})
 order by DisplayValue ";
  
             var models = Company.Query<dynamic>(sql, new { id });

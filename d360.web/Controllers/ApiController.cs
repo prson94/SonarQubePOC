@@ -4368,7 +4368,8 @@ from	[Policy] A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-where   OA.ID not in ({GetNoReadSqlStatement()}) ";
+where   OA.ID not in ({GetNoReadSqlStatement()})
+        and OA.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement()})";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -4654,7 +4655,8 @@ from	[Rule] A
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
 where   A.RuleTypeID = @id and A.[Visible] = 1
-        and O.ID not in (" + GetNoReadSqlStatement("@r") + ")", columns, joins);
+        and O.ID not in (" + GetNoReadSqlStatement("@r") + ")" +
+        "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins);
 
                 //querySql += " OPTION (RECOMPILE)";
 
@@ -6831,11 +6833,11 @@ where v.id = {0}", id)).FirstOrDefault();
             var asset = Company.GetAssetDetail(assetID);
             if (asset == null)
                 return null;
-            return Company.Filter<ResponsibilityDetail>(i => i.AssetID == assetID && i.IsVisible);
+            return Company.Filter<ResponsibilityDetail>(i => ( (i.AssetID == assetID) || (i.AssetID == 0 && i.AssetTypeID == asset.AssetTypeID) ) && i.IsVisible);
         }
 
         [Route("{id:int}/permissionsbyid")]
-        public List<PermissionInfo> GetPermissionsObObject(int id)
+        public List<PermissionInfo> GetPermissionsObject(int id)
         {
             var isAdmin = Company.CurrentResourceIsAdmin;
 
@@ -6861,7 +6863,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
                 if (type.IsType())
                 {
-                    return Company.GetPermissions(sType, id, null, 0);
+                    return Company.GetTypePermissions(sType, id);
                 }
                 else
                 {

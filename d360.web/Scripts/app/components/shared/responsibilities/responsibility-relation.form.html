@@ -14,7 +14,8 @@
         <div class="row">
             <div class="col s12">
                 <div id='TypeTip' class="FieldNameRequired">Asset Type</div>
-                <p-dropdown required name="assettype" [options]="commonFormData.AllocationOptions | responsibilityallocationFilter" placeholder="Select asset type..." [disabled]="inEditModel" [(ngModel)]="selectedAllocation" (onChange)="updateAssetType($event.value)" optionLabel="Path" dataKey="ID" filter="true" [style]="{'width':'98%', 'display' : 'block'}"></p-dropdown>
+                <div *ngIf="inEditModel">{{selectedAllocation.Path}}</div>
+                <p-dropdown required *ngIf="!inEditModel" name="assettype" [options]="commonFormData.AllocationOptions | responsibilityallocationFilter" placeholder="Select asset type..." [(ngModel)]="selectedAllocation" (onChange)="updateAssetType($event.value)" optionLabel="Path" dataKey="ID" filter="true" [style]="{'width':'98%', 'display' : 'block'}"></p-dropdown>
             </div>
         </div>
 

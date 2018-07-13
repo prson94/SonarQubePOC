@@ -15433,7 +15433,7 @@ order by case Object
                 if (oldPermissionsMask != existing.PermissionsBitMask)
                 {
                     // We need to mass-update the role results.
-                    Company.Execute(
+                    Company.Database.Connection.Execute(
                         "update ResponsibilityTypeRelationRuleResult set PermissionsBitMask = @m where ResponsibilityTypeID = @r and AssetTypeID = @a", 
                         new { r = model.ResponsibilityTypeID, a = model.AssetTypeID, m = existing.PermissionsBitMask },
                         commandTimeout: 120 );

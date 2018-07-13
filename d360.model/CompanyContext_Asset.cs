@@ -437,6 +437,7 @@ from	Asset A{tableHints}
 where   A.AssetTypeID = @atID 
         and A.State = 1
         and A.ID not in (select AssetID from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r) 
+        and A.AssetTypeID not in (select AssetTypeID from ResponsibilityDetail where AssetID = 0 and PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r)
 {whereString} 
 OPTION (RECOMPILE)";
             }
@@ -503,8 +504,8 @@ OPTION (RECOMPILE)";
             {
                 editRightsColumnStatement = " IIF(S_E.[Count] = 0, 0, 1) as P_CanEdit, IIF(S_D.[Count] = 0, 0, 1) as P_CanDelete, ";
                 editRightsJoinStatement = $@"
-cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and AssetID = A.ID and PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
-cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and AssetID = A.ID and PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
+cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
+cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
             }
 
             #endregion
@@ -871,6 +872,7 @@ from	Asset A{tableHints}
 where	A.AssetTypeID = @atID
 		and A.State = 1
         and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and AssetID = A.ID)
+        and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and AssetTypeID = A.AssetTypeID and AssetID = 0)
         {filterWhereString}
 OPTION (RECOMPILE)";
 
@@ -916,6 +918,7 @@ from	(
 						{relationshipJoinStatement}
 						{fieldFromRelationshipJoinStatement} 
                 where   not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and AssetID = A.ID)
+                        and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and AssetTypeID = A.AssetTypeID and AssetID = 0)
                         {filterWhereString}
 				) A
 		pivot	(

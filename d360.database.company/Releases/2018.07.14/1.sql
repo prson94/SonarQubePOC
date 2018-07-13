@@ -1697,6 +1697,12 @@ GO
 CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationRuleResult] ON [dbo].[ResponsibilityTypeRelationRuleResult] ([AssetID],[Overridden])
 GO
 
+CREATE NONCLUSTERED INDEX IX_ResponsibilityTypeRelationRuleResult_Asset_PermissionsBitMask_SecurityAsset ON ResponsibilityTypeRelationRuleResult (AssetID ASC, PermissionsBitMask ASC, SecurityAsset ASC, SecurityAssetID ASC)
+GO
+
+CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationRuleResult_ResponsibilityType_AssetType] ON [dbo].[ResponsibilityTypeRelationRuleResult] ( [ResponsibilityTypeID] ASC, [AssetTypeID] ASC )
+GO
+
 ALTER VIEW [dbo].[ResponsibilityDetail] AS
 	select	O.RuleID,
 			O.ResponsibilityTypeID,
@@ -1714,13 +1720,13 @@ ALTER VIEW [dbo].[ResponsibilityDetail] AS
 			O.IsVisible,
 			O.OverrideID,
 			A.Object,
-			A.ObjectID,
+			coalesce(A.ObjectID, 0) as ObjectID,
 			T.Object as [Type],
 			T.ObjectID as TypeID
 	from	ResponsibilityTypeRelationRuleResult O
 			inner join ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
-			inner join Asset A on A.ID = O.AssetID
-			inner join AssetType T on T.ID = A.AssetTypeID
+			inner join AssetType T on T.ID = O.AssetTypeID
+			left join Asset A on A.ID = O.AssetID and A.AssetTypeID = T.ID --( (A.ID = O.AssetID) OR (O.AssetID = 0 and A.AssetTypeID = O.AssetTypeID) )
 			left join [Group] G on O.SecurityAsset = 'G' and G.ID = O.SecurityAssetID
 			left join ResourceGroup RG on RG.GroupID = G.ID
 			left join [Organization] D on O.SecurityAsset = 'O' and D.ID = O.SecurityAssetID
@@ -1972,7 +1978,6 @@ GO
 
 drop table [cache].[Object]
 GO
-
 
 ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]
 --declare
@@ -2750,9 +2755,6 @@ BEGIN
 				@html as Body;
 	end
 END
-GO
-
-CREATE NONCLUSTERED INDEX IX_ResponsibilityTypeRelationRuleResult_Asset_PermissionsBitMask_SecurityAsset ON ResponsibilityTypeRelationRuleResult (AssetID ASC, PermissionsBitMask ASC, SecurityAsset ASC, SecurityAssetID ASC)
 GO
 
 ALTER procedure [dbo].[DeleteObject]
@@ -3727,9 +3729,6 @@ AS
 		END
 GO
 
-
-
-
 ALTER TABLE [dbo].[Intersect] DROP CONSTRAINT [UQ_Intersect]
 GO
 
@@ -3807,8 +3806,6 @@ CREATE TABLE [metrics].[StagingResultArchive] (
 	)
 )
 GO
-
-
 
 -- IGC STUFF ----------------------------------------------------------------------
 alter table integration.ExecutionAsset add [RawRelationships] NVARCHAR (MAX) NULL
