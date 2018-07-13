@@ -2677,6 +2677,7 @@ namespace d360.web.Controllers
             model.HomePageTitleSize = (settings.Any(i => i.SettingID == 43) ? settings.Single(i => i.SettingID == 43).Value : "38pt");
             model.HomePageTitleColor = (settings.Any(i => i.SettingID == 44) ? settings.Single(i => i.SettingID == 44).Value : "#fff");
             model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
+            model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
 
             model.UseLegacyLineage = (settings.Any(i => i.SettingID == 46) ? bool.Parse(settings.Single(i => i.SettingID == 46).Value) : true);
 
@@ -2875,6 +2876,7 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 40, formModel.ShowHomeBoardTile.ToString().ToLower());
                 updateCompanySetting(settings, 41, formModel.ShowHomeActivityTile.ToString().ToLower());
                 updateCompanySetting(settings, 42, formModel.ShowHomePageTitle.ToString().ToLower());
+                updateCompanySetting(settings, 33, formModel.BrowserTitlePrefix);
 
                 //prevent the user from entering special characters
                 var alphaNumericChars = "abcdefghijklmnopqrstuvwxyz0123456789";

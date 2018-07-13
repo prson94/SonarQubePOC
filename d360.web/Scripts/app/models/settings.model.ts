@@ -34,6 +34,7 @@ export class CompanySettings {
     HomePageTitleColor: string;
     HomePageBackgroundImage: string;
     ClearHomePageBackgroundImage: boolean = false;
+    BrowserTitlePrefix: string;
 }
 
 export class IpRestriction {

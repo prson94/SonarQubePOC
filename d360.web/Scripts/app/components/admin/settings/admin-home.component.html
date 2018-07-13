@@ -27,8 +27,14 @@
                 <div class="col s6">
                     <div class="FieldName">Title color</div>
                     <div>
-                        <p-colorPicker [ngModel]="companySettings.HomePageTitleColor" (ngModelChange)="companySettings.HomePageTitleColor = $event; companySettingsChange.emit(companySettings)"></p-colorPicker>
-                        <input type="text" [(ngModel)]="companySettings.HomePageTitleColor" name="titlebackcolortext" style="padding:2px;" />
+                        <p-colorPicker [ngModel]="companySettings.HomePageTitleColor" (ngModelChange)="companySettings.HomePageTitleColor = $event; companySettingsChange.emit(companySettings)" [disabled]="!companySettings.ShowHomePageTitle"></p-colorPicker>
+                        <input type="text" [(ngModel)]="companySettings.HomePageTitleColor" name="titlebackcolortext" [disabled]="!companySettings.ShowHomePageTitle" />
+                    </div>
+                </div>
+                <div class="col s12">
+                    <div class="FieldName">Title</div>
+                    <div>
+                        <input type="text" [(ngModel)]="companySettings.BrowserTitlePrefix" name="titletext" style="width:93%" />
                     </div>
                 </div>
             </div>
