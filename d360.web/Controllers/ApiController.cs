@@ -7638,11 +7638,11 @@ from	    TaxonomyType FAT
 
             if (days != 0)
             {
-                DateTime startDate = DateTime.Now.AddDays(days * -1);
+                days = days * -1;
 
-                sql += " and (a.createdon > @startDate or a.updatedon > @startDate)";
+                sql += " and (a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP) or a.updatedon > dateadd(day, @d, CURRENT_TIMESTAMP))";
 
-                return Company.Query<AssetDetail>(sql, new { typeId = artifactTypeId, startDate = startDate });            
+                return Company.Query<AssetDetail>(sql, new { typeId = artifactTypeId, d = days });            
             }
 
             return Company.Query<AssetDetail>(sql, new { typeId = artifactTypeId});
