@@ -67,6 +67,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private addObjectsWarning = "";
     private objectSource$ = new Subject<any>();
     private objectSearchSub: any;
+    private selectedDetailPredicate = null;
 
     public diagramMode: DiagramMode = DiagramMode.Diagram;
     DiagramMode = DiagramMode;
@@ -352,7 +353,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
             this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
             this.showInfoTab = this.showLinkTabs || this.showNodeTabs;
-
+            this.selectedDetailPredicate = 0;
 
             if (this.tab != 'info' && this.tab != 'add')
                 this.tab = 'info';

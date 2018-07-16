@@ -29,6 +29,16 @@
                                 {{selectedData.fullText || '[unknown]'}}
                             </div>
                         </div>
+                        <div class="col s12" *ngIf="selectedData != null && selectedData.predicates != null && selectedData.predicates.length > 0">
+                            <!--<div>
+                                <select [ngModel]="selectedDetailPredicate" style="width: 95%">
+                                    <option *ngFor="let p of selectedData.predicates; let i = index" [value]="index">{{p.name}}</option>
+                                </select>
+                            </div>-->
+                            <div>
+                                <object-detail [objectType]="'Intersect'" [objectID]="selectedData.predicates[0].intersectId"></object-detail>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length == 1">
