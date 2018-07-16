@@ -16,7 +16,6 @@ using Microsoft.ApplicationInsights.DataContracts;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -56,8 +55,7 @@ namespace d360.web.Controllers
             AuthnRequest authnRequest = new AuthnRequest
             {
                 AssertionConsumerServiceURL = string.Format("{0}://{1}/sso/acs", Request.Url.Scheme, Request.Url.Authority),
-                Destination = Community.CurrentCompanySsoModel.IdpSsoEndpoint,// "https://login.windows.net/21a2b0d9-a4b4-449e-af0b-f22a7129b71f/saml2",
-                //IsPassive = true,
+                Destination = Community.CurrentCompanySsoModel.IdpSsoEndpoint,// "https://login.windows.net/21a2b0d9-a4b4-449e-af0b-f22a7129b71f/saml2",                
                 Issuer = new Issuer(APP_ID),
                 ForceAuthn = false,
                 NameIDPolicy = new NameIDPolicy(null, null, true)                
@@ -66,16 +64,7 @@ namespace d360.web.Controllers
             // Serialize the authentication request to XML for transmission.
             var authnRequestXml = authnRequest.ToXml();
 
-            // Don't sign if using HTTP redirect as the generated query string is too long for most browsers.        
-            //if (Configuration.SingleSignOnServiceBinding != SAMLIdentifiers.Binding.HTTPRedirect)
-            //{
-            // Sign the authentication request.
-            //var x509Certificate = LoadCertificate(Path.Combine(System.Web.HttpRuntime.AppDomainAppPath, "sp.pfx"), "password");
-            //SAMLMessageSignature.Generate(authnRequestXml, x509Certificate.PrivateKey, x509Certificate);
-            //}
-
-            Telemetry.TrackTrace(new TraceTelemetry { Message = $"createAuthnRequest => Idp Endpoint: {Community.CurrentCompanySsoModel.IdpSsoEndpoint}", SeverityLevel = SeverityLevel.Verbose });
-            //Trace.TraceInformation("createAuthnRequest => Idp Endpoint: {0}", Community.CurrentCompanySsoModel.IdpSsoEndpoint);
+            Telemetry.TrackTrace(new TraceTelemetry { Message = $"createAuthnRequest => Idp Endpoint: {Community.CurrentCompanySsoModel.IdpSsoEndpoint}", SeverityLevel = SeverityLevel.Verbose });            
 
             return authnRequestXml;
         }
@@ -89,7 +78,7 @@ namespace d360.web.Controllers
                 if (SAMLAssertionSignature.IsSigned(assertionXml))
                 {
                     Telemetry.TrackTrace(new TraceTelemetry { Message = "AssertionConsumerService => Response SAML is signed.  Verifying now...", SeverityLevel = SeverityLevel.Information });
-                    //Trace.TraceInformation("AssertionConsumerService => Response SAML is signed.  Verifying now...");
+                    
                     if (Community.CurrentCompanySsoModel.IdpCertificateFile != null)
                     {
                         var x509Certificate = new X509Certificate2(Community.CurrentCompanySsoModel.IdpCertificateFile);
@@ -101,8 +90,7 @@ namespace d360.web.Controllers
                     else
                     {
                         if (SAMLAssertionSignature.Verify(assertionXml))
-                            Telemetry.TrackTrace(new TraceTelemetry { Message = "AssertionConsumerService => Response SAML is signed AND verified.", SeverityLevel = SeverityLevel.Information });
-                        //Trace.TraceInformation("AssertionConsumerService => Response SAML is signed AND verified.");
+                            Telemetry.TrackTrace(new TraceTelemetry { Message = "AssertionConsumerService => Response SAML is signed AND verified.", SeverityLevel = SeverityLevel.Information });                        
                         else
                             throw new ApplicationException("AssertionConsumerService => Failed to Verify Signature where no IDP-supplied CER file was stored");
                     }
@@ -111,9 +99,9 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 Telemetry.TrackTrace(new TraceTelemetry { Message = ex.Message + ((ex.InnerException != null) ? ex.InnerException.Message : ""), SeverityLevel = SeverityLevel.Error });
-                //Trace.TraceError(ex.Message + ((ex.InnerException != null) ? ex.InnerException.Message : ""));
+                
             }
-            //telemetry = null;
+            
         }
 
         [AllowAnonymous, Route("sso")]
@@ -133,14 +121,8 @@ namespace d360.web.Controllers
                     if (testUri.IsAbsoluteUri)
                         returnUrl = "/home";
 
-                    string relayState = null;
-                    if (!string.IsNullOrWhiteSpace(returnUrl))
-                        relayState = RelayStateCache.Add(new RelayState(returnUrl, null));
-
-
-                    Telemetry.TrackTrace(new TraceTelemetry { Message = $"Login => relayState: {relayState}", SeverityLevel = SeverityLevel.Information });
-                    //Trace.TraceInformation("Login => relayState: {0}", relayState);
-
+                    Telemetry.TrackTrace(new TraceTelemetry { Message = $"Login => relayState: {returnUrl}", SeverityLevel = SeverityLevel.Information });
+                    
                     if (Community.CurrentCompanySsoModel.SignInitialSSORequest)
                     {
                         Telemetry.TrackTrace(new TraceTelemetry { Message = $"Login => signing initial authentication request" });
@@ -153,7 +135,7 @@ namespace d360.web.Controllers
 
                             telemetry = null;
 
-                            ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, relayState, x509Certificate != null ? x509Certificate.PrivateKey : null, "http://www.w3.org/2000/09/xmldsig#rsa-sha1");
+                            ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, returnUrl, x509Certificate != null ? x509Certificate.PrivateKey : null, "http://www.w3.org/2000/09/xmldsig#rsa-sha1");
                         }
                     }
                     else
@@ -180,7 +162,7 @@ namespace d360.web.Controllers
                                 break;
                         }
                         
-                        ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, relayState, null, hashString);                        
+                        ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, returnUrl, null, hashString);                        
                     }
                     
                     return new EmptyResult();
@@ -225,12 +207,7 @@ namespace d360.web.Controllers
                         Message = $"AssertionConsumerService => Assertion Count: {samlResponse.GetAssertions().Count}, Signed Assertion Count: {samlResponse.GetSignedAssertions().Count}, Encrypted Assertion Count: {samlResponse.GetEncryptedAssertions().Count}",
                         SeverityLevel = SeverityLevel.Information
                     });
-                //Trace.TraceInformation("AssertionConsumerService => Assertion Count: {0}, Signed Assertion Count: {1}, Encrypted Assertion Count: {2}", 
-                //    samlResponse.GetAssertions().Count, 
-                //    samlResponse.GetSignedAssertions().Count,
-                //    samlResponse.GetEncryptedAssertions().Count);
-
-
+                
                 if (samlResponse.GetAssertions().Count > 0)
                 {
                     samlAssertion = samlResponse.GetAssertions()[0];
@@ -245,22 +222,11 @@ namespace d360.web.Controllers
                 else if (samlResponse.GetEncryptedAssertions().Count > 0)
                 {
                     // Decrypt the encrypted assertion.
-                    var samlAssertionXml = samlResponse.GetAssertions()[0].ToXml();//.GetEncryptedAssertions()[0].DecryptToXml(x509Certificate.PrivateKey, null, null);
+                    var samlAssertionXml = samlResponse.GetAssertions()[0].ToXml();
                     verifySignature(samlAssertionXml);
-                    //if (SAMLAssertionSignature.IsSigned(samlAssertionXml))
-                    //{
-                    //    if (Community.CurrentCompanySsoModel.IdpCertificateFile != null)
-                    //    {
-                    //        var x509Certificate = new X509Certificate2(Community.CurrentCompanySsoModel.IdpCertificateFile);
-                    //        if (!SAMLAssertionSignature.Verify(samlAssertionXml, x509Certificate))
-                    //        {
-                    //            Trace.TraceError("AssertionConsumerService => Failed to Verify Encrypted Assertions");
-                    //            throw new ArgumentException("The SAML assertion signature failed to verify.");
-                    //        }
-                    //    }
-                    //}
+                    
                     samlAssertion = new SAMLAssertion(samlAssertionXml);
-                    //var attributes = samlAssertion.GetAttributeStatements();
+                    
                 }
                 else
                 {
@@ -311,10 +277,7 @@ namespace d360.web.Controllers
 
                 Telemetry.TrackTrace(new TraceTelemetry { Message = $"SAML Attributes are: {submittedAttributes}", SeverityLevel = SeverityLevel.Information });
                 Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel = SeverityLevel.Information });
-
-                //if (samlAssertion.Subject.NameID != null) userName = samlAssertion.Subject.NameID.NameIdentifier;
-                //if (string.IsNullOrEmpty(userName)) throw new ArgumentException("The SAML assertion doesn't contain a subject name.");
-
+                
                 Resource resource = null;
 
                 if (!string.IsNullOrEmpty(userName))
@@ -324,12 +287,11 @@ namespace d360.web.Controllers
                     if (resource == null)
                     {
                         Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Did not find resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
-                        //Trace.TraceInformation("AssertionConsumerService => Did not find resource account for Username: {0}.", userName);
+                        
                         if (Community.CurrentCompanySsoModel.AllowNewUserLogin && !string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
                         {
                             Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Now creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
-                            //Trace.TraceInformation("AssertionConsumerService => Now creating resource account for Username: {0}.", userName);
-
+                            
                             if (string.IsNullOrEmpty(firstName)) firstName = "Unknown";
                             if (string.IsNullOrEmpty(lastName)) lastName = "Unknown";
 
@@ -351,8 +313,7 @@ namespace d360.web.Controllers
                                 Company.Add(new GlobalReportingResource { DateLastLoggedIn = resource.DateLastLoggedIn, Email = resource.Email, FirstName = resource.FirstName, IsAdministrator = false, LastName = resource.LastName, ResourceID = resource.ID, Status = resource.Status });
                             }
 
-                            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
-                            //Trace.TraceInformation("AssertionConsumerService => Finished creating resource account for Username: {0}.", userName);
+                            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });                            
                         }
                     }
                     else
@@ -389,8 +350,7 @@ namespace d360.web.Controllers
                 if (resource != null)
                 {
                     Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Resource account exists for Username: {userName}. Now authorizing with cookie.", SeverityLevel = SeverityLevel.Information });
-                    //Trace.TraceInformation("AssertionConsumerService => Resource account exists for Username: {0}. Now authorizing with cookie.", userName);
-
+                    
                     if (resource.ID > 0)
                     {
                         var settings = Community.GetCompanySettings();
@@ -468,16 +428,11 @@ namespace d360.web.Controllers
 
                         // Get the originally requested resource URL from the relay state, if any.
                         string redirectURL = "/#";
-
                         try
-                        {
-                            RelayState cachedRelayState = RelayStateCache.Remove(relayState);
-
-                            if (cachedRelayState != null)
-                            {
-                                var sendToUrl = cachedRelayState.ResourceURL;
-                                
-                                redirectURL = sendToUrl;
+                        {                         
+                           if(!string.IsNullOrEmpty(relayState))
+                            {                                
+                                redirectURL = relayState;
                             }
                         }
                         catch(Exception e)
@@ -518,8 +473,7 @@ namespace d360.web.Controllers
                     errorMessage = samlResponse.Status.StatusMessage.Message;
                 }
                 Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Unsuccessful: {errorMessage}", SeverityLevel = SeverityLevel.Error });
-                //Trace.TraceError("AssertionConsumerService => Unsuccessful: {0}", errorMessage);
-
+                
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
         }
@@ -588,10 +542,8 @@ namespace d360.web.Controllers
                         };
                         var lrXml = lr.ToXml();
 
-                        // Send the logout response over HTTP redirect.
-                        //X509Certificate2 x509Certificate = (X509Certificate2)Community.CurrentCompanySsoModel.IdpCertificateFile;
-                        SingleLogoutService.SendLogoutRequestByHTTPRedirect(Response, sloEndpoint, lrXml, null, null);
-                        //SAMLServiceProvider.InitiateSLO(Response, null);
+                        // Send the logout response over HTTP redirect.                        
+                        SingleLogoutService.SendLogoutRequestByHTTPRedirect(Response, sloEndpoint, lrXml, null, null);                        
                     }
                     break;
                 default:
@@ -729,13 +681,7 @@ namespace d360.web.Controllers
             var clientId = settings["AzureApplicationId"]; //application id from azure portal
             
             if (!string.IsNullOrEmpty(tenantId) && !string.IsNullOrEmpty(clientSecret) && !string.IsNullOrEmpty(clientId))
-            {
-                //var email = "kmcnamee@gmail.com";
-                //var tenantId = "b0f971a2-a021-43c6-b4e9-8bf500ebf35b"; // azure ad tenant / directory id
-
-                // from portal
-                //var clientId = "a9f106b3-52fc-43ca-b33b-9e53a58b40dd"; // application id from portal
-                //var clientSecret = "5w+fAVAdSv1bZtHMVBwAQy1AJtbUr/2v1X3rbCRpY0U=";  // encoded key from azure portal app key
+            {                
                 var invite = await AzureGraphProvider.CreateGuestAccount(email, firstName, lastName, title, url, tenantId, clientId, clientSecret);
 
                 return invite;
@@ -813,13 +759,7 @@ namespace d360.web.Controllers
                             else if (domain != null)
                             {
                                 var org = Company.GetById<Organization>(domain.OrganizationID);
-
-                                //if (!org.Accepted.Value)
-                                //{
-                                //    ModelState.AddModelError("Invalid", "Your domain owner has not accepted the organisational terms of use.");
-                                //    return View(model);
-                                //}
-
+                                
                                 //GOOD TO GO
                                 var registration = new OrganizationRegistration
                                 {
@@ -855,16 +795,7 @@ namespace d360.web.Controllers
 
 
                                 if (invite != null)
-                                {
-                                    //make sure org has been accepted
-                                    //var org = Company.GetById<Organization>(invite.OrganizationID);
-                                    //if (!org.Accepted ?? true)
-                                    //{
-                                    //    ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organisational terms of use.");
-                                    //    return View(model);
-                                    //}
-
-
+                                {                                    
                                     //GOOD TO GO
                                     var registration = new OrganizationRegistration
                                     {
@@ -908,9 +839,7 @@ namespace d360.web.Controllers
                         break;
                     #endregion
                     case RegisterStep.ADRegistration:
-                        // Save current place in the process.
-                        //  registration.Step = RegisterStep.TermsOfUse;
-                        //Company.Update(registration);
+                                                
                         if (!model.RegistrationID.HasValue)
                         {
                             ModelState.AddModelError("Invalid", "No registration found.");
@@ -923,16 +852,6 @@ namespace d360.web.Controllers
                             if (registration != null)
                             {
                                 model.Email = registration.Email;
-
-                                #region Validation
-
-                                //if (!model.Accept ?? false)
-                                //{
-                                //    ModelState.AddModelError("Invalid", "You must accept the terms of use.");
-                                //    return View(model);
-                                //}
-
-                                #endregion
 
                                 #region Check/Create resource account in community
 
@@ -1052,30 +971,8 @@ namespace d360.web.Controllers
                                 ModelState.AddModelError("Invalid", "No registration found.");
                                 return View(model);
                             }
-
-                            //var registration = Company.GetById<OrganizationRegistration>(model.RegistrationID.Value);
-                            //if (registration != null)
-                            //{
-                            //    model.Email = registration.Email;
-
-                            //    //var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
-
-                            //    //if (orgs.Any())
-                            //    //{
-                            //    //    if (!setOrgAndUserTermsOfUseText(registration, model))
-                            //    //    {
-                            //    //        return View(model);
-                            //    //    }
-                            //    //}
-                            //    //else if (!setTermsOfUseText(registration, model))
-                            //    //{
-                            //    //    return View(model);
-                            //    //}
-
-                            //    model.Step = RegisterStep.ADTermsOfUse;
-                            //}
                         }
-                        //return View(model);                        
+                        
                     case RegisterStep.Registration:
                         #region
                         try
@@ -1106,21 +1003,7 @@ namespace d360.web.Controllers
                                 if (registration != null)
                                 {
                                     model.Email = registration.Email;
-
-                                    //var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
-
-                                    //if (orgs.Any())
-                                    //{
-                                    //    if (!setOrgAndUserTermsOfUseText(registration, model))
-                                    //    {
-                                    //        return View(model);
-                                    //    }
-                                    //}
-                                    //else if (!setTermsOfUseText(registration, model))
-                                    //{
-                                    //    return View(model);
-                                    //}
-
+                                                                    
                                     #region Check/Create resource account in community
 
                                     var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
@@ -1201,17 +1084,7 @@ namespace d360.web.Controllers
 
                             var registration = Company.GetById<OrganizationRegistration>(model.RegistrationID.Value);
                             if (registration != null)
-                            {
-                                #region Validation
-
-                                //if (!model.Accept ?? false)
-                                //{
-                                //    ModelState.AddModelError("Invalid", "You must accept the terms of use.");
-                                //    return View(model);
-                                //}
-
-                                #endregion
-
+                            {                                
                                 #region Check/Create resource account in community
 
                                 var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
