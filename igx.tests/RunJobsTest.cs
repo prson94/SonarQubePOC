@@ -190,7 +190,7 @@ WHEN NOT MATCHED THEN
             //{
                 var company = getCompanyConnection(4);
                 company.Open();
-            company.ProcessResponsibilityRelationRules(60);
+            company.ProcessResponsibilityRelationRules(45);
                 //var fusionTypeIDs = company.Query<int>("select ID from FusionType where ID < 50000").ToList();
                 company.Close();
                 company.Dispose();

@@ -91,7 +91,7 @@ order by RT.Name", new { id }).AsQueryable();
             var responsibilityAssignments = Filter<ResponsibilityDetail>(i => 
             (
                 (i.Object == @object && i.ObjectID == objectID) ||
-                (i.Type == type && i.TypeID == typeID)
+                (i.AssetID == 0 && i.Type == type && i.TypeID == typeID)
             )
             && i.ResourceID == CurrentResourceID).Select(i => i.PermissionsBitMask).Distinct().ToList();
 
@@ -105,22 +105,19 @@ order by RT.Name", new { id }).AsQueryable();
             return permissions;
         }
 
-        public List<PermissionInfo> GetPermissions(SystemObjects type, int id)
+        /// <summary>
+        /// Default to read unless the user explicitely has no read access to an asset.
+        /// </summary>
+        public bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset)
         {
-            var permissions = Permission.DeleteAsset.GetList();
-
-            var sType = type.ToString();
-
-            var responsibilityAssignments = Filter<ResponsibilityDetail>(i => i.Object == sType && i.ObjectID == id && i.ResourceID == CurrentResourceID).Select(i => i.PermissionsBitMask).Distinct().ToList();
-
-            permissions.ForEach(p =>
+            bool hasPermission = CurrentResourceIsAdmin;
+            if (!hasPermission)
             {
-                p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
-            });
+                var assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).Single();
+                hasPermission = Query<int>($"select count(1) from ResponsibilityDetail where ( (Object = @type and ObjectID = @id) or (AssetID = 0 and AssetTypeID = @t) ) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = 0", new { type, id, t = assetTypeID }).Single() == 0;
+            }
 
-            permissions.RemoveAll(i => !i.Selected);
-
-            return permissions;
+            return hasPermission;
         }
 
         public bool HasAssetPermission(string type, int id, Permission permission)

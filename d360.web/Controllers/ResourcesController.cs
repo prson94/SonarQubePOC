@@ -573,23 +573,22 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         {
             try
             {
-                //check if the user has access
-                var accessSql = "select count(1) from cache.NoRead arp where arp.resourceid = @resourceId and arp.[object] = @Type and arp.objectid = @ID";
-
-                var accessCount = Company.Query<int>(accessSql, new { @resourceId = Company.CurrentResourceID, @Type = objectType, @ID = objectID }).FirstOrDefault();
-
                 bool show = false;
-                ObjectDetail det = null;
                 List<FieldTooltipValueModel> res = new List<FieldTooltipValueModel>();
                 List<TooltipFieldLevelPathModel> levels = new List<TooltipFieldLevelPathModel>();
                 string desc = "";
                 string dispName = "";
                 string typeName = "";
+                ObjectDetail det = null;
 
-                if (accessCount <= 0)
+                if (Company.HasAssetDefaultReadPermission(objectType, objectID))
                 {
-                    show = true;
                     det = Company.GetObjectDetail(objectType, objectID);
+
+                    if (det == null)
+                        throw new NotFoundException(objectType);
+
+                    show = true;
 
                     var sql = @"select 
                                 f.FormattedValue as [Value],

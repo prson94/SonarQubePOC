@@ -3862,18 +3862,18 @@ GO
 CREATE INDEX IX_IntegrationExecutionAsset_Execution ON [integration].[ExecutionAsset] ( [ExecutionID] desc )
 GO
 
-alter procedure integration.ProcessExecutionAssetType
+ALTER procedure [integration].[ProcessExecutionAssetType]
 --declare	
 	@ExecutionID bigint,
 	@SynchedAssetTypeID int,
 	@AssetTypeID int,
 	@ResourceID int,
 	@Section int --0 = Asset, 1 = Field, 2 = Relationships, 3 = Responsibilities
---set @ExecutionID = 5178
+--set @ExecutionID = 12085
 --set @SynchedAssetTypeID = 1
 --set @AssetTypeID = 3
 --set @ResourceID = 0
---set @Section = 1
+--set @Section = 2
 as
 begin
 	set nocount on;
@@ -4351,7 +4351,8 @@ begin
 					inner join Asset A on A.AssetTypeID = SAT.AssetTypeID and A.SourceID = EA.SourceID
 					left join FieldType FT on FT.AssetTypeID = SAT.AssetTypeID and FT.Name = F.TargetField
 			where	EA.ExecutionID = @ExecutionID--145 
-					and EA.SynchedAssetTypeID = @SynchedAssetTypeID;
+					and EA.SynchedAssetTypeID = @SynchedAssetTypeID
+					and EA.RawObject is not null;
 
 		BEGIN	-- Process array value-delimited fields
 			update	T
@@ -4542,6 +4543,7 @@ begin
 					outer apply OPENJSON(RIF.items) with (_type nvarchar(max) '$._type', _id nvarchar(max) '$._id') RIIF
 			where	A.ExecutionID = @ExecutionID
 					and A.SynchedAssetTypeID = @SynchedAssetTypeID
+					and A.RawRelationships is not null
 					and RIIF._type is not null;
 
 		drop table if exists #Rel_Step2;
@@ -4603,7 +4605,9 @@ begin
 					inner join integration.ExecutionAsset OE on OE.ExecutionID = @ExecutionID and OE.SynchedAssetTypeID = @SynchedAssetTypeID and OE.SourceID = O.SourceID
 					inner join #IntersectTypes SIT on SIT.ID = I.IntersectTypeID
 					left join #Rel_Step2 SI on SI.IntersectID = I.ID
-			where	SI.IntersectID is null;
+			where	SI.IntersectID is null
+					and S.SourceID not in (select SourceID from integration.ExecutionAsset where ExecutionID = @ExecutionID and SynchedAssetTypeID = @SynchedAssetTypeID and RawRelationships is not null)
+					and O.SourceID not in (select SourceID from integration.ExecutionAsset where ExecutionID = @ExecutionID and SynchedAssetTypeID = @SynchedAssetTypeID and RawRelationships is not null);
 		--END: Query for records we need to delete.
 
 		BEGIN	-- Try to process previously unresolved relationships.
@@ -4732,7 +4736,8 @@ begin
 					inner join [integration].[SynchedAssetTypeRoleItem] R on R.SynchedAssetTypeID = E.SynchedAssetTypeID and R.SourceIdField = J.[key] COLLATE DATABASE_DEFAULT
 					inner join ResponsibilityType RT on RT.Name = R.RoleName
 			where	E.ExecutionID = @ExecutionID
-					and E.SynchedAssetTypeID = @SynchedAssetTypeID;
+					and E.SynchedAssetTypeID = @SynchedAssetTypeID
+					and E.RawResponsibilitites is not null;
 
 		update	#Resp_Step1
 		set		[Action] = 'D'   -- Delete action

@@ -89,7 +89,7 @@ namespace d360.model
                             try
                             {
                                 var thenSql = cnn.GetThenResultsSql(rule, false, false);
-                                sqlToExecute = $@"insert into #ResponsibilityTypeRelationTypeItem {thenSql}";
+                                sqlToExecute = $@"insert into #ResponsibilityTypeRelationTypeItem {string.Format(thenSql, "")}";
                                 cnn.Execute(sqlToExecute, transaction: trans, commandTimeout: 1200);
                             }
                             catch (Exception ex)

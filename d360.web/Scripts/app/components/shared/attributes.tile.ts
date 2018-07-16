@@ -18,9 +18,7 @@ import * as _ from 'lodash';
             <p-treeTable [value]="items" selectionMode="single" [(selection)]="selectedRow" (onNodeSelect)="loadMenu();">
                 <p-column>
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <div *ngIf="item.data.IsCategory">
-                            <span class='Attribute-Category'>{{item.data.Name}}</span>
-                        </div>
+                        <div *ngIf="item.data.IsCategory" class='Attribute-Category'>{{item.data.Name}}</div>
                         <div *ngIf="!item.data.IsCategory">
                             <b *ngIf="item.data.ShowNameInTree">{{item.data.ObjectTypeName}}: </b> <span [innerHtml]="item.data.Name"></span>
                         </div>

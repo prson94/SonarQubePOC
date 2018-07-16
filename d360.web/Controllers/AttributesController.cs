@@ -27,23 +27,24 @@ namespace d360.web.Controllers
         [Route("hierarchy/{type}/{id:int}")]
         public JsonResult AttributeHierarchyItemsByObject(SystemObjects type, int id)
         {
-            var attributes = Company.GetAttributeAndIntersectHierarchyByObject(type, id).ToList();
-            var categories = attributes.Where(i => !string.IsNullOrEmpty(i.AttributeTypeCategory)).Select(i => i.AttributeTypeCategory).Distinct().OrderBy(i => i).ToList();
-            //categories.Insert(0, "Enterprise-wide Attributes");
-
             var list = new List<AttributeHierarchyItem>();
-
-            var rootNode = new AttributeHierarchyItem { ID = "EC", IsCategory = true, ObjectTypeName = "", ShowNameInTree = true, Name = "Enterprise-wide", ObjectType = type.ToString(), ObjectID = id, IsTechnical = false, ParentObjectType = type.ToString(), ParentObjectID = id };
-            rootNode.Items.AddRange(nestHierarchyNode(attributes, null, null));
-            list.Add(rootNode);
-
-            foreach (var c in categories)
+            if (Company.HasAssetPermission(type, id, Permission.ReadAttributes))
             {
-                var cNode = new AttributeHierarchyItem { ID = c, IsCategory = true, ObjectTypeName = "", ShowNameInTree = true, Name = c, ObjectType = type.ToString(), ObjectID = id, IsTechnical = false, ParentObjectType = type.ToString(), ParentObjectID = id };
-                cNode.Items.AddRange(nestHierarchyNode(attributes, null, c));
-                list.Add(cNode);
-            }
+                var attributes = Company.GetAttributeAndIntersectHierarchyByObject(type, id).ToList();
+                var categories = attributes.Where(i => !string.IsNullOrEmpty(i.AttributeTypeCategory)).Select(i => i.AttributeTypeCategory).Distinct().OrderBy(i => i).ToList();
+                //categories.Insert(0, "Enterprise-wide Attributes");
 
+                var rootNode = new AttributeHierarchyItem { ID = "EC", IsCategory = true, ObjectTypeName = "", ShowNameInTree = true, Name = "Enterprise-wide", ObjectType = type.ToString(), ObjectID = id, IsTechnical = false, ParentObjectType = type.ToString(), ParentObjectID = id };
+                rootNode.Items.AddRange(nestHierarchyNode(attributes, null, null));
+                list.Add(rootNode);
+
+                foreach (var c in categories)
+                {
+                    var cNode = new AttributeHierarchyItem { ID = c, IsCategory = true, ObjectTypeName = "", ShowNameInTree = true, Name = c, ObjectType = type.ToString(), ObjectID = id, IsTechnical = false, ParentObjectType = type.ToString(), ParentObjectID = id };
+                    cNode.Items.AddRange(nestHierarchyNode(attributes, null, c));
+                    list.Add(cNode);
+                }
+            }
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -66,7 +67,9 @@ namespace d360.web.Controllers
         {
             Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
 
-            var permissions = Company.GetPermissions(owner, ownerID).ToList();
+            var objectDetail = Company.GetObjectDetail(owner.ToString(), ownerID);
+
+            var permissions = Company.GetPermissions(objectDetail.Type, objectDetail.TypeID, owner.ToString(), ownerID).ToList();
 
             var list = new List<ToolbarItemNg>();
 
