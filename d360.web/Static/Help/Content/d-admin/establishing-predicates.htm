@@ -2,52 +2,264 @@
 <html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide|Establishing the metamodel">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Establishing predicates</title>
-        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
-        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Establishing predicates</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <link href="../Resources/TableStyles/PatternedRows.css" rel="stylesheet" />
+        <script src="../../Resources/Scripts/custom.modernizr.js">
         </script>
-        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/jquery.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.config.js">
         </script>
-        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/foundation.min.js">
         </script>
-        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/plugins.min.js">
         </script>
-        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        <script src="../../Resources/Scripts/MadCapAll.js">
         </script>
     </head>
     <body>
         <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/establishing-predicates.htm">Open topic with navigation</a>
-        </p>
-        <h1 class="ChapterHeading">Establishing predicates</h1>
-        <p>Many of the assets that you establish in <b>Infogix Data3Sixty</b> have links to other artifacts in the system. These links are referred to as Relationships, see <a href="establishing-relationships.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Establishing relationships</a>.</p>
-        <p>To frame the relationship, a predicate is used. A predicate is the term that links the two sides of a relationship. For example, take the two artifact types; "Report" and "Business Term", say you have a Report which contains a particular Business Term, then "Report contains Business Term" is an example of a relationship. The term that links the two artifacts, the predicate, in this case is "contains".</p>
-        <p>For every relationship, the inverse of the predicate must also be true. In the case of our example, "Report contains Business Term", this could also be written as "Business Term is contained in Report". Another common predicate is a synonym.</p>
-        <p>Each predicate is also assigned a <b>Functional Type</b> which controls its behavior in <b>Infogix Data3Sixty</b>. One of the most commonly used functional types is <b>Grammatic Assocation</b> which is used for synonyms, antonyms or grammatically similar terms.</p>
-        <p>&#160;</p>
-        <ol>
-            <li value="1">Click the <b>Administration</b> icon on the left of the screen and select <b>Predicates</b>.</li>
-            <li value="2">Click the <b>Add</b> icon in the top right corner to enter a new predicate.</li>
-            <li value="3">In the <b>New Predicate</b> screen, type a <b>Name</b> for your new predicate, e.g. <code>Contains</code>.</li>
-            <li value="4">Type the <b>Inverse</b> of the predicate, e.g. <code>Is contained in</code>.</li>
-            <li value="5">Select a <b>Functional Type</b>, e.g. <code>Data Lineage</code>.</li>
-            <li value="6">Click <b>Save</b> to create the new predicate.</li>
-        </ol>
-        <p>&#160;</p>
-        <p>You can then create relationships between artifacts, using predicates that you have created to frame the link between the two objects, see <a href="establishing-relationships.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Establishing relationships</a>. </p>
-        <p>&#160;</p>
-        <p>To edit a predicate, click the pencil icon to the right of the predicate which you want to modify.</p>
-        <p>&#160;</p>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h1 class="ChapterHeading">Establishing predicates</h1>
+                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>If you are not already familiar with asset relationships you should first check out the <b>User Guide</b> topic <a href="../c-user-guide/defining-relationships.htm" class="MCXref xref">Defining relationships between assets</a>.</p>
+                    <p>&#160;</p>
+                    <p>It is the responsibility of the system administrator to define and maintain a set of relationships which can be used to link various assets in the system. For more information on establishing the relationships available to users, please see the topic <a href="establishing-relationships.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Establishing relationships</a>.</p>
+                    <p>In order to establish sets of relationships you must first define the <b>predicates</b> to use. </p>
+                    <p>A predicate is the term that links the two sides of a relationship. For example, take the two artifact types "Report" and "Business Term". Say you have a Report which contains a particular Business Term, then "Report contains Business Term" is an example of a relationship. The term that links the two artifacts, the predicate, in this case is "contains":</p>
+                    <table style="mc-table-style: url('../Resources/TableStyles/PatternedRows.css');margin-left: 0;margin-right: auto;width: 800px;" class="TableStyle-PatternedRows" cellspacing="0">
+                        <col class="TableStyle-PatternedRows-Column-Regular" style="width: 266px;" />
+                        <col class="TableStyle-PatternedRows-Column-Regular" style="width: 266px;" />
+                        <col class="TableStyle-PatternedRows-Column-Regular" />
+                        <thead>
+                            <tr class="TableStyle-PatternedRows-Head-Header1">
+                                <th class="TableStyle-PatternedRows-HeadE-Regular-Header1">Subject</th>
+                                <th class="TableStyle-PatternedRows-HeadE-Regular-Header1">Predicate</th>
+                                <th class="TableStyle-PatternedRows-HeadD-Regular-Header1">Object</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Report</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">contains </td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Business Term
+</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Application</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">stores</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Business Term</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Business Term</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">synonym of</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Business Term</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Policy
+</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">governs </td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Business Term
+</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyB-Regular-LightRows">Report </td>
+                                <td class="TableStyle-PatternedRows-BodyB-Regular-LightRows">similar </td>
+                                <td class="TableStyle-PatternedRows-BodyA-Regular-LightRows">Report</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>&#160;</p>
+                    <p>For every relationship, the inverse of the predicate must also be defined. In the case of our example, "Report contains Business Term", this could also be written as "Business Term is contained in Report":</p>
+                    <table style="mc-table-style: url('../Resources/TableStyles/PatternedRows.css');margin-left: 0;margin-right: auto;width: 800px;" class="TableStyle-PatternedRows" cellspacing="0">
+                        <col class="TableStyle-PatternedRows-Column-Regular" style="width: 266px;" />
+                        <col class="TableStyle-PatternedRows-Column-Regular" style="width: 266px;" />
+                        <col class="TableStyle-PatternedRows-Column-Regular" />
+                        <thead>
+                            <tr class="TableStyle-PatternedRows-Head-Header1">
+                                <th class="TableStyle-PatternedRows-HeadE-Regular-Header1">Subject</th>
+                                <th class="TableStyle-PatternedRows-HeadE-Regular-Header1">Predicate</th>
+                                <th class="TableStyle-PatternedRows-HeadD-Regular-Header1">Object</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Business Term</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">is contained in </td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Report</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Business Term</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">is stored by</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Application</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Business Term</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">synonym of</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Business Term</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Business Term
+</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">is governed by </td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Policy
+</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyB-Regular-LightRows">Report </td>
+                                <td class="TableStyle-PatternedRows-BodyB-Regular-LightRows">similar </td>
+                                <td class="TableStyle-PatternedRows-BodyA-Regular-LightRows">Report</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>&#160;</p>
+                    <p>Each predicate is assigned a <b>Functional Type</b> which controls its behavior:</p>
+                    <table style="mc-table-style: url('../Resources/TableStyles/PatternedRows.css');margin-left: 0;margin-right: auto;width: 800px;" class="TableStyle-PatternedRows" cellspacing="0">
+                        <col class="TableStyle-PatternedRows-Column-Regular" style="width: 250px;" />
+                        <col class="TableStyle-PatternedRows-Column-Regular" style="width: 550px;" />
+                        <thead>
+                            <tr class="TableStyle-PatternedRows-Head-Header1">
+                                <th class="TableStyle-PatternedRows-HeadE-Regular-Header1">Functional Types</th>
+                                <th class="TableStyle-PatternedRows-HeadD-Regular-Header1">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Data Lineage</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Used to define source paths between objects. This predicate type must be used for lineage.</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Reference Data Lineage</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Used to define links between reference items across lists.</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Inter-type Hierarchy</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Used to create tree structures or hierarchies referencing different asset types at each level.</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows" style="font-weight: bold;"><span style="font-weight: normal;">Intra-type Hierarchy</span>
+                                </td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows" style="font-weight: bold;"><span style="font-weight: normal;">Used to create tree structures or hierarchies referencing the same asset type at each level.</span>
+                                </td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows" style="font-weight: normal;">Grammatic Association</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows" style="font-weight: bold;"><span style="font-weight: normal;">Used for synonyms, antonyms, abbreviations or grammatically similar terms.</span>
+                                </td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows" style="font-weight: normal;">Simple</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows" style="font-weight: normal;">Used to depict a relationship where lineage is not a consideration.</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">See Also</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Used for relationships between similar artifacts.</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-BodyB-Regular-DarkerRows">Usage</td>
+                                <td class="TableStyle-PatternedRows-BodyA-Regular-DarkerRows">Used for mapping items in the business glossary to items in the Fusion Data Dictionary.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h2>Browsing predicates</h2>
+                    <p>Choose <b>Administration &gt; MetaModel &gt; Predicates</b> to view a list of existing predicates:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/predicates.png" />
+                    </p>
+                    <h2>Creating predicates</h2>
+                    <p>You can click the <b>Add</b> button to create a new predicate. The <b>New Predicate</b> panel appears:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/predicate-add.png" />
+                    </p>
+                    <p>&#160;</p>
+                    <p>Provide a <b>Name</b> for your predicate (eg. Contains), and the name of the <b>Inverse</b> of the predicate too (eg. Contained In).</p>
+                    <p>Choose a <b>Functional Type</b> (eg. Data Lineage).</p>
+                    <p>Click <b>Save</b> to create the new predicate and return to the list of predicates.</p>
+                    <h2>Editing predicates</h2>
+                    <p>You can click the <b>Edit</b> button next to a predicate to modify it, using the <b>Edit Predicate</b> panel:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/predicate-edit.png" />
+                    </p>
+                    <p>&#160;</p>
+                    <p>Having created your predicates, you can then establish relationships between artifacts, using predicates that you have created to frame the link between the two objects.</p>
+                    <p>See <a href="establishing-relationships.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Establishing relationships</a> for more details.</p>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

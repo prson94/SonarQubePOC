@@ -3411,3 +3411,15 @@ ol.ol-top-padding
 	margin-top: 10px;
 }
 
+p.p-top-padding
+{
+	mc-hyphenate: never;
+	font-size: 100%;
+	overflow: hidden;
+	margin: 0;
+	padding-bottom: 0;
+	font-family: Arial, sans-serif;
+	margin-bottom: 10px;
+	margin-top: 10px;
+}
+

@@ -2,101 +2,176 @@
 <html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide|Establishing the metamodel">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Establishing artifact types</title>
-        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
-        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Establishing artifact types</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <script src="../../Resources/Scripts/custom.modernizr.js">
         </script>
-        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/jquery.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.config.js">
         </script>
-        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/foundation.min.js">
         </script>
-        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/plugins.min.js">
         </script>
-        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        <script src="../../Resources/Scripts/MadCapAll.js">
         </script>
     </head>
     <body>
         <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/establishing-artifacts.htm">Open topic with navigation</a>
-        </p>
-        <h1 class="ChapterHeading">Establishing artifact types</h1>
-        <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>If you are not already familiar with <b>Infogix Data3Sixty</b> artifacts you should first check out the <b>User Guide</b> topics <a href="../c-user-guide/intro-to-assets.htm" class="MCXref xref" xrefformat="{paratext}">Introduction to assets</a>
-		and <a href="../c-user-guide/artifacts.htm" class="MCXref xref" xrefformat="{paratext}">Glossary artifacts</a></p>
-        <p>&#160;</p>
-        <p>It is the responsibility of the system administrator to define and maintain a set of artifact types, in order to enable <b>Data Steward</b> and <b>Business Owner</b> users to create, develop and maintain artifacts - building out an accurate, high quality glossary of commonly understood and agreed upon terms.</p>
-        <p>When a user creates a new glossary artifact, they must first choose which artifact type to create. The artifact type determines the following:</p>
-        <ul>
-            <li value="1">The category of the artifact: eg. Business Term, Application, Process</li>
-            <li value="2">Which fields the user need to fill in for the artifact</li>
-            <li value="3">Which relationships can be created</li>
-            <li value="4">The responsibilities assigned by default to the artifact</li>
-            <li value="5">Which workflows are initiated upon certain actions (e.g. creation, modification)</li>
-        </ul>
-        <h2>Browsing artifact types</h2>
-        <p>Choose <b>Administration </b>&gt;<b> MetaModel </b>&gt;<b> Artifact</b> to view a list of existing <b>Artifact Types</b>, with details for the selected item shown on the right:</p>
-        <p>
-            <img src="../Resources/Images/admin/artifact-type-browse.png" class="img-vpadded" />
-        </p>
-        <p>You can filter the list of <b>Artifact Types</b> by typing th first few characters of an existing artifact type in the <b>Artifact Types</b> Search bar:</p>
-        <p>
-            <img src="../Resources/Images/admin/artifact-type-search.png" />
-        </p>
-        <h2>Creating artifact types</h2>
-        <p>You can hit the <b>Add</b> button to create a new <b>Artifact Type</b>:</p>
-        <p>
-            <img src="../Resources/Images/admin/artifact-type-add.png" />
-        </p>
-        <p>&#160;</p>
-        <p>The <b>Add Artifact Type</b> panel appears:</p>
-        <p>
-            <img src="../Resources/Images/admin/artifact-type-add2.png" />
-        </p>
-        <p>&#160;</p>
-        <p>Along with name and description, the following <b>Settings</b> are available:</p>
-        <ul>
-            <li value="1"><b>Auto Display Description</b>: If enabled, the content of the description property is auto-displayed to all users on the list page for this artifact type.</li>
-            <li value="2"><b>Can Own Fusion?</b>: Controls the <b style="color: #ff0000; font-weight: normal;"><a href="fusion-agent-configuration.htm">fusion configuration</a></b> which applies during auto promotion.</li>
-            <li value="3"><b>Background Color</b>: This is the color of the box used in <a href="../c-user-guide/inspecting-lineage.htm"><b style="font-weight: normal; color: #0000ff;">lineage diagrams</b></a>.</li>
-            <li value="4"><b>Text Color</b>: This is the color of the text used in <a href="../c-user-guide/inspecting-lineage.htm"><b style="font-weight: normal; color: #0000ff;">lineage diagrams</b></a>.</li>
-        </ul>
-        <p>&#160;</p>
-        <p>In order to help you categorize your artifact types, you can also create a new artifact type as a child of an existing item:</p>
-        <p>
-            <img src="../Resources/Images/admin/artifact-type-add3.png" />
-        </p>
-        <p>&#160;</p>
-        <p>It is useful to think of artifact types as categories of <b>Glossary</b> terms. For example, you may have a top-level artifact type for <b>Vendors</b>, but then wish to further organize vendors into <b>Software</b>, <b>License Services</b> and <b>Professional Services</b>. </p>
-        <h2>Editing artifact types</h2>
-        <p>You can also edit and delete artifact types from the list on the left. Choosing edit will display the <b>Edit Artifact Type</b> panel for the chosen item:</p>
-        <p>
-            <img src="../Resources/Images/admin/artifact-type-edit.png" />
-        </p>
-        <h2>Field definition</h2>
-        <p>For the selected artifact type, the <b>Field Definition</b> table on the right is available to determine which fields should be displayed and populated as part of the definition of an artifact of this type:</p>
-        <p>
-            <img src="../Resources/Images/admin/artifact-type-fields1.png" />
-        </p>
-        <p>&#160;</p>
-        <p>Please refer to the following topic <a href="defining-fields.htm" class="MCXref xref" xrefformat="{paratext}">Defining fields on asset types</a>, for full details on editing the fields associated with an asset.</p>
-        <h2>Permissions</h2>
-        <p>For details on how to manage permissions on artifact types, please refer to the topic <a href="assigning-permissions.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Assigning permissions</a></p>
-        <h2>Relationship types</h2>
-        <p>If you are not already familiar with the configuration of relationship types, please refer to the topic <a href="establishing-relationships.htm" class="MCXref xref" xrefformat="{paratext}">Establishing relationships</a></p>
-        <p>From this section you can view the relationship types associated with the selected artifact type, as well as create new relationship types:</p>
-        <p>
-            <img src="../Resources/Images/admin/artifact-type-relations.png" class="img-vpadded" />
-        </p>
-        <p> </p>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h1 class="ChapterHeading">Establishing artifact types</h1>
+                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>If you are not already familiar with  artifacts you should first check out the <b>User Guide</b> topics <a href="../c-user-guide/intro-to-assets.htm" class="MCXref xref">Introduction to assets</a>
+		and <a href="../c-user-guide/artifacts.htm" class="MCXref xref">Glossary artifacts</a></p>
+                    <p>&#160;</p>
+                    <p>It is the responsibility of the system administrator to define and maintain a set of artifact types, in order to enable <b>Data Steward</b> and <b>Business Owner</b> users to create, develop and maintain artifacts - building out an accurate, high quality glossary of commonly understood and agreed upon terms.</p>
+                    <p>When a user creates a new glossary artifact, they must first choose which artifact type to create. The artifact type determines the following:</p>
+                    <ul>
+                        <li value="1">The category of the artifact: eg. Business Term, Application, Process</li>
+                        <li value="2">Which fields the user need to fill in for the artifact</li>
+                        <li value="3">Which relationships can be created</li>
+                        <li value="4">The responsibilities assigned by default to the artifact</li>
+                        <li value="5">Which workflows are initiated upon certain actions (e.g. creation, modification)</li>
+                    </ul>
+                    <h2>Browsing artifact types</h2>
+                    <p>Choose <b>Administration </b>&gt;<b> MetaModel </b>&gt;<b> Artifact</b> to view a list of existing <b>Artifact Types</b>, with details for the selected item shown on the right:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/artifact-type-browse.png" class="img-vpadded" />
+                    </p>
+                    <p>You can filter the list of <b>Artifact Types</b> by typing th first few characters of an existing artifact type in the <b>Artifact Types</b> Search bar:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/artifact-type-search.png" />
+                    </p>
+                    <h2>Creating artifact types</h2>
+                    <p>Click the <b>Add</b> button to create a new <b>Artifact Type</b>:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/artifact-type-add.png" />
+                    </p>
+                    <p>&#160;</p>
+                    <p>The <b>Add Artifact Type</b> panel appears:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/artifact-type-add2.png" />
+                    </p>
+                    <p>&#160;</p>
+                    <p>Along with name and description, the following <b>Settings</b> are available:</p>
+                    <ul>
+                        <li value="1"><b>Auto Display Description</b>: If enabled, the content of the description property is auto-displayed to all users on the list page for this artifact type.</li>
+                        <li value="2"><b>Can Own Fusion?</b>: Controls the <b style="color: #ff0000; font-weight: normal;"><a href="fusion-agent-configuration.htm">Fusion configuration</a></b> which applies during auto promotion.</li>
+                        <li value="3"><b>Background Color</b>: This is the color of the box used in <a href="../c-user-guide/inspecting-lineage.htm"><b style="font-weight: normal; color: #0000ff;">lineage diagrams</b></a>.</li>
+                        <li value="4"><b>Text Color</b>: This is the color of the text used in <a href="../c-user-guide/inspecting-lineage.htm"><b style="font-weight: normal; color: #0000ff;">lineage diagrams</b></a>.</li>
+                    </ul>
+                    <p>&#160;</p>
+                    <p>In order to help you categorize your artifact types, you can also create a new artifact type as a child of an existing item, clicking the <b>Add</b> icon next to the existing artifact type:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/artifact-type-add3.png" />
+                    </p>
+                    <p>&#160;</p>
+                    <p>It is useful to think of artifact types as categories of <b>Glossary</b> terms. For example, you may have a top-level artifact type for <b>Vendors</b>, but then wish to further organize vendors into <b>Software</b>, <b>License Services</b> and <b>Professional Services</b>. </p>
+                    <h2>Editing artifact types</h2>
+                    <p>You can also edit and delete artifact types from the list on the left. Choosing edit will display the <b>Edit Artifact Type</b> panel for the chosen item:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/artifact-type-edit.png" />
+                    </p>
+                    <p>&#160;</p>
+                    <p>If you choose to delete an artifact type, you will be prompted to confirm the deletion of the artifact type, along with any artifacts which are based on this type:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/artifact-type-delete.png" />
+                    </p>
+                    <p>This operation cannot be undone, so great care should be taken when deleting artifacts and artifact types.</p>
+                    <h2>Field definition</h2>
+                    <p>For the selected artifact type, the <b>Field Definition</b> table on the right is available to determine which fields should be displayed and populated as part of the definition of an artifact of this type:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/artifact-type-fields1.png" />
+                    </p>
+                    <p>&#160;</p>
+                    <p>Please refer to the following topic <a href="defining-fields.htm" class="MCXref xref">Defining fields on asset types</a>, for full details on editing the fields associated with an asset.</p>
+                    <h2>Responsibility type assignment</h2>
+                    <p>You can manage permissions on asset types  via <b>Responsibility Types</b>. Please refer to the topic <a href="establishing-responsibilities.htm" class="MCXref xref">Establishing responsibilities</a> for more details.</p>
+                    <h2>Relationship types</h2>
+                    <p>If you are not already familiar with the configuration of relationship types, please refer to the topic <a href="establishing-relationships.htm" class="MCXref xref">Establishing relationships</a></p>
+                    <p>From this section you can view the relationship types associated with the selected artifact type, as well as create new relationship types:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/artifact-type-relations.png" class="img-vpadded" />
+                    </p>
+                    <p>
+                    </p>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

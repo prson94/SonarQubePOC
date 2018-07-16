@@ -2,48 +2,151 @@
 <html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Customizing the application</title>
-        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
-        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Customizing the application</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <script src="../../Resources/Scripts/custom.modernizr.js">
         </script>
-        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/jquery.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.config.js">
         </script>
-        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/foundation.min.js">
         </script>
-        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/plugins.min.js">
         </script>
-        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        <script src="../../Resources/Scripts/MadCapAll.js">
         </script>
     </head>
     <body>
         <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/customizing-govern.htm">Open topic with navigation</a>
-        </p>
-        <h1 class="ChapterHeading">Customizing the application</h1>
-        <p>If you have administrator permissions, you can customize the display of the application in various ways.</p>
-        <p>&#160;</p>
-        <p>This topic describes how to customize the home screen. See also:</p>
-        <ul>
-            <li value="1"><a href="defining-fields.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Defining fields on asset types</a>
-            </li>
-        </ul>
-        <p>&#160;</p>
-        <ol>
-            <li value="1">Click the <b>Administration</b> icon on the left side of the main screen, then select <b>Settings</b>:<p>&#160;</p><p><img src="../Resources/Images/admin/customize.PNG" /></p><p>You can configure the following items:</p><ul><li value="1"><b>Custom Images</b> - Substitute your company logo in place of the Infogix logo that appears in the top left corner of the screen.</li><li value="2"><b>IP Restrictions</b> - Restrict access to certain IP addresses or a range of addresses.</li><li value="3"><b>Site Nav</b> - Customize the icons that appear on the left side of the screen. You can re-order or rename the icons, select an alternative icon, or restrict permissions.</li><li value="4"><b>Home Page Customization</b> - Modify the appearance of the default welcome screen, including adding any shortcut links to other websites.</li><li value="5"><b>Header Background/Border Color</b> - Specify a color for the header background and border.</li><li value="6"><b>Search</b> - Select a default value for the initially selected list of object types to search. Choose whether to enable exact match by default.</li><li value="7"><b>Default Route</b> - Specify the default route that users will be redirected to when they log in to Infogix Data3Sixty.</li></ul><p>&#160;</p></li>
-            <li value="2">Click <b>Save Changes</b> to submit your customizations.</li>
-        </ol>
-        <p>&#160;</p>
-        <p>&#160;</p>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h1 class="ChapterHeading">Customizing the application</h1>
+                    <p>If you have administrator permissions, you can customize your user interface to suit the needs of your organization.</p>
+                    <p>For information on customizing asset types by defining new fields, see <a href="defining-fields.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Defining fields on asset types</a>.</p>
+                    <p>&#160;</p>
+                    <p>To access the <b>Settings</b> page, click the <b>Administration</b> icon on the left side of the main screen, then select <b>Settings</b>:<p><img src="../Resources/Images/admin/customize.PNG" class="img-vpadded" /></p><p>The <b>Settings</b> page opens:</p><p><img src="../Resources/Images/admin/settings.png" class="img-vpadded" /></p><p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>For many of the settings on this page, you will need to click the <b>Save Changes</b> button on the right of the screen for your changes to take effect.</p><h2>Custom Images</h2><ul><li value="1"><b>Company Logo</b> <p class="p-top-padding"><img src="../Resources/Images/admin/company-logo.png" /></p><p class="p-top-padding">You can substitute your company logo in place of the Infogix logo that appears in the top left corner of the screen by clicking <b>Choose file</b> in the <b>Company Logo</b> section of the <b>Custom Images</b> panel.</p></li><li value="2"><b>Company web icon</b><![CDATA[  ]]><p class="p-top-padding"><img src="../Resources/Images/admin/company-web-icon.png" /></p><p class="p-top-padding">You can substitute your company icon in place of the Infogix icon (favicon) that is displayed on web browser tabs by clicking <b>Choose file</b> in the <b>Company Web Icon</b> section of the <b>Custom Images</b> panel.</p></li></ul><h2>Features</h2><p><img src="../Resources/Images/admin/settings-features.png" /></p><p>The <b>Features</b> settings allow you to customize the buttons that are available from the toolbar at the top of the application:</p><p><img src="../Resources/Images/admin/settings-features2.png" class="img-vpadded" /></p></p>
+                    <h2>IP Restrictions</h2>
+                    <p>
+                        <img src="../Resources/Images/admin/settings-ip-restrictions.png" />
+                    </p>
+                    <p>You can  restrict access to certain IP addresses or a range of addresses by clicking the <b>Add</b> icon.</p>
+                    <p>If you do not add any IP addresses then there will be no restriction and users will be able to access the environment from any IP address.</p>
+                    <h2>Styles</h2>
+                    <p>
+                        <img src="../Resources/Images/admin/settings-styles.png" />
+                    </p>
+                    <p>The color that you specify in the <b>Header Background/Border Color</b> field only controls the thin strip of color that separates the toolbar from the rest of the application.</p>
+                    <h2>Site Nav</h2>
+                    <p>
+                        <img src="../Resources/Images/admin/settings-site-nav.png" />
+                    </p>
+                    <p>Customize the icons that appear on the left side of the screen. You can re-order or rename the icons, select an alternative icon, or restrict permissions.</p>
+                    <h2>Home page customization</h2>
+                    <p>
+                        <img src="../Resources/Images/admin/settings-home-page.png" />
+                    </p>
+                    <p>Modify the appearance of the default welcome screen, including adding any shortcut links to other websites:</p>
+                    <ul>
+                        <li value="1">The <b>Tile Options</b> allow you to select whether to display the <b>Your Assignments</b>, <b>Board</b> and <b>Activity</b> panels on the home page.</li>
+                        <li value="2"><b>Show site title on homepage</b> allows you to display a title on the home page in a color of your choosing.</li>
+                        <li value="3">The <b>Home Page Background Image</b> updates the image that is displayed on the home page.</li>
+                        <li value="4"><b>Shortcuts</b> controls the icons that are displayed on the bottom of the home page. You can specify the order of the icons and which icons to use. You can add icons that link to areas within the application, or you can link to an external location e.g. a SharePoint site.</li>
+                    </ul>
+                    <h2>Search</h2>
+                    <p>
+                        <img src="../Resources/Images/admin/settings-search.png" />
+                    </p>
+                    <p>Select a default value for the initially selected list of object types to search. Choose whether to enable exact match by default.</p>
+                    <p>These options control the default search on the home page:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/settings-search2.png" />
+                    </p>
+                    <p> These options do not control the search in the upper right corner of the home page.</p>
+                    <h2>Default route</h2>
+                    <p>
+                        <img src="../Resources/Images/admin/settings-default-route.png" />
+                    </p>
+                    <p>Specify the default route that users will be redirected to when they log in to the application.</p>
+                    <p>&#160;</p>
+                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>There are some settings that can only be updated from the database by Infogix Engineering. For example, by default, users with an Infogix email address are not displayed as users in the user interface. If you want to show Infogix users, please contact Infogix Support.</p>
+                    <p>&#160;</p>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

@@ -2,111 +2,131 @@
 <html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Establishing workflows</title>
-        <link href="../Resources/TableStyles/PatternedRows.css" rel="stylesheet" data-mc-stylesheet-type="table" />
-        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
-        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Establishing workflows</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <link href="../Resources/TableStyles/PatternedRows.css" rel="stylesheet" />
+        <script src="../../Resources/Scripts/custom.modernizr.js">
         </script>
-        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/jquery.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.config.js">
         </script>
-        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/foundation.min.js">
         </script>
-        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/plugins.min.js">
         </script>
-        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        <script src="../../Resources/Scripts/MadCapAll.js">
         </script>
     </head>
     <body>
         <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/establishing-workflows.htm">Open topic with navigation</a>
-        </p>
-        <h1 class="ChapterHeading">Establishing workflows</h1>
-        <p>By establishing a workflow in <b>Infogix Data3Sixty</b>, you are able to specify the process that end users will follow when they want to add, change or edit an artifact. </p>
-        <p>You can include conditions in the workflow so that, for example, when a change is entered, an administrator is notified, and has the opportunity to approve or reject the change.</p>
-        <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>This topic describes how an Administrator can establish a new workflow. For an overview on following workflows once they are set up, see <a href="../c-user-guide/following-workflows.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Following workflows</a>.</p>
-        <p>&#160;</p>
-        <p>The following steps illustrate how to set up a new workflow. In this example, the workflow is being created to manage artifact changes: </p>
-        <ol>
-            <li value="1">Click the <b>Administration</b> icon on the left of the screen and select <b>Workflows</b>.</li>
-            <li value="2">Click the <b>Add</b> icon in the top right corner to create a new workflow type.</li>
-            <li value="3">Type a <b>Name</b> for the new workflow, for example "Suggest Business Term Change".</li>
-            <li value="4">From the <b>Change Type</b> list, in this example select <b>Item Changed</b>. For different use cases, you can also choose from the following change types:<br /><p>&#160;</p><table style="width: 100%;margin-left: 0;margin-right: auto;mc-table-style: url('../Resources/TableStyles/PatternedRows.css');" class="TableStyle-PatternedRows" cellspacing="0"><col class="TableStyle-PatternedRows-Column-Regular" /><col class="TableStyle-PatternedRows-Column-Regular" /><thead><tr class="TableStyle-PatternedRows-Head-Header1"><th class="TableStyle-PatternedRows-HeadE-Regular-Header1">Change type</th><th class="TableStyle-PatternedRows-HeadD-Regular-Header1">Definition</th></tr></thead><tbody><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Item Added</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Notifies an administrator or designated user when a user
-has added a new element of a specified value.</td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Item Changed</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Notifies an administrator or designated user when a user
-has changed any element within the specified object type.</td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Item Removed</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Notifies an administrator or designated user when a user
-has deleted an existing entry.</td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Schedule</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Notifies an administrator or designated user of any
-changes that occurred over a specified time period.</td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Score Changed</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Reserved for a future release of <b>Infogix Data3Sixty</b>.</td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Rule Result</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Reserved for a future release of <b>Infogix Data3Sixty</b>.</td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Loaded</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Notifies an administrator or designated user when data
-that is loaded via fusion differs from current data in the
-system, see <a href="fusion.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Fusion</a>. </td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyB-Regular-DarkerRows">Request Certification</td><td class="TableStyle-PatternedRows-BodyA-Regular-DarkerRows">Reserved for a future release of <b>Infogix Data3Sixty</b>.</td></tr></tbody></table><p>&#160;</p></li>
-            <li value="5">From the <b>Object Type</b> list, select <b>Artifact::Business Term</b>. Click <b>Next</b>.</li>
-            <li value="6">
-                <p>You can then start building your workflow by dragging the Start and Finish elements (1) from the left of the screen into the flowchart editing area (2):</p>
-                <p>
-                    <img src="../Resources/Images/admin/workflows1.png" title="Building a workflow" alt="Building a workflow" style="max-width: 800px;" />
-                </p>
-            </li>
-            <li value="7">Drag the Form element onto the editing area. Set up the form, see <a href="workflow-form.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Setting up a form</a>.</li>
-            <li value="8">Drag from a point on one element to connect it to a point on the next.<p>&#160;</p><p>If you need to go back and delete a connection, select the connection that you want to remove, then press the <b>Delete</b> key.</p></li>
-        </ol>
-        <p>&#160;</p>
-        <p>By default, your flowchart must include a Start Element, a Finish Element, and at least one additional element that occurs between the start and finish. You can select from the following elements when creating your flowchart:</p>
-        <table style="width: 100%;margin-left: 0;margin-right: auto;mc-table-style: url('../Resources/TableStyles/PatternedRows.css');" class="TableStyle-PatternedRows" cellspacing="0">
-            <col class="TableStyle-PatternedRows-Column-Regular" />
-            <col class="TableStyle-PatternedRows-Column-Regular" />
-            <thead>
-                <tr class="TableStyle-PatternedRows-Head-Header1">
-                    <th class="TableStyle-PatternedRows-HeadE-Regular-Header1">Flowchart element</th>
-                    <th class="TableStyle-PatternedRows-HeadD-Regular-Header1">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="TableStyle-PatternedRows-Body-LightRows">
-                    <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Start</td>
-                    <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Marks the entry into the workflow.</td>
-                </tr>
-                <tr class="TableStyle-PatternedRows-Body-DarkerRows">
-                    <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Finish</td>
-                    <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Marks the successful completion of the workflow.</td>
-                </tr>
-                <tr class="TableStyle-PatternedRows-Body-LightRows">
-                    <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Terminate</td>
-                    <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Marks the unsuccessful completion of the workflow.</td>
-                </tr>
-                <tr class="TableStyle-PatternedRows-Body-DarkerRows">
-                    <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Email Notification</td>
-                    <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Sends an email notification to a specific role, person, or
-group.</td>
-                </tr>
-                <tr class="TableStyle-PatternedRows-Body-LightRows">
-                    <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Status Change</td>
-                    <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Changes the status of an artifact. For example the status
-might be switched from Draft to Under Review.</td>
-                </tr>
-                <tr class="TableStyle-PatternedRows-Body-DarkerRows">
-                    <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Form</td>
-                    <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Provides a custom form that is inserted into the workflow.</td>
-                </tr>
-                <tr class="TableStyle-PatternedRows-Body-LightRows">
-                    <td class="TableStyle-PatternedRows-BodyB-Regular-LightRows">SQL Procedure</td>
-                    <td class="TableStyle-PatternedRows-BodyA-Regular-LightRows">Reserved for use by <b>Infogix Data3Sixty</b> Implementation
-Specialists. The <b>Infogix Data3Sixty</b> team will write a custom
-procedure to handle complex functionality.</td>
-                </tr>
-            </tbody>
-        </table>
-        <p style="color: #ff0000;">&#160;</p>
-        <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>Ensure that you do not delete field types that are associated with active workflow instances.</p>
-        <p>&#160;</p>
-        <p>&#160;</p>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h1 class="ChapterHeading">Establishing workflows</h1>
+                    <p>A workflow is a set of steps that can be applied to an artifact to control how the item is managed within the business glossary. By establishing a workflow, you are  specifying the process that end users will follow when they want to add, change or edit an artifact. </p>
+                    <p>You can include conditions in the workflow so that the relevant parties are notified when an end user takes a specified action, giving approvers the opportunity to approve or reject the change.</p>
+                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>This topic describes how an Administrator can establish a new workflow. For an overview on following workflows once they are set up, see <a href="../c-user-guide/following-workflows.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Following workflows</a>.</p>
+                    <p>&#160;</p>
+                    <p>The following flowchart describes the workflow process:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/workflow-overview_800x135.png" title="Workflow overview" alt="Workflow overview" style="width: 800;height: 135;" />
+                    </p>
+                    <h2>Building a new workflow</h2>
+                    <p>You can access the <b>Workflow</b> page by clicking the <b>Administration</b> icon on the left of the screen and selecting <b>Workflow &gt; Workflow</b>. From here, you can build a new workflow.</p>
+                    <p>&#160;</p>
+                    <ol>
+                        <li value="1">Click the <b>Add</b> icon in the top right corner of the <b>Workflow Types</b> panel to create a new workflow:<p><img src="../Resources/Images/admin/workflows-add.png" class="img-vpadded" /></p><p>From this panel, you can also edit, delete, view or monitor a workflow by clicking the relevant icon to the right of the selected item.</p><p>&#160;</p></li>
+                        <li value="2">In the <b>New Workflow Type</b> panel, type a <b>Name</b> for the workflow, for example "Business Term Change".<p>&#160;</p><p>The first few steps of creating a workflow require you to specify a trigger  i.e. an event or an action that when carried out by an end user initiates the workflow. </p></li>
+                        <li value="3">From the <b>Change Type</b> list, select a workflow trigger.   For example, to initiate a workflow each time a new Business Term is added,  select <b>Item Added</b>. <br /><p>&#160;</p><p>The following table describes the triggers that you can select when creating a new workflow:</p><table style="width: 100%;margin-left: 0;margin-right: auto;mc-table-style: url('../Resources/TableStyles/PatternedRows.css');" class="TableStyle-PatternedRows" cellspacing="0"><col class="TableStyle-PatternedRows-Column-Regular" /><col class="TableStyle-PatternedRows-Column-Regular" /><thead><tr class="TableStyle-PatternedRows-Head-Header1"><th class="TableStyle-PatternedRows-HeadE-Regular-Header1">Change type</th><th class="TableStyle-PatternedRows-HeadD-Regular-Header1">Definition</th></tr></thead><tbody><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Item Added</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows"><p>Notifies an administrator or designated user when a user has added a new object.
+</p><p>In the case of adding an <b>Action Type</b>, the <b>Item Added</b> change type notifies an administrator, designated user, or responsible parties when a user takes an action on a specific asset.</p></td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Item Changed</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows"><p>Notifies an administrator, designated user,  or responsible parties when a user has changed any element on a specified asset type.</p></td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Item Removed</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Notifies an administrator or designated user when a user
+has deleted an existing entry of a specified asset.</td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Schedule</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows"><p>Notifies an administrator, designated user,  or responsible parties of any changes or specified changes that occur over a specified period of time.</p></td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Rule Result</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows"><p>When Data Quality Rules are configured in <b>Infogix Data3Sixty Govern</b>, Rule Results can be loaded via an API.  When Rule Results are loaded via an API this can set off a workflow using this trigger.</p></td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Fusion Loaded</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows"><p>Notifies an administrator or designated user when data is loaded via Fusion for a specific Fusion Type, see <a href="fusion.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Fusion</a>.</p></td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyB-Regular-LightRows">Request Certification</td><td class="TableStyle-PatternedRows-BodyA-Regular-LightRows">Allows users to request certification of an asset from an item's detail page, see <a href="certification-workflow.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Certification workflow</a>.</td></tr></tbody></table><p>&#160;</p></li>
+                        <li value="4">From the <b>Object Type</b> list, select the item type to which you want to relate the workflow. For example, select <b>Artifact::Business Term</b> if you want the workflow to be triggered when a user adds a new Business Term. </li>
+                        <li value="5">If you want to specify a greater level of granularity so that your workflow is only triggered in very specific situations, you can add <b>Conditions</b> by clicking the <b>Add</b> icon in the <b>Conditions</b> panel:<p><img src="../Resources/Images/admin/workflows-conditions.png" class="img-vpadded" /></p><p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>If you add more than one condition, the logic between the conditions is "AND" i.e. both conditions must apply for the workflow to be triggered.</p><p>&#160;</p></li>
+                        <li value="6">Click <b>Next</b>.<p>&#160;</p><p>Once you have established a workflow trigger, you can being building your workflow. Every workflow must have a <b>Start</b> element, a <b>Finish</b> element, and at least one additional element that occurs between the start and finish. You can select from the following elements when creating your workflow:</p><p>&#160;</p><table style="width: 100%;margin-left: 0;margin-right: auto;mc-table-style: url('../Resources/TableStyles/PatternedRows.css');" class="TableStyle-PatternedRows" cellspacing="0"><col class="TableStyle-PatternedRows-Column-Regular" /><col class="TableStyle-PatternedRows-Column-Regular" /><thead><tr class="TableStyle-PatternedRows-Head-Header1"><th class="TableStyle-PatternedRows-HeadE-Regular-Header1">Workflow activity</th><th class="TableStyle-PatternedRows-HeadD-Regular-Header1">Description</th></tr></thead><tbody><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Start</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Marks the entry into the workflow.</td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Finish</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Marks the successful completion of the workflow.</td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Terminate</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Marks the unsuccessful completion of the workflow.</td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows"><a name="Field"></a>Field Change</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows"><p>Updates a value, clears a value or updates a value that was entered or selected on a previous Form element. For example, you can use the Field Change element to update the status of an item in a certification workflow, see <a href="certification-workflow.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Certification workflow</a>.</p></td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Email Notification</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows"><p>Sends an email notification to a specific role or person. </p><p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>You can notify a group of people by choosing <b>Specific User</b> and then typing a group email address, for example datastewards@example.com.</p><p>When configuring the <b>Email Notification</b> element, you can use tokens as placeholders to add text to the body or subject of the email by selecting an option from the <b>Append field value</b> list.</p></td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Form</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Provides a custom form that is inserted into the workflow giving a reviewer the opportunity to certify an action, see <a href="workflow-form.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Setting up a form</a>.</td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">State Change</td><td class="TableStyle-PatternedRows-BodyD-Regular-LightRows"><p>Controls whether an artifact is visible within the application. This only applies to adding a data lineage relationship. The state of an item is not visible to end users, and should not be confused with the status, see <a href="#Field" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Field Change</a>.</p><p>Choose from:</p><ul><li value="1"><b>Pending Add</b></li><li value="2"><b>Active</b></li><li value="3"><b>Pending Delete</b></li><li value="4"><b>Active</b></li></ul><p>By default, an item will not have any state. An asset will only transition through the above states if you have established a workflow using the State Change elements.</p></td></tr><tr class="TableStyle-PatternedRows-Body-DarkerRows"><td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">SQL Procedure</td><td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Reserved for use by <b>Infogix</b> Implementation
+Specialists. The <b>Infogix</b> team will write a custom
+procedure to handle complex functionality.</td></tr><tr class="TableStyle-PatternedRows-Body-LightRows"><td class="TableStyle-PatternedRows-BodyB-Regular-LightRows">Relationship Change</td><td class="TableStyle-PatternedRows-BodyA-Regular-LightRows"><p>Updates or clears from a value on a previous form activity.</p></td></tr></tbody></table><p>&#160;</p></li>
+                        <li value="7">Build your workflow by dragging the required elements  from the left of the screen into the workflow editing area. To connect the workflow elements, click and drag from a point on one element to connect it to a point on the next. If you need to go back and delete a connection, select the connection that you want to remove, then press the <b>Delete</b> key.</li>
+                    </ol>
+                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>If you have missed any mandatory fields when configuring your workflow, the element with missing configuration is shown with a red border.</p>
+                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>Ensure that you do not delete field types that are associated with active workflow instances.</p>
+                    <p>&#160;</p>
+                    <p>&#160;</p>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

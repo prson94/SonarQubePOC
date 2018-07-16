@@ -142,7 +142,7 @@ order by RT.Name", new { id }).AsQueryable();
             {
                 var assetTypeID = Query<int>("select AssetTypeID from Asset where ID = @id", new { id }).Single();
                 //return Company.Filter<ResponsibilityDetail>(i => (i.AssetID == assetID || (i.AssetID == 0 && i.AssetTypeID == asset.AssetTypeID)) && i.IsVisible);
-                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where (i.AssetID == @id || (i.AssetID == 0 && i.AssetTypeID == @t)) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { id, t = assetTypeID }).Single();
+                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where (AssetID = @id or (AssetID = 0 and AssetTypeID = @t)) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { id, t = assetTypeID }).Single();
             }
 
             return hasPermission;

@@ -103,7 +103,7 @@ namespace d360.model
                             {
                                 var thenSql = cnn.GetThenResultsSql(rule, false, false, "A.AssetID");
                                 var whenSql = cnn.GetWhenResultsSql(rule, false);
-                                sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {thenSql} cross apply ({whenSql}) A";
+                                sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {string.Format(thenSql, (string.IsNullOrEmpty(whenSql) ? "" : $"cross apply ({whenSql}) A") )}";
                                 cnn.Execute(sqlToExecute, transaction: trans, commandTimeout: 1200);
                             }
                             catch (Exception ex)
@@ -391,7 +391,7 @@ when	not matched by target then
                 }
             }
 
-            thenSql += whenSuffix;
+            thenSql += " {0} " + whenSuffix;
 
             return thenSql;
         }
@@ -407,7 +407,7 @@ when	not matched by target then
             string sql = cnn.GetThenResultsSql(rule, IsHideData3SixtyUsers);
             return (string.IsNullOrEmpty(sql)) ?
                 new List<SecurityResult>().AsEnumerable() :
-                cnn.Query<SecurityResult>(sql, transaction: trans, commandTimeout: 7200);
+                cnn.Query<SecurityResult>(sql.Replace(" {0} ", ""), transaction: trans, commandTimeout: 7200);
         }
 
         #endregion

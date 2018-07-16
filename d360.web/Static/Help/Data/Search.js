@@ -1,1 +1,1 @@
-define({r:0.5,st:'Stem',n:1,t:[0],u:['../Content/a-shared/legal-notice.htm'],s:['+','incorpor','user'],p:[['+',11],['as',34],['compatible',64],['establishing',47],['if',57],['models',20],['policy',54],['setting',17],['then',9],['which',19]]});
+define({r:0.5,st:'Stem',n:1,t:[0],u:['../Content/a-shared/legal-notice.htm'],s:['+1','icon','toolbar'],p:[['+1',68],['artifact',9],['checkmark',64],['displayed',62],['glossary',15],['known',22],['on',56],['relevant',22],['support',0],['to',39],['with',67]]});

@@ -477,6 +477,30 @@ a.glossaryTerm
 	display: none;
 }
 
+div.MCBreadcrumbsBox_0
+{
+	border-bottom-style: none;
+	color: #696969;
+	font-size: 80%;
+	width: auto;
+	padding-top: 0px;
+	float: left;
+	padding-bottom: 0px;
+	margin-bottom: 0px;
+	font-family: Arial, sans-serif;
+	border-bottom-width: 1px;
+	border-bottom-color: black;
+}
+
+.topicToolbarProxy
+{
+	float: right;
+	padding: 0px;
+	border-spacing: 0;
+	vertical-align: top;
+	padding-top: 0px;
+}
+
 .xref
 {
 	font-size: 100%;

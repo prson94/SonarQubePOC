@@ -2,56 +2,124 @@
 <html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Managing users and groups</title>
-        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
-        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Managing users and groups</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <script src="../../Resources/Scripts/custom.modernizr.js">
         </script>
-        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/jquery.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.config.js">
         </script>
-        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/foundation.min.js">
         </script>
-        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/plugins.min.js">
         </script>
-        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        <script src="../../Resources/Scripts/MadCapAll.js">
         </script>
     </head>
     <body>
         <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/managing-users-groups.htm">Open topic with navigation</a>
-        </p>
-        <h1 class="ChapterHeading">Managing users and groups</h1>
-        <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>You must have administrator permissions to manage users and groups.</p>
-        <p>&#160;</p>
-        <p>If your organization deploys <b>Infogix Data3Sixty</b> in conjunction with an existing LDAP/AD protocol, users will be automatically created when they log in to the application, and granted read-only access. You will then need to grant additional access to selected individuals, as required. </p>
-        <p>For additional information on LDAP/AD integration, see <a href="configuring-active-directory.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Configuring Active Directory</a>.</p>
-        <p>&#160;</p>
-        <p>For non-LDAP/AD organizations, you can manually create users in <b>Infogix Data3Sixty</b>, see <a href="managing-users.htm#Creating" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Creating new users</a>.</p>
-        <p>&#160;</p>
-        <p>You can create groups to enable  you to cluster users together into logical categories, such as departments, or functional areas within an organization, see <a href="managing-groups.htm#Creating" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Creating a new group</a>.</p>
-        <p>&#160;</p>
-        <p>Then, as you build out business terms and assets within <b>Infogix Data3Sixty</b>, you can assign a user or a group as the resource for that asset.</p>
-        <p>&#160;</p>
-        <p>See:</p>
-        <ul>
-            <li value="1"><a href="configuring-active-directory.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Configuring Active Directory</a>
-            </li>
-            <li value="2"><a href="managing-users.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Managing users</a>
-            </li>
-            <li value="3"><a href="managing-groups.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Managing groups</a>
-            </li>
-        </ul>
-        <p>&#160;</p>
-        <p>&#160;</p>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h1 class="ChapterHeading">Managing users and groups</h1>
+                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>You must have administrator permissions to manage users and groups.</p>
+                    <p>&#160;</p>
+                    <p>If your organization deploys <b>Infogix Data3Sixty Govern</b> in conjunction with an existing LDAP/AD protocol, users will be automatically created when they log in to the application, and granted read-only access. You will then need to grant additional access to selected individuals, as required. </p>
+                    <p>For additional information on LDAP/AD integration, see <a href="configuring-active-directory.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Configuring Active Directory</a>.</p>
+                    <p>&#160;</p>
+                    <p>For non-LDAP/AD organizations, you can manually create users, see <a href="managing-users.htm#Creating" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Creating new users</a>.</p>
+                    <p>&#160;</p>
+                    <p>You can create groups to enable  you to cluster users together into logical categories, such as departments, or functional areas within an organization, see <a href="managing-groups.htm#Creating" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Creating a new group</a>.</p>
+                    <p>&#160;</p>
+                    <p>Then, as you build out business terms and assets, you can assign a user or a group as the resource for that asset.</p>
+                    <p>&#160;</p>
+                    <p>See:</p>
+                    <ul>
+                        <li value="1"><a href="configuring-active-directory.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Configuring Active Directory</a>
+                        </li>
+                        <li value="2"><a href="managing-users.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Managing users</a>
+                        </li>
+                        <li value="3"><a href="managing-groups.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Managing groups</a>
+                        </li>
+                    </ul>
+                    <p>&#160;</p>
+                    <p>&#160;</p>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

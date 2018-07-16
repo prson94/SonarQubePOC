@@ -14890,6 +14890,7 @@ order by TP.TextPath";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
         [HttpGet, Route("Responsibility/Resources"), NonNullableParameters]
         public JsonNetResult ResponsibilityResources(long assetID, int resTypeId,string secAssettype,int secAssetTypeid, int pagenum, int pagesize, string sortDataField, string sortOrder,string gbfilter)
         {

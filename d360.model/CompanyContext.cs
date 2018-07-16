@@ -2759,7 +2759,7 @@ select @err";
                                 )) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            if (Any<ResponsibilityTypeRelationOverrideItem>(i =>
+                            if (Any<ResponsibilityDetail>(i =>
                                 i.ResponsibilityTypeID == o.ID
                                 )) throw new ArgumentException(Messages.Error_ResponsibilityType_ExistingResponsibilities);
                             break;

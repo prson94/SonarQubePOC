@@ -1,51 +1,119 @@
 <!DOCTYPE html>
-<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide|Configuring data ingestion with Fusion">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide|Fusion">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Advanced Fusion configuration</title>
-        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
-        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Advanced Fusion configuration</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <script src="../../Resources/Scripts/custom.modernizr.js">
         </script>
-        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/jquery.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.config.js">
         </script>
-        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/foundation.min.js">
         </script>
-        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/plugins.min.js">
         </script>
-        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        <script src="../../Resources/Scripts/MadCapAll.js">
         </script>
     </head>
     <body>
         <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/fusion-agent-configuration.htm">Open topic with navigation</a>
-        </p>
-        <h2>Advanced Fusion configuration</h2>
-        <h3>Configuring fusion with a proxy server</h3>
-        <p>If your network configuration requires a proxy server to access the internet,   you can configure the <b>Infogix Data3Sixty</b> Fusion agent to go through a proxy server as follows:</p>
-        <ol>
-            <li value="1">Navigate to the app folder in the Fusion agent installation directory.</li>
-            <li value="2">Open the <code>Proxy.config</code> file in a text editor.</li>
-            <li value="3">If this is the first time you are editing this file, remove the text highlighted in red below:<p><img src="../Resources/Images/admin/fusion-proxy-server.jpg" title="Proxy server configuration" alt="Proxy server configuration" /></p></li>
-            <li value="4">Replace the proxy address and port values, highlighted in yellow above, with the actual address and port of the proxy server.</li>
-        </ol>
-        <h3>Changing the Fusion agent log level</h3>
-        <p>By default, all events are logged. To save server disk space, you can change the log level as follows:</p>
-        <ol>
-            <li value="1">Navigate to the "app" folder in your Fusion agent installation directory.</li>
-            <li value="2">Open the <code>Logging.config</code> file.</li>
-            <li value="3">Locate the level value line: <code>&lt;level value="ALL" /&gt;</code></li>
-            <li value="4">Edit the level value as required, choosing from the following options:<p>&#160;</p><ul><li value="1">ALL - All events generated by the agent are logged.</li><li value="2">DEBUG - All events marked as Debug or higher are logged.</li><li value="3">INFO - All events marked as INFO or higher are logged.</li><li value="4">WARN - All events marked as WARN or higher are logged.<p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>WARN is the recommended log level.</p></li><li value="5">ERROR - All events marked as ERROR or higher are logged.</li><li value="6">FATAL - All events marked as FATAL or higher are logged.</li><li value="7">OFF - Turns off all logging.</li></ul><p>For example, change the line to <code>&lt;level value="WARN" /&gt;</code> to set the log level to WARN.</p><p>&#160;</p></li>
-        </ol>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h2>Advanced Fusion configuration</h2>
+                    <h3>Configuring Fusion with a proxy server</h3>
+                    <p>If your network configuration requires a proxy server to access the internet,   you can configure the  Fusion agent to go through a proxy server as follows:</p>
+                    <ol>
+                        <li value="1">Navigate to the app folder in the Fusion agent installation directory.</li>
+                        <li value="2">Open the <code>Proxy.config</code> file in a text editor.</li>
+                        <li value="3">If this is the first time you are editing this file, remove the text highlighted in red below:<p><img src="../Resources/Images/admin/fusion-proxy-server.jpg" title="Proxy server configuration" alt="Proxy server configuration" /></p></li>
+                        <li value="4">Replace the proxy address and port values, highlighted in yellow above, with the actual address and port of the proxy server.</li>
+                    </ol>
+                    <h3>Changing the Fusion agent log level</h3>
+                    <p>By default, all events are logged. To save server disk space, you can change the log level as follows:</p>
+                    <ol>
+                        <li value="1">Navigate to the "app" folder in your Fusion agent installation directory.</li>
+                        <li value="2">Open the <code>Logging.config</code> file.</li>
+                        <li value="3">Locate the level value line: <code>&lt;level value="ALL" /&gt;</code></li>
+                        <li value="4">Edit the level value as required, choosing from the following options:<p>&#160;</p><ul><li value="1">ALL - All events generated by the agent are logged.</li><li value="2">DEBUG - All events marked as Debug or higher are logged.</li><li value="3">INFO - All events marked as INFO or higher are logged.</li><li value="4">WARN - All events marked as WARN or higher are logged.<p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>WARN is the recommended log level.</p></li><li value="5">ERROR - All events marked as ERROR or higher are logged.</li><li value="6">FATAL - All events marked as FATAL or higher are logged.</li><li value="7">OFF - Turns off all logging.</li></ul><p>For example, change the line to <code>&lt;level value="WARN" /&gt;</code> to set the log level to WARN.</p><p>&#160;</p></li>
+                    </ol>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

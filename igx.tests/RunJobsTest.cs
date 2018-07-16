@@ -177,6 +177,30 @@ WHEN NOT MATCHED THEN
             cnn.Dispose();
         }
 
+        [TestMethod]
+        public void ParseResponsibilityRule()
+        {
+            //var clientFusionTypes = new List<d360.core.entities.Plugins.ClientFusionType>();
+            //var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            //cnn.Open();
+
+            //var list = cnn.Query<Company>("select * from Company").ToList();
+
+            //list.ForEach(c =>
+            //{
+                var company = getCompanyConnection(4);
+                company.Open();
+            company.ProcessResponsibilityRelationRules(60);
+                //var fusionTypeIDs = company.Query<int>("select ID from FusionType where ID < 50000").ToList();
+                company.Close();
+                company.Dispose();
+
+            //});
+
+            //cnn.Close();
+            //cnn.Dispose();
+        }
+
 
         [TestMethod]
         public void SaveCertificate_Success()

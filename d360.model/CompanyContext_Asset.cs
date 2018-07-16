@@ -69,7 +69,7 @@ namespace d360.model
             {
                 editRightsColumnStatement = ", IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete ";
                 editRightsJoinStatement = $@"
-outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID and ResourceID = @r and (PermissionsBitMask & {(int)Permission.DeleteAsset}) = {(int)Permission.DeleteAsset}) S_E 
+outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID and ResourceID = @r and (PermissionsBitMask & {(int)Permission.ModifyAsset}) = {(int)Permission.ModifyAsset}) S_E 
 outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID and ResourceID = @r and (PermissionsBitMask & {(int)Permission.DeleteAsset}) = {(int)Permission.DeleteAsset}) S_D";
             }
 

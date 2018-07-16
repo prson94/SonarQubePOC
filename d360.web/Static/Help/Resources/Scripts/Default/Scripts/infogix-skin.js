@@ -1,5 +1,5 @@
 $(document).ready(function(){
-   $('head').append('<link rel="shortcut icon" href="Content/Resources/Images/Template/favicon.ico" type="image/ico" />');
+   $('head').append('<link rel="shortcut icon" href="Content/Resources/Images/Template/favicon.png" type="image/png" />');
 });
 
 $(document).ready(function(){

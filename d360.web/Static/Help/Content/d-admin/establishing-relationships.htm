@@ -2,52 +2,135 @@
 <html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide|Establishing the metamodel">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
-        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Establishing relationships</title>
-        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" type="text/css" />
-        <script src="../../Resources/Scripts/custom.modernizr.js" type="text/javascript">
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Establishing relationships</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <script src="../../Resources/Scripts/custom.modernizr.js">
         </script>
-        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/jquery.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.min.js">
         </script>
-        <script src="../../Resources/Scripts/require.config.js" type="text/javascript">
+        <script src="../../Resources/Scripts/require.config.js">
         </script>
-        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/foundation.min.js">
         </script>
-        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript">
+        <script src="../../Resources/Scripts/plugins.min.js">
         </script>
-        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript">
+        <script src="../../Resources/Scripts/MadCapAll.js">
         </script>
     </head>
     <body>
         <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/establishing-relationships.htm">Open topic with navigation</a>
-        </p>
-        <h1 class="ChapterHeading">Establishing relationships</h1>
-        <p>A relationship ties two artifacts together, using a predicate as a link between the two artifacts, see <a href="establishing-predicates.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber" xrefformat="{paratext}">Establishing predicates</a>. </p>
-        <p>For example, take the two artifact types; "Report" and "Business Term", say you have a Report which contains a particular Business Term, then "Report contains Business Term" is an example of a relationship. The term that links the two artifacts, the predicate, in this case is "contains".</p>
-        <p>
-            <img src="../Resources/Images/admin/relationship-types.png" />
-        </p>
-        <p>&#160;</p>
-        <ol>
-            <li value="1">Click the <b>Administration</b> icon on the left of the screen and select <b>Relationships</b>.</li>
-            <li value="2">Click the <b>Add</b> icon in the top right corner to enter a new relationship type.</li>
-            <li value="3">In the <b>New Relationship Type</b> screen, select a <b>Subject</b> e.g. <code>Artifacts :: Reports</code>.</li>
-            <li value="4">Select the <b>Predicate</b>, e.g. <code>Contains (Data Lineage)</code>.</li>
-            <li value="5">Select an <b>Object </b>, e.g. <code>Artifacts :: Business Term</code>.</li>
-            <li value="6">Specify the <b>Subject Cardinality</b> and the <b>Object Cardinality</b>. The cardinality is the numeric limitations of one data asset compared to another, for example, one report can contain many business terms, so in this example, you may choose to select <code>One </code>to <code>Many</code>. </li>
-            <li value="7">Click <b>Save</b> to create the new relationship type.</li>
-        </ol>
-        <p>&#160;</p>
-        <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>When creating a relationship type, the subject should always be the higher level item in the relationship, compared to the object. </p>
-        <p>&#160;</p>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h1 class="ChapterHeading">Establishing relationships</h1>
+                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>If you are not already familiar with asset relationships you should first check out the <b>User Guide</b> topic <a href="../c-user-guide/defining-relationships.htm" class="MCXref xref">Defining relationships between assets</a>.</p>
+                    <p>&#160;</p>
+                    <p>It is the responsibility of the system administrator to define and maintain a set of relationship types which can be used to link various assets in the system. A relationship ties two artifacts together, using a predicate as a link between the two artifacts, see <a href="establishing-predicates.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Establishing predicates</a>. </p>
+                    <p>For example, take the two artifact types; "Report" and "Business Term", say you have a Report which contains a particular Business Term, then "Report contains Business Term" is an example of a relationship. The term that links the two artifacts, the predicate, in this case is "contains".</p>
+                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>When creating a relationship type, the subject should always be the higher level item in the relationship, compared to the object. </p>
+                    <h2>Browsing relationship types</h2>
+                    <p>Choose <b>Administration &gt; MetaModel &gt; Relationships</b> to view a list of existing relationship types:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/relationship-types2.png" class="img-vpadded" />
+                    </p>
+                    <h2>Creating relationship types</h2>
+                    <p>You can click the <b>Add</b> button to create a new relationship type. The <b>New Relationship Type</b> panel appears:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/relationship-type-add.png" />
+                    </p>
+                    <p>&#160;</p>
+                    <p>Select a <b>Subject</b> asset type, e.g. <code>Artifacts :: Reports</code>.</p>
+                    <p>Select the <b>Predicate</b>, e.g. <code>Contains (Data Lineage)</code>.</p>
+                    <p>Select an <b>Object</b> asset type, e.g. <code>Artifacts :: Business Term</code>.</p>
+                    <p>Specify the <b>Subject Cardinality</b> and the <b>Object Cardinality</b>. The cardinality is the numeric limitations of one data asset compared to another. For example, one report can contain many business terms, so in this example, you would select <code>One</code> to <code>Many</code>. </p>
+                    <p>Click <b>Save</b> to create the new relationship type and return to the list.</p>
+                    <h2>Field definition</h2>
+                    <p>For the selected relationship type, the <b>Field Definition</b> table on the right is available to determine which fields should be displayed and available to populate for this type of relationship:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/relationship-type-fields.png" class="img-vpadded" />
+                    </p>
+                    <p>Please refer to the following topic <a href="defining-fields.htm" class="MCXref xref">Defining fields on asset types</a>, for full details on editing the fields associated with an relationship type.</p>
+                    <h2>Editing relationship types</h2>
+                    <p>You can click the <b>Edit</b> button next to a relationship type to modify it, using the <b>Edit Relationship Type</b> panel:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/relationship-type-edit.png" />
+                    </p>
+                    <p>&#160;</p>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
