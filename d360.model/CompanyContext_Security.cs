@@ -125,8 +125,20 @@ order by RT.Name", new { id }).AsQueryable();
             bool hasPermission = CurrentResourceIsAdmin;
             if (!hasPermission)
             {
-                var assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).Single();
-                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where ( (Object = @type and ObjectID = @id) or (AssetID = 0 and AssetTypeID = @t) ) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id, t = assetTypeID }).Single();
+                int? assetTypeID = null;
+
+                if (type.EndsWith("Type"))
+                {
+                    assetTypeID = Query<int?>("select ID from AssetType where Object = @type and ObjectID = @id", new { type, id }).SingleOrDefault();
+                }
+                else
+                {
+                    assetTypeID = Query<int?>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).SingleOrDefault();
+                }
+                if (assetTypeID.HasValue)
+                {
+                    hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where ( (Object = @type and ObjectID = @id) or (AssetID = 0 and AssetTypeID = @t) ) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id, t = assetTypeID.Value }).Single();
+                }
             }
 
             return hasPermission;

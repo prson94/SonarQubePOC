@@ -11,10 +11,12 @@ export class Model {
     AllowSynonyms: boolean;
     ID: number;
     NymTypes: NymType[];
+    P_CanDelete: boolean;
+    P_CanEdit: boolean;
 }
 
 export class ModelHierarchy {
-    HasChildren: boolean;    
+    HasChildren: boolean;   
     ID: number;
     AssetID: number;
     DisplayValue: string;

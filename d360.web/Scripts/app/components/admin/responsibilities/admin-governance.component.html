@@ -29,6 +29,9 @@
     </div>
     <div class="col s8" [ngSwitch]="formMode">
         <div *ngSwitchDefault class="tile tile-detail">
+            <object-detail [objectType]="'ResponsibilityType'" [objectID]="selectedRow?.ID"></object-detail>
+        </div>
+        <div *ngSwitchDefault class="tile tile-detail">
             <d3s-responsibility-relations queryType="R" [id]="selectedRow?.ID"></d3s-responsibility-relations>
         </div>
         <div *ngSwitchDefault class="tile tile-detail">

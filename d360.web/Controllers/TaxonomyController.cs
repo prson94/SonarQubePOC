@@ -55,18 +55,32 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 order by A.
             // get the dynamic fields set as listable for this taxonomy
             getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns, false, false, true, fields, "A.ObjectID");
 
+            var editRightsColumnStatement = "cast(1 as bit) as P_CanEdit, cast(1 as bit) as P_CanDelete,";
+            var editRightsJoinStatement = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                editRightsColumnStatement = " cast(IIF(S_E.[Count] = 0, 0, 1) as bit) as P_CanEdit, cast(IIF(S_D.[Count] = 0, 0, 1) as bit) as P_CanDelete, ";
+                editRightsJoinStatement = $@"
+cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
+cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
+            }
+
             var sql = $@"
-select	A.ObjectID as ID, P.SubjectID as ParentID, A.TypeID as TaxonomyTypeID,
+select	A.ObjectID as ID, 
+        P.SubjectID as ParentID, 
+        A.TypeID as TaxonomyTypeID,
+        {editRightsColumnStatement}
         A.ID as AssetID,  
         {columns} 
         D.DisplayValue, 
-hch.HasChildren--,
-        --dbo.GetAssetLevelScalar(A.ID,4) as [Level]
+        hch.HasChildren
 from	AssetWithType A        
         {joins} 
         cross apply [dbo].[GetAssetHasChildrenByAssetID](a.id,4) hch
-        cross apply dbo.GetAssetDisplayValueById(A.ID)  D  
-		outer apply (
+        cross apply dbo.GetAssetDisplayValueById(A.ID)  D 
+        {editRightsJoinStatement}
+        outer apply (
 					select	I.SubjectID
 					from	[Intersect] I
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
@@ -79,7 +93,7 @@ where   A.Type = 'TaxonomyType'
         and A.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement()})
 order by DisplayValue ";
  
-            var models = Company.Query<dynamic>(sql, new { id });
+            var models = Company.Query<dynamic>(sql, new { id, r = Company.CurrentResourceID });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }

@@ -16,6 +16,7 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
+import { Permission } from '../../models/responsibility-type.model';
 
 declare var CompanySettings;
 
@@ -83,10 +84,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.isLoading = true;
             this.messages = [];
             
-            this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId);
-
-            this.load(artifactId).then(() => this.isLoading = false);
-
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId).then(p => {
+                this.load(artifactId).then(() => this.isLoading = false);
+            });
+            
             this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
         });
     }
@@ -115,7 +116,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
 
                 this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.DisplayValue, this.artifact.AssetID, this.artifact.AssetTypeID);
-                this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true, true);
+                this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), this.artifact.HasDashboards, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                 if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-sitemap'], `/sidebar/children${this.objectContextUrl()}`));
 
                 this.loadItemSurvey(id);

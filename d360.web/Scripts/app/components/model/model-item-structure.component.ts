@@ -47,16 +47,16 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                                 </div>
                             </ng-template>
                         </p-column>     
-                        <p-column [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions()" >
+                        <p-column [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
+                                <div class="RowTools" *ngIf="item.data.P_CanEdit">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </ng-template>
                         </p-column>                            
-                        <p-column  [style]="{width:'40px'}" *ngIf="hasDeleteAssetPermissions()">
+                        <p-column  [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">                                
+                                <div class="RowTools" *ngIf="item.data.P_CanDelete">                                
                                     <a *ngIf="!item.children || item.children?.length == 0" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                             </ng-template>

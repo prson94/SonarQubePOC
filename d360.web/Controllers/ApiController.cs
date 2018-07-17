@@ -5856,41 +5856,6 @@ where    A.RuleID = @id", new { id });
                                 }
                             });
                         }
-
-                        #region Allocation
-
-                        var allocations = string.Empty;
-
-                        var comparer = new AllocationPossibilityComparer();
-                        var allocationPossibilities =
-                            Company.GetAllocationOptions()
-                            .Intersect(Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == responsibilityType.ID)
-                            .Select(i => new AllocationPossibility { ObjectType = i.ObjectType, ObjectTypeID = i.ObjectID })
-                            .ToList(), comparer)
-                            .ToList();
-
-                        foreach (var a in allocationPossibilities.Select(i => i.Name))
-                        {
-                            allocations += string.Format("<li>{0}</li>", a);
-                        }
-                        if (string.IsNullOrEmpty(allocations))
-                        {
-                            allocations = "None specified";
-                        }
-                        else
-                        {
-                            allocations = string.Format("<ul>{0}</ul>", allocations);
-                        }
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Assigned to Asset", FieldName = "Allocations", FieldDescription = "", Value = allocations }
-                            }
-                        });
-
-                        #endregion
                     }
                     responsibilityType = null;
                     break;

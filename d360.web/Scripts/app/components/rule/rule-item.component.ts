@@ -14,6 +14,7 @@ import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { Permission } from '../../models/responsibility-type.model';
 
 declare var CompanySettings;
 
@@ -90,8 +91,11 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             this.load(ruleId).then(() => {
                 this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
                 this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID);
-                this.setCommonRightSideBar(true, true, false, true, true, true, true, true);
-                this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId);
+
+                this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
+                    this.clearSidebar();
+                    this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+                });
 
                 this.isLoading = false;
             });

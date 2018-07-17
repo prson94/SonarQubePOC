@@ -4888,12 +4888,13 @@ BEGIN
 	DECLARE @tsqlWhere nvarchar(max);
 	DECLARE @tsql nvarchar(max);
 
-	set @tsqlSelect = 'select ri.id as [ID] ,ri.code as [Code],o.id as [AssetID]';
-	set @tsqlFrom = ' from [dbo].[referenceitem] ri  inner join Asset O on O.Object = ''ReferenceItem'' and O.ObjectID = ri.ID ';
+	set @tsqlSelect = 'select ri.id as [ID] , ri.code as [Code], o.id as [AssetID]';
+	set @tsqlFrom = 'from ReferenceItem ri inner join Asset O on O.Object = ''ReferenceItem'' and O.ObjectID = ri.ID ';
 	set @tsqlWhere = ' where ri.visible = 1 and ri.referenceitemtypeid = ' + cast(@listid as nvarchar(20));
 	if @resourceID > 0
 	begin
 		set @tsqlWhere = @tsqlWhere + ' and O.ID not in (select AssetID from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = ' +  cast(@resourceID as varchar) + ') ';
+		set @tsqlWhere = @tsqlWhere + ' and O.AssetTypeID not in (select AssetTypeID from ResponsibilityDetail where AssetID = 0 and PermissionsBitMask & 1 = 0 and ResourceID = ' +  cast(@resourceID as varchar) + ') ';
 	end	
 
 	DECLARE @name nvarchar(250);

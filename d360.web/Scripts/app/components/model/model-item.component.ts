@@ -14,6 +14,7 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { Permission } from '../../models/responsibility-type.model';
 
 declare var CompanySettings;
 
@@ -106,7 +107,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.headerBreadcrumbService.popLastBreadcrumb();
                 this.selectModelHierarchy(hierarchyId).then(n => {
                     this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
+                    //this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
                 });
             }
             
@@ -134,7 +135,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                     this.setBrowserTitle(this.titleService, this.model.Name);
 
                     this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
+                    //this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
                 });
             });
     }
@@ -154,7 +155,10 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
         this.assetID = this.selected.AssetID;
 
-        this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID);
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID).then(p => {
+            this.clearSidebar();
+            this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), this.model.HasDashboards, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+        });
 
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.DisplayValue, undefined, true, 'Taxonomy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
 

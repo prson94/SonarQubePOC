@@ -12,6 +12,7 @@ import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { Permission } from '../../models/responsibility-type.model';
 
 declare var CompanySettings;
 
@@ -101,8 +102,8 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             } else {
                 this.headerBreadcrumbService.popLastBreadcrumb();
                 this.selectPolicyHierarchy(hierarchyId).then(p => {
-                    this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, false, true, true, true, true, true);
+                    //this.clearSidebar();
+                    //this.setCommonRightSideBar(true, true, false, true, true, true, true, true);
                 });
             }
         });
@@ -128,8 +129,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
                 this.loadPolicyItems(this.policyTypeId, hierarchyId).then(n => {
                     this.setBrowserTitle(this.titleService, this.policyType.Name);
-                    this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, false, true, true, true, true);
+
                 });
             });
     }
@@ -188,7 +188,10 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
         this.assetID = this.selected.AssetID;
 
-        this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID);
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID).then(p => {
+            this.clearSidebar();
+            this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true);
+        });
 
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.DisplayValue, undefined, true, 'Policy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
 
