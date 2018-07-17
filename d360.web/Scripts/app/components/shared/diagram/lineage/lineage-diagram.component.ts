@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener, SimpleChanges } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, HostListener, SimpleChanges } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { PermissionsService } from '../../../../services/permissions.service';
 import { DiagramService } from '../../../../services/diagram.service';
@@ -99,8 +99,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         protected permissionsService: PermissionsService,
         private diagramService: DiagramService,
         private lineageService: LineageService,
-        private messagesService: MessagesService,
-        private renderer: Renderer) {
+        private messagesService: MessagesService) {
         super();
     }
 

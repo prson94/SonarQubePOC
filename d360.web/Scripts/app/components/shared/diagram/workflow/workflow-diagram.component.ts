@@ -4,8 +4,7 @@
     OnInit,
     ElementRef,
     OnDestroy,
-    ViewChild,
-    Renderer,
+    ViewChild,    
     HostListener,
     Output,
     EventEmitter,
@@ -110,8 +109,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     constructor(
         private myElement: ElementRef,
-        protected permissionsService: PermissionsService,
-        private renderer: Renderer,
+        protected permissionsService: PermissionsService,        
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
         private uriBasedService: UriBasedService,

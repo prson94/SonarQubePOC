@@ -1,4 +1,4 @@
-﻿import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, AfterViewInit, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
@@ -58,7 +58,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     public maxOverlayHeight: string = '800px'
     private searchSub: ISubscription
 
-    constructor(private renderer:Renderer, private elementRef: ElementRef, private router: Router,
+    constructor(private elementRef: ElementRef, private router: Router,
         private typeaheadSearchService: TypeaheadSearchService, private ref: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

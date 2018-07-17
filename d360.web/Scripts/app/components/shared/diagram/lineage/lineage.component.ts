@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { PermissionsService } from '../../../../services/permissions.service';
 import { DiagramService } from '../../../../services/diagram.service';
 import { DiagramBaseComponent } from '../diagram-base.component';
@@ -68,7 +68,7 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
     private zoomLevel: number = 50;
 
 
-    constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService, private renderer: Renderer) {
+    constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService) {
         super();
     }
 
