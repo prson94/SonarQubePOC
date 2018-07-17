@@ -173,6 +173,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.linkTemplateMap.add('', this.createDefaultLink());
         this.diagram.linkTemplateMap.add('adding', this.createPendingAddLink());
         this.diagram.linkTemplateMap.add('deleting', this.createPendingDeleteLink());
+        this.diagram.linkTemplateMap.add('deleted', this.createDeletedLink());
 
         this.diagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
@@ -276,6 +277,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     link.category = 'adding';
                 else if (link.state == 2)
                     link.category = 'deleting';
+                else if (link.state == 3)
+                    link.category = 'deleted';
                 else
                     link.category = '';
 
@@ -1344,6 +1347,46 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 }
             ),
             this.g(go.Shape, { toArrow: "standard", fill: "#900", stroke: "#900" }),
+            this.g(go.Panel, "Auto",
+                this.g(go.Shape, {
+                    visible: false,
+                    fill: this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                    stroke: null,
+                    //strokeDashArray: [3, 2]
+                },
+                    //only visible if there's a label
+                    new go.Binding("visible", "text", a => { return (a && this.showPredicateNames ? true : false) }),
+                ), // the link shape
+                this.g(go.TextBlock, {
+                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                },
+                    // the label
+                    new go.Binding("visible", "text", a => { return (a && this.showPredicateNames ? true : false) }),
+                    new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        );
+    }
+
+    private createDeletedLink(): go.Link {
+        return this.g(
+            go.Link, {
+                routing: go.Link.Orthogonal,
+                corner: 10,
+                relinkableFrom: false,
+                relinkableTo: false,
+                //curve: go.Link.Bezier
+            }, // the whole link panel
+            this.g(go.Shape, {
+                stroke: "#c00", strokeWidth: 2, strokeDashArray: [3, 2]
+            },
+                new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
+                new go.Binding("stroke", "hasProperties", function (h) { return h ? "#c00" : "#c00" }),
+                {
+                    toolTip: this.showTooltip("Deleted")
+                }
+            ),
+            this.g(go.Shape, { toArrow: "standard", fill: "#c00", stroke: "#c00" }),
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
                     visible: false,
