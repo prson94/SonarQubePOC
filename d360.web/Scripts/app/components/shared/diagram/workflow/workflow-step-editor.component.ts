@@ -101,7 +101,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         if (this.step.activityType == WorkflowActivityType.EmailNotification) {
 
             if (this.objectType == 'IntersectType') {
-                this.changeResponsibilitySide(this.step.settings.ResponsibilitySide || 'Subject');
+                this.changeResponsibilitySide(this.step.settings.ResponsibilitySide || 'Subject', false);
             } else {
                 this.responsibleObject = this.objectType;
                 this.responsibleObjectId = this.objectId;
@@ -244,9 +244,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         this.stepChange.emit(this.step);
     }
 
-    changeResponsibilitySide(e: any) {
+    changeResponsibilitySide(e: any, clear: boolean = true) {
         //if we switch sides, clear the current values
-        if (e != this.step.settings.ResponsibilitySide) {
+        if (e != this.step.settings.ResponsibilitySide && clear) {
             this.step.settings.ResponsibilityTypeID = null;
             //this.addResponsibility();
         }
@@ -289,7 +289,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     getResponsibilityTypes(): Promise<any> {
-        //console.log('getResTypes', this.responsibleObject, this.responsibleObjectId);
+        //console.log('getResTypes', this.responsibleObject, this.responsibleObjectId, this.step, this.responsibilities);
         if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0 || this.objectType == 'IssueType') {
             this.responsibilities = [];
             return this.responsibilityService.getResponsibilityTypes()
@@ -297,12 +297,14 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 .then(() => {
                     this.responsibilities.forEach(r => {
                         r.ResponsibilityTypeID = r.ID;
-                    })
+                    });
                 });
         }
 
         return this.responsibilityService.getResponsibilityTypesByObject(this.responsibleObject, this.responsibleObjectId)
-            .then(r => this.responsibilities = r);
+            .then(r => {
+                this.responsibilities = r;
+            });
     }
 
     changeValueType(e: any, field: string) {
