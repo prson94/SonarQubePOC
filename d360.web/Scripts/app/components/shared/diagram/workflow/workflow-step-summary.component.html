@@ -52,8 +52,10 @@
                         Responsibility
                     </div>
                     <div>
-                        <ng-container *ngIf="step.settings['ResponsibilityTypeName'] != null; else block">
-                            {{step.settings['ResponsibilityTypeName']}}
+                        <ng-container *ngIf="step.settings['ResponsibilityTypeID'] != null; else block">
+                            <div *ngFor="let r of step.settings.ResponsibilityTypeID; let i = index">
+                                {{getResponsibilityName(i)}}
+                            </div>
                         </ng-container>
                         <ng-template #block>
                             &nbsp;
