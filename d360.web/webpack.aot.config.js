@@ -28,7 +28,7 @@ var webpackConfig = {
       // Workaround for https://github.com/angular/angular/issues/11580
     new webpack.ContextReplacementPlugin(
       // The (\\|\/) piece accounts for path separators in *nix and Windows
-      /angular(\\|\/)core(\\|\/)(@angular|esm5)/,
+      /@angular(\\|\/)core(\\|\/)fesm5/,
       path.resolve(__dirname, '../src')
     ),
         /*new webpack.optimize.UglifyJsPlugin({
