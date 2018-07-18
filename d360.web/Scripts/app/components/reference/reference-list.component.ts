@@ -84,64 +84,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
         this.sub = this.route.params.subscribe(params => {
             this.canReadSelectedType = false;
-            this.setCommonRightSideBar(true, false, false, false, true, true, false, true);
+            //this.setCommonRightSideBar(true, false, false, false, true, true, false, true);
 
-            if (this.auditSidebar) {
-                this.auditSidebar.hasDynamicUrl = true;
-                this.auditSidebar.dynamicUrlCallback = (() => {
-                    return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-                });
-            }
-            
-            if (this.impactSidebar) {
-                this.impactSidebar.hasDynamicUrl = true;
-                this.impactSidebar.dynamicUrlCallback = (() => {
-                    return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-                });
-            }
-
-            if (this.relationsSidebar) {
-                this.relationsSidebar.hasDynamicUrl = true;
-                this.relationsSidebar.dynamicUrlCallback = (() => {
-                    return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-                });
-            }
-
-            if (this.monitorSidebar) {
-                this.monitorSidebar.hasDynamicUrl = true;
-                this.monitorSidebar.dynamicUrlCallback = (() => {
-                    return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-                });
-            }
-
-            if (this.authenticationService.isAdmin) {
-                let fields = new RightSidebarItem()
-                fields.hasDynamicUrl = true;
-                fields.icons = ['fa-drivers-license-o'];
-                fields.tag = 'fields'
-                fields.title = 'Field Definitions'
-                fields.url = '/sidebar/fields'
-                fields.dynamicUrlCallback = (() => {
-                    return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-                });
-
-                this.rightSidebarService.showItem(fields);
-            }
-
-            if (this.authenticationService.isAdmin) {
-                let permissions = new RightSidebarItem()
-                permissions.hasDynamicUrl = true;
-                permissions.icons = ['fa-ban'];
-                permissions.tag = 'responsibilities'
-                permissions.title = 'Responsibilities'
-                permissions.url = '/sidebar/responsibilities'
-                permissions.dynamicUrlCallback = (() => {
-                    return `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`
-                });
-                this.rightSidebarService.showItem(permissions);
-            }
-
-            let claims = [];
             //load default perms
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
@@ -156,6 +100,64 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                             this.canAddReferenceItem = this.hasModifyAssetPermissions();
                             this.canEditReferenceItem = this.hasModifyAssetPermissions();
                             this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
+
+                            this.clearSidebar();
+                            this.setCommonRightSideBar(true, false, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true);
+
+                            if (this.auditSidebar) {
+                                this.auditSidebar.hasDynamicUrl = true;
+                                this.auditSidebar.dynamicUrlCallback = (() => {
+                                    return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceListId}`
+                                });
+                            }
+
+                            if (this.impactSidebar) {
+                                this.impactSidebar.hasDynamicUrl = true;
+                                this.impactSidebar.dynamicUrlCallback = (() => {
+                                    return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceListId}`
+                                });
+                            }
+
+                            if (this.relationsSidebar) {
+                                this.relationsSidebar.hasDynamicUrl = true;
+                                this.relationsSidebar.dynamicUrlCallback = (() => {
+                                    return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceListId}`
+                                });
+                            }
+
+                            if (this.monitorSidebar) {
+                                this.monitorSidebar.hasDynamicUrl = true;
+                                this.monitorSidebar.dynamicUrlCallback = (() => {
+                                    return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceListId}`
+                                });
+                            }
+
+                            if (this.authenticationService.isAdmin) {
+                                let fields = new RightSidebarItem()
+                                fields.hasDynamicUrl = true;
+                                fields.icons = ['fa-drivers-license-o'];
+                                fields.tag = 'fields'
+                                fields.title = 'Field Definitions'
+                                fields.url = '/sidebar/fields'
+                                fields.dynamicUrlCallback = (() => {
+                                    return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`
+                                });
+
+                                this.rightSidebarService.showItem(fields);
+                            }
+
+                            if (this.authenticationService.isAdmin) {
+                                let permissions = new RightSidebarItem()
+                                permissions.hasDynamicUrl = true;
+                                permissions.icons = ['fa-user'];
+                                permissions.tag = 'responsibilities'
+                                permissions.title = 'Ownership'
+                                permissions.url = '/sidebar/responsibilities'
+                                permissions.dynamicUrlCallback = (() => {
+                                    return `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`
+                                });
+                                this.rightSidebarService.showItem(permissions);
+                            }
                         });
                     });
             }
@@ -194,12 +196,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);
-        this.permissionsService.getPermissions(this.selectedReferenceListId, "ReferenceItemType")
-            .then(result => {
-                let claims = result;
-                this.canAddReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.ModifyAsset);
-                this.canEditReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.ModifyAsset);
-                this.canRemoveReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.DeleteAsset);
-            });
+        //this.permissionsService.getPermissions(this.selectedReferenceListId, "ReferenceItemType")
+        //    .then(result => {
+        //        this.canAddReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.ModifyAsset);
+        //        this.canEditReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.ModifyAsset);
+        //        this.canRemoveReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.DeleteAsset);
+        //    });
     }
 };

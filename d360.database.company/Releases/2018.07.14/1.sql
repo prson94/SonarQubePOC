@@ -3869,7 +3869,7 @@ ALTER procedure [integration].[ProcessExecutionAssetType]
 	@AssetTypeID int,
 	@ResourceID int,
 	@Section int --0 = Asset, 1 = Field, 2 = Relationships, 3 = Responsibilities
---set @ExecutionID = 12085
+--set @ExecutionID = 6002
 --set @SynchedAssetTypeID = 1
 --set @AssetTypeID = 3
 --set @ResourceID = 0
@@ -3877,6 +3877,9 @@ ALTER procedure [integration].[ProcessExecutionAssetType]
 as
 begin
 	set nocount on;
+
+	--line below used for testing.
+--declare	 @ExecutionID bigint = 6002, @SynchedAssetTypeID int = 1, @AssetTypeID int = 3, @ResourceID int = 0, @Section int = 2
 	
 	declare @archived bit = 0
 
@@ -4543,6 +4546,7 @@ begin
 					outer apply OPENJSON(RIF.items) with (_type nvarchar(max) '$._type', _id nvarchar(max) '$._id') RIIF
 			where	A.ExecutionID = @ExecutionID
 					and A.SynchedAssetTypeID = @SynchedAssetTypeID
+--and A.SourceID = '5b818a0c.187019e4.p22m92joq.ku4e27e.42r9v7.oiegds2mjhclbmefe5pe9'
 					and A.RawRelationships is not null
 					and RIIF._type is not null;
 
@@ -4583,6 +4587,8 @@ begin
 		set		[ACtion] = 'A'
 		where	IntersectID is null;
 
+--select * from #Rel_Step2
+
 		drop table if exists #IntersectTypes;
 		create table #IntersectTypes (ID int);
 		insert into #IntersectTypes
@@ -4599,15 +4605,22 @@ begin
 					O.AssetTypeID, O.SourceID, O.ID, O.Object, O.ObjectID,
 					I.ID, 'D' as [Action]
 			from	[Intersect] I
-					inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID  
-					inner join integration.ExecutionAsset SE on SE.ExecutionID = @ExecutionID and SE.SynchedAssetTypeID = @SynchedAssetTypeID and SE.SourceID = S.SourceID
-					inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
-					inner join integration.ExecutionAsset OE on OE.ExecutionID = @ExecutionID and OE.SynchedAssetTypeID = @SynchedAssetTypeID and OE.SourceID = O.SourceID
 					inner join #IntersectTypes SIT on SIT.ID = I.IntersectTypeID
+					inner join integration.SynchedAssetTypeRelationItemTarget SRIT on SRIT.IntersectTypeID = SIT.ID
+					inner join integration.SynchedAssetTypeRelationItem SRI on SRI.SynchedAssetTypeID = @SynchedAssetTypeID and SRI.ID = SRIT.SynchedAssetTypeRelationItemID
+					inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID  
+					inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+					inner join integration.ExecutionAsset EA on EA.ExecutionID = @ExecutionID 
+																and EA.SynchedAssetTypeID = @SynchedAssetTypeID 
+																and EA.RawRelationships is not null
+																and EA.SourceID = case when SRI.IsSubject = 1 then S.SourceID else O.SourceID end
+					--inner join integration.ExecutionAsset OE on OE.ExecutionID = @ExecutionID and OE.SynchedAssetTypeID = @SynchedAssetTypeID and OE.SourceID = O.SourceID
 					left join #Rel_Step2 SI on SI.IntersectID = I.ID
 			where	SI.IntersectID is null
-					and S.SourceID not in (select SourceID from integration.ExecutionAsset where ExecutionID = @ExecutionID and SynchedAssetTypeID = @SynchedAssetTypeID and RawRelationships is not null)
-					and O.SourceID not in (select SourceID from integration.ExecutionAsset where ExecutionID = @ExecutionID and SynchedAssetTypeID = @SynchedAssetTypeID and RawRelationships is not null);
+					--and S.SourceID not in (select SourceID from integration.ExecutionAsset where ExecutionID = @ExecutionID and SynchedAssetTypeID = @SynchedAssetTypeID and RawRelationships is null)
+					--and O.SourceID not in (select SourceID from integration.ExecutionAsset where ExecutionID = @ExecutionID and SynchedAssetTypeID = @SynchedAssetTypeID and RawRelationships is null)
+					;
+
 		--END: Query for records we need to delete.
 
 		BEGIN	-- Try to process previously unresolved relationships.
