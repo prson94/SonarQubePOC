@@ -1110,10 +1110,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.IncludePreviousFormResponses = e.settings.IncludePreviousFormResponses;
                 n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
 
-                if (e.settings.MessageRecipientType == 'SpecificUser')
-                    delete e.settings.ResponsibilityTypeID;
-                if (e.settings.MessageRecipientType == 'Responsibility')
+                if (e.settings.MessageRecipientType == 'Responsibility') {
+                    if (this.model.Event.Object == 'IntersectType')
+                        n.settings.ResponsibilitySide = e.settings.ResponsibilitySide;
+                    else
+                        delete e.settings.ResponsibilitySide;
                     delete e.settings.MessageToUser;
+                } else {
+                    delete e.settings.ResponsibilityTypeID;
+                    delete e.settings.ResponsibilitySide;
+                }
 
                 break;
             case WorkflowActivityType.StatusChange: //status change
