@@ -312,13 +312,16 @@ namespace d360.web.Controllers.Services
                 //Determine whether it is JSON or XML to send back to caller, and format appropriately.
                 if (asJson)
                 {
-                    //var json = new JsonResultsModel { total = count, items = new List<dynamic>asset, _links = new List<JsonResultLinkModel>() };
-                    //json._links.Add(new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO });
-                    //return Request.CreateResponse(HttpStatusCode.OK, json, "application/json");
+                    var dic = (IDictionary<string, object>)asset;
+                    var exp = new ExpandoObject() as IDictionary<string, Object>;
+                    foreach (var property in dic)
+                    {
+                        if (property.Value != null) exp.Add(property.Key, property.Value);
+                    }                    
 
-                    ((IDictionary<string, Object>)asset).Add("_links", new List<JsonResultLinkModel> { new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO } });
+                    exp.Add("_links", new List<JsonResultLinkModel> { new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO } });
 
-                    return Request.CreateResponse(HttpStatusCode.OK, asset as object, "application/json");
+                    return Request.CreateResponse(HttpStatusCode.OK, exp as object, "application/json");
                 }
                 else
                 {
@@ -336,22 +339,11 @@ namespace d360.web.Controllers.Services
                     xLinks.Add(link);
                     xAsset.Add(xLinks);
                     
-                   /* var CollectionWrapper = new XElement(
-                        "CollectionWrapper",
-                        xLinks,
-                        xAsset
-                    );*/
-
-                    //XNamespace ns = "http://www.lmtom.london/schema/endpoints/Lloyds/RiskCode/v1";
-                    //CollectionWrapper.Add(new XAttribute(XNamespace.Xmlns + "", ns));
-
-                    //responseMessage = Request.CreateResponse(HttpStatusCode.OK, CollectionWrapper, "application/xml");
                     return Request.CreateResponse(HttpStatusCode.OK, xAsset, "application/xml");
                 }
 
                 #endregion End: Collection endpoint processing
-
-                //return Request.CreateResponse<string>($"Service: {service}, Endpoint: {endpoint}, Version: {version}, Entity: {entityFormat}, Key: {key}");
+                
             }
             catch (Exception r)
             {
@@ -1213,7 +1205,20 @@ namespace d360.web.Controllers.Services
                 //Determine whether it is JSON or XML to send back to caller, and format appropriately.
                 if (asJson)
                 {
-                    var json = new JsonResultsModel { total = count, items = assets, _links = new List<JsonResultLinkModel>() };
+                    var res = assets.ToList();
+                    for (int i = 0; i < res.Count(); i++)
+                    {
+                        var dic = (IDictionary<string, object>)res[i];
+                        var exp = new ExpandoObject() as IDictionary<string, Object>;
+                        foreach (var property in dic)
+                        {
+                            if (property.Value != null)
+                                exp.Add(property.Key, property.Value);                                
+                        }
+                        res[i] = exp;
+                    }
+
+                    var json = new JsonResultsModel { total = count, items = res, _links = new List<JsonResultLinkModel>() };
 
                     json._links.Add(new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO });
                     if (showNextLink)
@@ -1270,7 +1275,7 @@ namespace d360.web.Controllers.Services
                     responseMessage = Request.CreateResponse(HttpStatusCode.OK, CollectionWrapper, "application/xml");
                 }
 
-                responseMessage.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { MaxAge = new TimeSpan(0, 0, 0, maxAge) };
+                responseMessage.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { MaxAge = new TimeSpan(0, 0, 0, maxAge) };                
 
                 return responseMessage;
 
@@ -1290,8 +1295,6 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{service}/{endpoint}/{version}/version")]        
         public HttpResponseMessage GetEndpointVersion(string service, string endpoint, string version)
         {
-            
-
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -1367,8 +1370,6 @@ namespace d360.web.Controllers.Services
         [AllowAnonymous, HttpGet, Route("{service}/{endpoint}/{version}/health")]
         public HttpResponseMessage GetEndpointHealth(string service, string endpoint, string version)
         {
-            
-
             try
             {
                 //test the database connection
@@ -1397,8 +1398,6 @@ namespace d360.web.Controllers.Services
                 {
                     return Request.CreateResponse(HttpStatusCode.InternalServerError, "Endpoint not found."); 
                 }
-
-
             }
             catch (Exception)
             {

@@ -2382,15 +2382,7 @@ namespace d360.model
 
                 }
             }
-            //var elements = from prop in members
-            //               let name = XmlConvert.EncodeName(prop.Key)
-            //               let val = prop.Value.GetType().IsArray ? "array" : prop.Value
-            //               let value = prop.Value.GetType().IsArray ? GetArrayElement(prop.Key, (Array)prop.Value) : (prop.Value.GetType().IsSimpleType() ? new XElement(name, val) : val.ToXml(name))
-            //               where value != null
-            //               select value;
-
-            //ret.Add(elements);
-
+            
             return ret;
         }
 
