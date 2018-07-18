@@ -776,7 +776,7 @@ namespace d360.web.Controllers.Services
                             fieldDbType = System.Data.DbType.Int32;
                             break;
                         case "Decimal":
-                            fieldDataType = "decimal";
+                            fieldDataType = "decimal(18, 4)";
                             fieldDbType = System.Data.DbType.Decimal;
                             break;
                         default:
