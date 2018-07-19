@@ -10,20 +10,11 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 @Component({
     selector: 'd3s-admin-relationships-component',
     template: `<div class="row">
-                    <div class="col l6 m12 s12">                    
+                    <div class="col l12 m12 s12">                    
                         <div class="tile tile-detail">
                             <d3s-admin-relationships-list [(selected)]="selected"></d3s-admin-relationships-list>
                         </div>
                     </div>                    
-                    <div class="col l6 m12 s12" *ngIf="selected">                        
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">                                              
-                                    <d3s-field-definition-tile [objectType]="'IntersectType'" [objectID]="selected?.ID" ></d3s-field-definition-tile>
-                                </div>
-                            </div>
-                        </div>
-                    <div>                    
                 </div>  
                 `
 })
@@ -43,6 +34,21 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
                 return `/sidebar/audit/IntersectType/${this.selected.ID}`
             });
         }
+
+       
+        let fields = new RightSidebarItem()
+        fields.hasDynamicUrl = true;
+        fields.icons = ['fa-drivers-license-o'];
+        fields.tag = 'fields'
+        fields.title = 'Field Definitions'
+        fields.url = '/sidebar/fields'
+        fields.dynamicUrlCallback = (() => {
+            return `/sidebar/fields/IntersectType/${this.selected.ID}`
+        });
+
+        this.rightSidebarService.showItem(fields);
+      
+
         //this.rightSidebarService.showItem(new RightSidebarItem('Relationship Roles', 'roles', ['fa-user']));
     }
     
