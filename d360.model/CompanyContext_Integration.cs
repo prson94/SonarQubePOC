@@ -741,14 +741,13 @@ when not matched by target then
             #endregion
         }
 
-        public static List<dynamic> BulkRelationshipsImport(this SqlConnection cnn, int currentResourceID, BulkRelationshipImport import)
+        public static List<dynamic> BulkRelationshipsImport(this SqlConnection cnn, int currentResourceID, List<RelationshipImportRequest> import)
         {
             var relationshipTable = new System.Data.DataTable();
 
             relationshipTable.Columns.Add("ItemNumber", typeof(int));
             relationshipTable.Columns.Add("SubjectSourceID", typeof(string));
             relationshipTable.Columns.Add("ObjectSourceID", typeof(string));
-            relationshipTable.Columns.Add("PredicateType", typeof(int));
             relationshipTable.Columns.Add("IntersectTypeID", typeof(int));
             relationshipTable.Columns.Add("Message", typeof(string));
             relationshipTable.Columns.Add("Success", typeof(bool));
@@ -767,7 +766,6 @@ when not matched by target then
                 row["ItemNumber"] = model.ItemNumber;
                 row["SubjectSourceID"] = model.SubjectSourceID;
                 row["ObjectSourceID"] = model.ObjectSourceID;
-                row["PredicateType"] = model.PredicateType;
                 row["IntersectTypeID"] = model.IntersectTypeID;
 
                 relationshipTable.Rows.Add(row);
@@ -796,7 +794,6 @@ when not matched by target then
         ItemNumber int not null,
         SubjectSourceID nvarchar(1000) null,
         ObjectSourceID nvarchar(1000) null,
-        PredicateType int null,
         IntersectTypeID int null,
         Message nvarchar(2500) null,
         Success bit null,
@@ -815,7 +812,6 @@ when not matched by target then
                     assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     assetBulkCopy.ColumnMappings.Add("SubjectSourceID", "SubjectSourceID");
                     assetBulkCopy.ColumnMappings.Add("ObjectSourceID", "ObjectSourceID");
-                    assetBulkCopy.ColumnMappings.Add("PredicateType", "PredicateType");
                     assetBulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
                     assetBulkCopy.ColumnMappings.Add("Message", "Message");
                     assetBulkCopy.ColumnMappings.Add("Success", "Success");
@@ -855,7 +851,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
     where   I.ID is null;
 
     update  T
-    set     T.IntersectID = I.ID
+    set     T.IntersectID = I.ID,
+            T.Success = case when I.ID is null then cast(0 as bit) else cast(1 as bit) end
     from    #RelationshipTable T
             left join Asset S on S.SourceID = T.SubjectSourceID
             left join Asset O on O.SourceID = T.ObjectSourceID
@@ -865,86 +862,6 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                     and I.Object = O.Object 
                     and I.ObjectID = O.ObjectID;",
                 new { @r = currentResourceID }, transaction: trans, commandTimeout: 1200);
-
-
-                    //                cnn.Execute($@"
-                    //merge into  [Intersect] T
-                    //using       (
-                    //            select  R.ItemNumber,
-                    //                    IT.ID as IntersectTypeID,
-                    //              S.Object as Subject,
-                    //              S.ObjectID as SubjectID,
-                    //              T.Object,
-                    //              T.ObjectID
-                    //            from    #RelationshipTable R
-                    //              inner join Asset S on S.SourceID = R.SubjectSourceID
-                    //              inner join AssetType ST on ST.ID = S.AssetTypeID
-
-                    //              inner join Asset T on T.SourceID = R.ObjectSourceID
-                    //              inner join AssetType TT on TT.ID = T.AssetTypeID
-
-                    //              inner join IntersectTypeDetail	IT on IT.Subject = ST.Object and IT.SubjectID = ST.ObjectID and 
-                    //						                IT.Object = TT.Object and IT.ObjectID = TT.ObjectID and
-                    //						                IT.ID = R.IntersectTypeID
-                    //                    left join [Intersect] I on I.IntersectTypeID = IT.ID and I.Subject = S.Object and I.SubjectID = S.ObjectID and I.Object = T.Object and I.ObjectID = T.ObjectID
-                    //            where   I.ID is null
-                    //            ) S
-                    //on          (
-                    //                T.IntersectTypeID = S.IntersectTypeID and 
-                    //                T.Subject = S.Subject and 
-                    //                T.SubjectID = S.SubjectID and 
-                    //                T.Object = S.Object and 
-                    //                T.ObjectID = S.ObjectID
-                    //            )
-                    //when not matched then
-                    //    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
-                    //    values  (S.IntersectTypeID, S.Subject, S.SubjectID, S.Object, S.ObjectID, @r, @r)
-                    //output inserted.ID, S.ItemNumber, $action into #RelationshipMergeTableResult; 
-
-                    //update  T
-                    //set     T.IntersectID = S.IntersectID,
-                    //        T.IsNew = case when S.[Action] = 'INSERT' then 1 else 0 end
-                    //from    #RelationshipTable T
-                    //        inner join #RelationshipMergeTableResult S on S.ItemNumber = T.ItemNumber; 
-
-                    //update  T
-                    //set     T.IntersectID = I.ID
-                    //from    #RelationshipTable T
-                    //        left join Asset S on S.SourceID = T.SubjectSourceID
-                    //        left join Asset O on O.SourceID = T.ObjectSourceID
-                    //        left join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
-                    //                and I.Subject = S.Object 
-                    //                and I.SubjectID = S.ObjectID 
-                    //                and I.Object = O.Object 
-                    //                and I.ObjectID = O.ObjectID;",
-                    //            new { @r = currentResourceID }, transaction: trans, commandTimeout: 1200);
-
-                    #endregion
-
-                    #region Send remaining unprocessed to Unresolved table for later processing.
-
-                    cnn.Execute($@"
-    merge into  [integration].[UnresolvedRelationItem] T
-    using       (
-                select  SubjectSourceID,
-                        ObjectSourceID,
-                        IntersectTypeID
-                from    #RelationshipTable
-                where   IntersectID is null
-                ) S
-    on          (
-                    T.IntersectTypeID = S.IntersectTypeID and 
-                    T.SubjectSourceID = S.SubjectSourceID and 
-                    T.ObjectSourceID = S.ObjectSourceID
-                )
-    when matched then
-        update set
-            T.AttemptCount = T.AttemptCount + 1,
-            T.MostRecentAttemptOn = getutcdate()
-    when not matched by target then
-        insert  (IntersectTypeID, SubjectSourceID, ObjectSourceID, AttemptCount, MostRecentAttemptOn)
-        values  (S.IntersectTypeID, S.SubjectSourceID, S.ObjectSourceID, 1, getutcdate());
-    ", new { @r = currentResourceID }, transaction: trans, commandTimeout: 1200);
 
                     #endregion
 

@@ -1,14 +1,22 @@
-﻿CREATE NONCLUSTERED INDEX [IX_CacheAssetResponsibility_Asset]
-    ON [cache].[AssetResponsibility]([AssetID] ASC, [Overriden] ASC)
-    INCLUDE([ResponsibilityTypeID], [SecurityAsset], [SecurityAssetID]);
+﻿ALTER TABLE [dbo].[AssetDataQualityImplementation] DROP CONSTRAINT [FK_AssetDataQualityImplementation_Asset]
+GO
+ALTER TABLE [dbo].[AssetDataQualityImplementation]  WITH CHECK ADD  CONSTRAINT [FK_AssetDataQualityImplementation_Asset] FOREIGN KEY([AssetID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[AssetDataQualityImplementation] CHECK CONSTRAINT [FK_AssetDataQualityImplementation_Asset]
 GO
 
-CREATE NONCLUSTERED INDEX [IX_CacheAssetResponsibility_Object_ObjectID_Type_TypeID_SecurityAsset_SecurityAssetID]
-    ON [cache].[AssetResponsibility]([Object] ASC, [ObjectID] ASC, [Type] ASC, [TypeID] ASC, [SecurityAsset] ASC, [SecurityAssetID] ASC);
-GO
 
-DROP INDEX [IX_CacheAssetResponsibility_RuleID_OverrideItemID] ON [cache].[AssetResponsibility];
-GO
+--CREATE NONCLUSTERED INDEX [IX_CacheAssetResponsibility_Asset]
+--    ON [cache].[AssetResponsibility]([AssetID] ASC, [Overriden] ASC)
+--    INCLUDE([ResponsibilityTypeID], [SecurityAsset], [SecurityAssetID]);
+--GO
+
+--CREATE NONCLUSTERED INDEX [IX_CacheAssetResponsibility_Object_ObjectID_Type_TypeID_SecurityAsset_SecurityAssetID]
+--    ON [cache].[AssetResponsibility]([Object] ASC, [ObjectID] ASC, [Type] ASC, [TypeID] ASC, [SecurityAsset] ASC, [SecurityAssetID] ASC);
+--GO
+
+--DROP INDEX [IX_CacheAssetResponsibility_RuleID_OverrideItemID] ON [cache].[AssetResponsibility];
+--GO
 
 CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include]
     ON [dbo].[Field]([AssetID] ASC)
@@ -1398,8 +1406,9 @@ begin
 end
 GO
 
-
 ALTER TABLE [dbo].[Intersect] DROP CONSTRAINT [UQ_Intersect]
+GO
+ALTER TABLE [dbo].[Intersect] DROP CONSTRAINT [UQ_IntersectNew]
 GO
 
 DROP INDEX [IX_Intersect_Subject_Object_Include] ON [dbo].[Intersect]
@@ -1417,7 +1426,6 @@ GO
 DROP VIEW [utility].[ArtifactAssetParentIntermediate]
 GO
 
-
 DROP VIEW [utility].[IntersectAsset]
 GO
 
@@ -1426,7 +1434,9 @@ ALTER TABLE [dbo].[Intersect] alter column SubjectID int not null
 ALTER TABLE [dbo].[Intersect] alter column Object varchar(50) not null
 ALTER TABLE [dbo].[Intersect] alter column ObjectID int not null
 
-
+CREATE CLUSTERED INDEX [CIX_Intersect]
+    ON [dbo].[Intersect]([IntersectTypeID] ASC, [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC);
+GO
 
 ALTER TABLE [dbo].[Intersect] ADD CONSTRAINT [UQ_Intersect] UNIQUE  
 (
@@ -1436,16 +1446,6 @@ ALTER TABLE [dbo].[Intersect] ADD CONSTRAINT [UQ_Intersect] UNIQUE
 	[Object] ASC,
 	[ObjectID] ASC
 )
-GO
-
-CREATE CLUSTERED INDEX [CIX_Intersect] ON [dbo].[Intersect]
-(
-	[IntersectTypeID] ASC,
-	[Subject] ASC,
-	[SubjectID] ASC,
-	[Object] ASC,
-	[ObjectID] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF)
 GO
 
 --CREATE NONCLUSTERED INDEX [IX_Intersect_Object_Type_Subject_Include] ON [dbo].[Intersect]
@@ -1507,31 +1507,31 @@ CREATE UNIQUE CLUSTERED INDEX [IDEX_IntersectAsset_ObjectAsset_Predicate_Interse
 GO
 
 
---Recreate with latest: [utility].[ArtifactAssetParentIntermediate]
---CREATE VIEW [utility].[ArtifactAssetParentIntermediate]
---WITH SCHEMABINDING  
---AS  
---    select	a_o.ID as AssetID,		
---			I.SubjectID as ParentArtifactID
---	from
---		dbo.[Intersect] I
---		inner join dbo.Asset a_o on I.[Object] = a_o.[Object] and I.[ObjectID] = a_o.ObjectID	
---		inner join dbo.[IntersectType] IT on I.IntersectTypeID = IT.ID
---		inner join dbo.[Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3		
---	where I.[Object] = 'Artifact'
---GO
+CREATE VIEW [utility].[ArtifactAssetParentIntermediate]
+WITH SCHEMABINDING  
+AS  
+    select	a_o.ID as AssetID,		
+			I.SubjectID as ParentArtifactID
+	from
+		dbo.[Intersect] I
+		inner join dbo.Asset a_o on I.[Object] = a_o.[Object] and I.[ObjectID] = a_o.ObjectID	
+		inner join dbo.[IntersectType] IT on I.IntersectTypeID = IT.ID
+		inner join dbo.[Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3		
+	where I.[Object] = 'Artifact'
+GO
 
---Recreate with latest: [utility].[ArtifactAssetParent]
---create VIEW [utility].[ArtifactAssetParent]
---WITH SCHEMABINDING  
---AS  
---    select	
---		aim.AssetID,
---		aim.ParentArtifactID,
---		IA.ID as ParentAssetID
---	from [utility].[ArtifactAssetParentIntermediate] aim
---		inner join dbo.Asset IA on IA.Object = 'Artifact' and aim.ParentArtifactID = IA.ObjectID 	
---GO
+create VIEW [utility].[ArtifactAssetParent]
+WITH SCHEMABINDING  
+AS  
+    select	
+		aim.AssetID,
+		aim.ParentArtifactID,
+		IA.ID as ParentAssetID
+	from [utility].[ArtifactAssetParentIntermediate] aim
+		inner join dbo.Asset IA on IA.Object = 'Artifact' and aim.ParentArtifactID = IA.ObjectID 	
+GO
+
+
 
 --Responsibility Logic Re-work --------------------------------------
 ALTER TABLE ResponsibilityTypeRelation DROP CONSTRAINT [DF_ResponsibilityTypeRelation_DeleteAttributes]
@@ -1693,13 +1693,10 @@ CREATE TABLE [dbo].[ResponsibilityTypeRelationRuleResult](
 )
 WITH ( SYSTEM_VERSIONING = ON ( HISTORY_TABLE = [dbo].[ResponsibilityTypeRelationRuleResult_History] ) )
 GO
-
 CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationRuleResult] ON [dbo].[ResponsibilityTypeRelationRuleResult] ([AssetID],[Overridden])
 GO
-
 CREATE NONCLUSTERED INDEX IX_ResponsibilityTypeRelationRuleResult_Asset_PermissionsBitMask_SecurityAsset ON ResponsibilityTypeRelationRuleResult (AssetID ASC, PermissionsBitMask ASC, SecurityAsset ASC, SecurityAssetID ASC)
 GO
-
 CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationRuleResult_ResponsibilityType_AssetType] ON [dbo].[ResponsibilityTypeRelationRuleResult] ( [ResponsibilityTypeID] ASC, [AssetTypeID] ASC )
 GO
 
@@ -1902,10 +1899,8 @@ GO
 
 DROP TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterInsert]
 GO
-
 DROP TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpdate]
 GO
-
 CREATE TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpsert]
    ON  [dbo].[ResponsibilityTypeRelationOverrideItem]
    AFTER INSERT, UPDATE
@@ -1956,7 +1951,6 @@ BEGIN
 			values (S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.AssetTypeID, S.SecurityAsset, S.SecurityAssetID, S.PermissionsBitMask, S.Context, 0, 1, 0, S.ID);
 END
 GO
-
 ALTER TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]
    ON  [dbo].[ResponsibilityTypeRelationOverrideItem]
    AFTER DELETE
@@ -2828,7 +2822,7 @@ begin
 									C.ObjectID,
 									null
 							from	AssetType C
-									inner join IntersectType I on I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID
+									inner join IntersectType I on I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID and C.[Object] = @Obj
 									inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] = @predicateType
 									inner join AssetType P on P.Object = I.Subject and P.ObjectID = I.SubjectID
 									inner join @ht T on T.ID = P.ID and T.Processed = 0
@@ -3572,48 +3566,6 @@ begin
 end
 GO
 
-DROP TABLE [cache].[AssetDelete]
-GO
-DROP TABLE [cache].[AssetEdit]
-GO
-DROP TABLE [cache].[AssetResponsibility]
-GO
-DROP TABLE [cache].[NoRead]
-GO
-ALTER TABLE [dbo].[ResponsibilityTypeRelationItem] SET ( SYSTEM_VERSIONING = OFF  )
-GO
-
-DROP TABLE [dbo].[ResponsibilityTypeRelationItem]
-GO
-
-DROP TABLE [dbo].[ResponsibilityTypeRelationItem_History]
-GO
-ALTER TABLE [dbo].[ResponsibilityTypeRelationTypeItem] SET ( SYSTEM_VERSIONING = OFF  )
-GO
-
-DROP TABLE [dbo].[ResponsibilityTypeRelationTypeItem]
-GO
-
-DROP TABLE [dbo].[ResponsibilityTypeRelationTypeItem_History]
-GO
-DROP VIEW [dbo].[ResponsibilityDetails]
-GO
-drop table ResponsibilityTypeObjectClaim
-GO
-DROP VIEW [responsibility].[ClaimCore]
-GO
-
-DROP VIEW [responsibility].[Core]
-GO
-DROP PROCEDURE [cache].[SecurityProcessor]
-GO
-
-drop view [dbo].[SecurityDetail]
-GO
-drop view [dbo].[ResponsibilityTypeObjectClaimDetail]
-GO
-
-
 ALTER PROCEDURE [dbo].[GetCommentCountByFollower]
 --declare
 	@resourceID int,
@@ -3729,29 +3681,6 @@ AS
 		END
 GO
 
-ALTER TABLE [dbo].[Intersect] DROP CONSTRAINT [UQ_Intersect]
-GO
-
-DROP INDEX [IX_Intersect_Object_Type_Subject_Include] ON [dbo].[Intersect]
-GO
-
-DROP INDEX [IX_Intersect_Subject_Object_Include] ON [dbo].[Intersect]
-GO
-
-ALTER TABLE [dbo].[Intersect] ADD  CONSTRAINT [UQ_Intersect] UNIQUE NONCLUSTERED 
-(
-	[IntersectTypeID] ASC,
-	[Subject] ASC,
-	[SubjectID] ASC,
-	[Object] ASC,
-	[ObjectID] ASC
-)
-GO
-
-CREATE CLUSTERED INDEX [CIX_Intersect]
-    ON [dbo].[Intersect]([IntersectTypeID] ASC, [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC);
-GO
-
 CREATE FUNCTION [dbo].[GetAssetTypeTextPathById]
 (
 	@Id bigint,
@@ -3816,7 +3745,6 @@ alter table integration.ExecutionAssetType add [RawDefinition] NVARCHAR (MAX) NU
 GO
 alter table integration.ExecutionAssetType add [EnumFieldValues] NVARCHAR (MAX) NULL
 GO
-
 alter table integration.Execution add Archived bit constraint DF_IntegrationExecution_Archived default(0) NOT NULL
 GO
 
@@ -4994,3 +4922,1150 @@ ALTER TABLE [dbo].[ResponsibilityTypeRelationOverrideItem] ADD  CONSTRAINT [UQ_R
 )
 GO
 
+ALTER PROCEDURE [dbo].[GetCommentDetailByID]
+	@id int
+AS
+BEGIN
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	P (ID, ParentID)
+	AS
+	(
+		SELECT		C.ID,
+					C.ParentID
+		FROM		Comment C
+		WHERE		ID = @id
+	)
+
+	SELECT		C.*,
+				C.CreatingResourceID,
+				O.Name as ObjectName,				
+				O.Url as ObjectUrl,
+				case
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectType
+					ELSE 'Resource'
+				end as ObjectType,
+				O.Name as ResourceName,
+				case 
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectID
+					ELSE C.CreatingResourceID
+				end as ObjectID,
+				(
+				select	CRD.Object,
+						CRD.ObjectID,
+						CRD.TextPath,
+						CRD.ObjectTypeName,
+						CRD.Url,
+						CRD.IconForeColor,
+						CRD.IconBackColor,
+						CRD.NgUrl
+				from	CommentRelation CR
+				inner join cache.ObjectDetails CRD on CR.CommentID = C.ID 
+					and CR.ObjectType = CRD.[Object] 
+					and CR.ObjectID = CRD.ObjectID
+				where Object != 'Resource'
+					and TextPath != 'FirstNameLastName'
+				for xml path('tag'), root('tags'), type
+				) as TagsXml,
+				(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML,
+			CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			ELSE
+				cast(0 as bit)
+			END as CreatorIsOwner
+	FROM		Comment C
+				left join cache.ObjectDetails O on O.[Object] = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID
+				INNER JOIN P ON C.ID = P.ID
+	ORDER BY	C.ParentID, C.DateCreated DESC
+END
+GO
+
+ALTER PROCEDURE [dbo].[GetCommentDetailsByFollower]
+--declare
+	@resourceID int,
+	@skip int,
+	@take int,
+	@dateStart datetime = null,
+	@dateEnd datetime = null,
+	@commentTypeID int = 0,
+	@searchPhrase varchar(100) = ''
+--set @resourceID = 1
+--set @skip = 0
+--set @take = 200
+AS
+BEGIN
+	set nocount on;
+
+	with p as
+	(
+	select	c.*,
+			case 
+				when c.CreatingResourceID = @resourceID then 1
+				when c.VisibilityID = 2 then 1
+				when c.VisibilityID = 3 then 1
+				when coalesce(c.VisibilityID, 4) = 4  then 1
+				else 0
+			end as IsVisible
+	from	Comment c
+	where	c.ID in	(
+					select	CommentID as ID
+					from	FollowDetail f
+							inner join CommentRelation cr on cr.ObjectID = f.ObjectID and cr.ObjectType = f.ObjectType
+					where	f.ResourceID = @resourceId
+					union all
+					select	ID 
+					from	Comment 
+					where	CreatingResourceID = @resourceid
+					union all
+					select	ID 
+					from	comment c2
+							inner join	ResponsibilityDetail o on o.ResourceID = @resourceID and o.Object = c2.OwnerObjectType and o.ObjectID = c2.OwnerObjectID
+					)
+			AND C.isdeleted = 0
+			AND (
+					coalesce(@commentTypeID,0) = 0 OR (C.CommentTypeID = @commentTypeID)
+				) 
+			AND (
+					(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
+					(@dateStart is null and @dateEnd is null)
+				)
+			AND C.ParentID is null
+			AND (
+				coalesce(ltrim(rtrim(@searchPhrase)),'')='' or 
+				lower(Body) like lower('%'+@searchPhrase+'%')
+				)
+	order by c.datecreated DESC
+	OFFSET		@skip ROWS 
+	FETCH NEXT	@take ROWS ONLY
+	)
+
+	select	a.*,
+			a.OwnerObjectType as ObjectType,
+			a.OwnerObjectId as ObjectId,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			R.Email as ResourceEmail,
+			D.Name as ObjectName,
+			D.Url as ObjectUrl,
+			(
+			select	CRD.Object,
+					CRD.ObjectID,
+					CRD.TextPath,
+					CRD.ObjectTypeName,
+					CRD.Url,
+					CRD.IconBackColor,
+					CRD.IconForeColor,
+					CRD.NgUrl
+			from	CommentRelation CR
+					inner join cache.ObjectDetails CRD on CR.CommentID = a.ID and a.ParentID is null and CR.ObjectType = CRD.[Object] and CR.ObjectID = CRD.ObjectID
+			for xml path('tag'), root('tags'), type
+			) as TagsXml,
+			(
+			select	CommentID,
+					ResourceID,
+					vote as VoteValue
+			from	commentvote
+			where	commentid = a.ID
+			for		xml path('vote'), root('votes'), type
+			) as VotesXML,
+			0 as CreatorIsOwner
+	from	(
+			select	* 
+			from	p
+			union all
+			select	r.*,
+					1 as IsVisible 
+			from	Comment r
+					inner join p on r.ParentID = p.ID
+			) a
+			left join reporting.Global_Resource R on R.ResourceID = a.CreatingResourceID
+			left join cache.ObjectDetails D on D.[Object] = a.OwnerObjectType and D.ObjectID = a.OwnerObjectID
+	where	IsVisible = 1;
+END
+GO
+
+ALTER PROCEDURE [dbo].[GetCommentDetailsByType]
+--declare
+	@type varchar(50), 
+	@id int,
+	@skip int,
+	@take int,
+	@dateStart datetime = null,
+	@dateEnd datetime = null,
+	@commentTypeID int = 0,
+	@searchPhrase varchar(100) = ''
+--set @type = 'Artifact'
+--set @id = 733
+--set @skip = 0
+--set @take = 100
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	 P
+	AS
+	(
+		SELECT		C.*,
+					CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+						1
+					WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+						1
+					ELSE
+						0
+					END as CreatorIsOwner,
+					coalesce(C.OwnerObjectType, CR.ObjectType) as ObjectType,
+					coalesce(C.OwnerObjectID, CR.ObjectID) as ObjectID,
+					(
+					select	a.[Object],
+							a.ObjectID,
+							utility.getassetdisplayvalue(a.id) as TextPath,
+							ast.Name as ObjectTypeName,							
+							os.IconForeColor,
+							os.IconBackColor,
+							dbo.generatengobjecturl(a.[object],ast.[objectid],a.objectid) as Url
+					from	CommentRelation CR
+							inner join asset a on (CR.CommentID = C.ID and a.[object] = CR.[ObjectType] and a.objectid = CR.ObjectID)
+							inner join assettype ast on ( a.assettypeid = ast.id)
+							inner join objectstyle os on (ast.[object] = os.[objecttype] and ast.[objectid] = os.[objectid])							
+					for xml path('tag'), root('tags'), type
+					) as TagsXml
+		FROM		Comment C
+					INNER JOIN CommentRelation CR	ON C.ID = CR.CommentID
+													AND (
+														coalesce(@commentTypeID,0) = 0 OR (C.CommentTypeID = @commentTypeID)
+														) --in (1,2,3,7)
+													AND CR.ObjectType = @type 
+													AND CR.ObjectID = @id
+													AND (
+														(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
+														(@dateStart is null and @dateEnd is null)
+														)
+													AND C.ParentID IS NULL	
+													and c.isdeleted = 0			
+		WHERE
+			coalesce(ltrim(rtrim(@searchPhrase)),'')='' or (lower(Body) like lower('%'+@searchPhrase+'%')) 
+		ORDER BY	C.DateCreated DESC
+		OFFSET  @skip ROWS 
+		FETCH NEXT @take ROWS ONLY 
+
+		UNION ALL
+
+		SELECT	C.*,
+				0 as CreatorIsOwner, 
+				cast('Resource' as varchar(50)) as ObjectType,
+				C.CreatingResourceID as ObjectID,
+				NULL as TagsXml
+		FROM	P
+				INNER JOIN Comment C ON C.ParentID = P.ID
+	)
+
+	select	P.*,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			R.Email as ResourceEmail,
+			utility.getassetdisplayvalue(a.id),
+			dbo.generatengobjecturl(a.[object],ast.[objectid],a.objectid) as ObjectUrl,
+			(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML
+	from	P
+			left join reporting.Global_Resource R on R.ResourceID = P.CreatingResourceID			
+			left join asset a on a.[object] = p.objecttype and a.objectid = p.objectid
+			left join assettype ast on a.assettypeid = ast.id
+	where
+		isdeleted = 0;
+END
+GO
+
+ALTER procedure [utility].[ClearDatabase]
+as
+begin
+	truncate table [analytics].[Statistic];
+	truncate table [analytics].[Action];
+	truncate table [analytics].[BrowserLanguage];
+	truncate table [analytics].[Host];
+	truncate table [analytics].[Ip];
+	truncate table [analytics].[Object];
+	truncate table [analytics].[UserAgent];
+
+	delete [Artifact];
+	DBCC CHECKIDENT ('dbo.Artifact', RESEED, 1);
+
+	truncate table AssetDataQualityImplementationResultFusion;
+	truncate table AssetDataQualityImplementationResultQualifier;
+	delete AssetDataQualityImplementationResult
+	DBCC CHECKIDENT ('dbo.AssetDataQualityImplementationResult', RESEED, 1);
+	
+	ALTER TABLE [dbo].[AssetDataQualityProperty] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [AssetDataQualityProperty_History];
+	delete [AssetDataQualityProperty];
+	ALTER TABLE [dbo].[AssetDataQualityProperty] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[AssetDataQualityProperty_History]) );   
+
+	ALTER TABLE [dbo].[AssetDataQualityImplementationQualifierType] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [AssetDataQualityImplementationQualifierType_History];
+	delete [AssetDataQualityImplementationQualifierType];
+	DBCC CHECKIDENT ('dbo.AssetDataQualityImplementationQualifierType', RESEED, 1);
+	ALTER TABLE [dbo].[AssetDataQualityImplementationQualifierType] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[AssetDataQualityImplementationQualifierType_History]) );   
+
+	ALTER TABLE [dbo].[AssetDataQualityImplementation] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [AssetDataQualityImplementation_History];
+	delete AssetDataQualityImplementation;
+	DBCC CHECKIDENT ('dbo.AssetDataQualityImplementation', RESEED, 1);
+	ALTER TABLE AssetDataQualityImplementation SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[AssetDataQualityImplementation_History]) );   
+
+	ALTER TABLE AssetDataQualityDimension SET (SYSTEM_VERSIONING = OFF);  
+	truncate table AssetDataQualityDimension_History;
+	delete AssetDataQualityDimension;
+	DBCC CHECKIDENT ('dbo.AssetDataQualityDimension', RESEED, 1);
+	ALTER TABLE AssetDataQualityDimension SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[AssetDataQualityDimension_History]) );   
+
+	ALTER TABLE Asset SET (SYSTEM_VERSIONING = OFF);  
+	truncate table Asset_History;
+	delete Asset;
+	DBCC CHECKIDENT ('dbo.Asset', RESEED, 1);
+	ALTER TABLE Asset SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[Asset_History]) );
+
+	ALTER TABLE AssetType SET (SYSTEM_VERSIONING = OFF);  
+	truncate table AssetType_History;
+	delete AssetType;
+	DBCC CHECKIDENT ('dbo.AssetType', RESEED, 1);
+	ALTER TABLE AssetType SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[AssetType_History]) );
+
+	delete [ArtifactType];
+	DBCC CHECKIDENT ('dbo.ArtifactType', RESEED, 1);
+	SET IDENTITY_INSERT dbo.ArtifactType ON;
+	INSERT INTO ArtifactType (ID, Name, CanOwnFusion, UpdatedOn, UpdatedBy, AllowHierarchy) VALUES (1, 'Business Term', 0, getutcdate(), 0, 0);
+	INSERT INTO ArtifactType (ID, Name, CanOwnFusion, UpdatedOn, UpdatedBy, AllowHierarchy) VALUES (2, 'Application', 1, getutcdate(), 0, 0);
+	SET IDENTITY_INSERT dbo.ArtifactType OFF;
+
+	truncate table [Attribute];
+	truncate table [AttributeTypeRelation];
+	delete [AttributeType];
+	DBCC CHECKIDENT ('dbo.AttributeType', RESEED, 1);
+	delete AttributeTypeCategory;
+	DBCC CHECKIDENT ('dbo.AttributeTypeCategory', RESEED, 1);
+	SET IDENTITY_INSERT dbo.AttributeTypeCategory ON;
+	INSERT INTO AttributeTypeCategory (ID, Name) VALUES (1, 'Characteristics');
+	SET IDENTITY_INSERT dbo.AttributeTypeCategory OFF;
+
+	truncate table CommentRelation;
+	truncate table CommentVote;
+	delete Comment;
+	DBCC CHECKIDENT ('dbo.Comment', RESEED, 1);
+
+	truncate table [Contract];
+	DBCC CHECKIDENT ('dbo.Contract', RESEED, 1);
+
+	truncate table [Favorite];
+
+	ALTER TABLE [dbo].[Field] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table [Field];
+	truncate table [Field_History];
+	ALTER TABLE [dbo].[Field] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[Field_History]) );   
+
+	delete [FieldTypeFilteredLookupDefinition];
+	DBCC CHECKIDENT ('dbo.FieldTypeFilteredLookupDefinition', RESEED, 1);
+	truncate table [FieldTypeFilteredLookupDisplayField];
+	DBCC CHECKIDENT ('dbo.FieldTypeFilteredLookupDisplayField', RESEED, 1);
+
+	delete [FieldTypeFusionLookupDefinition];
+	DBCC CHECKIDENT ('dbo.FieldTypeFusionLookupDefinition', RESEED, 1);
+	truncate table [FieldTypeFusionLookupDisplayField];
+	DBCC CHECKIDENT ('dbo.FieldTypeFusionLookupDisplayField', RESEED, 1);
+
+	truncate table [FieldTypeLookup];
+
+	ALTER TABLE [dbo].[FieldType] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [FieldType_History];
+	delete [FieldType];
+	DBCC CHECKIDENT ('dbo.FieldType', RESEED, 1);
+	ALTER TABLE [dbo].[FieldType] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[FieldType_History]) );   
+
+
+	truncate table [Follow];
+
+	truncate table [FusionFilter];
+	truncate table [FusionOwner];
+
+	truncate table [FusionAttribute];
+	delete [FusionAttributeType];
+	DBCC CHECKIDENT ('dbo.FusionAttributeType', RESEED, 1);
+
+	truncate table [FusionQueryAttribute];
+	delete [FusionQueryAttributeType];
+	DBCC CHECKIDENT ('dbo.FusionQueryAttributeType', RESEED, 1);
+
+	truncate table [FusionSchedule];
+	truncate table [FusionStatusLog];
+
+	delete [Fusion];
+	DBCC CHECKIDENT ('dbo.Fusion', RESEED, 1);
+
+	delete [FusionType];
+	DBCC CHECKIDENT ('dbo.FusionType', RESEED, 1);
+
+	truncate table [ResourceGroup];
+	delete [Group];
+	DBCC CHECKIDENT ('dbo.Group', RESEED, 1);
+
+	ALTER TABLE [dbo].[Intersect] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [Intersect_History];
+	delete [Intersect];
+	DBCC CHECKIDENT ('dbo.Intersect', RESEED, 1);
+	ALTER TABLE [dbo].[Intersect] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[Intersect_History]) );   
+
+	ALTER TABLE [dbo].[IntersectGroupItem] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [IntersectGroupItem_History];
+	truncate table [IntersectGroupItem];
+	ALTER TABLE [dbo].[IntersectGroupItem] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[IntersectGroupItem_History]) ); 
+
+	ALTER TABLE [dbo].[IntersectGroup] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [IntersectGroup_History];
+	delete [IntersectGroup];
+	DBCC CHECKIDENT ('dbo.IntersectGroup', RESEED, 1);
+	ALTER TABLE [dbo].[IntersectGroup] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[IntersectGroup_History]) ); 
+
+	ALTER TABLE [dbo].[IntersectType] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [IntersectType_History];
+	delete [IntersectType];
+	DBCC CHECKIDENT ('dbo.IntersectType', RESEED, 1);
+	ALTER TABLE [dbo].[IntersectType] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[IntersectType_History]) ); 
+
+	delete [Predicate] where IsSystem = 0;
+	DBCC CHECKIDENT ('dbo.Predicate', RESEED, 9);
+
+	INSERT INTO [IntersectType] ( [UpdatedOn],[UpdatedBy],[Subject],[SubjectID],[Object],[ObjectID],[IsSystem],[CreatedBy],[CreatedOn],[PredicateID])
+	VALUES ( getutcdate(),0,'ArtifactType',1,'ArtifactType',1,0,0,getutcdate(),2);
+
+	INSERT INTO [IntersectType] ( [UpdatedOn],[UpdatedBy],[Subject],[SubjectID],[Object],[ObjectID],[IsSystem],[CreatedBy],[CreatedOn],[PredicateID])
+	VALUES ( getutcdate(),0,'ArtifactType',2,'ArtifactType',1,0,0,getutcdate(),1);
+
+	truncate table [Issue];
+	delete [IssueType] where IsSystem = 0;
+	DBCC CHECKIDENT ('dbo.IssueType', RESEED, 3);
+
+	truncate table [LoadItemColumn];
+	delete [LoadItem];
+	delete [LoadColumn];
+	delete [Load];
+	DBCC CHECKIDENT ('dbo.Load', RESEED, 1);
+
+	truncate table [Lookup];
+	DBCC CHECKIDENT ('dbo.Lookup', RESEED, 1);
+	delete [LookupType];
+	DBCC CHECKIDENT ('dbo.LookupType', RESEED, 1);
+
+
+	truncate table [MapItemMap];
+	truncate table [MapRuleItemMapItem];
+	truncate table [MapRuleItemMapRule];
+	truncate table [MapRuleMap];
+	truncate table [MapSequenceContext];
+	delete MapSequence;
+	DBCC CHECKIDENT ('dbo.MapSequence', RESEED, 1);
+
+	delete Map;
+	DBCC CHECKIDENT ('dbo.Map', RESEED, 1);
+
+	truncate table NymRelation;
+	truncate table Nym;
+
+	truncate table [ObjectStyle];
+	truncate table [OrganizationDomain];
+	truncate table [OrganizationInvitation];
+	truncate table [OrganizationRegistration];
+	truncate table [OrganizationResource];
+
+	delete Organization;
+	DBCC CHECKIDENT ('dbo.Organization', RESEED, 1);
+
+	truncate table [Policy];
+	delete PolicyTypeLevel;
+	delete PolicyType;
+	DBCC CHECKIDENT ('dbo.PolicyType', RESEED, 1);
+	delete PolicyTypeClass;
+	DBCC CHECKIDENT ('dbo.PolicyTypeClass', RESEED, 1);
+	insert into PolicyTypeClass ([Name], [UpdatedOn], [UpdatedBy]) values ('Regulatory', getutcdate(), 0);
+
+	truncate table [QuestionOption];
+	delete [Question];
+	DBCC CHECKIDENT ('dbo.Question', RESEED, 1);
+	delete QuestionTypeOption;
+	DBCC CHECKIDENT ('dbo.QuestionTypeOption', RESEED, 1);
+	delete QuestionType;
+	DBCC CHECKIDENT ('dbo.QuestionType', RESEED, 1);
+
+	truncate table ReferenceItem;
+	DBCC CHECKIDENT ('dbo.ReferenceItem', RESEED, 1);
+	delete ReferenceItemType;
+	DBCC CHECKIDENT ('dbo.ReferenceItemType', RESEED, 1);
+
+	truncate table [ReportResponsibility];
+	DBCC CHECKIDENT ('dbo.ReportResponsibility', RESEED, 1);
+	truncate table [ReportTile];
+	DBCC CHECKIDENT ('dbo.ReportTile', RESEED, 1);
+	delete [Report];
+	DBCC CHECKIDENT ('dbo.Report', RESEED, 1);
+
+	truncate table ResourcePasswordReset;
+
+	truncate table [ResponsibilityTypeRelation];
+	delete ResponsibilityType;
+	DBCC CHECKIDENT ('dbo.ResponsibilityType', RESEED, 1);
+
+	SET IDENTITY_INSERT dbo.ResponsibilityType ON;
+	INSERT INTO ResponsibilityType	([ID], [Name],[ResponsibilityTypeGroup],[UpdatedOn],[UpdatedBy]) 
+	VALUES							(1, 'Data Steward', 1, getutcdate(), 0);
+	INSERT INTO ResponsibilityType	([ID], [Name],[ResponsibilityTypeGroup],[UpdatedOn],[UpdatedBy]) 
+	VALUES							(2, 'Business Owner', 1, getutcdate(), 0);
+	INSERT INTO ResponsibilityType	([ID], [Name],[ResponsibilityTypeGroup],[UpdatedOn],[UpdatedBy]) 
+	VALUES							(3, 'Technical Custodian', 1, getutcdate(), 0);
+	SET IDENTITY_INSERT dbo.ResponsibilityType OFF;
+
+	INSERT INTO ResponsibilityTypeRelation (ResponsibilityTypeID, ObjectType, ObjectID) VALUES (1,'ArtifactType',1);
+	INSERT INTO ResponsibilityTypeRelation (ResponsibilityTypeID, ObjectType, ObjectID) VALUES (2,'ArtifactType',1);
+	INSERT INTO ResponsibilityTypeRelation (ResponsibilityTypeID, ObjectType, ObjectID) VALUES (3,'ArtifactType',2);
+
+	ALTER TABLE [dbo].[ResponsibilityTypeRelationRuleResult] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [ResponsibilityTypeRelationRuleResult_History];
+	delete [ResponsibilityTypeRelationRuleResult];
+	ALTER TABLE [dbo].[ResponsibilityTypeRelationRuleResult] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[ResponsibilityTypeRelationRuleResult_History]) ); 
+
+	ALTER TABLE [dbo].[ResponsibilityTypeRelationOverrideItem] SET (SYSTEM_VERSIONING = OFF);  
+	truncate table  [ResponsibilityTypeRelationOverrideItem_History];
+	delete [ResponsibilityTypeRelationOverrideItem];
+	DBCC CHECKIDENT ('dbo.ResponsibilityTypeRelationOverrideItem', RESEED, 1);
+	ALTER TABLE [dbo].[ResponsibilityTypeRelationOverrideItem] SET ( SYSTEM_VERSIONING = ON (HISTORY_TABLE = [dbo].[ResponsibilityTypeRelationOverrideItem_History]) ); 
+
+	truncate table RuleResultFusionAttribute;
+	DBCC CHECKIDENT ('dbo.RuleResultFusionAttribute', RESEED, 1);
+
+	truncate table RuleResultQualifier;
+
+	delete RuleResultQualifierType;
+	DBCC CHECKIDENT ('dbo.RuleResultQualifierType', RESEED, 1);
+
+	delete RuleResult;
+	DBCC CHECKIDENT ('dbo.RuleResult', RESEED, 1);
+
+	delete RuleImplementation;
+	DBCC CHECKIDENT ('dbo.RuleImplementation', RESEED, 1);
+
+	delete [Rule];
+	DBCC CHECKIDENT ('dbo.Rule', RESEED, 1);
+
+	delete [RuleType] where ID > 4;
+	delete [RuleDimension] where IsSystemDefined = 0;
+
+	truncate table metrics.MapResult;
+	delete metrics.Score;
+	DBCC CHECKIDENT ('metrics.Score', RESEED, 1);
+	truncate table metrics.ConditionValue;
+	delete metrics.Condition;
+	delete metrics.Map;
+	DBCC CHECKIDENT ('metrics.Map', RESEED, 1);
+	delete metrics.Item;
+	DBCC CHECKIDENT ('metrics.Item', RESEED, 1);
+	delete metrics.[Group];
+	DBCC CHECKIDENT ('metrics.Group', RESEED, 1);
+
+	truncate table ShoppingCartItem;
+	delete ShoppingCart;
+	DBCC CHECKIDENT ('dbo.ShoppingCart', RESEED, 1);
+
+	delete SiteNavPermission where SiteNavID > 9;
+	delete SiteNav where ID > 9;
+
+	delete Survey;
+	DBCC CHECKIDENT ('dbo.Survey', RESEED, 1);
+	delete SurveyType;
+	DBCC CHECKIDENT ('dbo.SurveyType', RESEED, 1);
+
+	truncate table Taxonomy;
+	DBCC CHECKIDENT ('dbo.Taxonomy', RESEED, 1);
+
+	delete TaxonomyTypeLevel;
+
+	delete TaxonomyType;
+	DBCC CHECKIDENT ('dbo.TaxonomyType', RESEED, 1);
+
+	SET IDENTITY_INSERT dbo.TaxonomyType ON;
+	INSERT INTO TaxonomyType (ID, Name, MaximumDepth, TaxonomyTypeClassID, UpdatedOn, UpdatedBy) VALUES (1, 'Investments', 3, 1, getutcdate(), 0);
+	SET IDENTITY_INSERT dbo.TaxonomyType OFF;
+
+	insert into TaxonomyTypeLevel values (1, 1, 'Level 1', null);
+	insert into TaxonomyTypeLevel values (1, 2, 'Level 2', null);
+	insert into TaxonomyTypeLevel values (1, 3, 'Level 3', null);
+
+	delete TaxonomyTypeClass where ID > 3;
+
+	truncate table [fusion].[AgentErrorItem];
+	DBCC CHECKIDENT ('fusion.AgentErrorItem', RESEED, 1);
+	delete [fusion].[AgentError];
+	DBCC CHECKIDENT ('fusion.AgentError', RESEED, 1);
+
+	truncate table [fusion].[Error];
+	truncate table [fusion].[Result];
+
+	truncate table [fusion].[RuleFilter];
+	DBCC CHECKIDENT ('fusion.RuleFilter', RESEED, 1);
+	truncate table [fusion].[RuleItem];
+	DBCC CHECKIDENT ('fusion.RuleItem', RESEED, 1);
+	truncate table [fusion].[RuleLog];
+	DBCC CHECKIDENT ('fusion.RuleLog', RESEED, 1);
+	truncate table [fusion].[RulePromotion];
+	DBCC CHECKIDENT ('fusion.RulePromotion', RESEED, 1);
+
+	truncate table [fusion].[RuleStepMapping];
+	DBCC CHECKIDENT ('fusion.RuleStepMapping', RESEED, 1);
+	truncate table [fusion].[RuleStepSetting];
+
+	delete fusion.[RuleStep];
+	DBCC CHECKIDENT ('fusion.RuleStep', RESEED, 1);
+
+	delete fusion.[Rule];
+	DBCC CHECKIDENT ('fusion.Rule', RESEED, 1);
+
+
+	truncate table fusion.StagingFileItem;
+	DBCC CHECKIDENT ('fusion.StagingFileItem', RESEED, 1);
+	delete fusion.StagingFile;
+	DBCC CHECKIDENT ('fusion.StagingFile', RESEED, 1);
+
+	truncate table fusion.StagingRelation;
+	DBCC CHECKIDENT ('fusion.StagingRelation', RESEED, 1);
+	truncate table  fusion.StagingRelationUnresolved;
+	DBCC CHECKIDENT ('fusion.StagingRelationUnresolved', RESEED, 1);
+
+	delete fusion.Execution
+	DBCC CHECKIDENT ('fusion.Execution', RESEED, 1);
+
+	truncate table [queue].Task;
+
+	truncate table [reporting].[Global_FieldAudit];
+	delete [reporting].[Global_Audit];
+	DBCC CHECKIDENT ('reporting.Global_Audit', RESEED, 1);
+
+	truncate table [workflow].[EventRegistration];
+	DBCC CHECKIDENT ('workflow.EventRegistration', RESEED, 1);
+
+	truncate table [workflow].[ItemAssignment];
+	DBCC CHECKIDENT ('workflow.ItemAssignment', RESEED, 1);
+	truncate table [workflow].[ItemStepTransition];
+	delete [workflow].[ItemStep];
+	DBCC CHECKIDENT ('workflow.ItemStep', RESEED, 1);
+
+	delete [workflow].[VersionStepTransition];
+	DBCC CHECKIDENT ('workflow.VersionStepTransition', RESEED, 1);
+	delete [workflow].[VersionStep];
+	DBCC CHECKIDENT ('workflow.VersionStep', RESEED, 1);
+	delete [workflow].[Version];
+	DBCC CHECKIDENT ('workflow.Version', RESEED, 1);
+	delete [workflow].[Type];
+	DBCC CHECKIDENT ('workflow.Type', RESEED, 1);
+end
+GO
+
+alter procedure [utility].[GetOwnersForWorkflow]
+	@workflowID int,
+	@workflowStepID int = 0,
+	@workflowItemID int = 0
+as
+begin
+	declare @objectId int,			
+			@objectType varchar(50),
+			@responsibilityTypeID int,
+			@issueId int;
+	declare @xmlSettings xml;
+	declare @responsibleSide varchar(50);
+
+	declare @tbl table (ResourceID int, FirstName nvarchar(250), LastName nvarchar(250), Email nvarchar(500), Username nvarchar(500), DateLastLoggedIn datetime null, ResourceTypeID int, Status nvarchar(25))
+	declare @responsibilityIDTbl table (RowID int not null identity(1,1) primary key, ResponsibilityTypeID int not null);
+	--get the responsibility for this step from the settings of the step
+
+	select @xmlSettings = settings from [workflow].[VersionStep] where id = @workflowStepID
+	
+	insert into @responsibilityIDTbl select T.C.value('.','int') as responsibility from @xmlSettings.nodes('(/settings/ResponsibilityTypeID)') as T(C) ;
+
+	select @responsibleSide = upper(T.C.value('.','varchar(50)')) from @xmlSettings.nodes('(/settings/ResponsibilitySide)') as T(C);
+		
+	declare @i int
+	select @i = min(RowID) from @responsibilityIDTbl
+	declare @max int
+	select @max = max(RowID) from @responsibilityIDTbl
+
+	while @i <= @max and not exists (select 1 from @tbl) begin
+		select @responsibilityTypeID = ResponsibilityTypeID from @responsibilityIDTbl where RowID = @i
+		set @i = @i + 1
+
+		-- check object	
+		begin
+			select @objectType = object, @objectId = objectid from [workflow].[item] where id = @workflowItemID;
+			
+			if @objectType = 'Issue'
+			begin				
+				select @issueId = id, @objectType = [object], @objectId = [objectid] from Issue where id = @objectId
+			end
+
+			--if the object is an intersect we need to look at the settings to see what side of the intersect to look at
+			-- then we need to load the object from the corresponding side.
+			
+			if @objectType = 'Intersect'
+			begin				
+				if @responsibleSide = 'SUBJECT'
+				begin
+					select @objectType = [subject], @objectId = [subjectId] from [intersect] where id = @objectId;
+				end
+				else if @responsibleSide = 'OBJECT'
+				begin
+					select @objectType = [object], @objectId = [objectId] from [intersect] where id = @objectId;
+				end
+			end
+
+			insert into @tbl
+				select	R.ResourceID, 
+						R.FirstName, 
+						R.LastName, 
+						R.Email, 
+						R.Email, 
+						R.DateLastLoggedIn, 
+						1 as ResourceTypeID, 
+						R.Status 
+				from	ResponsibilityDetail RD
+						inner join reporting.Global_Resource R on RD.Object = @objectType
+								and RD.ObjectID = @objectId
+								and RD.ResponsibilityTypeID = @responsibilityTypeID
+								and RD.ResourceID = R.ResourceID
+								and R.Email not like '%?subject=%' and R.Status = 'Active'
+		end		
+	end;
+
+	-- if no one found email admins
+	if not exists (select 1 from @tbl)
+	begin
+		insert into @tbl 
+				select	R.ResourceID, 
+						R.FirstName, 
+						R.LastName, 
+						R.Email, 
+						R.Email, 
+						R.DateLastLoggedIn, 
+						1 as ResourceTypeID, 
+						R.Status 
+				from	reporting.Global_Resource R where isadministrator = 1 and status = 'Active'
+	end		
+
+	select * from @tbl;
+end
+GO
+
+ALTER FUNCTION [dbo].[GetAssetDisplayValue]()
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select		A.AssetTypeID,
+				A.ID,
+				A.Object,
+				A.ObjectID,
+				string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+	from		Asset A
+				inner join AssetType T on T.ID = A.AssetTypeID 
+				outer apply (
+							select	TL.value,
+									coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.TextPath, FU.Name) as FormattedValue
+							from	string_split(replace(T.DisplayFormat, '{', '|'), '|') TF
+									cross apply string_split(replace(TF.[value], '}', '|'), '|') TL
+									left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TL.Value
+									left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+									left join ReferenceItem RI on TL.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ObjectID
+									left join FusionAttribute FA on TL.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+									left join Fusion FU on TL.Value = 'Name' and A.Object = 'Fusion' and FU.ID = A.ObjectID
+									left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+							where	RTRIM(TF.value) <> ''
+									and RTRIM(TL.value) <> ''
+							) D
+	group by	A.AssetTypeID,
+				A.ID,
+				A.Object,
+				A.ObjectID
+)
+GO
+
+ALTER FUNCTION [lineage].[GetTrailForObject]
+(	
+	@Object varchar(50), 
+	@ObjectID int,
+	@Forward bit
+)
+RETURNS @tbl TABLE
+(
+	IntersectID int, 
+	IntersectTypeID int, 
+	[Subject] varchar(50), 
+	SubjectID int, 
+	[Object] varchar(50), 
+	ObjectID int, 
+	[State] int, 
+	PredicateID int, 
+	PredicateName varchar(max), 
+	PredicateInverse varchar(max), 
+	PredicateType int, 
+	Visited bit
+)
+AS
+BEGIN
+
+
+	--TESTING---------------------
+	--declare @tbl table (IntersectID int, IntersectTypeID int, Subject varchar(50), SubjectID int, Object varchar(50), ObjectID int, State int, PredicateID int, PredicateName varchar(max), PredicateInverse varchar(max), PredicateType int, Visited bit);
+	--declare @Object varchar(50);
+	--declare @ObjectID int;
+	--declare @Forward bit;
+
+	--select @Object = 'Artifact',
+	--	   @ObjectID = 973683,
+	--	   @Forward = 1;
+	-------------------------------
+
+
+	insert into @tbl
+	select 
+		P.*,
+		0 as Visited 
+	from PredicateIntersect P
+	where 
+		((@Forward = 1 and [Subject] = @Object and SubjectID = @ObjectID) OR
+		(@Forward = 0 and [Object] = @Object and ObjectID = @ObjectID)) AND
+		PredicateType = 1;
+		
+
+	declare @level int = 1;
+	declare @i int;
+	select @i = count(*) from @tbl where Visited = 0;
+
+	while @i != 0 and @level <= 10
+	begin
+		declare @intersectId int;
+		select top 1 @intersectId = IntersectID from @tbl where Visited = 0; 
+
+		update @tbl
+		set Visited = 1
+		where IntersectID = @intersectId;
+
+		insert into @tbl
+		select 
+			P.*,
+			0 as Visited 
+		from PredicateIntersect P
+		cross apply (select * from @tbl where IntersectID = @intersectId) I
+		where 
+			((@Forward = 1 and P.[Subject] = I.[Object] and P.SubjectID = I.ObjectID) OR
+			(@Forward = 0 and P.[Object] = I.[Subject] and P.ObjectID = I.SubjectID)) AND
+			P.PredicateType = 1 AND P.IntersectID not in (select IntersectID from @tbl);
+
+		select @i = count(*) from @tbl where Visited = 0;
+		set @level = @level + 1
+	end
+
+	RETURN
+END
+GO
+
+ALTER FUNCTION [utility].[ObjectDetail]
+(
+--declare
+	@type varchar(50), 
+	@id int
+--set @type = 'Domain'
+--set @id = 1
+)
+RETURNS @tbl TABLE 
+(
+	ID int,
+	AssetID bigint,
+	AssetTypeID int,
+	Name nvarchar(max),
+	TextPath nvarchar(2500),
+	Description nvarchar(max),
+	ParentID int null,
+	ParentType nvarchar(250),
+	Url nvarchar(2500),
+	TypeID int,
+	[Type] varchar(25),
+	[TypeName] nvarchar(250),
+	IconBackColor varchar(15),
+	IconForeColor varchar(15),
+	IconText varchar(15),
+	Status nvarchar(25) null
+) 
+AS
+BEGIN
+	if @type = 'Artifact' or @type = 'Attribute' or @type = 'Fusion' or @type = 'FusionAttribute' or @type = 'Policy' or @type = 'ReferenceItem' or @type = 'Taxonomy' or @type = 'Rule'
+	begin
+		insert into @tbl (	ID,			AssetID,	AssetTypeID, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,											TypeID,	[Type],	TypeName, Status)
+			SELECT			ObjectID,	ID,			AssetTypeID, DisplayValue,	DisplayValue,	NULL,			null,		null,		dbo.GenerateObjectUrl(@type, TypeID, ObjectID),	TypeID,	Type,	TypeName, NULL
+			FROM	AssetDetail
+			where	Object = @type 
+					and ObjectID = @id
+	end
+
+	if @type = 'ArtifactType' or @type = 'AttributeType' or @type = 'FusionType' or @type = 'FusionAttributeType' or @type = 'PolicyType' or @type = 'ReferenceItemType' or @type = 'RuleType' or @type = 'TaxonomyType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ObjectID,		Name,	Name,		Description,	NULL,		NULL,		turl.[url] as Url,	ObjectID,		@type,	'Asset Type'
+			FROM	AssetType O
+			cross apply [dbo].GetAssetUrl(@type,@id,0) turl
+			WHERE	Object = @type
+					and ObjectID = @id
+	end
+
+	if @type = 'Group'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	0,		@type,	'Group'
+			FROM	[Group]
+			WHERE	ID = @id
+	end
+
+	if @type = 'Intersect'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		dbo.GenerateObjectUrl(@type, O.IntersectTypeID, O.ID),	O.IntersectTypeID,	'IntersectType',	T.Name
+			FROM	[Intersect] O
+					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
+					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
+	end
+
+	if @type = 'IntersectType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Intersect Type'
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
+			WHERE	ID = @id
+	end
+
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type'
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Lookup'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	T.Name + ' Item',	T.Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, O.LookupTypeID, O.ID),	O.LookupTypeID,	'LookupType',	T.Name
+			FROM	[Lookup] O
+					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'LookupType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		Name,	Name,		'',				0,			@type,		dbo.GenerateObjectUrl(@type, ID, 0),	ID,		@type,	'Lookup Type'
+			FROM	LookupType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'FusionQueryAttribute'
+	begin
+		insert into @tbl (	ID,		Name,		TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,						[Type],					TypeName)
+			SELECT			O.ID,	O.DisplayValue,	O.DisplayValue,	'',				NULL,	@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),
+																											O.FusionQueryAttributeTypeID,	'FusionQueryAttributeType',	T.Name
+			FROM	FusionQueryAttribute O
+					INNER JOIN FusionQueryAttributeType T ON O.FusionQueryAttributeTypeID = T.ID and O.ID = @id					
+	end
+	
+	if @type = 'FusionQueryAttributeType'
+	begin
+		insert into @tbl (	ID, Name,		TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	O.Name,	'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Fusion Query Attribute Type'
+			FROM	FusionQueryAttributeType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Report'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report'
+			FROM	Report O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'Resource'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
+			select	ResourceID, FirstName + ' ' + LastName, dbo.GenerateObjectUrl(@type, 1, @id), 1, 'ResourceType', 'Employee'
+			from	reporting.Global_Resource 
+			where	ResourceID = @id
+	end
+
+	if @type = 'ResponsibilityType'
+	begin
+		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Responsibility Type'
+			FROM	ResponsibilityType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'ResourceType'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
+		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type')
+	end
+
+	if @type = 'RuleImplementation'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		dbo.GenerateObjectUrl(@type, T.ID, O.ID),	T.RuleTypeID,	'RuleType',	T.DisplayValue, 'Active'
+			FROM	[RuleImplementation] O
+					inner join [Rule] T on T.ID = O.RuleID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateObjectUrl('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
+			WHERE	O.ID = @id
+	end
+
+	update	T
+	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
+			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
+			T.IconText =	--case @type
+							--	when 'Taxonomy' then 'IM'
+							--	when 'TaxonomyType' then 'IM'
+								--else 
+								COALESCE(S.IconText, 'leaf') 
+							--end
+	from	@tbl T
+			left join ObjectStyle S ON S.ObjectType = T.[Type] and S.ObjectID = T.TypeID
+
+	RETURN
+END
+GO
+
+CREATE FUNCTION GetAssetTypeChildrenByID
+(	
+	@assetTypeId int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	with T as
+	(
+		select 
+			A.ID as AssetTypeID, 
+			A.[Object], 
+			A.ObjectID, 
+			A.[Name], 
+			B.[Object] as [ChildObject], 
+			B.ObjectID as ChildObjectID, 
+			B.ID as ChildAssetTypeID, 
+			B.[Name] as ChildName,
+			0 as [Level]
+		from AssetType A 
+		inner join IntersectType IT on IT.[Subject] = A.[Object] and IT.SubjectID = A.ObjectID
+		inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = case when A.[Object] in ('TaxonomyType', 'PolicyType') then 4 else 3 end
+		inner join AssetType B on B.[Object] = IT.[Object] and B.ObjectID = IT.ObjectID
+		where A.ID = @assetTypeId
+
+		union all
+
+		select
+			A.ID as AssetTypeID, 
+			A.[Object], 
+			A.ObjectID, 
+			A.[Name], 
+			B.[Object] as [ChildObject], 
+			B.ObjectID as ChildObjectID, 
+			B.ID as ChildAssetTypeID, 
+			B.[Name] as ChildName,
+			T.[Level] + 1 as [Level]
+		from AssetType A
+		inner join IntersectType IT on IT.[Subject] = A.[Object] and IT.subjectid = A.objectid
+		inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = case when A.[Object] in ('TaxonomyType', 'PolicyType') then 4 else 3 end
+		inner join T on T.ChildObject = A.[Object] and T.ChildObjectID = A.ObjectID and T.[Level] < 25
+		inner join AssetType B on B.[Object] = IT.[Object] and B.ObjectID = IT.ObjectID
+	 )
+	 select * from T
+)
+GO
+
+
+
+
+DROP TABLE [cache].[AssetDelete]
+GO
+DROP TABLE [cache].[AssetEdit]
+GO
+DROP TABLE [cache].[AssetResponsibility]
+GO
+DROP TABLE [cache].[NoRead]
+GO
+ALTER TABLE [dbo].[ResponsibilityTypeRelationItem] SET ( SYSTEM_VERSIONING = OFF  )
+GO
+
+DROP TABLE [dbo].[ResponsibilityTypeRelationItem]
+GO
+
+DROP TABLE [dbo].[ResponsibilityTypeRelationItem_History]
+GO
+ALTER TABLE [dbo].[ResponsibilityTypeRelationTypeItem] SET ( SYSTEM_VERSIONING = OFF  )
+GO
+
+DROP TABLE [dbo].[ResponsibilityTypeRelationTypeItem]
+GO
+
+DROP TABLE [dbo].[ResponsibilityTypeRelationTypeItem_History]
+GO
+DROP VIEW [dbo].[ResponsibilityDetails]
+GO
+DROP VIEW [responsibility].[ClaimCore]
+GO
+
+DROP VIEW [responsibility].[Core]
+GO
+DROP PROCEDURE [cache].[SecurityProcessor]
+GO
+
+drop view [dbo].[SecurityDetail]
+GO
+drop view [dbo].[ResponsibilityTypeObjectClaimDetail]
+GO
+
+
+
+drop table ResponsibilityTypeObjectClaim
+GO

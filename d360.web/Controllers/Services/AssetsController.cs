@@ -134,7 +134,7 @@ namespace d360.web.Controllers.Services
 
             try
             {
-                var import = readRequestJsonContent<BulkRelationshipImport>(Request).Result;
+                var import = readRequestJsonContent<List<RelationshipImportRequest>>(Request).Result;
                 var retResults = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(Company.CurrentResourceID, import);
                 return Request.CreateResponse(HttpStatusCode.OK, retResults);
             }
