@@ -179,9 +179,13 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                 if (event.report.ReportType == 'sagacity') event.report.DisplayType = 'Data3Sixty Foundation';
                 else event.report.DisplayType = event.report.ReportType;
                 
-                this.selected = event.report;
+                if (result.type == "error") {
+                    this.showEditor = true;
+                } else {
+                    this.showEditor = false;
+                }
                 this.isLoading = false;
-                this.showEditor = false;
+                this.selected = event.report;
             });
     }
 

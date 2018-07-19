@@ -22,7 +22,7 @@ declare var CompanySettings;
                         <div class="col s12">
                             <div class="FieldName">Report Type</div>
                             <div>                                
-                                <select required [(ngModel)]="editedReport.ReportType" name="reportType" #reportType="ngModel" style="width:100%;">
+                                <select required [(ngModel)]="editedReport.ReportType" name="reportType" #reportType="ngModel" (ngModelChange)="reportTypeChange()" style="width:100%;">
                                   <option *ngFor="let p of reportTypes" [value]="p.value">{{p.title}}</option>
                                 </select>
                             </div>       
@@ -66,6 +66,7 @@ declare var CompanySettings;
                         <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi'">
                             <div class="FieldName">File</div>
                             <div><input type="file" (change)="changeFile($event);" accept=".pbix" style="width: 99%" name="File" formenctype="multipart/form-data" /></div>
+                             <div class="errorMessage" [hidden]="isValid()">File is required</div>
                         </div>
                         <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi' && editedReport.ObjectType">
                             <div class="FieldName">Restrict Visibility To</div>
@@ -77,7 +78,7 @@ declare var CompanySettings;
                         </div>                    
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
-                            <button pButton type="submit" [disabled]="!reportForm.form.valid" style="width: '150px';" label="Save"></button>                            
+                            <button pButton type="submit" [disabled]="!reportForm.form.valid || !isValid()" style="width: '150px';" label="Save"></button>                            
                             <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
                         </div>                    
                     </form>                           
@@ -124,6 +125,10 @@ export class AdminDashboardsEditor {
         this.getReportLayouts();
     }
 
+    reportTypeChange() {
+        this.file = null;
+    }
+
     onSubmit() {        
         this.saveClick.emit({ report: this.editedReport, action: this.report ? "new" : "edit", file: this.file });
     }
@@ -152,7 +157,14 @@ export class AdminDashboardsEditor {
 
     private changeFile(e) {
         this.file = e.srcElement.files[0];
-    }    
+   }    
+
+    private isValid(): boolean {
+       if (this.action === "New" && this.editedReport.ReportType == "powerbi")
+            return this.file != null
+        else
+            return true;
+    }
 
     private objectTypeChanged(type: string, isInitialLoad?: boolean) {
         let object = type.split("|");

@@ -14263,6 +14263,9 @@ order by TP.TextPath";
                             filename = file.FileName;
                         }
                     }
+                    else if (reportType == "powerbi" && fileCount==0) {
+                        throw new ConflictException("Error", "File is required");
+                    }
 
                     var model = new Report
                     {
@@ -14477,6 +14480,9 @@ order by TP.TextPath";
 
                         filename = file.FileName;
                     }           
+                }else if (reportType == "powerbi" && string.IsNullOrEmpty(model.FileName))
+                {
+                    throw new ConflictException("Error", "File is required");
                 }
 
                 var visibleTo = form["VisibleTo"];
