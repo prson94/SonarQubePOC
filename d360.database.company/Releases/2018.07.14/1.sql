@@ -6069,3 +6069,6 @@ GO
 
 drop table ResponsibilityTypeObjectClaim
 GO
+
+CREATE NONCLUSTERED INDEX IX_ResponsibilityTypeRelationOverrideItem_OverrideID_Include ON [dbo].[ResponsibilityTypeRelationRuleResult] ([OverrideID]) INCLUDE ([RuleID],[Overridden])
+GO
