@@ -1991,7 +1991,7 @@ where	R.SourceObject = 'FusionAttribute'
                     dateEnd = dateEnd,
                     commentTypeID = commentType,
                     searchPhrase = searchPhrase.Replace("'", "''").Replace("--", "")
-                });
+                }).ToList();
             foreach (CommentDetail cd in comments)
             {
                 cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
