@@ -3351,7 +3351,7 @@ end",
                         }
 
                         join.JoinStatement += permissionJoin;
-                        join.WhereStatement += (string.IsNullOrEmpty(permissionsWhere) ? "" : " and ") + permissionsWhere;
+                        join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : " and " + permissionsWhere;
                     }
                     else
                     {
@@ -3399,7 +3399,7 @@ end",
                     {
                         join.JoinStatement += $" and A{i}.Deleted = 0";
                     }
-                    join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                    join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : " and " + permissionsWhere;
                     break;
                 #endregion
                 case ComplexLookupRelationType.ChildItem:
@@ -3423,7 +3423,7 @@ end",
                     }
 
                     join.JoinStatement += permissionJoin;
-                    join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                    join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : " and " + permissionsWhere;
 
                     objColumn = $"'{currentObj}'";
                     objIDColumn = $"A{i}.ID";
@@ -3450,7 +3450,7 @@ end",
                     }
 
                     join.JoinStatement += permissionJoin;
-                    join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere.Replace("and ", "") : permissionsWhere;
+                    join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : " and " + permissionsWhere;
 
                     objColumn = $"'{currentObj}'";
                     objIDColumn = $"A{i}.ID";
