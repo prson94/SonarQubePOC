@@ -23,6 +23,7 @@ export class CompanySettings {
     DefaultSearchTypes: string;
     EnableOrganizations: boolean;
     EnableShoppingCart: boolean;
+    HideData3SixtyUsers: boolean;
     DefaultRoute: string;
     EnableSearchExactMatch: boolean;
     ShowDefaultHelpVideos: boolean;

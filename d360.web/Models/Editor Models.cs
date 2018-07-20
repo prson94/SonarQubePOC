@@ -161,6 +161,8 @@ namespace d360.web.Models
 
         public bool ShowDefaultHelpVideos { get; set; }
 
+        public bool HideData3SixtyUsers { get; set; }
+
         public bool ShowHomeAssignmentTile { get; set; }
         public bool ShowHomeBoardTile { get; set; }
         public bool ShowHomeActivityTile { get; set; }

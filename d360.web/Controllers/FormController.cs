@@ -2649,6 +2649,7 @@ namespace d360.web.Controllers
             model.DefaultRoute = (settings.Any(i => i.SettingID == 22) ? settings.Single(i => i.SettingID == 22).Value : "");
             model.EnableSearchExactMatch = (settings.Any(i => i.SettingID == 23) ? bool.Parse(settings.Single(i => i.SettingID == 23).Value) : false);
             model.ShowDefaultHelpVideos = (settings.Any(i => i.SettingID == 35) ? bool.Parse(settings.Single(i => i.SettingID == 35).Value) : true);
+            model.HideData3SixtyUsers = (settings.Any(i => i.SettingID == 9) ? bool.Parse(settings.Single(i => i.SettingID == 9).Value) : true);
 
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2804,6 +2805,7 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 22, (formModel.DefaultRoute ?? "").Trim());
                 updateCompanySetting(settings, 23, formModel.EnableSearchExactMatch.ToString().ToLower());
                 updateCompanySetting(settings, 35, formModel.ShowDefaultHelpVideos.ToString().ToLower());
+                updateCompanySetting(settings, 9, formModel.HideData3SixtyUsers.ToString().ToLower());
 
                 #endregion
 
