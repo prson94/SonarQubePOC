@@ -95,7 +95,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                         enabled: false
                     },
                     tooltip: {
-                        pointFormat: '{point.y} Assigned Users'
+                        pointFormat: '{point.y} Total Assigned Items'
                     },
                     plotOptions: {
                         pie: {
