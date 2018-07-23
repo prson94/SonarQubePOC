@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 
 namespace d360.model
 {
@@ -418,6 +419,17 @@ when	not matched by target then
             if (fromField!=null)
             updateSql += $" Update fieldtype set ColumnOrder ={fromField.ColumnOrder},UpdatedBy = {currentResourceID} where Id={fromField.ID};";
             return cnn.Execute(updateSql);
+        }
+
+        public static int UpdateFieldMove(this DbConnection cnn, List<FieldType> fields, int currentResourceID)
+        {
+            StringBuilder updateSql = new StringBuilder();
+            foreach(var f in fields)
+            {
+                updateSql.Append( $" Update fieldtype set ColumnOrder ={f.ColumnOrder},UpdatedBy = {currentResourceID} where Id={f.ID};");
+            }
+            
+            return cnn.Execute(updateSql.ToString());
         }
     }
 }

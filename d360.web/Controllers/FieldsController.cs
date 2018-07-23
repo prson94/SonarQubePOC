@@ -98,10 +98,26 @@ namespace d360.web.Controllers
             string errorMessage = string.Format("{0} with ID {1} could not be found.", type.ToString(), id);
 
             var sType = type.ToString();
-            var list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.ColumnOrder).ThenBy(i => i.Name).ToList();
+            List<FieldType> list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
             if (list != null)
             {
+                //Verify the list colum order is an ordered list
+                //If not Chagne the field defintion to ordered before applying the perform move
+                int startSeq = list[0].ColumnOrder == 0 || list[0].ColumnOrder == 1 ? list[0].ColumnOrder : 1;
+                var listColumn = list.Select(x => x.ColumnOrder).ToList();
+                var seqList = Enumerable.Range(startSeq, list.Count );
+                if (!Enumerable.SequenceEqual<int>(listColumn, seqList))
+                {
+                    var j = startSeq;
+                    foreach (var f in list)
+                    {
+                        f.ColumnOrder = j++;
+                    }
+                    Company.Database.Connection.UpdateFieldMove(list, Company.CurrentResourceID);
+                    list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+                }
+
                 var fieldToMove = list.SingleOrDefault(i => i.ID == fieldTypeID);
 
                 var maxPosition = list.Count;
@@ -114,7 +130,9 @@ namespace d360.web.Controllers
                 fieldToMove.ColumnOrder = newPosition;
 
 
-                var fieldFromMove = list.SingleOrDefault(i => i.ColumnOrder == newPosition && i.ID != fieldTypeID);
+                var fieldFromMove = list.OrderBy(x=>x.Name).FirstOrDefault(i => i.ColumnOrder == newPosition && i.ID != fieldTypeID);
+                
+
                 if (fieldFromMove != null && fieldFromMove.ID != 0)
                 {
                     fieldFromMove.ColumnOrder = currentPosition;
