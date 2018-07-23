@@ -557,6 +557,7 @@
     <Content Include="Content\quill\v1.3.4\quill.min.js" />
     <Content Include="Content\quill\v1.3.4\quill.snow.css" />
     <Content Include="Content\quill\v1.3.4\quill.snow.min.css" />
+    <Content Include="Content\scripts\jquery\2.2.4\jquery.min.js" />
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
