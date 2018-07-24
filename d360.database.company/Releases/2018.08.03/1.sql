@@ -249,3 +249,12 @@ begin
 	select @shouldRun
 end
 GO
+
+
+-- GOV-4943 Remove dead/orphaned nav items ------------
+delete nav
+from sitenav nav
+where nav.objectid is not null and nav.object is not null
+and not exists (select 1 from assettype t where t.object = nav.object and t.objectid = nav.objectid);
+GO
+--------------------------------------------------------
