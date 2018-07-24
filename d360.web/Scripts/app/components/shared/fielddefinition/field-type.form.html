@@ -40,7 +40,7 @@
                         <div>
                             <div>
                                 <div class="FieldNameRequired">Sort Order</div>
-                                <input name="sortorder" pInputText type="number" [(ngModel)]="model.FieldType.SortOrder" [disabled]="!model.FieldType.IsListable" style="width: 25%; display: block;" />
+                                <input name="sortorder" pInputText type="number" [(ngModel)]="model.FieldType.SortOrder" [disabled]="!model.FieldType.IsListable" [ngStyle]="{'background':(!model.FieldType.IsListable ? '#EFEFEF': '')}" style="width: 25%; display: block;" />
                             </div>                            
                         </div>                        
                     </div>
