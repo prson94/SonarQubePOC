@@ -1313,7 +1313,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
                         joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
                         joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                        joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {f.LookupObjectFieldTypeID}";
+                        joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {(f.LookupObjectFieldTypeID.HasValue ? f.LookupObjectFieldTypeID : 0)}";
                         joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
                         joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
 
