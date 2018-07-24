@@ -6072,3 +6072,30 @@ GO
 
 CREATE NONCLUSTERED INDEX IX_ResponsibilityTypeRelationOverrideItem_OverrideID_Include ON [dbo].[ResponsibilityTypeRelationRuleResult] ([OverrideID]) INCLUDE ([RuleID],[Overridden])
 GO
+
+CREATE FUNCTION [dbo].[GetObjectDisplayValueById]
+(
+	@o varchar(50),
+	@oid int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+		select	top 1	
+					string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+		from		dbo.Asset A
+					inner join dbo.AssetType T on T.ID = A.AssetTypeID and A.Object = @o and A.ObjectID = @oid
+					outer apply (
+								select	TF.value,
+										coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.Name) as FormattedValue
+								from	string_split(replace(replace(T.DisplayFormat, '{', '|'),'}','|'), '|') TF									
+										left join dbo.FieldType FT on FT.AssetTypeID = T.ID and FT.Name = TF.Value
+										left join dbo.Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+										left join dbo.ReferenceItem RI on TF.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ObjectID
+										left join dbo.FusionAttribute FA on TF.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+										left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+								where	RTRIM(TF.value) <> ''									
+								) D
+)
+GO
