@@ -3,6 +3,7 @@ import { BaseComponent } from '../base.component';
 import { SocialService } from '../../../services/social.service';
 import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../../models/social.model';
 import { CurrentCompanySettings } from '../../../static/company-settings'
+import { MessagesService } from '../../../services/messages.service';
 
 @Component({
     selector: 'd3s-social-board',
@@ -45,7 +46,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     
     
 
-    constructor(private socialService: SocialService) {
+    constructor(private socialService: SocialService, protected messagesService: MessagesService) {
         super();
     }
 
@@ -106,7 +107,8 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     
                     if (index >= 0) {
                         this.comments.splice(index,1);
-                    }                                     
+                    }    
+                    this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
                 }
                 this.countsChanged.emit({}); // counts changed fire event
                 this.isLoading = false;
@@ -134,6 +136,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                 if (res) {
                     this.comments.unshift(res);                    
                 }
+                this.messagesService.showInfoMessage('Success', 'Item added successfully');
                 this.countsChanged.emit({}); // counts have changed fire event
                 this.isLoading = false;
             });
@@ -151,7 +154,8 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         editData.ObjectType = this.objectType;
         
         this.socialService.editComment(editData).
-            then(res => {                
+            then(res => {       
+                this.messagesService.showInfoMessage('Success', 'Item edited successfully');
                 this.isLoading = false;
             });
     }
