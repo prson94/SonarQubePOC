@@ -96,11 +96,13 @@
     <Folder Include="Properties" />
     <Folder Include="Releases" />
     <Folder Include="Releases\2018.07.14" />
+    <Folder Include="Releases\2018.08.03" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
     <None Include="DevelopmentCompare.scmp" />
     <None Include="SST-UAT-to-Dev.dcmp" />
     <None Include="Releases\2018.07.14\1.sql" />
+    <None Include="Releases\2018.08.03\1.sql" />
   </ItemGroup>
 </Project>
