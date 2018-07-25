@@ -261,7 +261,21 @@ namespace d360.web.Controllers.Services
                     columnSql += ", D.[Key] as [Code]";
                 }*/
 
-                
+                var dbArgs = new Dapper.DynamicParameters();
+                dbArgs.Add("id", assetTypeId);
+                dbArgs.Add("key", key);
+
+
+
+                var lastmodifiedDateSql = @"
+                    select  O.UpdatedOn
+                    from    AssetApiModel A
+                            inner join Asset O on O.ID = A.ID
+                            cross apply utility.GetAssetBusinessKey(A.ID) D 
+                    where   A.AssetTypeID = @id and  D.[key] =@key";
+
+                DateTime lastModifiedDate = Company.Query<DateTime>(lastmodifiedDateSql, dbArgs).FirstOrDefault();
+
                 foreach (var f in config)
                 {
                     var fID = f.FieldType.ID;
@@ -311,7 +325,8 @@ namespace d360.web.Controllers.Services
 
                 var canoUri = JsonResultLinkModel.BASE_URI + Request.RequestUri.PathAndQuery;
 
-                //Determine whether it is JSON or XML to send back to caller, and format appropriately.
+                //Determine whether it is JSON or XML to send back to caller, and format appropriately
+                HttpResponseMessage responseMessage = null;
                 if (asJson)
                 {
                     var dic = (IDictionary<string, object>)asset;
@@ -323,7 +338,7 @@ namespace d360.web.Controllers.Services
 
                     exp.Add("_links", new List<JsonResultLinkModel> { new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO } });
 
-                    return Request.CreateResponse(HttpStatusCode.OK, exp as object, "application/json");
+                    responseMessage =   Request.CreateResponse(HttpStatusCode.OK, exp as object, "application/json");
                 }
                 else
                 {
@@ -340,12 +355,19 @@ namespace d360.web.Controllers.Services
 
                     xLinks.Add(link);
                     xAsset.Add(xLinks);
-                    
-                    return Request.CreateResponse(HttpStatusCode.OK, xAsset, "application/xml");
+
+                    responseMessage=  Request.CreateResponse(HttpStatusCode.OK, xAsset, "application/xml");
+
                 }
 
+                if (lastModifiedDate != DateTime.MinValue)
+                    responseMessage.Content.Headers.LastModified = new DateTimeOffset(lastModifiedDate,
+                              TimeZoneInfo.Local.GetUtcOffset(lastModifiedDate)); ;
+
+                return responseMessage;
+
                 #endregion End: Collection endpoint processing
-                
+
             }
             catch (Exception r)
             {
@@ -1155,6 +1177,15 @@ namespace d360.web.Controllers.Services
 
                 #endregion
 
+                var lastmodifiedDateSql = @"
+                    select max(O.UpdatedOn)
+                    from    AssetApiModel A
+                            inner join Asset O on O.ID = A.ID
+                            cross apply utility.GetAssetBusinessKey(A.ID) D 
+                            {0} 
+                    where   A.AssetTypeID = @id
+                            {1}";
+
                 //Add final dynamic parameter.
                 dbArgs.Add("@id", config.First().AssetType.ID, System.Data.DbType.Int32);
 
@@ -1164,6 +1195,7 @@ namespace d360.web.Controllers.Services
 
                 // Now, format the SQL to get the items.
                 sql = string.Format(sql, columnSql, fieldSql, additionalWhereSql, orderSql);
+                 lastmodifiedDateSql = string.Format(lastmodifiedDateSql, fieldSql, additionalWhereSql);
 
                 if (!sql.Contains("order by"))
                 {
@@ -1179,6 +1211,7 @@ namespace d360.web.Controllers.Services
 
                 // Get the actual results from DB.
                 var assets = Company.Query<dynamic>(sql, dbArgs); //new { id = config.First().AssetType.ID }
+                DateTime lastModifiedDate = Company.Query<DateTime>(lastmodifiedDateSql, dbArgs).SingleOrDefault();
 
                 #region Calculate the page links
 
@@ -1277,8 +1310,11 @@ namespace d360.web.Controllers.Services
                     responseMessage = Request.CreateResponse(HttpStatusCode.OK, CollectionWrapper, "application/xml");
                 }
 
-                responseMessage.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { MaxAge = new TimeSpan(0, 0, 0, maxAge) };                
+                responseMessage.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { MaxAge = new TimeSpan(0, 0, 0, maxAge) };
 
+                if(lastModifiedDate!= DateTime.MinValue)
+                    responseMessage.Content.Headers.LastModified = new DateTimeOffset(lastModifiedDate,
+                                 TimeZoneInfo.Local.GetUtcOffset(lastModifiedDate)); ;
                 return responseMessage;
 
                 #endregion End: Collection endpoint processing
