@@ -38,6 +38,8 @@ namespace d360.web.Controllers.Services
         internal const string NEXT = "next";
         internal const string PREV = "previous";
 
+        internal const string BASE_URI = "https://api.londonmarketgroup.co.uk";
+
         public string @ref { get; set; }
         public string href { get; set; }
     }
@@ -307,7 +309,7 @@ namespace d360.web.Controllers.Services
                 if (asset == null)
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
 
-                var canoUri = Request.RequestUri.PathAndQuery;
+                var canoUri = JsonResultLinkModel.BASE_URI + Request.RequestUri.PathAndQuery;
 
                 //Determine whether it is JSON or XML to send back to caller, and format appropriately.
                 if (asJson)
@@ -1183,9 +1185,9 @@ namespace d360.web.Controllers.Services
                 var uri = Request.RequestUri;
                 var qs = uri.ParseQueryString();
 
-                var canoUri = uri.PathAndQuery;
-                var nextUri = uri.PathAndQuery;
-                var prevUri = uri.PathAndQuery;
+                var canoUri = JsonResultLinkModel.BASE_URI + uri.PathAndQuery;
+                var nextUri = JsonResultLinkModel.BASE_URI + uri.PathAndQuery;
+                var prevUri = JsonResultLinkModel.BASE_URI + uri.PathAndQuery;
 
                 nextUri = (nextUri.Contains("_pageNum=")) ?
                     nextUri.Replace($"_pageNum={currentPageNumber}", $"_pageNum={currentPageNumber + 1}") :
