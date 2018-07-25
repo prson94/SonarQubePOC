@@ -46,14 +46,14 @@
 <!DOCTYPE html>
 <html class="no-js">
 <head>
-    <base href="/"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta charset="utf-8"/>
+    <base href="/" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="utf-8" />
     <title>@(title)</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-    <meta name="description" content="Data3Sixty: Data Collaboration Suite"/>
-    <link rel="icon" href="@(companyIcon)" type="image/x-icon"/>
-    <link rel="Shortcut Icon" href="@(companyIcon)"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="Data3Sixty: Data Collaboration Suite" />
+    <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
+    <link rel="Shortcut Icon" href="@(companyIcon)" />
     <script type="text/javascript">
         var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
@@ -62,11 +62,12 @@
         var ResourceName = '@(ViewData["ResourceName"].ToString())';
         var ResourceEmail = '@(ViewData["ResourceEmail"].ToString())';
     </script>
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v5.0.2/primeng.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v6.0.1/primeng.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/1.0.0-beta.10/primeicons.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v5.0.2/theme.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v6.0.1/theme.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.4/quill.snow.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />

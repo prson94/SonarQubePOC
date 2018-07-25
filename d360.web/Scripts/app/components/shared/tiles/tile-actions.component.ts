@@ -111,7 +111,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
        
         if (this.hasDate) {
             this.dateMenuItems.push({
-                icon: 'fa-clock-o',
+                icon: 'fa fa-clock-o',
                 items: [
                     { label: 'Past Week', command: () => this.dateClick.emit({ days: 7 }) },
                     { label: 'Past Month', command: () => this.dateClick.emit({ days: 30 }) },

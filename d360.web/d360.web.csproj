@@ -459,6 +459,11 @@
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
+    <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
+    <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.css" />
+    <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.min.css">
+      <DependentUpon>primeicons.css</DependentUpon>
+    </Content>
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.svg" />
     <Content Include="Content\primeng\d3s\images\icons_16.png" />
     <Content Include="Content\primeng\d3s\images\slider_handles%402x.png" />
@@ -553,7 +558,24 @@
     <Content Include="Content\primeng\v5.0.2\primeng.css" />
     <Content Include="Content\primeng\v5.0.2\primeng.min.css" />
     <Content Include="Content\primeng\v5.0.2\theme.css" />
-    <Content Include="Content\primeng\v5.0.2\theme.min.css" />
+    <Content Include="Content\primeng\v5.0.2\theme.min.css">
+      <DependentUpon>theme.css</DependentUpon>
+    </Content>
+    <Content Include="Content\primeng\v6.0.1\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="Content\primeng\v6.0.1\images\color.png" />
+    <Content Include="Content\primeng\v6.0.1\images\hue.png" />
+    <Content Include="Content\primeng\v6.0.1\images\line.gif" />
+    <Content Include="Content\primeng\v6.0.1\images\loading.gif" />
+    <Content Include="Content\primeng\v6.0.1\images\password-meter.png" />
+    <Content Include="Content\primeng\v6.0.1\images\rating.png" />
+    <Content Include="Content\primeng\v6.0.1\primeng.css" />
+    <Content Include="Content\primeng\v6.0.1\primeng.min.css">
+      <DependentUpon>primeng.css</DependentUpon>
+    </Content>
+    <Content Include="Content\primeng\v6.0.1\theme.css" />
+    <Content Include="Content\primeng\v6.0.1\theme.min.css">
+      <DependentUpon>theme.css</DependentUpon>
+    </Content>
     <Content Include="Content\quill\v1.3.4\quill.min.js" />
     <Content Include="Content\quill\v1.3.4\quill.snow.css" />
     <Content Include="Content\quill\v1.3.4\quill.snow.min.css" />
@@ -1388,6 +1410,13 @@
     <Content Include="Content\primeng\v5.0.2\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v5.0.2\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Content\quill\v1.3.4\quill.min.js.map" />
+    <Content Include="Content\primeng\v6.0.1\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="Content\primeng\v6.0.1\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="Content\primeng\v6.0.1\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="Content\primeng\v6.0.1\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.eot" />
+    <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.ttf" />
+    <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.woff" />
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>

@@ -452,7 +452,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         if (this.readonly && (this.canAdd || this.canEdit || this.canDelete)) {
             this.menuItems.push({
-                icon: 'fa-pencil',
+                icon: 'fa fa-pencil',
                 items: null,
                 title: 'Edit Lineage'
             });
@@ -460,13 +460,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         if (!this.readonly)
             this.menuItems.push({
-                icon: 'fa-floppy-o',
+                icon: 'fa fa-floppy-o',
                 items: null,
                 title: 'Save Lineage'
             });
 
         let top = {
-            icon: 'fa-eye',
+            icon: 'fa fa-eye',
             items: [{
                 icon: null,
                 items: null,
@@ -478,32 +478,32 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.menuItems.push(top);
 
         this.menuItems.push({
-            icon: 'fa-search-plus',
+            icon: 'fa fa-search-plus',
             items: null,
             title: 'Zoom in'
         });
         this.menuItems.push({
-            icon: 'fa-search-minus',
+            icon: 'fa fa-search-minus',
             items: null,
             title: 'Zoom out'
 
         });
         this.menuItems.push({
-            icon: 'fa-info-circle',
+            icon: 'fa fa-info-circle',
             items: null,
             title: 'Show/Hide Info'
         });
 
         if (!this.readonly)
             this.menuItems.push({
-                icon: 'fa-remove',
+                icon: 'fa fa-remove',
                 items: null,
                 title: 'Cancel Changes'
             });
 
         if (this.history.length > 1) {
             let hist = {
-                icon: 'fa-history',
+                icon: 'fa fa-history',
                 items: [],
                 title: 'Navigation History'
             };
@@ -1028,14 +1028,14 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     public menuClick(e: MenuItem) {
         //console.log('menuClick', e);
-        if (e.icon == 'fa-info-circle') {
+        if (e.icon == 'fa fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
-        } else if (e.icon == 'fa-pencil') {
+        } else if (e.icon == 'fa fa-pencil') {
             this.toggleReadOnly(false);
             this.toggleTabs(this.selectedData);
             this.setSourceValues(this.selectedData);
             this.isWindowVisible = true;
-        } else if (e.icon == 'fa-floppy-o') {
+        } else if (e.icon == 'fa fa-floppy-o') {
             if (!this.isLoading) {
                 if (!this.valid()) {
                     this.messagesService.showError('', this.errors.join('\n'));
@@ -1047,13 +1047,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 }
             }
             
-        } else if (e.icon == 'fa-remove') {
+        } else if (e.icon == 'fa fa-remove') {
             this.toggleReadOnly(true);
             this.populateDiagram();
             this.loadMenuItems();
-        } else if (e.icon == 'fa-search-plus') {
+        } else if (e.icon == 'fa fa-search-plus') {
             this.zoomDiagram(this.diagram.scale + .1);
-        } else if (e.icon == 'fa-search-minus') {
+        } else if (e.icon == 'fa fa-search-minus') {
             this.zoomDiagram(this.diagram.scale - .1);
         } else if (e.icon == null && e.label == 'Toggle Predicate Names') {
             this.showPredicateNames = !this.showPredicateNames;

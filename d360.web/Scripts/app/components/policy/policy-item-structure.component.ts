@@ -28,37 +28,44 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                     </header>                              
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
-                        <p-column field="displayValue" header="Item">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.DisplayValue}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
-                            </ng-template>
-                        </p-column>
-                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">                                                                
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item.data"></d3s-dynamic-field-value>                                 
-                            </ng-template>
-                        </p-column>
-                        <p-column [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions()">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" *ngIf="policyType.MaximumDepth > item.data.Level" (click)="selected=item;add()"><i class="fa fa-plus"></i></a>                                        
-                                </div>
-                            </ng-template>
-                        </p-column>   
-                        <p-column [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions()">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
-                                </div>
-                            </ng-template>
-                        </p-column>                            
-                        <p-column  [style]="{width:'40px'}" *ngIf="hasDeleteAssetPermissions()">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">                                
-                                    <a *ngIf="!item.children" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                </div>
-                            </ng-template>
-                        </p-column>       
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Item</th>
+                                <th *ngFor="let column of columns" [ttSortableColumn]="column.sortable === true ? column.datafield : null">
+                                    {{column.text}}
+                                    <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-rowNode let-item="rowData">
+                            <tr [ttSelectableRow]="rowNode">
+                                <td>
+                                    <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                                    <a (click)="showHierarchy(item.ID)" [ngStyle]="setTreeNodeStyles(rowNode.node)">{{item.DisplayValue}} <i *ngIf="item?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
+                                </td>
+                                <td *ngFor="let column of columns">
+                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
+                                </td>
+                                <td>
+                                    <div *ngIf="hasModifyAssetPermissions()" class="RowTools">
+                                        <a style="cursor:pointer;" *ngIf="policyType.MaximumDepth > item.Level" (click)="selected=rowNode.node;add()"><i class="fa fa-plus"></i></a>                                        
+                                    </div>
+                                </td>
+                                <td>
+                                    <div *ngIf="hasModifyAssetPermissions()" class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=rowNode.node;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                    </div>
+                                </td>
+                                <td>
+                                    <div *ngIf="hasDeleteAssetPermissions()" class="RowTools">
+                                        <a *ngIf="!rowNode.node.children" style="cursor:pointer;" (click)="selected=rowNode.node;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                    </div>
+                                </td>
+                            </tr>
+                       </ng-template> 
                     </p-treeTable> 
                     <d3s-delete-form *ngIf="showDelete"
                         [callback]="theDeleteCallback"

@@ -21,14 +21,31 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
                         <header>Glossary</header>                              
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;">  
                         <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selectedRow" (selectionChange)="navigate($event.data)" [style]="{ 'width': '100%' }">
-                            <p-column field="Name" header="Name" [style]="{ 'width': '20%' }"></p-column>
-                            <p-column field="Description" header="Description" [style]="{ 'width': '70%' }"></p-column>
-                            <p-column field="kount" header="Item Count" [style]="{ 'width': '5%','overflow':'automatic', 'padding-left':'15px', 'text-align':'center' }"></p-column>
-                            <p-column [style]="{ 'width': '5%','overflow':'automatic', 'padding-left':'15px', 'text-align':'center' }" header="Select Item">
-                                <ng-template let-col let-item="rowData" pTemplate="body">
-                                    <d3s-preview-tooltip objectType="ArtifactType" [objectId]="item.data.ID" icon="info" (click)="navigate(item.data)"></d3s-preview-tooltip>
-                                </ng-template>
-                            </p-column>
+                            <ng-template pTemplate="header">
+	                            <tr>
+		                            <th style="width: 20%">Name</th>
+		                            <th style="width: 70%">Description</th>
+		                            <th style="width: 5%">Item Count</th>
+		                            <th style="width: 5%">Select Item</th>
+	                            </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-rowNode let-item="rowData">
+	                            <tr [ttSelectableRow]="rowNode">
+		                            <td>
+			                            <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                            {{item.Name}}
+		                            </td>
+                                    <td>
+                                        {{item.Description}}
+                                    </td>
+                                    <td style="overflow: auto; padding-left: 15px; text-align: center">
+                                        {{item.kount}}
+                                    </td>
+                                    <td style="overflow: auto; padding-left: 15px; text-align: center">
+                                        <d3s-preview-tooltip objectType="ArtifactType" [objectId]="item.ID" icon="info" (click)="navigate(item)"></d3s-preview-tooltip>
+                                    </td>
+	                            </tr>
+                            </ng-template>
                         </p-treeTable>
                     </div>
                 </div>

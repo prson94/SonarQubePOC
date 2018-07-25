@@ -289,11 +289,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.menuItems = [];
 
         this.menuItems.push({
-            icon: 'fa-info-circle'
+            icon: 'fa fa-info-circle'
         });
         if (this.hasClose)
             this.menuItems.push({
-                icon: 'fa-remove'
+                icon: 'fa fa-remove'
             });
     }
 
@@ -1207,13 +1207,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private menuClick(e: any) {
         //console.log(e);
-        if (e.icon == 'fa-info-circle')
+        if (e.icon == 'fa fa-info-circle')
             this.isWindowVisible = !this.isWindowVisible;
-        if (e.icon == 'fa-remove')
+        if (e.icon == 'fa fa-remove')
             this.onCloseClick.emit();
-        if (e.icon == 'fa-floppy-o')
+        if (e.icon == 'fa fa-floppy-o')
             this.save();
-        if (e.icon == 'fa-arrow-left')
+        if (e.icon == 'fa fa-arrow-left')
             this.backClick();
 
         //TODO: debugging remove this

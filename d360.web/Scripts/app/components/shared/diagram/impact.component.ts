@@ -68,23 +68,23 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
         this.menuItems.push({
-            icon: 'fa-filter'
+            icon: 'fa fa-filter'
         });
 
         this.menuItems.push({
-            icon: 'fa-search-minus'
+            icon: 'fa fa-search-minus'
         });
 
         this.menuItems.push({
-            icon: 'fa-search-plus'
+            icon: 'fa fa-search-plus'
         });
 
         this.menuItems.push({
-            icon: 'fa-refresh'
+            icon: 'fa fa-refresh'
         });
 
         this.menuItems.push({
-            icon: 'fa-info-circle'
+            icon: 'fa fa-info-circle'
         });
 
         this.initializeDiagram();
@@ -450,20 +450,20 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     }
 
     public menuAction(e: MenuItem) {
-        if (e.icon == 'fa-refresh') {
+        if (e.icon == 'fa fa-refresh') {
             this.refreshDiagram();
-        } else if (e.icon == 'fa-info-circle') {
+        } else if (e.icon == 'fa fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
             this.isFilterVisible = false;
-        } else if (e.icon == 'fa-search-plus') {
+        } else if (e.icon == 'fa fa-search-plus') {
             this.diagram.scale += .1;
             if (this.diagram.scale > 2.5)
                 this.diagram.scale = 2.5;
-        } else if (e.icon == 'fa-search-minus') {
+        } else if (e.icon == 'fa fa-search-minus') {
             this.diagram.scale -= .1;
             if (this.diagram.scale < .1)
                 this.diagram.scale = .1;
-        } else if (e.icon == 'fa-filter') {
+        } else if (e.icon == 'fa fa-filter') {
             this.isFilterVisible = !this.isFilterVisible;
             this.isWindowVisible = false;
         }

@@ -16,7 +16,7 @@
             <ng-container *ngSwitchCase="'info'" >
                 <div *ngIf="showNodeTabs" style="overflow-y: scroll" [style.max-height]="(overlayMaxHeight - 100) + 'px'">
                     <div style="float:right;">
-                        <button pButton type="button" [label]="showDetail ? 'Hide Detail' : 'Show Detail'" [icon]="showDetail ? 'fa-compress' : 'fa-expand'" (click)="toggleDetail()"></button>
+                        <button pButton type="button" [label]="showDetail ? 'Hide Detail' : 'Show Detail'" [icon]="showDetail ? 'fa fa-compress' : 'fa fa-expand'" (click)="toggleDetail()"></button>
                     </div>
                     <object-detail *ngIf="showDetail" [objectType]="selectedData.object" [objectID]="selectedData.objectId"></object-detail>
                     <d3s-lineage-info *ngIf="!showDetail" [node]="selectedData" [diagram]="diagram" (selectionChange)="ChangedSelection()"></d3s-lineage-info>

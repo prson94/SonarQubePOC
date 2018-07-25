@@ -18,29 +18,41 @@ import { MessagesService } from '../../../services/messages.service';
                 <div [ngSwitch]="formMode">
                     <div *ngSwitchCase="FormMode.Default">
                         <p-treeTable [value]="groupTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)">
-                            <p-column field="Name" header="Name"></p-column>
-                            <p-column field="Weight" header="Weight"></p-column>
-                            <p-column  [style]="{width:'40px'}">
-                                <ng-template let-node="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
-                                        <a style="cursor:pointer;" (click)="selectNode(node); add()"><i class="fa fa-plus"></i></a>                                    
-                                    </div>
-                                </ng-template>
-                            </p-column> 
-                            <p-column  [style]="{width:'40px'}">
-                                <ng-template let-node="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
-                                        <a style="cursor:pointer;" (click)="selectNode(node); edit()"><i class="fa fa-pencil"></i></a>                                    
-                                    </div>
-                                </ng-template>
-                            </p-column> 
-                            <p-column  [style]="{width:'40px'}">
-                                <ng-template let-node="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
-                                        <a style="cursor:pointer;" (click)="selectNode(node); delete()"><i class="fa fa-trash-o"></i></a>                                    
-                                    </div>
-                                </ng-template>
-                            </p-column> 
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Weight</th>
+                                    <th style="width: 40px"></th>
+                                    <th style="width: 40px"></th>
+                                    <th style="width: 40px"></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-rowNode let-item="rowData">
+                                <tr [ttSelectableRow]="rowNode">
+                                    <td>
+                                        <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                                        {{item.Name}}
+                                    </td>
+                                    <td>
+                                        {{item.Weight}}
+                                    </td>
+                                    <td>
+                                        <div class="RowTools">                                
+                                            <a style="cursor:pointer;" (click)="selectNode(rowNode.node); add()"><i class="fa fa-plus"></i></a>                                      
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="RowTools">                                
+                                            <a style="cursor:pointer;" (click)="selectNode(rowNode.node); edit()"><i class="fa fa-pencil"></i></a>                                    
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="RowTools">                                
+                                            <a style="cursor:pointer;" (click)="selectNode(rowNode.node); delete()"><i class="fa fa-trash-o"></i></a>                                    
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
                         </p-treeTable>
                     </div>
                     <div *ngSwitchCase="FormMode.Adding">

@@ -21,7 +21,7 @@
             <div *ngIf="selectedObject && selectedObjectID && isWindowVisible" [ngSwitch]="tab"  style="background-color: #fff; padding: 10px; overflow-y:scroll; max-height: 300px">
                 <div *ngSwitchCase="'info'">
                     <div style="float:right;">
-                        <button pButton type="button" [label]="showDetail ? 'Hide Detail' : 'Show Detail'" [icon]="showDetail ? 'fa-compress' : 'fa-expand'" (click)="toggleDetail()"></button>
+                        <button pButton type="button" [label]="showDetail ? 'Hide Detail' : 'Show Detail'" [icon]="showDetail ? 'fa fa-compress' : 'fa fa-expand'" (click)="toggleDetail()"></button>
                     </div>
                     <d3s-lineage-object-detail *ngIf="!showDetail && selectedObject && selectedObjectID" [objectType]="selectedObject" [objectId]="selectedObjectID"></d3s-lineage-object-detail>
                     <object-detail *ngIf="showDetail && selectedObject && selectedObjectID" [objectType]="selectedObject" [objectID]="selectedObjectID"></object-detail>

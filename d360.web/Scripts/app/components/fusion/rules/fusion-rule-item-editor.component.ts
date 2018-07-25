@@ -16,12 +16,23 @@ import { TreeNode } from 'primeng/primeng';
                 <div style="max-height:500px;overflow-y:scroll;position:relative;">
                     <input type="text" style="width:100%;margin-bottom:10px;" [(ngModel)]="addItemSearch" placeholder="Search..." [disabled]="selectAllItems"/>
                     <p-treeTable [value]="values | treeSearch: addItemSearch:'Name'" (onNodeExpand)="loadSubItems($event)">
-                        <p-column header="Name" field="Name"></p-column>
-                        <p-column [style]="{ 'width' : '30px' }">
-                            <ng-template pTemplate type="body" let-row="rowData">
-                                <input type="checkbox" [ngModel]="row?.data?.selected" (ngModelChange)="row.data.selected = $event;selectInOriginalTree(row.data.ID,$event);" [disabled]="selectAllItems" />
-                            </ng-template>
-                        </p-column>
+                        <ng-template pTemplate="header">
+	                        <tr>
+		                        <th>Name</th>
+                                <th style="width: 30px"></th>
+	                        </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-rowNode let-row="rowData">
+	                        <tr [ttSelectableRow]="rowNode">
+		                        <td>
+			                        <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                        {{row.Name}}
+		                        </td>
+                                <td>
+                                    <input type="checkbox" [ngModel]="row?.selected" (ngModelChange)="row.selected = $event;selectInOriginalTree(row.ID,$event);" [disabled]="selectAllItems" />
+                                </td>
+	                        </tr>
+                        </ng-template>
                     </p-treeTable>
                 </div>
             </div>

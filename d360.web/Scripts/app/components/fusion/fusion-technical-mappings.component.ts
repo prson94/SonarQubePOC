@@ -18,32 +18,41 @@ import { FormMode } from '../../models/form.model';
             </select>
             <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 300px;display:inline-block;" *ngIf="formMode == FormMode.Default">   
             <p-treeTable *ngIf="formMode == FormMode.Default" [value]="technicalMappingsTree|treeSearch: searchValue: searchField" selectionMode="single" [(selection)]="selected">
-            <p-column header="Group">
-                <ng-template let-row="rowData" pTemplate type="body">
-                    <div *ngIf="row.data.ID != 0">{{row.data.ID}}</div>
-                    <div *ngIf="row.data.ID == 0">NONE</div>
+                <ng-template pTemplate="header">
+	                <tr>
+		                <th>Group</th>
+		                <th>Transformation</th>
+		                <th>Source Object</th>
+		                <th>Source Configuration</th>
+		                <th>Source Attribute</th>
+		                <th>Target Object</th>
+		                <th>Target Configuration</th>
+		                <th>Target Attribute</th>
+		                <th></th>
+	                </tr>
                 </ng-template>
-            </p-column>
-                <p-column header="Transformation" field="Transformation">
-                    <ng-template pTemplate type="body" let-item="rowData">
-                        <div [innerHtml]="item.data.Transformation"></div> 
-                    </ng-template>
-                </p-column>
-                <p-column header="Source Object" field="SourceObjectName"></p-column>
-                <p-column header="Source Configuration" field="SourceFusion"></p-column>
-                <p-column header="Source Attribute" field="SourceFusionAttributeTextPath"></p-column>
-                <p-column header="Target Object" field="TargetObjectName"></p-column>
-                <p-column header="Target Configuration" field="TargetFusion"></p-column>
-                <p-column header="Target Attribute" field="TargetFusionAttributeTextPath"></p-column>
-                <p-column header="">
-                    <ng-template pTemplate type="body" let-row="rowData">
-                        <div class="RowTools">
-                            <a *ngIf="row.data.ParentTextID == null" style="cursor: pointer" (click)="add(row)"><i class="fa fa-plus"></i></a>
-                            <a style="cursor: pointer"><i class="fa fa-pencil" (click)="edit(row)"></i></a>
-                            <a style="cursor: pointer"><i class="fa fa-trash-o" (click)="delete(row)"></i></a>
-                        </div>
-                    </ng-template>
-                </p-column>
+                <ng-template pTemplate="body" let-rowNode let-row="rowData">
+	                <tr [ttSelectableRow]="rowNode">
+		                <td>
+			                <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                <div *ngIf="row.ID != 0">{{row.ID}}</div>
+                            <div *ngIf="row.ID == 0">NONE</div>
+		                </td>
+                        <td>{{row.SourceObjectName}}</td>
+                        <td>{{row.SourceFusion}}</td>
+                        <td>{{row.SourceFusionAttributeTextPath}}</td>
+                        <td>{{row.TargetObjectName}}</td>
+                        <td>{{row.TargetFusion}}</td>
+                        <td>{{row.TargetFusionAttributeTextPath}}</td>
+                        <td>
+                            <div class="RowTools">
+                                <a *ngIf="row.ParentTextID == null" style="cursor: pointer" (click)="add(rowNode.node)"><i class="fa fa-plus"></i></a>
+                                <a style="cursor: pointer"><i class="fa fa-pencil" (click)="edit(nowNode.node)"></i></a>
+                                <a style="cursor: pointer"><i class="fa fa-trash-o" (click)="delete(nowNode.node)"></i></a>
+                            </div>
+                        </td>
+	                </tr>
+                </ng-template>
             </p-treeTable>
             <div *ngIf="formMode == FormMode.Editing" class="row">
                 <div class="col s12">

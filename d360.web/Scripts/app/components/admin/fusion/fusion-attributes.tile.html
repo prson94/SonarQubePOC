@@ -9,7 +9,7 @@
             [topTypeID]="fusionType.ID" 
             [showParentPredicates]="selectedRow!=null"
             [parentID]="selectedRow?.data.ID" 
-            [title]="'Edit Type'" 
+            [title]="selectedRow!=null ? 'Add Sub Type' : 'Add Type'" 
             (onCancel)="formMode = FormMode.Default;" 
             (onComplete)="save($event)">
         </d3s-asset-type-editor>
@@ -17,7 +17,7 @@
             [assetTypeClass]="'FA'" 
             [topTypeID]="fusionType.ID" 
             [id]="selectedRow?.data.AssetTypeID" 
-            [title]="'Add Sub Type'" 
+            [title]="'Edit Type'" 
             (onCancel)="formMode = FormMode.Default;" 
             (onComplete)="save($event)">
         </d3s-asset-type-editor>
@@ -35,23 +35,44 @@
         <h4>&nbsp;</h4>
         <div id="FusionAttributeTypes"></div>
         <p-treeTable [value]="fusionAttributeTypes" selectionMode="single" [(selection)]="selectedRow">
-            <p-column field="Name" header="Name"></p-column>
-            <p-column field="ScanEnabled" header="Enabled" [style]="{width:'80px'}">
-                <ng-template let-item="rowData" pTemplate type="body">
-                    <span><i *ngIf="item.data.ScanEnabled" class="fa fa-check enabled" title="True"></i></span>
-                    <span><i *ngIf="!item.data.ScanEnabled" class="fa fa-times disabled" title="False"></i></span>
-                </ng-template>
-            </p-column>
-            <p-column field="ID" header="ID" [style]="{width:'60px'}"></p-column>
-            <p-column>
-                <ng-template let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">
-                        <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                        <a (click)="selectedRow = item; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                        <a (click)="selectedRow = item; add();" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
-                    </div>
-                </ng-template>
-            </p-column>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th style="width: 80px">
+                        Enabled
+                    </th>
+                    <th style="width: 60px">
+                        ID
+                    </th>
+                    <th></th>
+                </tr>
+
+            </ng-template>
+            <ng-template pTemplate="body" let-rowNode let-item="rowData">
+                <tr [ttSelectableRow]="rowNode">
+                    <td>
+                        <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                        {{item.Name}}
+                    </td>
+                    <td>
+                        <span><i *ngIf="item.ScanEnabled" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item.ScanEnabled" class="fa fa-times disabled" title="False"></i></span>
+                    </td>
+                    <td>
+                        {{item.ID}}
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="selectedRow = rowNode.node; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="selectedRow = rowNode.node; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            <a (click)="selectedRow = rowNode.node; add();" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
         </p-treeTable>
     </div>
     <div class="col hide-on-small-and-down m12 l7">

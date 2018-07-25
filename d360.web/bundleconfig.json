@@ -73,5 +73,23 @@
     "inputFiles": [
       "Content/codemirror/eclipse.css"
     ]
+  },
+  {
+    "outputFileName": "Content/primeng/v6.0.1/theme.min.css",
+    "inputFiles": [
+      "Content/primeng/v6.0.1/theme.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/primeng/v6.0.1/primeng.min.css",
+    "inputFiles": [
+      "Content/primeng/v6.0.1/primeng.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/primeicons/1.0.0-beta.10/primeicons.min.css",
+    "inputFiles": [
+      "Content/primeicons/1.0.0-beta.10/primeicons.css"
+    ]
   }
 ]

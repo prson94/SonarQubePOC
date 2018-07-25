@@ -16,14 +16,22 @@ import * as _ from 'lodash';
     <div class="row">
         <div [class]="readonly ? 'col s12' : 'col s6'">
             <p-treeTable [value]="items" selectionMode="single" [(selection)]="selectedRow" (onNodeSelect)="loadMenu();">
-                <p-column>
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <div *ngIf="item.data.IsCategory" class='Attribute-Category'>{{item.data.Name}}</div>
-                        <div *ngIf="!item.data.IsCategory">
-                            <b *ngIf="item.data.ShowNameInTree">{{item.data.ObjectTypeName}}: </b> <span [innerHtml]="item.data.Name"></span>
-                        </div>
-                    </ng-template>
-                </p-column>
+                <ng-template pTemplate="header">
+	                <tr>
+		                <th></th>
+	                </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-rowNode let-item="rowData">
+	                <tr [ttSelectableRow]="rowNode">
+		                <td>
+			                <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                <div *ngIf="item.IsCategory" class='Attribute-Category'>{{item.Name}}</div>
+                            <div *ngIf="!item.IsCategory">
+                                <b *ngIf="item.ShowNameInTree">{{item.ObjectTypeName}}: </b> <span [innerHtml]="item.Name"></span>
+                            </div>
+		                </td>
+	                </tr>
+                </ng-template>
             </p-treeTable>
         </div>
         <div *ngIf="!readonly" class="col s6">

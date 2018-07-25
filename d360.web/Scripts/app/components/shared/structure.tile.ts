@@ -27,13 +27,21 @@ import { FormHelper } from '../../models/form.model';
                     <div class="row">
                         <div class="col s12 m6">
                             <p-treeTable [value]="items" selectionMode="single" [(selection)]="selectedRow" (onNodeSelect)="selectRow()">
-                                <p-column>
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                            <div class="row-item">
-                                                <span [style.color]="((item.data.Level > 0) ? (item.data.ObjectID == objectID && item.data.Object == objectType) : (item.data.SubjectID == objectID && item.data.Subject == objectType)) ? '#00C' : '#000'" >{{item.data.Name}}</span>&nbsp;&nbsp;<span class="item-type">{{item.data.ObjectTypeName}}</span>
+                                <ng-template pTemplate="header">
+	                                <tr>
+		                                <th></th>
+	                                </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-rowNode let-item="rowData">
+	                                <tr [ttSelectableRow]="rowNode">
+		                                <td>
+			                                <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                                <div class="row-item">
+                                                <span [style.color]="((item.Level > 0) ? (item.ObjectID == objectID && item.Object == objectType) : (item.SubjectID == objectID && item.Subject == objectType)) ? '#00C' : '#000'" >{{item.Name}}</span>&nbsp;&nbsp;<span class="item-type">{{item.ObjectTypeName}}</span>
                                             </div>
-                                    </ng-template>
-                                </p-column>
+		                                </td>
+	                                </tr>
+                                </ng-template>
                             </p-treeTable>
                         </div>
                         <div class="col s12 m6">

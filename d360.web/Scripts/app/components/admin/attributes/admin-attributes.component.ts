@@ -20,18 +20,36 @@ import { Title } from '@angular/platform-browser';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
                                 <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;margin-bottom:10px;">                      
-                                <p-treeTable [value]="attributes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selected">
-                                    <p-column field="ID" header="ID"></p-column>
-                                    <p-column field="Name" header="Name"></p-column>
-                                    <p-column>
-                                        <ng-template let-col let-item="rowData" pTemplate type="body">
-                                            <div class="RowTools">
-                                                <a style="cursor:pointer;" (click)="add(item.data.ID)"><i class="fa fa-plus"></i></a>
-                                                <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
-                                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                            
-                                            </div>
-                                        </ng-template>
-                                    </p-column>
+                                <p-treeTable [value]="attributes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selected" dataKey="ID">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th>
+                                                ID
+                                            </th>
+                                            <th>
+                                                Name
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-rowNode let-item="rowData">
+                                        <tr [ttSelectableRow]="rowNode">
+                                            <td>
+                                                <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                                                {{item.ID}}
+                                            </td>
+                                            <td>
+                                                {{item.Name}}
+                                            </td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="add(item.ID)"><i class="fa fa-plus"></i></a>
+                                                    <a style="cursor:pointer;" (click)="selected=rowNode.node;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                                    <a style="cursor:pointer;" (click)="selected=rowNode.node;showDelete=true"><i class="fa fa-trash-o"></i></a>                                            
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
                                 </p-treeTable>      
                             </span>
                             <d3s-delete-form *ngIf="showDelete"
@@ -157,7 +175,7 @@ export class AdminAttributesComponent extends AdminBaseComponent {
         }
     }
 
-    add(parentID?: number) {
+    add(parentID: number) {
         this.showEditor = true;
         this.selected = null;
         this.parentID = parentID;

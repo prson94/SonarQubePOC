@@ -6101,3 +6101,7 @@ input[type=text]::-ms-clear {
 .ui-treetable-loading-icon {
     font-size: 2em;
 }
+
+.ui-sortable-column-icon {
+    color: #fff;
+}

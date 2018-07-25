@@ -18,26 +18,32 @@ const Highcharts = require('highcharts/highstock.src');
                     <div class="row">
                         <div class="col s12">
                             <header>Point Breakdown</header>
-                            <p-treeTable  scrollable="true" scrollWidth="100%" [value]="pointBreakdownTree" selectionMode="single">                                
-                                <p-column header="Analytic">
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <span *ngIf="item.data.MapID" [innerText]="item.data.Name"></span>
-                                        <b *ngIf="!item.data.MapID"><span [innerText]="item.data.Name"></span></b>
-                                    </ng-template>
-                                </p-column>                                
-                                <p-column header="Value" [style]="{'width':'75px'}">
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <span *ngIf="item.data.MapID">
-                                            <i *ngIf="item.data.Value" class="fa fa-check enabled" title="Passed"></i>
-                                            <i *ngIf="!item.data.Value" class="fa fa-times disabled" title="Failed"></i>
-                                        </span>
-                                    </ng-template>
-                                </p-column>
-                                <p-column header="Weight" [style]="{'width':'75px'}">
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <span [innerText]="item.data.Weight"></span>
-                                    </ng-template>
-                                </p-column>
+                            <p-treeTable  scrollable="true" scrollWidth="100%" [value]="pointBreakdownTree" selectionMode="single">  
+                                <ng-template pTemplate="header">
+	                                <tr>
+		                                <th>Analytic</th>
+		                                <th style="width: 75px">Value</th>
+		                                <th style="width: 75px">Weight</th>
+	                                </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-rowNode let-item="rowData">
+	                                <tr [ttSelectableRow]="rowNode">
+		                                <td>
+			                                <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                                <span *ngIf="item.MapID" [innerText]="item.Name"></span>
+                                            <b *ngIf="!item.MapID"><span [innerText]="item.Name"></span></b>
+		                                </td>
+                                        <td>
+                                            <span *ngIf="item.MapID">
+                                                <i *ngIf="item.Value" class="fa fa-check enabled" title="Passed"></i>
+                                                <i *ngIf="!item.Value" class="fa fa-times disabled" title="Failed"></i>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span [innerText]="item.Weight"></span>
+                                        </td>
+	                                </tr>
+                                </ng-template>
                             </p-treeTable>  
                         </div>
                     </div>
