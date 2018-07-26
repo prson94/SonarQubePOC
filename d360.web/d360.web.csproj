@@ -1739,6 +1739,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />

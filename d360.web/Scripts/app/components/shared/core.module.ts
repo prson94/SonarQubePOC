@@ -6,6 +6,7 @@ import { TooltipComponent } from './tooltip.component';
 import { PreviewTooltipComponent } from './preview-tooltip.component';
 import { LookupTooltipComponent } from './lookup-tooltip.component';
 import { LoadingComponent } from './loading.component';
+import { D3STreeTableToggler } from './treetable-toggler.component';
 
 @NgModule({
     declarations: [        
@@ -13,12 +14,14 @@ import { LoadingComponent } from './loading.component';
         PreviewTooltipComponent,
         LoadingComponent,
         LookupTooltipComponent,
+        D3STreeTableToggler,
     ],
     exports: [        
         TooltipComponent,        
         PreviewTooltipComponent,
         LoadingComponent,
         LookupTooltipComponent,
+        D3STreeTableToggler,
     ]
     , imports: [
         CommonModule,

@@ -30,7 +30,7 @@ import { MessagesService } from '../../../services/messages.service';
                             <ng-template pTemplate="body" let-rowNode let-item="rowData">
                                 <tr [ttSelectableRow]="rowNode">
                                     <td>
-                                        <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                                        <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                                         {{item.Name}}
                                     </td>
                                     <td>

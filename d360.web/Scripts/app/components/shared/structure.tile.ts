@@ -35,7 +35,7 @@ import { FormHelper } from '../../models/form.model';
                                 <ng-template pTemplate="body" let-rowNode let-item="rowData">
 	                                <tr [ttSelectableRow]="rowNode">
 		                                <td>
-			                                <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                                <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
 			                                <div class="row-item">
                                                 <span [style.color]="((item.Level > 0) ? (item.ObjectID == objectID && item.Object == objectType) : (item.SubjectID == objectID && item.Subject == objectType)) ? '#00C' : '#000'" >{{item.Name}}</span>&nbsp;&nbsp;<span class="item-type">{{item.ObjectTypeName}}</span>
                                             </div>

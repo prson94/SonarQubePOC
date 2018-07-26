@@ -24,7 +24,7 @@ import * as _ from 'lodash';
                 <ng-template pTemplate="body" let-rowNode let-item="rowData">
 	                <tr [ttSelectableRow]="rowNode">
 		                <td>
-			                <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
 			                <div *ngIf="item.IsCategory" class='Attribute-Category'>{{item.Name}}</div>
                             <div *ngIf="!item.IsCategory">
                                 <b *ngIf="item.ShowNameInTree">{{item.ObjectTypeName}}: </b> <span [innerHtml]="item.Name"></span>

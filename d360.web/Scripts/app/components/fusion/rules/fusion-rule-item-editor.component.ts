@@ -25,7 +25,7 @@ import { TreeNode } from 'primeng/primeng';
                         <ng-template pTemplate="body" let-rowNode let-row="rowData">
 	                        <tr [ttSelectableRow]="rowNode">
 		                        <td>
-			                        <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                        <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
 			                        {{row.Name}}
 		                        </td>
                                 <td>

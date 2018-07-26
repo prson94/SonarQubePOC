@@ -6,7 +6,7 @@
             </header>
             <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;margin-bottom:10px;">    
             
-            <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" dataKey="ID" [(selection)]="selectedRow">
+            <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" dataKey="ID" [(selection)]="selectedRow" #tt>
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 60%">Name</th>
@@ -19,7 +19,7 @@
                 <ng-template pTemplate="body" let-rowNode let-item="rowData">
                     <tr [ttSelectableRow]="rowNode">
                         <td>
-                            <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                            <d3s-treeTableToggler [rowNode]="rowNode" ></d3s-treeTableToggler>
                             {{item.Name}}
                         </td>
                         <td>

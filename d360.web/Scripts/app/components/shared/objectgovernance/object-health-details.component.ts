@@ -29,7 +29,7 @@ const Highcharts = require('highcharts/highstock.src');
                                 <ng-template pTemplate="body" let-rowNode let-item="rowData">
 	                                <tr [ttSelectableRow]="rowNode">
 		                                <td>
-			                                <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+			                                <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
 			                                <span *ngIf="item.MapID" [innerText]="item.Name"></span>
                                             <b *ngIf="!item.MapID"><span [innerText]="item.Name"></span></b>
 		                                </td>

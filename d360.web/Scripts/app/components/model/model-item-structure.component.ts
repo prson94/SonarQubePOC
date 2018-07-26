@@ -45,7 +45,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                         <ng-template pTemplate="body" let-rowNode let-item="rowData">
                             <tr [ttSelectableRow]="rowNode">
                                 <td>
-                                    <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                                    <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                                     <a (click)="showHierarchy(item.ID)" [ngStyle]="setTreeNodeStyles(rowNode.node)" class="link">{{item.DisplayValue}} <i *ngIf="item?.HasChildren" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>
                                 </td>
                                 <td *ngFor="let column of columns">
