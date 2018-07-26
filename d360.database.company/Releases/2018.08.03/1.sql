@@ -261,6 +261,7 @@ GO
 
 -- GOV-4967 Allow renaming of item node ----------------
 alter table api.[Endpoint] add ItemNode varchar(50) null;
+GO
 update api.[Endpoint] set ItemNode = 'item';
 alter table api.[Endpoint] add constraint DF_ApiEndpoint_ItemNode default 'item' for ItemNode;
 alter table api.[Endpoint] alter column ItemNode varchar(50) not null;
