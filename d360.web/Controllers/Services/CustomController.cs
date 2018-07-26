@@ -222,7 +222,8 @@ namespace d360.web.Controllers.Services
                                  f.JsonFieldNameOverride,
                                  f.XmlFieldNameOverride,
                                  f.FieldType,
-                                 EntityUri = u
+                                 EntityUri = u,
+                                 Endpoint = e
                              });
 
                 if (config.Count() <= 0)
@@ -318,7 +319,7 @@ namespace d360.web.Controllers.Services
                 sql = string.Format(sql, columnSql, fieldSql);
 
                 // Get the actual results from DB.
-                var asset = Company.Query<dynamic>(sql, new { id = config.First().AssetType.ID, key }).FirstOrDefault();
+                var asset = Company.Query<dynamic>(sql, new { id = config.First().Endpoint.ItemNode, key }).FirstOrDefault();
 
                 if (asset == null)
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
@@ -343,9 +344,10 @@ namespace d360.web.Controllers.Services
                 else
                 {
                     var serviceID = config.First().ServiceID;
+                    var itemNode = config.First().Endpoint.ItemNode ?? "item";
                     var namespaces = Company.ApiNamespaces.Where(i => i.ServiceID == serviceID).ToDictionary(k => k.Node, v => v.Namespace);
 
-                    XElement xAsset = DynamicHelper.ConvertToXml(asset, "item", namespaces);
+                    XElement xAsset = DynamicHelper.ConvertToXml(asset, itemNode, namespaces);
                     xAsset.Add(new XAttribute("id", asset.id));
 
                     XElement xLinks = DynamicHelper.GetXElement("Links", namespaces, xAsset); 
@@ -423,7 +425,8 @@ namespace d360.web.Controllers.Services
                                  f.JsonFieldNameOverride,
                                  f.XmlFieldNameOverride,
                                  f.FieldType,
-                                 EntityUri = u
+                                 EntityUri = u,
+                                 Endpoint = e
                              }).ToList();
 
                 #endregion
@@ -1267,7 +1270,7 @@ namespace d360.web.Controllers.Services
                 {
                     int serviceID = config.First().ServiceID;
                     var namespaces = Company.ApiNamespaces.Where(i => i.ServiceID == serviceID).ToDictionary(k => k.Node, v => v.Namespace);
-
+                    var itemNode = config.First().Endpoint.ItemNode ?? "item";
 
                     var CollectionWrapper = DynamicHelper.GetXElement(
                         "CollectionWrapper",
@@ -1277,7 +1280,7 @@ namespace d360.web.Controllers.Services
 
                     foreach (var a in assets)
                     {
-                        var xNode = DynamicHelper.ConvertToXml(a, "item", namespaces, xItems);
+                        var xNode = DynamicHelper.ConvertToXml(a, itemNode, namespaces, xItems);
                         (xNode as XElement).Add(new XAttribute("id", a.id));
                         xItems.Add(xNode);
                     }

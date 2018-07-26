@@ -19,6 +19,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string Description { get; set; }
+
+        [DataMember]
+        public string ItemNode { get; set; } = "item";
         
         [ForeignKey("ServiceID"), IgnoreDataMember]
         public virtual ApiService Service { get; set; }

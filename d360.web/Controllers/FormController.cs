@@ -19757,6 +19757,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             list.Add(new EditableField { FieldName = "ServiceID", FieldType = DataType.Hidden.ToString(), Value = serviceId.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
+            list.Add(new EditableField { Row = 1, Column = 3, Required = true, FieldName = "ItemNode", Name = "Item Element Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = "item", Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 50, "Must be between 1 and 50 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -19775,6 +19776,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix, Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
+            list.Add(new EditableField { Row = 1, Column = 3, Required = true, FieldName = "ItemNode", Name = "Item Element Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.ItemNode ?? "item", Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 50, "Must be between 1 and 50 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -19794,6 +19796,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
                 var serviceId = parseIntField(form, "ServiceID");
                 var name = parseTextField(form, "Name");
                 var prefix = parseTextField(form, "URIPrefix");
+                var itemNode = parseTextField(form, "ItemNode");
 
                 if (string.IsNullOrEmpty(name))
                     return jsonException("API Service Endpoint Name is null", HttpStatusCode.NotFound);
@@ -19806,7 +19809,8 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
                     Name = name,
                     Description = parseTextField(form, "Description"),
                     UriPrefix = prefix,
-                    ServiceID = serviceId
+                    ServiceID = serviceId,
+                    ItemNode = itemNode
                 };
 
                 Company.Add(endpoint);
@@ -19842,6 +19846,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
                 model.Name = parseTextField(form, "Name");
                 model.UriPrefix = parseTextField(form, "URIPrefix");
                 model.Description = parseTextField(form, "Description");
+                model.ItemNode = parseTextField(form, "ItemNode");
 
                 Company.Update(model);
 
