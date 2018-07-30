@@ -6,13 +6,14 @@ import { ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';
 import { NymType } from '../../models/object-detail.model';
 import { ResponsibilityTypeRelationPermission } from '../../models/responsibility-type.model';
+import { FormMode } from '../../models/form.model';
 
 @Component({
     selector: 'd3s-object-definition-tile',
     template: `
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-            <div *ngIf="!showEditor && !isLoading">
-                        <header>&nbsp;<d3s-tile-actions [hasEdit]="hasModifyAssetPermissions()" (editClick)="showEditor=true"></d3s-tile-actions></header>
+            <div *ngIf="formMode == FormMode.Default && !isLoading">
+                        <header>&nbsp;<d3s-tile-actions [hasEdit]="hasModifyAssetPermissions()" (editClick)="formMode = FormMode.Editing;formModeChange.emit(formMode);"></d3s-tile-actions></header>
                         <simple-accordion header="Definition" [active]="true">
                             <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
                         </simple-accordion>
@@ -23,7 +24,7 @@ import { ResponsibilityTypeRelationPermission } from '../../models/responsibilit
                             <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasModifyAttributesPermissions()" [hasEdit]="hasModifyAttributesPermissions()" [hasDelete]="hasDeleteAttributesPermissions"></d3s-attributes-tile>
                         </simple-accordion>                     
             </div>
-            <d3s-dynamic-editor *ngIf="showEditor"
+            <d3s-dynamic-editor *ngIf="formMode == FormMode.Editing"
                                             [objectID]="objectID" 
                                             [parentID]="object?.ParentID" 
                                             [objectType]="objectType" 
@@ -31,7 +32,7 @@ import { ResponsibilityTypeRelationPermission } from '../../models/responsibilit
                                             [editUri]="'form/dynamicedit/edit/' + objectType"
                                             [title]="object?.Name" 
                                             (saveClick)="save($event)" 
-                                            (closeClick)="showEditor=false">
+                                            (closeClick)="formMode = FormMode.Default;formModeChange.emit(formMode);">
             </d3s-dynamic-editor>
             `,
     providers: [ObjectDetailService],
@@ -45,10 +46,14 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     @Input() nymTypes: NymType[] = [];
 
     @Output() onEditComplete = new EventEmitter();
+    @Output() formModeChange = new EventEmitter();
+
+    private formMode: FormMode = FormMode.Default;
+    FormMode = FormMode;
     
     private object: ObjectDetail = null;
 
-    private showEditor: boolean = false;;
+    //private showEditor: boolean = false;;
         
     @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
 
@@ -77,11 +82,16 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
             });
     }
 
+
+
     save(e): void {
         this.load().then(() => {
             this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was renamed
             this.onEditComplete.emit(this.object);            
-            this.showEditor = false;
+           // this.showEditor = false;
+            this.formMode = FormMode.Default;
+            this.formModeChange.emit(this.formMode);
+            
         });
     }
     

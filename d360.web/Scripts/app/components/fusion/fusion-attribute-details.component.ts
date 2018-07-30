@@ -11,6 +11,7 @@ import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { FusionAttributeService } from '../../services/fusion-attribute.service';
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
+import { FormMode } from '../../models/form.model';
 
 @Component({
     selector: 'd3s-fusion-attribute-details',
@@ -18,12 +19,12 @@ import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model
                  <div class="row" *ngIf="!isLoading">    
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="id" [objectType]="type" [hasAttributes]="false"></d3s-object-definition-tile>
-                            <button pButton type="button" (click)="close()" label="Close"></button>
+                            <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="id" [objectType]="type" [hasAttributes]="false" (formModeChange)="formModeChange($event)"></d3s-object-definition-tile>
+                            <button pButton type="button" (click)="close()" *ngIf="formMode == FormMode.Default" label="Close"></button>
                         </div>           
                     </div>
                  </div>
-                `,
+                 `,
     providers: [PermissionsService, FusionAttributeService],
 })
 
@@ -34,6 +35,9 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
     private id: number = -1;
     private name: string = '';
     private fusionAttributeDetail: FusionAttributeValueDetails;
+    private formMode :FormMode = FormMode.Default;
+    FormMode = FormMode;
+
     constructor(        
         private route: ActivatedRoute,
         private router: Router,
@@ -74,6 +78,9 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
         this.sub.unsubscribe();
     }
 
+    private formModeChange($event: FormMode) {
+        this.formMode = $event;
+    }
     private close() {
        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionTypeWithFusionAttributeType', this.fusionAttributeDetail.FusionAttributeTypeID, this.fusionAttributeDetail.FusionID ));
     }
