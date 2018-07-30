@@ -21,6 +21,7 @@ using System.Security.Cryptography;
 using IdentityModel;
 using IdentityModel.Client;
 using System.Configuration;
+using System.Web;
 
 namespace d360.web
 {
@@ -180,6 +181,8 @@ from	Resource R
         {
             IOwinContext context = new OwinContext(environment);
 
+            
+
             usercompany u = null;
 
             var companyID = context.Get<int>("CompanyID");
@@ -308,7 +311,13 @@ from	Resource R
                         if (!string.IsNullOrEmpty(apiCredentials)) Trace.TraceWarning("Could not locate the user with API credentials of: {0}", apiCredentials);
                         if (!string.IsNullOrEmpty(token)) Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
                         if (context.Request.User.Identity.IsAuthenticated) Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
-                        if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated) return;
+                        if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated)
+                        {                            
+                            System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
+                           
+                            context.Response.StatusCode = 401;                            
+                            return;
+                        }
                     }
                     catch (Exception ex)
                     {
