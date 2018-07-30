@@ -25,8 +25,8 @@ import * as _ from 'lodash';
 	                <tr [ttSelectableRow]="rowNode">
 		                <td>
 			                <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-			                <div *ngIf="item.IsCategory" class='Attribute-Category'>{{item.Name}}</div>
-                            <div *ngIf="!item.IsCategory">
+			                <div *ngIf="item.IsCategory" class='Attribute-Category' style="display: inline-block">{{item.Name}}</div>
+                            <div *ngIf="!item.IsCategory" style="display: inline-block">
                                 <b *ngIf="item.ShowNameInTree">{{item.ObjectTypeName}}: </b> <span [innerHtml]="item.Name"></span>
                             </div>
 		                </td>
@@ -193,7 +193,7 @@ export class AttributesTile implements OnInit {
         let i = new MenuItemParams();
         i.action = item.Action;
         i.menuItem = {
-            icon: 'fa-' + item.Icon,
+            icon: 'fa fa-' + item.Icon,
             disabled: ((item.Action || '').toLowerCase() == 'add') ? false : (this.selectedRow == null),
         };
         i.params = item.Params;
@@ -205,7 +205,7 @@ export class AttributesTile implements OnInit {
                 let k = new MenuItemParams();
                 k.action = j.Action;
                 k.menuItem = {
-                    icon: 'fa-' + j.Icon,
+                    icon: 'fa fa-' + j.Icon,
                     label: j.Title
                 };
                 k.params = j.Params;
