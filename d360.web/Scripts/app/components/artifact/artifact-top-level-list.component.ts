@@ -35,9 +35,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 			                            <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
 			                            {{item.Name}}
 		                            </td>
-                                    <td>
-                                        {{item.Description}}
-                                    </td>
+                                    <td [innerHtml]="item.Description"></td>
                                     <td style="overflow: auto; padding-left: 15px; text-align: center">
                                         {{item.kount}}
                                     </td>
