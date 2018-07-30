@@ -104,10 +104,17 @@ where   A.Type = 'ArtifactType'
 
             var type = Company.GetById<ArtifactType>(id);
 
-            sql = $"select * from ({sql}) A where not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and AssetID = A.ID)";
-
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: fields);
+            sql = $"select * from ({sql}) A ";
             
+            var filterSql = applyFilteringSuffixBindRaw(Request, dbArgs, fields:fields);
+
+            sql = sql + filterSql;
+
+            if (string.IsNullOrEmpty(filterSql))
+                sql += $" where not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and AssetID = A.ID)";
+            else
+                sql += $" and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and AssetID = A.ID)";
+
             if (string.IsNullOrEmpty(sortDataField))
             {
                 var sortSql = "";
