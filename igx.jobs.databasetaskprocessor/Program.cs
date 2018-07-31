@@ -481,7 +481,7 @@ from    [queue].[Task] T
                                             }
                                             catch (Exception iex)
                                             {
-                                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                                                CoreFunction.AITrackException(functionName, iex, c.CompanyID);
                                             }
                                         }
 

@@ -1046,7 +1046,7 @@ namespace d360.web.Controllers
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception )
                 {
 
                 }
@@ -2187,7 +2187,10 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        /// <param name="p">ParentID</param>
+       /// <summary>
+       /// 
+       /// </summary>
+       /// <returns></returns>
         [Route("AttributeTypeCategory_AddFields")]
         public JsonResult AttributeTypeCategory_AddFields()
         {
@@ -2407,7 +2410,13 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="at">AttributeTypeID</param>
+        /// <param name="ot"></param>
+        /// <param name="oid"></param>
+        /// <returns></returns>
         [Route("AttributeTypeRelation_EditFields"), NonNullableParameters]
         public JsonResult AttributeTypeRelation_EditFields(int at, string ot, int oid)
         {
@@ -4744,8 +4753,11 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        /// <param name="fat">FusionTypeID</param>
-        /// <param name="p">ParentID</param>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ft">FusionTypeID</param>
+        /// <returns></returns>
         [Route("Fusion_AddFields"), NonNullableParameters]
         public JsonResult Fusion_AddFields(int ft)
         {
@@ -12798,7 +12810,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="id">PolicyTypeID</param>
+        /// <param name="level">Level</param>
+        /// <returns></returns>
         [Route("PolicyTypeLevel_DeleteFields"), NonNullableParameters]
         public JsonResult PolicyTypeLevel_DeleteFields(int id, int level)
         {
@@ -12813,7 +12830,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="id">PolicyTypeID</param>
+        /// <param name="level">Level</param>
+        /// <returns></returns>
         [Route("PolicyTypeLevel_EditFields"), NonNullableParameters]
         public JsonResult PolicyTypeLevel_EditFields(int id, int level)
         {
@@ -14335,9 +14357,9 @@ order by TP.TextPath";
 
         private static readonly string pbiUsername = ConfigurationManager.AppSettings["pbiUsername"];
         private static readonly string pbiPassword = ConfigurationManager.AppSettings["pbiPassword"];
-        private static readonly string pbiAuthorityUrl = "https://login.windows.net/common/oauth2/authorize/";
-        private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
-        private static readonly string pbiUrl = "https://api.powerbi.com";
+      //  private static readonly string pbiAuthorityUrl = "https://login.windows.net/common/oauth2/authorize/";
+      //  private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
+      //  private static readonly string pbiUrl = "https://api.powerbi.com";
 
         [HttpDelete, Route("DeleteReport")]
         public async Task<JsonResult> DeleteReport(FormCollection form)
@@ -19344,7 +19366,12 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="id">TaxonomyTypeID</param>
+        /// <param name="level">Level</param>
+        /// <returns></returns>
         [Route("TaxonomyTypeLevel_DeleteFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeLevel_DeleteFields(int id, int level)
         {
@@ -19359,7 +19386,12 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="id">TaxonomyTypeID</param>
+        /// <param name="level">Level</param>
+        /// <returns></returns>
         [Route("TaxonomyTypeLevel_EditFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeLevel_EditFields(int id, int level)
         {

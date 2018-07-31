@@ -226,13 +226,14 @@ order by wi.StartedOn desc";
 
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }
-        
+
+
         /// <summary>
         /// Gets the status of a given workflow, containing all steps executed as well as assignments.
         /// </summary>
         /// <param name="id">The ID of the workflow record to retrieve status for.</param>
+        /// <param name="version">Version</param>
         /// <returns></returns>
-        
         [Route("diagram/{id:int}")]
         public WorkflowDiagramModel GetWorkflowDiagram(int id, int? version = null)
         {
@@ -1616,7 +1617,7 @@ order by wi.StartedOn desc";
                     }
                 }
             }
-             catch (Exception ex)
+             catch (Exception )
             {
 
             }

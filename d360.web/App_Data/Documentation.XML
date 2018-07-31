@@ -2095,6 +2095,7 @@
             Gets the status of a given workflow, containing all steps executed as well as assignments.
             </summary>
             <param name="id">The ID of the workflow record to retrieve status for.</param>
+            <param name="version">Version</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.Services.WorkflowController.MapWorkflowConditions(System.String,System.Collections.Generic.Dictionary{System.Int32,System.Int32})">
@@ -2537,7 +2538,10 @@
             <param name="id">AttributeTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.AttributeTypeCategory_AddFields">
-            <param name="p">ParentID</param>
+            <summary>
+            
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.AttributeTypeCategory_DeleteFields(System.Int32)">
             <param name="id">AttributeTypeCategoryID</param>
@@ -2554,7 +2558,13 @@
             <param name="oid">ObjectID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.AttributeTypeRelation_EditFields(System.Int32,System.String,System.Int32)">
+            <summary>
+            
+            </summary>
             <param name="at">AttributeTypeID</param>
+            <param name="ot"></param>
+            <param name="oid"></param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.DeleteAttributeTypeRelationWithUri(System.Int32,System.String,System.Int32)">
             <summary>
@@ -2626,8 +2636,11 @@
             <param name="id">ID of the object</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Fusion_AddFields(System.Int32)">
-            <param name="fat">FusionTypeID</param>
-            <param name="p">ParentID</param>
+            <summary>
+            
+            </summary>
+            <param name="ft">FusionTypeID</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Fusion_DeleteFields(System.Int32)">
             <param name="id">FusionAttributeTypeID</param>
@@ -2758,10 +2771,20 @@
             <param name="id">PolicyID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.PolicyTypeLevel_DeleteFields(System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
             <param name="id">PolicyTypeID</param>
+            <param name="level">Level</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.PolicyTypeLevel_EditFields(System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
             <param name="id">PolicyTypeID</param>
+            <param name="level">Level</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Predicate_DeleteFields(System.Int32)">
             <param name="id">PredicateID</param>
@@ -2875,10 +2898,20 @@
             <param name="id">TaxonomyTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_DeleteFields(System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
             <param name="id">TaxonomyTypeID</param>
+            <param name="level">Level</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_EditFields(System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
             <param name="id">TaxonomyTypeID</param>
+            <param name="level">Level</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FieldsController._FieldTypesByObjectFull(d360.core.SystemObjects,System.Int32)">
             <summary>

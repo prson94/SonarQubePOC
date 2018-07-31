@@ -76,7 +76,7 @@ namespace d360.web
                         else
                             contractCount = 0;
                     }
-                    catch (Exception ex)
+                    catch (Exception )
                     {
                         contractCount = 0;
                     }

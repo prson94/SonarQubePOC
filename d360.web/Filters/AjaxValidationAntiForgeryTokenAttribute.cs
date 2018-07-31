@@ -21,7 +21,7 @@ namespace d360.web.Filters
                     AntiForgery.Validate();
                 }
             }
-            catch (HttpAntiForgeryException e)
+            catch (HttpAntiForgeryException )
             {
                 throw new HttpAntiForgeryException("Anti forgery token not found");
             }

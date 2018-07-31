@@ -670,7 +670,7 @@ namespace d360.web.Controllers
                 }
             }
             
-            return View("Register", model);
+            return await Task.Run(()=>View("Register", model));
         }
 
         private async Task<InvitedUserResult> registerAzureActiveDirectoryGuest(string email, string firstName, string lastName, string title, string url)
@@ -831,12 +831,12 @@ namespace d360.web.Controllers
 
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception )
                         {
                             ModelState.AddModelError("Invalid", "This email does not look valid.");
                             return View(model);
                         }
-                        break;
+                        
                     #endregion
                     case RegisterStep.ADRegistration:
                                                 
@@ -1062,12 +1062,12 @@ namespace d360.web.Controllers
                                 return View(model);
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception )
                         {
                             ModelState.AddModelError("Invalid", "This email does not look valid.");
                             return View(model);
                         }
-                        break;
+                        
                     #endregion
                     case RegisterStep.ADTermsOfUse:
                         try
@@ -1204,7 +1204,7 @@ namespace d360.web.Controllers
                                 return View(model);
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception )
                         {
                             ModelState.AddModelError("Invalid", "This email does not look valid.");
                             return View(model);
@@ -1319,12 +1319,12 @@ namespace d360.web.Controllers
                                 return View(model);
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception )
                         {
                             ModelState.AddModelError("Invalid", "This email does not look valid.");
                             return View(model);
                         }
-                        break;
+                        
                     #endregion
                     case RegisterStep.TermsOfUseValidated:
                         #region

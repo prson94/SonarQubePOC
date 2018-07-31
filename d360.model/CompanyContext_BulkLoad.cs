@@ -269,7 +269,7 @@ order by	ColumnIndex", new { id });
                         bulkCopy.WriteToServer(table);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception) 
                 {
 
                 }

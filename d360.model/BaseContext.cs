@@ -69,7 +69,7 @@ namespace d360.model
 
         public string CompanyConnectionString { get; set; }
 
-        internal ISecurityContextProvider Context;
+       // internal ISecurityContextProvider Context;
         internal ICachingProvider Caching;
 
         public ObjectContext ObjectContext

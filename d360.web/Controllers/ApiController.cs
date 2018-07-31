@@ -2027,7 +2027,7 @@ from    [Lookup] I
 
                 results = Company.Query<dynamic>(sql);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }
@@ -6351,7 +6351,7 @@ where    A.RuleID = @id", new { id });
                                         html += (string.IsNullOrEmpty(html) ? t : " or " + t);
                                     }
                                 }
-                                catch (Exception ex)
+                                catch (Exception )
                                 {
 
                                 }

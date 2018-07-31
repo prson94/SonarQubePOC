@@ -194,7 +194,7 @@ namespace d360.model
 
                     trans.Commit();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     trans.Rollback();
                     //throw;

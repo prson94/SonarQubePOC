@@ -678,7 +678,7 @@ where	ID = @id", new { id = loadId }, transaction: trans);
 
                     trans.Commit();
                 }
-                catch (Exception ex)
+                catch 
                 {
                     trans.Rollback();
                     throw;
@@ -905,7 +905,7 @@ where	T.Success = 1", transaction: trans);
 
                     trans.Commit();
                 }
-                catch (Exception ex)
+                catch 
                 {
                     trans.Rollback();
                     throw;
@@ -1048,7 +1048,7 @@ where	ID = @loadId", new { loadId }, transaction: trans);
 
                     trans.Commit();
                 }
-                catch (Exception ex)
+                catch 
                 {
                     trans.Rollback();
                     throw;

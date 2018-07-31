@@ -140,7 +140,7 @@ namespace igx.jobs.eaglemessagestreamprocessor
             {
                 lastModified = storageProvider.GetFileLastModifiedDate(constants.AZURE_CLOUD_FUSION_CONTAINER, azureFilePath);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //CoreFunction.AITrackException(functionName, new ApplicationException($"ERROR WHILE LOADING LAST MODIFIED INFO.", ex), companyId: companyID);
                 return;

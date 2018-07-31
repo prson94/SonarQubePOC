@@ -97,7 +97,7 @@ namespace d360.web
                 DependencyResolver.SetResolver(new Autofac.Integration.Mvc.AutofacDependencyResolver(container));
                 GlobalConfiguration.Configuration.DependencyResolver = new Autofac.Integration.WebApi.AutofacWebApiDependencyResolver(container);
             }
-            catch (Exception ex)
+            catch (Exception )
             {
             }
 
