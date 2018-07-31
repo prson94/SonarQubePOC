@@ -523,7 +523,7 @@ OPTION (RECOMPILE)";
                     //valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})"; 
                     break;
                 case "CONTAINS":
-                    dbArgs.Add(bind, $"{wildcardValue(value)}");
+                    dbArgs.Add(bind, $"%{wildcardValue(value)}%");
                     valueColumnQuery = $"{fieldName} like @{bind}";
                     break;
                 case "NOT_EQUAL":
