@@ -69,10 +69,10 @@ namespace d360.web.Controllers.Services
         /// <param name="otid">The Object Type ID of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
         [HttpPost, Route("{ot}/{otid:int}/bulk")]
-        public async Task<HttpResponseMessage> PostBulkAssetsAsync(SystemObjects ot, int otid)
+        public async Task<IHttpActionResult> PostBulkAssetsAsync(SystemObjects ot, int otid)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update assets of this type.");
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update assets of this type.")));
 
             var prefix = "Assets.PostBulkAssetsAsync => ";
             var errorMessage = "";
@@ -97,21 +97,21 @@ namespace d360.web.Controllers.Services
                 var assetType = Company.Filter<AssetType>(i => i.Object == sType && i.ObjectID == otid).SingleOrDefault();
 
                 if (assetType == null)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with Object {sType} and ObjectID {otid} could not be found.");
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with Object {sType} and ObjectID {otid} could not be found.")));
 
                 var import = readRequestJsonContent<BulkAssetImport>(Request).Result;
                 //var import = JsonConvert.DeserializeObject<BulkAssetImport>(json);
 
                 var results = (Company.Database.Connection as SqlConnection).BulkAssetsImport(Company.CurrentResourceID, ot, otid, import);
 
-                return Request.CreateResponse(HttpStatusCode.OK, results);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage);
+               return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
             }
             //finally
             //{
@@ -124,10 +124,10 @@ namespace d360.web.Controllers.Services
         /// </summary>
         /// <returns>An HTTP status code and message.</returns>
         [HttpPost, Route("relationships/bulk")]
-        public async Task<HttpResponseMessage> PostBulkAssetRelationshipsAsync()
+        public async Task<IHttpActionResult> PostBulkAssetRelationshipsAsync()
         {
             if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships via bulk asset manager.");
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships via bulk asset manager.")));
 
             var prefix = "Assets.PostBulkAssetRelationshipsAsync => ";
             var errorMessage = "";
@@ -136,14 +136,13 @@ namespace d360.web.Controllers.Services
             {
                 var import = readRequestJsonContent<List<RelationshipImportRequest>>(Request).Result;
                 var retResults = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(Company.CurrentResourceID, import);
-                return Request.CreateResponse(HttpStatusCode.OK, retResults);
+               return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, retResults)));
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
             }
         }
 
@@ -152,10 +151,10 @@ namespace d360.web.Controllers.Services
         /// </summary>
         /// <returns>An HTTP status code and message.</returns>
         [HttpPost, Route("ownership/bulk")]
-        public async Task<HttpResponseMessage> PostBulkAssetOwnersAsync()
+        public async Task<IHttpActionResult> PostBulkAssetOwnersAsync()
         {
             if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update ownership via bulk asset manager.");
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update ownership via bulk asset manager.")));
 
             var prefix = "Assets.PostBulkAssetOwnersAsync => ";
             var errorMessage = "";
@@ -164,14 +163,14 @@ namespace d360.web.Controllers.Services
             {
                 var import = readRequestJsonContent<BulkOwnerImport>(Request).Result;
                 var retResults = (Company.Database.Connection as SqlConnection).BulkOwnersImport(Company.CurrentResourceID, import);
-                return Request.CreateResponse(HttpStatusCode.OK, retResults);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, retResults)));
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage);
+              return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
             }
         }
 
