@@ -35,7 +35,8 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 			                            <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
 			                            {{item.Name}}
 		                            </td>
-                                    <td [innerHtml]="item.Description"></td>
+                                    <td *ngIf="item.Description;else other_content" [innerHtml]="item.Description"></td>
+                                    <ng-template #other_content><td>&nbsp;</td></ng-template>
                                     <td style="overflow: auto; padding-left: 15px; text-align: center">
                                         {{item.kount}}
                                     </td>
