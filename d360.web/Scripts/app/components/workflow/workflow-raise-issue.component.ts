@@ -35,7 +35,7 @@ declare var CompanySettings;
                                     <div class="FieldName">{{actionMessage}}</div>
                                     <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectCurrent()" value="current">{{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}</label></div>
                                     <div>
-                                        <label style="padding-left:20px"><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption">Other item</label>
+                                        <label style="padding-left:20px"><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption" (click)="selectOther()">Other item</label>
                                         <div *ngIf="selectedOption=='other'" style="padding-left:40px"><p-autoComplete size="100"                                                
                                                 scrollHeight="400px"
                                                 name="other"
@@ -52,11 +52,11 @@ declare var CompanySettings;
                                         </p-autoComplete></div>                                        
                                     </div>
                                 </div>       
-                                <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
+                                <div class="col s12" *ngIf="selectedObjectId != null && selectedObjectType != null">
                                     <div>&nbsp;</div>
                                     <div class="FieldName">What are you reporting?</div>                                    
                                 </div>                 
-                                <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
+                                <div class="col s12" *ngIf="selectedObjectId != null && selectedObjectType != null">
                                     <div style="padding-left:40px">
                                         <select required name="availableTypes" style="width:100%" placeholder="Choose a type" [(ngModel)]="issueType">                                            
                                               <option></option>
@@ -198,4 +198,16 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         }
     }
 
+    private selectOther() {
+        if (this.selectedOption == 'current') {
+            this.selectedOption = 'other';
+            this.issueType = null;
+            if (this.term != null && this.term.Object != null && this.term.ObjectID != null) {
+                this.selectItem();
+            } else {
+                this.selectedObjectId = null;
+                this.selectedObjectType = null;
+            }
+        }
+    }
 }
