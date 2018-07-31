@@ -14,9 +14,7 @@ Your Api Credentials
 </header>
 <div *ngIf="isLoading">
 </div>
-<div *ngIf="!isLoading">
-    <div class="row">
-        <div class="col s5">
+<div *ngIf="!isLoading">    
             <div class="row">
                 <div class="col s12">
                     <h4>CRUD API</h4>
@@ -37,33 +35,7 @@ Your Api Credentials
                         <input pInput type="text" [value]="resource.PrivateKey" readonly style="width: 100%" />
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col s2" style="margin-top: 50px; text-align: center;">
-            <h4>
-                OR
-            </h4>
-        </div>
-        <div class="col s5">
-            <div class="row">
-                <div class="col s12">
-                    <h4>READ-ONLY API</h4>
-                    <div class="form-instructions">
-                        Use this token for read-only purposes, such as pulling reporting endpoints into Excel PowerQuery or other reporting platforms that support JSON endpoints.
-                        Append this value to any reporting endpoint.  <br /> For example: [MY REPORTING ENDPOINT]<b>?key=</b>THE_KEY_BELOW
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <div>
-                        <div class="FieldName">Api Access Token</div>
-                        <input pInput type="text" [value]="resource.Token" readonly style="width: 100%" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+            </div>    
 </div>
 `,
     providers: [ResourcesService]
