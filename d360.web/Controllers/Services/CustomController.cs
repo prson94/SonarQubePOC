@@ -319,7 +319,7 @@ namespace d360.web.Controllers.Services
                 sql = string.Format(sql, columnSql, fieldSql);
 
                 // Get the actual results from DB.
-                var asset = Company.Query<dynamic>(sql, new { id = config.First().Endpoint.ItemNode, key }).FirstOrDefault();
+                var asset = Company.Query<dynamic>(sql, new { id = config.First().AssetType.ID, key }).FirstOrDefault();
 
                 if (asset == null)
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");

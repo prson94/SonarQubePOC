@@ -2353,6 +2353,9 @@ namespace d360.model
             foreach (var prop in members)
             {
                 var name = XmlConvert.EncodeName(prop.Key);
+                //id should only be a attribute of the root ignore the id field
+                if ((name ?? "").ToUpper() == "ID") continue;
+
                 if (prop.Value != null)
                 {
                     if (prop.Value.GetType().IsArray)
