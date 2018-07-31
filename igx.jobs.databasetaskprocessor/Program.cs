@@ -139,18 +139,18 @@ namespace igx.jobs.databasetaskprocessor
                                 var itemParentId = detail != null ? (detail.ParentID ?? 0) : 0;
 
                             //if the item 
-                            var assetSql = "select id from asset where [object] = @obj and [objectID] = @i";
+                            //var assetSql = "select id from asset where [object] = @obj and [objectID] = @i";
 
-                                long assetId = 0;
+                                long assetId = givenAssetId;
 
                                 if (detail != null)
                                 {
-                                    if (o == "Artifact")
-                                    {
-                                        var assetIDResult = companyConnection.Query<long?>(assetSql, new { @obj = new Dapper.DbString { IsAnsi = true, Value = o, IsFixedLength = true, Length = 20 }, i = oid }).FirstOrDefault();
-                                        if (assetIDResult.HasValue)
-                                            assetId = assetIDResult.Value;
-                                    }
+                                    //if (o == "Artifact")
+                                    //{
+                                    //    var assetIDResult = companyConnection.Query<long?>(assetSql, new { @obj = new Dapper.DbString { IsAnsi = true, Value = o, IsFixedLength = true, Length = 20 }, i = oid }).FirstOrDefault();
+                                    //    if (assetIDResult.HasValue)
+                                    //        assetId = assetIDResult.Value;
+                                    //}
 
                                     if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
                                     else fields.Add("Name", detail.Name);
@@ -292,7 +292,7 @@ from    [queue].[Task] T
                                             {
                                                 case "Add":
                                                 #region
-                                                addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom);
+                                                addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom, q.AssetID);
 
                                                     resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
                                                     break;
@@ -459,7 +459,7 @@ from    [queue].[Task] T
                                             #endregion
                                             case "Update":
                                                 #region
-                                                addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom);
+                                                addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom, q.AssetID);
 
                                                     if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
                                                         resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
@@ -538,7 +538,7 @@ from    [queue].[Task] T
             }
         }
 
-        private static void addAuditEntry(SqlConnection companyConnection, string @object, int objectID, string oper, string custom)
+        private static void addAuditEntry(SqlConnection companyConnection, string @object, int objectID, string oper, string custom, long assetID)
         {
             if (!string.IsNullOrEmpty(custom))
             {
