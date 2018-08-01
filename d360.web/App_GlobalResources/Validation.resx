@@ -193,6 +193,6 @@
     <value>(?=^.{7,25}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*</value>
   </data>
   <data name="Password_Requirements" xml:space="preserve">
-    <value>be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number; at least 1 special character</value>
+    <value>be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number</value>
   </data>
 </root>

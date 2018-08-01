@@ -214,7 +214,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number; at least 1 special character.
+        ///   Looks up a localized string similar to be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number.
         /// </summary>
         public static string Password_Requirements {
             get {
