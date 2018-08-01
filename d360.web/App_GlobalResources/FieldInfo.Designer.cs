@@ -79,7 +79,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Asset ID is the unique identifier for this item across Data3Sixty..
+        ///   Looks up a localized string similar to The Asset ID is the unique identifier for this asset across all Data3Sixty assets..
         /// </summary>
         public static string AssetId_Description {
             get {
@@ -264,6 +264,24 @@ namespace Resources {
         public static string FusionPromotionUnder_ToolTip {
             get {
                 return ResourceManager.GetString("FusionPromotionUnder_ToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The GUID is the unique identifier for this item across all of Data3Sixty..
+        /// </summary>
+        public static string Guid_Description {
+            get {
+                return ResourceManager.GetString("Guid_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to GUID.
+        /// </summary>
+        public static string Guid_Name {
+            get {
+                return ResourceManager.GetString("Guid_Name", resourceCulture);
             }
         }
         

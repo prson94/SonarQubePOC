@@ -4979,12 +4979,17 @@ where    A.RuleID = @id", new { id });
                         if (asset != null) {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 1,
+                                columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
-                            }
+                            },
+                                SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.Guid_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.Guid_Description, Value = asset.UID.ToString(), DataType = "string" }
+                            },
                             });
+
                         }
 
                         if (artifact.UpdatedOn.HasValue)
@@ -5644,10 +5649,14 @@ where    A.RuleID = @id", new { id });
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 1,
+                                columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+                            },
+                                SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.Guid_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.Guid_Description, Value = asset.UID.ToString(), DataType = "string" }
                             }
                             });
                         }
@@ -5699,10 +5708,14 @@ where    A.RuleID = @id", new { id });
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 1,
+                                columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+                            },
+                                SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.Guid_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.Guid_Description, Value = asset.UID.ToString(), DataType = "string" }
                             }
                             });
                         }
@@ -6487,6 +6500,7 @@ where    A.RuleID = @id", new { id });
                     #region Fields
                     var taxonomy = Company.Query<dynamic>(@"
 select	A.ID as AssetID,
+        A.UID as UID,
 		A.ObjectID,
 		T.ObjectID as TypeID,
 		P.TextPath,
@@ -6533,13 +6547,22 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 2,
+                            columns = 3,
                             FirstColumnFields = new List<ReadOnlyField> {
                                 new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = $"{taxonomy.AssetID}", DataType = "string" }
                             },
-                            SecondColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = "ID", FieldName = "TaxonomyID", Value = $"{taxonomy.ID}" }
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.Guid_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.Guid_Description, Value = taxonomy.UID.ToString(), DataType = "string" }
                             }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField { Name = "ID", FieldName = "TaxonomyID", Value = $"{taxonomy.ID}" }
+                            },
                         });
                     }
                     taxonomy = null;

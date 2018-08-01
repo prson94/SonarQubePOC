@@ -1,5 +1,6 @@
 ﻿using d360.core.entities.Contracts;
 using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -24,6 +25,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string SourceID { get; set; }
+
+        [DataMember]
+        public Guid UID { get; set; }
 
         [IgnoreDataMember, ReadOnly(true)]
         public string KeyHash { get; set; }

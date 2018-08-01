@@ -642,7 +642,20 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     }
                 }
 
-                return Json(new { ShowTooltip = show, AssetID = (det != null ? det.AssetID : -1), DisplayName = dispName, TypeName = typeName, Url = ((det != null && det.Url !=null) ? $"/{det.Url}" : ""), Levels=levels, FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
+                return Json(
+                    new
+                    {
+                        ShowTooltip = show,
+                        AssetID = (det != null ? det.AssetID : -1),
+                        UID = (det != null ? det.UID.ToString() : null),
+                        DisplayName = dispName,
+                        TypeName = typeName,
+                        Url = ((det != null && det.Url != null) ? $"/{det.Url}" : ""),
+                        Levels = levels,
+                        FieldValues = res,
+                        Description = desc
+                    },
+                    JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {

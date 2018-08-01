@@ -124,7 +124,7 @@
     <value>API Name</value>
   </data>
   <data name="AssetId_Description" xml:space="preserve">
-    <value>The Asset ID is the unique identifier for this item across Data3Sixty.</value>
+    <value>The Asset ID is the unique identifier for this asset across all Data3Sixty assets.</value>
   </data>
   <data name="AssetId_Name" xml:space="preserve">
     <value>Asset ID</value>
@@ -185,6 +185,12 @@
   </data>
   <data name="FusionPromotionUnder_ToolTip" xml:space="preserve">
     <value>Please select a parent for the item since the selected Promote To value has multiple levels.</value>
+  </data>
+  <data name="Guid_Description" xml:space="preserve">
+    <value>The GUID is the unique identifier for this item across all of Data3Sixty.</value>
+  </data>
+  <data name="Guid_Name" xml:space="preserve">
+    <value>GUID</value>
   </data>
   <data name="ID_Name" xml:space="preserve">
     <value>ID</value>

@@ -673,7 +673,7 @@ order by I.ID, QT.Name", new { id }).ToList();
                                     CreatedBy = Company.CurrentResourceID,
                                     UpdatedBy = Company.CurrentResourceID,
                                     CreatedOn = DateTime.UtcNow,
-                                    UpdatedOn = DateTime.UtcNow
+                                    UpdatedOn = null //ensures the rule processor picks this up at least once
                                 });
                             });
 
@@ -832,7 +832,7 @@ order by I.ID, QT.Name", new { id = implementationID }).ToList();
                                     CreatedBy = Company.CurrentResourceID,
                                     UpdatedBy = Company.CurrentResourceID,
                                     CreatedOn = DateTime.UtcNow,
-                                    UpdatedOn = DateTime.UtcNow
+                                    UpdatedOn = null //ensures the rule processor picks this up at least once
                                 });
                             });
 

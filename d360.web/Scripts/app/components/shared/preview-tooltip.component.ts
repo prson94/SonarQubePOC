@@ -22,6 +22,7 @@ import { TooltipSingletonService } from '../../services/tooltip-singleton.servic
                         </div> 
                         <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
                         <div *ngIf="data?.AssetID && data?.AssetID >0"><b>Asset ID</b>: <span [innerHtml]="data.AssetID"></span></div>
+                        <div *ngIf="data?.UID != null"><b>GUID</b>: <span [innerHtml]="data.UID"></span></div>
                         <div *ngFor="let field of data?.FieldValues"><span *ngIf="field.Value"><b>{{field.Name}}</b>: <span [innerHtml]="field.Value"></span></span></div>                                            
                     </div>
                 </span>                

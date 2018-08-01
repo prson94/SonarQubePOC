@@ -83,7 +83,7 @@ outer apply (
 			from	AssetDetail O
 					where O.[Object] = 'Taxonomy' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'TaxonomyType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
 			) R_T
-where coalesce(Q.UpdatedOn, dateadd(minute, -5, getutcdate())) >= dateadd(minute, -5, getutcdate())"
+where coalesce(Q.UpdatedOn, dateadd(minute, -10, getutcdate())) >= dateadd(minute, -10, getutcdate())"
 , commandTimeout: _defaultQueryCommandTimeout);
 
                         #endregion

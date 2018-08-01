@@ -404,7 +404,7 @@
         </member>
         <member name="P:Resources.FieldInfo.AssetId_Description">
             <summary>
-              Looks up a localized string similar to The Asset ID is the unique identifier for this item across Data3Sixty..
+              Looks up a localized string similar to The Asset ID is the unique identifier for this asset across all Data3Sixty assets..
             </summary>
         </member>
         <member name="P:Resources.FieldInfo.AssetId_Name">
@@ -505,6 +505,16 @@
         <member name="P:Resources.FieldInfo.FusionPromotionUnder_ToolTip">
             <summary>
               Looks up a localized string similar to Please select a parent for the item since the selected Promote To value has multiple levels..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Guid_Description">
+            <summary>
+              Looks up a localized string similar to The GUID is the unique identifier for this item across all of Data3Sixty..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Guid_Name">
+            <summary>
+              Looks up a localized string similar to GUID.
             </summary>
         </member>
         <member name="P:Resources.FieldInfo.ID_Name">
