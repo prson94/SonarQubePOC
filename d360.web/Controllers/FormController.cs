@@ -15281,22 +15281,46 @@ order by TP.TextPath";
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                var existing = Company.GetById<ResponsibilityType>(model.ID);
+                var existing = Company.GetById<ResponsibilityType>(model.ID, i => i.ResponsibilityTypeRelations);
                 if (existing == null) throw new NotFoundException("ownership type");
 
                 existing.Name = model.Name;
                 existing.Description = model.Description;
                 
-                Company.Update(existing);
-
-                Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == model.ID);
-
-                foreach(var r in model.ResponsibilityTypeRelations)
+                // First, do the ADDs.
+                foreach (var nr in model.ResponsibilityTypeRelations)
                 {
-                    Company.Set<ResponsibilityTypeRelation>().Add(r);
+                    if (!existing.ResponsibilityTypeRelations.Any(i => i.ObjectType == nr.ObjectType && i.ObjectID == nr.ObjectID))
+                    {
+                        existing.ResponsibilityTypeRelations.Add(new ResponsibilityTypeRelation { ObjectType = nr.ObjectType, ObjectID = nr.ObjectID, ResponsibilityTypeID = existing.ID, PermissionsBitMask = 0 });
+                    }
                 }
 
-                Company.SaveChanges();
+                // Last, do the DELETEs.
+                var deletes = new List<ResponsibilityTypeRelation>();
+                foreach (var dr in existing.ResponsibilityTypeRelations)
+                {
+                    if (!model.ResponsibilityTypeRelations.Any(i => i.ObjectType == dr.ObjectType && i.ObjectID == dr.ObjectID))
+                    {
+                        deletes.Add(dr);
+                    }
+                }
+                foreach (var dr in deletes)
+                {
+                    existing.ResponsibilityTypeRelations.Remove(dr);
+                }
+
+                Company.Update(existing);
+
+
+                //Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == model.ID);
+
+                //foreach (var r in model.ResponsibilityTypeRelations)
+                //{
+                //    Company.Set<ResponsibilityTypeRelation>().Add(r);
+                //}
+
+                //Company.SaveChanges();
 
                 return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -15831,16 +15855,27 @@ order by DN.DisplayValue");
                 existing.ApplyToType = model.ApplyToType;
                 existing.IsVisible = model.IsVisible;
 
+                var previousDefinition = existing.Definition;
                 existing.SetRawFromDefinition();
                 if (existing.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
                 {
                     throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_Filter_Value_Required);
                 }
 
+                var definitionIsDifferent = (previousDefinition != existing.Definition);
+                if (definitionIsDifferent)
+                {
+                    existing.LastRunOn = DateTime.Parse("1/1/2000");
+                }
+
                 Company.Update(existing);
 
                 // Re-process this rule.
-                (Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(existing.ID);
+                if (definitionIsDifferent)
+                {
+                    (Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(existing.ID);
+                }
+                
 
                 return jsonSuccess("Item successfully updated and processed.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }

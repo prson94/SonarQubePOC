@@ -259,6 +259,48 @@ and not exists (select 1 from assettype t where t.object = nav.object and t.obje
 GO
 --------------------------------------------------------
 
+-- IGC additional columns ------------------------------
+alter table integration.SynchedAssetType add FieldPageSize int null
+alter table integration.SynchedAssetType add RelationshipPageSize int null
+alter table integration.SynchedAssetType add OwnershipPageSize int null
+GO
+
+alter table integration.ExecutionAsset add [RawRelationships] nvarchar(max) null
+alter table integration.ExecutionAsset add [RawResponsibilitites] nvarchar(max) null
+alter table integration.ExecutionAssetType add [RawDefinition] nvarchar(max) null
+alter table integration.ExecutionAssetType add [EnumFieldValues] nvarchar(max) null
+alter table integration.Execution add [Archived] bit CONSTRAINT [DF_IntegrationExecution_Archived]  DEFAULT ((0)) not null
+GO
+--------------------------------------------------------
+
+CREATE TABLE [dbo].[AssetCrossReference](
+	[uid] [varchar](250) NOT NULL,
+	[DataSource] [varchar](250) NOT NULL,
+	[Type] [varchar](50) NOT NULL,
+	[ExternalID] [varchar](250) NOT NULL,
+ CONSTRAINT [PK_AssetCrossReference] PRIMARY KEY CLUSTERED 
+(
+	[DataSource] ASC,
+	[Type] ASC,
+	[ExternalID] ASC,
+	[uid] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE INDEX IX_AssetCrossReference_uid ON AssetCrossReference ( [uid] asc )
+GO
+
+CREATE INDEX IX_AssetCrossReference_uid_DataSource ON AssetCrossReference ( [uid] asc, DataSource ASC )
+GO
+
+DROP TABLE [integration].[ExecutionRelationItem]
+GO
+DROP TABLE [integration].[ExecutionRoleItem]
+GO
+
+--------------------------------------------------------
+
 -- GOV-4967 Allow renaming of item node ----------------
 alter table api.[Endpoint] add ItemNode varchar(50) null;
 GO

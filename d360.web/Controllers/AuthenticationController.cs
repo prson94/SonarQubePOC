@@ -310,7 +310,7 @@ namespace d360.web.Controllers
                             Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
                             if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
                             {
-                                Company.Add(new GlobalReportingResource { DateLastLoggedIn = resource.DateLastLoggedIn, Email = resource.Email, FirstName = resource.FirstName, IsAdministrator = false, LastName = resource.LastName, ResourceID = resource.ID, Status = resource.Status });
+                                Company.Add(new GlobalReportingResource { DateLastLoggedIn = resource.DateLastLoggedIn, Email = resource.Email, FirstName = resource.FirstName, IsAdministrator = false, LastName = resource.LastName, ResourceID = resource.ID, Status = resource.Status, CreatedOn = DateTime.UtcNow });
                             }
 
                             Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });                            
@@ -326,7 +326,7 @@ namespace d360.web.Controllers
                                 Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
                                 if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
                                 {
-                                    Company.Add(new GlobalReportingResource { DateLastLoggedIn = resource.DateLastLoggedIn, Email = resource.Email, FirstName = resource.FirstName, IsAdministrator = false, LastName = resource.LastName, ResourceID = resource.ID, Status = resource.Status });
+                                    Company.Add(new GlobalReportingResource { DateLastLoggedIn = resource.DateLastLoggedIn, Email = resource.Email, FirstName = resource.FirstName, IsAdministrator = false, LastName = resource.LastName, ResourceID = resource.ID, Status = resource.Status, CreatedOn = DateTime.UtcNow });
                                 }                                
                             }
                             else

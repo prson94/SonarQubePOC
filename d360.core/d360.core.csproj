@@ -247,7 +247,6 @@
     <Compile Include="entities\Transitive\ChildArtifactStatisticsByObject.cs" />
     <Compile Include="entities\Transitive\CriticalRelationshipsByObject.cs" />
     <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />
-    <Compile Include="entities\Transitive\RedFlagSummariesByResource.cs" />
     <Compile Include="entities\Transitive\SocialStatisticsByObject.cs" />
     <Compile Include="entities\Views\IntersectDetail.cs" />
     <Compile Include="entities\Views\IntersectTypeDetail.cs" />
@@ -377,6 +376,7 @@
     <Compile Include="exceptions\UnauthorizedException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="queue\IntegrationQueueModel.cs" />
     <Compile Include="queue\EventInfo.cs" />
     <Compile Include="queue\BulkLoadInfo.cs" />
     <Compile Include="queue\IndexObjectModel.cs" />

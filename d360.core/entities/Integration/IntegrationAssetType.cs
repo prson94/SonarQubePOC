@@ -46,7 +46,13 @@ namespace d360.core.entities
         public bool TriggerTopicMessage { get; set; }
 
         [DataMember]
-        public int? PageSize { get; set; }
+        public int? FieldPageSize { get; set; }
+
+        [DataMember]
+        public int? RelationshipPageSize { get; set; }
+
+        [DataMember]
+        public int? OwnershipPageSize { get; set; }
 
         [DataMember]
         public int? RefreshIntervalOverride { get; set; }

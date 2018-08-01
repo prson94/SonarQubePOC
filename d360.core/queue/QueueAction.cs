@@ -8,6 +8,7 @@
         AddVersion = 4,
         BulkLoad = 5,
         Cache = 6,
-        Event = 7
+        Event = 7,
+        Integration = 8
     }
 }

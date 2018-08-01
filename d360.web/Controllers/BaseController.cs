@@ -188,6 +188,24 @@ namespace d360.web.Controllers
             return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
         }
 
+        #region Error Handling Helper
+
+        [System.Runtime.Serialization.DataContract(Name = "Error")]
+        public class GenericHttpError
+        {
+            public string Message { get; set; }
+            public HttpStatusCode Code { get; set; }
+        }
+
+        internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string message)
+        {
+            var acceptHeaders = Request.Headers.Accept;
+            var asJson = !acceptHeaders.Any(i => i.MediaType == "application/xml");
+            return Request.CreateResponse<GenericHttpError>(status, new GenericHttpError { Code = status, Message = message }, asJson ? "application/json" : "application/xml");
+        }
+
+        #endregion
+
         internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {
             var telemetry = new TelemetryClient();

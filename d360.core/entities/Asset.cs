@@ -14,6 +14,9 @@ namespace d360.core.entities
         [DataMember]
         public int AssetTypeID { get; set; }
 
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid uid { get; set; }
+
         [DataMember]
         public string Object { get; set; }
 

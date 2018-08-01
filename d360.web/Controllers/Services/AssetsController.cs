@@ -1,25 +1,18 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.extensions;
 using d360.model;
-using d360.core;
-using Dapper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http;
-using d360.core.exceptions;
-using d360.core.enums;
-using System.Collections;
-using System.Text;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using Newtonsoft.Json;
-using System.Data.SqlClient;
-using d360.extensions;
-using d360.core.queue;
-using d360.core.enums.Workflow;
+using System.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
@@ -38,6 +31,95 @@ namespace d360.web.Controllers.Services
         {
             QueueSource = queueSource;
         }
+
+        #endregion
+
+        #region Type Endpoints
+
+        [HttpGet, Route("classes")]
+        public async Task<HttpResponseMessage> GetAssetTypeClassesAsync()
+        {
+            var prefix = "Assets.GetAssetTypeClassesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var classes = AssetTypeClass.Glossary.GetAsList();
+                return Request.CreateResponse(HttpStatusCode.OK, classes);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        [HttpGet, Route("types")]
+        public async Task<HttpResponseMessage> GetAssetTypesAsync()
+        {
+            var prefix = "Assets.GetAssetTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(@"
+SELECT		A.[Name]
+			,A.[Description]
+			,A.[Class] as ClassID
+			,A.[Notes]
+			,A.[uid],
+			P.[Path]
+FROM		AssetType A
+			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+where		A.[State] = 1
+order by	P.[Path]
+");
+
+                return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        [HttpPost, Route("types")]
+        public async Task<HttpResponseMessage> AddAssetTypeAsync()
+        {
+            var prefix = "Assets.AddAssetTypeAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(@"
+SELECT		A.[Name]
+			,A.[Description]
+			,A.[Class] as ClassID
+			,A.[Notes]
+			,A.[uid],
+			P.[Path]
+FROM		AssetType A
+			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+where		A.[State] = 1
+order by	P.[Path]
+");
+
+                return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
 
         #endregion
 

@@ -34,6 +34,9 @@ namespace d360.core.entities
         [DataMember]
         public bool ApplyToType { get; set; }
 
+        [DataMember]
+        public DateTime? LastRunOn { get; set; }
+
         private string _rawDefinition = "";
         [IgnoreDataMember]
         public string Definition

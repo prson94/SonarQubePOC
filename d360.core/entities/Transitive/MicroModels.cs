@@ -101,6 +101,9 @@ namespace d360.core.entities
         [DataMember]
         public bool IsAdministrator { get; set; }
 
+        [DataMember]
+        public DateTime? CreatedOn { get; set; }
+
         [DataMember, System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public string FullName { get { return FirstName + " " + LastName; } }
     }

@@ -124,5 +124,17 @@ namespace d360.core.enums
 
             return list.OrderBy(i => i.Name).ToList();
         }
+
+        public static AssetTypeClassInfo GetInfo(this AssetTypeClass type)
+        {
+            var info = new AssetTypeClassInfo();
+
+            var member = type.GetType().GetMember(type.ToString()).Single();
+
+            info.Description = member.GetCustomAttribute<DescriptionAttribute>().Description;
+            info.Name = member.GetCustomAttribute<NameAttribute>().Name;
+            info.ID = type;
+            return info;
+        }
     }
 }

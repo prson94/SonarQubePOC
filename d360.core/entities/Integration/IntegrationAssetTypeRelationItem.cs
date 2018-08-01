@@ -23,6 +23,9 @@ namespace d360.core.entities
         [DataMember]
         public bool IsSubject { get; set; } = false;
 
+        [DataMember]
+        public bool Active { get; set; } = true;
+
         [IgnoreDataMember, ForeignKey("SynchedAssetTypeID")]
         public virtual IntegrationAssetType IntegrationAssetType { get; set; }
 

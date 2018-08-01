@@ -17,6 +17,6 @@ namespace d360.core.entities
         public int IntersectTypeID { get; set; }
 
         [IgnoreDataMember, ForeignKey("SynchedAssetTypeRelationItemID")]
-        public virtual ICollection<IntegrationAssetTypeRelationItem> IntegrationAssetTypeRelationItem { get; set; }
+        public virtual IntegrationAssetTypeRelationItem IntegrationAssetTypeRelationItem { get; set; }
     }
 }

@@ -26,15 +26,22 @@ namespace igx.jobs.resourcecache
     public class ResourceCache
     {
         const string functionName = "ResourceCache_Generate";
+#if DEBUG
+        const string timerSettings = "*/2 * * * * *";
+#else
         const string timerSettings = "0 */1 * * * *";
-        //const string timerSettings = "*/10 * * * * *";
+#endif
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
-                CoreFunction.AITrackJobStart(functionName);
+                //CoreFunction.AITrackJobStart(functionName);
+#if DEBUG
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 4).ToList();
+#else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
+#endif
 
                 var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -62,7 +69,8 @@ inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new {
 
                         #region Insert/Update Logic
 
-                        companyConnection.Execute(@"merge	reporting.Global_Resource as T
+                        companyConnection.Execute(@"
+merge	reporting.Global_Resource as T
 using	(
 		select	@ResourceID as ResourceID,
 				@FirstName as FirstName,
@@ -80,10 +88,11 @@ when	matched then
                 T.DateLastLoggedIn = S.DateLastLoggedIn,
                 T.Email = S.Email,
                 T.Status = S.Status,
-                T.IsAdministrator = S.IsAdministrator
+                T.IsAdministrator = S.IsAdministrator,
+                T.CreatedOn = case when T.CreatedOn is null then getutcdate() else T.CreatedOn end
 when	not matched by target then
-		insert (ResourceID, FirstName, LastName, DateLastLoggedIn, Email, Status, IsAdministrator)
-		values (S.ResourceID, S.FirstName, S.LastName, S.DateLastLoggedIn, S.Email, S.Status, S.IsAdministrator);",
+		insert (ResourceID, FirstName, LastName, DateLastLoggedIn, Email, Status, IsAdministrator, CreatedOn)
+		values (S.ResourceID, S.FirstName, S.LastName, S.DateLastLoggedIn, S.Email, S.Status, S.IsAdministrator, getutcdate());",
                             resources.ToArray()
                             );
 

@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -8,6 +9,9 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class AssetType : BaseCreatedAndUpdatedIntObject
     {
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid uid { get; set; }
+
         [DataMember]
         public string Name { get; set; }
 
@@ -46,5 +50,37 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("AssetTypeID")]
         public virtual ICollection<Asset> Assets { get; set; }
+    }
+
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class AssetTypeApiViewModel : BaseObject
+    {
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid uid { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+        AssetTypeClass _ClassID;
+        public AssetTypeClass ClassID {
+            get { return _ClassID; }
+            set {
+                _ClassID = value;
+                this.Class = _ClassID.GetInfo();
+            }
+        }
+
+        [DataMember]
+        public AssetTypeClassInfo Class { get; set; }
+
+        [DataMember]
+        public string Notes { get; set; }
+
+        [DataMember]
+        public string Path { get; set; }
     }
 }

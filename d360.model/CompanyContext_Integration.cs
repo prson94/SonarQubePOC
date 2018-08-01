@@ -206,7 +206,7 @@ namespace d360.model
             return retResults;
         }
 
-        public static List<AssetImportResult> BulkAssetsImport(this SqlConnection cnn, int currentResourceID, SystemObjects ot, int otid, BulkAssetImport import)
+        public static List<AssetImportResult> BulkAssetsImport(this SqlConnection cnn, int currentResourceID, SystemObjects ot, int otid, List<Dictionary<string, string>> import)
         {
             var results = new List<AssetImportResult>();
 

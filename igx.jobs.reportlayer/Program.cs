@@ -380,7 +380,9 @@ from    h as A
 
                         selectSql = @"
 select	A.ID,
-		A.AssetTypeID,
+		A.[uid],
+        A.AssetTypeID,
+        T.[uid] as AssetTypeUid,
 		A.State,
 		A.Object,
 		A.ObjectID,
