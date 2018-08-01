@@ -48,46 +48,50 @@ namespace igx.jobs.ruleresultprocessor
                         #region Resolving rule result qualifiers
 
                         company.Execute(@"
-    update	Q
-    set		Q.ResolvedObject	= coalesce(R_F.Object, R_A.Object, R_R.Object, R_T.Object),
-		    Q.ResolvedObjectID	= coalesce(R_F.ObjectID, R_A.ObjectID, R_R.ObjectID, R_T.ObjectID)
-    from	RuleResultQualifier Q
-		    inner join RuleResultQualifierType QT on QT.ID = Q.RuleResultQualifierTypeID and QT.ResolutionObject is not null and Q.ResolvedObject is null
-		    outer apply (
-					    select	top 1
-							    O.ObjectType as Object,
-							    O.ObjectID
-					    from	Field O
-							    inner join FieldType T on T.ID = O.FieldTypeID and T.ID = QT.ResolutionFieldTypeID and T.Object = QT.ResolutionObject and T.ObjectID = QT.ResolutionObjectID and O.FormattedValue = Q.Value
-					    ) R_F
-		    outer apply (
-					    select	top 1
-							    'Artifact' as Object,
-							    O.ID as ObjectID
-					    from	AssetDetail O
-							    where O.[Object] = 'Artifact' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ArtifactType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
-					    ) R_A
-		    outer apply (
-					    select	top 1
-							    'ReferenceItem' as Object,
-							    O.ID as ObjectID
-					    from	ReferenceItem O
-							    inner join ReferenceItemType T on T.ID = O.ReferenceItemTypeID and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ReferenceItemType' and T.ID = QT.ResolutionObjectID and (O.DisplayValue = Q.Value OR O.Code = Q.Value)
-					    ) R_R
-		    outer apply (
-					    select	top 1
-							    'Taxonomy' as Object,
-							    O.ID as ObjectID
-					    from	AssetDetail O
-							    where O.[Object] = 'Taxonomy' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'TaxonomyType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
-					    ) R_T", commandTimeout: _defaultQueryCommandTimeout);
+update	Q
+set		Q.ResolvedObject	= coalesce(R_F.Object, R_A.Object, R_R.Object, R_T.Object),
+	Q.ResolvedObjectID	= coalesce(R_F.ObjectID, R_A.ObjectID, R_R.ObjectID, R_T.ObjectID),
+	Q.UpdatedOn = coalesce(Q.UpdatedOn, getutcdate()),
+	Q.UpdatedBy = 0
+from	RuleResultQualifier Q
+inner join RuleResultQualifierType QT on QT.ID = Q.RuleResultQualifierTypeID and QT.ResolutionObject is not null and Q.ResolvedObject is null
+outer apply (
+			select	top 1
+					O.ObjectType as Object,
+					O.ObjectID
+			from	Field O
+					inner join FieldType T on T.ID = O.FieldTypeID and T.ID = QT.ResolutionFieldTypeID and T.Object = QT.ResolutionObject and T.ObjectID = QT.ResolutionObjectID and O.FormattedValue = Q.Value
+			) R_F
+outer apply (
+			select	top 1
+					'Artifact' as Object,
+					O.ID as ObjectID
+			from	AssetDetail O
+					where O.[Object] = 'Artifact' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ArtifactType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
+			) R_A
+outer apply (
+			select	top 1
+					'ReferenceItem' as Object,
+					O.ID as ObjectID
+			from	ReferenceItem O
+					inner join ReferenceItemType T on T.ID = O.ReferenceItemTypeID and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ReferenceItemType' and T.ID = QT.ResolutionObjectID and (O.DisplayValue = Q.Value OR O.Code = Q.Value)
+			) R_R
+outer apply (
+			select	top 1
+					'Taxonomy' as Object,
+					O.ID as ObjectID
+			from	AssetDetail O
+					where O.[Object] = 'Taxonomy' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'TaxonomyType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
+			) R_T
+where coalesce(Q.UpdatedOn, dateadd(minute, -5, getutcdate())) >= dateadd(minute, -5, getutcdate())"
+, commandTimeout: _defaultQueryCommandTimeout);
 
                         #endregion
 
                         #region Resolving rule result qualifiers
 
                         company.Execute(@"
-	    select	RuleResultID,
+        select	RuleResultID,
 			    RuleResultQualifierTypeID,
 			    ResolvedObject as Object,
 			    ResolvedObjectID as ObjectID,

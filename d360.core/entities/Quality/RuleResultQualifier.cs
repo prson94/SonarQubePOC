@@ -5,9 +5,9 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class RuleResultQualifier : BaseObject
+    public class RuleResultQualifier : BaseCreatedAndUpdatedObject
     {        
-        [DataMember, Key, Column(Order=1)]
+        [DataMember, Key, Column(Order = 1)]
         public int RuleResultID { get; set; }
 
         [DataMember, Key, Column(Order = 2)]

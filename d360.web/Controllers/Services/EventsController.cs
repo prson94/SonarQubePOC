@@ -667,7 +667,14 @@ order by I.ID, QT.Name", new { id }).ToList();
                                 if (result.RuleResultQualifiers == null)
                                     result.RuleResultQualifiers = new List<RuleResultQualifier>();
 
-                                result.RuleResultQualifiers.Add(new RuleResultQualifier { RuleResultQualifierTypeID = qt.RuleResultQualifierTypeID.Value, Value = q.Value });
+                                result.RuleResultQualifiers.Add(new RuleResultQualifier {
+                                    RuleResultQualifierTypeID = qt.RuleResultQualifierTypeID.Value,
+                                    Value = q.Value,
+                                    CreatedBy = Company.CurrentResourceID,
+                                    UpdatedBy = Company.CurrentResourceID,
+                                    CreatedOn = DateTime.UtcNow,
+                                    UpdatedOn = DateTime.UtcNow
+                                });
                             });
 
                             Company.RuleResults.Add(result);
@@ -819,7 +826,14 @@ order by I.ID, QT.Name", new { id = implementationID }).ToList();
                                 if (result.RuleResultQualifiers == null)
                                     result.RuleResultQualifiers = new List<RuleResultQualifier>();
 
-                                result.RuleResultQualifiers.Add(new RuleResultQualifier { RuleResultQualifierTypeID = qt.RuleResultQualifierTypeID.Value, Value = q.Value });
+                                result.RuleResultQualifiers.Add(new RuleResultQualifier {
+                                    RuleResultQualifierTypeID = qt.RuleResultQualifierTypeID.Value,
+                                    Value = q.Value,
+                                    CreatedBy = Company.CurrentResourceID,
+                                    UpdatedBy = Company.CurrentResourceID,
+                                    CreatedOn = DateTime.UtcNow,
+                                    UpdatedOn = DateTime.UtcNow
+                                });
                             });
 
                             Company.RuleResults.Add(result);
