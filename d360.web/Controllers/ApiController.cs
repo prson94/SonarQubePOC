@@ -4201,14 +4201,23 @@ from	ResponsibilityDetail RD
             var list = Company.Query<ResponsibilityTypeRelationViewModel>(@"
 select  R.ResponsibilityTypeID,
         O.Name as ResponsibilityTypeName,
-        D.Name as AssetTypeName, 
+        case D.Object
+		 	when 'ArtifactType' then 'Artifacts :: '
+			when 'TaxonomyType' then 'Models :: '
+			when 'PolicyType' then 'Policies :: '
+			when 'RuleType' then 'Rules :: '
+			when 'FusionAttributeType' then 'Fusion Attributes :: '
+			when 'FusionType' then 'Fusion Types :: '
+			when 'ReferenceItemType' then 'Reference Item Type :: '
+		end  + P.[Path]  as AssetTypeName, 
         D.ID as AssetTypeID,
         R.ObjectType,
         R.ObjectID,
         R.PermissionsBitMask
 from    ResponsibilityTypeRelation R 
         inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID and O.ID = @id 
-        left join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID",
+        left join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID
+        cross apply dbo.GetAssetTypeTextPathById(D.ID, ' / ') P",
             new { id }).ToList();
 
             list.ForEach(i =>
