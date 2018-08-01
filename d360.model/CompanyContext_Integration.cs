@@ -785,8 +785,7 @@ when not matched by target then
                 try
                 {
                     cnn.Execute("DROP TABLE IF EXISTS #RelationshipTable", transaction: trans);
-                    //cnn.Execute("DROP TABLE IF EXISTS #RelationshipMergeTableResult", transaction: trans);
-
+                    
                     #region Asset Bulk Copy
 
                     cnn.Execute(@"
@@ -821,16 +820,12 @@ when not matched by target then
                     assetBulkCopy.WriteToServer(relationshipTable);
 
                     #endregion
-
-                    //cnn.Execute($@"create table #RelationshipMergeTableResult (IntersectID int, ItemNumber int, [Action] nvarchar(10));", transaction: trans);
-
-                    //cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipMergeTableResult ON #RelationshipMergeTableResult ( ItemNumber ASC ) INCLUDE ( IntersectID )", transaction: trans);
-
+                                        
                     #region Merge into Intersect
 
                     cnn.Execute($@"
 insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
-    select  distinct
+    (select  distinct
             IT.ID as IntersectTypeID,
 		    S.Object as Subject,
 		    S.ObjectID as SubjectID,
@@ -848,7 +843,46 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 										    IT.Object = TT.Object and IT.ObjectID = TT.ObjectID and
 										    IT.ID = R.IntersectTypeID
             left join [Intersect] I on I.IntersectTypeID = IT.ID and I.Subject = S.Object and I.SubjectID = S.ObjectID and I.Object = T.Object and I.ObjectID = T.ObjectID
-    where   I.ID is null;
+    where   I.ID is null)
+    union
+    (select  distinct
+            IT.ID as IntersectTypeID,
+		    S.Object as Subject,
+		    S.ObjectID as SubjectID,
+		    T.Object,
+		    T.ObjectID,
+            @r, @r
+    from    #RelationshipTable R
+		    inner join AssetType S on S.Uid = R.SubjectSourceID		    
+
+		    inner join Asset T on T.SourceID = R.ObjectSourceID
+		    inner join AssetType TT on TT.ID = T.AssetTypeID
+
+		    inner join IntersectTypeDetail	IT on IT.Subject = S.Object and IT.SubjectID = 0 and 
+										    IT.Object = TT.Object and IT.ObjectID = TT.ObjectID and
+										    IT.ID = R.IntersectTypeID
+            left join [Intersect] I on I.IntersectTypeID = IT.ID and I.Subject = S.Object and I.SubjectID = S.ObjectID and I.Object = T.Object and I.ObjectID = T.ObjectID
+    where   I.ID is null)
+    union
+    (select  distinct
+            IT.ID as IntersectTypeID,
+		    S.Object as Subject,
+		    S.ObjectID as SubjectID,
+		    T.Object,
+		    T.ObjectID,
+            @r, @r
+    from    #RelationshipTable R
+		    inner join Asset S on S.SourceID = R.SubjectSourceID
+		    inner join AssetType ST on ST.ID = S.AssetTypeID
+
+		    inner join AssetType T on T.Uid = R.ObjectSourceID		    
+
+		    inner join IntersectTypeDetail	IT on IT.Subject = ST.Object and IT.SubjectID = ST.ObjectID and 
+										    IT.Object = T.Object and IT.ObjectID = 0 and
+										    IT.ID = R.IntersectTypeID
+            left join [Intersect] I on I.IntersectTypeID = IT.ID and I.Subject = S.Object and I.SubjectID = S.ObjectID and I.Object = T.Object and I.ObjectID = T.ObjectID
+    where   I.ID is null)
+;
 
     update  T
     set     T.IntersectID = I.ID,
@@ -860,7 +894,34 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                     and I.Subject = S.Object 
                     and I.SubjectID = S.ObjectID 
                     and I.Object = O.Object 
-                    and I.ObjectID = O.ObjectID;",
+                    and I.ObjectID = O.ObjectID;
+
+    update  T
+    set     T.IntersectID = I.ID,
+            T.Success = case when I.ID is null then cast(0 as bit) else cast(1 as bit) end
+    from    #RelationshipTable T
+            inner join Asset S on S.SourceID = T.SubjectSourceID
+            inner join AssetType O on O.Uid = T.ObjectSourceID
+            inner join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
+                    and I.Subject = S.Object 
+                    and I.SubjectID = S.ObjectID 
+                    and I.Object = O.Object 
+                    and I.ObjectID = O.ObjectID
+
+    update  T
+    set     T.IntersectID = I.ID,
+            T.Success = case when I.ID is null then cast(0 as bit) else cast(1 as bit) end
+    from    #RelationshipTable T
+            inner join AssetType S on S.Uid = T.SubjectSourceID
+            inner join Asset O on O.SourceID = T.ObjectSourceID
+            inner join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
+                    and I.Subject = S.Object 
+                    and I.SubjectID = S.ObjectID 
+                    and I.Object = O.Object 
+                    and I.ObjectID = O.ObjectID;
+
+
+",
                 new { @r = currentResourceID }, transaction: trans, commandTimeout: 1200);
 
                     #endregion
