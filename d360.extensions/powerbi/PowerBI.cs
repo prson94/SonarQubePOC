@@ -11,76 +11,15 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace d360.extensions.powerbi
 {
-    public static class AsymmetricKeyEncryptionHelper
+    public class DataSourceCredentials
     {
-
-        private const int SegmentLength = 85;
-        private const int EncryptedLength = 128;
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="userName"></param> the datasouce user name
-        /// <param name="password"></param> the datasource password
-        /// <param name="gatewaypublicKeyExponent"></param> gateway publicKey Exponent field, you can get it from the get gateways api response json
-        /// <param name="gatewaypublicKeyModulus"></param> gateway publicKey Modulus field, you can get it from the get gateways api response json
-        /// <returns></returns>
-        public static string EncodeCredentials(string userName, string password, string gatewaypublicKeyExponent, string gatewaypublicKeyModulus)
-        {
-            // using json serializer to handle escape characters in username and password
-            var plainText = string.Format("{{\"credentialData\":[{{\"value\":{0},\"name\":\"username\"}},{{\"value\":{1},\"name\":\"password\"}}]}}", JsonConvert.SerializeObject(userName), JsonConvert.SerializeObject(password));
-            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(EncryptedLength * 8))
-            {
-                var parameters = rsa.ExportParameters(false);
-                parameters.Exponent = Convert.FromBase64String(gatewaypublicKeyExponent);
-                parameters.Modulus = Convert.FromBase64String(gatewaypublicKeyModulus);
-                rsa.ImportParameters(parameters);
-                return Encrypt(plainText, rsa);
-            }
-        }
-
-        private static string Encrypt(string plainText, RSACryptoServiceProvider rsa)
-        {
-            byte[] plainTextArray = Encoding.UTF8.GetBytes(plainText);
-
-            // Split the message into different segments, each segment's length is 85. So the result may be 85,85,85,20.
-            bool hasIncompleteSegment = plainTextArray.Length % SegmentLength != 0;
-
-            int segmentNumber = (!hasIncompleteSegment) ? (plainTextArray.Length / SegmentLength) : ((plainTextArray.Length / SegmentLength) + 1);
-
-            byte[] encryptedData = new byte[segmentNumber * EncryptedLength];
-            int encryptedDataPosition = 0;
-
-            for (var i = 0; i < segmentNumber; i++)
-            {
-                int lengthToCopy;
-
-                if (i == segmentNumber - 1 && hasIncompleteSegment)
-                    lengthToCopy = plainTextArray.Length % SegmentLength;
-                else
-                    lengthToCopy = SegmentLength;
-
-                var segment = new byte[lengthToCopy];
-
-                Array.Copy(plainTextArray, i * SegmentLength, segment, 0, lengthToCopy);
-
-                var segmentEncryptedResult = rsa.Encrypt(segment, true);
-
-                Array.Copy(segmentEncryptedResult, 0, encryptedData, encryptedDataPosition, segmentEncryptedResult.Length);
-
-                encryptedDataPosition += segmentEncryptedResult.Length;
-            }
-
-            return Convert.ToBase64String(encryptedData);
-        }
+        public string credentialType { get; set; }
+        public BasicCredentials basicCredentials { get; set; }
     }
 
     public class PowerBI
@@ -89,7 +28,7 @@ namespace d360.extensions.powerbi
 
         private static readonly string pbiAuthorityUrl = "https://login.windows.net/common/oauth2/authorize/";
         private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
-        
+        public const string PowerBiServiceRootUrl = "https://api.powerbi.com/v1.0/myorg/";
 
 
         /// <summary>
@@ -135,22 +74,31 @@ namespace d360.extensions.powerbi
         }
 
 
-        public static async Task<PowerBIClient> CreateClient(string user, string pwd, string clientId)
+        public static async Task<PowerBIClient> CreateClient(string user, string pwd, string clientId, AuthenticationResult auth = null)
         {
-            var credential = new UserPasswordCredential(user, pwd);
-
-            // Authenticate using created credentials
-            var authenticationContext = new AuthenticationContext(pbiAuthorityUrl);
-            var authenticationResult = await authenticationContext.AcquireTokenAsync(pbiResourceUrl, clientId, credential);
-
-            if (authenticationResult == null)
+            if (auth == null)
             {
-                throw new Exception("authentication failed");
+                var credential = new UserPasswordCredential(user, pwd);
+
+                // Authenticate using created credentials
+                var authenticationContext = new AuthenticationContext(pbiAuthorityUrl);
+                var authenticationResult = await authenticationContext.AcquireTokenAsync(pbiResourceUrl, clientId, credential);
+
+                if (authenticationResult == null)
+                {
+                    throw new Exception("authentication failed");
+                }
+
+                var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
+
+                return new PowerBIClient(new Uri(apiEndpointUri), tokenCredentials);
             }
+            else
+            {
+                var tokenCredentials = new TokenCredentials(auth.AccessToken, "Bearer");
 
-            var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
-
-            return new PowerBIClient(new Uri(apiEndpointUri), tokenCredentials);
+                return new PowerBIClient(new Uri(apiEndpointUri), tokenCredentials);
+            }
         }
         
         public async static Task<Group> CreateWorkspace(string pbiUser, string pbiPwd, string clientId, string groupName)
@@ -173,9 +121,19 @@ namespace d360.extensions.powerbi
         }
 
         public static async Task UpdateConnectionCredentials(string pbiUser, string pbiPwd, string clientId, string groupId, string username, string password, string connectionString = "")
-        {            
-            using (var client = await CreateClient(pbiUser, pbiPwd, clientId))
+        {
+            var credential = new UserPasswordCredential(pbiUser, pbiPwd);
+
+            var authenticationContext = new AuthenticationContext(pbiAuthorityUrl);
+            var authenticationResult = await authenticationContext.AcquireTokenAsync(pbiResourceUrl, clientId, credential);
+
+            if (authenticationResult == null)
             {
+                throw new Exception("authentication failed");
+            }
+
+            using (var client = await CreateClient(pbiUser, pbiPwd, clientId, authenticationResult))
+            {                
                 // Get the newly created dataset from the previous import process
                 var datasets = await client.Datasets.GetDatasetsAsync(groupId);
 
@@ -199,53 +157,44 @@ namespace d360.extensions.powerbi
                         var datasources = await client.Datasets.GetDatasourcesInGroupAsync(groupId, dataset.Id);
 
                         if ((datasources.Value[datasources.Value.Count - 1].DatasourceType ?? "").ToUpper() == "SQL")
-                        {
-                            // Reset your connection credentials
-                            /*  var delta = new GatewayDatasource
+                        {                            
+                            var gatewayId = datasources.Value[datasources.Value.Count - 1].GatewayId;
+                            var datasourceId = datasources.Value[datasources.Value.Count - 1].DatasourceId;
+                            
+                            // create URL with pattern myorg/gateways/{gateway_id}/datasources/{datasource_id}
+                            string restUrlPatchCredentials =
+                              PowerBiServiceRootUrl +
+                              "gateways/" + gatewayId + "/" +
+                              "datasources/" + datasourceId + "/";
+
+                            // create C# object with credential data
+                            DataSourceCredentials dataSourceCredentials =
+                              new DataSourceCredentials
                               {
-                                  CredentialType = "Basic",
-                                  BasicCredentials = new BasicCredentials
+                                  credentialType = "Basic",
+                                  basicCredentials = new BasicCredentials
                                   {
                                       Username = username,
                                       Password = password
                                   }
-                              };*/
-
-                            var gatewayId = datasources.Value[datasources.Value.Count - 1].GatewayId;
-                            var datasourceId = datasources.Value[datasources.Value.Count - 1].DatasourceId;
-                            /*
-
-                            
-                            string uri = string.Format("https://api.powerbi.com/v1.0/myorg/gateways/{0}/datasources/{1}", gatewayId, datasourceId);
-
-                            var patchUri = new Uri(uri);
-
-                            var basic = $"{{\"credentialData\": [{{\"name\":\"username\",\"value\":\"{username}\"}},{{ \"name\":\"password\",\"value\":\"{password}\" }}]}}";
-                            
-
-                            using (var request = new HttpRequestMessage { Method = new HttpMethod("PATCH"), RequestUri = patchUri, Content = content })
-                            {
-                                var rep = client.HttpClient.SendAsync(request).Result;
-                            }*/
-                            
-                            //var credentials = AsymmetricKeyEncryptionHelper.EncodeCredentials(username, password, gate.PublicKey.Exponent, gate.PublicKey.Modulus);
-                               var plainText = string.Format("{{\"credentialData\":[{{\"value\":{0},\"name\":\"username\"}},{{\"value\":{1},\"name\":\"password\"}}]}}", JsonConvert.SerializeObject(username), JsonConvert.SerializeObject(password));
-
-                              var delta = new UpdateDatasourceRequest
-                              {
-                                  CredentialDetails = new CredentialDetails(
-                                  plainText,
-                                  credentialType: "Basic",
-                                  encryptedConnection: "Encrypted",
-                                  encryptionAlgorithm: "None",
-                                  privacyLevel: "None"
-                                  )
                               };
-                            
-                            // Update the datasource with the specified credentials
-                            await client.Gateways.UpdateDatasourceAsync(datasources.Value[datasources.Value.Count - 1].GatewayId, datasources.Value[datasources.Value.Count - 1].DatasourceId, delta);
-                              
-                            //return;
+
+                            // serialize C# object into JSON
+                            string jsonDelta = JsonConvert.SerializeObject(dataSourceCredentials);
+
+                            // add JSON to HttpContent object and configure content type
+                            HttpContent patchRequestBody = new StringContent(jsonDelta);
+                            patchRequestBody.Headers.ContentType = new MediaTypeWithQualityHeaderValue("application/json");
+
+                            // prepare PATCH request
+                            var method = new HttpMethod("PATCH");
+                            var request = new HttpRequestMessage(method, restUrlPatchCredentials);
+                            request.Content = patchRequestBody;
+
+                            request.Headers.Add("Accept", "application/json");
+                            request.Headers.Add("Authorization", "Bearer " + authenticationResult.AccessToken);
+
+                            await client.HttpClient.SendAsync(request);                            
                         }
                     }
                     catch (HttpOperationException ex)
