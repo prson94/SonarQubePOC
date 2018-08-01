@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
+    [JsonArray]
     [DataContract(Name="assets")]
     public class BulkAssetImport : List<Dictionary<string, string>>
     {
@@ -19,6 +21,7 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
     }
 
+    [JsonArray]
     [DataContract(Name = "relationships")]
     public class BulkRelationshipImport : List<RelationshipImportRequest>
     {

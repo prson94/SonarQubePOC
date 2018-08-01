@@ -76,21 +76,7 @@ namespace d360.web.Controllers.Services
 
             var prefix = "Assets.PostBulkAssetsAsync => ";
             var errorMessage = "";
-
-            //string json = "";
-
-            //if (Request.Content.IsMimeMultipartContent())
-            //{
-            //    var streamProvider = new MultipartMemoryStreamProvider();
-            //    await Request.Content.ReadAsMultipartAsync(streamProvider);
-
-            //    json = await streamProvider.Contents.Single().ReadAsStringAsync();
-            //}
-            //else
-            //{
-            //    json = await Request.Content.ReadAsStringAsync();
-            //}
-
+            
             try
             {
                 var sType = ot.ToString();
@@ -100,8 +86,7 @@ namespace d360.web.Controllers.Services
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with Object {sType} and ObjectID {otid} could not be found.")));
 
                 var import = readRequestJsonContent<BulkAssetImport>(Request).Result;
-                //var import = JsonConvert.DeserializeObject<BulkAssetImport>(json);
-
+                
                 var results = (Company.Database.Connection as SqlConnection).BulkAssetsImport(Company.CurrentResourceID, ot, otid, import);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
@@ -112,11 +97,7 @@ namespace d360.web.Controllers.Services
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
-            }
-            //finally
-            //{
-            //    json = null;
-            //}
+            }            
         }
 
         /// <summary>
