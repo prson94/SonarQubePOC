@@ -1169,11 +1169,12 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                             responsiblityOverride.SecurityAsset = "G";
 
                             //lookup the group
-                            var grp = company.Groups.Where(x => string.Compare(x.Name, resourceParts[1], true) == 0).FirstOrDefault();
+                            var resourcePart = resourceParts[1];
+                            var grp = company.Groups.Where(x => string.Compare(x.Name, resourcePart, true) == 0).FirstOrDefault();
 
                             if (grp == null)
                             {
-                                msg = $"Bulk load responsibilities group name value {resourceParts[1]} is not a valid group name it cannot be found in the groups table.";
+                                msg = $"Bulk load responsibilities group name value {resourcePart} is not a valid group name it cannot be found in the groups table.";
                                 CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
                             }
                             else
