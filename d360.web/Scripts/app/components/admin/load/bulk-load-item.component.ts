@@ -47,7 +47,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p == 'id') {
-                this.load();                
+               return this.load();                
             }
         }
 

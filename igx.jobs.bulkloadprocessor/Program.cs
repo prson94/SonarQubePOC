@@ -1109,7 +1109,7 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                 var resourceCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == resourceIndex).FirstOrDefault();
                 var assetCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == assetIdIndex).FirstOrDefault();
                 var msg = "";
-
+                var status = 0;
                 if ((responsibilityCol == null) || (resourceCol == null) || (assetCol == null))
                 {
                     if (responsibilityCol == null)
@@ -1203,10 +1203,12 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                         if (company.ResponsibilityTypeRelationOverrideItems.Any(x => x.ResponsibilityTypeID == responsiblityOverride.ResponsibilityTypeID && x.SecurityAsset == responsiblityOverride.SecurityAsset && x.SecurityAssetID == responsiblityOverride.SecurityAssetID && responsiblityOverride.AssetID == x.AssetID))
                         {
                             msg = "Responsibility already exists.";
+                            status = 1;
                         }
                         else
                         {
                             msg = "Responsibility added sucessfully.";
+                            status = 1;
                             company.ResponsibilityTypeRelationOverrideItems.Add(responsiblityOverride);
                         }
                     }
@@ -1214,9 +1216,9 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                     CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities adding {currentRowIndex} of {rowData.Count} responsibilites.", companyId: company.CurrentCompanyID);
 
                     // update status for this item
-                    var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = 1, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
+                    var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = @status, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
 
-                    await company.QueryAsync<int>(statusSql, new { objectId = responsiblityOverride.ID, msg = msg, loadId = loadId, rowIndex = currentRowIndex });
+                    await company.QueryAsync<int>(statusSql, new { objectId = responsiblityOverride.ID, status=status, msg = msg, loadId = loadId, rowIndex = currentRowIndex });
                 }
 
                 //next row
