@@ -186,12 +186,6 @@
   <data name="FusionPromotionUnder_ToolTip" xml:space="preserve">
     <value>Please select a parent for the item since the selected Promote To value has multiple levels.</value>
   </data>
-  <data name="Guid_Description" xml:space="preserve">
-    <value>The GUID is the unique identifier for this item across all of Data3Sixty.</value>
-  </data>
-  <data name="Guid_Name" xml:space="preserve">
-    <value>GUID</value>
-  </data>
   <data name="ID_Name" xml:space="preserve">
     <value>ID</value>
   </data>
@@ -344,6 +338,12 @@
   </data>
   <data name="TestPattern_Name" xml:space="preserve">
     <value>Test Pattern</value>
+  </data>
+  <data name="UID_Description" xml:space="preserve">
+    <value>The UID is the unique identifier for this item across all of Data3Sixty.</value>
+  </data>
+  <data name="UID_Name" xml:space="preserve">
+    <value>UID</value>
   </data>
   <data name="UpdatedOn_Description" xml:space="preserve">
     <value>The date that this item was last modified in Data3Sixty.</value>

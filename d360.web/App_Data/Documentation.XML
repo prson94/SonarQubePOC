@@ -507,16 +507,6 @@
               Looks up a localized string similar to Please select a parent for the item since the selected Promote To value has multiple levels..
             </summary>
         </member>
-        <member name="P:Resources.FieldInfo.Guid_Description">
-            <summary>
-              Looks up a localized string similar to The GUID is the unique identifier for this item across all of Data3Sixty..
-            </summary>
-        </member>
-        <member name="P:Resources.FieldInfo.Guid_Name">
-            <summary>
-              Looks up a localized string similar to GUID.
-            </summary>
-        </member>
         <member name="P:Resources.FieldInfo.ID_Name">
             <summary>
               Looks up a localized string similar to ID.
@@ -770,6 +760,16 @@
         <member name="P:Resources.FieldInfo.TestPattern_Name">
             <summary>
               Looks up a localized string similar to Test Pattern.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.UID_Description">
+            <summary>
+              Looks up a localized string similar to The UID is the unique identifier for this item across all of Data3Sixty..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.UID_Name">
+            <summary>
+              Looks up a localized string similar to UID.
             </summary>
         </member>
         <member name="P:Resources.FieldInfo.UpdatedOn_Description">

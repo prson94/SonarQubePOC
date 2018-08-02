@@ -4986,7 +4986,7 @@ where    A.RuleID = @id", new { id });
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.Guid_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.Guid_Description, Value = asset.UID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.UID.ToString(), DataType = "string" }
                             },
                             });
 
@@ -5656,7 +5656,7 @@ where    A.RuleID = @id", new { id });
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.Guid_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.Guid_Description, Value = asset.UID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.UID.ToString(), DataType = "string" }
                             }
                             });
                         }
@@ -5715,7 +5715,7 @@ where    A.RuleID = @id", new { id });
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.Guid_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.Guid_Description, Value = asset.UID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.UID.ToString(), DataType = "string" }
                             }
                             });
                         }
@@ -6553,7 +6553,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.Guid_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.Guid_Description, Value = taxonomy.UID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = taxonomy.UID.ToString(), DataType = "string" }
                             }
                         });
 

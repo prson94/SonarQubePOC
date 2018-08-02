@@ -268,24 +268,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The GUID is the unique identifier for this item across all of Data3Sixty..
-        /// </summary>
-        public static string Guid_Description {
-            get {
-                return ResourceManager.GetString("Guid_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to GUID.
-        /// </summary>
-        public static string Guid_Name {
-            get {
-                return ResourceManager.GetString("Guid_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to ID.
         /// </summary>
         public static string ID_Name {
@@ -741,6 +723,24 @@ namespace Resources {
         public static string TestPattern_Name {
             get {
                 return ResourceManager.GetString("TestPattern_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The UID is the unique identifier for this item across all of Data3Sixty..
+        /// </summary>
+        public static string UID_Description {
+            get {
+                return ResourceManager.GetString("UID_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UID.
+        /// </summary>
+        public static string UID_Name {
+            get {
+                return ResourceManager.GetString("UID_Name", resourceCulture);
             }
         }
         
