@@ -1367,8 +1367,8 @@ namespace d360.model
                 await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, settings.BodyTemplate, true, fromEmail, fromName);
             }
             else if(settings.RecipientType == EmailTaskRecipientType.Responsibility)
-            {
-                var users = Query<dynamic>("[utility].[GetOwnersForWorkflow] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
+            {                
+                var users = Query<dynamic>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
 
                 foreach (var user in users)
                 {
