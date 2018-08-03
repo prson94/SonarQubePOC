@@ -38,14 +38,14 @@ import { BaseComponent } from '../../shared/base.component';
                             </p-column>      
                             <p-column [style]="{width:'40px'}">
                                 <ng-template let-relationship="rowData" pTemplate type="body">
-                                    <div class="RowTools">
+                                    <div *ngIf="!relationship.IsSystem" class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=relationship;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                     </div>
                                 </ng-template>
                             </p-column>                            
                             <p-column  [style]="{width:'40px'}">
                                 <ng-template let-relationship="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
+                                    <div *ngIf="!relationship.IsSystem" class="RowTools">                                
                                         <a style="cursor:pointer;" (click)="selected=relationship;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
                                </ng-template>

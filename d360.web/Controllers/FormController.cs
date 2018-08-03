@@ -8185,7 +8185,7 @@ namespace d360.web.Controllers
 
                 var models = Company.Table<Predicate>()
                     .ToList()
-                    .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && !usedPredicateIDs.Contains(i.ID))
+                    .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && i.Type.AsInfoModel().AllowEditFromRelationshipEditor && !usedPredicateIDs.Contains(i.ID))
                     .Select(i => new {
                         title = $"{i.Name} ({i.Type.AsInfoModel().Name})",
                         value = i.ID
@@ -12980,9 +12980,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             var list = new List<EditableField>();
 
+            var functionalTypes = PredicateType.DataLineage.GetAsList()
+                .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment)
+                .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
+                .ToList();
+
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Functional Type", FieldType = DataType.Lookup.ToString(), Items = PredicateType.DataLineage.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Functional Type", FieldType = DataType.Lookup.ToString(), Items = functionalTypes });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -13009,6 +13014,10 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
             var a = Company.GetById<Predicate>(id);
             var any = Company.Any<IntersectType>(i => i.PredicateID == id);
+            var functionalTypes = PredicateType.DataLineage.GetAsList()
+                .Where(f =>  f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment)
+                .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
+                .ToList();
 
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
@@ -13016,7 +13025,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Value = a.Inverse, Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
-            list.Add(new EditableField { ReadOnly=any, Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Functional Type", FieldType = DataType.Lookup.ToString(), Value = ((int)a.Type).ToString(), Items = PredicateType.DataLineage.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList() });
+            list.Add(new EditableField { ReadOnly=any, Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Functional Type", FieldType = DataType.Lookup.ToString(), Value = ((int)a.Type).ToString(), Items = functionalTypes });
             
             return Json(list, JsonRequestBehavior.AllowGet);
         }

@@ -129,7 +129,7 @@ namespace d360.web.Controllers
                         ID = p.ID,
                         Name = p.Name,
                         Inverse = p.Inverse,
-                        p.IsSystem,
+                        IsSystem = p.IsSystem,
                         IsUsed = usage.Any(i => i == p.ID),
                         Type = p.Type.GetDisplayName()
                     });
@@ -158,8 +158,13 @@ namespace d360.web.Controllers
                 return null;
             }
 
+            var systemTypes =  PredicateType.DataLineage.GetAsList()
+                .Where(i => !i.AllowIntersectTypeAssignment || !i.AllowEditFromRelationshipEditor)
+                .Select(i => (int)i.ID)
+                .ToList();
+
             var models = Company.Query<dynamic>(
-@"select    ID,
+$@"select    ID,
 			Subject,
 			SubjectID,
 			SubjectName,
@@ -167,11 +172,16 @@ namespace d360.web.Controllers
             PredicateName,
 			Object,
 			ObjectID,
-			ObjectName
-from		IntersectTypeDetail
+			ObjectName,
+            PredicateType,
+            cast(0 as bit) as IsSystem
+from		IntersectTypeDetail D
 where       IsSystem = 0
 order by	SubjectName,
-			ObjectName");
+			ObjectName").ToList();
+
+            models.ForEach(m => m.IsSystem = systemTypes.Contains(m.PredicateType));
+
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
