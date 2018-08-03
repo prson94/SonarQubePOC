@@ -8,7 +8,7 @@
         <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
         <meta charset="utf-8" />
         <meta name="description" content="" />
-        <meta name="author" content="" /><title>Bulk loading users</title>
+        <meta name="author" content="" /><title>Bulk loading users and group memberships</title>
         <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
         <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
         <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
@@ -92,42 +92,50 @@
                             </tbody>
                         </table>
                     </div>
-                    <h2>Bulk loading users</h2>
-                    <p>You can add users to your system via bulk loading.</p>
-                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>If you are not familiar with the concept of Bulk Loading, see <a href="bulk-loading.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Bulk loading</a>.</p>
-                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>It is not possible to import groups via the Bulk Loader. However, you can assign users to groups that you have already created, see <a href="#Assignin" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Assigning users to groups via bulk loading</a>. </p>
-                    <p>&#160;</p>
+                    <h2>Bulk loading users and group memberships</h2>
+                    <p>As an Admin user, you can add users and group memberships to the system via the Bulk Loader.</p>
+                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>If you are not yet familiar with the concept of Bulk Loading, see the <a href="bulk-loading.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Bulk loading</a> introduction topic.</p>
+                    <h3>Preparing the Bulk Load file</h3>
                     <ol>
-                        <li value="1">Click the <b>Administration</b> icon on the left of the screen and select <b>Integration &gt; Bulk Loader</b>.</li>
-                        <li value="2">In the top right corner of the <b>History</b> panel, click the <b>Add</b> button:<p><img src="../Resources/Images/admin/bulk-loading.png" class="img-vpadded" /></p><p>The <b>Upload a spreadsheet job panel</b> opens.</p></li>
+                        <li value="1">Click the <b>Administration</b> icon on the left of the screen and select <b>Integration </b>&gt;<b> Bulk Loader</b>.</li>
+                        <li value="2">In the top right corner of the <b>History</b> panel, click the <b>Add</b> button to start a new upload:<p><img src="../Resources/Images/admin/bulk-loading.png" class="img-vpadded" /></p><p>The <b>Upload a spreadsheet job</b> panel opens.</p></li>
                         <li value="3">Select <b>Users/Groups</b> from the <b>Action</b> list.</li>
-                        <li value="4">Select <b>Users</b> from the <b>Relationships Type</b> list. <p class="p-top-padding">You will see a depiction of the spreadsheet columns, with any mandatory columns shown in bold:</p><p class="p-top-padding"><img src="../Resources/Images/admin/bulk-loading-users.PNG" /></p></li>
-                        <li value="5">You can either use a spreadsheet that you have already created, ensuring that you include the required columns shown in bold, or, you can download a spreadsheet containing these columns by clicking the <b>Download Spreadsheet</b> link.</li>
-                        <li value="6">Complete the spreadsheet by adding the required information to the bold columns.<p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>The valid options for the <b>Status </b>column are Active and Inactive.</p></li>
-                        <li value="7">Save the spreadsheet, then return to the <b>Infogix Data3Sixty Govern</b> user interface.</li>
-                        <li value="8">Click <b>Choose file</b> to navigate to your spreadsheet and click <b>Open</b> on the Windows file navigation window. </li>
-                        <li value="9">Click <b>Save</b> to bulk upload the users.</li>
+                        <li value="4">Select either <b>Group Membership</b> or <b>Users</b> for upload from the <b>Relationships Type</b> list. <p class="p-top-padding">&#160;</p><p class="p-top-padding">Fields that you can populate for upload will be listed under <b>Expected columns based on the type you selected</b>:</p><p class="p-top-padding">&#160;</p><p class="p-top-padding"><img src="../Resources/Images/admin/bulk-loading-users.PNG" /></p><p>&#160;</p><p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>Any mandatory columns are shown in bold. Some required fields are system fields, while others may be custom fields created by an administrator for your specific deployment.</p><p>&#160;</p></li>
+                        <li value="5">
+                            <p>Generate the upload file. There are two ways to generate an upload file for bulk loading users or group memberships:</p>
+                            <ul>
+                                <li value="1">You can create an upload file in Microsoft Excel, using the provided fields as guidance. For each user or group membership to be uploaded, complete the required information then save the spreadsheet.<p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>For users, the valid options for the <b>Status </b>column are <b>Active</b> and <b>Inactive</b>. Enter one of these values for each user. For group memberships, the valid options for the <b>Action</b> column are <b>Add</b> and <b>Remove</b>. Enter one of these values to manage your group memberships via bulk load.</p></li>
+                                <li value="2">Or, you can use a system-generated upload file  by clicking the <b>Download Spreadsheet</b> link. The application generates a file which you can save to your local desktop. For each user or group membership to be uploaded, complete the required information then save the spreadsheet.</li>
+                            </ul>
+                            <p>&#160;</p>
+                            <p>The following example shows a completed group membership spreadsheet that is ready to upload:</p>
+                            <p>
+                                <img src="../Resources/Images/admin/bulk-load-users5.png" />
+                            </p>
+                        </li>
                     </ol>
-                    <p>The <b>Load Details</b> panel will display a list of imported records.</p>
-                    <p>If there are any errors, for example if you are missing an entry in one of the bold columns, you can download the spreadsheet to investigate the errors by clicking the <b>Export Errors to Excel</b> button:</p>
+                    <h3>Uploading the file</h3>
+                    <p>Once you have completed the required information and checked for any errors in the bulk load file, upload the file as follows:</p>
+                    <ol>
+                        <li value="1">On the <b>Bulk Loading</b> page, from the <b>Upload a spreadsheet job</b> panel, click <b>Browse</b> (or <b>Choose file</b> if you are using Chrome).</li>
+                        <li value="2">Navigate to your upload file, select it and click <b>Open</b> on the Windows file navigation window. </li>
+                        <li value="3">Click <b>Save</b>.</li>
+                        <li value="4">Monitor the upload progress in the <b>Load Details</b> panel by clicking the <b>Refresh</b> button:<p><img src="../Resources/Images/admin/bulk-loading-users2.png" class="img-vpadded" /></p><p>You can also view upload history by clicking the <b>Refresh</b> button in the <b>History</b> panel.</p></li>
+                    </ol>
+                    <h3>Upload results</h3>
+                    <p>When your upload is complete, the results  display above the <b>Load Details</b> panel, to the right of the <b>History</b> panel:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/bulk-loading-users3.png" />
+                    </p>
+                    <p>&#160;</p>
+                    <p>If there are any errors, you can investigate the details of the failure by clicking the <b>Export Errors to Excel</b> button in the <b>Load Details</b> panel:</p>
                     <p>
                         <img src="../Resources/Images/admin/bulk-loading3.png" />
                     </p>
-                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>If the system has not refreshed immediately, you can click the <b>Refresh</b> button <img src="../Resources/Images/admin/refresh-button.png" style="width: 0px;height: 0px;" /> to see the results of your bulk upload.</p>
-                    <h3><a name="Assignin"></a>Assigning users to groups via bulk loading</h3>
-                    <p>You can assign users to groups via bulk loading in much the same way that you can bulk import users, but instead of selecting <b>Users</b> from the <b>Relationships Type</b> list, select <b>Group Membership</b>, as follows:</p>
-                    <ol>
-                        <li value="1">Click the <b>Administration</b> icon on the left of the screen and select <b>Integration &gt; Bulk Loader</b>.</li>
-                        <li value="2">In the top right corner of the <b>History</b> panel, click the <b>Add</b> button:<p><img src="../Resources/Images/admin/bulk-loading.png" class="img-vpadded" /></p><p>The <b>Upload a spreadsheet job panel</b> opens.</p></li>
-                        <li value="3">Select <b>Users/Groups</b> from the <b>Action</b> list.</li>
-                        <li value="4">Select <b>Group Membership</b> from the <b>Relationships Type</b> list. <p class="p-top-padding">You will see a depiction of the spreadsheet columns, with any mandatory columns shown in bold.</p><p class="p-top-padding">The mandatory columns for <b>Group Membership</b> are <b>Action</b>, <b>Group Name</b> and <b>User Email</b>.</p></li>
-                        <li value="5">You can either use a spreadsheet that you have already created, ensuring that you include the required columns shown in bold, or, you can download a spreadsheet containing these columns by clicking the <b>Download Spreadsheet</b> link.</li>
-                        <li value="6">Complete the spreadsheet by adding the required information to the bold columns.<p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>The valid options for the <b>Action </b>column are Add and Remove.</p><p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>The <b>Group Name</b> must match an existing user group on your system.</p></li>
-                        <li value="7">Save the spreadsheet, then return to the <b>Infogix Data3Sixty Govern</b> user interface.</li>
-                        <li value="8">Click <b>Choose file</b> to navigate to your spreadsheet and click <b>Open</b> on the Windows file navigation window. </li>
-                        <li value="9">Click <b>Save</b> to bulk assign users to groups.</li>
-                    </ol>
-                    <p>&#160;</p>
+                    <p>When prompted, open the file for viewing. The spreadsheet will show the failed entry along with the specific error, for example:</p>
+                    <p>
+                        <img src="../Resources/Images/admin/bulk-load-users4.jpg" />
+                    </p>
                     <p>&#160;</p>
                 </div>
                 <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>

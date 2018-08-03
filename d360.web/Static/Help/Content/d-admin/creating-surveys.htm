@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide|Establishing the metamodel">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Creating surveys</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <script src="../../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/creating-surveys.htm">Open topic with navigation</a>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h1 class="ChapterHeading">Creating surveys</h1>
+                    <p>As an Administrator, you can create a survey and apply it to a specific artifact, model or rule. Then, when users are viewing an item for which there is a related survey, they will be able to click a link to complete the survey questions, see <a href="../c-user-guide/taking-surveys.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Responding to a survey</a>. </p>
+                    <p>&#160;</p>
+                    <ol>
+                        <li value="1">From the <b>Administration</b> menu on the left of the screen, select <b>Metamodel</b> &gt; <b>Surveys</b>.</li>
+                        <li value="2">Click the <b>Add</b> button in the top right corner of the <b>Surveys</b> panel:<p class="p-top-padding"><img src="../Resources/Images/admin/surveys1.png" /></p><p>&#160;</p></li>
+                        <li value="3">Set up the metadata for the survey by completing the fields in the <b>New Survey</b> panel:<ul class="ul-top-padding"><li value="1"><b>Name</b> - Type a name for the survey. The name will be displayed to users in the survey link on the artifact detail page.</li><li value="2"><b>Assign Survey To</b> - Select the Artifact, Model or Rule to which you want to apply the survey. You can only select one artifact type.</li><li value="3"><b># Days before user can retake</b> - Enter the number of days before a user who has already taken the survey can retake it. For example, if you want to allow users to retake the survey on a daily basis, enter <code>1</code>, or if you want to create a survey that is taken annually, enter <code>365</code>.</li></ul></li>
+                        <li value="4">Create the questions for your survey:</li>
+                        <ol style="list-style-type: lower-alpha;">
+                            <li value="1"> Highlight the survey in the <b>Surveys</b> panel and click the <b>Add</b> icon in the top right corner of the <b>Questions</b> panel:<p><img src="../Resources/Images/admin/surveys2.png" class="img-vpadded" /></p></li>
+                            <li value="2">Complete the fields in the <b>New Question</b> panel:<ul class="ul-top-padding"><li value="1"><b>Name</b> - Type the question.</li><li value="2"><b>Display Style</b> - Choose from&#160;<b>Radio List</b> or <b>Check List</b>. If you select <b>Radio List</b>, the user will only be able to select one of the specified options, for example: <p><img src="../Resources/Images/admin/surveys5.png" class="img-vpadded" /></p><p>If you select <b>Check List</b>, the user will be able to select multiple options, for example:</p><p><img src="../Resources/Images/admin/surveys4.png" class="img-vpadded" /></p></li><li value="3"><b>Description</b> - If needed, add context to the question with a brief description. The description will be included with the question, for example:<p><img src="../Resources/Images/admin/surveys6.png" class="img-vpadded" /></p></li><li value="4"><p><b>Question Options</b> - Enter the response values from which the user will be able to select. To add additional response options, click the <b>Add</b> button to the right of the <b>Question Options</b> fields:</p><p><img src="../Resources/Images/admin/surveys3.png" /></p></li></ul></li>
+                            <li value="3">When you have finished creating your question, click <b>Save</b>. Repeat steps a and b to add further questions as necessary.</li>
+                        </ol>
+                        <p>&#160;</p>
+                    </ol>
+                    <p>The survey response information is stored in the database and can be reported on via dashboards. You can work with your Infogix representative to create dashboards using survey results. </p>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

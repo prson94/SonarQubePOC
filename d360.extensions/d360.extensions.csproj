@@ -157,11 +157,11 @@
     <Compile Include="caching\MemoryCachingProvider.cs" />
     <Compile Include="caching\DummyCachingProvider.cs" />
     <Compile Include="info\UriSecurityContextProvider.cs" />
+    <Compile Include="IQueueSource.cs" />
     <Compile Include="IScheduledJob.cs" />
     <Compile Include="ISearchSource.cs" />
     <Compile Include="ISecurityContextProvider.cs" />
     <Compile Include="ICachingProvider.cs" />
-    <Compile Include="IQueueSource.cs" />
     <Compile Include="IStorageProvider.cs" />
     <Compile Include="mail\SimpleMessage.cs" />
     <Compile Include="mail\TemplateMessage.cs" />

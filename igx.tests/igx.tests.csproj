@@ -108,6 +108,7 @@
     <Compile Include="ActiveDirectorySynch.cs" />
     <Compile Include="BaseTest.cs" />
     <Compile Include="LineageTests.cs" />
+    <Compile Include="Asset_ItemTableGeneration_Tests.cs" />
     <Compile Include="RunJobsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
