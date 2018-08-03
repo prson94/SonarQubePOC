@@ -770,13 +770,10 @@
     <Content Include="Static\Help\Content\c-user-guide\using-reference-lists.htm" />
     <Content Include="Static\Help\Content\d-admin\action-type-workflow.htm" />
     <Content Include="Static\Help\Content\d-admin\admin-intro.htm" />
-    <Content Include="Static\Help\Content\d-admin\assigning-permissions.htm" />
     <Content Include="Static\Help\Content\d-admin\azure-active-directory.htm" />
-    <Content Include="Static\Help\Content\d-admin\bulk-load-template.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading-business-terms.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading-users.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading.htm" />
-    <Content Include="Static\Help\Content\d-admin\business-lineage.htm" />
     <Content Include="Static\Help\Content\d-admin\certification-workflow.htm" />
     <Content Include="Static\Help\Content\d-admin\configuring-action-types.htm" />
     <Content Include="Static\Help\Content\d-admin\configuring-active-directory.htm" />
@@ -831,7 +828,6 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\active-directory_330x382.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\add-group.PNG" />
     <Content Include="Static\Help\Content\Resources\Images\admin\add-icon.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\add-responsibility.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\add-user.PNG" />
     <Content Include="Static\Help\Content\Resources\Images\admin\admin-menu.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\allocations.png" />
@@ -857,9 +853,7 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-loading-users2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-loading-users3.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-loading.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-loading2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-loading3.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\business-lineage-spreadsheet.jpg" />
     <Content Include="Static\Help\Content\Resources\Images\admin\certification-workflow.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\certification-workflow2.PNG" />
     <Content Include="Static\Help\Content\Resources\Images\admin\certification-workflow4.PNG" />
@@ -868,7 +862,6 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\customize.PNG" />
     <Content Include="Static\Help\Content\Resources\Images\admin\delete-icon.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\edit-icon.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\edit-lineage.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table1.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table10.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table11.png" />
@@ -898,7 +891,6 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\model-types.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\models-add.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\models-add2.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\permissions.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\policy-add.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\policy-add2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\policy-fields.png" />
@@ -912,7 +904,6 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\relationship-type-add.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\relationship-type-edit.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\relationship-type-fields.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\relationship-types.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\relationship-types2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\request-certification.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\responsibility-then.png" />
@@ -923,9 +914,7 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\responsibility-type-ownership-add.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\responsibility-type-ownership-edit.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\responsibility-type-ownership.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\responsibility-types.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\responsibility-types2.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\responsibility-types_800x247.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\responsibility-when.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\responsibility-when2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\rule-types.png" />
@@ -962,7 +951,6 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\workflows-add.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflows-conditions.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflows-form.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\workflows1.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflows2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflows3.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\CheckMark-EH24112014.png" />
@@ -1121,7 +1109,6 @@
     <Content Include="Static\Help\Content\Resources\Images\user-guide\take-action3.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\ui-callouts.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-monitor.png" />
-    <Content Include="Static\Help\Content\Resources\Images\user-guide\workflows.jpg" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflows1.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflows2.png" />
     <Content Include="Static\Help\Content\Resources\Stylesheets\Default_Lavastorm.css" />
