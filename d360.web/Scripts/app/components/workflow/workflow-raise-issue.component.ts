@@ -189,25 +189,21 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private selectCurrent() {
-        if (this.selectedOption == 'other') {
-            this.issueType = null;
-            this.selectedOption = 'current';
-            this.selectedObjectId = this.objectID;
-            this.selectedObjectType = this.objectType;
-            this.loadIssueTypes()
-        }
+        this.issueType = null;
+        this.selectedOption = 'current';
+        this.selectedObjectId = this.objectID;
+        this.selectedObjectType = this.objectType;
+        this.loadIssueTypes()
     }
 
     private selectOther() {
-        if (this.selectedOption == 'current') {
-            this.selectedOption = 'other';
-            this.issueType = null;
-            if (this.term != null && this.term.Object != null && this.term.ObjectID != null) {
-                this.selectItem();
-            } else {
-                this.selectedObjectId = null;
-                this.selectedObjectType = null;
-            }
+        this.selectedOption = 'other';
+        this.issueType = null;
+        if (this.term != null && this.term.Object != null && this.term.ObjectID != null) {
+            this.selectItem();
+        } else {
+            this.selectedObjectId = null;
+            this.selectedObjectType = null;
         }
     }
 }
