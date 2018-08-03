@@ -25,7 +25,7 @@ declare var ResourceEmail;
                                 <div class="col s12" *ngIf="!singleSignOn">&nbsp;</div>
                                 <div class="col s12" *ngIf="!singleSignOn"><a [routerLink]="'/resource/'+resourceId+'/changepassword'"><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;Change Password</a></div>
                                 <div class="col s12">&nbsp;</div>
-                                <div class="col s12"><a [routerLink]="'/resource/'+resourceId+'/apikey'"><i class="fa fa-key" aria-hidden="true"></i>&nbsp;API Key</a></div>
+                                <div class="col s12"><a [routerLink]="'/resource/my/apikey'"><i class="fa fa-key" aria-hidden="true"></i>&nbsp;API Key</a></div>
                         </div>
                     </div>
                 <span>`,    

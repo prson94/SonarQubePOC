@@ -13,7 +13,7 @@ const routes: Routes = [
         children: [
             { path: '', component: ResourceListComponent },
             { path: ':resourceId', component: ResourceItemComponent },
-            { path: ':resourceId/apikey', component: ResourceKeyComponent },
+            { path: 'my/apikey', component: ResourceKeyComponent },
             { path: ':resourceId/changepassword', component: ResourceChangePwdComponent }
         ]
     },
