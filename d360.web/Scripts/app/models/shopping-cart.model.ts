@@ -8,7 +8,7 @@ export class ShoppingCart {
     ShoppingCartTypeID: number;
     ResourceID: number;
     CreatedOn: string;
-    RequestedOn: string;
+    RequestedOn: Date;
     Request: string;
     Requestor: string;
 }
