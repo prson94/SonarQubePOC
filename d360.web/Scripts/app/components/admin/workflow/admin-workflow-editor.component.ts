@@ -437,7 +437,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             return;
         }
 
-        if (this.model.Event.ChangeType == null || this.selectedObjectType == null) {
+        if (this.model.Event.ChangeType == null || this.model.Event.ChangeType.toString() == '') {
             this.isValid = false;
             return;
         }
