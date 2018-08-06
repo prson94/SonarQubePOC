@@ -99,8 +99,9 @@ namespace igx.jobs
 select		T.SynchedAssetTypeID
 from		integration.ExecutionAssetType T
 where		T.CompletedOn is null
-			and T.ErrorMessage is null
-            and T.ExecutionID > (select coalesce(max(ID)-10, 0) from integration.Execution)").ToList();
+			and T.ErrorMessage is null").ToList();
+
+                                //            and T.ExecutionID > (select coalesce(max(ID)-10, 0) from integration.Execution)
 
                                 if (assetsToAvoid.Count > 0)
                                 {
@@ -396,8 +397,6 @@ from		(
 
                 #endregion
 
-                var shouldContinue = true;
-
                 #region Fields Request
 
                 postModel.pageSize = fieldPageSize;
@@ -410,7 +409,8 @@ from		(
                     if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
                 }
 
-                while (shouldContinue)
+                var fShouldContinue = true;
+                while (fShouldContinue)
                 {
                     try
                     {
@@ -448,7 +448,7 @@ from		(
                             }
 
                             // Should we do this again, since we have not completed the paged dataset.
-                            shouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                            fShouldContinue = (models.paging.numTotal > models.paging.end + 1);
                             postModel.begin = models.paging.end + 1;
                         }
                     }
@@ -472,7 +472,7 @@ from		(
                         postModel.begin = postModel.begin + postModel.pageSize;
                         if (postModel.begin >= executionAssetType.CurrentSourceAssetCount)
                         {
-                            shouldContinue = false;
+                            fShouldContinue = false;
                         }
                     }
                 }
@@ -498,9 +498,8 @@ from		(
                     if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
                 }
 
-                shouldContinue = true;
-
-                while (shouldContinue)
+                var rShouldContinue = true;
+                while (rShouldContinue)
                 {
                     try
                     {
@@ -528,7 +527,7 @@ from		(
                             }
 
                             // Should we do this again, since we have not completed the paged dataset.
-                            shouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                            rShouldContinue = (models.paging.numTotal > models.paging.end + 1);
                             postModel.begin = models.paging.end + 1;
                         }
                     }
@@ -549,7 +548,7 @@ from		(
                         postModel.begin = postModel.begin + postModel.pageSize;
                         if (postModel.begin >= executionAssetType.CurrentSourceAssetCount)
                         {
-                            shouldContinue = false;
+                            rShouldContinue = false;
                         }
                     }
                 }
@@ -576,9 +575,9 @@ from		(
                     if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
                 }
 
-                shouldContinue = true;
+                var oShouldContinue = true;
 
-                while (shouldContinue)
+                while (oShouldContinue)
                 {
                     try
                     {
@@ -606,7 +605,7 @@ from		(
                             }
 
                             // Should we do this again, since we have not completed the paged dataset.
-                            shouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                            oShouldContinue = (models.paging.numTotal > models.paging.end + 1);
                             postModel.begin = models.paging.end + 1;
                         }
                     }
@@ -627,7 +626,7 @@ from		(
                         postModel.begin = postModel.begin + postModel.pageSize;
                         if (postModel.begin >= executionAssetType.CurrentSourceAssetCount)
                         {
-                            shouldContinue = false;
+                            oShouldContinue = false;
                         }
                     }
                 }
