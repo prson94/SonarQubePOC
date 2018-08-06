@@ -1508,8 +1508,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
         public static string ShoppingCartItemList = @"
                 select 
-	                d.Object, 
-	                d.ObjectID, 
+	                i.Object, 
+	                i.ObjectID, 
 	                d.[DisplayValue] as [Name],
 	                coalesce(d.TypeName, case when i.[Object] = 'ReferenceItemType' then 'Reference List' else null end) as ObjectTypeName,
 					u.Url  
