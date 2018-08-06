@@ -25,7 +25,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail" *ngIf="!isLoading">                            
                     <header *ngIf="!showDelete && !showEditor">{{model?.Name}}
-                        &nbsp; <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAdd()"></d3s-tile-actions>                            
+                        &nbsp; <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAdd(0)"></d3s-tile-actions>                            
                     </header>                                                
                     <div *ngIf="!showDelete && !showEditor && model && model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
@@ -53,7 +53,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                                 </td>
                                 <td>
                                     <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=rowNode.node;showAdd()" *ngIf="model.MaximumDepth > item.Level"><i class="fa fa-plus"></i></a>                                        
+                                        <a style="cursor:pointer;" (click)="selected=rowNode.node;showAdd(item.Level)" *ngIf="model.MaximumDepth > item.Level"><i class="fa fa-plus"></i></a>                                        
                                     </div>
                                 </td>
                                 <td>
@@ -309,10 +309,10 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         this.showEditor = false;        
     }
 
-    private showAdd() {        
+    private showAdd(level:number) {       
         this.showEditor = true;        
-        this.selectedParentID = this.selected ? this.selected.data.ID : undefined;
-        this.selectedLevel = this.selected ? this.selected.data.Level : 0;
+        this.selectedParentID = level == 0 ? undefined : this.selected ? this.selected.data.ID : undefined;
+        this.selectedLevel = level;
         this.selected = null;
     }    
 };
