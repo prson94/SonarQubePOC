@@ -620,9 +620,12 @@ namespace d360.web.Controllers
 
                     staticFieldCount = hasParentType ? 4 : 3;
 
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
+
                     if (hasParentType)
                     {
-                        columns.Add(new GridColumn
+
+                        columns.Insert(1,new GridColumn
                         {
                             text = d360.core.resources.Fields.Parent_Name,
                             datafield = "Parent",
@@ -637,7 +640,7 @@ namespace d360.web.Controllers
                         });
                     }
 
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
+                   
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -4958,12 +4961,13 @@ where    A.RuleID = @id", new { id });
                     var parent = Company.GetParentObject<Artifact>(id);                    
                     if (artifact != null)
                     {
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                         if (parent != null)
                         {
                             var parentUrl = Company.Query<string>($"select dbo.GenerateObjectUrl('Artifact', {parent.ArtifactTypeID}, {parent.ID})").First();
                             var parentAsset = Company.GetAssetDetail("Artifact", parent.ID);
 
-                            model.rows.Add(new DetailReadOnlyRowModel
+                            model.rows.Insert(1,new DetailReadOnlyRowModel
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
@@ -4972,7 +4976,7 @@ where    A.RuleID = @id", new { id });
                             });
                         }
 
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
+                       
 
                         var asset = Company.Assets.Where(x => x.Object == "Artifact" && x.ObjectID == id).FirstOrDefault();
 
