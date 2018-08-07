@@ -1353,7 +1353,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 {
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                     columns += $@"case     
-    when {name}_T.Value is not null then cast({name}_T.FormattedValue as bigint)
+    when {name}_T.Value is not null then try_cast({name}_T.FormattedValue as bigint)
     when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as bigint)
     else null 
 end as [{(useFriendlyName ? friendlyName : name)}], ";
