@@ -2213,7 +2213,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             if ((sortFieldType ?? "").ToUpper() == "NUMBER")
                 sql += " ORDER BY CAST(+ [" + sortDataField + "] AS bigint)" + sortOrder;
             else if ((sortFieldType ?? "").ToUpper() == "DATE")
-                sql += " ORDER BY CAST(+ [" + sortDataField + "] AS date)" + sortOrder;
+                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS date)" + sortOrder;
+            else if ((sortFieldType ?? "").ToUpper() == "DATETIME")
+                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS datetime)" + sortOrder;
             else
                 sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
 

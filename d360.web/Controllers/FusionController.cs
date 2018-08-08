@@ -536,6 +536,13 @@ where   A.FusionID = @f
                 }
             });
 
+            var sField = sortDataField.StartsWith("Field") ? sortDataField.ReplaceFirst("Field", "") : "";
+            int sFieldTypeId=0;
+            string sortFieldType = null;  
+            if (!string.IsNullOrEmpty(sField) && Int32.TryParse(sField, out sFieldTypeId))
+            {
+                sortFieldType = Company.Filter<FieldType>(x => x.ID == sFieldTypeId).SingleOrDefault().Type;
+            }
             //Parent joins have be listed in ASC order by Level.
             var parentQueryJoinText = "";
             parents.OrderBy(i => i.Level).ToList().ForEach(i =>
@@ -592,7 +599,7 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             sql = $@"select * from ({sql}) A";
             sql = applyFilteringSuffixBind(sql, Request, dbArgs);
-            sql = applySortSuffix(sql, sortDataField, sortOrder);
+            sql = applySortSuffix(sql, sortDataField, sortOrder, sortFieldType:sortFieldType);
             sql = applyPagingSuffix(sql, pagenum, pagesize);
 
             sql += " OPTION (RECOMPILE)";
