@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { CustomAPIService } from '../../../services/custom-api.service';
 import { ApiService } from '../../../models/custom-api.model';
 import { Router } from '@angular/router';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-admin-customapi',
@@ -75,14 +76,16 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
 
     theDeleteCallback: Function;
 
-    constructor(protected customAPIService: CustomAPIService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title, private router: Router) {
-        super(headerBreadcrumbService, titleService);
+    constructor(protected customAPIService: CustomAPIService, rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title, private router: Router) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Custom API";
         this.setCommonItems();
+        this.clearSidebar();
         this.theDeleteCallback = this.deleteService.bind(this);
     }
 
-    ngOnInit() : void {
+    ngOnInit(): void {
+        this.rightSidebarService.clearItems();
         this.load();
     }
 

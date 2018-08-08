@@ -94,6 +94,7 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
     }
 
     ngOnDestroy() {
+        this.clearSidebar();
         this.sub.unsubscribe();
     }    
 }

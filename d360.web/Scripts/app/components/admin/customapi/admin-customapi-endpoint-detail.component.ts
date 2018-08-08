@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { CustomAPIService } from '../../../services/custom-api.service';
 import { ApiService, ApiEndpoint, ApiVersion } from '../../../models/custom-api.model';
 import { Router, ActivatedRoute } from '@angular/router';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-admin-customapi-service-detail',
@@ -83,10 +84,11 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
         private router: Router,
         protected customAPIService: CustomAPIService,
         headerBreadcrumbService: HeaderBreadcrumbService,
+        rightSidebarService: RightSidebarService,
         private messagesService: MessagesService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService);
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Custom API";
         this.setCommonItems();
     }
@@ -98,7 +100,8 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
             this.isLoading = true;
             this.customAPIService.getService(this.serviceId).then(res => {
                 this.service = res;
-                
+
+                this.clearSidebar();
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Administration'));
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Custom API', '/admin/customapi'));
