@@ -74,6 +74,35 @@ export class CustomAPIService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+
+    getEndpointVersionFieldEditorModel(id: number): Promise<any> {
+        return this.http.get(`form/CustomAPIVersionFieldEditor_EditModel?id=${id}`)
+            .toPromise()
+            .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getEndpointVersionField_FieldTypes(versionId: number) : Promise<any[]> {
+        return this.http.get(`form/CustomAPIVersionFieldEditor_GetFieldTypes?versionId=${versionId}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getEndpointVersionField_LookupFieldTypes(fieldTypeId: number): Promise<any[]> {
+        return this.http.get(`form/CustomAPIVersionFieldEditor_GetLookupFields?fieldTypeId=${fieldTypeId}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    saveEndpointVersionField(model: ApiField): Promise<any> {
+        return this.http.post(`form/AddCustomAPIVersionField`, model)
+            .toPromise()
+            .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     deleteEndpointUri(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'uri', id);
     }

@@ -57,7 +57,13 @@ import { Router, ActivatedRoute } from '@angular/router';
                                     </p-column> 
                                 </p-dataTable>                                  
                             </span>             
-                            <d3s-dynamic-editor *ngIf="showEditor" [parentID]="version?.ID" [objectID]="selected?.ID" [objectType]="'ApiField'" [title]="'Version Field'" [selection]="selected" (saveClick)="saveField($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                            <d3s-admin-api-endpoint-version-fields-editor *ngIf="showEditor"
+                                [model]="selected" 
+                                [versionId]="version?.ID"
+                                [entityId]="version?.EntityID"
+                                (onCloseClick)="showEditor = false;"
+                                (onSaveClick)="showEditor = false; load()">
+                            </d3s-admin-api-endpoint-version-fields-editor>
                             <d3s-delete-form *ngIf="showDelete"
                                                         [callback]="theDeleteCallback"
                                                         [itemId]="selected?.ID"

@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -28,6 +29,12 @@ namespace d360.core.entities
 
         [DataMember]
         public bool AllowFilter { get; set; }
+
+        [DataMember]
+        public string ItemNameOverride { get; set; }
+
+        [NotMapped]
+        public List<ApiEntityFieldTypeMultiSelectField> MultiSelectFields { get; set; }
 
         [ForeignKey("EntityID"), IgnoreDataMember]
         public virtual ApiEntity Entity { get; set; }

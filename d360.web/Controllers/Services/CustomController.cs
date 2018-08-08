@@ -20,6 +20,7 @@ using System.Xml.Schema;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Microsoft.ApplicationInsights;
+using d360.core.entities;
 
 namespace d360.web.Controllers.Services
 {
@@ -30,6 +31,23 @@ namespace d360.web.Controllers.Services
         public string FieldName { get; set; }
         public bool IsAscending { get; set; }
     }
+
+    internal class MultiSelectField
+    {
+        public MultiSelectField(int entityFieldTypeID, string itemOverrideName = null)
+        {
+            this.EntityFieldTypeID = entityFieldTypeID;
+            this.ItemName = itemOverrideName ?? "item";
+        }
+
+        public int EntityFieldTypeID { get; set; }
+
+        public string ItemName { get; set; } = "item";
+        public object[] Items { get; set; }
+        public List<int> Values { get; set; } = new List<int>();
+        public List<int> Fields { get; set; } = new List<int>();
+    }
+
 
     public class JsonResultLinkModel
     {
@@ -181,6 +199,119 @@ namespace d360.web.Controllers.Services
 
         #endregion
 
+
+        #region Multiselect Helpers
+        
+        private void GetMultiSelectValues(Dictionary<FieldType, MultiSelectField> multiSelectDetails, dynamic asset)
+        {
+            if (multiSelectDetails.Any())
+            {
+                // get the values for the multiselect list
+                foreach (var mlList in multiSelectDetails)
+                {
+                    var dic = (IDictionary<string, object>)asset;
+
+                    if (dic.TryGetValue(mlList.Key.Name, out object val))
+                    {
+                        var ids = val.ToString().Split(',');
+                        mlList.Value.Values = new List<int>();
+
+                        foreach (var id in ids)
+                        {
+                            mlList.Value.Values.Add(int.Parse(id));
+                        }
+                    }
+                }
+
+                foreach (var field in multiSelectDetails)
+                {
+                    if (!field.Value.Fields.Any())
+                        field.Value.Fields = Company.ApiEntityFieldTypeMultiSelectFields.Where(i => i.EntityFieldTypeID == field.Value.EntityFieldTypeID).Select(i => i.FieldTypeID).ToList();
+
+                    //based on the field type get the properties for the reference list type
+                    if (field.Key.LookupObjectType != "ReferenceItem" || field.Key.LookupObjectID <= 0)
+                        continue;
+
+                    var joins = new List<string>();
+                    var columns = new List<string>();
+
+                    var fieldCount = field.Value.Fields.Count;
+
+                    if (fieldCount > 0)
+                    {
+                        //build select statement columns/joins
+                        field.Value.Fields.ForEach(s =>
+                        {
+                            var ft = Company.GetById<FieldType>(s);
+                            columns.Add($"F{ft.ID}.FormattedValue as [{(fieldCount == 1 ? "value" : ft.Name)}]");
+                            joins.Add($"left join Field F{ft.ID} on F{ft.ID}.ObjectID = A.ObjectID and F{ft.ID}.FieldTypeID = {ft.ID}");
+                        });
+                    }
+                    else //default to just display value
+                    {
+                        columns.Add($"D.DisplayValue as [value]");
+                        joins.Add("cross apply dbo.GetAssetDisplayValueById(A.ID) D");
+                    }
+
+                    var listSql = @"select {0} from Asset A 
+                            {1}
+                            where A.Object = 'ReferenceItem' and A.ObjectID in ({2})
+                            ";
+
+                    listSql = string.Format(listSql, string.Join(",", columns), string.Join("\n", joins), string.Join(",", field.Value.Values));
+
+                    var items = Company.Query<dynamic>(listSql).ToArray();
+
+                    if (field.Value.Fields.Count > 1)
+                        field.Value.Items = items;
+                    else //for single fields return an array of values
+                        field.Value.Items = items.Select(i => i.value).ToArray();
+                    
+                    var assetObj = asset as IDictionary<string, object>;
+                    //remove the original values as they are no longer needed
+                    assetObj.Remove(field.Key.Name);
+
+                }
+            }
+
+        }
+
+        private void ConvertMultiSelectValuesToXml(Dictionary<FieldType, MultiSelectField> multiSelectDetails, XElement asset, Dictionary<string, string> namespaces = null)
+        {
+            if (multiSelectDetails.Any())
+            {
+                foreach (var field in multiSelectDetails)
+                {
+                    var p = DynamicHelper.GetXElement(field.Key.Name, namespaces, asset);
+                    asset.Add(p);
+
+                    foreach (var i in field.Value.Items)
+                    {
+                        if (field.Value.Fields.Count > 1)
+                            p.Add(DynamicHelper.ConvertToXml(i, field.Value.ItemName, namespaces, p));
+                        else
+                            p.Add(DynamicHelper.GetXElement(field.Value.ItemName, namespaces, p, i));
+                    }
+                }
+            }
+        }
+
+        private void ConvertMultiSelectValueToJson(Dictionary<FieldType, MultiSelectField> multiSelectDetails, dynamic asset)
+        {
+            var dic = (IDictionary<string, object>)asset;
+
+            if (multiSelectDetails.Any())
+            {
+                foreach (var field in multiSelectDetails)
+                {
+                    dic.Add(field.Key.Name, field.Value.Items);
+                }
+            }
+        }
+
+        #endregion
+
+
         /// <summary>
         /// Sends back data based on a custom route.
         /// </summary>
@@ -216,11 +347,13 @@ namespace d360.web.Controllers.Services
                                  ServiceID = s.ID,
                                  en.AssetType,
                                  en.FieldTypes,
+                                 EntityFieldTypeID = f.ID,
                                  f.AllowFilter,
                                  f.AllowSelect,
                                  f.AllowSort,
                                  f.JsonFieldNameOverride,
                                  f.XmlFieldNameOverride,
+                                 f.ItemNameOverride,
                                  f.FieldType,
                                  EntityUri = u,
                                  Endpoint = e
@@ -276,6 +409,7 @@ namespace d360.web.Controllers.Services
                     where   A.AssetTypeID = @id and  D.[key] =@key";
 
                 DateTime lastModifiedDate = Company.Query<DateTime>(lastmodifiedDateSql, dbArgs).FirstOrDefault();
+                Dictionary<FieldType, MultiSelectField> multiSelectDetails = new Dictionary<FieldType, MultiSelectField>();
 
                 foreach (var f in config)
                 {
@@ -306,6 +440,17 @@ namespace d360.web.Controllers.Services
                         case "DATE":                            
                             columnSql += $", convert(varchar, cast(F{ fID}.FormattedValue as date), 120) as [{fieldName}]";
                             break;
+                        case "LOOKUP":
+                            if (f.FieldType.AllowMultipleValues)
+                            {
+                                multiSelectDetails.Add(f.FieldType, new MultiSelectField(f.EntityFieldTypeID, f.ItemNameOverride));
+                                columnSql += $", F{fID}.Value as [{fieldName}]";
+                            }
+                            else
+                            {
+                                columnSql += $", F{fID}.FormattedValue as [{fieldName}]";
+                            }
+                            break;
                         default:
                             columnSql += $", F{fID}.FormattedValue as [{fieldName}]";
                             break;
@@ -324,6 +469,9 @@ namespace d360.web.Controllers.Services
                 if (asset == null)
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
 
+                //process multiselect values
+                GetMultiSelectValues(multiSelectDetails, asset);
+
                 var canoUri = JsonResultLinkModel.BASE_URI + Request.RequestUri.PathAndQuery;
 
                 //Determine whether it is JSON or XML to send back to caller, and format appropriately
@@ -332,6 +480,9 @@ namespace d360.web.Controllers.Services
                 {
                     var dic = (IDictionary<string, object>)asset;
                     var exp = new ExpandoObject() as IDictionary<string, Object>;
+
+                    ConvertMultiSelectValueToJson(multiSelectDetails, asset);
+
                     foreach (var property in dic)
                     {
                         if (property.Value != null) exp.Add(property.Key, property.Value);
@@ -349,6 +500,8 @@ namespace d360.web.Controllers.Services
 
                     XElement xAsset = DynamicHelper.ConvertToXml(asset, itemNode, namespaces);
                     xAsset.Add(new XAttribute("id", asset.id));
+
+                    ConvertMultiSelectValuesToXml(multiSelectDetails, xAsset, namespaces);
 
                     XElement xLinks = DynamicHelper.GetXElement("Links", namespaces, xAsset); 
                     XElement link = DynamicHelper.GetXElement("link", namespaces, xLinks);
@@ -419,11 +572,13 @@ namespace d360.web.Controllers.Services
                                  s.MaximumCacheAge,
                                  en.AssetType,
                                  en.FieldTypes,
+                                 EntityFieldTypeID = f.ID,
                                  f.AllowFilter,
                                  f.AllowSelect,
                                  f.AllowSort,
                                  f.JsonFieldNameOverride,
                                  f.XmlFieldNameOverride,
+                                 f.ItemNameOverride,
                                  f.FieldType,
                                  EntityUri = u,
                                  Endpoint = e
@@ -763,11 +918,12 @@ namespace d360.web.Controllers.Services
                 var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
 
                 // gov-4840 lloyds doesnt want this after all
-               /* if (assetType != null && assetType.Object == "ReferenceItemType")
-                {
-                    columnSql += ", D.[Key] as [Code]";
-                }*/
-                
+                /* if (assetType != null && assetType.Object == "ReferenceItemType")
+                 {
+                     columnSql += ", D.[Key] as [Code]";
+                 }*/
+
+                Dictionary<FieldType, MultiSelectField> multiSelectDetails = new Dictionary<FieldType, MultiSelectField>();
 
                 foreach (var f in config)
                 {
@@ -863,6 +1019,12 @@ namespace d360.web.Controllers.Services
                     else if (fieldDataType != "nvarchar")
                     {
                         formattedValueColumnSql = $"cast(F{fID}.FormattedValue as {fieldDataType})";
+                    }
+
+                    if (f.FieldType.Type == "Lookup" && f.FieldType.AllowMultipleValues)
+                    {
+                        multiSelectDetails.Add(f.FieldType, new MultiSelectField(f.EntityFieldTypeID, f.ItemNameOverride));
+                        formattedValueColumnSql =  $"F{fID}.Value";
                     }
 
                 
@@ -1241,13 +1403,17 @@ namespace d360.web.Controllers.Services
                 HttpResponseMessage responseMessage = null;
 
                 //Determine whether it is JSON or XML to send back to caller, and format appropriately.
-                if (asJson)
+                if (asJson || true)
                 {
                     var res = assets.ToList();
                     for (int i = 0; i < res.Count(); i++)
                     {
                         var dic = (IDictionary<string, object>)res[i];
                         var exp = new ExpandoObject() as IDictionary<string, Object>;
+
+                        GetMultiSelectValues(multiSelectDetails, res[i]);
+                        ConvertMultiSelectValueToJson(multiSelectDetails, res[i]);
+
                         foreach (var property in dic)
                         {
                             if (property.Value != null)
@@ -1280,8 +1446,13 @@ namespace d360.web.Controllers.Services
 
                     foreach (var a in assets)
                     {
+                        GetMultiSelectValues(multiSelectDetails, a);
+
                         var xNode = DynamicHelper.ConvertToXml(a, itemNode, namespaces, xItems);
                         (xNode as XElement).Add(new XAttribute("id", a.id));
+
+                        ConvertMultiSelectValuesToXml(multiSelectDetails, xNode, namespaces);
+
                         xItems.Add(xNode);
                     }
 

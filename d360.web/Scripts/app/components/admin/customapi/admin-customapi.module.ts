@@ -19,6 +19,7 @@ import { AdminCustomAPIServiceDetailComponent } from './admin-customapi-service-
 import { AdminCustomAPIEndpointDetailComponent } from './admin-customapi-endpoint-detail.component';
 import { AdminCustomAPIEndpointVersionsComponent } from './admin-customapi-endpoint-version.component';
 import { AdminCustomAPIEndpointVersionFieldsComponent } from './admin-customapi-endpoint-version-fields.component';
+import { AdminCustomAPIEndpointVersionFieldsEditorComponent } from './admin-customapi-endpoint-version-fields-editor.component';
 import { AdminCustomAPIEndpointVersionUriTypesComponent } from './admin-customapi-endpoint-version-uris.component';
 import { AdminCustomAPIServiceNamespaceComponent } from './admin-customapi-service-namespace.component';
 
@@ -29,7 +30,8 @@ import {
     EditorModule,
     InputTextModule,
     SharedModule,
-    DataTableModule
+    DataTableModule,
+    MultiSelectModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -43,6 +45,8 @@ import {
         //prime              
         SharedModule,
         DataTableModule,
+        MultiSelectModule,
+        ButtonModule,
 
         //d3s                
         CoreModule,
@@ -58,6 +62,7 @@ import {
         AdminCustomAPIEndpointDetailComponent,
         AdminCustomAPIEndpointVersionsComponent,
         AdminCustomAPIEndpointVersionFieldsComponent,
+        AdminCustomAPIEndpointVersionFieldsEditorComponent,
         AdminCustomAPIEndpointVersionUriTypesComponent,
         AdminCustomAPIServiceNamespaceComponent,
     ],

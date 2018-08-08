@@ -20,6 +20,8 @@ namespace d360.model
 
         public DbSet<ApiEntityFieldType> ApiEntityFieldTypes { get; set; }
 
+        public DbSet<ApiEntityFieldTypeMultiSelectField> ApiEntityFieldTypeMultiSelectFields { get; set; }
+
         public DbSet<ApiEntityUri> ApiEntityUris { get; set; }
 
         public DbSet<ApiNamespace> ApiNamespaces { get; set; }

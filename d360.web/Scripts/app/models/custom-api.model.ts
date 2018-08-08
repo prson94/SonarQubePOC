@@ -39,8 +39,10 @@ export class ApiField {
     AllowFilter: boolean;
     JsonFieldNameOverride: string;
     XmlFieldNameOverride: string;
+    ItemNameOverride: string;
     EntityID: number;
     FieldTypeID: number;
+    MultiSelectFields: any[];
 }
 
 export class ApiUri {

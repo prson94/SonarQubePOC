@@ -78,6 +78,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
+    <Compile Include="entities\Api\ApiEntityFieldTypeMultiSelectField.cs" />
     <Compile Include="entities\Api\ApiEntityUri.cs" />
     <Compile Include="entities\Api\ApiEntityFieldType.cs" />
     <Compile Include="entities\Api\ApiEntity.cs" />
