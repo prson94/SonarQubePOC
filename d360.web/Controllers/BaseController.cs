@@ -863,21 +863,23 @@ namespace d360.web.Controllers
                         if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
                         {
                             var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
-                            bool isSubject = (intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID);
-                            var obj = isSubject ? intersectType.Object : intersectType.Subject;
-                            var objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
-                            var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
+                            if (intersectType != null)
+                            {
+                                bool isSubject = (intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID);
+                                var obj = isSubject ? intersectType.Object : intersectType.Subject;
+                                var objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+                                var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
-                            if (cardinality != Cardinality.Many)
-                                fld.MultiSelect = false;
-                            else
-                                fld.MultiSelect = true;
+                                if (cardinality != Cardinality.Many)
+                                    fld.MultiSelect = false;
+                                else
+                                    fld.MultiSelect = true;
 
-                            var result = Company.GetRelationshipFieldItems(ft.ID, @object, objectID);
+                                var result = Company.GetRelationshipFieldItems(ft.ID, @object, objectID);
 
-                            fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
-                            fld.RecordCount = (int)result["Count"];
-
+                                fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
+                                fld.RecordCount = (int)result["Count"];
+                            }
                         }
 
                         #endregion Relationship
