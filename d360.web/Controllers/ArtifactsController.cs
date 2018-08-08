@@ -106,7 +106,7 @@ where   A.Type = 'ArtifactType'
 
             sql = $"select * from ({sql}) A ";
             
-            var filterSql = applyFilteringSuffixBindRaw(Request, dbArgs, fields:fields);
+            var filterSql = applyFilteringSuffixBindRaw(Request, dbArgs, fields:fields, applyHiddenFilters:true);
 
             sql = sql + filterSql;
 
