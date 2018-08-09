@@ -83,8 +83,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
         this.sub = this.route.params.subscribe(params => {
-            this.canReadSelectedType = false;
-            //this.setCommonRightSideBar(true, false, false, false, true, true, false, true);
+            this.canReadSelectedType = false;            
 
             //load default perms
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
@@ -149,9 +148,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                             if (this.authenticationService.isAdmin) {
                                 let permissions = new RightSidebarItem()
                                 permissions.hasDynamicUrl = true;
-                                permissions.icons = ['fa-user'];
+                                permissions.icons = ['fa-bars'];
                                 permissions.tag = 'responsibilities'
-                                permissions.title = 'Ownership'
+                                permissions.title = 'Responsibilities'
                                 permissions.url = '/sidebar/responsibilities'
                                 permissions.dynamicUrlCallback = (() => {
                                     return `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`
@@ -195,12 +194,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     changeType(e: any) {
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);
-        //this.permissionsService.getPermissions(this.selectedReferenceListId, "ReferenceItemType")
-        //    .then(result => {
-        //        this.canAddReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.ModifyAsset);
-        //        this.canEditReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.ModifyAsset);
-        //        this.canRemoveReferenceItem = ResponsibilityTypeRelationPermission.hasPermission(result, Permission.DeleteAsset);
-        //    });
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);        
     }
 };

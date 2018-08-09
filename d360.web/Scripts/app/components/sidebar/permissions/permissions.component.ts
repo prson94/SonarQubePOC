@@ -11,7 +11,7 @@ import { AuthenticationService } from '../../../services/authentication.service'
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <d3s-responsibility-relations queryType="A" [id]="assetTypeId" showAddButton="true" showDeleteButton="true"></d3s-responsibility-relations>                        
+                        <d3s-responsibility-relations queryType="A" [id]="assetTypeId" [showAddButton]="false" showDeleteButton="true"></d3s-responsibility-relations>                        
                     </div>
                 </div>
             </div>
