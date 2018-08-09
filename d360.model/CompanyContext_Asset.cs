@@ -64,14 +64,19 @@ namespace d360.model
             #region Administrator Editability Sql Syntax
 
             var editRightsColumnStatement = "1 as P_CanEdit, 1 as P_CanDelete,";
-            var editRightsJoinStatement = "";
-
+            
             if (!CurrentResourceIsAdmin)
             {
-                editRightsColumnStatement = " IIF(S_E.[Count] = 0, 0, 1) as P_CanEdit, IIF(S_D.[Count] = 0, 0, 1) as P_CanDelete, ";
-                editRightsJoinStatement = $@"
-cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
-cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
+                editRightsColumnStatement = @" CASE 
+                    WHEN EXISTS((select 1 from ResponsibilityDetail r where r.ResourceID = @r and((r.AssetTypeID = AssetTypeID and r.AssetID = 0) ) and r.PermissionsBitMask & 2 = 2) ) THEN 1
+                    WHEN EXISTS((select 1 from ResponsibilityDetail r where r.ResourceID = @r and((r.AssetID = AssetID and r.AssetID = 0) ) and r.PermissionsBitMask & 2 = 2) ) THEN 1
+                    ELSE 0
+                END as P_CanEdit,
+				CASE
+                    WHEN EXISTS((select 1 from ResponsibilityDetail r where r.ResourceID = @r and((r.AssetTypeID = AssetTypeID and r.AssetID = 0)) and r.PermissionsBitMask & 4 = 4) ) THEN 1
+                    WHEN EXISTS((select 1 from ResponsibilityDetail r where r.ResourceID = @r and((r.AssetID = AssetID and r.AssetID = 0) ) and r.PermissionsBitMask & 4 = 4) ) THEN 1
+                    ELSE 0
+                END as P_CanDelete,";
             }
 
             #endregion
@@ -134,8 +139,7 @@ left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_R.Subject = A.
             if (parentIntersectType != null)
             {
                 parentOuterSqlColumn = @"ParentID, Parent, ParentUrl,";
-                parentSqlColumn = @"arp.ParentArtifactID as ParentID, parp.DisplayValue as Parent, '' as ParentUrl, ";
-                //parentSqlJoin = @" cross apply [dbo].[GetArtifactParentByAssetID](A.ID) PID";
+                parentSqlColumn = @"arp.ParentArtifactID as ParentID, parp.DisplayValue as Parent, '' as ParentUrl, ";                
                 parentSqlJoin = @" inner join [utility].[ArtifactAssetParent] arp on a.id = arp.assetid cross apply [dbo].[GetArtifactDisplayValue](arp.ParentAssetID) parp";
             }
 
@@ -159,13 +163,13 @@ left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_R.Subject = A.
                         var paramPrefix = $"AttType{f.AttributeTypeID}";
 
                         dbArgs.Add($"{paramPrefix}", f.AttributeTypeID);
-                        dbArgs.Add($"{paramPrefix}Value", $"{wildcardValue(f.RawValue)}");//$"\"{f.RawValue}\"");
+                        dbArgs.Add($"{paramPrefix}Value", $"{wildcardValue(f.RawValue)}");
 
                         filterWhereList.Add(
     $@"A.ObjectID in (
 select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{paramPrefix} and FormattedValue like @{paramPrefix}Value
 )"
-                            ); //CONTAINS(FormattedValue, @{paramPrefix}Value)
+                            );
                     }
 
                     if (filter is UiRequestFieldFilterValue)
@@ -235,11 +239,7 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                     if (filter is UiRequestOwnershipFilterValue)
                     {
                         var f = filter as UiRequestOwnershipFilterValue;
-
-                        //var groupFilters = f.Items.Where(i => i.FilterType == UiRequestOwnershipFilterType.Group).ToList();
-                        //var organizationFilters = f.Items.Where(i => i.FilterType == UiRequestOwnershipFilterType.Organization).ToList();
-                        //var userFilters = f.Items.Where(i => i.FilterType == UiRequestOwnershipFilterType.User).ToList();
-
+                        
                         var index = 1;
                         foreach (var o in f.Items)
                         {
@@ -443,8 +443,7 @@ where	A.AssetTypeID = @atID
 OPTION (RECOMPILE)";
 
             count = Query<int>(countSql, dbArgs).Single();
-            //count = ExecuteQuery<int>(countSql, countParameters).Single();
-            
+                        
             pageNumber = (pageNumber < 0) ? 0 : pageNumber;
             if (pageSize < 0)
                 pageSize = 25;
@@ -454,18 +453,18 @@ OPTION (RECOMPILE)";
 select	*
 from	(
 		select	AssetID, Object, ObjectID, Type, TypeID, 
-               {parentOuterSqlColumn}
-                P_CanEdit, P_CanDelete,
+               {parentOuterSqlColumn}                
+                {editRightsColumnStatement}
 				{selectFieldString}
 		from	(
 				select	A.ID as AssetID,
+                        A.AssetTypeID as AssetTypeID,
 						A.Object,
 						A.ObjectID,        
 						AST.Object as Type,
 						AST.ObjectID as TypeID,
                         {parentSqlColumn}
-						FT.ID as FieldTypeID,
-                        {editRightsColumnStatement}
+						FT.ID as FieldTypeID,                        
 						case 
 							when FT.AllowAllValue = 1 and F_O.Value = '0' then FT.AllowAllLabel 
                             when F_O.Value is not null then F_O.FormattedValue
@@ -477,8 +476,7 @@ from	(
 				from	Asset A{tableHints}
                         {parentSqlJoin} 
                         inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
-                        {filterJoinString} 
-                        {editRightsJoinStatement} 
+                        {filterJoinString}                         
 						inner join FieldType FT{tableHints} on FT.ID in ({selectFieldIDs}) and FT.AssetTypeID = A.AssetTypeID
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
@@ -494,9 +492,7 @@ from	(
 		) A
 OPTION (RECOMPILE)";
 
-            return Query<dynamic>(sql, dbArgs);
-            //var items = ExecuteQuery<dynamic>(sql, queryParameters);
-            //Dapper.SqlMapper.Parse()
+            return Query<dynamic>(sql, dbArgs);            
         }
 
         private string GetFieldTypeSort(string fieldName, bool ascending, string datatype)
@@ -518,9 +514,8 @@ OPTION (RECOMPILE)";
             switch (condition)
             {
                 case "EQUAL":
-                    dbArgs.Add(bind, $"{value}");// $"\"{f.RawValue}\"");
-                    valueColumnQuery = $"{fieldName} = @{bind}";
-                    //valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})"; 
+                    dbArgs.Add(bind, $"{value}");
+                    valueColumnQuery = $"{fieldName} = @{bind}";                    
                     break;
                 case "CONTAINS":
                     dbArgs.Add(bind, $"%{wildcardValue(value)}%");
@@ -546,7 +541,7 @@ OPTION (RECOMPILE)";
                 case "IN_MULTI":
                     try
                     {
-                        var values = value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries);//.Select(i => int.Parse(i)).ToList();
+                        var values = value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries);
                         var inParamsList = new List<string>();
                         for (var iLoop = 0; iLoop < values.Length; iLoop++)
                         {
@@ -558,13 +553,7 @@ OPTION (RECOMPILE)";
                             valueColumnQuery = $"{fieldName} in ({string.Join(",", inParamsList)})";
                     }
                     catch { }
-                    break;
-                //case "IN_MULTI":
-                //    var multiValues = f.RawValue.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries).Select(i => $"\"{i}\"").ToList();
-                //    var multiConcatenatedValue = string.Join($" {f.Operator} ", multiValues);
-                //    dbArgs.Add(bind, multiConcatenatedValue);
-                //    valueColumnQuery = $"CONTAINS({nonPivotFieldName}, @{bind})";
-                //    break;
+                    break;                
                 case "NULL":
                     valueColumnQuery = $"{fieldName} is null";
                     break;
