@@ -1403,7 +1403,7 @@ namespace d360.web.Controllers.Services
                 HttpResponseMessage responseMessage = null;
 
                 //Determine whether it is JSON or XML to send back to caller, and format appropriately.
-                if (asJson || true)
+                if (asJson)
                 {
                     var res = assets.ToList();
                     for (int i = 0; i < res.Count(); i++)
