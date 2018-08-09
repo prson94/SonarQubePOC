@@ -48,7 +48,9 @@ namespace d360.web.Controllers
 
             var dbArgs = new Dapper.DynamicParameters();
 
-            dbArgs.Add("id", id);
+            var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
+
+            dbArgs.Add("typeId", assetType.ID);
 
             joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
 
@@ -86,7 +88,7 @@ from	AssetDetail A
         {parentSqlJoin} 
         {joins} 
 where   A.Type = 'ArtifactType' 
-        and A.TypeID = @id 
+        and A.TypeID = @typeId 
         and A.[State] = 1 ";
 
             #endregion
