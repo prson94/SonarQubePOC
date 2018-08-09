@@ -267,7 +267,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                     hash = status.charCodeAt(i) + ((hash << 5) - hash);
                     hash = hash & hash;
                 }
-                return `hsl(${hash % 360}, 70%, 70%)`;
+                return `hsl(${(hash*2) % 360}, 70%, 70%)`;
         }
     }
 
