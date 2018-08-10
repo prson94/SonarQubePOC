@@ -1122,7 +1122,7 @@ where	T.ID = @id";
 
         public static string ImpactAnalysisDiagram = @"
 declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
-declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateid int, intersectid int, isLeaf bit)
+declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateLabel nvarchar(250), predicateid int, intersectid int, isLeaf bit)
 
 	insert into @nodes
 		select	
@@ -1141,6 +1141,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 					when I.Subject = @type and I.SubjectID = @id then coalesce(P.Name, 'uses')
 					else coalesce(P.Inverse, 'used in')
 				end as [Predicate],
+                coalesce(P.Name, 'uses') + ' (' + coalesce(P.Inverse, 'used in') + ')' as [PredicateLabel],
 				P.ID as PredicateID,
 				I.ID,
 				1 as isLeaf
@@ -1201,6 +1202,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 				null,
 				null,
 				null,
+				null,
 				1 as isLeaf
 		from	Asset D
 				inner join AssetType DT on DT.ID = D.AssetTypeID
@@ -1220,6 +1222,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 			    D.[Name] as TextPath,
 				coalesce(S.IconBackColor, '#000') as IconBackColor,
 				coalesce(S.IconForeColor, '#fff') as IconForeColor,
+				null,
 				null,
 				null,
 				null,
@@ -1251,7 +1254,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 
         public static string ImpactAnalysisDiagramFusion = @"
     declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
-    declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateid int, intersectid int)
+    declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateLabel nvarchar(250), predicateid int, intersectid int)
 
     declare @typeName varchar(50), @typeId int;
 
@@ -1273,6 +1276,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 					    when I.Subject = @type and I.SubjectID = @id then coalesce(P.Name, 'uses')
 					    else coalesce(P.Inverse, 'used in')
 				    end as [Predicate],
+                    coalesce(P.Name, 'uses') + ' (' + coalesce(P.Inverse, 'used in') + ')',
 				    P.ID as PredicateID,
 				    I.ID
     from [Intersect] I

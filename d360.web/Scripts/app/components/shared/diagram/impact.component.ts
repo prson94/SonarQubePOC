@@ -160,7 +160,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                         if (predicate == null && n.predicateid != null) {
                             this.filters.push({
                                 key: n.predicateid.toString(),
-                                name: n.predicate,
+                                name: n.predicateLabel,
                                 type: FilterType.Predicate,
                                 selected: true
                             });
@@ -233,7 +233,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
             if (existing == -1 && n.data.predicateid != null) {
                 this.filters.push({
                     key: n.data.predicateid.toString(),
-                    name: n.data.predicate,
+                    name: n.data.predicateLabel,
                     type: FilterType.Predicate,
                     selected: true
                 });

@@ -24,6 +24,7 @@ export class NodeModel {
     obj: string;
     objid: number;
     predicate: string;
+    predicateLabel: string;
     predicateid: number;
     typeName: string;
     typeNamePlural: string;
