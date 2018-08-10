@@ -76,13 +76,13 @@ namespace d360.model
             if (!CurrentResourceIsAdmin)
             {
                 editRightsColumnStatement = @" CASE 
-                    WHEN EXISTS((select 1 from ResponsibilityDetail r where r.ResourceID = @r and((r.AssetTypeID = AssetTypeID and r.AssetID = 0) ) and r.PermissionsBitMask & 2 = 2) ) THEN 1
-                    WHEN EXISTS((select 1 from ResponsibilityDetail r where r.ResourceID = @r and((r.AssetID = AssetID and r.AssetID = 0) ) and r.PermissionsBitMask & 2 = 2) ) THEN 1
+                    WHEN EXISTS((select 1 from ResponsibilityAllAsset r where r.ResourceID = @r and((r.AssetTypeID = AssetTypeID and r.AssetID = 0) ) and r.PermissionsBitMask & 2 = 2) ) THEN 1
+                    WHEN EXISTS((select 1 from ResponsibilityAllAsset r where r.ResourceID = @r and((r.AssetID = AssetID and r.AssetID = 0) ) and r.PermissionsBitMask & 2 = 2) ) THEN 1
                     ELSE 0
                 END as P_CanEdit,
 				CASE
-                    WHEN EXISTS((select 1 from ResponsibilityDetail r where r.ResourceID = @r and((r.AssetTypeID = AssetTypeID and r.AssetID = 0)) and r.PermissionsBitMask & 4 = 4) ) THEN 1
-                    WHEN EXISTS((select 1 from ResponsibilityDetail r where r.ResourceID = @r and((r.AssetID = AssetID and r.AssetID = 0) ) and r.PermissionsBitMask & 4 = 4) ) THEN 1
+                    WHEN EXISTS((select 1 from ResponsibilityAllAsset r where r.ResourceID = @r and((r.AssetTypeID = AssetTypeID and r.AssetID = 0)) and r.PermissionsBitMask & 4 = 4) ) THEN 1
+                    WHEN EXISTS((select 1 from ResponsibilityAllAsset r where r.ResourceID = @r and((r.AssetID = AssetID and r.AssetID = 0) ) and r.PermissionsBitMask & 4 = 4) ) THEN 1
                     ELSE 0
                 END as P_CanDelete,";
             }
@@ -265,7 +265,7 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                     break;
                             }
 
-                            filterWhereList.Add($"A.ID in (select AssetID from ResponsibilityDetail{tableHints} where SecurityAsset = '{securityAsset}' and SecurityAssetID = {o.SecurityAssetID} and ResponsibilityTypeID = {o.ResponsibilityTypeID} )");
+                            filterWhereList.Add($"A.ID in (select AssetID from ResponsibilityAllAsset{tableHints} where SecurityAsset = '{securityAsset}' and SecurityAssetID = {o.SecurityAssetID} and ResponsibilityTypeID = {o.ResponsibilityTypeID} )");
 
                             index++;
                         }
@@ -446,7 +446,7 @@ from	Asset A{tableHints}
         {filterJoinString}         
 where	A.AssetTypeID = @atID
 		and A.State = 1
-        and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID) OR (AssetTypeID = A.AssetTypeID and AssetID = 0) ))
+        and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID) OR (AssetTypeID = A.AssetTypeID and AssetID = 0) ))
         {filterWhereString}
 OPTION (RECOMPILE)";
             
@@ -489,7 +489,7 @@ from	(
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
 						{fieldFromRelationshipJoinStatement} 
-                where   not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID) or (AssetID = 0 and AssetTypeID = A.AssetTypeID) ) )
+                where   not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID) or (AssetID = 0 and AssetTypeID = A.AssetTypeID) ) )
                         {filterWhereString}
 				) A
 		pivot	(
