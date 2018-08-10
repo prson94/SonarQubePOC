@@ -4135,10 +4135,10 @@ order by C.TextPath";
 		        end as Via,
                 RD.Context
         from	ResponsibilityDetail RD
-		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @o and T.ObjectID = @id
+		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = {resourceID} and T.Object = '{type.ToString()}' and T.ObjectID = {id.ToString()}
         {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? $"where RD.ResponsibilityTypeID = {(int)responsibilityTypeId}" : "")}";
 
-            return Company.Query<dynamic>(sql, new { resourceID, o = type.ToString(), id });
+            return Company.Query<dynamic>(sql).ToList();
         }
 
 
