@@ -7,9 +7,16 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace d360.model
 {
+    public class AssetResults
+    {
+        public int Count { get; set; }
+        public IEnumerable<dynamic> Results { get; set; }        
+    }
+
     partial class CompanyContext : BaseContext
     {
         #region DbSets
@@ -41,9 +48,10 @@ namespace d360.model
         /// <summary>
         /// This is the pivot version of the method above, but the paging is where this design broke down.
         /// </summary>
-        public IEnumerable<dynamic> GetPivotVersionDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, out int count, int pageNumber = 0, int pageSize = 25, bool useFieldNames = false, string sortField = "", string sortOrder = "", string simpleFilter = "")
+        public async Task<AssetResults> GetPivotVersionDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, bool useFieldNames = false, string sortField = "", string sortOrder = "", string simpleFilter = "")
         {
-            count = 0; //initialize
+            AssetResults results = new AssetResults();
+            results.Count = 0; //initialize
 
             var assetTypeID = at.ID;
 
@@ -129,14 +137,14 @@ left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_R.Subject = A.
 
             #region Parent Sql Syntax
 
-            var parentIntersectType = Filter<IntersectType>(i => i.Object == at.Object && i.ObjectID == at.ObjectID && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
-
+            var artifactTypeHasParent = TypeHasParent(SystemObjects.ArtifactType, at.ObjectID);
+            
             var parentOuterSqlColumn = @"";
             var parentSqlColumn = @"";
             var parentSqlJoin = @"";         
             var countRequireParentJoin = false;
 
-            if (parentIntersectType != null)
+            if (artifactTypeHasParent)
             {
                 parentOuterSqlColumn = @"ParentID, Parent, ParentUrl,";
                 parentSqlColumn = @"arp.ParentArtifactID as ParentID, parp.DisplayValue as Parent, '' as ParentUrl, ";                
@@ -340,7 +348,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
 		                                    group by A.ID
 		                            ) SF on SF.AssetID = A.ID" : "";
 
-                if (parentIntersectType != null)
+                if (artifactTypeHasParent)
                 {   
                     var joinInfo = fieldFromRelationshipAssets.Any() ? "" : " ) SF on SF.AssetID = A.ID ";
                     
@@ -441,8 +449,8 @@ where	A.AssetTypeID = @atID
         and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID) OR (AssetTypeID = A.AssetTypeID and AssetID = 0) ))
         {filterWhereString}
 OPTION (RECOMPILE)";
-
-            count = Query<int>(countSql, dbArgs).Single();
+            
+            results.Count = await Database.Connection.ExecuteScalarAsync<int>(countSql, dbArgs);
                         
             pageNumber = (pageNumber < 0) ? 0 : pageNumber;
             if (pageSize < 0)
@@ -492,7 +500,9 @@ from	(
 		) A
 OPTION (RECOMPILE)";
 
-            return Query<dynamic>(sql, dbArgs);            
+            results.Results =  await QueryAsync<dynamic>(sql, dbArgs);
+
+            return results;
         }
 
         private string GetFieldTypeSort(string fieldName, bool ascending, string datatype)

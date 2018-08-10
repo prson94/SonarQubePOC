@@ -11,6 +11,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace d360.web.Controllers
@@ -719,13 +720,13 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
         }
 
         [HttpGet, Route("artifactsbytype"), NonNullableParameters]
-        public JsonNetResult ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
+        public async Task<JsonNetResult> ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
-            return ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter);
+            return await ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter);
         }
 
         [HttpPost, Route("bytype"), NonNullableParameters]
-        public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
+        public async Task<JsonNetResult> ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             try
             {
@@ -740,13 +741,11 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                 }
                 var filters = GetFilterValuesFromRequest(Request,true);
 
-                int total;
-                //var results = Company.GetDynamicAssets(assetType, filters, out total, pagenum, pagesize, false, sortDataField, sortOrder, filter);
-                var results = Company.GetPivotVersionDynamicAssets(assetType, filters, out total, pagenum, pagesize, false, sortDataField, sortOrder, filter);
+                var results = await Company.GetPivotVersionDynamicAssets(assetType, filters, pagenum, pagesize, false, sortDataField, sortOrder, filter);
 
                 return new JsonNetResult
                 {
-                    Data = new { results, total },
+                    Data = new { results = results.Results, total = results.Count },
                     Formatting = Newtonsoft.Json.Formatting.None
                 };
             }
