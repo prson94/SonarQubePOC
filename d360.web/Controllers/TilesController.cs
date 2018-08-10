@@ -74,20 +74,23 @@ namespace d360.web.Controllers
         public async Task<JsonNetResult> ResponsibilityBreakdownByResource(int id, int? responsibilityTypeID)
         {
 
-            var sql = $@"
-		select		{QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
-					C.[Type],
-					C.TypeID,
-					count(1) as [Count]
-		from		ResponsibilityDetail C
-					inner join AssetType T on T.Object = C.Type and T.ObjectID = C.TypeID
-		where		C.IsVisible = 1 
-                    {(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}	
-					and C.ResourceID = @r
-		group by	{QueryConstants.HighLevelTypeCaseStatement} + T.Name,
-					C.[Type],
-					C.TypeID,
-					C.ResourceID;";
+            var sql = $@"select  
+		                    {QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
+			                 R.Type,
+			                 R.TypeID,
+			                 R.[Count]
+		                from AssetType T
+		                inner join (
+			                select 
+						                C.[Type],
+						                C.TypeID,
+						                count(1) as [Count]
+			                from ResponsibilityDetail C
+			                where		C.IsVisible = 1 
+						                 {(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}
+						                and C.ResourceID = @r
+			                group by C.[Type], C.TypeID
+		                ) R on R.[Type] = T.Object and R.TypeID = T.ObjectID";
 
             var query = await Company.QueryAsync<dynamic>(sql, new { r = id, rt = responsibilityTypeID });
 
