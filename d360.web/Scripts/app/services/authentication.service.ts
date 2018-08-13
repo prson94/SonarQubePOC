@@ -3,5 +3,19 @@ import { Subject } from 'rxjs/Subject';
 
 @Injectable()
 export class AuthenticationService {    
-    isAdmin: boolean = false;    
+    private _isAdmin: boolean = false;    
+
+    private isAdminSource = new Subject<boolean>();
+    public isAdmin$ = this.isAdminSource.asObservable();
+
+    get isAdmin(): boolean {
+        return this._isAdmin;
+    }
+
+    set isAdmin(val: boolean) {
+        this._isAdmin = val;
+        this.isAdminSource.next(val);
+    }
+
+
 }

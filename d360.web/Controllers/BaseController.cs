@@ -547,7 +547,20 @@ namespace d360.web.Controllers
             return hideData3SixtyUsers;
         }
 
-        internal JsonNetResult jsonNetException(Exception ex)
+        internal bool ShowAllUsersAPIKey()
+        {
+            var showAllUsersAPIKey = false;
+            var settings = Community.GetCompanySettings();
+            if (settings.Any(i => i.Key == "ShowAllUsersAPIKey"))
+            {
+                showAllUsersAPIKey = bool.Parse(settings["ShowAllUsersAPIKey"]);
+            }
+            return showAllUsersAPIKey;
+        }
+
+
+
+    internal JsonNetResult jsonNetException(Exception ex)
         {
             return new JsonNetResult
             {

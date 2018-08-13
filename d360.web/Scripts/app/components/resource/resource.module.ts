@@ -18,7 +18,7 @@ import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/share
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
-
+import { ApiKeyUsersGuard } from '../../guards/api-key-users.gurard';
 
 
 import { ResourceApiComponent } from './resource-api.component';
@@ -94,6 +94,7 @@ import {
         ResourceGroupsComponent
     ],
     providers: [
+       ApiKeyUsersGuard,
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 

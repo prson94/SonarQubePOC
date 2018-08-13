@@ -1,11 +1,14 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { AuthenticationService } from '../../../services/authentication.service';
+import { Subscription } from 'rxjs/Subscription';
 
 declare var CurrentResourceID;
 declare var SingleSignOn;
 declare var ResourceName;
 declare var ResourceEmail;
+declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-profile',
@@ -25,27 +28,46 @@ declare var ResourceEmail;
                                 <div class="col s12" *ngIf="!singleSignOn">&nbsp;</div>
                                 <div class="col s12" *ngIf="!singleSignOn"><a [routerLink]="'/resource/'+resourceId+'/changepassword'"><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;Change Password</a></div>
                                 <div class="col s12">&nbsp;</div>
-                                <div class="col s12"><a [routerLink]="'/resource/my/apikey'"><i class="fa fa-key" aria-hidden="true"></i>&nbsp;API Key</a></div>
-                        </div>
+                                <div class="col s12"  *ngIf="showAllUsersAPIKey"><a [routerLink]="'/resource/my/apikey'"><i class="fa fa-key" aria-hidden="true"></i>&nbsp;API Key</a></div>
+                         </div>
                     </div>
                 <span>`,    
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class HeaderProfileComponent {    
+export class HeaderProfileComponent implements OnInit , OnDestroy{    
+
     public active: boolean = false;
     private hideHandle: number = 0;
     public resourceId: number = CurrentResourceID;
     public singleSignOn: boolean = SingleSignOn;
     public userName: string = ResourceName;
     public userEmail: string = ResourceEmail;
-
+    private showAllUsersAPIKey: boolean = false;
+    private isAdminSub: Subscription;
     constructor(
         private router: Router,        
-        private ref: ChangeDetectorRef
+        private ref: ChangeDetectorRef,
+        private authenticationService: AuthenticationService
     ) { }
     
+    ngOnInit() {
 
+        this.isAdminSub = this.authenticationService.isAdmin$.subscribe(x => {
+            let isAdmin: boolean = x; 
+            if (isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true'))
+                this.showAllUsersAPIKey = true;
+            else
+                this.showAllUsersAPIKey = false;
+        });
+       
+        if (this.authenticationService.isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true'))
+            this.showAllUsersAPIKey = true;
+    }
+
+    ngOnDestroy(): void {
+        this.isAdminSub.unsubscribe();
+    }
     public resourceUrl() {
         return SiteUrlHelpers.getObjectUrl('Resource', this.resourceId);
     }
