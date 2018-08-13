@@ -94,16 +94,20 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                     credits: {
                         enabled: false
                     },
-                    tooltip: {
-                        pointFormat: '{point.y} Total Assigned Items'
+                    tooltip: {                        
+                        formatter: function () {
+                            return this.point.name +'<br>' + Highcharts.numberFormat(this.y, 0, '.', ',') +  ' Total Assigned Items';
+                        }
                     },
                     plotOptions: {
                         pie: {
                             allowPointSelect: true,
                             cursor: 'pointer',
-                            dataLabels: {
-                                enabled: true,
-                                format: '<b>{point.name}</b>: {point.y}',
+                            dataLabels: {                                
+                                enabled: true,                              
+                                formatter: function () {
+                                    return '<b>' + this.point.name+'</b>: ' + Highcharts.numberFormat(this.y, 0, '.', ',');
+                                },
                                 style: {
                                     color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                                 }
