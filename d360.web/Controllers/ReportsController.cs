@@ -140,6 +140,8 @@ namespace d360.web.Controllers
         {
             if (id > 0)
             {
+                bool isType = type.Contains("Type");
+
                 SystemObjects objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
                 var objectId = id;
                 if (objectType == SystemObjects.Artifact)
@@ -151,9 +153,16 @@ namespace d360.web.Controllers
                 var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType != "legacy").Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
 
                 List<ResponsibilityDetail> currentUserResponsibilityTypeList = new List<ResponsibilityDetail>();
-                if (!string.IsNullOrEmpty(type) && !type.Contains("Type"))
+                if (!string.IsNullOrEmpty(type) && !isType)
+                {
                     currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
-                else if (type.Contains("Type"))
+                    var asset = Company.GetAssetDetail(type, id);
+
+                    if (asset != null)
+                        currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.AssetTypeID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList();
+
+                }
+                else if (isType)
                     currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.TypeID == id && x.Type == type && x.ResourceID == Company.CurrentResourceID).ToList();
                 else
                     currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
