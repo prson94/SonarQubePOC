@@ -38,8 +38,7 @@ namespace d360.web.Controllers
                 Data = new
                 {
                     PublicKey = resource.APIPublicKey,
-                    PrivateKey = resource.APIPrivateKey,
-                    Token = resource.ApiReadOnlyAccessToken
+                    PrivateKey = resource.APIPrivateKey
                 },
                 Formatting = Newtonsoft.Json.Formatting.None
 
