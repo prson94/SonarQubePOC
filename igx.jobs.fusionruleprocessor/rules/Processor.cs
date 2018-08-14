@@ -420,7 +420,22 @@ namespace igx.jobs.fusionruleprocessor
 			where	(
 					R.UpdatedOn > @lastRun 
 					and R.[Enabled] = 1 					
-					)";
+					)
+
+        -- get igc integration jobs
+        union        
+            select	distinct
+					R.ID,
+                    R.Description,
+                    R.FusionID,
+                    R.ObjectType,
+                    R.ObjectID
+			from	integration.synchedassettype sat
+					inner join [fusion].[Rule] R on R.FusionID = sat.OptionalID
+			where	R.[Enabled] = 1 
+					and sat.LastSynchOn > @lastRun
+					and sat.OptionalIDName is not null and sat.OptionalIDName = 'FusionID'
+         ";
 
             return await company.QueryAsync<FusionRule>(sql, new { lastRun = lastPromotionRun });
             
