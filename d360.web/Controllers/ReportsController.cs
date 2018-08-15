@@ -159,7 +159,7 @@ namespace d360.web.Controllers
                     var asset = Company.GetAssetDetail(type, id);
 
                     if (asset != null)
-                        currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.AssetTypeID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList();
+                        currentUserResponsibilityTypeList.AddRange(Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.AssetTypeID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
 
                 }
                 else if (isType)
@@ -210,7 +210,10 @@ namespace d360.web.Controllers
                     {
                         List<core.entities.Views.ResponsibilityDetail> currentUserResponsibilityType = new List<core.entities.Views.ResponsibilityDetail>();
                         if (!string.IsNullOrEmpty(report.ObjectType) && !report.ObjectType.Contains("Type"))
+                        {
                             currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Object == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
+                            currentUserResponsibilityType.AddRange(Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Type == report.ObjectType + "Type" && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
+                        }
                         else if (report.ObjectType.Contains("Type"))
                             currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Type == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
                         else
