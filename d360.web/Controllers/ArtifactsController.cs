@@ -89,7 +89,7 @@ from	AssetDetail A
         {parentSqlJoin} 
         {joins} 
 where   A.Type = 'ArtifactType' 
-        and A.TypeID = @typeId 
+        and A.AssetTypeID = @typeId 
         and A.[State] = 1 ";
 
             #endregion
