@@ -108,7 +108,7 @@ from	CommentRelation CR
 
         public static string FusionResources = @"
 select	R.ResourceID, 
-        RE.ResourceName as Name, 
+        RE.FirstName + ' ' + RE.LastName as Name, 
         RE.Email 
 from	ResponsibilityDetail R 
         inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID and RE.Email not like '%?subject=%' 
