@@ -477,6 +477,24 @@ a.glossaryTerm
 	display: none;
 }
 
+.xref
+{
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+	color: blue;
+	text-decoration: underline;
+}
+
+.xref.xrefLink_NoPageNumber
+{
+	text-decoration: underline;
+	font-weight: normal;
+	font-style: normal;
+	color: #0000d0;
+	font-size: 100%;
+	font-family: Arial, sans-serif;
+}
+
 div.MCBreadcrumbsBox_0
 {
 	border-bottom-style: none;
@@ -499,24 +517,6 @@ div.MCBreadcrumbsBox_0
 	border-spacing: 0;
 	vertical-align: top;
 	padding-top: 0px;
-}
-
-.xref
-{
-	font-size: 100%;
-	font-family: Arial, sans-serif;
-	color: blue;
-	text-decoration: underline;
-}
-
-.xref.xrefLink_NoPageNumber
-{
-	text-decoration: underline;
-	font-weight: normal;
-	font-style: normal;
-	color: #0000d0;
-	font-size: 100%;
-	font-family: Arial, sans-serif;
 }
 
 .MCWebHelpFramesetLink a

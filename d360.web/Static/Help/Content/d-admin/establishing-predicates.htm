@@ -198,43 +198,31 @@
                         <tbody>
                             <tr class="TableStyle-PatternedRows-Body-LightRows">
                                 <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Data Lineage</td>
-                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Used to define source paths between objects. This predicate type must be used for lineage.</td>
-                            </tr>
-                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows">Reference Data Lineage</td>
-                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows">Used to define links between reference items across lists.</td>
-                            </tr>
-                            <tr class="TableStyle-PatternedRows-Body-LightRows">
-                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">Inter-type Hierarchy</td>
-                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Used to create tree structures or hierarchies referencing different asset types at each level.</td>
-                            </tr>
-                            <tr class="TableStyle-PatternedRows-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows" style="font-weight: bold;"><span style="font-weight: normal;">Intra-type Hierarchy</span>
-                                </td>
-                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows" style="font-weight: bold;"><span style="font-weight: normal;">Used to create tree structures or hierarchies referencing the same asset type at each level.</span>
-                                </td>
-                            </tr>
-                            <tr class="TableStyle-PatternedRows-Body-LightRows">
-                                <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows" style="font-weight: normal;">Grammatic Association</td>
-                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows" style="font-weight: bold;"><span style="font-weight: normal;">Used for synonyms, antonyms, abbreviations or grammatically similar terms.</span>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows" style="font-weight: normal;">
+                                    <p>Used to define source paths between objects. This predicate type must be used for lineage. </p>
+                                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>The relationship type for Data Lineage does not apply to legacy lineage.</p>
                                 </td>
                             </tr>
                             <tr class="TableStyle-PatternedRows-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows" style="font-weight: normal;">Simple</td>
-                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows" style="font-weight: normal;">Used to depict a relationship where lineage is not a consideration.</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows" style="font-weight: normal;">Grammatic Association</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows" style="font-weight: normal;">Used for synonyms, antonyms, abbreviations or grammatically similar terms.</td>
                             </tr>
                             <tr class="TableStyle-PatternedRows-Body-LightRows">
                                 <td class="TableStyle-PatternedRows-BodyE-Regular-LightRows">See Also</td>
                                 <td class="TableStyle-PatternedRows-BodyD-Regular-LightRows">Used for relationships between similar artifacts.</td>
                             </tr>
                             <tr class="TableStyle-PatternedRows-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-BodyB-Regular-DarkerRows">Usage</td>
-                                <td class="TableStyle-PatternedRows-BodyA-Regular-DarkerRows">Used for mapping items in the business glossary to items in the Fusion Data Dictionary.</td>
+                                <td class="TableStyle-PatternedRows-BodyE-Regular-DarkerRows" style="font-weight: normal;">Simple</td>
+                                <td class="TableStyle-PatternedRows-BodyD-Regular-DarkerRows" style="font-weight: normal;">Used to define a simple relationship between two assets.</td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-BodyB-Regular-LightRows">Usage</td>
+                                <td class="TableStyle-PatternedRows-BodyA-Regular-LightRows">Used to define a relationship where one asset is used in another asset.</td>
                             </tr>
                         </tbody>
                     </table>
                     <h2>Browsing predicates</h2>
-                    <p>Choose <b>Administration &gt; MetaModel &gt; Predicates</b> to view a list of existing predicates:</p>
+                    <p>Choose <b>Administration </b>&gt;<b> MetaModel </b>&gt;<b> Predicates</b> to view a list of existing predicates:</p>
                     <p>
                         <img src="../Resources/Images/admin/predicates.png" />
                     </p>
@@ -244,9 +232,11 @@
                         <img src="../Resources/Images/admin/predicate-add.png" />
                     </p>
                     <p>&#160;</p>
-                    <p>Provide a <b>Name</b> for your predicate (eg. Contains), and the name of the <b>Inverse</b> of the predicate too (eg. Contained In).</p>
-                    <p>Choose a <b>Functional Type</b> (eg. Data Lineage).</p>
-                    <p>Click <b>Save</b> to create the new predicate and return to the list of predicates.</p>
+                    <ol>
+                        <li value="1">Provide a <b>Name</b> for your predicate, for example Contains. Then, provide the name of the <b>Inverse</b> of the predicate, for example Contained In.</li>
+                        <li value="2">Choose a <b>Functional Type</b>, for example Data Lineage.</li>
+                        <li value="3">Click <b>Save</b> to create the new predicate and return to the list of predicates.</li>
+                    </ol>
                     <h2>Editing predicates</h2>
                     <p>You can click the <b>Edit</b> button next to a predicate to modify it, using the <b>Edit Predicate</b> panel:</p>
                     <p>

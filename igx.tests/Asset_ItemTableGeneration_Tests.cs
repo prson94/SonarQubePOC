@@ -32,7 +32,7 @@ namespace igx.tests
             var assetTypes = company.Query<AssetType>("select * from AssetType").ToList();
 
             assetTypes.ForEach(at => {
-                var assetTableSql = $"drop table asset.Item_{at.ID}";
+                var assetTableSql = $"drop table if exists asset.Item_{at.ID}";
                 company.Execute(assetTableSql);
             });
 

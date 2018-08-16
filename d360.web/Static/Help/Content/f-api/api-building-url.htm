@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Custom API guide|[%=System.LinkedTitle%]">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Building an API URL</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <script src="../../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#f-api/api-building-url.htm">Open topic with navigation</a>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h2>Building an API URL</h2>
+                    <p>For every configured API service, there is a unique URL that allows users to query <span style="font-weight: bold;" class="GeneralProduct">Infogix Data3Sixty Govern</span> object data. Your administrator configures and maintains these connections.</p>
+                    <p>A single connection service may have many endpoints, versions, and URI types associated with it. Your administrator can provide details on the base URL and various endpoints, versions, and URI types available for each service.</p>
+                    <h3>URI types</h3>
+                    <p>It is important to understand that there are two specific types of URI connections:</p>
+                    <ul>
+                        <li value="1">Singleton - Allows the return of data for only one object instance.</li>
+                        <li value="2">Collection - Allows the return of data for multiple objects.</li>
+                    </ul>
+                    <p>If a singleton URI Type is used in an API request, the request must specify an asset identity so a single item is returned. Failure to supply an identity results in an error. You may also use a collection URI Type to return data for a single object by using a filter, see the following section <a href="#URL" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">URL request syntax</a>.</p>
+                    <h3><a name="URL"></a>URL request syntax</h3>
+                    <p>The syntax of the API request follows a specific format and allows you to add options to make data selections. The general syntax of an API request is:</p>
+                    <p class="Code">https://hostname.com/services/custom/service_name/endpoint_name/version/ URI_type_name</p>
+                    <p>&#160;</p>
+                    <p>where:</p>
+                    <ul>
+                        <li value="1"><code>https</code> is the protocol</li>
+                        <li value="2"><code>hostname.com</code> is the hostname for your <span style="font-weight: bold;" class="GeneralProduct">Infogix Data3Sixty Govern</span> deployment</li>
+                        <li value="3"><code>services/custom</code> are the Custom API service identifiers</li>
+                        <li value="4"><code>service_name</code> is the name of the defined service</li>
+                        <li value="5"><code>endpoint_name</code> is the configured endpoint</li>
+                        <li value="6"><code>version</code> is the version number of the service</li>
+                        <li value="7"><code>URI_type_name</code> is the URI connection type (Singleton or Collection) configured for the request</li>
+                    </ul>
+                    <p>With the exception of protocol and service identifiers, these components are all custom to your environment and defined by your administrator.</p>
+                    <p>In addition, the Custom API supports several options to select and organize data. For details on using these options, see <a href="api-request-options.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">API request options</a>.</p>
+                    <h4>Collection URI Type Requests</h4>
+                    <p>To use a collection URI type, use the components listed above to construct the request. For example, given a base URL of <code>https://client.data3sixty.com/services/custom</code>, adding the following connection information constructs an API request to return all data found by the collection URI type "AllValues":</p>
+                    <ul>
+                        <li value="1">URI: <code>AcmeInc</code></li>
+                        <li value="2">Endpoint: <code>RiskCodes</code></li>
+                        <li value="3">Version: <code>1.5</code></li>
+                        <li value="4">URI Type Name: <code>AllValues</code> (a collection URI type) </li>
+                    </ul>
+                    <p>The complete API URL request is:</p>
+                    <p class="Code">https://client.data3sixty.com/services/custom/AcmeInc/RiskCodes/1.5/AllValues</p>
+                    <h4>Singleton URI type requests</h4>
+                    <p>Singleton URI types require the inclusion of the asset identity. For example, the following is an API request using a singleton URI "SingleResult" for an asset named "DFAST_10-50":</p>
+                    <p class="Code">https://client.data3sixty.com/services/custom/AcmeInc/1.5/SingleResult/ DFAST_10-50</p>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

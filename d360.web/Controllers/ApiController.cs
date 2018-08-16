@@ -3315,17 +3315,17 @@ end",
                         case FieldTypeComplexLookupRelationDirection.Back:
                             join.JoinStatement = (i == 0) ? 
                                 $"from [Intersect] I{i}" : 
-                                $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and I{i}.[State] not in (2,3) and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn}";
+                                $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn}";
                             break;
                         case FieldTypeComplexLookupRelationDirection.Forward:
                             join.JoinStatement = (i == 0) ? 
                                 $"from [Intersect] I{i}" : 
-                                $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and I{i}.[State] not in (2,3) and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}";
+                                $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}";
                             break;
                         default:
                             join.JoinStatement = (i == 0) ? 
                                 $"from [Intersect] I{i}" : 
-                                $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and I{i}.[State] not in (2,3) and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn} ) )";
+                                $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn} ) )";
                             break;
                     }
                     
@@ -3335,19 +3335,19 @@ end",
                         {
                             case FieldTypeComplexLookupRelationDirection.Back:
                                 join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
-                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and I{i}.[State] not in (2,3) and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Object = '{type}' and I{i}.ObjectID = {id}";
+                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Object = '{type}' and I{i}.ObjectID = {id}";
                                 objColumn = $"I{i}.Subject";
                                 objIDColumn = $"I{i}.SubjectID";
                                 break;
                             case FieldTypeComplexLookupRelationDirection.Forward:
                                 join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
-                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and I{i}.[State] not in (2,3) and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Subject = '{type}' and I{i}.SubjectID = {id}";
+                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Subject = '{type}' and I{i}.SubjectID = {id}";
                                 objColumn = $"I{i}.Object";
                                 objIDColumn = $"I{i}.ObjectID";
                                 break;
                             default:
                                 join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
-                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and I{i}.[State] not in (2,3) and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
                                 objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 break;
@@ -3383,7 +3383,7 @@ end",
                     }
                     if (addDeletedCheck)
                     {
-                        join.JoinStatement += $" and I{i}.[State] not in (2,3) and (A{i}.Deleted = 0 OR A{i}.Deleted is null)";
+                        join.JoinStatement += $" and (A{i}.Deleted = 0 OR A{i}.Deleted is null)";
                     }
                     break;
                 #endregion
@@ -3400,7 +3400,7 @@ end",
                     }
                     if (addDeletedCheck)
                     {
-                        join.JoinStatement += $" and I{i}.[State] not in (2,3) and A{i}.Deleted = 0";
+                        join.JoinStatement += $" and A{i}.Deleted = 0";
                     }
                     join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : (string.IsNullOrEmpty(permissionsWhere) ? "" : $" and {permissionsWhere}");
                     break;

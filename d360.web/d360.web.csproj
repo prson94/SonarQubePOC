@@ -730,6 +730,7 @@
     <Content Include="Scripts\app\polyfills.bundle.js" />
     <Content Include="Scripts\app\vendor.bundle.js" />
     <Content Include="Static\Help\Content\a-shared\legal-notice.htm" />
+    <Content Include="Static\Help\Content\b-release-notes\new-17aug.htm" />
     <Content Include="Static\Help\Content\c-user-guide\adding-artifacts.htm" />
     <Content Include="Static\Help\Content\c-user-guide\artifacts.htm" />
     <Content Include="Static\Help\Content\c-user-guide\assigning-ownership.htm" />
@@ -773,6 +774,7 @@
     <Content Include="Static\Help\Content\d-admin\admin-intro.htm" />
     <Content Include="Static\Help\Content\d-admin\azure-active-directory.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading-business-terms.htm" />
+    <Content Include="Static\Help\Content\d-admin\bulk-loading-relationships.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading-users.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading.htm" />
     <Content Include="Static\Help\Content\d-admin\certification-workflow.htm" />
@@ -802,6 +804,24 @@
     <Content Include="Static\Help\Content\d-admin\managing-users-groups.htm" />
     <Content Include="Static\Help\Content\d-admin\managing-users.htm" />
     <Content Include="Static\Help\Content\d-admin\workflow-form.htm" />
+    <Content Include="Static\Help\Content\f-api\api-building-url.htm" />
+    <Content Include="Static\Help\Content\f-api\api-configuration.htm" />
+    <Content Include="Static\Help\Content\f-api\api-end-users.htm" />
+    <Content Include="Static\Help\Content\f-api\api-fields.htm" />
+    <Content Include="Static\Help\Content\f-api\api-filtering-options.htm" />
+    <Content Include="Static\Help\Content\f-api\api-intro.htm" />
+    <Content Include="Static\Help\Content\f-api\api-namespace-config.htm" />
+    <Content Include="Static\Help\Content\f-api\api-request-options-summary.htm" />
+    <Content Include="Static\Help\Content\f-api\api-request-options.htm" />
+    <Content Include="Static\Help\Content\f-api\api-requests-format.htm" />
+    <Content Include="Static\Help\Content\f-api\api-results-formatting.htm" />
+    <Content Include="Static\Help\Content\f-api\api-service-endpoints.htm" />
+    <Content Include="Static\Help\Content\f-api\api-service.htm" />
+    <Content Include="Static\Help\Content\f-api\api-testing.htm" />
+    <Content Include="Static\Help\Content\f-api\api-uri-types.htm" />
+    <Content Include="Static\Help\Content\f-api\api-url-syntax.htm" />
+    <Content Include="Static\Help\Content\f-api\api-user-credentials.htm" />
+    <Content Include="Static\Help\Content\f-api\api-version.htm" />
     <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow10.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow11.png" />
@@ -832,6 +852,7 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\add-user.PNG" />
     <Content Include="Static\Help\Content\Resources\Images\admin\admin-menu.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\allocations.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\api-key.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\artifact-type-add.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\artifact-type-add2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\artifact-type-add3.png" />
@@ -848,6 +869,8 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\artifact-type-search.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\attributes.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\azure-ad.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-relation.jpg" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-relation2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-users4.jpg" />
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-users5.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-loading-users.PNG" />
@@ -858,6 +881,7 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\certification-workflow.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\certification-workflow2.PNG" />
     <Content Include="Static\Help\Content\Resources\Images\admin\certification-workflow4.PNG" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\child-artifact-type.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\company-logo.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\company-web-icon.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\customize.PNG" />
@@ -954,12 +978,18 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\workflows-form.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflows2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflows3.png" />
+    <Content Include="Static\Help\Content\Resources\Images\api\api-credentials.png" />
+    <Content Include="Static\Help\Content\Resources\Images\api\profile-button.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\CheckMark-EH24112014.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\checkmark-transparent-eh08032016.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\checkmark_black-EH18032015.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\favicon.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\NoteIconTransparent-SW18112015.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\play-video.png" />
+    <Content Include="Static\Help\Content\Resources\Images\Template\ReleaseNotes_Star.png" />
+    <Content Include="Static\Help\Content\Resources\Images\Template\ReleaseNotes_Star_21x22.png" />
+    <Content Include="Static\Help\Content\Resources\Images\Template\ReleaseNotes_Tick.png" />
+    <Content Include="Static\Help\Content\Resources\Images\Template\ReleaseNotes_Tick_21x21.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\ResultStep.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\tip16-SW27052015.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\Top.png" />
@@ -1113,6 +1143,7 @@
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflows1.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflows2.png" />
     <Content Include="Static\Help\Content\Resources\Stylesheets\Default_Lavastorm.css" />
+    <Content Include="Static\Help\Content\Resources\TableStyles\PatternedRows-infogix.css" />
     <Content Include="Static\Help\Content\Resources\TableStyles\PatternedRows.css" />
     <Content Include="Static\Help\csh.js" />
     <Content Include="Static\Help\Data\Alias.js" />
@@ -1132,6 +1163,8 @@
     <Content Include="Static\Help\Data\SearchPhrase_Chunk1.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk10.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk11.js" />
+    <Content Include="Static\Help\Data\SearchPhrase_Chunk12.js" />
+    <Content Include="Static\Help\Data\SearchPhrase_Chunk13.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk2.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk3.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk4.js" />
@@ -1144,6 +1177,7 @@
     <Content Include="Static\Help\Data\SearchStem_Chunk1.js" />
     <Content Include="Static\Help\Data\SearchStem_Chunk2.js" />
     <Content Include="Static\Help\Data\SearchTopic_Chunk0.js" />
+    <Content Include="Static\Help\Data\SearchTopic_Chunk1.js" />
     <Content Include="Static\Help\Data\SearchUrl_Chunk0.js" />
     <Content Include="Static\Help\Data\Synonyms.js" />
     <Content Include="Static\Help\Data\Synonyms.xml" />
@@ -1532,6 +1566,7 @@
     <None Include="Properties\PublishProfiles\AU - East - Uat.pubxml" />
     <None Include="Properties\PublishProfiles\EU - North - Development.pubxml" />
     <None Include="Properties\PublishProfiles\EU - North - Uat.pubxml" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Include="Properties\PublishProfiles\IN - Central - Development.pubxml" />
     <None Include="Properties\PublishProfiles\IN - Central - Uat.pubxml" />
     <None Include="Properties\PublishProfiles\UK - East - Development.pubxml" />
@@ -2288,7 +2323,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://demo.dev.data3sixty.local/</IISUrl>
+          <IISUrl>http://lmtom.data3sixty.local/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
