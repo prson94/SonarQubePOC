@@ -122,14 +122,14 @@ outer apply dbo.GetObjectDisplayValueById(
             {
                 fieldFromRelationshipCaseStatement = @"when FT.Type = 'FieldFromRelationship' and FT.LookupObjectType = 'IntersectType' then F_RF.FormattedValue";
                 fieldFromRelationshipJoinStatement = $@"
- left join [Intersect] F_R{tableHints} on	FT.LookupObjectType = 'IntersectType' 
-										and F_R.IntersectTypeID = FT.LookupObjectID 
+ left join [Intersect] F_REL{tableHints} on	FT.LookupObjectType = 'IntersectType' 
+										and F_REL.IntersectTypeID = FT.LookupObjectID 
 										and (
-											(F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID) or 
-											(F_R.Object = A.Object and F_R.ObjectID = A.ObjectID)
+											(F_REL.Subject = A.Object and F_REL.SubjectID = A.ObjectID) or 
+											(F_REL.Object = A.Object and F_REL.ObjectID = A.ObjectID)
 											)
-left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.Object else F_R.Subject end
-						and F_RF.ObjectID = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.ObjectID else F_R.SubjectID end
+left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_REL.Subject = A.Object and F_REL.SubjectID = A.ObjectID then F_REL.Object else F_REL.Subject end
+						and F_RF.ObjectID = case when F_REL.Subject = A.Object and F_REL.SubjectID = A.ObjectID then F_REL.ObjectID else F_REL.SubjectID end
 						and F_RF.FieldTypeID = FT.LookupObjectFieldTypeID ";
             }
 
