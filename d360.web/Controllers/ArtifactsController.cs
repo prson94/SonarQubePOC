@@ -114,9 +114,9 @@ where   A.Type = 'ArtifactType'
             sql = sql + filterSql;
 
             if (string.IsNullOrEmpty(filterSql))
-                sql += $" where not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and AssetID = A.AssetID)";
+                sql += $" where not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and ((AssetID = A.AssetID) or (AssetID = 0 and AssetTypeID = @typeId)))";
             else
-                sql += $" and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and AssetID = A.AssetID)";
+                sql += $" and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and ((AssetID = A.AssetID) or (AssetID = 0 and AssetTypeID = @typeId)))";
 
             if (string.IsNullOrEmpty(sortDataField))
             {
