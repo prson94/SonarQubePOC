@@ -72,20 +72,15 @@ namespace d360.model
             #region Administrator Editability Sql Syntax
 
             var editRightsColumnStatement = "1 as P_CanEdit, 1 as P_CanDelete,";
-            
+            var editRightsJoinStatement = "";
+
             if (!CurrentResourceIsAdmin)
             {
-                editRightsColumnStatement = @" CASE 
-                    WHEN EXISTS((select 1 from ResponsibilityAllAsset r where r.ResourceID = @r and((r.AssetTypeID = AssetTypeID and r.AssetID = 0) ) and r.PermissionsBitMask & 2 = 2) ) THEN 1
-                    WHEN EXISTS((select 1 from ResponsibilityAllAsset r where r.ResourceID = @r and((r.AssetID = AssetID and r.AssetID = 0) ) and r.PermissionsBitMask & 2 = 2) ) THEN 1
-                    ELSE 0
-                END as P_CanEdit,
-				CASE
-                    WHEN EXISTS((select 1 from ResponsibilityAllAsset r where r.ResourceID = @r and((r.AssetTypeID = AssetTypeID and r.AssetID = 0)) and r.PermissionsBitMask & 4 = 4) ) THEN 1
-                    WHEN EXISTS((select 1 from ResponsibilityAllAsset r where r.ResourceID = @r and((r.AssetID = AssetID and r.AssetID = 0) ) and r.PermissionsBitMask & 4 = 4) ) THEN 1
-                    ELSE 0
-                END as P_CanDelete,";
-            }
+                editRightsColumnStatement = " IIF(S_E.[Count] = 0, 0, 1) as P_CanEdit, IIF(S_D.[Count] = 0, 0, 1) as P_CanDelete, ";
+                editRightsJoinStatement = $@"
+cross apply (select count(1) as [Count] from ResponsibilityAllAsset where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
+cross apply (select count(1) as [Count] from ResponsibilityAllAsset where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
+            }            
 
             #endregion
 
@@ -462,8 +457,8 @@ OPTION (RECOMPILE)";
 select	*
 from	(
 		select	AssetID, Object, ObjectID, Type, TypeID, 
-               {parentOuterSqlColumn}                
-                {editRightsColumnStatement}
+               {parentOuterSqlColumn}  
+                P_CanEdit, P_CanDelete,
 				{selectFieldString}
 		from	(
 				select	A.ID as AssetID,
@@ -473,7 +468,8 @@ from	(
 						AST.Object as Type,
 						AST.ObjectID as TypeID,
                         {parentSqlColumn}
-						FT.ID as FieldTypeID,                        
+						FT.ID as FieldTypeID,  
+                        {editRightsColumnStatement}
 						case 
 							when FT.AllowAllValue = 1 and F_O.Value = '0' then FT.AllowAllLabel 
                             when F_O.Value is not null then F_O.FormattedValue
@@ -485,7 +481,8 @@ from	(
 				from	Asset A{tableHints}
                         {parentSqlJoin} 
                         inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
-                        {filterJoinString}                         
+                        {filterJoinString}     
+                        {editRightsJoinStatement} 
 						inner join FieldType FT{tableHints} on FT.ID in ({selectFieldIDs}) and FT.AssetTypeID = A.AssetTypeID
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
