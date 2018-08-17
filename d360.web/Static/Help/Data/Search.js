@@ -1,1 +1,1 @@
-define({r:0.5,st:'Stem',n:1,t:[0,73],u:['../Content/a-shared/legal-notice.htm'],s:['$','experienc','relationship'],p:[['$',76],['an',90],['be',76],['conditionally',59],['do',3],['for',44],['in',61],['manage',42],['once',42],['range',90],['selected',63],['that',90],['to',46],['warn',72]]});
+define({r:0.5,st:'Stem',n:1,t:[0,73],u:['../Content/a-shared/legal-notice.htm'],s:['$','explain','relationshiptyp'],p:[['$',76],['analysis',10],['be',86],['confers',12],['dock',3],['for',53],['in',70],['mandatory',64],['one',45],['read',43],['selects',59],['the',0],['to',50],['way',58]]});
