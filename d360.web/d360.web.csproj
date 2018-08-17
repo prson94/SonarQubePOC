@@ -774,6 +774,7 @@
     <Content Include="Static\Help\Content\d-admin\admin-intro.htm" />
     <Content Include="Static\Help\Content\d-admin\azure-active-directory.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading-business-terms.htm" />
+    <Content Include="Static\Help\Content\d-admin\bulk-loading-reference-lists.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading-relationships.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading-users.htm" />
     <Content Include="Static\Help\Content\d-admin\bulk-loading.htm" />
@@ -869,6 +870,14 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\artifact-type-search.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\attributes.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\azure-ad.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-lists.PNG" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-lists2.PNG" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-lists3.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-lists4.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-lists5.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-lists6.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-lists7.jpg" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-lists8.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-relation.jpg" />
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-relation2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\bulk-load-users4.jpg" />

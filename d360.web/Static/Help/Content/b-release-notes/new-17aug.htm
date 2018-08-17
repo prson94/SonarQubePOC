@@ -223,7 +223,7 @@
                             <tr>
                                 <td class="RN_Fix">
                                     <img src="../Resources/Images/template/ReleaseNotes_Tick_21x21.png" style="width: 21;height: 21;" />Fix</td>
-                                <td><a href="#Column" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Column order on artifact pages</a>
+                                <td><a href="#Model" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Model depth</a>
                                 </td>
                                 <td class="RN_Fix">
                                     <img src="../Resources/Images/template/ReleaseNotes_Tick_21x21.png" style="width: 21;height: 21;" />Fix</td>
@@ -233,10 +233,22 @@
                             <tr>
                                 <td class="RN_Fix">
                                     <img src="../Resources/Images/template/ReleaseNotes_Tick_21x21.png" style="width: 21;height: 21;" />Fix</td>
+                                <td><a href="#Column" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Column order on artifact pages</a>
+                                </td>
+                                <td class="RN_Fix">
+                                    <img src="../Resources/Images/template/ReleaseNotes_Tick_21x21.png" style="width: 21;height: 21;" />Fix</td>
+                                <td><a href="#Performa2" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Performance with large number of users</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="RN_Fix">
+                                    <img src="../Resources/Images/template/ReleaseNotes_Tick_21x21.png" style="width: 21;height: 21;" />Fix</td>
                                 <td><a href="#Fusion" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Fusion List page column sorting</a>
                                 </td>
-                                <td class="RN_Fix">&#160;</td>
-                                <td>&#160;</td>
+                                <td class="RN_Fix">
+                                    <img src="../Resources/Images/template/ReleaseNotes_Tick_21x21.png" style="width: 21;height: 21;" />Fix</td>
+                                <td><a href="#Glossary" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Glossary list page display</a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -316,8 +328,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <p>A new option was added to the <b>Administration</b> &gt; <b>Settings</b> page under the <b>Features</b> section to <b>Display API Key</b>. When selected, any user will be able to see their API Key on their User Profile page. If not selected, non-admin users will not be able to see their API on the User Profile page. </p>
-                                                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>Users with Administrative access will always be able to see their API regardless of this option.</p>
+                                                    <p>A new option was added to the <b>Administration</b> &gt; <b>Settings</b> page under the <b>Features</b> section to <b>Display API Key</b>. When selected, any user will be able to see their API key on their user profile page. If not selected (default), non-admin users will not be able to see their API key on the user profile page. </p>
+                                                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>Users with administrative access will always be able to see their API key regardless of this option.</p>
                                                 </td>
                                                 <td style="text-align: center;">GOV-5085</td>
                                             </tr>
@@ -444,7 +456,7 @@ The HEAD method is identical to GET, except that the server does not return a me
                                                 <td>&#160;</td>
                                             </tr>
                                             <tr>
-                                                <td>Optimizations to the glossary list page queries were made as part of this release.</td>
+                                                <td>Optimizations to the <b>Glossary</b> list page queries were made as part of this release.</td>
                                                 <td style="text-align: center;">
                                                     <p>GOV-5136</p>
                                                     <p>GOV-5138</p>
@@ -580,8 +592,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <p>Resolved an issue where exporting to Excel from an artifact list page  filtered by a none listable top level field exported all items rather than only those displayed in the filtered view. </p>
-                                                    <p>For example, on the Business Terms page, if you had applied a filter to show only the items which contained the word "date", if you then exported the list to Excel, you would see that all items were exported rather than only the  items containing the word "date".  </p>
+                                                    <p>Resolved an issue where in some cases exporting to Excel from a filtered artifact list page exported all items rather than only those displayed in the filtered view. </p>
+                                                    <p>For example, on the Business Terms page, if you had applied an advanced filter to show only the items which contained the word "date", if you then exported the list to Excel, you may see that all items were exported rather than only the  items containing the word "date".  </p>
                                                 </td>
                                                 <td style="text-align: center;">GOV-5058</td>
                                             </tr>
@@ -591,6 +603,29 @@ The HEAD method is identical to GET, except that the server does not return a me
                             </tr>
                             <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
                                 <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
+                                    <table style="width: 100%;">
+                                        <col style="width: 70%;" />
+                                        <col style="width: 30%;" />
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <h4 class="FrontMatter"><a name="Model"></a>Model depth</h4>
+                                                </td>
+                                                <td>&#160;</td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p>Resolved an issue where it was possible to create models for a model type of any depth, irrespective of the <b>Maximum Depth</b> specified when defining the model type on the <b>Administration</b> &gt; <b>Metamodels</b> &gt; <b>Models</b> page.</p>
+                                                    <p>The <b>Maximum Depth</b> field value is now being honored when creating models of different levels for the model type.</p>
+                                                </td>
+                                                <td style="text-align: center;">GOV-5064</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -609,8 +644,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -631,8 +666,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -654,8 +689,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -674,8 +709,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -694,8 +729,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -716,8 +751,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -746,8 +781,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -768,8 +803,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -804,8 +839,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -824,8 +859,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -844,8 +879,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -866,8 +901,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -886,8 +921,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -906,8 +941,8 @@ The HEAD method is identical to GET, except that the server does not return a me
                                     </table>
                                 </td>
                             </tr>
-                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
-                                <td class="TableStyle-PatternedRows-infogix-BodyA-Regular-DarkerRows">
+                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-LightRows">
                                     <table style="width: 100%;">
                                         <col style="width: 70%;" />
                                         <col style="width: 30%;" />
@@ -919,8 +954,50 @@ The HEAD method is identical to GET, except that the server does not return a me
                                                 <td>&#160;</td>
                                             </tr>
                                             <tr>
-                                                <td>Resolved an issue in the <b>Administration</b> &gt; <b>Field Definition</b>  panel  where you could end up with the wrong default <b>List Display Format</b> value when configuring a new list field. </td>
+                                                <td>Resolved an issue in the <b>Administration</b> &gt; <b>MetaModels</b> &gt; <b>Artifacts</b> page when using the <b>Field Definition</b>  panel  to configure a new list field where you could end up with the wrong default <b>List Display Format</b> value. </td>
                                                 <td style="text-align: center;">GOV-5155</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-infogix-Body-DarkerRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyD-Regular-DarkerRows">
+                                    <table style="width: 100%;">
+                                        <col style="width: 70%;" />
+                                        <col style="width: 30%;" />
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <h4 class="FrontMatter"><a name="Performa2"></a>Performance with large number of users</h4>
+                                                </td>
+                                                <td>&#160;</td>
+                                            </tr>
+                                            <tr>
+                                                <td>A scalability issue was fixed in the job that keeps users synced across the application.</td>
+                                                <td style="text-align: center;">GOV-5180</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr class="TableStyle-PatternedRows-infogix-Body-LightRows">
+                                <td class="TableStyle-PatternedRows-infogix-BodyA-Regular-LightRows">
+                                    <table style="width: 100%;">
+                                        <col style="width: 70%;" />
+                                        <col style="width: 30%;" />
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <h4 class="FrontMatter"><a name="Glossary"></a>Glossary list page display</h4>
+                                                </td>
+                                                <td>&#160;</td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p>Resolved an issue where the <b>Glossary</b> list page would not display when both a Listable "Relationship" type field and a "Field from Relationship" type field were present at the same time. </p>
+                                                </td>
+                                                <td style="text-align: center;">GOV-5184</td>
                                             </tr>
                                         </tbody>
                                     </table>
