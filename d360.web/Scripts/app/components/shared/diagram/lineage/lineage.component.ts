@@ -292,7 +292,7 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         this.menuItems = [];
 
         let edit: MenuItem = {
-            icon: 'fa-pencil',
+            icon: 'fa fa-pencil',
             items: []
         }
 
@@ -305,7 +305,7 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         edit.items = editSubItem;
 
         let view: MenuItem = {
-            icon: 'fa-eye',
+            icon: 'fa fa-eye',
             items: []
         }
 
@@ -318,16 +318,16 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         view.items = viewSubItem;
 
         let settings: MenuItem = {
-            icon: 'fa-gears',
+            icon: 'fa fa-gears',
             items: []
         };
 
         let settingSubItem: MenuItem[] = [
             {
-                icon: this.usageOnly ? 'fa-check-square-o' : 'fa-square-o',
+                icon: this.usageOnly ? 'fa fa-check-square-o' : 'fa fa-square-o',
                 label: 'Usage only?'
             },
-            { label: 'Name only?', icon: this.nameOnly ? 'fa-check-square-o' : 'fa-square-o'}            
+            { label: 'Name only?', icon: this.nameOnly ? 'fa fa-check-square-o' : 'fa fa-square-o'}            
         ];
 
         settings.items = settingSubItem;
@@ -336,10 +336,10 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         this.menuItems.push(view); 
         this.menuItems.push(settings);
         
-        this.menuItems.push(this.createMenuItem('', 'fa-search-minus'));
-        this.menuItems.push(this.createMenuItem('', 'fa-search-plus'));        
-        this.menuItems.push(this.createMenuItem('', 'fa-refresh'));
-        this.menuItems.push(this.createMenuItem('', 'fa-info-circle'));
+        this.menuItems.push(this.createMenuItem('', 'fa fa-search-minus'));
+        this.menuItems.push(this.createMenuItem('', 'fa fa-search-plus'));        
+        this.menuItems.push(this.createMenuItem('', 'fa fa-refresh'));
+        this.menuItems.push(this.createMenuItem('', 'fa fa-info-circle'));
     }
 
     private createMenuItem(label?: string, icon?: string): MenuItem {
@@ -475,19 +475,19 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
 
     private menuClick(e: MenuItem) {
         //TODO: this is a hack, need a better way to handle these clicks
-        if (e.icon == 'fa-refresh') {
+        if (e.icon == 'fa fa-refresh') {
             this.objectType = this.originalObject;
             this.objectID = this.originalObjectID;
             this.populateDiagram();
-        } else if (e.icon == 'fa-search-plus') {
+        } else if (e.icon == 'fa fa-search-plus') {
             this.diagram.scale += .1;
             if (this.diagram.scale > 2.5)
                 this.diagram.scale = 2.5;
-        } else if (e.icon == 'fa-search-minus') {
+        } else if (e.icon == 'fa fa-search-minus') {
             this.diagram.scale -= .1;
             if (this.diagram.scale < .1)
                 this.diagram.scale = .1;
-        } else if (e.icon == 'fa-info-circle') {
+        } else if (e.icon == 'fa fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
         } else if (e.label == 'Business System Flow') {
             this.view = LineageView.SystemFlow;
@@ -509,11 +509,11 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
             this.diagramMode = DiagramMode.TechnicalLineageEditor;
         } else if (e.label == 'Usage only?') {
             this.usageOnly = !this.usageOnly;
-            e.icon = this.usageOnly ? 'fa-check-square-o' : 'fa-square-o';
+            e.icon = this.usageOnly ? 'fa fa-check-square-o' : 'fa fa-square-o';
             this.populateDiagram();
         } else if (e.label == 'Name only?') {
             this.nameOnly = !this.nameOnly;
-            e.icon = this.nameOnly ? 'fa-check-square-o' : 'fa-square-o';
+            e.icon = this.nameOnly ? 'fa fa-check-square-o' : 'fa fa-square-o';
             this.changeNameOnly();
         }
     }
