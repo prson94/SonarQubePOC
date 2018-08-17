@@ -446,7 +446,8 @@ from	Asset A{tableHints}
         {filterJoinString}         
 where	A.AssetTypeID = @atID
 		and A.State = 1
-        and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID) OR (AssetTypeID = A.AssetTypeID and AssetID = 0) ))
+        and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetTypeID = A.AssetTypeID and AssetID = 0) ))
+        and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID)  ))
         {filterWhereString}
 OPTION (RECOMPILE)";
             
@@ -489,7 +490,8 @@ from	(
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
 						{fieldFromRelationshipJoinStatement} 
-                where   not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID) or (AssetID = 0 and AssetTypeID = A.AssetTypeID) ) )
+                where   not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID)  ) )
+                        and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and (  (AssetID = 0 and AssetTypeID = A.AssetTypeID) ) )
                         {filterWhereString}
 				) A
 		pivot	(
