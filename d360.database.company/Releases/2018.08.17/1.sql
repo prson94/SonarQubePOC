@@ -1,7 +1,68 @@
-﻿
-update AssetType set [uid] = '00000001-0000-0000-0000-a00000000011' where Object = 'ResourceType' and ObjectID = 1
-update AssetType set [uid] = '00000001-0000-0000-0000-b00000000012' where Object = 'GroupType' and ObjectID = 1
+﻿merge into  AssetType T
+using       (
+			select	'User' as Name,
+					'A resource account.' as Description,
+					11 as [Class],
+					'{FirstName} {LastName}' as DisplayFormat,
+					1 as [State],
+					0 as Hierarchical,
+					0 as HierarchyMaximumDepth,
+					'ResourceType' as Object,
+					1 as ObjectID,
+					'00000001-0000-0000-0000-a00000000011' as [uid]
+			union
+			select	'Group' as Name,
+					'A security group.' as Description,
+					12 as [Class],
+					'{Name}' as DisplayFormat,
+					1 as [State],
+					0 as Hierarchical,
+					0 as HierarchyMaximumDepth,
+					'GroupType' as Object,
+					1 as ObjectID,
+					'00000001-0000-0000-0000-b00000000012' as [uid]
+            ) S
+on          (
+                S.Object = T.Object and 
+                S.ObjectID = T.ObjectID
+            )
+when matched then
+    update set
+            T.[uid] = S.[uid]
+when not matched by target then
+    insert  (Name, Description, [Class], DisplayFormat, [State], Hierarchical, HierarchyMaximumDepth, [Object], [ObjectID], [CreatedOn], [CreatedBy],[UpdatedOn],[UpdatedBy])
+    values  (S.Name, S.Description, S.[Class], S.DisplayFormat, S.[State], S.Hierarchical, S.HierarchyMaximumDepth, S.Object, S.ObjectID, '1/1/2018', 0, '1/1/2018', 0);
 
+merge into  Asset T
+using       (
+			SELECT	T.ID as AssetTypeID, 
+					1 as State, 
+					'Resource' as Object, 
+					O.ResourceID as ObjectID
+			FROM	reporting.global_resource O 
+					inner join AssetType T on T.Object = 'ResourceType' and T.ObjectID = 1
+			union
+			SELECT	T.ID as AssetTypeID, 
+					1 as State, 
+					'Group' as Object, 
+					O.ID as ObjectID
+			FROM	[Group] O 
+					inner join AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
+            ) S
+on          (
+                T.AssetTypeID = S.AssetTypeID and
+                S.Object = T.Object and 
+                S.ObjectID = T.ObjectID
+            )
+when matched then
+    update set
+            T.CreatedBy = 0,
+			T.[CreatedOn] = getutcdate(),
+			T.UpdatedBy = 0,
+            T.UpdatedOn = getutcdate()
+when not matched by target then
+    insert  (AssetTypeID,[State],[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+    values  (S.AssetTypeID, S.[State], S.Object, S.ObjectID, getutcdate(), 0, getutcdate(), 0);
 
 
 begin
