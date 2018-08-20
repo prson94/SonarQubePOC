@@ -38,7 +38,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <p-column  [style]="{width:'35px'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="open(item)" title="Complete Form"><i class="fa fa-check-square-o"></i></a>                                    
+                                            <a style="cursor:pointer;" (click)="open(item)" title="Complete Form"><i class="fa fa-pencil-square-o"></i></a>                                    
                                         </div>
                                     </ng-template>
                                 </p-column> 
