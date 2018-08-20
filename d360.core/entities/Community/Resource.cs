@@ -53,8 +53,6 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Username_Name", Description = "Username_Description")]
         public string Username { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)] 
-        public string ApiReadOnlyAccessToken { get; set; }
 
         #endregion
 

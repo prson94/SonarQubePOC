@@ -38,7 +38,7 @@ namespace d360.web
             public string Password { get; set; }
             public string APIPublicKey { get; set; }
             public string APIPrivateKey { get; set; }
-            public string APIReadOnlyAccessToken { get; set; }
+   
         }
         public class user
         {
@@ -52,7 +52,6 @@ namespace d360.web
             public string Password { get; set; }
             public string APIPublicKey { get; set; }
             public string APIPrivateKey { get; set; }
-            public string APIReadOnlyAccessToken { get; set; }
             public List<usercompany> Companies { get; set; }
         }
 
@@ -147,7 +146,6 @@ namespace d360.web
 select	C.*,
         R.APIPrivateKey,
         R.APIPublicKey,
-        R.APIReadOnlyAccessToken,
         R.Username,
         R.Password
 from	Resource R
@@ -156,10 +154,6 @@ from	Resource R
                     if (!string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiSecret))
                     {
                         u = cnn.Query<usercompany>(baseSql + @" and R.APIPublicKey = @pub and R.APIPrivateKey = @pri", new { com = companyID, pri = apiSecret, pub = apiKey }).FirstOrDefault();
-                    }
-                    else if (!string.IsNullOrEmpty(apiReadOnlyKey))
-                    {
-                        u = cnn.Query<usercompany>(baseSql + @" and R.APIReadOnlyAccessToken = @token", new { com = companyID, token = apiReadOnlyKey }).FirstOrDefault();
                     }
                     else if (!string.IsNullOrEmpty(username))
                     {
@@ -247,39 +241,7 @@ from	Resource R
                         }
                     }
                 }
-                else
-                {
-                    var keyPair = context.Request.Query.FirstOrDefault(i => i.Key == "oauth2_access_token");
-                    if (keyPair.Value != null)
-                    {
-                        token = keyPair.Value.First();
-                    }
-                    else
-                    {
-                        keyPair = context.Request.Query.FirstOrDefault(i => i.Key == "key");
-                        if (keyPair.Value != null)
-                        {
-                            token = keyPair.Value.First();
-                        }
-                    }
 
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.APIReadOnlyAccessToken == token);
-                        if (u == null)
-                        {
-                            u = LoadUserFromDatabase(companyID, apiReadOnlyKey: token);
-                            if (u != null)
-                            {
-                                if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
-                                {
-                                    cachedUsers.Add(u);
-                                }
-                                Users = cachedUsers;
-                            }
-                        }
-                    }
-                }
 
                 if (context.Request.User.Identity.IsAuthenticated)
                 {
