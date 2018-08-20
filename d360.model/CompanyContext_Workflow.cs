@@ -835,9 +835,7 @@ namespace d360.model
                         SaveChanges();
                     }
 
-                    //update asset table to trigger audit
-                    //var sql = "update asset set updatedby = 0, updatedon = getutcdate() where[object] = @obj and[objectid] = @id";
-
+                    //update asset table to trigger audit                    
                     Database.Connection.Execute(
                         "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
                         new
@@ -975,8 +973,7 @@ namespace d360.model
             switch (objectInfo.Object)
             {
                 case core.SystemObjects.Artifact:
-                    var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    //artifact.Status = statusModel.Status;
+                    var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();                    
                     SaveChanges();
                     break;
             }
@@ -1092,7 +1089,7 @@ namespace d360.model
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
             {
-                users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID }).ToList();
+                users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID).ToList();
             }
             else if(settings.RecipientType == EmailTaskRecipientType.SpecificUser)
             {
@@ -1367,9 +1364,9 @@ namespace d360.model
                 await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, settings.BodyTemplate, true, fromEmail, fromName);
             }
             else if(settings.RecipientType == EmailTaskRecipientType.Responsibility)
-            {                
-                var users = Query<dynamic>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
-
+            {
+                var users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID);
+                
                 foreach (var user in users)
                 {
                     Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{user.Email}].");
@@ -1399,6 +1396,53 @@ namespace d360.model
             }
 
             SaveItemStepEmailedUsers(item, emailedUsers);
+        }
+
+        private IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID)
+        {
+            var users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
+
+            if(users == null || users.Count() == 0)
+            {
+                //check if there is a system setting that says to use a group.
+                var companySettings = Community.GetCompanySettings();
+
+                var defaultGroup = companySettings["WorkflowCatchAllGroup"] ?? "";
+
+                int.TryParse(defaultGroup, out int defaultWorkflowUserGroup);
+
+                if(defaultWorkflowUserGroup > 0)
+                {
+                    // a default workflow group has been defined for when there are no memebers in the resonponsibilities
+                    return Query<core.entities.GlobalReportingResource>(@"select distinct	R.ResourceID, 
+						            R.FirstName, 
+						            R.LastName, 
+						            R.Email, 
+						            R.Email, 
+						            R.DateLastLoggedIn, 
+						            1 as ResourceTypeID, 
+						            R.Status 
+				            from	reporting.Global_Resource R
+							inner join [resourcegroup] rg on (R.ResourceID = rg.ResourceID)
+                            where rg.groupid= @groupId and status = 'Active'", new { groupId = defaultWorkflowUserGroup });
+                }
+                else
+                {
+                    // else add all admins
+                    // no default workflow email group defined
+                    return Query<core.entities.GlobalReportingResource>(@"select	R.ResourceID, 
+						            R.FirstName, 
+						            R.LastName, 
+						            R.Email, 
+						            R.Email, 
+						            R.DateLastLoggedIn, 
+						            1 as ResourceTypeID, 
+						            R.Status 
+				            from	reporting.Global_Resource R where isadministrator = 1 and status = 'Active'");
+                }
+            }
+
+            return users;
         }
 
         private void SaveItemStepEmailedUsers(WorkflowItemStep item, List<string> emailedUsers)
@@ -1635,17 +1679,7 @@ namespace d360.model
 
             return result;
         }
-
-
-
-        public void DetermineTransitionBasedOnPreviousStepConditions(long itemStepID)
-        {
-            var itemStep = getWorkflowItemStep(itemStepID, true);
-            var possibleTransitions = GetTransitionsForCompletedStep(itemStep);
-
-            //itemStep.SettingsDocument.
-        }
-
+        
         /// <summary>
         /// Gets a list of possible transitions based on a completed workflow item step.
         /// </summary>
