@@ -113,7 +113,8 @@ order by RT.Name", new { id }).AsQueryable();
             bool hasPermission = CurrentResourceIsAdmin;
             if (!hasPermission)
             {
-                var assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).Single();
+                var assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).FirstOrDefault();
+                if (assetTypeID <= 0) return true; // objects not in asset table we grant permission
                 hasPermission = Query<int>($"select count(1) from ResponsibilityDetail where ( (Object = @type and ObjectID = @id) or (AssetID = 0 and AssetTypeID = @t) ) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = 0", new { type, id, t = assetTypeID }).Single() == 0;
             }
 
