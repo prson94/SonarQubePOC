@@ -53,7 +53,7 @@ namespace d360.web.Controllers
                 Trace.TraceInformation("Calling OverlaysController.AuditCombined : {0}", id);
 
                 var querySql = @"select 	                            
-	                                 ga.*,
+                                   ga.*,
                                      R.FirstName + ' ' + R.LastName as ResourceName, 
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
@@ -72,7 +72,7 @@ namespace d360.web.Controllers
                 {//Gets the Fusion audit for the fusion type
                     querySql += @" UNION 
                                     select 	                            
-	                                 ga.*,
+                                    ga.*,
                                      R.FirstName + ' ' + R.LastName as ResourceName, 
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
@@ -99,7 +99,8 @@ namespace d360.web.Controllers
                 int total = Company.Query<int>(countSql, dbArgs).First();
 
                 sql = applyFilteringSuffixBind(sql, Request, dbArgs);
-                sql = applySortSuffix(sql, sortDataField, sortOrder, "Date", "desc");
+                var stFieldType = sortDataField == null || sortDataField == "Date" ? "DateTime" : "string";
+                sql = applySortSuffix(sql, sortDataField, sortOrder, "Date", "desc",sortFieldType: stFieldType);
                 sql = applyPagingSuffix(sql, pagenum, pagesize);
 
                 var query = Company.Query<dynamic>(sql, dbArgs);
@@ -139,6 +140,7 @@ namespace d360.web.Controllers
             ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
+            sql = applySortSuffix(sql, "Date", "desc", sortFieldType: "DateTime");
 
             var dbArgs = new Dapper.DynamicParameters();
             dbArgs.Add("objType", new DbString {Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 });
@@ -175,10 +177,10 @@ namespace d360.web.Controllers
                 rowIndex++;
 
                 document.SetCellValue(rowIndex, 1, row.ResourceName);
-                document.SetCellValue(rowIndex, 2, ((DateTime)row.Date));
+                document.SetCellValue(rowIndex, 2, (((DateTime)row.Date)).ToLocalTime());
 
                 SLStyle style = document.CreateStyle();
-                style.FormatCode = "m/d/yyyy";
+                style.FormatCode = "mmm dd yyyy hh:mm:ss AM/PM";
                 document.SetCellStyle(rowIndex, 2, style);
 
                 document.SetCellValue(rowIndex, 3, row.Action);
