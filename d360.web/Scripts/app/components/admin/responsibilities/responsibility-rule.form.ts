@@ -221,6 +221,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         if (item.FieldTypeID) {
             let selectedFieldType = this.whenFieldTypes.find(f => f.value == item.FieldTypeID.toString());
             if (selectedFieldType) {
+                selectedFieldType = _.cloneDeep(selectedFieldType);
                 item.FieldTypeName = selectedFieldType.label;
                 if (selectedFieldType.isLookup) {
                     selectedFieldType.values.unshift({ label: 'Choose...', value: null });
@@ -356,8 +357,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     private loadValuesForIntersectType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
         this.responsibilityTypeService.getRelationRuleFormDataRelationshipsForDropdown(this.model.Object, this.model.ObjectID, item.IntersectTypeID)
-            .then(d => {
+            .then(d => { 
+                item.IsBool = false;
                 item.ValueOptions = d;
+                item.ValueOptions.unshift({ label: 'Choose...', value: null });
             });
         return null;
     }

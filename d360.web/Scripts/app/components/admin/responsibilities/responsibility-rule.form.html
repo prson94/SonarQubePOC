@@ -120,7 +120,7 @@
                         <tbody *ngFor="let item of model.StructuredDefinition.When; let i=index;">
                             <tr>
                                 <td>
-                                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="whenCheckTypes" [(ngModel)]="item.CheckType" [style]="{ 'width' : '95%' }"></p-dropdown>
+                                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="whenCheckTypes" (onChange)="item.Value=null;item.FieldTypeID=null;item.IntersectTypeID=null;item.ValueOptions=[]" [(ngModel)]="item.CheckType" [style]="{ 'width' : '95%' }"></p-dropdown>
                                 </td>
                                 <td>
                                     <p-dropdown *ngIf="item.CheckType == 'F'" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="whenFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%' }" (onChange)="loadWhenValuesForFieldType(item)"></p-dropdown>
