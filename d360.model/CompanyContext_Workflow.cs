@@ -1172,6 +1172,11 @@ namespace d360.model
                     emailBody = $"{customBody} <br>Please complete the form at {url}";
                 }
 
+                if (settings.ShouldIncludeFormResponses)
+                {
+                    emailBody += GenerateFormResponsesEmailContent(item.ItemID);
+                }
+
                 var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\">{emailBody}</body></html>";
 
                 foreach (var user in users)
@@ -1261,81 +1266,7 @@ namespace d360.model
             //if the setting to include responses from froms is enabled then get previous form responses and put in xml
             if (settings.ShouldIncludeFormResponses)
             {
-                var formResponses = WorkflowItemSteps.Where(x => x.ItemID == item.ItemID && x.Step.ActivityType == WorkflowActivityType.Form).Include(x=>x.Step);
-
-                StringBuilder sb = new StringBuilder();
-                sb.Append($"<br><br><b>Form responses</b><br>");
-
-                foreach(var formResponse in formResponses)
-	            {
-                    if (string.IsNullOrEmpty(formResponse.Fields)) continue;
-
-                    var xml = XElement.Parse(formResponse.Fields);
-
-                    var name = formResponse.Step != null ? formResponse.Step.Name : "(unknown)";
-
-                    sb.Append($"<br><br>{name}");
-
-                    foreach (var form in xml.Elements("form"))
-                    {
-                        int resourceID = 0;
-                                         
-                        if(int.TryParse((string)form.Attribute("ResourceID"), out resourceID))
-                        {
-                            var user = GlobalReportingResources.Where(x => x.ResourceID == resourceID).FirstOrDefault();
-
-                            if(user != null)
-                            {
-                                sb.Append($"<br>Response from user <b>{user.FullName}</b><br>");
-                            }
-                        }
-
-                        foreach(var field in form.Elements("field"))
-                        {
-                            var fieldName = (string)field.Attribute("label");
-                            var value = (string)field.Attribute("value");
-                            var fieldType = (string)field.Attribute("fieldtype");
-
-
-                            if ((fieldType ?? "").ToUpper() == "RELATIONSHIPTYPE")
-                            {
-                                value = (string)field.Attribute("displayvalue");
-
-                                if (value != null)
-                                {
-                                    List<string> objects = value.Split(',').ToList();
-                                    List<string> objectNames = new List<string>();
-
-                                    foreach (string o in objects)
-                                    {
-                                        var type = o.Split('|')[0];
-                                        if (int.TryParse(o.Split('|')[1], out var id))
-                                        {
-                                            objectNames.Add(GetObjectDetail(type.Replace("Type",""), id).Name);
-                                        }
-                                    }
-
-                                    value = string.Join(", ", objectNames);
-                                }   
-                            }
-
-                            if ((fieldType ?? "").ToUpper() == "LIST")
-                            {
-                                value = (string)field.Attribute("displayvalue");
-                            }
-
-                            if((fieldType ?? "").ToUpper() == "DATE")
-                            {
-                                if (DateTime.TryParse(value, out DateTime dt))
-                                    value = dt.ToShortDateString();
-                            }
-
-                            sb.Append($"<b>{fieldName}</b> {value}<br>");
-                        }
-                    }
-	            }
-                
-                settings.BodyTemplate += sb.ToString();
+                settings.BodyTemplate += GenerateFormResponsesEmailContent(item.ItemID);                
             }
 
             settings.BodyTemplate += "</body></html>";
@@ -1396,6 +1327,85 @@ namespace d360.model
             }
 
             SaveItemStepEmailedUsers(item, emailedUsers);
+        }
+
+        private string GenerateFormResponsesEmailContent(long itemId)
+        {
+            var formResponses = WorkflowItemSteps.Where(x => x.ItemID == itemId && x.Step.ActivityType == WorkflowActivityType.Form).Include(x => x.Step);
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"<br><br><b>Form responses</b><br>");
+
+            foreach (var formResponse in formResponses)
+            {
+                if (string.IsNullOrEmpty(formResponse.Fields)) continue;
+
+                var xml = XElement.Parse(formResponse.Fields);
+
+                var name = formResponse.Step != null ? formResponse.Step.Name : "(unknown)";
+
+                if(xml.Elements("form") != null && xml.Elements("form").Any()) sb.Append($"<br><br>{name}");
+
+                foreach (var form in xml.Elements("form"))
+                {
+                    int resourceID = 0;
+
+                    if (int.TryParse((string)form.Attribute("ResourceID"), out resourceID))
+                    {
+                        var user = GlobalReportingResources.Where(x => x.ResourceID == resourceID).FirstOrDefault();
+
+                        if (user != null)
+                        {
+                            sb.Append($"<br>Response from user <b>{user.FullName}</b><br>");
+                        }
+                    }
+
+                    foreach (var field in form.Elements("field"))
+                    {
+                        var fieldName = (string)field.Attribute("label");
+                        var value = (string)field.Attribute("value");
+                        var fieldType = (string)field.Attribute("fieldtype");
+
+
+                        if ((fieldType ?? "").ToUpper() == "RELATIONSHIPTYPE")
+                        {
+                            value = (string)field.Attribute("displayvalue");
+
+                            if (value != null)
+                            {
+                                List<string> objects = value.Split(',').ToList();
+                                List<string> objectNames = new List<string>();
+
+                                foreach (string o in objects)
+                                {
+                                    var type = o.Split('|')[0];
+                                    if (int.TryParse(o.Split('|')[1], out var id))
+                                    {
+                                        objectNames.Add(GetObjectDetail(type.Replace("Type", ""), id).Name);
+                                    }
+                                }
+
+                                value = string.Join(", ", objectNames);
+                            }
+                        }
+
+                        if ((fieldType ?? "").ToUpper() == "LIST")
+                        {
+                            value = (string)field.Attribute("displayvalue");
+                        }
+
+                        if ((fieldType ?? "").ToUpper() == "DATE")
+                        {
+                            if (DateTime.TryParse(value, out DateTime dt))
+                                value = dt.ToShortDateString();
+                        }
+
+                        sb.Append($"<b>{fieldName}</b> {value}<br>");
+                    }
+                }
+            }
+
+            return sb.ToString();
         }
 
         private IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID)

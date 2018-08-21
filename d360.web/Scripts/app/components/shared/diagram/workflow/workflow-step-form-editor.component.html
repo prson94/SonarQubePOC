@@ -98,6 +98,11 @@
             <div>
                 <input type="checkbox" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);" /> Send form email?
             </div>
+            <div>
+                <div>
+                    <input type="checkbox" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)" /> Include previous form responses
+                </div>
+            </div>
         </div>
     </div>
     <div class="row" style="padding-top: 8px" *ngIf="step.settings.SendFormEmail == true">

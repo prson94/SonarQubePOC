@@ -1133,6 +1133,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                 n.settings.MessageToUser = e.settings.MessageToUser;
                 n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
+                n.settings.IncludePreviousFormResponses = e.settings.IncludePreviousFormResponses;
                 if (n.settings.SendFormEmail == true) {
                     n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
                     n.settings.MessageSubjectTemplate = e.settings.MessageSubjectTemplate;
