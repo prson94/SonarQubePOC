@@ -3,7 +3,7 @@ import { Location } from '@angular/common';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { WorkflowType, WorkflowAssignmentDetail } from '../../models/workflow.model';
+import { WorkflowType, WorkflowAssignmentDetail, WorkflowAssignmentSummary } from '../../models/workflow.model';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
@@ -16,7 +16,33 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <div class="row" *ngIf="!isLoading">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <header>Open {{workflow?.Name}}<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+                            <header>Edit {{workflow?.Name}}<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+                            <div class="row" style="margin-bottom: 5px">
+                                <div class="col l2 m4 s12">
+                                       <span class="FieldName FieldDisplayName">Version:&nbsp;</span>
+                                        <span  *ngIf="assignmentSummary" class="FieldDisplayContent">{{assignmentSummary.Version}}</span>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-bottom: 5px">
+                                <div class="col l4 m6 s12">
+                                       <span class="FieldName FieldDisplayName">Step:&nbsp;</span>
+                                        <span *ngIf="assignmentSummary" class="FieldDisplayContent">{{assignmentSummary.StepName}}</span>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-bottom: 5px">
+                                <div class="col l4 m6 s12">
+                                       <span class="FieldName FieldDisplayName">Object:&nbsp;</span>
+                                        <span *ngIf="assignmentSummary" class="FieldDisplayContent">{{assignmentSummary.ObjectName}}</span>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-bottom: 5px">
+                                <div class="col l4 m6 s12">
+                                        <span class="FieldName FieldDisplayName">Type:&nbsp;</span>
+                                        <span *ngIf="assignmentSummary" class="FieldDisplayContent">{{assignmentSummary.TypeName}}</span>
+                                </div>
+                            </div>
+                          
+                           
                             <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
                             <p-dataTable #dt [globalFilter]="gb" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="items" selectionMode="single">
                                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
@@ -26,9 +52,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                         <a (click)="open(item)" *ngIf="item.IssueObject && item.IssueObjectID"><d3s-preview-tooltip [objectType]="item.IssueObject" [objectId]="item.IssueObjectID">{{item.IssueObjectName ? item.IssueObjectName : "unknown"}}</d3s-preview-tooltip></a>
                                     </ng-template>
                                 </p-column>
-                                <p-column field="StepName" header="Step" sortable="true" [filter]="!showSimpleFilter"></p-column>                                
-                                <p-column field="Object" header="Object" sortable="true" [filter]="!showSimpleFilter"></p-column>
-                                <p-column field="TypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column>
+                                
                                 <p-column field="StartedOn" header="Started On" sortable="true" [filter]="!showSimpleFilter">
                                     <ng-template let-col let-data="rowData" pTemplate type="body">
                                         <span>{{data.StartedOn | date: 'shortDate'}}</span>
@@ -68,6 +92,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private resourceID: number = null;
     private version: number;
     private stepId: number;
+    private assignmentSummary: WorkflowAssignmentSummary;
 
     private sub: any;
     private tempWorkflowtype = WorkflowType;
@@ -107,6 +132,13 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             .then(res => {
                 this.isLoading = false;
                 this.items = res.items;
+                if (this.items && this.items.length != 0) {
+                    this.assignmentSummary = new WorkflowAssignmentSummary();
+                    this.assignmentSummary.Version = this.version;
+                    this.assignmentSummary.ObjectName = this.items[0].Object;
+                    this.assignmentSummary.StepName = this.items[0].StepName;
+                    this.assignmentSummary.TypeName = this.items[0].TypeName;
+                }
                 this.workflow = res.workflow;
             });
     }

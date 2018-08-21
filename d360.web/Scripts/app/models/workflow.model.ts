@@ -450,6 +450,13 @@ export enum EmailTaskRecipientType {
 
 //#endregion
 
+export class WorkflowAssignmentSummary {
+
+    Version: number;
+    StepName: string;
+    ObjectName: string;
+    TypeName: string;
+}
 
 export class WorkflowAssignmentDetail {
     ItemID: number;
