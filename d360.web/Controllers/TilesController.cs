@@ -76,21 +76,31 @@ namespace d360.web.Controllers
 
             var sql = $@"select  
 		                    {QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
-			                 R.Type,
+			                			                 R.Type,
 			                 R.TypeID,
-			                 R.[Count]
+			                 R.[Count] * R.AssetCount as [Count]
 		                from AssetType T
 		                inner join (
 			                select 
 						                C.[Type],
 						                C.TypeID,
-						                count(1) as [Count]
+						                count(1) as [Count],
+										A.Count as AssetCount
 			                from ResponsibilityDetail C
+							cross apply (
+								select 
+										case when C.ApplyToType = 1 and C.AssetID = 0 then 
+											(select count(*) from Asset where AssetTypeID = C.AssetTypeID) 
+										else 
+											1
+								end as [Count]
+							) A
 			                where		C.IsVisible = 1 
-						                 {(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}
+						                 and C.ResponsibilityTypeID = @rt
 						                and C.ResourceID = @r
-			                group by C.[Type], C.TypeID
-		                ) R on R.[Type] = T.Object and R.TypeID = T.ObjectID";
+			                group by C.[Type], C.TypeID, A.Count
+		                ) R on R.[Type] = T.Object and R.TypeID = T.ObjectID
+						";
 
             var query = await Company.QueryAsync<dynamic>(sql, new { r = id, rt = responsibilityTypeID });
 

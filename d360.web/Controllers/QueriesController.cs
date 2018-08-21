@@ -77,13 +77,34 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
         public JsonNetResult GetResponsibilityTypeBreakdown()
         {
             var query = Company.Query<dynamic>(@"
-select		ResponsibilityTypeID,
-			ResponsibilityTypeName as ResponsibilityType,
-			count(1) as [Count] 
-from		[dbo].[ResponsibilityDetail]
-where		IsVisible = 1
-group by	ResponsibilityTypeID,
-			ResponsibilityTypeName");
+select
+	ResponsibilityTypeID, 
+	ResponsibilityType, 
+	sum(ResponsibilityCount * AssetCount) as [Count] 
+from
+(
+	select		ResponsibilityTypeID,
+				ResponsibilityTypeName as ResponsibilityType,
+				count(1) as [ResponsibilityCount],
+				C.[Count] as AssetCount
+	from		[dbo].[ResponsibilityDetail] R
+	cross apply (
+					select 
+						case when R.ApplyToType = 1 and R.AssetID = 0 then 
+							(select count(*) from Asset where AssetTypeID = R.AssetTypeID) 
+						else 
+							1
+				end as [Count]
+				) C
+	where		IsVisible = 1
+	group by	ResponsibilityTypeID,
+				ResponsibilityTypeName,
+				C.[Count]
+) X
+group by 
+	ResponsibilityTypeID,
+	ResponsibilityType
+");
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -92,20 +113,31 @@ group by	ResponsibilityTypeID,
         public JsonNetResult GetResourcesByResponsibilityType(int id)
         {
             var query = Company.Query<dynamic>(@"
+
 select		OC.ResourceID,
 			R.FirstName,
 			R.LastName,
 			OC.ResponsibilityTypeID,
-			sum(OC.[Count]) as OwnedItemCount
+			sum(OC.[Count] * OC.AssetCount) as OwnedItemCount
 from		(
 			select		ResponsibilityTypeID,
 						ResourceID,
-                        count(1) as [Count]
-			from		ResponsibilityDetail
+						count(1) as [Count],
+						C.Count as AssetCount
+			from		ResponsibilityDetail R
+			cross apply (
+				select 
+						case when R.ApplyToType = 1 and R.AssetID = 0 then 
+							(select count(*) from Asset where AssetTypeID = R.AssetTypeID) 
+						else 
+							1
+				end as [Count]
+			) C
 			where		IsVisible = 1
 						and ResponsibilityTypeID = @id
 			group by	ResponsibilityTypeID,
-						ResourceID
+						ResourceID,
+						C.Count
 			) OC
 			inner join reporting.Global_Resource R on R.ResourceID = OC.ResourceID
 group by	OC.ResourceID,

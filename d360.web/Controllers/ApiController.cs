@@ -4116,7 +4116,59 @@ order by C.TextPath";
         public IEnumerable<dynamic> GetResponsibilitiesByResourceByType(int resourceID, SystemObjects type, int id, int? responsibilityTypeId = null)
         {
 
-            var sql = $@"select	RD.SecurityAsset,
+        //    var sq2l = $@"select	RD.SecurityAsset,
+		      //  RD.SecurityAssetID,
+		      //  RD.SecurityAssetName,
+		      //  RD.ResourceID,
+		      //  RD.ResponsibilityTypeID,
+		      //  RD.Type,
+		      //  RD.TypeID,
+		      //  T.Name as TypeName,
+		      //  RD.Object,
+		      //  RD.ObjectID,
+		      //  utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
+		      //  RD.ResponsibilityTypeName,
+		      //  case RD.SecurityAsset
+			     //   when 'G' then 'Via Group'
+			     //   when 'O' then 'Via Organization'
+			     //   else ''
+		      //  end as Via,
+        //        RD.Context
+        //from	ResponsibilityDetail RD
+		      //  inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = {resourceID} and T.Object = '{type.ToString()}' and T.ObjectID = {id.ToString()}
+        //{(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? $"where RD.ResponsibilityTypeID = {(int)responsibilityTypeId}" : "")}";
+
+
+
+            var sql = $@"
+		select 
+			RD.SecurityAsset,
+		    RD.SecurityAssetID,
+		    RD.SecurityAssetName,
+		    RD.ResourceID,
+		    RD.ResponsibilityTypeID,
+		    T.Object as Type,
+		    T.ObjectID as TypeID,
+		    T.Name as TypeName,
+		    RD.Object,
+		    RD.ObjectID,
+		    utility.GetAssetDisplayValueWrapper(A.ID) as ObjectName,
+		    RD.ResponsibilityTypeName,
+		    case RD.SecurityAsset
+			    when 'G' then 'Via Group'
+			    when 'O' then 'Via Organization'
+			    else ''
+		    end as Via,
+            RD.Context 
+		from 
+		ResponsibilityDetail RD 
+		inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
+		inner join Asset A on A.AssetTypeID = T.ID
+		where {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} ResourceID = @resourceID and AssetID = 0 and ApplyToType = 1
+		
+		union all
+
+		select	RD.SecurityAsset,
 		        RD.SecurityAssetID,
 		        RD.SecurityAssetName,
 		        RD.ResourceID,
@@ -4135,10 +4187,12 @@ order by C.TextPath";
 		        end as Via,
                 RD.Context
         from	ResponsibilityDetail RD
-		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = {resourceID} and T.Object = '{type.ToString()}' and T.ObjectID = {id.ToString()}
-        {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? $"where RD.ResponsibilityTypeID = {(int)responsibilityTypeId}" : "")}";
+		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @type and T.ObjectID = @id
+        where  {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} RD.AssetID != 0 and RD.ApplyToType = 0
+";
 
-            return Company.Query<dynamic>(sql).ToList();
+
+            return Company.Query<dynamic>(sql, new { type = new DbString { Value = type.ToString(), IsAnsi = true }, id, resourceID, responsibilityTypeId }).ToList();
         }
 
 
