@@ -142,29 +142,37 @@ namespace d360.web.Controllers
                                 {
                                     ro.Values = new List<ReadOnlyFieldValue>();
                                     ro.Value = "values";
-
-                                    
+                                                                        
                                     var items = ((k != null) ? k.Value.Split(',') : new string[] { });
-                                    var itemNames = (k!= null) ?  k.FormattedValue.Split(',') : new string[] { };
+                                    var itemIds = new List<long>();
 
-                                    for (int i = 0; i < items.Length; i++)
+                                    foreach (var item in items)
                                     {
-                                        var item = items[i];
-                                        var name = (itemNames.Length >= i ? itemNames[i] : "(unknown)");
-                                        
-                                        if (!int.TryParse(item, out var itemId)) continue;
+                                        if (long.TryParse(item, out long listId)) itemIds.Add(listId);
+                                    }
 
-                                        var detail = Company.GetObjectDetail(ft.LookupObjectType, id);
+                                    if (itemIds.Count > 0)
+                                    {
+                                        var lookupItems = Company.Query<FieldLookupValue>(@"select FieldTypeID, LookupObjectType, LookupObjectID, Value, Text from fieldlookupvalue where fieldtypeid = @fId and value in @vals order by Text", new { fId = ft.ID, vals = itemIds });
 
-                                        ro.Values.Add(new ReadOnlyFieldValue
+                                        if (lookupItems != null)
                                         {
-                                            TooltipContext = "Preview",
-                                            TooltipID = itemId,
-                                            Value = name,
-                                            TooltipType = ft.LookupObjectType,
-                                            TooltipUrl = (detail == null ? "" : detail.NgUrl)
-                                        });                                        
-                                    }                                    
+
+                                            foreach (var item in lookupItems)
+                                            {
+                                                var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
+
+                                                ro.Values.Add(new ReadOnlyFieldValue
+                                                {
+                                                    TooltipContext = "Preview",
+                                                    TooltipID = (int)item.Value,
+                                                    Value = item.Text,
+                                                    TooltipType = ft.LookupObjectType,
+                                                    TooltipUrl = (detail == null ? "" : detail.NgUrl)
+                                                });
+                                            }
+                                        }
+                                    }
                                 }
                                 else
                                 {
