@@ -16,7 +16,7 @@ const routes: Routes = [
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE, component: WorkflowRaiseIssueComponent
             },                                
             {
-                path: SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2 + '/:workflowTypeId', component: WorkflowNewDetailComponent
+                path: SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2 + '/:workflowTypeId/:version/:stepId', component: WorkflowNewDetailComponent
             },            
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_FORM + '/:workflowId/:stepId/:itemId', component: WorkflowFormComponent

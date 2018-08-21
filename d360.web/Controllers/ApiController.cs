@@ -7722,6 +7722,9 @@ from	    TaxonomyType FAT
             var sql = @"select
 	                             wt.name as Name
                                 ,wt.id as Id
+								,wv.[version]
+								, wvs.name as Step
+                                ,wvs.Id as StepId
                                 ,count(1) as Total 
                                 from
 	                                [workflow].[type] wt
@@ -7732,7 +7735,7 @@ from	    TaxonomyType FAT
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                                 where
                                     wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
-									group by wt.name, wt.id order by wt.Name";
+									group by wt.name, wt.id,wv.[version],wvs.name,wvs.Id order by wt.Name asc,[version] desc,Step asc";
 
             return Company.Query<CountModel>(sql, new { r = resourceId });
         }

@@ -92,6 +92,9 @@ namespace d360.web.Models
     {
         public string Name { get; set; }
         public int? New { get; set; }
+        public int? Version { get; set; }
+        public string Step { get; set; }
+        public int StepId { get; set; }
         public int? Total { get; set; }        
         public int? Id { get; set; }
     }

@@ -66,7 +66,8 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
 
     
     private resourceID: number = null;
-
+    private version: number;
+    private stepId: number;
 
     private sub: any;
     private tempWorkflowtype = WorkflowType;
@@ -91,6 +92,8 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.isLoading = true;
             this.workflowTypeId = +params['workflowTypeId'];
             this.resourceID = +params['resourceID'];
+            this.version = +params['version'];
+            this.stepId = +params['stepId'];
 
             this.headerBreadcrumbService.clearBreadcrumbs();    
 
@@ -100,7 +103,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
 
     private load() {
         this.isLoading = true;
-        this.workflowService.getAssignedWorkflowInstancesByTypeId(this.workflowTypeId, this.resourceID)
+        this.workflowService.getAssignedWorkflowInstancesByTypeId(this.workflowTypeId, this.resourceID,this.version,this.stepId)
             .then(res => {
                 this.isLoading = false;
                 this.items = res.items;

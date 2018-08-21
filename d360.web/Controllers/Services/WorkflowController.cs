@@ -1422,7 +1422,7 @@ order by wi.StartedOn desc";
         }
 
         [Route("type/{typeId:int}/myinstances")]
-        public HttpResponseMessage GetAssignedWorkflowInstances(int typeId, int resourceId = 0)
+        public HttpResponseMessage GetAssignedWorkflowInstances(int typeId, int version,int stepId, int resourceId = 0)
         {
             try
             {
@@ -1466,13 +1466,14 @@ order by wi.StartedOn desc";
                                     left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
                                     left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
                                 where
-                                    wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
-                                order by StartedOn desc
+                                    wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3 
+                                    and wv.[version]=@verid and wvs.id = @sid  
+                                    order by StartedOn desc
                            ";
 
                 var w = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
 
-                var res = Company.Query<dynamic>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId = typeId });
+                var res = Company.Query<dynamic>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId = typeId, verid=version,sid=stepId });
 
                 return Request.CreateResponse(new { items = res, workflow = w });
             }

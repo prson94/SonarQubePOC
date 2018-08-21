@@ -295,9 +295,17 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getAssignedWorkflowInstancesByTypeId(id: number, resourceId: number): Promise<any> {        
+    getAssignedWorkflowInstancesByTypeId(id: number, resourceId: number,version:number,stepId:number): Promise<any> {        
         let url = `services/workflow/type/${id}/myinstances`;
-        if (resourceId && !isNaN(resourceId)) url += `?resourceId=${resourceId}`;
+        if (resourceId && !isNaN(resourceId)) {
+            url += `?resourceId=${resourceId}`;
+            url += `&version=${version}`;
+            url += `&stepId=${stepId}`;
+        }
+        else {
+            url += `?version=${version}`;
+            url += `&stepId=${stepId}`;
+        }
         return this.http.get(url)
                 .toPromise()
                 .then(response => <any>response.json())

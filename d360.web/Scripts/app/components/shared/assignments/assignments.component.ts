@@ -23,7 +23,9 @@ import { WorkflowType } from '../../../models/workflow.model';
                             <ng-template let-item="rowData" pTemplate type="body">
                                     <a (click)="doSelect(item)">{{item.Name}}</a>
                             </ng-template>
-                        </p-column>           
+                        </p-column>  
+                        <p-column field="Version" header="Version" [sortable]="true" [style]="{'text-align':'center'}"></p-column>    
+                        <p-column field="Step" header="Step" [sortable]="true" [style]="{'text-align':'left'}"></p-column>    
                         <p-column field="Total" header="Count" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                                                                
                     </p-dataTable>                      
                     <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">You currently have no assignments</div>
@@ -74,7 +76,9 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
         this.showItemDetail.emit({
             workflowType: this.getWorkflowType(item),
             resourceID: this.resourceId,
-            workflowId: item.Id
+            workflowId: item.Id,
+            version: item.Version,
+            stepId:item.StepId
         });
     }
 
