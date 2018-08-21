@@ -211,9 +211,14 @@ namespace d360.web.Controllers.Services
                 {
                     var dic = (IDictionary<string, object>)asset;
 
+                    //clear out previous values
+                    mlList.Value.Values = new List<int>();
+
                     if (dic.TryGetValue(mlList.Key.Name, out object val))
                     {
-                        var ids = val.ToString().Split(',');
+                        if (val == null)
+                            continue;
+                        var ids = (val ?? "").ToString().Split(',');
                         mlList.Value.Values = new List<int>();
 
                         foreach (var id in ids)
@@ -228,6 +233,9 @@ namespace d360.web.Controllers.Services
                     if (!field.Value.Fields.Any())
                         field.Value.Fields = Company.ApiEntityFieldTypeMultiSelectFields.Where(i => i.EntityFieldTypeID == field.Value.EntityFieldTypeID).Select(i => i.FieldTypeID).ToList();
 
+                    //clear out previous values
+                    field.Value.Items = null;
+
                     //based on the field type get the properties for the reference list type
                     if (field.Key.LookupObjectType != "ReferenceItem" || field.Key.LookupObjectID <= 0)
                         continue;
@@ -236,6 +244,10 @@ namespace d360.web.Controllers.Services
                     var columns = new List<string>();
 
                     var fieldCount = field.Value.Fields.Count;
+                    var valueCount = field.Value.Values.Count;
+
+                    if (valueCount < 1)
+                        continue;
 
                     if (fieldCount > 0)
                     {
@@ -282,6 +294,9 @@ namespace d360.web.Controllers.Services
             {
                 foreach (var field in multiSelectDetails)
                 {
+                    if (field.Value.Items == null || field.Value.Items.Count() < 1)
+                        continue;
+
                     var p = DynamicHelper.GetXElement(field.Key.Name, namespaces, asset);
                     asset.Add(p);
 
@@ -881,8 +896,10 @@ namespace d360.web.Controllers.Services
 
                     if (continueChecking)
                     {
+                        var ft = config.First().FieldTypes.Where(f => f.FieldType.Name == fieldToFilter).FirstOrDefault();
+
                         // astring          astring,bstring,cstring
-                        if (fieldValueToFilterBy.Contains(","))
+                        if (fieldValueToFilterBy.Contains(",") || (ft != null && ft.FieldType != null && ft.FieldType.Type == "Lookup" && ft.FieldType.AllowMultipleValues))
                         {
                             var filter = new MultiValueFilterModel { Negated = isNegated, FieldName = fieldToFilter, Values = fieldValueToFilterBy.Split(',').ToList() };
                             filters.Add(filter);
@@ -1061,17 +1078,60 @@ namespace d360.web.Controllers.Services
                             }
                             else if (filter is MultiValueFilterModel)
                             {
+                                //process multiselect fields
                                 var multiValueFilter = filter as MultiValueFilterModel;
                                 var loopNumber = 1;
-                                foreach (var v in multiValueFilter.Values)
-                                {
-                                    if (!string.IsNullOrEmpty(fieldFilterSql)) fieldFilterSql += conjunction;
 
-                                    fieldFilterSql += $"{formattedValueColumnSql} {@operator} @{filter.FieldName}{loopNumber}";
-                                    dbArgs.Add($"@{filter.FieldName}{loopNumber}", v, fieldDbType);
-                                    loopNumber++;
+                                if (f.FieldType.Type == "Lookup" && f.FieldType.AllowMultipleValues)
+                                {
+                                    foreach (var v in multiValueFilter.Values)
+                                    {
+                                        dbArgs.Add($"@{filter.FieldName}{loopNumber}", v, fieldDbType);
+                                        loopNumber++;
+                                    }
+
+                                    var valueCount = multiValueFilter.Values.Count();
+                                    var columnName = "D.DisplayValue";
+                                    additionalWhereSql += $@"{(filter.Negated ? 0 : valueCount)} = (
+                                        select count(*) from Asset A
+                                        inner join AssetType T on T.Object = '{(f.FieldType.LookupObjectType == "ReferenceItem" ? f.FieldType.LookupObjectType + "Type" : f.FieldType.LookupObjectType)}'
+                                            and T.ObjectID = {f.FieldType.LookupObjectID} and T.ID = A.AssetTypeID
+                                        inner join string_split((select Value from Field where FieldTypeID = {f.FieldType.ID} and AssetID = O.ID),',') FV on FV.Value = A.ObjectID
+                                        ";
+                                    var entityFieldTypeId = config.First().EntityFieldTypeID;
+
+                                    var selectFields = Company.ApiEntityFieldTypeMultiSelectFields.Where(i => i.EntityFieldTypeID == entityFieldTypeId).ToList();
+
+                                    if (selectFields != null && selectFields.Count == 1)
+                                    {
+                                        additionalWhereSql += $" inner join Field F on F.FieldTypeID = {selectFields.First().FieldTypeID} and F.AssetID = A.ID";
+                                        columnName = "F.Value";
+                                    }
+                                    else
+                                        additionalWhereSql += " cross apply dbo.GetAssetDisplayValueById(A.ID) D";
+
+                                    var values = string.Join(",", multiValueFilter.Values.Select((v, i) => $"@{multiValueFilter.FieldName}{i + 1}"));
+
+                                    additionalWhereSql += $" where {columnName} in ({values})";
+                                    additionalWhereSql += ")";
+                                    
                                 }
-                                fieldFilterSql = $"({fieldFilterSql})";
+                                else
+                                {
+                                    foreach (var v in multiValueFilter.Values)
+                                    {
+                                        if (!string.IsNullOrEmpty(fieldFilterSql)) fieldFilterSql += conjunction;
+
+                                        fieldFilterSql += $"{formattedValueColumnSql} {@operator} @{filter.FieldName}{loopNumber}";
+                                        dbArgs.Add($"@{filter.FieldName}{loopNumber}", v, fieldDbType);
+                                        loopNumber++;
+                                    }
+                                    fieldFilterSql = $"({fieldFilterSql})";
+                                }
+
+                                if (!string.IsNullOrEmpty(additionalWhereSql))
+                                    additionalWhereSql = " and " + additionalWhereSql;
+
                             }
                             else if (filter is RangeValueFilterModel)
                             {
@@ -1211,9 +1271,13 @@ namespace d360.web.Controllers.Services
                         else if (filter is MultiValueFilterModel)
                         {
                             var multiValueFilter = filter as MultiValueFilterModel;
-                            additionalWhereSql += "(";
+                            var fieldType = config.Where(f => f.FieldType.Name == filter.FieldName).Select(f => f.FieldType).FirstOrDefault();
+
                             var loopNumber = 1;
                             var dateFieldString = "";
+     
+                            additionalWhereSql += "(";
+
                             foreach (var v in multiValueFilter.Values)
                             {
                                 if (!string.IsNullOrEmpty(dateFieldString)) dateFieldString += " OR ";
@@ -1223,6 +1287,8 @@ namespace d360.web.Controllers.Services
                             }
                             additionalWhereSql += dateFieldString;
                             additionalWhereSql += ") ";
+                            
+
                         }
                         else if (filter is RangeValueFilterModel)
                         {
@@ -1343,7 +1409,7 @@ namespace d360.web.Controllers.Services
                 #endregion
 
                 var lastmodifiedDateSql = @"
-                    select max(O.UpdatedOn)
+                    select max(O.UpdatedOn) as UpdatedOn
                     from    AssetApiModel A
                             inner join Asset O on O.ID = A.ID
                             cross apply utility.GetAssetBusinessKey(A.ID) D 
@@ -1376,7 +1442,7 @@ namespace d360.web.Controllers.Services
 
                 // Get the actual results from DB.
                 var assets = Company.Query<dynamic>(sql, dbArgs); //new { id = config.First().AssetType.ID }
-                DateTime lastModifiedDate = Company.Query<DateTime>(lastmodifiedDateSql, dbArgs).SingleOrDefault();
+                var lastModifiedDate = Company.Query<DateTime?>(lastmodifiedDateSql, dbArgs).SingleOrDefault();
 
                 #region Calculate the page links
 
@@ -1486,9 +1552,9 @@ namespace d360.web.Controllers.Services
 
                 responseMessage.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { MaxAge = new TimeSpan(0, 0, 0, maxAge) };
 
-                if(lastModifiedDate!= DateTime.MinValue)
-                    responseMessage.Content.Headers.LastModified = new DateTimeOffset(lastModifiedDate,
-                                 TimeZoneInfo.Local.GetUtcOffset(lastModifiedDate)); ;
+                if (lastModifiedDate.HasValue && lastModifiedDate != DateTime.MinValue)
+                    responseMessage.Content.Headers.LastModified = new DateTimeOffset(((DateTime)lastModifiedDate),
+                                 TimeZoneInfo.Local.GetUtcOffset(((DateTime)lastModifiedDate))); ;
                 return responseMessage;
 
                 #endregion End: Collection endpoint processing
