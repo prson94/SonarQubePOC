@@ -10,6 +10,7 @@ import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
+import { SelectItem } from 'primeng/primeng';
 
 @Component({
     selector: 'admin-settings',
@@ -36,7 +37,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     companyLogo: CompanyImage = new CompanyImage();
     companyIcon: CompanyImage = new CompanyImage();
     homePageImage: CompanyImage = new CompanyImage()
-
+    groups: SelectItem[];
     sub: any;
     routeValidationMessage = "";
     
@@ -72,7 +73,13 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.companySettings.SiteNav.forEach(s => {
                     s.IsCustom = (s.Name.indexOf('#') != 0)
                 });
-                
+
+             
+            })
+            .then(() => this.companySettingsService.getGroups())
+            .then(x => {
+                this.groups = x;
+                this.groups.unshift({ label: 'Administrator', value: '0' });
                 this.isLoading = false;
             });
     }

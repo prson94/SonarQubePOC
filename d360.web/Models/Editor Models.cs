@@ -163,6 +163,7 @@ namespace d360.web.Models
 
         public bool HideData3SixtyUsers { get; set; }
         public bool ShowAllUsersAPIKey { get; set; }
+        public int WorkflowCatchAllGroup { get; set; }
 
         public bool ShowHomeAssignmentTile { get; set; }
         public bool ShowHomeBoardTile { get; set; }

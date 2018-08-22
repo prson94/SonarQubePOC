@@ -41,7 +41,13 @@
                     <div class="directions">
                         Displays the API Key for all users in their Profile Screen. Uncheck to display for administrators only.
                     </div>
-                </div>                
+                </div>    
+                <div class="tile tile-detail">
+                    <header>Workflow</header>
+                    <div class="FieldName">Default recipient for workflow forms and emails</div>
+                    <p-dropdown  [options]="groups" [(ngModel)]="companySettings.WorkflowCatchAllGroup" [style]="{ 'width' : '95%' }" ></p-dropdown>
+                    <div class="directions">Determines the default recipient of a workflow form or email when the recipient in the setup of the Email Activity or Form Activity cannot be found.</div>
+                </div>
                 <div class="tile tile-detail">
                     <header>Styles</header>
                     <div class="FieldName">Header Border Color</div>

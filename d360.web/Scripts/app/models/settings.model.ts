@@ -27,6 +27,7 @@ export class CompanySettings {
     ShowAllUsersAPIKey:boolean
     DefaultRoute: string;
     EnableSearchExactMatch: boolean;
+    WorkflowCatchAllGroup: number;
     ShowDefaultHelpVideos: boolean;
     ShowHomeAssignmentTile: boolean;
     ShowHomeBoardTile: boolean;

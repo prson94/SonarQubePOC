@@ -2645,6 +2645,21 @@ namespace d360.web.Controllers
 
         #region Company Settings
 
+        [Route("CompanySettings/Groups")]
+        public JsonNetResult GetGroups()
+        {
+            var list = Company.Query<dynamic>($@"
+				select	cast(ID as varchar) as [value],
+                Name as label 
+                from	[Group]
+                order by Name");
+            return new JsonNetResult
+            {
+                Data = list,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         [Route("CompanySettings")]
         public JsonNetResult CompanySettings()
         {
@@ -2660,6 +2675,7 @@ namespace d360.web.Controllers
             model.ShowDefaultHelpVideos = (settings.Any(i => i.SettingID == 35) ? bool.Parse(settings.Single(i => i.SettingID == 35).Value) : true);
             model.HideData3SixtyUsers = (settings.Any(i => i.SettingID == 9) ? bool.Parse(settings.Single(i => i.SettingID == 9).Value) : true);
             model.ShowAllUsersAPIKey = (settings.Any(i => i.SettingID == 57) ? bool.Parse(settings.Single(i => i.SettingID == 57).Value) : true);
+            model.WorkflowCatchAllGroup = (settings.Any(i => i.SettingID == 58) ? Int32.Parse(settings.Single(i => i.SettingID == 58).Value) : 0);
 
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2817,6 +2833,7 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 35, formModel.ShowDefaultHelpVideos.ToString().ToLower());
                 updateCompanySetting(settings, 9, formModel.HideData3SixtyUsers.ToString().ToLower());
                 updateCompanySetting(settings, 57, formModel.ShowAllUsersAPIKey.ToString().ToLower());
+                updateCompanySetting(settings, 58, formModel.WorkflowCatchAllGroup.ToString());
 
                 #endregion
 
