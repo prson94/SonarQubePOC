@@ -96,7 +96,7 @@ namespace d360.web.Controllers
 								end as [Count]
 							) A
 			                where		C.IsVisible = 1 
-						                 and C.ResponsibilityTypeID = @rt
+						                 {(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}
 						                and C.ResourceID = @r
 			                group by C.[Type], C.TypeID, A.Count
 		                ) R on R.[Type] = T.Object and R.TypeID = T.ObjectID
