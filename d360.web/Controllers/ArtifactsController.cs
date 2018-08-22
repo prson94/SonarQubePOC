@@ -41,7 +41,8 @@ namespace d360.web.Controllers
                 DataType.DataTableSelect.ToString(),
                 DataType.FilteredLookup.ToString(),
                 DataType.FusionLookup.ToString(),
-                DataType.OwnershipLookup.ToString()
+                DataType.OwnershipLookup.ToString(),
+                DataType.FieldFromRelationship.ToString()
             };
             var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
 

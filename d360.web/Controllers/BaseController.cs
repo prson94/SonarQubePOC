@@ -1291,7 +1291,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             if (fields == null)
             {
                 if(listableOnly)
-                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();                
                 else
                     fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.ColumnOrder).ToList();
             }
