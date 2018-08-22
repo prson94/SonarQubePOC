@@ -163,24 +163,41 @@ from	FollowDetail F
             document.AddWorksheet("Items");
 
             string sql = $@"
-select		C.ResponsibilityTypeName as ResponsibilityType,
-			C.AssetID,
-			TP.TextPath as [Path],
-			case C.SecurityAsset
+        select 
+			RD.ResponsibilityTypeName as ResponsibilityType,
+		    A.ID as AssetID,
+            TP.TextPath as [Path],
+		    case RD.SecurityAsset
+			    when 'G' then 'Via Group'
+			    when 'O' then 'Via Organization'
+			    else ''
+		    end as Via
+		from 
+		    ResponsibilityDetail RD 
+		    inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
+		    inner join Asset A on A.AssetTypeID = T.ID
+            cross apply [dbo].GetAssetTextPathById(A.ID, ' / ') TP
+		where {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
+            ResourceID = @resourceID and AssetID = 0 and ApplyToType = 1
+		
+		union all
+
+		select	
+		        RD.ResponsibilityTypeName as ResponsibilityType,
+		        RD.AssetID as AssetID,
+                TP.TextPath as [Path],
+		        case RD.SecurityAsset
 			        when 'G' then 'Via Group'
 			        when 'O' then 'Via Organization'
 			        else ''
 		        end as Via
-from		ResponsibilityDetail C
-			cross apply [dbo].GetAssetTextPathById(C.AssetID, ' / ') TP
-where		C.Type = @type 
-			and C.TypeID = @id
-			and C.IsVisible = 1
-			and C.ResourceID = @r
-            {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? $" and C.ResponsibilityTypeID = {(int)responsibilityTypeId}" : "" )}
-";
+        from	ResponsibilityDetail RD
+                cross apply [dbo].GetAssetTextPathById(RD.AssetID, ' / ') TP
+		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @type and T.ObjectID = @id
+        where  {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
+            RD.AssetID != 0 and RD.ApplyToType = 0";
 
-            var query = Company.Query<dynamic>(sql, new { r = resourceID, type, id });
+            var query = Company.Query<dynamic>(sql, new { resourceID, type, id, responsibilityTypeId });
 
             #region Create the list sheet
 
