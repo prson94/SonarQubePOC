@@ -13,6 +13,7 @@ import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
 
 import { AssignmentsComponent } from './assignments.component';
+import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 
 
 @NgModule({
@@ -23,6 +24,7 @@ import { AssignmentsComponent } from './assignments.component';
         //d3s
         CoreModule,        
         TilesModule,
+        SharedGridPagingInfoModule,
 
         //prime        
         DataTableModule,
