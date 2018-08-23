@@ -218,6 +218,13 @@ namespace igx.jobs.fusionruleprocessor
                         break;
                 }
 
+                if((ParentObjectID > 0)  && (ParentObjectSearchType == FusionRuleParentSearchTypes.Direct || ParentObjectSearchType == FusionRuleParentSearchTypes.FusionOwner || ParentObjectSearchType == FusionRuleParentSearchTypes.ResultFromStep))
+                {
+                    //delete any items that we didnt fine a parent for
+                    await company.ExecuteAsync(@"delete from #fields where not exists(select 1 from  #promotionParents p where p.ObjectID = id )", transaction:transaction);
+
+                }
+
 #if DEBUG
                 await PrintTempTableContents(company, Log, "promotionParents",transaction);
 #endif
