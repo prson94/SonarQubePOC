@@ -1646,7 +1646,28 @@ namespace d360.model
 
                     if (fieldId > 0)
                     {
-                        var fieldRecord = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == objectInfo.Object.ToString() && x.FieldTypeID == fieldId).FirstOrDefault();
+                        var obj = objectInfo.Object.ToString();
+                        var fieldRecord = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == obj && x.FieldTypeID == fieldId).FirstOrDefault();
+
+                        if((obj ?? "").ToUpper() == "INTERSECT")
+                        {
+                            var intersect = Intersects.Where(i => i.ID == objectInfo.ObjectID).FirstOrDefault();
+
+                            if(intersect != null)
+                            {
+                                var ofieldRecord = Fields.Where(x => x.ObjectID == intersect.ObjectID && x.ObjectType == intersect.Object && x.FieldTypeID == fieldId).FirstOrDefault();
+
+                                if (ofieldRecord != null)
+                                    fieldValue = ofieldRecord.FormattedValue;
+
+                                var sfieldRecord = Fields.Where(x => x.ObjectID == intersect.SubjectID && x.ObjectType == intersect.Subject && x.FieldTypeID == fieldId).FirstOrDefault();
+
+                                if (!string.IsNullOrEmpty(fieldValue)) fieldValue += " ";
+
+                                if (sfieldRecord != null)
+                                    fieldValue = sfieldRecord.FormattedValue;
+                            }
+                        }
 
                         if(fieldRecord != null)
                             fieldValue = fieldRecord.FormattedValue;
