@@ -60,6 +60,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     private relations: ResponsibilityTypeRelation[] = [];
     private relation: ResponsibilityTypeRelation = new ResponsibilityTypeRelation();
     private model: ResponsibilityTypeRelationRule = new ResponsibilityTypeRelationRule();
+    private disableTestWhen: boolean = false;
+    private disableTestThen: boolean = false;
 
     private actionName: string = "Add";
 
@@ -275,10 +277,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         this.isWhenTestLoading = true;
 
         let promises = [];
+        this.disableTestWhen = true;
 
         this.responsibilityTypeService.testWhen(this.model)
             .then(d => {
                 this.WhenTestRows = d;
+                this.disableTestWhen = false;
                 this.isWhenTestLoading = false;
             });
 
@@ -317,10 +321,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         this.isThenTestLoading = true;
 
         let promises = [];
+        this.disableTestThen = true;
 
         this.responsibilityTypeService.testThen(this.model)
             .then(d => {
                 this.ThenTestRows = d;
+                this.disableTestThen = false;
                 this.isThenTestLoading = false;
             });
 

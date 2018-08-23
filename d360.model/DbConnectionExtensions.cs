@@ -431,7 +431,7 @@ and (
             string obj = "";
             string uniqueIdField = "ID";
 
-            if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null))
+            if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object !=null))
             {
                 thenSql = $@"select {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}";
 
@@ -491,6 +491,7 @@ and (
                 }
             }
 
+            if(!string.IsNullOrEmpty(thenSql) || !string.IsNullOrEmpty(whenSuffix))
             thenSql += " {0} " + whenSuffix;
 
             return thenSql;
