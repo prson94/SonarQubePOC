@@ -180,7 +180,7 @@ where       IsSystem = 0
 order by	SubjectName,
 			ObjectName").ToList();
 
-            models.ForEach(m => m.IsSystem = systemTypes.Contains(m.PredicateType));
+            models.ForEach(m => m.IsSystem = m.PredicateType == null || systemTypes.Contains(m.PredicateType));
 
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
