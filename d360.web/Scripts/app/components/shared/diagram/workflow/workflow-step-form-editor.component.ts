@@ -172,6 +172,11 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         else
             this.step.settings.SendFormEmail = this.step.settings.SendFormEmail.toString().toLowerCase() === 'true' ? true : false;
 
+        if (this.step.settings.IncludePreviousFormResponses == null)
+            this.step.settings.IncludePreviousFormResponses = false;
+        else
+            this.step.settings.IncludePreviousFormResponses = this.step.settings.IncludePreviousFormResponses.toString().toLowerCase() === 'true' ? true : false;
+
         if (this.step.fields.form['@allowReassignObject'] != null)
             this.allowReassignObject = this.step.fields.form['@allowReassignObject'].toString().toLowerCase() === 'true' ? true : false;
 
