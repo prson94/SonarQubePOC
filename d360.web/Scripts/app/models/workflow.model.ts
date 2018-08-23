@@ -476,6 +476,10 @@ export class WorkflowAssignmentDetail {
     ActivityType: WorkflowActivityType;
 }
 
+export class BulkWorkflowFormModel {
+    ItemStepIDs: number[] = [];
+    Fields: WorkflowFormField[] = [];
+}
 
 export class EmailTaskRecipientTypeInfo {
     ID: number;

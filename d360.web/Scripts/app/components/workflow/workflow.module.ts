@@ -9,6 +9,7 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
@@ -16,6 +17,7 @@ import { WorkflowComponent } from './workflow.component';
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
 import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 import { WorkflowFormComponent } from './workflow-form.component';
+import { WorkflowBulkFormComponent } from './workflow-bulk-form.component';
 import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
@@ -67,6 +69,7 @@ import {
         PipesModule,
         TilesModule,
         SharedGridPagingInfoModule,
+        SharedGridSelectionInfoModule,
         SharedDynamicGridEditorModule,
     ],
     declarations: [                        
@@ -77,6 +80,7 @@ import {
         WorkflowRaiseIssueComponent,
         WorkflowViewDetailsComponent,        
         WorkflowNewDetailComponent,
+        WorkflowBulkFormComponent,
     ],
     exports: [                        
         WorkflowRaiseIssueComponent,           

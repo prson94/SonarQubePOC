@@ -23,6 +23,7 @@ import {
     WorkflowTaskProcedure,   
     EmailTaskRecipientTypeInfo,
     WorkflowChangeType,
+    BulkWorkflowFormModel,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -136,13 +137,32 @@ export class WorkflowService extends BaseService {
 
     //#endregion
 
+
+    //#region bulk
+
+    getWorkflowBulkForm(model: BulkWorkflowFormModel) {
+        return this.http.post('/services/workflow/form/bulk', model)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    submitBulkWorkflowForm(model: BulkWorkflowFormModel) {
+        return this.http.post('/services/workflow/SubmitWorkflowForm/bulk', model)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    //#endregion
+
     getWorkflowForm(id: number, itemStepId: number): Promise<WorkflowForm> {
         return this.http.get(`/services/workflow/form/${id}/${itemStepId}`)
             .toPromise()
             .then(response => <WorkflowForm>response.json())
             .catch(err => this.handleError(err));
     }
-
+ 
     reassignUser(itemId: number, resourceId: number): Promise<JsonResult> {
         return this.http
             .post(`services/workflow/ReassignWorkflowResource/${itemId}/${resourceId}`, null)
@@ -242,7 +262,6 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    
     saveWorkflowDiagramModel(model: WorkflowDiagramModel): Promise<number> {
         //returns workflowtype id
         return this.http.post('services/workflow/diagram/save', model)
@@ -325,7 +344,6 @@ export class WorkflowService extends BaseService {
             .then(response => <EmailTaskRecipientTypeInfo[]>response.json())
             .catch(err => this.handleError(err));
     }
-
 
     getWorkflowsByTypeList(types: string, filteredObject?: string, filteredObjectId?: number) {
         let uri = `services/workflow/typelist?types=${types}`;

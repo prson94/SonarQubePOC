@@ -520,10 +520,113 @@ order by wi.StartedOn desc";
             }
         }
 
+        [HttpPost, Route("SubmitWorkflowForm/bulk")]
+        public async Task<HttpResponseMessage> SubmitBulkWorkflowForm(BulkWorkflowFormModel model)
+        {
+
+            //model validation
+
+            if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "INVALID MODEL, MODEL IS NULL OR MISSING ITEM STEP IDS");
+
+            var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).ToList();
+
+            if (itemSteps == null || itemSteps.Count < 1)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "NO VALID ITEM STEPS FOUND");
+
+            var stepID = itemSteps.First().StepID;
+
+            if (itemSteps.Any(i => i.StepID != stepID))
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "MULTIPLE VERION STEPS SPECIFIED");
+
+            var versionStep = Company.WorkflowVersionSteps.Where(x => x.ID == stepID).Include(x => x.Version).FirstOrDefault();
+
+            if (versionStep == null)
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW ITEM ID,  CANNOT FIND WORKFLOWITEMSTEP WITH SPECIFIED ID.");
+
+            if (model.Fields == null)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "INVALID MODEL NO FIELDS PASSED");
+
+
+            try
+            {
+                var omittedCount = 0;
+                var validItemSteps = new List<WorkflowItemStep>();
+                foreach(var i in itemSteps)
+                {
+
+
+                    var formResults = XElement.Parse(i.Fields);
+                    bool isCompletedByCurrentUser = false;
+                    bool isDeleted = false;
+                    ObjectDetail details = null;
+
+                    switch (i.Item.Object)
+                    {
+                        case "Issue":
+                            var issue = Company.Issues.Where(x => x.ID == i.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+
+                            if (issue != null)
+                            {
+                                details = new ObjectDetail
+                                {
+                                    Type = "Action",
+                                    Name = issue.Object,
+                                    TypeName = issue.IssueType.Name
+                                };
+                            }
+                            break;
+                        default:
+                            details = Company.GetObjectDetail(i.Item.Object, i.Item.ObjectID);
+                            break;
+                    }
+
+                    if (details == null)
+                    {
+                        isDeleted = true;
+                        omittedCount++;
+                    }
+
+
+                    foreach (var form in formResults.Elements("form"))
+                    {
+                        int completedById = 0;
+                        int.TryParse((string)form.Attribute("ResourceID") ?? "", out completedById);
+
+                        if (completedById == Company.CurrentResourceID && !isCompletedByCurrentUser)
+                        {
+                            isCompletedByCurrentUser = true;
+                            continue;
+                        }
+                    }
+
+                    // check if the user has access
+                    var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemID == i.ItemID && x.ResourceObjectID == Company.CurrentResourceID).Any();
+
+                    // if user does not have access or item has been deleted, don't add it to the list of valid item steps
+                    if (IsUserAllowedToComplete && !isCompletedByCurrentUser && !i.CompletedOn.HasValue && !isDeleted)
+                        validItemSteps.Add(i);
+
+                }
+
+                //submit the valid item steps
+                foreach(var i in validItemSteps)
+                    await SubmitWorkflowForm((int)i.ItemID, (int)i.ID, model.Fields);
+
+
+                return Request.CreateResponse(HttpStatusCode.OK, new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
         [Route("form/{typeID:int}/{itemStepID:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, int itemStepID)
         {
             var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).Include(x=>x.Item).Include(x=>x.Step).FirstOrDefault();
+
 
             if(itemStep == null)
             {
@@ -631,7 +734,7 @@ order by wi.StartedOn desc";
                 }
             }
 
-            switch (itemStep.Item.Object)
+           switch (itemStep.Item.Object)
             {
                 case "Issue":
                     var issue = Company.Issues.Where(x => x.ID == itemStep.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
@@ -705,6 +808,219 @@ order by wi.StartedOn desc";
                 IssueTypeName = issueTypeName,
                 AllowReassignObject = allowReassignObject,
                 AllowReassignResource = allowReassignResource
+            });
+        }
+
+        [Route("form/bulk"), HttpPost]
+        public async Task<HttpResponseMessage> GetBulkWorkflowForm(BulkWorkflowFormModel model)
+        {
+            //model validation
+
+            if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "INVALID MODEL, MODEL IS NULL OR MISSING ITEM STEP IDS");
+
+            var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).ToList();
+
+            if (itemSteps == null || itemSteps.Count < 1)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "NO VALID ITEM STEPS FOUND");
+
+            var stepID = itemSteps.First().StepID;
+
+            if (itemSteps.Any(i => i.StepID != stepID))
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "MULTIPLE VERION STEPS SPECIFIED");
+
+
+            var versionStep = Company.WorkflowVersionSteps.Where(x => x.ID == stepID).Include(x => x.Version).FirstOrDefault();
+
+            if (versionStep == null)
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW ITEM ID,  CANNOT FIND WORKFLOWITEMSTEP WITH SPECIFIED ID.");
+
+
+            var typeID = versionStep.Version.TypeID;
+            var type = Company.GetById<core.entities.Workflow.Type>(typeID);
+
+            string sql = @"
+                    SELECT vs.[Fields]      
+                      FROM 
+	                    [workflow].[VersionStep] vs
+                        inner join [workflow].[itemstep] wis on(vs.id = wis.stepid)
+                     where wis.stepid = @id
+                ";
+
+            var xml = (await Company.QueryAsync<string>(sql, new { id = stepID })).FirstOrDefault();
+
+            if (string.IsNullOrEmpty(xml))
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW FORM DEFINITION,  FORM XML IS NULL.");
+
+            var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
+            var title = (string)XElement.Parse(xml).Element("form").Attribute("title");
+            //bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignResource"), out bool allowReassignResource);
+            //bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignObject"), out bool allowReassignObject);
+
+            if (string.IsNullOrEmpty(xml))
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow with specified version step id not found");
+
+            List<WorkflowFormModelField> properties = (
+                                 from s in XElement.Parse(xml).Element("form").Elements()
+                                 select new WorkflowFormModelField { Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), ReferenceFieldID = (string)s.Attribute("referenceFieldId"), IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"), FieldType = (WorkflowFormModelFieldType)Enum.Parse(typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
+                                 ).ToList();
+
+
+            ObjectDetail details = null;
+            ObjectDetail issueItemDetails = null;
+            var issueTypeName = "";
+            var issueObjectType = "";
+
+            foreach (var item in properties)
+            {
+                int fieldId = 0;
+
+                if (item.FieldType == WorkflowFormModelFieldType.relationshipType)
+                {
+                    if (item.IntersectTypeID <= 0) throw new Exception("RELATIONSHIP INPUT HAS AN INVALID INTERSECTTYPE ID VALUE");
+
+                    //load the possible options for this relationship type into values array
+                    var intersectType = Company.IntersectTypes.Where(x => x.ID == item.IntersectTypeID).FirstOrDefault();
+
+                    if (intersectType == null) throw new Exception("RELATIONSHIP INPUT CANNOT FIND THE SPECIFIED INTERSECT TYPE");
+
+                    var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == typeID).FirstOrDefault();
+
+                    if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
+
+                    var itemSql = "select i.Name as Text, i.ObjectType + '|' + cast(i.ObjectID as varchar) as Value from cache.objectdetails i where i.objecttype = @objectType and i.objecttypeid = @objectTypeId and i.[object] != @objectType order by 1";
+
+                    item.Values = new List<System.Web.Mvc.SelectListItem>();
+
+                    if (reg.Object == intersectType.Subject && reg.ObjectID == intersectType.SubjectID)
+                    {
+                        // load the object items into the values array                        
+                        item.AllowMultipleValues = !(intersectType.ObjectCardinality == core.enums.Cardinality.One);
+
+                        item.Values.AddRange(
+                            Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Object, objectTypeId = intersectType.ObjectID })
+                        );
+                    }
+                    else
+                    {
+                        item.AllowMultipleValues = !(intersectType.SubjectCardinality == core.enums.Cardinality.One);
+                        // load the subject items into the value array
+                        item.Values.AddRange(
+                            Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Subject, objectTypeId = intersectType.SubjectID })
+                        );
+                    }
+                }
+
+                if (string.IsNullOrEmpty(item.ReferenceFieldID) || !int.TryParse(item.ReferenceFieldID, out fieldId) || item.FieldType != WorkflowFormModelFieldType.list) continue;
+
+                //load the field type
+                var fieldType = Company.FieldTypes.Where(x => x.ID == fieldId).FirstOrDefault();
+
+                if (fieldType == null) continue;
+
+                //get the possible values for this field
+                if (!string.IsNullOrEmpty(fieldType.LookupObjectType))
+                {
+                    try
+                    {
+                        item.AllowMultipleValues = fieldType.AllowMultipleValues;
+                        item.Values = new List<System.Web.Mvc.SelectListItem>();
+
+                        item.Values.AddRange(
+                            Company.Filter<FieldLookupValue>(o => o.FieldTypeID == fieldType.ID && o.LookupObjectType == fieldType.LookupObjectType && o.LookupObjectID == fieldType.LookupObjectID.Value)
+                                .OrderBy(o => o.Text)
+                                .Select(i => new System.Web.Mvc.SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                .ToList()
+                        );
+                    }
+                    catch { }
+                }
+            }
+
+            var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Settings));
+
+            //check if the current user already completed the form
+
+            var validItemSteps = new List<WorkflowItemStep>();
+            var omittedCount = 0;
+
+            var typeName = "";
+            var objectName = "";
+
+            itemSteps.ForEach(i =>
+            {
+                var formResults = XElement.Parse(i.Fields);
+                bool isCompletedByCurrentUser = false;
+                bool isDeleted = false;
+
+                switch (i.Item.Object)
+                {
+                    case "Issue":
+                        var issue = Company.Issues.Where(x => x.ID == i.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+                        
+                        if (issue != null)
+                        {
+                            details = new ObjectDetail
+                            {
+                                Type = "Action",
+                                Name = issue.Object,
+                                TypeName = issue.IssueType.Name
+                            };
+                        }
+                        break;
+                    default:
+                        details = Company.GetObjectDetail(i.Item.Object, i.Item.ObjectID);
+                        break;
+                }
+
+                if (details == null)
+                {
+                    isDeleted = true;
+                    omittedCount++;
+                }
+                else if (string.IsNullOrEmpty(typeName))
+                {
+                    typeName = details.TypeName;
+                    objectName = details.Type == "Action" ? details.Name : i.Item.Object;
+                }
+
+                foreach (var form in formResults.Elements("form"))
+                {
+                    int completedById = 0;
+                    int.TryParse((string)form.Attribute("ResourceID") ?? "", out completedById);
+
+                    if (completedById == Company.CurrentResourceID && !isCompletedByCurrentUser)
+                    {
+                        isCompletedByCurrentUser = true;
+                        continue;
+                    }
+                }
+
+                // check if the user has access
+                var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemID == i.ItemID && x.ResourceObjectID == Company.CurrentResourceID).Any();
+
+                // if user does not have access or item has been deleted, don't add it to the list of valid item steps
+                if (IsUserAllowedToComplete && !isCompletedByCurrentUser && !i.CompletedOn.HasValue && !isDeleted)
+                    validItemSteps.Add(i);
+
+            });
+
+            return Request.CreateResponse<dynamic>(HttpStatusCode.OK, new
+            {
+                WorkflowName = type?.Name ?? "",
+                TypeName = typeName,
+                versionStep.Version.Version,
+                ObjectName = string.IsNullOrEmpty(objectName) ? "(unknown)" : objectName,
+
+                Fields = properties,
+                Title = title ?? "",
+                Description = desc ?? "",
+                IssueObject = issueObjectType,
+                IssueObjectID = issueItemDetails != null ? issueItemDetails.ID : 0,
+                IssueObjectName = issueItemDetails != null ? issueItemDetails.Name : "",
+                IssueTypeName = issueTypeName,
+                ItemSteps = validItemSteps,
+                OmittedCount = omittedCount
             });
         }
 

@@ -3,7 +3,7 @@ import { Location } from '@angular/common';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { WorkflowType, WorkflowAssignmentDetail, WorkflowAssignmentSummary } from '../../models/workflow.model';
+import { WorkflowType, WorkflowAssignmentDetail, WorkflowAssignmentSummary, BulkWorkflowFormModel } from '../../models/workflow.model';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
@@ -13,7 +13,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     selector: 'd3s-workflow-new-detail',
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading">
+                <div class="row" *ngIf="!isLoading && !showBulkFormEditor">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <header>Edit {{workflow?.Name}}<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
@@ -41,11 +41,11 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                         <span *ngIf="assignmentSummary" class="FieldDisplayContent">{{assignmentSummary.TypeName}}</span>
                                 </div>
                             </div>
-                          
                            
                             <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
-                            <p-dataTable #dt [globalFilter]="gb" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="items" selectionMode="single">
+                            <p-dataTable #dt [globalFilter]="gb" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="items" headerCheckboxToggleAllPages="true" [(selection)]="selection">
                                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
+                                <p-column [style]="{'width':'35px'}" selectionMode="multiple"></p-column>                                
                                 <p-column field="ObjectName" header="Name" sortable="true" [filter]="!showSimpleFilter">
                                     <ng-template let-col let-item="rowData" pTemplate type="body">
                                         <a (click)="open(item)" *ngIf="!item.IssueObject"><d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" >{{item.ObjectName}}</d3s-preview-tooltip></a>
@@ -73,13 +73,26 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                         </div>
                                     </ng-template>
                                 </p-column> 
+                                <ng-template pTemplate="paginatorLeft">
+                                    <d3s-grid-selection-info
+                                        [model]="items"
+                                        [selection]="selection"
+                                        (onSelectAllClick)="selection = items"
+                                        (onSelectNoneClick)="selection = []"
+                                    >
+                                    </d3s-grid-selection-info>
+                                </ng-template>
                             </p-dataTable>       
                             <div style="padding:10px">
                                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
+                                <button pButton type="button" (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 2"></button>
                             </div>  
                         </div>
                     </div>
-                </div>                
+                </div>  
+                <div *ngIf="!isLoading && showBulkFormEditor">
+                    <d3s-workflow-bulk-form [model]="bulkEditorModel" (onClose)="showBulkFormEditor = false;"></d3s-workflow-bulk-form>
+                </div>
                 `,
     providers: [WorkflowService]
 })
@@ -87,7 +100,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 export class WorkflowNewDetailComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() workflowTypeId: number;
     @Input() hasCloseButton: boolean = true;
-
     
     private resourceID: number = null;
     private version: number;
@@ -98,6 +110,9 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private tempWorkflowtype = WorkflowType;
     private items: WorkflowAssignmentDetail[];
     private workflow: any;
+    private selection: WorkflowAssignmentDetail[] = [];
+    private showBulkFormEditor = false;
+    private bulkEditorModel: BulkWorkflowFormModel;
 
     constructor(private route: ActivatedRoute,
         private location: Location,
@@ -130,6 +145,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
         this.isLoading = true;
         this.workflowService.getAssignedWorkflowInstancesByTypeId(this.workflowTypeId, this.resourceID,this.version,this.stepId)
             .then(res => {
+                this.selection = [];
                 this.isLoading = false;
                 this.items = res.items;
                 if (this.items && this.items.length != 0) {
@@ -141,6 +157,17 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
                 }
                 this.workflow = res.workflow;
             });
+    }
+
+    private bulkRespond() {
+        if (this.selection != null && this.selection.length >= 2) {
+            console.log(this.selection.map(i => i.ItemStepID));
+
+            this.bulkEditorModel = new BulkWorkflowFormModel();
+            this.bulkEditorModel.ItemStepIDs = this.selection.map(i => i.ItemStepID);
+
+            this.showBulkFormEditor = true;
+        }
     }
 
     private close() {

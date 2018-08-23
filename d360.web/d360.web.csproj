@@ -1682,6 +1682,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-profile-details.component.ts" />
@@ -1966,6 +1967,7 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-bulk-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-new-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-details.component.ts" />
