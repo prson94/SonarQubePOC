@@ -319,7 +319,8 @@ namespace d360.web.Controllers.Services
             {
                 foreach (var field in multiSelectDetails)
                 {
-                    dic.Add(field.Key.Name, field.Value.Items);
+                    if (!dic.ContainsKey(field.Key.Name))
+                        dic.Add(field.Key.Name, field.Value.Items);
                 }
             }
         }
