@@ -1,6 +1,7 @@
 ﻿using d360.core.entities.Contracts;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -39,6 +40,11 @@ namespace d360.core.entities.Workflow
 
         [IgnoreDataMember]
         public string Settings { get; set; }
+
+
+        [IgnoreDataMember]
+        public DateTime? TimerLastRunDate { get; set; }
+
 
         [IgnoreDataMember, ForeignKey("FromVersionStepID")]
         public virtual WorkflowVersionStep FromVersionStep { get; set; }

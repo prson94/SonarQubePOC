@@ -23,7 +23,7 @@ namespace d360.core.entities.Workflow
 
         [IgnoreDataMember]
         public DateTime Date { get; set; }
-
+        
         [IgnoreDataMember, ForeignKey("FromItemStepID")]
         public virtual WorkflowItemStep FromItemStep { get; set; }
 

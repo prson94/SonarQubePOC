@@ -139,7 +139,8 @@ namespace d360.model
         }
         public bool ExecuteTimerSteps()
         {
-            var sql = @"select
+            var sql = @"
+                    select
                             i_s.id 'FromItemStepID'
 	                        ,i_s.stepid 'FromStepID'
 	                        ,vst.toversionstepid 'ToStepID'
@@ -159,9 +160,11 @@ namespace d360.model
 								and
                             DATEADD(day, vst.settings.value('(/settings/TimerInterval)[1]', 'int'), i_s.StartedOn) <= getutcdate()-- timers that need to be run
                                 and
+                            (vst.TimerLastRunDate is null or DATEADD(day, vst.settings.value('(/settings/TimerInterval)[1]', 'int'),vst.TimerLastRunDate) <= getutcdate() )
+                                and
                             not exists(select * from workflow.itemsteptransition s_ist inner join workflow.itemstep s_isf on (s_isf.id = s_ist.fromitemstepid and s_isf.id = i_s.id) inner join workflow.itemstep s_isto on(s_isto.id = s_ist.toitemstepid and s_isto.itemid = i_s.itemid and s_isto.stepid = vst.toversionstepid))";
 
-            var res = Query<dynamic>(sql);
+            var res = Query<dynamic>(sql).ToList();
 
             var events = new List<EventInfo>();
 
@@ -185,10 +188,24 @@ namespace d360.model
                         ObjectType = SystemObjects.ArtifactType //doesnt matter needs value to serialize and there is no none in the enum                  
                     }
                 });
+
+
+                // update the timer step transition to be completed
+                
+                int.TryParse(transition.FromStepID.ToString(), out int fromTransitionId);
+                int.TryParse(transition.ToStepID.ToString(), out int toTransitionId);
+                var item = WorkflowVersionStepTransitions.Where(x => x.FromVersionStepID == fromTransitionId && x.ToVersionStepID == toTransitionId).FirstOrDefault();
+                                
+                if (item == null) throw new Exception("ERROR - CANNOT FIND THE WORKFLOW TRANSITION INSTANCE THAT WE NEED TO MARK AS COMPLETED");
+                                
+                item.TimerLastRunDate = DateTime.UtcNow;
+                SaveChanges();
             }
 
+            
+
             //add topic messages for the transitions
-            if(events.Count > 0) QueueSource.CreateTopicMessages(events);
+            if (events.Count > 0) QueueSource.CreateTopicMessages(events);
             
 
             return true;
