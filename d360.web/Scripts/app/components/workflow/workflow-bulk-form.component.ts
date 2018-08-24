@@ -51,6 +51,7 @@ import { ISubscription } from 'rxjs/Subscription';
                                 </div>
                                 <div class="form-instructions">Please complete this form for the {{itemSteps?.length}} selected items</div>
                                 <div *ngIf="omittedCount > 0" class="form-instructions">{{omittedCount}} items were excluded because they were deleted, already completed, or you do not have permission to complete them.</div>
+                                <div [innerHtml]="description"></div>                                
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
                                     <div class="row">   
                                         <div class="col l6 s12">
@@ -89,7 +90,7 @@ import { ISubscription } from 'rxjs/Subscription';
                                         <div class="col s12">&nbsp;</div>                                                                                        
                                         <div class="col s12">
                                                 <button pButton type="submit" [disabled]="!workflowForm.valid" style="width: 150px;" label="Submit"></button>                                    
-                                                <button pButton type="button" (click)="onClose.emit()" label="Cancel" style="width: 150px;"></button>
+                                                <button pButton type="button" (click)="close()" label="Cancel" style="width: 150px;"></button>
                                         </div>
                                     </div>                                       
                                 </form>                                                                                     
@@ -97,10 +98,10 @@ import { ISubscription } from 'rxjs/Subscription';
                             <div *ngIf="isCompleted" class="tile tile-detail">
                                 <header>{{title}}</header>
                                 <div class="row">
-                                    <div class="col s12">Thank you, your responses have been submitted.</div>
+                                    <div class="col s12">Thank you, your responses have been submitted and are being processed.</div>
                                     <div class="col s12">&nbsp;</div>
                                     <div class="col s12">
-                                        <button pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
+                                        <button pButton type="button" (click)="complete();" label="Close" style="width: 150px;"></button>
                                     </div>
                                 </div>
                             </div>   
@@ -113,7 +114,7 @@ import { ISubscription } from 'rxjs/Subscription';
                                         <button pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
                                     </div>
                                 </div>
-                            </div>
+                            </div>  
                         </div>
                     </div>                                               
                 `,
@@ -123,7 +124,7 @@ import { ISubscription } from 'rxjs/Subscription';
 export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, OnDestroy { 
     @Input() model: BulkWorkflowFormModel = null;
     @Output() onClose = new EventEmitter();
-    @Output() onSave = new EventEmitter();
+    @Output() onComplete = new EventEmitter();
 
     private workflowId: number;
     private workflowItemStepId: number;
@@ -178,7 +179,8 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
             .then(r => {
                 this.isCompleted = true;
                 this.isLoading = false;
-            });
+            })
+            //.then(() => setTimeout(() => this.isLoading = false, 5000)); //pause for 5 seconds to ensure user sees processing message
         
     }
 
@@ -217,6 +219,10 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
 
     private close() {
         this.onClose.emit();
+    }
+
+    private complete() {
+        this.onComplete.emit();
     }
 
     private userFriendlyObjectName(objectType: string) {

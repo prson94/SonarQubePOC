@@ -85,13 +85,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </p-dataTable>       
                             <div style="padding:10px">
                                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
-                                <button pButton type="button" (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 2"></button>
+                                <button pButton type="button" (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 1"></button>
                             </div>  
                         </div>
                     </div>
                 </div>  
                 <div *ngIf="!isLoading && showBulkFormEditor">
-                    <d3s-workflow-bulk-form [model]="bulkEditorModel" (onClose)="showBulkFormEditor = false;"></d3s-workflow-bulk-form>
+                    <d3s-workflow-bulk-form [model]="bulkEditorModel" (onClose)="showBulkFormEditor = false;" (onComplete)="isLoading = true; close();" ></d3s-workflow-bulk-form>
                 </div>
                 `,
     providers: [WorkflowService]
@@ -160,13 +160,17 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     }
 
     private bulkRespond() {
-        if (this.selection != null && this.selection.length >= 2) {
-            console.log(this.selection.map(i => i.ItemStepID));
+        if (this.selection != null) {
+            if (this.selection.length >= 2) {
+                console.log(this.selection.map(i => i.ItemStepID));
 
-            this.bulkEditorModel = new BulkWorkflowFormModel();
-            this.bulkEditorModel.ItemStepIDs = this.selection.map(i => i.ItemStepID);
+                this.bulkEditorModel = new BulkWorkflowFormModel();
+                this.bulkEditorModel.ItemStepIDs = this.selection.map(i => i.ItemStepID);
 
-            this.showBulkFormEditor = true;
+                this.showBulkFormEditor = true;
+            } else if (this.selection.length == 1) {
+                this.open(this.selection[0]);
+            }
         }
     }
 
