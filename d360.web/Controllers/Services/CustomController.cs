@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Microsoft.ApplicationInsights;
 using d360.core.entities;
+using Microsoft.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
@@ -171,7 +172,11 @@ namespace d360.web.Controllers.Services
     /// <summary>
     /// This service houses all endpoints handling custom API configurations.
     /// </summary>
-    [RoutePrefix("services/custom"), Authorize]
+    [
+        ApiVersionNeutral, 
+        RoutePrefix("services/custom"), 
+        Authorize
+    ]
     public class CustomController : BaseApiController
     {
         

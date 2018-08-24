@@ -8,10 +8,11 @@ using d360.model;
 using d360.core.entities.Plugins;
 using d360.web.Models.Attributes;
 using d360.core;
+using Microsoft.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
-    [RoutePrefix("services/agent"), Authorize]
+    [ ApiVersion("1.0"), RoutePrefix("services/agent"), Authorize]
     public class AgentController : BaseApiController
     {
         #region DI

@@ -25,11 +25,11 @@ using System.Data.Entity;
 using System.Collections;
 using System.Text.RegularExpressions;
 using d360.web.Models.Attributes;
-
+using Microsoft.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
-    [RoutePrefix("services/workflow"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/workflow"), Authorize]
     public class WorkflowController : BaseApiController
     {
 

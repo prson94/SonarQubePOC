@@ -5,6 +5,7 @@ using d360.core.entities.Views;
 using d360.extensions;
 using d360.model;
 using d360.web.Models;
+using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using SpreadsheetLight;
 using System;
@@ -25,7 +26,7 @@ namespace d360.web.Controllers.Services
     /// <summary>
     /// This service houses all endpoints handling third-party metadata synchronization.
     /// </summary>
-    [RoutePrefix("services/fusion"), Authorize, Name("Fusion Service")]
+    [ApiVersion("1.0"), RoutePrefix("services/fusion"), Authorize, Name("Fusion Service")]
     public class FusionController : BaseApiController
     {
         #region DI

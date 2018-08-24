@@ -22,22 +22,31 @@ namespace d360.web.Handlers
 
             var response = await base.SendAsync(request, cancellationToken);
 
-            object isHead;
-            response.RequestMessage.Properties.TryGetValue(Head, out isHead);
-
-            if (isHead != null && ((bool)isHead))
+            try
             {
-                var oldContent = await response.Content.ReadAsByteArrayAsync();
-                var content = new StringContent(string.Empty);
-                content.Headers.Clear();
-
-                foreach (var header in response.Content.Headers)
+                object isHead;
+                if (response.RequestMessage != null)
                 {
-                    content.Headers.Add(header.Key, header.Value);
-                }
+                    response.RequestMessage.Properties.TryGetValue(Head, out isHead);
 
-                content.Headers.ContentLength = oldContent.Length;
-                response.Content = content;
+                    if (isHead != null && ((bool)isHead))
+                    {
+                        var oldContent = await response.Content.ReadAsByteArrayAsync();
+                        var content = new StringContent(string.Empty);
+                        content.Headers.Clear();
+
+                        foreach (var header in response.Content.Headers)
+                        {
+                            content.Headers.Add(header.Key, header.Value);
+                        }
+
+                        content.Headers.ContentLength = oldContent.Length;
+                        response.Content = content;
+                    }
+                }
+            }
+            catch
+            {
             }
 
             return response;

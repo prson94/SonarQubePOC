@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -63,8 +64,9 @@ namespace d360.core.entities
     {
         [DataMember]
         public int ItemNumber { get; set; }
-        public int ObjectID { get; set; }
         [DataMember]
+        public Guid uid { get; set; }
+
         public string SourceID { get; set; }
         [DataMember]
         public string Message { get; set; }

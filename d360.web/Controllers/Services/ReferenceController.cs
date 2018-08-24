@@ -12,13 +12,14 @@ using d360.core.exceptions;
 using d360.core.enums;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
     /// <summary>
     /// This services houses all endpoints handling reference lists and items.
     /// </summary>
-    [RoutePrefix("services/reference"), Name("Reference Service"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/reference"), Name("Reference Service"), Authorize]
     public class ReferenceController : BaseApiController
     {
         #region DI

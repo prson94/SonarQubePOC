@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.extensions;
 using d360.model;
+using Microsoft.Web.Http;
 using System.Linq;
 using System.Web.Http;
 
@@ -9,7 +10,7 @@ namespace d360.web.Controllers.Services
     /// <summary>
     /// Search everything in Data3Sixty.
     /// </summary>
-    [RoutePrefix("services/search"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/search"), Authorize]
     public class SearchController : BaseApiController
     {
         #region DI

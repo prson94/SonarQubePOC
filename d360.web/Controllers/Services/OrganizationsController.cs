@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using d360.model;
+using Microsoft.Web.Http;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
@@ -10,7 +11,7 @@ namespace d360.web.Controllers.Services
     /// <summary>
     /// Manage your organizations within Data3Sixty.
     /// </summary>
-    [RoutePrefix("services/organizations"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/organizations"), Authorize]
     public class OrganizationsController : BaseApiController
     {
         #region DI

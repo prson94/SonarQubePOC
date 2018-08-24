@@ -8,10 +8,11 @@ using System.Collections.Generic;
 using d360.web.Models;
 using System.Xml.Linq;
 using d360.web.Filters;
+using Microsoft.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
-    [RoutePrefix("services/community"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/community"), Authorize]
     public class CommunityController : BaseApiController
     {
         #region DI

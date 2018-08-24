@@ -2,6 +2,7 @@
 using d360.extensions;
 using d360.model;
 using d360.web.Models;
+using Microsoft.Web.Http;
 using System;
 using System.Linq;
 using System.Net;
@@ -13,7 +14,7 @@ namespace d360.web.Controllers.Services
     /// <summary>
     /// Search everything in Data3Sixty.
     /// </summary>
-    [RoutePrefix("services/scoring"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/scoring"), Authorize]
     public class ScoringController : BaseApiController
     {
         #region DI

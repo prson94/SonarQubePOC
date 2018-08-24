@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
+using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,9 @@ namespace d360.web.Controllers.Services
     /// <summary>
     /// This service houses all endpoints handling glossary-related data such as artifacts and models.
     /// </summary>
-    [RoutePrefix("services/assets"), Authorize]
+    [ 
+        ApiVersion("1.0"),
+        RoutePrefix("services/assets"), Authorize ]
     public class AssetsController : BaseApiController
     {
         #region DI
@@ -31,95 +34,6 @@ namespace d360.web.Controllers.Services
         {
             QueueSource = queueSource;
         }
-
-        #endregion
-
-        #region Type Endpoints
-
-        [HttpGet, Route("classes")]
-        public async Task<HttpResponseMessage> GetAssetTypeClassesAsync()
-        {
-            var prefix = "Assets.GetAssetTypeClassesAsync => ";
-            var errorMessage = "";
-
-            try
-            {
-                var classes = AssetTypeClass.Glossary.GetAsList();
-                return Request.CreateResponse(HttpStatusCode.OK, classes);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
-        }
-
-        [HttpGet, Route("types")]
-        public async Task<HttpResponseMessage> GetAssetTypesAsync()
-        {
-            var prefix = "Assets.GetAssetTypesAsync => ";
-            var errorMessage = "";
-
-            try
-            {
-                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(@"
-SELECT		A.[Name]
-			,A.[Description]
-			,A.[Class] as ClassID
-			,A.[Notes]
-			,A.[uid],
-			P.[Path]
-FROM		AssetType A
-			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-where		A.[State] = 1
-order by	P.[Path]
-");
-
-                return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
-        }
-
-        [HttpPost, Route("types")]
-        public async Task<HttpResponseMessage> AddAssetTypeAsync()
-        {
-            var prefix = "Assets.AddAssetTypeAsync => ";
-            var errorMessage = "";
-
-            try
-            {
-                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(@"
-SELECT		A.[Name]
-			,A.[Description]
-			,A.[Class] as ClassID
-			,A.[Notes]
-			,A.[uid],
-			P.[Path]
-FROM		AssetType A
-			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-where		A.[State] = 1
-order by	P.[Path]
-");
-
-                return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
-        }
-
 
         #endregion
 
@@ -144,13 +58,15 @@ order by	P.[Path]
             return JsonConvert.DeserializeObject<T>(json);
         }
 
+        #region Bulk Assets
+
         /// <summary>
         /// Takes a given set of assets and bulk inserts/updates them.
         /// </summary>
         /// <param name="ot">The Object Type of the asset type.</param>
         /// <param name="otid">The Object Type ID of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
-        [HttpPost, Route("{ot}/{otid:int}/bulk")]
+        [HttpPost, MapToApiVersion("1.0"), Route("{ot}/{otid:int}/bulk")]
         public async Task<IHttpActionResult> PostBulkAssetsAsync(SystemObjects ot, int otid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -181,6 +97,8 @@ order by	P.[Path]
                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
             }            
         }
+        
+        #endregion
 
         /// <summary>
         /// Takes a given set of relationships and bulk inserts/updates them.

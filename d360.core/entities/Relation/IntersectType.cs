@@ -14,6 +14,9 @@ namespace d360.core.entities
     public class IntersectType : BaseIntObject, IIntObject, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember]
+        public Guid uid { get; set; }
+
+        [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         [ReadOnly(true)]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
@@ -36,6 +39,9 @@ namespace d360.core.entities
         public int SubjectID { get; set; }
 
         [DataMember]
+        public Guid? SubjectUid { get; set; }
+
+        [DataMember]
         public Cardinality SubjectCardinality { get; set; }
 
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]
@@ -43,6 +49,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int ObjectID { get; set; }
+
+        [DataMember]
+        public Guid? ObjectUid { get; set; }
 
         [DataMember]
         public Cardinality ObjectCardinality { get; set; }

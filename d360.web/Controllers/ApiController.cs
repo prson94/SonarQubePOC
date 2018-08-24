@@ -28,10 +28,11 @@ using System.Threading.Tasks;
 using Dapper;
 using d360.core.entities.Metric;
 using d360.web.Filters;
+using Microsoft.Web.Http;
 
 namespace d360.web.Controllers
 {
-    [RoutePrefix("api"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
+    [ApiVersion("1.0"), RoutePrefix("api"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
     public class D3SApiController : BaseApiController
     {
         #region DI

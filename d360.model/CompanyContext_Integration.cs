@@ -720,7 +720,7 @@ when not matched by target then
                         var dbr = retResults.SingleOrDefault(i => i.ItemNumber == air.ItemNumber);
                         if (dbr != null)
                         {
-                            air.ObjectID = dbr.ObjectID;
+                            //air.ObjectID = dbr.ObjectID;
                             air.IsNew = dbr.IsNew;
                             air.Success = dbr.Success;
                             air.Message = dbr.Success ? (dbr.IsNew ? "Created" : "Updated") : $"Failed: {dbr.Message}";
@@ -740,6 +740,189 @@ when not matched by target then
 
             #endregion
         }
+
+        public static List<DatabaseBulkAssetResult> BulkAssetsImport(this SqlConnection cnn, int currentResourceID, AssetType at, List<Dictionary<string, string>> import)
+        {
+            List<DatabaseBulkAssetResult> results = null;
+
+            #region Build data tables for bulk load.
+
+            var assetTable = new System.Data.DataTable();
+            assetTable.Columns.Add("ItemNumber", typeof(int));
+            assetTable.Columns.Add("IntersectTypeUid", typeof(Guid));
+            assetTable.Columns.Add("Message", typeof(string));
+            assetTable.Columns.Add("Success", typeof(bool));
+            assetTable.Columns.Add("Uid", typeof(Guid));
+            //assetTable.Columns.Add("ParentUid", typeof(Guid));
+            assetTable.Columns.Add("KeyHash", typeof(string));
+            assetTable.Columns.Add("IsNew", typeof(bool));
+
+            var assetFieldTable = new System.Data.DataTable();
+            assetFieldTable.Columns.Add("ItemNumber", typeof(int));
+            assetFieldTable.Columns.Add("FieldName", typeof(string));
+            assetFieldTable.Columns.Add("FieldValue", typeof(string));
+            assetFieldTable.Columns.Add("FieldTypeID", typeof(int));
+
+            #endregion
+
+            #region Generate data sets
+
+            //#region Parent predicate type choice.
+
+            //var predicateType = PredicateType.InterTypeHierarchy;
+
+            //var ot = at.Object;
+            //if (ot == SystemObjects.PolicyType.ToString() || ot == SystemObjects.TaxonomyType.ToString())
+            //{
+            //    predicateType = PredicateType.IntraTypeHierarchy;
+            //}
+
+            //#endregion
+
+            for (int i = 1; i <= import.Count; i++)
+            {
+                var model = import[i - 1];
+
+                var row = assetTable.NewRow();
+
+                row["ItemNumber"] = i;
+
+                if (model.ContainsKey("Uid"))
+                    row["Uid"] = Guid.Parse(model["Uid"]);
+                //if (model.ContainsKey("ParentUid"))
+                //    row["ParentUid"] = Guid.Parse(model["ParentUid"]);
+
+                //if (model.ContainsKey("SourceID"))
+                //    row["SourceID"] = model["SourceID"].ToString();
+                //if (model.ContainsKey("ParentSourceID"))
+                //    row["ParentSourceID"] = model["ParentSourceID"].ToString();
+
+                assetTable.Rows.Add(row);
+
+                foreach (var k in model.Keys)
+                {
+                    if (k != "ParentUid" && k != "Uid" && k != "ParentSourceID" && k != "SourceID")
+                    {
+                        if (!string.IsNullOrEmpty(model[k]))
+                        {
+                            var fieldRow = assetFieldTable.NewRow();
+
+                            fieldRow["ItemNumber"] = i;
+                            fieldRow["FieldName"] = k.Trim();
+                            fieldRow["FieldValue"] = (model[k] + "").Trim();
+
+                            assetFieldTable.Rows.Add(fieldRow);
+                        }
+                    }
+                }
+            }
+
+            #endregion
+
+            if (cnn.State != System.Data.ConnectionState.Open)
+                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+            using (var trans = cnn.BeginTransaction())
+            {
+                try
+                {
+                    cnn.Execute("DROP TABLE IF EXISTS #AssetTable", transaction: trans);
+                    cnn.Execute("DROP TABLE IF EXISTS #AssetFieldTable", transaction: trans);
+
+                    #region Asset Bulk Copy
+
+                    cnn.Execute(@"
+    create table #AssetTable (
+        ItemNumber int not null,
+        Message nvarchar(2500) null,
+        Success bit null,
+        --IntersectTypeUid uniqueidentifier null,        
+        Uid uniqueidentifier null,
+        --ParentUid uniqueidentifier null,
+        --SourceID nvarchar(1000) null,
+        --ParentSourceID nvarchar(1000) null,
+        --Object varchar(50) null,
+        --ObjectID int null,
+        IsNew bit null
+    )", transaction: trans);
+
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_SourceID ON #AssetTable ( [SourceID] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_ParentSourceID ON #AssetTable ( [ParentSourceID] ASC )", transaction: trans);
+
+                    var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
+
+                    assetBulkCopy.BatchSize = assetTable.Rows.Count;
+                    assetBulkCopy.DestinationTableName = "#AssetTable";
+                    assetBulkCopy.BulkCopyTimeout = 3600;
+
+                    assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    //assetBulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
+                    assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
+                    //assetBulkCopy.ColumnMappings.Add("ParentSourceID", "ParentSourceID");
+                    assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
+                    //assetBulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
+                    assetBulkCopy.WriteToServer(assetTable);
+
+                    #endregion
+
+//                  #region Resolve Parents, if required.
+
+//                  cnn.Execute(@"
+//update  T
+//set     T.ParentUid = S.[uid],
+//        T.IntersectTypeUid = IT.[uid]
+//from    #AssetTable T
+//		inner join Asset S on (() or (S.SourceID = T.ParentSourceID))
+//        inner join AssetType ST on ST.ID = S.AssetTypeID
+//        inner join IntersectType IT on IT.Subject = ST.Object and IT.SubjectID = ST.ObjectID and IT.Object = @ot and IT.ObjectID = @otid
+//        inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = @pt", new { ot = sType, otid, pt = (int)predicateType, transaction: trans);
+
+//                  #endregion
+
+                    #region Asset Field Bulk Copy
+
+                    cnn.Execute(@"
+    create table #AssetFieldTable (
+        ItemNumber int not null,
+        FieldName nvarchar(250) not null,
+        FieldValue nvarchar(max) null,
+        FieldTypeID int null
+    )", transaction: trans);
+
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetFieldTable ON #AssetFieldTable ( ItemNumber ASC ) INCLUDE ( FieldTypeID )", transaction: trans);
+
+                    var assetFieldBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
+
+                    assetFieldBulkCopy.BatchSize = assetTable.Rows.Count;
+                    assetFieldBulkCopy.DestinationTableName = "#AssetFieldTable";
+                    assetFieldBulkCopy.BulkCopyTimeout = 3600;
+
+                    assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    assetBulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+                    assetBulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+                    assetBulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+
+                    assetFieldBulkCopy.WriteToServer(assetFieldTable);
+
+                    #endregion
+
+                    cnn.Execute("exec asset.BulkUpsert @uid, @r", new { at.uid, r = currentResourceID }, trans, 1800, System.Data.CommandType.StoredProcedure);
+
+                    results = cnn.Query<DatabaseBulkAssetResult>("select ItemNumber, [uid], Message, Success, IsNew from #AssetTable", transaction: trans).ToList();
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
+
+            cnn.Close();
+
+            return results;
+        }
+
 
         public static List<dynamic> BulkRelationshipsImport(this SqlConnection cnn, int currentResourceID, List<RelationshipImportRequest> import)
         {

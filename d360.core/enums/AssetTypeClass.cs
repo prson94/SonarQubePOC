@@ -111,15 +111,12 @@ namespace d360.core.enums
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
-                if (!((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly)
+                list.Add(new AssetTypeClassInfo
                 {
-                    list.Add(new AssetTypeClassInfo
-                    {
-                        Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
-                        Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
-                        ID = (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), tm.Name)
-                    });
-                }
+                    Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                    ID = (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), tm.Name)
+                });
             }
 
             return list.OrderBy(i => i.Name).ToList();

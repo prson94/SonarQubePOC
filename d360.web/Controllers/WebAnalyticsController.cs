@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.model;
 using d360.web.Filters;
+using Microsoft.Web.Http;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
@@ -13,7 +14,7 @@ using System.Web.Http.Description;
 
 namespace d360.web.Controllers
 {
-    [RoutePrefix("webanalytics"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
+    [ApiVersion("1.0"), RoutePrefix("webanalytics"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
     public class D3SWebAnalyticsController : BaseApiController
     {
         #region DI

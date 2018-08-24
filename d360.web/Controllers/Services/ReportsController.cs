@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.model;
+using Microsoft.Web.Http;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace d360.web.Controllers.Services
     /// <summary>
     /// Retrieve report tile results.
     /// </summary>
-    [RoutePrefix("services/reports"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/reports"), Authorize]
     public class ReportsController : BaseApiController
     {
         #region DI

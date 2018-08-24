@@ -12,13 +12,14 @@ using d360.core.enums;
 using System.Collections;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using Microsoft.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
     /// <summary>
     /// This service houses all endpoints handling glossary-related data such as artifacts and models.
     /// </summary>
-    [RoutePrefix("services/glossary"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/glossary"), Authorize]
     public class GlossaryController : BaseApiController
     {
         #region DI

@@ -640,7 +640,7 @@ from		(
 
                 #endregion
 
-                DateTime start;
+                DateTime start = DateTime.UtcNow;
                 DateTime end;
 
                 // Section 0 : Asset
@@ -653,87 +653,150 @@ from		(
                     log.WriteLine($"End: Processing Section 0. Took {end.Subtract(start).Minutes} minutes, {end.Subtract(start).Seconds} seconds.");
                 }
 
-                // Section 1 : Fields
-                log.WriteLine($"Begin: Processing Section 1");
-                start = DateTime.UtcNow;
-                cnn.ProcessExecutionAssetType<dynamic>(executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, synchedAssetType.AssetTypeID, setting.TargetResourceID, 1);
-                end = DateTime.UtcNow;
-                log.WriteLine($"End: Processing Section 1. Took {end.Subtract(start).Minutes} minutes, {end.Subtract(start).Seconds} seconds.");
-
-                // Section 2 : Relationships
-                log.WriteLine($"Begin: Processing Section 2");
-                start = DateTime.UtcNow;
-                var relationshipActions = cnn.ProcessExecutionAssetType<RelationshipAction>(executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, synchedAssetType.AssetTypeID, setting.TargetResourceID, 2);
-                end = DateTime.UtcNow;
-                log.WriteLine($"End: Processing Section 2. Took {end.Subtract(start).Minutes} minutes, {end.Subtract(start).Seconds} seconds.");
-
-                #region Send Relationship Events
-
-                var queue = new AzureQueueSource();
-
-                var events = new List<EventInfo>();
-
-                if (synchedAssetType.TriggerTopicMessage)
+                #region Section 1 : Fields
+                try
                 {
-                    int lastIntersectID = 0;
+                    log.WriteLine($"Begin: Processing Section 1");
+                    start = DateTime.UtcNow;
+                    cnn.ProcessExecutionAssetType<dynamic>(executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, synchedAssetType.AssetTypeID, setting.TargetResourceID, 1);
+                }
+                catch (Exception rex)
+                {
+                    log.WriteLine($"Workflow error - Company: {model.CompanyID}, Exception: {rex.GetFullExceptionData()}");
+                    CoreFunction.AITrackException(functionName, rex);
+                }
+                finally
+                {
+                    end = DateTime.UtcNow;
+                    log.WriteLine($"End: Processing Section 1. Took {end.Subtract(start).Minutes} minutes, {end.Subtract(start).Seconds} seconds.");
+                }
+                #endregion
 
-                    foreach (var relationshipAction in relationshipActions)
+                #region Section 2 : Relationships
+                try
+                {
+                    log.WriteLine($"Begin: Processing Section 2");
+                    start = DateTime.UtcNow;
+                    var relationshipActions = cnn.ProcessExecutionAssetType<RelationshipAction>(executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, synchedAssetType.AssetTypeID, setting.TargetResourceID, 2);
+
+                    #region Send Relationship Events
+
+                    try
                     {
-                        var changeType = ChangeType.Add;
+                        var queue = new AzureQueueSource();
 
-                        switch (relationshipAction.Action)
-                        {
-                            case "D":
-                                changeType = ChangeType.Delete;
-                                break;
-                            case "U":
-                                changeType = ChangeType.Update;
-                                break;
-                        }
+                        var events = new List<EventInfo>();
 
-                        // Check to make sure we do not send multiple workflows out for the same intersect ID.
-                        if (relationshipAction.IntersectID != lastIntersectID)
+                        if (synchedAssetType.TriggerTopicMessage)
                         {
-                            events.Add(new EventInfo
+                            int lastIntersectID = 0;
+
+                            foreach (var relationshipAction in relationshipActions)
                             {
-                                CompanyID = company.CurrentCompanyID,
-                                DomainPrefix = model.UrlPrefix,
-                                ResourceID = setting.TargetResourceID,
-                                Action = changeType,
-                                Object = new EventObjectInfo
+                                var changeType = ChangeType.Add;
+
+                                switch (relationshipAction.Action)
                                 {
-                                    Object = SystemObjects.Intersect,
-                                    ObjectType = SystemObjects.IntersectType,
-                                    ObjectID = relationshipAction.IntersectID,
-                                    ObjectTypeID = relationshipAction.IntersectTypeID
+                                    case "D":
+                                        changeType = ChangeType.Delete;
+                                        break;
+                                    case "U":
+                                        changeType = ChangeType.Update;
+                                        break;
                                 }
-                            });
+
+                                // Check to make sure we do not send multiple workflows out for the same intersect ID.
+                                if (relationshipAction.IntersectID != lastIntersectID)
+                                {
+                                    events.Add(new EventInfo
+                                    {
+                                        CompanyID = company.CurrentCompanyID,
+                                        DomainPrefix = model.UrlPrefix,
+                                        ResourceID = setting.TargetResourceID,
+                                        Action = changeType,
+                                        Object = new EventObjectInfo
+                                        {
+                                            Object = SystemObjects.Intersect,
+                                            ObjectType = SystemObjects.IntersectType,
+                                            ObjectID = relationshipAction.IntersectID,
+                                            ObjectTypeID = relationshipAction.IntersectTypeID
+                                        }
+                                    });
+                                }
+
+                                if (events.Count > 50)
+                                {
+                                    queue.CreateTopicMessages(events);
+                                    events.Clear();
+                                }
+
+                                lastIntersectID = relationshipAction.IntersectID;
+                            }
                         }
 
-                        if (events.Count > 50)
+                        if (events.Count > 0)
                         {
                             queue.CreateTopicMessages(events);
                             events.Clear();
                         }
-
-                        lastIntersectID = relationshipAction.IntersectID;
                     }
-                }
+                    catch (Exception wex)
+                    {
+                        log.WriteLine($"Workflow error - Company: {model.CompanyID}, Exception: {wex.GetFullExceptionData()}");
+                        CoreFunction.AITrackException(functionName, wex);
+                    }
 
-                if (events.Count > 0)
+                    #endregion
+                }
+                catch (Exception rex)
                 {
-                    queue.CreateTopicMessages(events);
-                    events.Clear();
+                    log.WriteLine($"Workflow error - Company: {model.CompanyID}, Exception: {rex.GetFullExceptionData()}");
+                    CoreFunction.AITrackException(functionName, rex);
                 }
-
+                finally
+                {
+                    end = DateTime.UtcNow;
+                    log.WriteLine($"End: Processing Section 2. Took {end.Subtract(start).Minutes} minutes, {end.Subtract(start).Seconds} seconds.");
+                }
                 #endregion
 
-                // Section 3 : Responsibilities
-                log.WriteLine($"Begin: Processing Section 3");
-                start = DateTime.UtcNow;
-                cnn.ProcessExecutionAssetType<dynamic>(executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, synchedAssetType.AssetTypeID, setting.TargetResourceID, 3);
-                end = DateTime.UtcNow;
-                log.WriteLine($"End: Processing Section 3. Took {end.Subtract(start).Minutes} minutes, {end.Subtract(start).Seconds} seconds.");
+                #region Section 3 : Responsibilities
+                try
+                {
+                    log.WriteLine($"Begin: Processing Section 3");
+                    start = DateTime.UtcNow;
+                    cnn.ProcessExecutionAssetType<dynamic>(executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, synchedAssetType.AssetTypeID, setting.TargetResourceID, 3);
+                }
+                catch (Exception rex)
+                {
+                    log.WriteLine($"Workflow error - Company: {model.CompanyID}, Exception: {rex.GetFullExceptionData()}");
+                    CoreFunction.AITrackException(functionName, rex);
+                }
+                finally
+                {
+                    end = DateTime.UtcNow;
+                    log.WriteLine($"End: Processing Section 3. Took {end.Subtract(start).Minutes} minutes, {end.Subtract(start).Seconds} seconds.");
+                }
+                #endregion
+
+                #region Section 4 : Capture metrics for this run
+                try
+                {
+                    log.WriteLine($"Begin: Processing Section 4");
+                    start = DateTime.UtcNow;
+                    cnn.ProcessExecutionAssetType<dynamic>(executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, synchedAssetType.AssetTypeID, setting.TargetResourceID, 4);
+                }
+                catch (Exception rex)
+                {
+                    log.WriteLine($"Workflow error - Company: {model.CompanyID}, Exception: {rex.GetFullExceptionData()}");
+                    CoreFunction.AITrackException(functionName, rex);
+                }
+                finally
+                {
+                    end = DateTime.UtcNow;
+                    log.WriteLine($"End: Processing Section 4. Took {end.Subtract(start).Minutes} minutes, {end.Subtract(start).Seconds} seconds.");
+                }
+                #endregion
 
                 // Set the last synch time so we can start the next delta check from this date.
                 synchedAssetType.LastSynchOn = now;

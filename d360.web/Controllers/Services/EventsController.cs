@@ -6,6 +6,7 @@ using d360.model;
 using d360.web.Models;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Web.Http;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -19,7 +20,7 @@ using System.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
-    [RoutePrefix("services/events"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/events"), Authorize]
     public class EventsController : BaseApiController
     {
         TelemetryClient Telemetry;

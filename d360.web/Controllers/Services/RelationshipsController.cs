@@ -17,10 +17,11 @@ using d360.web.Models.Attributes;
 using System.Web.Http.Description;
 using d360.core.enums;
 using System.Web.Http.Results;
+using Microsoft.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
-    [RoutePrefix("services/relationships"), Name("Relationships"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/relationships"), Name("Relationships"), Authorize]
     public class RelationshipsController : BaseApiController
     {
         #region DI

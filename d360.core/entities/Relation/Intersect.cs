@@ -37,11 +37,17 @@ namespace d360.core.entities
         [DataMember]
         public int SubjectID { get; set; }
 
+        //[DataMember]
+        //public Guid? SubjectUid { get; set; }
+
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]
         public int ObjectID { get; set; }
+
+        //[DataMember]
+        //public Guid? ObjectUid { get; set; }
 
         [DataMember]
         public State State { get; set; } = State.Active;
