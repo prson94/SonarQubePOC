@@ -464,7 +464,7 @@ and (
                         }
                         else
                         {
-                            if (!string.IsNullOrEmpty(rc.FieldTypeName))
+                            if (!string.IsNullOrEmpty(rc.FieldTypeName) && !string.IsNullOrEmpty(rc.Value))
                             {
                                 if (rc.FieldTypeName == "Name")
                                 {
