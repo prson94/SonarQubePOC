@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-responsibility-selector',
-    providers: [ResponsibilityTypeService],
+    providers: [ResponsibilityTypeService, WorkflowService],
     template: `
          <ng-container *ngIf="objectType == 'IntersectType'">
             <div class="FieldName">
@@ -52,7 +52,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
     private responsibleObject = null;
     private responsibleObjectId = null;
 
-    constructor(private responsibilityService: ResponsibilityTypeService) {
+    constructor(private workflowService: WorkflowService, private responsibilityService: ResponsibilityTypeService) {
     }
 
     ngOnInit() {
