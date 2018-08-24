@@ -54,35 +54,11 @@
             </div>
         </div>
         <div *ngIf="step.settings.MessageRecipientType == 'Responsibility'" class="col s12">
-            <ng-container *ngIf="objectType == 'IntersectType'">
-                <div class="FieldName">
-                    Responsible Party
-                </div>
-                <div>
-                    <select [ngModel]="step.settings.ResponsibilitySide" (ngModelChange)="changeResponsibilitySide($event)" style="width: 95%">
-                        <option></option>
-                        <option value="Object">Object</option>
-                        <option value="Subject">Subject</option>
-                    </select>
-                </div>
-            </ng-container>
-            <ng-container *ngIf="((step.settings.ResponsibilitySide != null && step.settings.ResponsibilitySide != '' && objectType == 'IntersectType') || objectType != 'IntersectType') && !isLoadingRes">
-                <div class="FieldName">
-                    Responsibility
-                </div>
-                <div *ngFor="let x of step.settings.ResponsibilityTypeID; let i = index; trackBy: trackRes">
-                    <select [ngModel]="step.settings.ResponsibilityTypeID[i]" (ngModelChange)="changeResponsibility($event, i)" [style.width]="step.settings.ResponsibilityTypeID.length > 1 ? '90%' : '95%'">
-                        <option></option>
-                        <option *ngFor="let r of responsibilities" [value]="r.ResponsibilityTypeID">{{r.Name}}</option>
-                    </select>
-                    <div *ngIf="step.settings.ResponsibilityTypeID != null && step.settings.ResponsibilityTypeID.length > 1" style="display: inline-block; font-size: 1.5em; padding: 0 0 10px 10px;">
-                        <a style="cursor: pointer;" (click)="removeResponsibility(i)"><i class="fa fa-trash"></i></a>
-                    </div>
-                </div>
-                <div>
-                    <a style="cursor: pointer;" (click)="addResponsibility()"><i class="fa fa-plus"></i> Add a backup responsibility</a>
-                </div>
-            </ng-container>       
+            <d3s-workflow-responsibility-selector [step]="step"
+                                                 (stepChange)="step = $event; stepChange.emit(step)" 
+                                                 [objectType]="objectType"
+                                                 [objectId]="objectId" >
+            </d3s-workflow-responsibility-selector>     
         </div>
     </div>
     <div class="row" style="padding-top: 8px">

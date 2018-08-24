@@ -19,14 +19,13 @@ import { FieldType } from '../../../../models/fields.model';
 import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
-import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 
 import * as _ from 'lodash';
 import * as go from 'gojs';
 
 @Component({
     selector: 'd3s-workflow-step-editor',
-    providers: [WorkflowService, ResponsibilityTypeService],
+    providers: [WorkflowService],
     templateUrl: './workflow-step-editor.component.html'
 })
 
@@ -70,7 +69,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     private formRelationshipFields = [];
     private formRelationship;
 
-    constructor(private responsibilityService: ResponsibilityTypeService, private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
+    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
         super();
     }
 
@@ -99,14 +98,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
 
         if (this.step.activityType == WorkflowActivityType.EmailNotification) {
-
-            if (this.objectType == 'IntersectType') {
-                this.changeResponsibilitySide(this.step.settings.ResponsibilitySide || 'Subject', false);
-            } else {
-                this.responsibleObject = this.objectType;
-                this.responsibleObjectId = this.objectId;
-                this.getResponsibilityTypes();
-            }
 
         } else if (this.step.activityType == WorkflowActivityType.Procedure) {
             this.workflowService.getWorkflowProcedures()
@@ -222,14 +213,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         
     }
 
-    changeResponsibility(e: any) {
-        this.step.settings.ResponsibilityTypeID = e;
-        let rt = this.responsibilities.find(r => r.ResponsibilityTypeID == e);
-        if (rt)
-            this.step.settings.ResponsiblityTypeName = rt.Name;
-        this.stepChange.emit(this.step)
-    }
-
     changeRelationship(e: any) {
         this.formRelationship = e;
         if (e == null || e.indexOf('|') < 0) {
@@ -243,70 +226,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
         this.stepChange.emit(this.step);
     }
-
-    changeResponsibilitySide(e: any, clear: boolean = true) {
-        //if we switch sides, clear the current values
-        if (e != this.step.settings.ResponsibilitySide && clear) {
-            this.step.settings.ResponsibilityTypeID = null;
-            //this.addResponsibility();
-        }
-
-        this.step.settings.ResponsibilitySide = e;
-        //console.log('changeResponsibilitySide', this.step, e, this.intersectType, this.responsibleObject, this.responsibleObjectId);
-        let promises = [];
-        this.isLoadingRes = true;
-
-        if (this.intersectType == null)
-            promises.push(this.workflowService.getIntersectType(this.objectId).then(r => {
-                if (r == null || r.length < 1) {
-                    this.intersectType = null;
-                } else {
-                    this.intersectType = r[0];
-                }
-                //console.log('changeResSide after inttype', this.intersectType);
-            }));
-        else
-            promises.push(Promise.resolve());
-
-        Promise.all(promises)
-            .then(() => {
-                if (this.intersectType == null || (e != 'Object' && e != 'Subject')) {
-                    this.responsibleObjectId = null;
-                    this.responsibleObject = null;
-                    this.responsibilities = [];
-                } else if (e == 'Object') {
-                    this.responsibleObject = this.intersectType.Object;
-                    this.responsibleObjectId = this.intersectType.ObjectID;
-                } else if (e == 'Subject') {
-                    this.responsibleObject = this.intersectType.Subject;
-                    this.responsibleObjectId = this.intersectType.SubjectID;
-                }
-                //console.log('changeResSide after promises', this.intersectType, this.responsibleObject, this.responsibleObjectId, e);
-            })
-            .then(() => this.getResponsibilityTypes())
-            .then(() => this.stepChange.emit(this.step))
-            .then(() => this.isLoadingRes = false);
-    }
-
-    getResponsibilityTypes(): Promise<any> {
-        //console.log('getResTypes', this.responsibleObject, this.responsibleObjectId, this.step, this.responsibilities);
-        if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0 || this.objectType == 'IssueType') {
-            this.responsibilities = [];
-            return this.responsibilityService.getResponsibilityTypes()
-                .then(r => this.responsibilities = r)
-                .then(() => {
-                    this.responsibilities.forEach(r => {
-                        r.ResponsibilityTypeID = r.ID;
-                    });
-                });
-        }
-
-        return this.responsibilityService.getResponsibilityTypesByObject(this.responsibleObject, this.responsibleObjectId)
-            .then(r => {
-                this.responsibilities = r;
-            });
-    }
-
     changeValueType(e: any, field: string) {
         this.step.settings.RelationshipUpdate.Relationship[field] = e;
         if (field == '@AppendValue' && e == true) {

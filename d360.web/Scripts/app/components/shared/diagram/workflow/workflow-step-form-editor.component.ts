@@ -46,10 +46,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private showHelp = false;
 
     private intersectType = null;
-    private responsibleObject: string;
-    private responsibleObjectId: number;
-    private responsibilities = [];
-    private isLoadingRes = false;
 
     private destination = [];
     private lookups = null;
@@ -89,24 +85,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.originalStep = _.cloneDeep(this.step);
         let promises = [];
 
-        if (this.objectId != null && this.objectType != null) {
-            if (this.objectType != 'IntersectType') {
-                this.responsibleObject = this.objectType;
-                this.responsibleObjectId = this.objectId;
-                promises.push(this.getResponsibilityTypes());
-            }
-        }
-
-        
-
         this.usedFields = this.workflowFieldsService.getUsedFields();
-
-       
-
-        //promises.push(this.responsibilityService.getResponsibilityTypes()
-        //    .then(r => {
-        //        this.responsibilities = r;
-        //    }));
 
         if (this.destination.length < 1)
             promises.push(this.workflowService.getEmailTaskRecipientType()
@@ -183,31 +162,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         if (this.step.fields.form['@allowReassignResource'] != null)
             this.allowReassignResource = this.step.fields.form['@allowReassignResource'].toString().toLowerCase() === 'true' ? true : false;
 
-        //convert single value to array
-        if (this.step.settings.ResponsibilityTypeID != null && !_.isArray(this.step.settings.ResponsibilityTypeID)) {
-            let id = this.step.settings.ResponsibilityTypeID;
-            delete this.step.settings.ResponsibilityTypeID;
-            this.step.settings.ResponsibilityTypeID = [];
-            this.step.settings.ResponsibilityTypeID.push(id);
-        } else if (this.step.settings.ResponsibilityTypeID == null) {
-            this.step.settings.ResponsibilityTypeID = [];
-            this.step.settings.ResponsibilityTypeID.push(null);
-        }
-
-        if (this.step.settings.MessageRecipientType != null && this.step.settings.MessageRecipientType == 'Responsibility') {
-            if (this.objectType == 'IntersectType') {
-                this.changeResponsibilitySide(this.step.settings.ResponsibilitySide || 'Subject');
-            } else {
-                this.responsibleObject = this.objectType;
-                this.responsibleObjectId = this.objectId;
-                this.getResponsibilityTypes();
-            }
-        }
-
-
         this.usedFields = this.workflowFieldsService.getUsedFields();
-
-
 
         //console.log('initFields', this.step.settings);
     }
@@ -318,92 +273,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                 });
         }
     }
-
-    addResponsibility() {
-        this.step.settings.ResponsibilityTypeID.push(null);
-        this.step.settings.ResponsibilityTypeID = this.step.settings.ResponsibilityTypeID.slice();
-        this.stepChange.emit(this.step);
-    }
-
-    removeResponsibility(i: number) {
-        this.step.settings.ResponsibilityTypeID.splice(i, 1);
-        this.step.settings.ResponsibilityTypeID = this.step.settings.ResponsibilityTypeID.slice();
-        this.stepChange.emit(this.step);
-    }
-
-    changeResponsibilitySide(e: any) {
-        //if we switch sides, clear the current values
-        if (e != this.step.settings.ResponsibilitySide) {
-            this.step.settings.ResponsibilityTypeID = [];
-            this.addResponsibility();
-        }
-
-        this.step.settings.ResponsibilitySide = e;
-        //console.log('changeResponsibilitySide', this.step, e, this.intersectType, this.responsibleObject, this.responsibleObjectId);
-        let promises = [];
-        this.isLoadingRes = true;
-
-        if (this.intersectType == null)
-            promises.push(this.workflowService.getIntersectType(this.objectId).then(r => {
-                if (r == null || r.length < 1) {
-                    this.intersectType = null;
-                } else {
-                    this.intersectType = r[0];
-                }
-                //console.log('changeResSide after inttype', this.intersectType);
-            }));
-        else
-            promises.push(Promise.resolve());
-
-        Promise.all(promises)
-            .then(() => {
-                if (this.intersectType == null || (e != 'Object' && e != 'Subject')) {
-                    this.responsibleObjectId = null;
-                    this.responsibleObject = null;
-                    this.responsibilities = [];
-                } else if (e == 'Object') {
-                    this.responsibleObject = this.intersectType.Object;
-                    this.responsibleObjectId = this.intersectType.ObjectID;
-                } else if (e == 'Subject') {
-                    this.responsibleObject = this.intersectType.Subject;
-                    this.responsibleObjectId = this.intersectType.SubjectID;
-                }
-                //console.log('changeResSide after promises', this.intersectType, this.responsibleObject, this.responsibleObjectId, e);
-            })
-            .then(() => this.getResponsibilityTypes())
-            .then(() => this.stepChange.emit(this.step))
-            .then(() => this.isLoadingRes = false);
-    }
-
-    getResponsibilityTypes(): Promise<any> {
-        //console.log('getResTypes', this.responsibleObject, this.responsibleObjectId);
-        if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0 || this.objectType == 'IssueType') {
-            this.responsibilities = [];
-            return this.responsibilityService.getResponsibilityTypes()
-                .then(r => this.responsibilities = r)
-                .then(() => {
-                    this.responsibilities.forEach(r => {
-                        r.ResponsibilityTypeID = r.ID;
-                    })
-                });
-        }
-
-        return this.responsibilityService.getResponsibilityTypesByObject(this.responsibleObject, this.responsibleObjectId)
-            .then(r => this.responsibilities = r);
-    }
-
-    changeResponsibility(e: any, i: number) {
-        //console.log('changeResponsibility', e, i, this.responsibilities);
-        this.step.settings.ResponsibilityTypeID[i] = e;
-        this.step.settings.ResponsibilityTypeID = this.step.settings.ResponsibilityTypeID.slice();
-        this.stepChange.emit(this.step)
-    }
-
-    trackRes(index, item) {
-        //not sure why this is required, but without it Angular has trouble keeping track of the index based responsibility types
-        return index;
-    }
-
+    
     validateField() {
         if (this.newField['@label'] == null || this.newField['@label'].length < 1 || this.newField['@type'] == null || this.newField['@type'] == '')
            return false;

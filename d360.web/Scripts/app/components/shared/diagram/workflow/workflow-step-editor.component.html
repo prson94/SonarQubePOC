@@ -27,29 +27,11 @@
                 </div>
             </div>
             <div *ngIf="step.settings.MessageRecipientType == 'Responsibility'" class="col s12">
-                <ng-container *ngIf="objectType == 'IntersectType'">
-                    <div class="FieldName">
-                        Responsible Party
-                    </div>
-                    <div>
-                        <select [ngModel]="step.settings.ResponsibilitySide" (ngModelChange)="changeResponsibilitySide($event)" style="width: 95%">
-                            <option></option>
-                            <option value="Object">Object</option>
-                            <option value="Subject">Subject</option>
-                        </select>
-                    </div>
-                </ng-container>
-                <ng-container *ngIf="((step.settings.ResponsibilitySide != null && step.settings.ResponsibilitySide != '' && objectType == 'IntersectType') || objectType != 'IntersectType') && !isLoadingRes">
-                    <div class="FieldName">
-                        Responsibility
-                    </div>
-                    <div>
-                        <select [ngModel]="step.settings.ResponsibilityTypeID" (ngModelChange)="changeResponsibility($event)" style="width: 95%">
-                            <option></option>
-                            <option *ngFor="let r of responsibilities" [value]="r.ResponsibilityTypeID">{{r.Name}}</option>
-                        </select>
-                    </div>
-                </ng-container>
+                <d3s-workflow-responsibility-selector [step]="step"
+                                                     (stepChange)="step = $event; stepChange.emit(step)"
+                                                     [objectType]="objectType"
+                                                     [objectId]="objectId">
+                </d3s-workflow-responsibility-selector>
             </div>
             <div class="col s12">
                 <div class="FieldName">
