@@ -177,10 +177,10 @@ namespace d360.web.Controllers
                 rowIndex++;
 
                 document.SetCellValue(rowIndex, 1, row.ResourceName);
-                document.SetCellValue(rowIndex, 2, (((DateTime)row.Date)).ToLocalTime());
+                document.SetCellValue(rowIndex, 2, (((DateTime)row.Date)));
 
                 SLStyle style = document.CreateStyle();
-                style.FormatCode = "mmm dd yyyy hh:mm:ss AM/PM";
+                style.FormatCode = "mmm dd yyyy hh:mm:ss";
                 document.SetCellStyle(rowIndex, 2, style);
 
                 document.SetCellValue(rowIndex, 3, row.Action);
