@@ -21,25 +21,25 @@ const Highcharts = require('highcharts/highstock.src');
                             <p-treeTable  scrollable="true" scrollWidth="100%" [value]="pointBreakdownTree" selectionMode="single">  
                                 <ng-template pTemplate="header">
 	                                <tr>
-		                                <th>Analytic</th>
-		                                <th style="width: 75px">Value</th>
-		                                <th style="width: 75px">Weight</th>
+		                                <th  style="width:60%;text-align:left">Analytic</th>
+		                                <th style="width:20%;text-align:right">Value</th>
+		                                <th style="width:20%;text-align:right">Weight</th>
 	                                </tr>
                                 </ng-template>
                                 <ng-template pTemplate="body" let-rowNode let-item="rowData">
 	                                <tr [ttSelectableRow]="rowNode">
-		                                <td>
+		                                <td  style="width:60%;">
 			                                <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
 			                                <span *ngIf="item.MapID" [innerText]="item.Name"></span>
                                             <b *ngIf="!item.MapID"><span [innerText]="item.Name"></span></b>
 		                                </td>
-                                        <td>
+                                        <td  style="width:20%;text-align:right">
                                             <span *ngIf="item.MapID">
                                                 <i *ngIf="item.Value" class="fa fa-check enabled" title="Passed"></i>
                                                 <i *ngIf="!item.Value" class="fa fa-times disabled" title="Failed"></i>
                                             </span>
                                         </td>
-                                        <td>
+                                        <td style="width:20%;text-align:right">
                                             <span [innerText]="item.Weight"></span>
                                         </td>
 	                                </tr>
