@@ -93,7 +93,114 @@ namespace d360.model
 
             return true;
         }
-        
+
+        public async Task SendDigestEmails()
+        {
+            var companySettings = Community.GetCompanySettings();
+
+            // 0 check if the workflow digest emails are enabled
+
+            var enabledString = companySettings["WorkflowDigestEmailEnabled"] ?? "false";
+
+            if (!bool.TryParse(enabledString, out bool isEnabled)  || !isEnabled) return; // setting is off or we cant figure out if it is on / off
+            
+            // 1 determine which users have outstanding workflows
+            var users = await GetUsersWithOutstandingWorkflows();
+
+            // 2 loop through the users with outstanding workflows and create an email for each
+            if(users != null && users.Any())
+            {
+                
+
+                var fromName = companySettings["WorkflowFromName"] ?? "Data3Sixty Workflow";
+                var fromEmail = companySettings["WorkflowFromEmail"] ?? "no-reply@data3sixty.com";
+
+                // 3 get oustanding assignments
+                foreach (var user in users)
+                {
+                    var workflows = await GetUsersOutstandingWorkflows(user.ID);
+
+                    StringBuilder sb = new StringBuilder();
+                    //build email content
+                    // email summary
+                    sb.Append($"<b>You have {workflows.Count} outstanding workflows</b><br><br>");
+                    // email details
+                    foreach (var item in workflows)
+                    {
+                        sb.Append($"Workflow <b>{item.WorkflowName}</b>");
+                        sb.Append($" Step <b>{item.StepName}</b>");
+                        sb.Append($" Started by <b>{item.StartedBy}</b>");
+
+                        sb.Append("<br>");
+                    }
+
+                    var emailAddress = user.Email;
+
+                    //emailAddress = "kmcnamee@infogix.com";
+
+
+                    //send email
+                    await extensions.mail.SimpleMessage.SendMessage("Data3Sixty Daily Workflow Email", emailAddress, "", sb.ToString(), true, fromEmail, fromName);
+                }
+            }
+        }
+
+        private async Task<IEnumerable<dynamic>> GetUsersWithOutstandingWorkflows()
+        {
+            return await Database.Connection.QueryAsync<dynamic>(@"select
+	distinct WIA.ResourceObjectID as ID, GRAA.Email
+                                from
+	                                [workflow].[Type] WT
+	                                inner join workflow.[Version] WV on WT.ID = WV.TypeID
+	                                inner join workflow.Item WI on WV.ID = WI.VersionID
+	                                inner join reporting.Global_Resource GR on WI.StartedBy = GR.ResourceID									
+	                                inner join workflow.ItemAssignment WIA on WIA.ItemID = WI.ID and WIA.ResourceObject = 'Resource'
+	                                inner join workflow.ItemStep WIS on WIS.ItemID = WI.ID and WIS.CompletedOn is null
+	                                inner join workflow.VersionStep WVS on WVS.ID = WIS.StepID                                    
+									inner join reporting.Global_Resource GRAA on WIA.ResourceObjectID = GRAA.ResourceID									
+                                where
+                                     WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3");
+        }
+
+        private async Task<IEnumerable<dynamic>> GetUsersOutstandingWorkflows(int resourceId)
+        {
+            return await Database.Connection.QueryAsync<dynamic>(@"
+                                select
+	                                wt.name as 'WorkflowName'
+	                                ,wi.[object] as 'Object'
+	                                ,wi.[objectid] as 'ObjectID'
+	                                ,wi.startedOn as 'StartedOn'	                                                                    
+	                                ,gr.firstName + ' ' + gr.lastName as 'StartedBy'
+	                                ,case 
+										when wi.[object] = 'Issue' then it.Name
+										else assettype.name
+									end as 'TypeName'
+	                                ,assettype.[Object] as 'ObjectType'
+	                                ,assettype.ObjectID as 'ObjectTypeID'	                                
+                                    ,case 
+                                        when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
+                                        else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
+                                    end as 'ObjectName'	                                
+	                                ,wvs.name as 'StepName'	                                                                    
+                                    ,utility.getassetdisplayvalue(cod.id) as 'IssueObjectName'                                    
+                                from
+	                                [workflow].[type] wt
+	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
+	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
+	                                left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
+									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
+	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+                                    inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
+                                    left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
+                                    left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+                                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
+                                where
+                                    wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3                                     
+                                    order by StartedOn desc", new { r = resourceId });
+        }
+
         public bool AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object)
         {
             var item = WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
