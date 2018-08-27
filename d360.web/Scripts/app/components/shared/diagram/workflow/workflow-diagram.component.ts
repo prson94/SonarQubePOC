@@ -1020,12 +1020,18 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             let from = model.linkDataArray.find(l => (<any>l).from == node.key);
             let to = model.linkDataArray.find(l => (<any>l).to == node.key);
 
+            //special case, steps from timer transitions don't require an output
+            if (to != null && (+node.stepType == StepType.Task && (<LinkModel>to).transitionType == TransitionType.Timer))
+                return;
+
             if (to == null && +node.stepType != StepType.Start)
                 missingInputCount++;
             if (from == null && +node.stepType != StepType.Finish && +node.stepType != StepType.Terminate)
                 missingOutputCount++;
             if (to == null && from == null)
                 disconnectedNodeCount++;
+
+            
 
         });
 
