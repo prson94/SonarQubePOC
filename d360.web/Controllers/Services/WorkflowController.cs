@@ -1734,7 +1734,11 @@ order by wi.StartedOn desc";
 	                                ,wvs.activitytype as 'ActivityType'
                                     ,iss.[object] as 'IssueObject'
 									,iss.[objectid] as 'IssueObjectID'
-                                    ,utility.getassetdisplayvalue(cod.id) as 'IssueObjectName'                                    
+                                    ,utility.getassetdisplayvalue(cod.id) as 'IssueObjectName'  
+                                    ,case when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id)
+                                      when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
+                                        else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
+                                    end as Name
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)

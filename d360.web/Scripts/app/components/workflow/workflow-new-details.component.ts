@@ -46,7 +46,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <p-dataTable #dt [globalFilter]="gb" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="items" headerCheckboxToggleAllPages="true" [(selection)]="selection">
                                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                 <p-column [style]="{'width':'35px'}" selectionMode="multiple"></p-column>                                
-                                <p-column field="ObjectName" header="Name" sortable="true" [filter]="!showSimpleFilter">
+                                <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter">
                                     <ng-template let-col let-item="rowData" pTemplate type="body">
                                         <a (click)="open(item)" *ngIf="!item.IssueObject"><d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" >{{item.ObjectName}}</d3s-preview-tooltip></a>
                                         <a (click)="open(item)" *ngIf="item.IssueObject && item.IssueObjectID"><d3s-preview-tooltip [objectType]="item.IssueObject" [objectId]="item.IssueObjectID">{{item.IssueObjectName ? item.IssueObjectName : "unknown"}}</d3s-preview-tooltip></a>
