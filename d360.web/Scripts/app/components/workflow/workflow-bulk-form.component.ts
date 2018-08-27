@@ -23,7 +23,7 @@ import { ISubscription } from 'rxjs/Subscription';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div class="row" *ngIf="!isLoading">
                         <div class="col s12">
-                            <div class="tile tile-detail" *ngIf="!isCompleted && hasItems">                        
+                            <div class="tile tile-detail" *ngIf="!isCompleted && hasItems && !isSubmitting">                        
                                 <header>{{title}}</header>
                                 <div class="row" style="margin-bottom: 5px">
                                     <div class="col l4 m6 s12">
@@ -95,10 +95,11 @@ import { ISubscription } from 'rxjs/Subscription';
                                     </div>                                       
                                 </form>                                                                                     
                             </div>
-                            <div *ngIf="isCompleted" class="tile tile-detail">
+                            <div *ngIf="isCompleted && !isSubmitting" class="tile tile-detail">
                                 <header>{{title}}</header>
                                 <div class="row">
                                     <div class="col s12">Thank you, your responses have been submitted and are being processed.</div>
+                                    <div *ngIf="omittedCount > 0" class="col s12">{{omittedCount}} items were omitted because they were deleted, already completed, or you do not have permission to complete them.</div>
                                     <div class="col s12">&nbsp;</div>
                                     <div class="col s12">
                                         <button pButton type="button" (click)="complete();" label="Close" style="width: 150px;"></button>
@@ -113,6 +114,13 @@ import { ISubscription } from 'rxjs/Subscription';
                                     <div class="col s12">
                                         <button pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
                                     </div>
+                                </div>
+                            </div>  
+                            <div *ngIf="isSubmitting" class="tile tile-detail">
+                                <header>{{title}}</header>
+                                <div class="row">
+                                    <div class="col s12">Processing, please wait...</div>
+                                    <d3s-loading isLoading="true"></d3s-loading>
                                 </div>
                             </div>  
                         </div>
@@ -147,6 +155,7 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
     private isCompleted: boolean = false;
     private hasItems: boolean = false;
     private isUserAllowedToComplete: boolean = true;
+    private isSubmitting = false;
 
     constructor(private route: ActivatedRoute,
             protected headerBreadcrumbService: HeaderBreadcrumbService,
@@ -174,13 +183,14 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
         }
 
         this.model.Fields = this.fields;
-        this.isLoading = true;
+        this.isSubmitting = true;
         this.workflowService.submitBulkWorkflowForm(this.model)
             .then(r => {
                 this.isCompleted = true;
-                this.isLoading = false;
+                if (r && r.omittedCount)
+                this.omittedCount = r.omittedCount;
             })
-            //.then(() => setTimeout(() => this.isLoading = false, 5000)); //pause for 5 seconds to ensure user sees processing message
+            .then(() => setTimeout(() => this.isSubmitting = false, 5000)); //pause for 5 seconds to ensure user sees processing message
         
     }
 
@@ -204,11 +214,11 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
                 this.issueObjectName = res.IssueObjectName;
                 this.issueTypeName = res.IssueTypeName;
 
-                this.itemSteps = res.ItemSteps;
+                this.itemSteps = res.ItemStepIDs;
                 this.omittedCount = res.OmittedCount;
                 this.hasItems = this.itemSteps == null ? false : this.itemSteps.length > 0;
                 if (this.hasItems)
-                    this.model.ItemStepIDs = this.itemSteps.map(i => i.ID);
+                    this.model.ItemStepIDs = this.itemSteps;
                 else
                     this.model.ItemStepIDs = null;
 
