@@ -33,7 +33,7 @@ namespace igx.jobs.workflowdigestprocessor
 #if DEBUG
         const string timerSettings = "*/10 * * * * *";
 #else
-        const string timerSettings = "0 0 2 * * *"; // every day at 2am
+        const string timerSettings = "0 0 5 * * *"; // every day at 5am
 #endif
 
 
