@@ -80,8 +80,9 @@ import { ISubscription } from 'rxjs/Subscription';
                                                 <div class="col l3 s4" *ngIf="reassignType == 'object'">   
                                                     <div class="FieldName">Select object:</div>
                                                     <p-autoComplete size="100"                                                
-                                                            scrollHeight="400px"
+                                                            scrollHeight="300px"
                                                             name="other"
+                                                            appendTo="body"
                                                             [inputStyle]="{width:'100%'}"
                                                             [(ngModel)]="term" 
                                                             [suggestions]="terms" 
@@ -91,8 +92,8 @@ import { ISubscription } from 'rxjs/Subscription';
                                                             [forceSelection]="true"
                                                             (onSelect)="selectItem()">     
                                                         <ng-template let-item>
-                                                            <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
-                                                        </ng-template>                  
+                                                           <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
+                                                      </ng-template>                  
                                                     </p-autoComplete>                                         
                                                 </div>
                                                 <div class="col l3 s4" *ngIf="reassignType == 'resource'"> 
