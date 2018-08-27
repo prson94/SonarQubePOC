@@ -13,8 +13,10 @@ import { TooltipSingletonService } from '../../services/tooltip-singleton.servic
                     <div *ngIf="innerHtmlContent != null" [innerHtml]="innerHtmlContent"></div>
                     <div class="tooltip-child tooltip-panel" #tip>
                         <h3 style="positon: relative"><a *ngIf="data && data.Url" [routerLink]="data?.Url">{{data?.DisplayName}}</a> 
-                                <span *ngIf="data && !data.Url && data.DisplayName" style="background-color: #fff;">{{data?.DisplayName}}</span>
-                                <span *ngIf="data && data.TypeName" style="background-color: #fff;">{{data.TypeName}}</span></h3>
+                            <span *ngIf="data && !data.Url && data.DisplayName" style="background-color: #fff;">{{data?.DisplayName}}</span>
+                            <small *ngIf="data && data.TypeName && data.DisplayName" style="background-color: #fff; float:right;font-size:65%;">{{data.TypeName}}</small>
+                            <span *ngIf="data && !data.DisplayName && data.TypeName" style="background-color: #fff;">{{data.TypeName}}</span>
+                        </h3>                                
                         <div>&nbsp;</div>
                         <div *ngFor="let field of data?.Levels; let ii=index">
                             <div *ngIf="ii==0"><b>Path:</b></div>
