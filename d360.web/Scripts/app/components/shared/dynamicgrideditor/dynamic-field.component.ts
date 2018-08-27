@@ -1,7 +1,7 @@
-﻿import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
+﻿import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ChangeDetectorRef, OnDestroy, ViewChild, AfterViewChecked, OnChanges } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { EditorField } from '../../../models/editor-field.model';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem, Editor } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 import { FormHelpers } from '../../../static/form-helpers';
@@ -23,7 +23,7 @@ declare var CompanySettings;
                         </div>
                         <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="string" [(ngModel)]="field.Value">  
                         <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>                                  
-                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName"  [style]="{'height':'150px'}" [(ngModel)]="field.Value">
+                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName"  [style]="{'height':'150px'}" [ngModel]="field.Value" (ngModelChange)="setEditorContent($event)" #ed>
                             <header style="padding-bottom:0px !important">                                 
                                     <span class="ql-formats">
                                         <select class="ql-header">
@@ -140,11 +140,14 @@ declare var CompanySettings;
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsService]
 })
-export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDestroy {
+export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
     @Input() field: EditorField;
     @Input() form: FormGroup;
     @Input() object: string;
     @Input() objectID: number = null;
+
+    @ViewChild('ed') ed: Editor;
+    private quill;
     
     @Output() listItemChange = new EventEmitter();
 
@@ -167,6 +170,23 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         private ref: ChangeDetectorRef
     ) {
         super();
+    }
+
+    setEditorContent(e: any) {
+        //workaround for GOV-5287, bug with primeng see JIRA for issue details
+
+        if (this.quill != null) {
+            let contents = this.quill.getContents();
+            if (contents != null && contents.ops != null) {
+                let content = contents.ops.find(i => i.insert != null && i.insert != '\n');
+                if (content != null) {
+                    this.field.Value = this.quill.root.innerHTML;
+                    return;
+                }
+            }
+        }
+        //fallback to default behavior
+        this.field.Value = e;
     }
 
     ngOnInit() {
@@ -237,9 +257,24 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
     }
 
+    ngOnChanges() {
+
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
+        else
+            this.quill = null;
+    }
+
+    ngAfterViewChecked() {
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
+    }
+    
     ngOnDestroy() {
         this.cascadeSub.unsubscribe();
         this.relationSub.unsubscribe();
+        this.quill = null;
+        this.ed = null;
     }
 
     get isValid() {
