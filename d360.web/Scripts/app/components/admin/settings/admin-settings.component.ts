@@ -79,7 +79,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             .then(() => this.companySettingsService.getGroups())
             .then(x => {
                 this.groups = x;
-                this.groups.unshift({ label: 'Administrator', value: '0' });
+                this.groups.unshift({ label: '[Administrators]', value: '0' });
                 this.isLoading = false;
             });
     }
