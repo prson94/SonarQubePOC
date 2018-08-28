@@ -163,6 +163,12 @@
                         {{step?.fields?.form['@allowReassignObject'].toString() == 'true' ? 'Yes' : 'No'}}
                     </div>
                 </div>
+                <div class="col s12" *ngIf="step.settings['IncludePreviousFormResponses'] != null">
+                    <div class="FieldName">Include previous form responses?</div>
+                    <div>
+                        {{step.settings['IncludePreviousFormResponses'].toString() == 'true' ? 'Yes' : 'No'}}
+                    </div>
+                </div>
                 <div class="col s12" *ngIf="step.settings['SendFormEmail'] != null && step.settings['SendFormEmail'].toString() == 'true' && step?.settings?.MessageSubjectTemplate != null">
                     <div class="FieldName">
                         Subject
