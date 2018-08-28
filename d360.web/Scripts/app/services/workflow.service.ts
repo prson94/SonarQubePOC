@@ -331,6 +331,23 @@ export class WorkflowService extends BaseService {
                 .catch(err => this.handleError(err));        
     }
 
+    getAssignedWorkflowInstancesSummary(id: number, resourceId: number, version: number, stepId: number): Promise<any> {
+        let url = `services/workflow/type/${id}/myinstances/summary`;
+        if (resourceId && !isNaN(resourceId)) {
+            url += `?resourceId=${resourceId}`;
+            url += `&version=${version}`;
+            url += `&stepId=${stepId}`;
+        }
+        else {
+            url += `?version=${version}`;
+            url += `&stepId=${stepId}`;
+        }
+        return this.http.get(url)
+            .toPromise()
+            .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getWorkflowProcedures(): Promise<WorkflowTaskProcedure[]> {
         return this.http.get('services/workflow/procedures')
             .toPromise()

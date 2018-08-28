@@ -9,4 +9,14 @@
 
         public string IntersectTypeID { get; set; }
     }
+
+    public class WorkflowAssignmentSummary
+    {
+        public int Version { get; set; }
+        public string StepName { get; set; }
+        public string ObjectName { get; set; }
+        public string TypeName { get; set; }
+
+
+    }
 }

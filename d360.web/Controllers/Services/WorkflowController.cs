@@ -1760,9 +1760,54 @@ order by wi.StartedOn desc";
 
                 var w = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
 
-                var res = Company.Query<dynamic>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId = typeId, verid=version,sid=stepId });
+                var res = Company.Query<dynamic>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId = typeId, verid = version, sid = stepId });
 
                 return Request.CreateResponse(new { items = res, workflow = w });
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
+
+        [Route("type/{typeId:int}/myinstances/summary")]
+        public HttpResponseMessage GetAssignedWorkflowInstancesHeader(int typeId, int version, int stepId, int resourceId = 0)
+        {
+            try
+            {
+                //get workflow instances of the type specified assigned to the current user
+                var sql = @"    select
+                                    top 1 wi.[object] as 'ObjectName',
+                                    wvs.name as 'StepName',
+                                    case when wi.[object] = 'Issue' then it.Name
+                                    else assettype.name
+                                    end as 'TypeName' ,
+                                    wv.[version] as 'Version'
+                                from
+	                                [workflow].[type] wt
+	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
+	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
+	                                left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
+									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
+	                                left join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+	                                left join [workflow].[itemstep] wis on(wis.itemid = wi.id )
+	                                left join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+                                    inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
+                                    left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
+                                    left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+                                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
+                                where
+                                    wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3 
+                                    and wv.[version]=@verid and wvs.id = @sid  
+                                   
+                           ";
+
+               
+
+                var res = Company.Query<WorkflowAssignmentSummary>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId = typeId, verid = version, sid = stepId }).FirstOrDefault<WorkflowAssignmentSummary>();
+
+                return Request.CreateResponse(new { item=res });
             }
             catch (Exception ex)
             {

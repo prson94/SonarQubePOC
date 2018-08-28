@@ -143,20 +143,18 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
 
     private load() {
         this.isLoading = true;
-        this.workflowService.getAssignedWorkflowInstancesByTypeId(this.workflowTypeId, this.resourceID,this.version,this.stepId)
+        this.workflowService.getAssignedWorkflowInstancesByTypeId(this.workflowTypeId, this.resourceID, this.version, this.stepId)
             .then(res => {
                 this.selection = [];
-                this.isLoading = false;
                 this.items = res.items;
-                if (this.items && this.items.length != 0) {
-                    this.assignmentSummary = new WorkflowAssignmentSummary();
-                    this.assignmentSummary.Version = this.version;
-                    this.assignmentSummary.ObjectName = this.items[0].Object;
-                    this.assignmentSummary.StepName = this.items[0].StepName;
-                    this.assignmentSummary.TypeName = this.items[0].TypeName;
-                }
                 this.workflow = res.workflow;
+            })
+            .then(() => this.workflowService.getAssignedWorkflowInstancesSummary(this.workflowTypeId, this.resourceID, this.version, this.stepId))
+            .then(res => {
+                this.isLoading = false;
+                this.assignmentSummary = res.item;
             });
+               
     }
 
     private bulkRespond() {
