@@ -166,7 +166,7 @@ namespace d360.web.Controllers
                                                 ro.Values.Add(new ReadOnlyFieldValue
                                                 {
                                                     TooltipContext = "Preview",
-                                                    TooltipID = (int)item.Value,
+                                                    TooltipID = item.Value,
                                                     Value = item.Text,
                                                     TooltipType = ft.LookupObjectType,
                                                     TooltipUrl = (detail == null ? "" : detail.NgUrl)

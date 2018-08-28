@@ -406,7 +406,7 @@ order by wi.StartedOn desc";
                     {
                         var fieldTypeId = int.Parse(field.ReferenceFieldID);
                         var fieldType = Company.FieldTypes.Where(x => x.ID == fieldTypeId).FirstOrDefault();
-                        long longVal = 0;
+                        int intVal = 0;
 
                         if (field.AllowMultipleValues)
                         {
@@ -414,9 +414,9 @@ order by wi.StartedOn desc";
                             displayVal = "";
                             foreach (var v in values)
                             {
-                                if (fieldType != null && long.TryParse(v, out longVal))
+                                if (fieldType != null && int.TryParse(v, out intVal))
                                 {
-                                    var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == longVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
+                                    var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == intVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
 
                                     if (!string.IsNullOrEmpty(displayVal)) displayVal += ",";
 
@@ -429,10 +429,10 @@ order by wi.StartedOn desc";
                         }
                         else
                         {                            
-                            if (fieldType != null && long.TryParse(val, out longVal))
+                            if (fieldType != null && int.TryParse(val, out intVal))
                             {
 
-                                var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == longVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
+                                var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == intVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
 
                                 if (lookup != null)
                                 {
