@@ -433,10 +433,19 @@ order by	ColumnIndex", new { id });
 
                 int subjectId = getItemIdFromKeyFields(rowData, subjectAssetIDFieldIndex, subjectTypeName, intersectType.SubjectID);
                 int objectId = getItemIdFromKeyFields(rowData, objectAssetIDFieldIndex, objectTypeName, intersectType.ObjectID);
-
-                int intersectId = (operation == BulkRelationshipOperation.Relate) ?
-                    RelateObjects(rowData, objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID, customFieldTypes, customFieldTypeMap) :
-                    (await UnrelateObjects(objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID)); 
+                string errorMsg;
+                int intersectId = 0;
+                if (IsValidCardinality(intersectType, objectId, subjectId, objectTypeName, subjectTypeName, out errorMsg))
+                {
+                    intersectId = (operation == BulkRelationshipOperation.Relate) ?
+                       RelateObjects(rowData, objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID, customFieldTypes, customFieldTypeMap) :
+                       (await UnrelateObjects(objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID));
+                
+                }
+                else
+                {
+                    BulkLoadStatusMsg = errorMsg;
+                }
                 
                 // update status for this item
                 var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = @status, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
@@ -450,6 +459,28 @@ order by	ColumnIndex", new { id });
             }
         }
 
+        private bool IsValidCardinality(IntersectTypeDetail intersectType, int objectId, int subjectId, string objectType, string subjectType,out string message)
+        {
+            message = string.Empty;
+            bool found = false;
+
+
+            if (intersectType.ObjectCardinality== Cardinality.One && intersectType.SubjectCardinality == Cardinality.One)
+            {
+                found = Intersects.Any((x => x.Object == objectType && x.IntersectTypeID == intersectType.ID && x.ObjectID == objectId) );
+                message = found ? $"{objectType}  does not satisfy relationship cardinality " : string.Empty;
+
+                if (found) return false;
+
+                found = Intersects.Any(x => x.Subject == subjectType && x.IntersectTypeID == intersectType.ID && x.SubjectID == subjectId);
+                message = found ? $" {subjectType}  does not satisfy relationship cardinality " : string.Empty;
+
+                if (found) return false;
+
+            }
+
+            return true;
+        }
         private async Task<int> UnrelateObjects(int objectId, int subjectId, string objectType, string subjectType, int intersectTypeId)
         {
             var intersectId = 0;
