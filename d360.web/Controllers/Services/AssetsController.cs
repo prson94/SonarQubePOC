@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
+using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using System;
@@ -78,11 +79,22 @@ namespace d360.web.Controllers.Services
             try
             {
                 var sType = ot.ToString();
-                var assetType = Company.Filter<AssetType>(i => i.Object == sType && i.ObjectID == otid).SingleOrDefault();
 
-                if (assetType == null)
+                if(!await Company.Database.Connection.QuerySingleAsync<bool>(
+                    @"begin
+	                        if exists(select 1 from assettype where [object] = @obj and [objectid] = @objId)
+	                        begin
+		                        select 1
+	                        end
+	                        else
+	                        begin
+		                        select 0
+	                        end
+                        end"
+                    ,new { obj = sType, objId = otid })){
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with Object {sType} and ObjectID {otid} could not be found.")));
-
+                }
+                
                 var import = readRequestJsonContent<BulkAssetImport>(Request).Result;
                 
                 var results = (Company.Database.Connection as SqlConnection).BulkAssetsImport(Company.CurrentResourceID, ot, otid, import);

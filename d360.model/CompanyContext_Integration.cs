@@ -350,7 +350,7 @@ namespace d360.model
     )", transaction: trans);
 
                     cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_SourceID ON #AssetTable ( [SourceID] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_ParentSourceID ON #AssetTable ( [ParentSourceID] ASC )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_ParentSourceID ON #AssetTable ( [Object] ASC, [ObjectID] ASC, [ParentSourceID] ASC )", transaction: trans);
 
                     var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
 
@@ -673,10 +673,10 @@ when not matched by target then
     when matched then
         update set
                 T.Value = S.FieldValue,
-                T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.FieldValue, S.AllowMultipleValues)
+                T.FormattedValue = S.FieldValue
     when not matched by target then
         insert  (FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
-        values  (S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue, utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.FieldValue, S.AllowMultipleValues));
+        values  (S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue, S.FieldValue);
     ", new { id = otid }, transaction: trans, commandTimeout: 1200);
 
                     cnn.Execute(@"
@@ -707,10 +707,10 @@ when not matched by target then
     when matched then
         update set
                 T.Value = S.Value,
-                T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.Value, S.AllowMultipleValues)
+                T.FormattedValue = S.Value
     when not matched by target then
         insert  (FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
-        values  (S.FieldTypeID, S.Object, S.ObjectID, S.Value, utility.GetFormattedFieldLookupValueWithMultiple(S.Type, S.LookupDisplayFormat, S.LookupObjectType, S.LookupObjectID, S.Value, S.AllowMultipleValues));
+        values  (S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.Value);
     ", new { id = otid }, transaction: trans, commandTimeout: 1200);
 
                     #endregion
@@ -877,7 +877,7 @@ when not matched by target then
         LookupValue nvarchar(250) null
     )", transaction: trans);
 
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetFieldTable ON #AssetFieldTable ( ItemNumber ASC ) INCLUDE ( FieldTypeID )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetFieldTable ON #AssetFieldTable ( ItemNumber ASC, FieldTypeID ASC )", transaction: trans);
 
                     var assetFieldBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
 
