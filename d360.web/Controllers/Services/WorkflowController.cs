@@ -1918,7 +1918,7 @@ order by wi.StartedOn desc";
 
         [Route("versionstep/history/{id:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowVersionStepHistory(int id, string filteredObject = null, int? filteredObjectId = null)
-        {
+        {            
             var sql = QueryConstants.WorkflowVersionStepHistory;
             //			left join issue s on m.object = 'Issue' and s.id = m.objectID
             if (filteredObject != null && filteredObjectId != null)
@@ -1932,6 +1932,7 @@ order by wi.StartedOn desc";
             {
                 sql = string.Format(sql, "left join workflow.item m on m.id = i.itemid", "left join issue s on m.object = 'Issue' and s.id = m.objectID");
             }
+            
 
             var results = Company.Query<dynamic>(sql, new { id, filteredObject, filteredObjectId }).ToList();
 

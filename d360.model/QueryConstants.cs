@@ -1567,7 +1567,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 			when convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
 				'Email sent to ' + coalesce(convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
 			when convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Responsibility' then
-				'Email sent to ' + dbo.GetOwnersListForWorkflow(T.ID, VS.ID)
+				'Email sent to ' + [dbo].[GetEmailStepRecipients](IST.ID)
 			else
 				'Email sent'
 			end
