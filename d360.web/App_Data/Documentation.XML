@@ -2489,6 +2489,24 @@
             <param name="phrase"></param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.RelationshipsController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipTypesAsync">
+            <summary>
+            GET a list of relationship types.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid)">
+            <summary>
+            Takes a given set of relationships and bulk inserts/updates them.
+            </summary>
+            <param name="uid">The unique identifier of the asset type.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.AssetsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
@@ -2496,7 +2514,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypeClassesAsync">
             <summary>
-            
+            Retrieves a list of all asset types classes.
             </summary>
             <returns></returns>
         </member>
@@ -2506,7 +2524,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsV2Async(System.Guid)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid)">
             <summary>
             Takes a given set of assets and bulk inserts/updates them.
             </summary>

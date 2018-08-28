@@ -1,6 +1,9 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.enums.Workflow;
+using d360.core.queue;
+using d360.extensions;
 using Dapper;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
@@ -741,7 +744,13 @@ when not matched by target then
             #endregion
         }
 
-        public static List<DatabaseBulkAssetResult> BulkAssetsImport(this SqlConnection cnn, int currentResourceID, AssetType at, List<Dictionary<string, string>> import)
+        public static List<DatabaseBulkAssetResult> BulkAssetsImport(this SqlConnection cnn, 
+            IQueueSource queue, 
+            string companyUrlPrefix,
+            int currentCompanyID,
+            int currentResourceID, 
+            AssetType at, 
+            List<Dictionary<string, string>> import)
         {
             List<DatabaseBulkAssetResult> results = null;
 
@@ -749,13 +758,10 @@ when not matched by target then
 
             var assetTable = new System.Data.DataTable();
             assetTable.Columns.Add("ItemNumber", typeof(int));
-            assetTable.Columns.Add("IntersectTypeUid", typeof(Guid));
             assetTable.Columns.Add("Message", typeof(string));
             assetTable.Columns.Add("Success", typeof(bool));
             assetTable.Columns.Add("Uid", typeof(Guid));
-            //assetTable.Columns.Add("ParentUid", typeof(Guid));
-            assetTable.Columns.Add("KeyHash", typeof(string));
-            assetTable.Columns.Add("IsNew", typeof(bool));
+            assetTable.Columns.Add("ParentUid", typeof(Guid));
 
             var assetFieldTable = new System.Data.DataTable();
             assetFieldTable.Columns.Add("ItemNumber", typeof(int));
@@ -767,18 +773,6 @@ when not matched by target then
 
             #region Generate data sets
 
-            //#region Parent predicate type choice.
-
-            //var predicateType = PredicateType.InterTypeHierarchy;
-
-            //var ot = at.Object;
-            //if (ot == SystemObjects.PolicyType.ToString() || ot == SystemObjects.TaxonomyType.ToString())
-            //{
-            //    predicateType = PredicateType.IntraTypeHierarchy;
-            //}
-
-            //#endregion
-
             for (int i = 1; i <= import.Count; i++)
             {
                 var model = import[i - 1];
@@ -789,8 +783,8 @@ when not matched by target then
 
                 if (model.ContainsKey("Uid"))
                     row["Uid"] = Guid.Parse(model["Uid"]);
-                //if (model.ContainsKey("ParentUid"))
-                //    row["ParentUid"] = Guid.Parse(model["ParentUid"]);
+                if (model.ContainsKey("ParentUid"))
+                    row["ParentUid"] = Guid.Parse(model["ParentUid"]);
 
                 //if (model.ContainsKey("SourceID"))
                 //    row["SourceID"] = model["SourceID"].ToString();
@@ -834,20 +828,28 @@ when not matched by target then
                     cnn.Execute(@"
     create table #AssetTable (
         ItemNumber int not null,
-        Message nvarchar(2500) null,
-        Success bit null,
-        --IntersectTypeUid uniqueidentifier null,        
+
         Uid uniqueidentifier null,
-        --ParentUid uniqueidentifier null,
-        --SourceID nvarchar(1000) null,
-        --ParentSourceID nvarchar(1000) null,
-        --Object varchar(50) null,
-        --ObjectID int null,
+        SourceID nvarchar(1000) null,
+        AssetID bigint null,
+        Object varchar(50) null,
+        ObjectID int null,
+        KeyHash varchar(50) null,
+
+        ParentUid uniqueidentifier null,
+        ParentObject varchar(50) null,
+        ParentObjectID int null,
+        ParentSourceID nvarchar(1000) null,
+
+        [Message] nvarchar(2500) null,
+        Success bit null,
         IsNew bit null
     )", transaction: trans);
 
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_SourceID ON #AssetTable ( [SourceID] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_ParentSourceID ON #AssetTable ( [ParentSourceID] ASC )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_Uid ON #AssetTable ( [Uid] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_ParentUid ON #AssetTable ( [ParentUid] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+                    //cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_SourceID ON #AssetTable ( [SourceID] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+                    //cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_ParentSourceID ON #AssetTable ( [ParentSourceID] ASC )", transaction: trans);
 
                     var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
 
@@ -856,28 +858,13 @@ when not matched by target then
                     assetBulkCopy.BulkCopyTimeout = 3600;
 
                     assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    //assetBulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
-                    assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
+                    //assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
                     //assetBulkCopy.ColumnMappings.Add("ParentSourceID", "ParentSourceID");
                     assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
-                    //assetBulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
+                    assetBulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
                     assetBulkCopy.WriteToServer(assetTable);
 
                     #endregion
-
-//                  #region Resolve Parents, if required.
-
-//                  cnn.Execute(@"
-//update  T
-//set     T.ParentUid = S.[uid],
-//        T.IntersectTypeUid = IT.[uid]
-//from    #AssetTable T
-//		inner join Asset S on (() or (S.SourceID = T.ParentSourceID))
-//        inner join AssetType ST on ST.ID = S.AssetTypeID
-//        inner join IntersectType IT on IT.Subject = ST.Object and IT.SubjectID = ST.ObjectID and IT.Object = @ot and IT.ObjectID = @otid
-//        inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = @pt", new { ot = sType, otid, pt = (int)predicateType, transaction: trans);
-
-//                  #endregion
 
                     #region Asset Field Bulk Copy
 
@@ -886,7 +873,8 @@ when not matched by target then
         ItemNumber int not null,
         FieldName nvarchar(250) not null,
         FieldValue nvarchar(max) null,
-        FieldTypeID int null
+        FieldTypeID int null,
+        LookupValue nvarchar(250) null
     )", transaction: trans);
 
                     cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetFieldTable ON #AssetFieldTable ( ItemNumber ASC ) INCLUDE ( FieldTypeID )", transaction: trans);
@@ -900,15 +888,14 @@ when not matched by target then
                     assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     assetBulkCopy.ColumnMappings.Add("FieldName", "FieldName");
                     assetBulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-                    assetBulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
 
                     assetFieldBulkCopy.WriteToServer(assetFieldTable);
 
                     #endregion
 
-                    cnn.Execute("exec asset.BulkUpsert @uid, @r", new { at.uid, r = currentResourceID }, trans, 1800, System.Data.CommandType.StoredProcedure);
+                    cnn.Execute("exec asset.BulkUpsert @uid, @r", new { at.uid, r = currentResourceID }, trans, 1800);
 
-                    results = cnn.Query<DatabaseBulkAssetResult>("select ItemNumber, [uid], Message, Success, IsNew from #AssetTable", transaction: trans).ToList();
+                    results = cnn.Query<DatabaseBulkAssetResult>("select * from #AssetTable", transaction: trans).ToList();
                     trans.Commit();
                 }
                 catch (Exception ex)
@@ -919,6 +906,53 @@ when not matched by target then
             }
 
             cnn.Close();
+
+
+            #region Send Relationship Events
+
+            try
+            {
+                var events = new List<EventInfo>();
+                var objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), at.Object);
+                foreach (var result in results)
+                {
+                    var changeType = result.IsNew ? ChangeType.Add : ChangeType.Update;
+
+                    events.Add(new EventInfo
+                    {
+                        CompanyID = currentCompanyID,
+                        DomainPrefix = companyUrlPrefix,
+                        ResourceID = currentResourceID,
+                        Action = changeType,
+                        Object = new EventObjectInfo
+                        {
+                            Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), result.Object),
+                            ObjectType = objectType,
+                            ObjectID = result.ObjectID,
+                            ObjectTypeID = at.ObjectID
+                        }
+                    });
+
+                    if (events.Count > 50)
+                    {
+                        queue.CreateTopicMessages(events);
+                        events.Clear();
+                    }
+                }
+
+                if (events.Count > 0)
+                {
+                    queue.CreateTopicMessages(events);
+                    events.Clear();
+                }
+            }
+            catch (Exception wex)
+            {
+
+            }
+
+            #endregion
+
 
             return results;
         }
@@ -1125,6 +1159,206 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             #endregion
 
             return retResults;
+        }
+
+        public static List<DatabaseBulkRelationshipResult> BulkRelationshipsImport(this SqlConnection cnn,
+            IQueueSource queue,
+            string companyUrlPrefix,
+            int currentCompanyID,
+            int currentResourceID,
+            IntersectType rt,
+            List<Dictionary<string, string>> import)
+        {
+            List<DatabaseBulkRelationshipResult> results = null;
+
+            #region Build data tables for bulk load.
+
+            var table = new System.Data.DataTable();
+            table.Columns.Add("ItemNumber", typeof(int));
+            table.Columns.Add("Message", typeof(string));
+            table.Columns.Add("Success", typeof(bool));
+            table.Columns.Add("SubjectUid", typeof(Guid));
+            table.Columns.Add("ObjectUid", typeof(Guid));
+
+            var fieldTable = new System.Data.DataTable();
+            fieldTable.Columns.Add("ItemNumber", typeof(int));
+            fieldTable.Columns.Add("FieldName", typeof(string));
+            fieldTable.Columns.Add("FieldValue", typeof(string));
+            fieldTable.Columns.Add("FieldTypeID", typeof(int));
+
+            #endregion
+
+            #region Generate data sets
+
+            for (int i = 1; i <= import.Count; i++)
+            {
+                var model = import[i - 1];
+
+                var row = table.NewRow();
+
+                row["ItemNumber"] = i;
+
+                if (model.ContainsKey("SubjectUid"))
+                    row["SubjectUid"] = Guid.Parse(model["SubjectUid"]);
+                if (model.ContainsKey("ObjectUid"))
+                    row["ObjectUid"] = Guid.Parse(model["ObjectUid"]);
+
+                table.Rows.Add(row);
+
+                foreach (var k in model.Keys)
+                {
+                    if (k != "SubjectUid" && k != "ObjectUid")
+                    {
+                        if (!string.IsNullOrEmpty(model[k]))
+                        {
+                            var fieldRow = fieldTable.NewRow();
+
+                            fieldRow["ItemNumber"] = i;
+                            fieldRow["FieldName"] = k.Trim();
+                            fieldRow["FieldValue"] = (model[k] + "").Trim();
+
+                            fieldTable.Rows.Add(fieldRow);
+                        }
+                    }
+                }
+            }
+
+            #endregion
+
+            if (cnn.State != System.Data.ConnectionState.Open)
+                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+            using (var trans = cnn.BeginTransaction())
+            {
+                try
+                {
+                    cnn.Execute("DROP TABLE IF EXISTS #RelationshipTable", transaction: trans);
+                    cnn.Execute("DROP TABLE IF EXISTS #RelationshipFieldTable", transaction: trans);
+
+                    #region Asset Bulk Copy
+
+                    cnn.Execute(@"
+    create table #RelationshipTable (
+        ItemNumber int not null,
+
+        SubjectUid uniqueidentifier null,
+        Subject varchar(50) null,
+        SubjectID int null,
+
+        ObjectUid uniqueidentifier null,
+        Object varchar(50) null,
+        ObjectID int null,
+
+        IntersectID int null,
+        [Message] nvarchar(2500) null,
+        Success bit null,
+        IsNew bit null
+    )", transaction: trans);
+
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable_SubjectUid ON #RelationshipTable ( [SubjectUid] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable_ObjectUid ON #RelationshipTable ( [ObjectUid] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+
+                    var bulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
+
+                    bulkCopy.BatchSize = table.Rows.Count;
+                    bulkCopy.DestinationTableName = "#RelationshipTable";
+                    bulkCopy.BulkCopyTimeout = 3600;
+
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
+                    bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
+                    bulkCopy.WriteToServer(table);
+
+                    #endregion
+
+                    #region Asset Field Bulk Copy
+
+                    cnn.Execute(@"
+    create table #RelationshipFieldTable (
+        ItemNumber int not null,
+        FieldName nvarchar(250) not null,
+        FieldValue nvarchar(max) null,
+        FieldTypeID int null,
+        LookupValue nvarchar(250) null
+    )", transaction: trans);
+
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipFieldTable ON #RelationshipFieldTable ( ItemNumber ASC ) INCLUDE ( FieldTypeID )", transaction: trans);
+
+                    var fieldBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
+
+                    fieldBulkCopy.BatchSize = table.Rows.Count;
+                    fieldBulkCopy.DestinationTableName = "#RelationshipFieldTable";
+                    fieldBulkCopy.BulkCopyTimeout = 3600;
+
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+                    bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+
+                    fieldBulkCopy.WriteToServer(fieldTable);
+
+                    #endregion
+
+                    cnn.Execute("exec relation.BulkUpsert @uid, @r", new { rt.uid, r = currentResourceID }, trans, 1800);
+
+                    results = cnn.Query<DatabaseBulkRelationshipResult>("select * from #RelationshipTable", transaction: trans).ToList();
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
+
+            cnn.Close();
+
+
+            #region Send Relationship Events
+
+            try
+            {
+                var events = new List<EventInfo>();
+                foreach (var result in results)
+                {
+                    var changeType = result.IsNew ? ChangeType.Add : ChangeType.Update;
+
+                    events.Add(new EventInfo
+                    {
+                        CompanyID = currentCompanyID,
+                        DomainPrefix = companyUrlPrefix,
+                        ResourceID = currentResourceID,
+                        Action = changeType,
+                        Object = new EventObjectInfo
+                        {
+                            Object = SystemObjects.Intersect,
+                            ObjectType = SystemObjects.IntersectType,
+                            ObjectID = result.ID,
+                            ObjectTypeID = rt.ID
+                        }
+                    });
+
+                    if (events.Count > 50)
+                    {
+                        queue.CreateTopicMessages(events);
+                        events.Clear();
+                    }
+                }
+
+                if (events.Count > 0)
+                {
+                    queue.CreateTopicMessages(events);
+                    events.Clear();
+                }
+            }
+            catch (Exception wex)
+            {
+
+            }
+
+            #endregion
+
+
+            return results;
         }
 
         public static void BulkExecutionAssetLoad(this SqlConnection cnn, int currentResourceID, List<IntegrationExecutionAsset> assets, string targetJsonColumn = "RawObject")

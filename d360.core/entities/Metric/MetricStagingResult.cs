@@ -24,6 +24,8 @@ namespace d360.core.entities.Metric
 
         public decimal Score { get; set; }
 
+        public bool Processing { get; set; }
+
         [IgnoreDataMember]
         public virtual MetricMap MetricMap { get; set; }
     }

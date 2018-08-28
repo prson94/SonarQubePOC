@@ -20,14 +20,14 @@ namespace d360.web.Controllers.V2
     /// </summary>
     [ 
         ApiVersion("2.0"), 
-        RoutePrefix("api/v{version:apiVersion}/assets"), Authorize] //v{version:apiVersion}
-    public class AssetsController : BaseApiController
+        RoutePrefix("api/v{version:apiVersion}/relationships"), Authorize]
+    public class RelationshipsController : BaseApiController
     {
         #region DI
 
         IQueueSource QueueSource;
 
-        public AssetsController(CommunityContext community, CompanyContext company, IQueueSource queueSource)
+        public RelationshipsController(CommunityContext community, CompanyContext company, IQueueSource queueSource)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -59,55 +59,46 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Retrieves a list of all asset types classes.
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("classes")]
-        public HttpResponseMessage GetAssetTypeClassesAsync()
-        {
-            var prefix = "Assets.GetAssetTypeClassesAsync => ";
-            var errorMessage = "";
-
-            try
-            {
-                var classes = AssetTypeClass.Glossary.GetAsList();
-                return Request.CreateResponse(HttpStatusCode.OK, classes);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
-        }
-
-        /// <summary>
-        /// GET a list of asset types.
+        /// GET a list of relationship types.
         /// </summary>
         /// <returns></returns>
         [HttpGet, MapToApiVersion("2.0"), Route("types")]
-        public async Task<HttpResponseMessage> GetAssetTypesAsync()
+        public async Task<HttpResponseMessage> GetRelationshipTypesAsync()
         {
-            var prefix = "Assets.GetAssetTypesAsync => ";
+            var prefix = "Relationships.GetRelationshipTypesAsync => ";
             var errorMessage = "";
 
             try
             {
-                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(@"
-SELECT		A.[Name]
-			,A.[Description]
-			,A.[Class] as ClassID
-			,A.[Notes]
-			,A.[uid],
-			P.[Path]
-FROM		AssetType A
-			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-where		A.[State] = 1
-order by	P.[Path]
-");
+                var types = await Company.QueryAsync<IntersectTypeApiViewModel>(@"
+select	I.Uid,
+		P.Name as PredicateName,
+		P.Inverse as PredicateInverse,
+		P.[Type] as PredicateTypeID,
+		I.SubjectUid,
+		S.Class as SubjectClassID,
+		case 
+			when I.SubjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
+			when I.SubjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
+			when I.SubjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
+			else S.Name 
+		end as SubjectTypeName,
+		I.ObjectUid,
+		O.Class as ObjectClassID,
+		case 
+			when I.ObjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
+			when I.ObjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
+			when I.ObjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
+			else O.Name 
+		end as ObjectTypeName
+from	IntersectType I
+		left join [Predicate] P on P.ID = I.PredicateID
+		left join AssetType S on S.uid = I.SubjectUid
+		left join AssetType O on O.uid = I.ObjectUid
+where	coalesce(S.uid, I.SubjectUid) is not null
+		and coalesce(O.uid, I.ObjectUid) is not null");
 
-                return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
+                return Request.CreateResponse(HttpStatusCode.OK, types);
             }
             catch (Exception ex)
             {
@@ -118,32 +109,36 @@ order by	P.[Path]
             }
         }
 
-        #region Bulk Assets
+        #region Bulk Relationships
 
         /// <summary>
-        /// Takes a given set of assets and bulk inserts/updates them.
+        /// Takes a given set of relationships and bulk inserts/updates them.
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
         [HttpPost, MapToApiVersion("2.0"), Route("{uid}")]
-        public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid uid)
+        public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid uid)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update assets of this type.")));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships of this type.")));
 
-            var prefix = "Assets.PostBulkAssetsAsync => ";
+            var prefix = "Assets.PostBulkRelationshipsAsync => ";
             var errorMessage = "";
 
             try
             {
-                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+                var intersectType = Company.Filter<IntersectType>(i => i.uid == uid).SingleOrDefault();
 
-                if (assetType == null)
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with UID {uid} could not be found.")));
+                if (intersectType == null)
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with UID {uid} could not be found.")));
 
                 var import = readRequestJsonContent<BulkAssetImport>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).BulkAssetsImport(QueueSource, Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID, assetType, import);
+                var results = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(
+                    QueueSource, 
+                    Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID, 
+                    intersectType, 
+                    import);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }

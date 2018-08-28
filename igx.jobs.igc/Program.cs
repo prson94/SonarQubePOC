@@ -85,6 +85,19 @@ namespace igx.jobs
 #else
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
 #endif
+
+                            #region Do cleanup of really old execution assets, getting rid of ones older than 7 days.
+
+                            try
+                            {
+                                company.Delete<IntegrationExecutionAssetType>(i => i.CompletedOn == null && i.StartedOn < DateTime.UtcNow.AddDays(-7));
+                            }
+                            catch (Exception cex)
+                            {
+                                log.WriteLine($"Unable to remove old execution asset types for company ({c.CompanyID}) due to the following error: {cex.GetFullExceptionData()}"); ;
+                            }
+
+                            #endregion
                         }
 
                         var executionIDs = new List<ExecutionAssetType>(); //To loop through to synch deletions.

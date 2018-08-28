@@ -74,5 +74,25 @@ namespace d360.core.entities
         public bool Success { get; set; }
         [DataMember]
         public bool IsNew { get; set; }
+
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+    }
+
+    [DataContract]
+    public class DatabaseBulkRelationshipResult
+    {
+        [DataMember]
+        public int ItemNumber { get; set; }
+
+        [DataMember]
+        public int ID { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+        [DataMember]
+        public bool IsNew { get; set; }
     }
 }

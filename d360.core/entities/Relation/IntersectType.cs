@@ -79,4 +79,71 @@ namespace d360.core.entities
             };
         }
     }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class IntersectTypeApiViewModel : BaseObject
+    {
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string PredicateName { get; set; }
+
+        [DataMember]
+        public string PredicateInverse { get; set; }
+
+        PredicateType _PredicateTypeID;
+        public PredicateType PredicateTypeID
+        {
+            get { return _PredicateTypeID; }
+            set
+            {
+                _PredicateTypeID = value;
+                this.PredicateType = _PredicateTypeID.AsInfoModel();
+            }
+        }
+
+        [DataMember]
+        public PredicateTypeInfo PredicateType { get; set; }
+
+        [DataMember]
+        public Guid SubjectUid { get; set; }
+
+        AssetTypeClass _SubjectClassID;
+        public AssetTypeClass SubjectClassID
+        {
+            get { return _SubjectClassID; }
+            set
+            {
+                _SubjectClassID = value;
+                this.SubjectClass = _SubjectClassID.GetInfo();
+            }
+        }
+
+        [DataMember]
+        public AssetTypeClassInfo SubjectClass { get; set; }
+
+        [DataMember]
+        public string SubjectTypeName { get; set; }
+
+        [DataMember]
+        public Guid ObjectUid { get; set; }
+
+        AssetTypeClass _ObjectClassID;
+        public AssetTypeClass ObjectClassID
+        {
+            get { return _ObjectClassID; }
+            set
+            {
+                _ObjectClassID = value;
+                this.ObjectClass = _ObjectClassID.GetInfo();
+            }
+        }
+
+        [DataMember]
+        public AssetTypeClassInfo ObjectClass { get; set; }
+
+        [DataMember]
+        public string ObjectTypeName { get; set; }
+    }
 }

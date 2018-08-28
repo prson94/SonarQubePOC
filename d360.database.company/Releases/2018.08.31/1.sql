@@ -121,6 +121,9 @@ when not matched by target then
 		values (S.Name, S.Description, 10, coalesce(S.DisplayFormat, '{Name}'), 1, 0, 1, 'OrganizationType', S.ID, coalesce(S.CreatedOn, getutcdate()), S.CreatedBy, coalesce(S.UpdatedOn, getutcdate()), S.UpdatedBy);
 GO
 
+alter table metrics.StagingResult add Processing bit constraint DF_MetricsStagingResult_Processing default(0) not null
+GO
+
 ALTER procedure [metrics].[LoadFromStaging]
 as
 begin
@@ -202,17 +205,22 @@ begin
 
 		drop table if exists #a
 
-		create table #a (AssetID bigint, Value bit, ID int, ParentID int null, Name nvarchar(250), Weight decimal(5,3), EffectiveDate datetime, Level int, Type char(1), New_ID varchar(250), New_ParentID varchar(250), Score decimal(5,3));
+		create table #a (AssetID bigint, Value bit, ID int, ParentID int null, Name nvarchar(250), Weight decimal(5,3), EffectiveDate date, Level int, Type char(1), New_ID varchar(250), New_ParentID varchar(250), Score decimal(5,3));
+
+		update	metrics.StagingResult
+		set		Processing = 1;
 
 		insert into #a (AssetID, ID, EffectiveDate, Level, Type)
-			select	distinct
-					R.AssetID,
-					0 as ID,
-					R.EffectiveDate,
-					0 as Level,
-					'A' as Type
-			from	[metrics].[StagingResult] R
-					inner join #gh H on H.ID = R.MapID and H.Type = 'M' and R.EffectiveDate between H.EffectiveStartDate and H.EffectiveEndDate;
+			select		distinct
+						R.AssetID,
+						0 as ID,
+						cast(max(R.EffectiveDate) as date) as EffectiveDate,
+						0 as Level,
+						'A' as Type
+			from		[metrics].[StagingResult] R
+						inner join #gh H on H.ID = R.MapID and H.Type = 'M' and R.EffectiveDate between H.EffectiveStartDate and H.EffectiveEndDate and R.Processing = 1
+			group by	R.AssetID, cast(R.EffectiveDate as date);
+			--order by	R.AssetID, cast(max(R.EffectiveDate) as date) desc;
 
 --select * from #a
 
@@ -223,7 +231,7 @@ begin
 					H.ParentID,
 					H.Name,
 					H.Weight,
-					G.EffectiveDate,
+					G.EffectiveDay,
 					H.Level,
 					H.Type
 			from	#gh H
@@ -231,27 +239,28 @@ begin
 								select	distinct
 										R.AssetID,
 										max(R.EffectiveDate) as EffectiveDate,
+										cast(max(R.EffectiveDate) as date) as EffectiveDay,--max(R.EffectiveDate) as EffectiveDate,
 										H.GroupingID
 								from	[metrics].[StagingResult] R
-										inner join #gh H on H.ID = R.MapID and H.Type = 'M' and R.EffectiveDate between H.EffectiveStartDate and H.EffectiveEndDate
-								group by R.AssetID,
-										H.GroupingID
+										inner join #gh H on H.ID = R.MapID and H.Type = 'M' and R.EffectiveDate between H.EffectiveStartDate and H.EffectiveEndDate and R.Processing = 1
+								group by R.AssetID, H.GroupingID, cast(R.EffectiveDate as date)
+								--order by R.AssetID, H.GroupingID, cast(R.EffectiveDate as date) desc
 								) G on G.GroupingID = H.GroupingID
-					left join [metrics].[StagingResult] R on R.AssetID = G.AssetID and cast(R.EffectiveDate as date) = cast(G.EffectiveDate as date) and R.MapID = H.ID and H.Type = 'M' ;
+					left join [metrics].[StagingResult] R on R.AssetID = G.AssetID and R.EffectiveDate = G.EffectiveDate and R.MapID = H.ID and H.Type = 'M' and R.Processing = 1 ;
 
 --select * from #a
 
 		--Calculate parent/child concatenated IDs.
 		update	#a
-		set		New_ID = cast(format(EffectiveDate, 'yyyyMMddHHmmss', 'en-US') as varchar) + '.' + cast(AssetID as varchar) + '.' + cast(Type as varchar) + '.' + cast(ID as varchar);
+		set		New_ID = cast(format(EffectiveDate, 'yyyyMMdd', 'en-US') as varchar) + '.' + cast(AssetID as varchar) + '.' + cast(Type as varchar) + '.' + cast(ID as varchar);
 
 		update	#a
-		set		New_ParentID = cast(format(EffectiveDate, 'yyyyMMddHHmmss', 'en-US') as varchar) + '.' + cast(AssetID as varchar) + '.G.' + cast(ParentID as varchar)
+		set		New_ParentID = cast(format(EffectiveDate, 'yyyyMMdd', 'en-US') as varchar) + '.' + cast(AssetID as varchar) + '.G.' + cast(ParentID as varchar)
 		where	Type <> 'A'
 				and ParentID is not null;
 
 		update	#a
-		set		New_ParentID = cast(format(EffectiveDate, 'yyyyMMddHHmmss', 'en-US') as varchar) + '.' + cast(AssetID as varchar) + '.A.0'
+		set		New_ParentID = cast(format(EffectiveDate, 'yyyyMMdd', 'en-US') as varchar) + '.' + cast(AssetID as varchar) + '.A.0'
 		where	Type <> 'A'
 				and ParentID is null;
 
@@ -301,52 +310,30 @@ begin
 			set @level = @level-1
 		end
 
-		--select * from #a
-
-		/*
-		delete	T
-		from	metrics.StagingResult T
-				left join	(
-							select	MapID,
-									max(EffectiveDate) as EffectiveDate,
-									AssetID
-							from	metrics.StagingResult
-							group by	MapID, AssetID
-							) S  on S.MapID = T.MapID and S.EffectiveDate = T.EffectiveDate and S.AssetID = T.AssetID
-		where	S.MapID is null;
-		*/
+		--select * from #a order by AssetID, EffectiveDate desc
 
 		-- 2. Update pre-existing scores
 		update	T
-		set		T.Value = S.Score
+		set		T.Value = R.Score
 		from	metrics.Score T
-				inner join (
-							select		cast(R.EffectiveDate as date) as EffectiveDate, A.Object, A.ObjectID, R.Score 
-							from		#a R
-										inner join Asset A on A.ID = R.AssetID and R.Type = 'A'
-							group by	cast(R.EffectiveDate as date), A.Object, A.ObjectID, R.Score 
-							) S on S.EffectiveDate = T.EffectiveStartDate and S.Object = T.Object and S.ObjectID = T.ObjectID;
-
+				inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
+				inner join #a R on R.Type = 'A' and R.AssetID = A.ID and R.EffectiveDate = T.EffectiveStartDate;
+				
 		-- 3. Insert new scores
 		insert	metrics.Score
 				select		A.Object, 
 							A.ObjectID, 
-							cast(R.EffectiveDate as date) as EffectiveDate, 
-							case
-								when M.EffectiveEndDate = cast('12/31/9999' as date) then M.EffectiveEndDate
-								else DATEADD(d, -1, M.EffectiveEndDate)
-							end as EffectiveEndDate, 
+							R.EffectiveDate, 
+							EffectiveEndDate=coalesce(
+												dateadd(dd, -1, LAG(R.EffectiveDate,1) over (Partition by A.Object, A.ObjectID order by R.EffectiveDate desc)), 
+												'12/31/9999'
+											),
 							R.Score 
 				from		#a R
 							inner join Asset A on A.ID = R.AssetID and R.Type = 'A'
-							outer apply	(
-										select	coalesce(min(EffectiveStartDate), cast('12/31/9999' as date)) as EffectiveEndDate
-										from	metrics.Score
-										where	Object = A.Object and ObjectID = A.ObjectID and EffectiveStartDate > cast(R.EffectiveDate as date)
-										) M
 							left join metrics.Score T on T.EffectiveStartDate = cast(R.EffectiveDate as date) and T.Object = A.Object and T.ObjectID = A.ObjectID
 				where		T.ID is null
-				group by	R.EffectiveDate, M.EffectiveEndDate, A.Object, A.ObjectID, R.Score;
+				order by	A.Object, A.ObjectID,R.EffectiveDate desc;
 
 		-- 4. Merge the metric results, updating existing and adding new ones.
 		update	T
@@ -359,7 +346,7 @@ begin
 							coalesce(SR.Value, cast(0 as bit)) as Value
 					from	#a SR
 							inner join Asset A on A.ID = SR.AssetID and SR.Type = 'M'
-							inner join metrics.Score S on S.Object = A.Object and S.ObjectID = A.ObjectID and cast(S.EffectiveStartDate as date) = cast(SR.EffectiveDate as date)			
+							inner join metrics.Score S on S.Object = A.Object and S.ObjectID = A.ObjectID and S.EffectiveStartDate = SR.EffectiveDate
 				) S on S.ID = T.MapID and S.ScoreID = T.ScoreID;
 
 --select * from #a
@@ -370,46 +357,26 @@ begin
 					cast(max(coalesce(cast(SR.Value as int), cast(0 as int))) as bit) as Value
 			from	#a SR
 					inner join Asset A on A.ID = SR.AssetID and SR.Type = 'M'
-					inner join metrics.Score S on S.Object = A.Object and S.ObjectID = A.ObjectID and cast(S.EffectiveStartDate as date) = cast(SR.EffectiveDate as date)
+					inner join metrics.Score S on S.Object = A.Object and S.ObjectID = A.ObjectID and S.EffectiveStartDate = SR.EffectiveDate
 					left join metrics.MapResult E on E.MapID = SR.ID and E.ScoreID = S.ID
 			where	E.MapID is null
 			group by	SR.ID,
 						S.ID;
 
-		-- 5. End-date the older scores based on object and effective date comparisons.
-		update	T
-		set		T.EffectiveEndDate = DATEADD(d, -1, M.EffectiveStartDate)
-		from	metrics.Score T
-				inner join (
-							select		MS.Object,
-										MS.ObjectID,
-										max(MS.EffectiveStartDate) as EffectiveStartDate 
-							from		metrics.Score MS
-										inner join (
-													select		cast(R.EffectiveDate as date) as EffectiveDate, A.Object, A.ObjectID, Score 
-													from		metrics.StagingResult R
-																inner join Asset A on A.ID = R.AssetID
-													group by	cast(R.EffectiveDate as date), A.Object, A.ObjectID, R.Score 
-													) S on S.EffectiveDate = MS.EffectiveStartDate and S.Object = MS.Object and S.ObjectID = MS.ObjectID
-							group by	MS.Object, 
-										MS.ObjectID
-							) M	on M.Object = T.Object and M.ObjectID = T.ObjectID and T.EffectiveStartDate < M.EffectiveStartDate and T.EffectiveEndDate = cast('12/31/9999' as date);
-
-		-- 6. Backup staging table items that we are about to remove.
+		-- 5. Backup staging table items that we are about to remove.
 		insert into [metrics].[StagingResultArchive]
-			select	T.[MapID],
-					T.[EffectiveDate],
-					T.[AssetID],
-					T.[Value]
-			from    metrics.StagingResult T
-					inner join #a S on S.AssetID = T.AssetID and S.EffectiveDate = T.EffectiveDate and S.ID = T.MapID and S.Type = 'M';
+			select	[MapID],
+					[EffectiveDate],
+					[AssetID],
+					[Value]
+			from    metrics.StagingResult
+			where	Processing = 1;
 
 		-- 6. Clear the staging table.
-		delete	T
-		from    metrics.StagingResult T
-				inner join #a S on S.AssetID = T.AssetID and cast(S.EffectiveDate as date) = cast(T.EffectiveDate as date) and S.ID = T.MapID and S.Type = 'M';
+		delete	metrics.StagingResult
+		where	Processing = 1;
 
-		-- 7. Delete any possible dupes from score tables.
+		-- 7. Delete any possible dupes from map result table.
 		delete	metrics.MapResult 
 		where	ScoreID in	(
 							select		T.ID
@@ -427,6 +394,7 @@ begin
 													) S on S.ID > T.ID and S.ObjectID = T.ObjectID and S.EffectiveStartDate = T.EffectiveStartDate and S.EffectiveEndDate = T.EffectiveEndDate
 							);
 
+		-- 8. Delete any possible dupes from score table.
 		delete		T
 		from		metrics.Score T
 					inner join	(
