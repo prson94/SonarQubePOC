@@ -43,7 +43,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </div>
                            
                             <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
-                            <p-dataTable #dt [globalFilter]="gb" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="items" headerCheckboxToggleAllPages="true" [(selection)]="selection">
+                            <p-dataTable #dt [globalFilter]="gb" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="items" [headerCheckboxToggleAllPages]="false" [(selection)]="selection">
                                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                 <p-column [style]="{'width':'35px'}" selectionMode="multiple"></p-column>                                
                                 <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter">
