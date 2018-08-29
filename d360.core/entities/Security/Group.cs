@@ -4,6 +4,7 @@ using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using d360.core.queue;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -27,6 +28,12 @@ namespace d360.core.entities
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "GroupSecondaryOwner_Name", Description = "GroupSecondaryOwner_Description")]
         public int? SecondaryOwnerResourceID { get; set; }
+
+        [DataMember, NotMapped]
+        public string PrimaryOwnerName { get; set; }
+
+        [DataMember, NotMapped]
+        public string SecondaryOwnerName { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }

@@ -36,6 +36,8 @@ export class Group {
     Description: string;
     PrimaryOwnerResourceID: number;
     SecondaryOwnerResourceID: number;
+    PrimaryOwnerName: string;
+    SecondaryOwnerName: string;
     UpdatedOn: string;
     UpdatedBy: string;
 }

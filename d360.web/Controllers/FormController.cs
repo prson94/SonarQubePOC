@@ -8997,7 +8997,7 @@ namespace d360.web.Controllers
             }
 
             querySql = @"
-			select  r.LastName + ', ' + r.FirstName as Text,  'Resource|' + cast(r.ResourceID as varchar)  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
+			select  r.LastName + ', ' + r.FirstName as Text, 'Resource|' + cast(r.ResourceID as varchar) + '|' + r.LastName + ', ' + r.FirstName  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
 			where r.status ='Active'  
 			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID) "
             + hideUsersSql;
@@ -9277,6 +9277,12 @@ namespace d360.web.Controllers
             else
             {
                 group = Company.GetById<Group>(id);
+
+                var primaryOwner = GetCompanyResources().Where(x => x.ResourceID == group.PrimaryOwnerResourceID).FirstOrDefault();
+                var secondaryOwner = GetCompanyResources().Where(x => x.ResourceID== group.SecondaryOwnerResourceID).FirstOrDefault();
+                group.PrimaryOwnerName = primaryOwner!=null ? primaryOwner.LastName + ", " + primaryOwner.FirstName:"";
+                group.SecondaryOwnerName = secondaryOwner!=null ? secondaryOwner.LastName + ", " + secondaryOwner.FirstName : "";
+
                 var currentUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
                 resourceList = GetCompanyResources()
                     .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName, MembershipStatus = currentUsers.Any(o => o == i.ResourceID) ? "Current Member" : "Not Yet a Member" })

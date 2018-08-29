@@ -6,11 +6,13 @@ import { JsonResult } from '../../../models/jsonresult.model';
 import { GroupService } from '../../../services/group.service';
 import { MessagesService } from '../../../services/messages.service';
 import * as _ from 'lodash';
+import { EditorField } from '../../../models/editor-field.model';
+import { ResourcesService } from '../../../services/resources.service';
 
 @Component({
     selector: 'd3s-group-form',
     templateUrl: './group.form.html',
-    providers: [GroupService],
+    providers: [GroupService, ResourcesService],
 })
 
 export class GroupForm implements OnInit, OnChanges, FormEvents { 
@@ -21,6 +23,11 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
     @Output() onError = new EventEmitter();
     @Output() onCancel = new EventEmitter();
     @Output() onLoadComplete = new EventEmitter();
+    private primaryOwnerField: EditorField;
+    private primaryOwnerGrid: boolean = false;
+
+    private secondaryOwnerField: EditorField;
+    private secondaryOwnerGrid: boolean = false;
 
     private model: GroupEditorModel;
     private isLoading = false;
@@ -89,4 +96,41 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
                 });
         }
     }
+
+    private showPrimaryOwnerResourceGrid() {
+        this.secondaryOwnerGrid = false;
+        this.primaryOwnerField = new EditorField();
+        this.primaryOwnerField.TypeaheadUri = `form/GetGroupUserList?id=0`;
+        this.primaryOwnerField.FieldName = "resources";
+        this.primaryOwnerGrid = true;
+    }
+
+    private set primaryFieldValue(value) {
+        this.primaryOwnerField.Value = value;
+       if (this.primaryOwnerField.Value != null && this.primaryOwnerField.Value.length > 0) {
+            let x = this.primaryOwnerField.Value[0];
+            this.model.group.PrimaryOwnerResourceID = x.split('|')[1];
+            this.model.group.PrimaryOwnerName = x.split('|')[2];
+            this.primaryOwnerGrid = false;
+        }
+    }
+
+    private showSecondaryOwnerResourceGrid() {
+        this.primaryOwnerGrid = false;
+        this.secondaryOwnerField = new EditorField();
+        this.secondaryOwnerField.TypeaheadUri = `form/GetGroupUserList?id=0`;
+        this.secondaryOwnerField.FieldName = "resources";
+        this.secondaryOwnerGrid = true;
+    }
+    
+    private set secondaryFieldValue(value) {
+        this.secondaryOwnerField.Value = value;
+        if (this.secondaryOwnerField.Value != null && this.secondaryOwnerField.Value.length > 0) {
+            let x = this.secondaryOwnerField.Value[0];
+            this.model.group.SecondaryOwnerResourceID= x.split('|')[1];
+            this.model.group.SecondaryOwnerName= x.split('|')[2];
+            this.secondaryOwnerGrid = false;
+        }
+    }
+
 }
