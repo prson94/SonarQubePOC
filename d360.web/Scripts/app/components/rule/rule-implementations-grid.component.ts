@@ -36,9 +36,8 @@ import { MessagesService } from '../../services/messages.service';
                         </p-column>
                         <p-column [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a *ngIf="item.SourceUri == null"><i class="fa fa-info" title="Source Uri"></i></a>
-                                    <a *ngIf="item.SourceUri != null" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
+                                <div class="RowTools">                                    
+                                    <a *ngIf="item.SourceUri" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
                                 </div>
                             </ng-template>
                         </p-column>
