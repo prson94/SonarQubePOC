@@ -739,6 +739,7 @@
     <Content Include="Scripts\app\vendor.bundle.js" />
     <Content Include="Static\Help\Content\a-shared\legal-notice.htm" />
     <Content Include="Static\Help\Content\b-release-notes\new-17aug.htm" />
+    <Content Include="Static\Help\Content\b-release-notes\whats-new.htm" />
     <Content Include="Static\Help\Content\c-user-guide\adding-artifacts.htm" />
     <Content Include="Static\Help\Content\c-user-guide\artifacts.htm" />
     <Content Include="Static\Help\Content\c-user-guide\assigning-ownership.htm" />
@@ -778,6 +779,7 @@
     <Content Include="Static\Help\Content\c-user-guide\ui-overview.htm" />
     <Content Include="Static\Help\Content\c-user-guide\user-guide.htm" />
     <Content Include="Static\Help\Content\c-user-guide\using-reference-lists.htm" />
+    <Content Include="Static\Help\Content\c-user-guide\your-assignments.htm" />
     <Content Include="Static\Help\Content\d-admin\action-type-workflow.htm" />
     <Content Include="Static\Help\Content\d-admin\admin-intro.htm" />
     <Content Include="Static\Help\Content\d-admin\azure-active-directory.htm" />
@@ -914,6 +916,7 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table6.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table7.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table9.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\form-email-workflow.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\fusion-installation.jpg" />
     <Content Include="Static\Help\Content\Resources\Images\admin\fusion-proxy-server.jpg" />
     <Content Include="Static\Help\Content\Resources\Images\admin\fusion-rule.png" />
@@ -977,6 +980,7 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\settings-search2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\settings-site-nav.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\settings-styles.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\settings-workflow.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\settings.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\surveys1.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\surveys2.png" />
@@ -1034,6 +1038,9 @@
     <Content Include="Static\Help\Content\Resources\Images\user-guide\assets-policies.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\assets-relationships.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\assets-relationships_350x214.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\assignments-bulk-respond.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\assignments-bulk-respond2.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\assignments-bulk-respond3.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\button-audit.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\button-community.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\button-dashboards.png" />
@@ -1144,6 +1151,7 @@
     <Content Include="Static\Help\Content\Resources\Images\user-guide\search-header1.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\search-header2.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\search-header3.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\search-help.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\search-home1.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\search-home2.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\search-home3.png" />
@@ -1157,8 +1165,13 @@
     <Content Include="Static\Help\Content\Resources\Images\user-guide\take-action3.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\ui-callouts.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-monitor.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-step-assignment.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-step-assignment3.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-step-assignment4.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-step-assignment5.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflows1.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflows2.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\your-assignments.png" />
     <Content Include="Static\Help\Content\Resources\Stylesheets\Default_Lavastorm.css" />
     <Content Include="Static\Help\Content\Resources\TableStyles\PatternedRows-infogix.css" />
     <Content Include="Static\Help\Content\Resources\TableStyles\PatternedRows.css" />
