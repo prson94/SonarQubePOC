@@ -97,7 +97,7 @@ namespace d360.web.Controllers.Services
                 
                 var import = readRequestJsonContent<BulkAssetImport>(Request).Result;
                 
-                var results = (Company.Database.Connection as SqlConnection).BulkAssetsImport(Company.CurrentResourceID, ot, otid, import);
+                var results = await ( (Company.Database.Connection as SqlConnection).BulkAssetsImport(Company.CurrentResourceID, ot, otid, import));
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }

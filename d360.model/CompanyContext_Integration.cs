@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace d360.model
 {
@@ -209,7 +210,7 @@ namespace d360.model
             return retResults;
         }
 
-        public static List<AssetImportResult> BulkAssetsImport(this SqlConnection cnn, int currentResourceID, SystemObjects ot, int otid, List<Dictionary<string, string>> import)
+        public static async Task<List<AssetImportResult>> BulkAssetsImport(this SqlConnection cnn, int currentResourceID, SystemObjects ot, int otid, List<Dictionary<string, string>> import)
         {
             var results = new List<AssetImportResult>();
 
@@ -327,15 +328,15 @@ namespace d360.model
             {
                 try
                 {
-                    cnn.Execute("DROP TABLE IF EXISTS #AssetTable", transaction: trans);
-                    cnn.Execute("DROP TABLE IF EXISTS #AssetFieldTable", transaction: trans);
-                    cnn.Execute("DROP TABLE IF EXISTS #ObjectMergeTableResult", transaction: trans);
+                    await cnn.ExecuteAsync("DROP TABLE IF EXISTS #AssetTable", transaction: trans);
+                    await cnn.ExecuteAsync("DROP TABLE IF EXISTS #AssetFieldTable", transaction: trans);
+                    await cnn.ExecuteAsync("DROP TABLE IF EXISTS #ObjectMergeTableResult", transaction: trans);
 
                     #region Asset Bulk Copy
 
-                    cnn.Execute(@"
+                    await cnn.ExecuteAsync(@"
     create table #AssetTable (
-        ItemNumber int not null,
+        ItemNumber int not null primary key,
         SourceID nvarchar(1000) null,
         Message nvarchar(2500) null,
         Success bit null,
@@ -349,8 +350,8 @@ namespace d360.model
         IsNew bit null
     )", transaction: trans);
 
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_SourceID ON #AssetTable ( [SourceID] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_ParentSourceID ON #AssetTable ( [Object] ASC, [ObjectID] ASC, [ParentSourceID] ASC )", transaction: trans);
+                    await cnn.ExecuteAsync(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_SourceID ON #AssetTable ( [SourceID] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+                    await cnn.ExecuteAsync(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_ParentSourceID ON #AssetTable ( [Object] ASC, [ObjectID] ASC, [ParentSourceID] ASC )", transaction: trans);
 
                     var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
 
@@ -371,7 +372,7 @@ namespace d360.model
                     assetBulkCopy.ColumnMappings.Add("OptionalID", "OptionalID");   // For Fusion Data
                     assetBulkCopy.ColumnMappings.Add("IsNew", "IsNew");
 
-                    assetBulkCopy.WriteToServer(assetTable);
+                    await assetBulkCopy.WriteToServerAsync(assetTable);
 
                     #endregion
 
@@ -391,7 +392,7 @@ from    #AssetTable T
 
                     #region Asset Field Bulk Copy
 
-                    cnn.Execute(@"
+                    await cnn.ExecuteAsync(@"
     create table #AssetFieldTable (
         ItemNumber int not null,
         FieldName nvarchar(250) not null,
@@ -416,8 +417,8 @@ from    #AssetTable T
 
                     #endregion
 
-                    cnn.Execute($@"create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));", transaction: trans);
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC )", transaction: trans);
+                    await cnn.ExecuteAsync($@"create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));", transaction: trans);
+                    await cnn.ExecuteAsync(@"CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC )", transaction: trans);
 
                     var o = ot.ToString().Replace("Type", "");
 
@@ -510,7 +511,7 @@ from    #AssetTable T
                         #endregion
                         case SystemObjects.ReferenceItemType:
                             #region
-                            cnn.Execute($@"
+                            await cnn.ExecuteAsync($@"
     merge into  [ReferenceItem] T
     using       (
                 select      min(A.ItemNumber) as ItemNumber,
@@ -606,7 +607,7 @@ from    #AssetTable T
 
                     #region Deal with parent relationship if required
 
-                    cnn.Execute($@"
+                    await cnn.ExecuteAsync($@"
 merge into  [Intersect] T
 using       (
             select  IntersectTypeID,
@@ -635,7 +636,7 @@ when not matched by target then
 
                     #region Update the asset field temp table with the proper FieldTypeID
 
-                    cnn.Execute(@"
+                    await cnn.ExecuteAsync(@"
     update  T
     set     T.FieldTypeID = S.ID
     from    #AssetFieldTable T
@@ -646,7 +647,7 @@ when not matched by target then
 
                     #region Merge into the Field table
 
-                    cnn.Execute(@"
+                    await cnn.ExecuteAsync(@"
     merge into  Field T
     using       (
                 select  A.Object,
@@ -678,11 +679,11 @@ when not matched by target then
         insert  (FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
         values  (S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue, S.FieldValue);
     ", new { id = otid }, transaction: trans, commandTimeout: 1200);
-
-                    cnn.Execute(@"
+                    
+                    await cnn.ExecuteAsync(@"
     merge into  Field T
     using       (
-                select  distinct 
+                select  
                         A.Object, 
                         A.ObjectID, 
                         F.FieldTypeID,
@@ -696,8 +697,9 @@ when not matched by target then
                         inner join #AssetTable A on A.ItemNumber = F.ItemNumber 
                             and A.ObjectID is not null 
                             and F.FieldTypeID is not null
-                        inner join FieldType FT on FT.ID = F.FieldTypeID and FT.[Type] = 'Lookup' 
-                        inner join FieldLookupValue LV on LV.LookupObjectType = FT.LookupObjectType and LV.LookupObjectID = FT.LookupObjectID and LV.Text = F.FieldValue
+                        inner join FieldType FT on FT.ID = F.FieldTypeID and FT.[Type] = 'Lookup'                      
+                        cross apply  [dbo].[FieldLookupValueByFieldTypeID](FT.ID) LV
+				where LV.Text = F.FieldValue
                 ) S
     on          (
                     T.FieldTypeID = S.FieldTypeID and 
@@ -715,7 +717,7 @@ when not matched by target then
 
                     #endregion
 
-                    retResults = cnn.Query<DatabaseBulkAssetResult>("select ItemNumber, ObjectID, SourceID, Message, Success, IsNew from #AssetTable", transaction: trans).ToList();
+                    retResults = (await cnn.QueryAsync<DatabaseBulkAssetResult>("select ItemNumber, ObjectID, SourceID, Message, Success, IsNew from #AssetTable", transaction: trans)).ToList();
                     trans.Commit();
 
                     results.ForEach(air =>
@@ -878,7 +880,7 @@ when not matched by target then
     )", transaction: trans);
 
                     cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetFieldTable ON #AssetFieldTable ( ItemNumber ASC, FieldTypeID ASC )", transaction: trans);
-
+                    
                     var assetFieldBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
 
                     assetFieldBulkCopy.BatchSize = assetTable.Rows.Count;
