@@ -19,7 +19,7 @@ declare var window: any;
         <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
         <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)" ></d3s-tile-actions>
     </header>
-    <div style="position:relative;left: 100%; display: inline; width: 1px;">
+    <div style="position:relative;left: 100%; display: inline; width: 1px; top: 5px">
         <d3s-overlay-window width="500" maxHeight="400" padding="15" [(visible)]="isWindowVisible" [headerText]="(selectedNode != null) ? headerText : ''">
             <div *ngIf="selectedNode == null">Nothing selected</div>
             <ul class="tab-menu" *ngIf="selectedNode != null">
@@ -74,10 +74,10 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     public ngOnInit() {
         this.menuItems.push({
-            icon: 'fa-refresh menu-icon'
+            icon: 'fa fa-refresh menu-icon'
         });
         this.menuItems.push({
-            icon: 'fa-info-circle menu-icon'
+            icon: 'fa fa-info-circle menu-icon'
         });
 
         this.initializeDiagram();
@@ -171,9 +171,9 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     
 
     public menuAction(e: MenuItem) {
-        if (e.icon == 'fa-refresh menu-icon') {
+        if (e.icon == 'fa fa-refresh menu-icon') {
             this.populateDiagram();
-        } else if (e.icon == 'fa-info-circle menu-icon') {
+        } else if (e.icon == 'fa fa-info-circle menu-icon') {
             this.isWindowVisible = !this.isWindowVisible;
         }
 
