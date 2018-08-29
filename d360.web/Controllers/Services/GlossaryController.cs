@@ -182,7 +182,8 @@ namespace d360.web.Controllers.Services
             var querySql = $@"
 select	A.ID,
         {columns}
-		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url,
+        O.UID as uid
 from	Artifact A 
         {joins}
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
@@ -365,7 +366,8 @@ from    FieldWithRelation F
             var querySql = $@"
 select	A.ID,
         {columns}
-		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url,
+        O.Uid as Uid
 from	Artifact A 
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         {joins}
