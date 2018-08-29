@@ -1182,6 +1182,7 @@
     <Content Include="Static\Help\Data\SearchPhrase_Chunk11.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk12.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk13.js" />
+    <Content Include="Static\Help\Data\SearchPhrase_Chunk14.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk2.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk3.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk4.js" />
