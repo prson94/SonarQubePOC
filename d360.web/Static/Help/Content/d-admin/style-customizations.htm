@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Administration guide|Customizing the application">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Style customization</title>
+        <link rel="shortcut icon" href="../Resources/Images/Template/favicon.png" type="image/png" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Default_Lavastorm.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.print-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/printer.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-previous.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../../Skins/Default/Stylesheets/Images/navigate-next.png') no-repeat center center, linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <script src="../../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <p class="MCWebHelpFramesetLink MCWebHelpFramesetLinkTop"><a href="../../Default.htm#d-admin/style-customizations.htm">Open topic with navigation</a>
+        </p><a name="top"></a>
+        <div class="content">
+            <div id="contentBody">
+                <div class="row collapse">
+                    <div class="FloatRight">
+                        <table style="width: 100%;">
+                            <col style="width: 70%;" />
+                            <col style="width: 30%;" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="nocontent">
+                                            <div class="MCBreadcrumbsBox_0 breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Lavastorm_Topic_Toolbar mc-component nocontent" style="mc-topic-toolbar-items: PreviousTopic NextTopic;">
+                                            <div class="button-group-container-left">
+                                                <button class="button needs-pie print-button" title="Print">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="print" />
+                                                </button>
+                                                <button class="button needs-pie previous-topic-button" title="Previous topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="previous topic" />
+                                                </button>
+                                                <button class="button needs-pie next-topic-button" title="Next topic">
+                                                    <img src="../../Skins/Default/Stylesheets/Images/transparent.gif" alt="next topic" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h1 class="ChapterHeading">Style customization</h1>
+                    <p>If you have administrator permissions, you can customize the styling of the user interface to echo the branding of your organization.</p>
+                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>A solid understanding of CSS (Cascading Style Sheets) coding is required to use this feature. You will be overriding the style sheets used by the application to present the user interface and the data of your company. It is notoriously easy to introduce unintended side effects in CSS (for example, accidentally displaying white text over white backgrounds), so you should be able to confidently make changes in CSS&#160;and troubleshoot issues to use this feature.</p>
+                    <p>&#160;</p>
+                    <p>To customize the styling of the application, click the <b>Administration</b> icon on the left side of the main screen, then select <b>Style Customizations</b>:<p><img src="../Resources/Images/admin/customize-style.png" class="img-vpadded" /></p><p>The <b>Style Customizations</b> page opens:</p><p><img src="../Resources/Images/admin/style-customizations.png" class="img-vpadded" /></p></p>
+                    <p>This page is very straightforward, with a single code field for you to enter or edit your own CSS&#160;code, and a <b>Save</b> button to save and commit your changes.</p>
+                    <p>This CSS code is then applied over the top of the styling code of the application.</p>
+                    <h2>Using the Web Inspector to identify selectors</h2>
+                    <p>The web inspector is very useful for identifying the CSS&#160;selector for any elements you wish to restyle in the application. </p>
+                    <p>In <b>Chrome</b>, the web inspector can be invoked by choosing <b>More Tools </b>&gt;<b> Developer Tools</b> from the menu, right-clicking an element and choosing <b>Inspect</b>, or via the keyboard shortcut <b>Ctrl</b>+<b>Shift</b>+<b>I</b>.</p>
+                    <p>In <b>Microsoft&#160;Edge</b> or <b>Internet Explorer</b>, the web inspector can be invoked by choosing <b>Developer Tools</b> from the menu or via the keyboard shortcut <b>F12</b>.</p>
+                    <p>
+                        <img src="../Resources/Images/admin/web-inspector.png" />
+                    </p>
+                    <p>The <b>Elements</b> view can be used to locate the element you will need to restyle, and the <b>Styles</b> view below will list all of the CSS rules which have been applied to the element. You can use this list to identify the selector you need to use to override a given styling property.</p>
+                    <h2>Changing the application font</h2>
+                    <p>To change the font across the application you should use the body selector, rather than the html or universal (*) selector. If you use the web inspector, you will see that the body selector is used to set the default font. The following sample CSS&#160;shows how to set the application font to a custom webfont from <b>Google Fonts</b>:</p><pre xml:space="preserve">@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
+body {	
+   font-family: 'Source Sans Pro', sans-serif; 
+   font-size: 14px;
+}</pre><pre xml:space="preserve">&#160;</pre>
+                    <p>There are a couple of other locations where the default font is overridden in the application. Your own font must be specified again for these selectors:</p><pre xml:space="preserve">.tile .header, .tile header {
+   font-family: 'Source Sans Pro', sans-serif !important;
+   font-weight: 600 !important;
+   font-size: 18px !important;
+}</pre><pre xml:space="preserve">
+.ui-widget, .ql-container {
+   font-family: 'Source Sans Pro', sans-serif;
+   font-size: 14px;
+}</pre>
+                    <p>&#160;</p>
+                    <p>Notice the use of the !important declaration in places. This is either because the original rule to override uses it, or because an inline style has been defined, which we want to override.</p>
+                    <h2>Styling the header</h2>
+                    <p>If you restyle the header, give consideration to the text and icons which are in the header, making sure to recolor them, if necessary, to ensure a decent contrast between content and background. For example:</p><pre xml:space="preserve">nav.top {
+   background: #252c41;
+   color: #fff;
+   border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}</pre><pre xml:space="preserve">div.breadcrumbs .active, div.breadcrumbs .sep {
+   color: #fff;
+}</pre><pre xml:space="preserve">
+nav.top ul a, nav.top ul a.help {
+   color: #fff;
+}</pre><pre xml:space="preserve">
+nav.top ul a i.fa-question-circle, nav.top .breadcrumbs i.fa-ellipsis-h {
+   color: #fff !important;
+}</pre><pre xml:space="preserve">.favorite, .follow {
+   color: #fff;
+}</pre><pre xml:space="preserve">
+nav.top .header-profile-panel a, nav.top .header-search-panel a {
+   color: #000;
+}</pre>
+                    <p>&#160;</p>
+                    <p>Notice that the last rule sets some elements back to black, which we set to white in a previous rule. This is because the targeted elements are displayed on a white pop-up panel, rather than in the header itself. When making changes with broad selectors, be sure to thoroughly check through the UI for cases such as this. Wherever possible, it is better to use more specific selectors, to minimize the chances of any unwanted side effects.</p>
+                    <h2>Styling the background</h2>
+                    <p>If you wish to recolor the background, use a rule which ensures that the entire background will be painted:</p><pre xml:space="preserve">
+body {	
+   background: linear-gradient(#e0e0e0, #f0f0f0);
+   min-height: 100vh;
+}</pre>
+                    <h2>Styling buttons</h2>
+                    <p>The example below shows how to change the color of the buttons in the application, including the hover and active states:</p><pre xml:space="preserve">.ui-button, button.ui-button.ui-state-default, .ui-button.ui-state-default {
+   background: #30a9e5;
+}
+
+.ui-button:hover, button.ui-button.ui-state-default:hover, .ui-button.ui-state-default:hover {
+   background: #40b9f5;
+}
+
+.ui-button:active, button.ui-button.ui-state-default:active, .ui-button.ui-state-default:active {
+   background: #50c9ff;
+}
+</pre>
+                    <h2>Styling tables</h2>
+                    <p>The example below shows how to change the color of the header row, alternate rows and the selected row in tables:</p><pre xml:space="preserve">/* table header row*/
+th.ui-state-default, .ui-treetable th.ui-state-default {
+  background: #252c41;
+}
+
+/* table even rows */
+.ui-datatable-even {
+    background: #f7f7f7;
+}
+
+/* table selected row */
+.ui-multiselect-item .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {
+    background: #30a9e5;
+}
+
+/* set the info icon color to white for selected row */
+tr.ui-state-highlight .RowTools {
+   color: #fff;
+}
+</pre>
+                    <p xml:space="preserve">&#160;</p>
+                    <p>Notice that you can use comments to explain what your code is doing. This is highly recommended, especially if several users will be editing the code. It may also be a good idea to make a copy of the CSS&#160;code into a file occasionally, possibly even using a source control management system to track the changes to your CSS code.</p>
+                </div>
+                <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
+                <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

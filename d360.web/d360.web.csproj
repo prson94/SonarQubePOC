@@ -739,6 +739,7 @@
     <Content Include="Scripts\app\vendor.bundle.js" />
     <Content Include="Static\Help\Content\a-shared\legal-notice.htm" />
     <Content Include="Static\Help\Content\b-release-notes\new-17aug.htm" />
+    <Content Include="Static\Help\Content\b-release-notes\new-31aug.htm" />
     <Content Include="Static\Help\Content\b-release-notes\whats-new.htm" />
     <Content Include="Static\Help\Content\c-user-guide\adding-artifacts.htm" />
     <Content Include="Static\Help\Content\c-user-guide\artifacts.htm" />
@@ -814,6 +815,7 @@
     <Content Include="Static\Help\Content\d-admin\managing-groups.htm" />
     <Content Include="Static\Help\Content\d-admin\managing-users-groups.htm" />
     <Content Include="Static\Help\Content\d-admin\managing-users.htm" />
+    <Content Include="Static\Help\Content\d-admin\style-customizations.htm" />
     <Content Include="Static\Help\Content\d-admin\workflow-form.htm" />
     <Content Include="Static\Help\Content\f-api\api-building-url.htm" />
     <Content Include="Static\Help\Content\f-api\api-configuration.htm" />
@@ -903,9 +905,11 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\child-artifact-type.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\company-logo.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\company-web-icon.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\customize-style.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\customize.PNG" />
     <Content Include="Static\Help\Content\Resources\Images\admin\delete-icon.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\edit-icon.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\email-backup-responsibility.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table1.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table10.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table11.png" />
@@ -917,6 +921,7 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table7.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table9.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\form-email-workflow.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\form-email-workflow2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\fusion-installation.jpg" />
     <Content Include="Static\Help\Content\Resources\Images\admin\fusion-proxy-server.jpg" />
     <Content Include="Static\Help\Content\Resources\Images\admin\fusion-rule.png" />
@@ -981,7 +986,9 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\settings-site-nav.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\settings-styles.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\settings-workflow.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\settings-workflow2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\settings.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\style-customizations.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\surveys1.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\surveys2.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\surveys3.png" />
@@ -990,6 +997,7 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\surveys6.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\users.PNG" />
     <Content Include="Static\Help\Content\Resources\Images\admin\view-lineage.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\web-inspector.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflow-overview.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflow-overview_800x135.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflow-status2.png" />
@@ -1109,6 +1117,7 @@
     <Content Include="Static\Help\Content\Resources\Images\user-guide\model.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\models-menu2.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\models.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\page-size.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\policies-menu2.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\policies.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\policy-asset.png" />
@@ -1166,6 +1175,7 @@
     <Content Include="Static\Help\Content\Resources\Images\user-guide\ui-callouts.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-monitor.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-step-assignment.png" />
+    <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-step-assignment2.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-step-assignment3.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-step-assignment4.png" />
     <Content Include="Static\Help\Content\Resources\Images\user-guide\workflow-step-assignment5.png" />
