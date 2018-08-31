@@ -90,7 +90,8 @@ namespace igx.jobs
 
                             try
                             {
-                                company.Delete<IntegrationExecutionAssetType>(i => i.CompletedOn == null && i.StartedOn < DateTime.UtcNow.AddDays(-7));
+                                var deleteDate = DateTime.UtcNow.AddDays(-7);
+                                company.Delete<IntegrationExecutionAssetType>(i => i.CompletedOn == null && i.StartedOn < deleteDate);
                             }
                             catch (Exception cex)
                             {
