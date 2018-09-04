@@ -75,6 +75,7 @@ delete	IntersectType where ObjectUid is null and Object <> 'IntersectType'
 
 --select Subject, SubjectID, Object, ObjectID, SubjectUid, ObjectUid from [Intersect] where SubjectUid is null or ObjectUid is null
 
+/*
 ALTER TABLE [IntersectGroupItem] SET ( SYSTEM_VERSIONING = OFF  )
 GO
 drop table IntersectGroupItem_History
@@ -92,12 +93,55 @@ ALTER TABLE [IntersectGroup] DROP PERIOD FOR SYSTEM_TIME;
 alter table [IntersectGroup] drop column [EffectiveStartDate]
 alter table [IntersectGroup] drop column [EffectiveEndDate]
 GO
---create VIEW [utility].[IntersectAsset] (get script)
+*/
+create VIEW [utility].[IntersectAsset]
+WITH SCHEMABINDING  
+AS  
+    select
+	I.ID,
+	I.ID as IntersectID,
+	I.IntersectTypeID as IntersectTypeID,
+	P.Type as PredicateType,
+	a_o.ID as ObjectAssetID,
+	I.[Object] as [Object],
+	I.ObjectID as [ObjectID],	
+	I.[Subject] as [Subject],
+	I.SubjectID as [SubjectID]
+from 
+	dbo.[Intersect] I
+	inner join dbo.Asset a_o on I.[Object] = a_o.[Object] and I.[ObjectID] = a_o.ObjectID	
+	inner join dbo.[IntersectType] IT on I.IntersectTypeID = IT.ID
+	inner join dbo.[Predicate] P on P.ID = IT.PredicateID
 GO
---CREATE VIEW [utility].[ArtifactAssetParentIntermediate] (get script)
+
+CREATE UNIQUE CLUSTERED INDEX [IDEX_IntersectAsset_ObjectAsset_Predicate_IntersectType] ON [utility].[IntersectAsset] ([ID], [ObjectAssetID], [PredicateType], [IntersectTypeID])
 GO
---create VIEW [utility].[ArtifactAssetParent] (get script)
+
+CREATE VIEW [utility].[ArtifactAssetParentIntermediate]
+WITH SCHEMABINDING  
+AS  
+    select	a_o.ID as AssetID,		
+			I.SubjectID as ParentArtifactID
+	from
+		dbo.[Intersect] I
+		inner join dbo.Asset a_o on I.[Object] = a_o.[Object] and I.[ObjectID] = a_o.ObjectID	
+		inner join dbo.[IntersectType] IT on I.IntersectTypeID = IT.ID
+		inner join dbo.[Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3		
+	where I.[Object] = 'Artifact'
 GO
+
+create VIEW [utility].[ArtifactAssetParent]
+WITH SCHEMABINDING  
+AS  
+    select	
+		aim.AssetID,
+		aim.ParentArtifactID,
+		IA.ID as ParentAssetID
+	from [utility].[ArtifactAssetParentIntermediate] aim
+		inner join dbo.Asset IA on IA.Object = 'Artifact' and aim.ParentArtifactID = IA.ObjectID 	
+GO
+
+
 
 --Merge the rule types to the asset type table.
 merge	AssetType as T
@@ -120,13 +164,13 @@ when not matched by target then
 		insert (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
 		values (S.Name, S.Description, 10, coalesce(S.DisplayFormat, '{Name}'), 1, 0, 1, 'OrganizationType', S.ID, coalesce(S.CreatedOn, getutcdate()), S.CreatedBy, coalesce(S.UpdatedOn, getutcdate()), S.UpdatedBy);
 GO
-
+/*
 alter table metrics.StagingResult add Processing bit constraint DF_MetricsStagingResult_Processing default(0) not null
 GO
 
 alter table [workflow].[VersionStepTransition] add [TimerLastRunDate] DATETIME NULL
 GO
-
+*/
 alter procedure [dbo].[DeleteObject]
  @ObjTemp varchar(50),
  @ObjectIDTemp int,
@@ -1188,20 +1232,301 @@ END
 --select * from workflow.itemstep
 GO
 
-CREATE TABLE [dbo].[AssetCrossReference] (
-    [uid]        VARCHAR (250) NOT NULL,
-    [DataSource] VARCHAR (250) NOT NULL,
-    [Type]       VARCHAR (50)  NOT NULL,
-    [ExternalID] VARCHAR (250) NOT NULL,
-    CONSTRAINT [PK_AssetCrossReference] PRIMARY KEY CLUSTERED ([DataSource] ASC, [Type] ASC, [ExternalID] ASC, [uid] ASC)
-);
-GO
+CREATE procedure [relation].[BulkUpsert]
+--declare 
+	@uid uniqueidentifier,-- = 'B56999A9-CBCD-4091-8317-89C80F0AF3D1', --App stores BT
+	@r int-- = 1
+as
+begin
+	set nocount on;
+	/*	TEST: insert some records	*/
+	--BEGIN
+	--	drop table if exists #RelationshipTable;
+	--	create table #RelationshipTable (
+	--		ItemNumber int not null,
+	--		SubjectUid uniqueidentifier null,
+	--		Subject varchar(50) null,
+	--		SubjectID int null,
+	--		ObjectUid uniqueidentifier null,
+	--		Object varchar(50) null,
+	--		ObjectID int null,
+	--		IntersectID int null,
+	--		[Message] nvarchar(2500) null,
+	--		Success bit null,
+	--		IsNew bit null
+	--	);
+	--	drop table if exists #RelationshipFieldTable;
+	--	create table #RelationshipFieldTable (
+	--		ItemNumber int not null,
+	--		FieldName nvarchar(250) not null,
+	--		FieldValue nvarchar(max) null,
+	--		FieldTypeID int null,
+	--		LookupValue nvarchar(250) null
+	--	);
 
-CREATE NONCLUSTERED INDEX [IX_AssetCrossReference_uid]
-    ON [dbo].[AssetCrossReference]([uid] ASC);
-GO
+	--	insert into #RelationshipTable (ItemNumber, [SubjectUid], [ObjectUid]) values (1, '858f5605-a72e-4c15-84bb-3ee619c3f2cf', '66cc34fa-126f-4cf8-964a-1aeaddb72d37');
+	--	insert into #RelationshipFieldTable (ItemNumber, FieldName, FieldValue) values (1, 'AuthoritativeSource', 'true');
+	--	--insert into #RelationshipFieldTable (ItemNumber, FieldName, FieldValue) values (1, 'DataType', 'true');
+	--END;
+	/********************************/
 
-CREATE NONCLUSTERED INDEX [IX_AssetCrossReference_uid_DataSource]
-    ON [dbo].[AssetCrossReference]([uid] ASC, [DataSource] ASC);
-GO
+	--Get Identifier values that we will need for this relationship type.
+	declare @st varchar(50),
+			@stid int,
+			@ot varchar(50),
+			@otid int,
+			@it int
 
+	select	@st = Subject,
+			@stid = SubjectID,
+			@ot = Object,
+			@otid = ObjectID,
+			@it = ID
+	from	IntersectType
+	where	[uid] = @uid
+
+	-- Resolve the FieldTypeIDs for the fields you have added.
+	update	T
+	set		T.FieldTypeID = S.ID
+	from	#RelationshipFieldTable T
+			inner join FieldType S on S.Object = 'IntersectType' and S.ObjectID = @it and S.Name = T.FieldName
+	----------------------------------------------------------
+
+	BEGIN 
+		-- Validation checks ----------
+
+		-- 1. Does relationship have all the key fields defined?
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Relationship is missing key field(s): [' + S.Names + ']'
+		from	#RelationshipTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name, ', ') as Names
+							from	#RelationshipTable A
+									inner join FieldType FT on FT.Object = 'IntersectType' 
+																and FT.ObjectID = @it
+																and FT.IsPartOfKey = 1
+									left join #RelationshipFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+							where	F.ItemNumber is null
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		-- 2. Does relationship have all required fields defined?
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Relationship is missing required field(s): [' + S.Names + ']'
+		from	#RelationshipTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name, ', ') as Names
+							from	#RelationshipTable A
+									inner join FieldType FT on FT.Object = 'IntersectType' 
+																and FT.ObjectID = @it
+																and FT.IsRequired = 1
+									left join #RelationshipFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID 
+							where	F.ItemNumber is null
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		-- 3. Are all lookup fields valid, based on field's LookupEditFormat, or LookupDisplayFormat?
+
+		--- A. Get the valid lookup values.
+		update	T
+		set		T.LookupValue = S.[Value]
+		from	#RelationshipFieldTable T
+				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup'
+				inner join FieldLookupValue S on S.FieldTypeID = F.ID and S.[Text] = T.FieldValue
+
+		--- B. Check which fields do not have a valid from from query above.
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Relationship contains one or more fields with invalid lookup values: [' + S.Names + ']'
+		from	#RelationshipTable T
+				inner join	(
+							select		A.ItemNumber,
+										STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
+							from		#RelationshipTable A
+										inner join FieldType FT on FT.Object = 'IntersectType' 
+																	and FT.ObjectID = @it
+																	and FT.[Type] = 'Lookup'
+										inner join #RelationshipFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null
+							group by	A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		-- 4. Are all values valid based on field's data type?
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Relationship contains one or more field that are invalid based on their data types: [' + S.Names + ']'
+		from	#RelationshipTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' is ' + FT.[Type] + ' but has a value of ' + F.FieldValue, ', ') as Names
+							from	#RelationshipTable A
+									inner join FieldType FT on FT.Object = 'IntersectType' and FT.ObjectID = @it
+									inner join #RelationshipFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and (
+																		(FT.[Type] = 'Boolean' and LOWER(F.FieldValue)  not in ('false', 'true')) or 
+																		(FT.[Type] = 'Date' and ISDATE(F.FieldValue) = 0) or 
+																		(FT.[Type] = 'DateTime' and ISDATE(F.FieldValue) = 0) or 
+																		(FT.[Type] = 'Number' and ISNUMERIC(F.FieldValue + '.e0') = 0) or 
+																		(FT.[Type] = 'Decimal' and ISNUMERIC(F.FieldValue) = 0) or 
+																		(FT.[Type] = 'Link' and (CHARINDEX('|', F.FieldValue, 0) = 0 OR CHARINDEX('|', F.FieldValue, 0) is null) ) or 
+																		(FT.[Type] = 'Percentage' and ISDATE(F.FieldValue) = 0)
+																	)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		-- 5. Check if length populated, if so is the field's length valid?
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Relationship contains one or more field that have an invalid length: [' + S.Names + ']'
+		from	#RelationshipTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' must have an exact length of ' + cast(FT.[Length] as nvarchar), ', ') as Names
+							from	#RelationshipTable A
+									inner join FieldType FT on FT.Object = 'IntersectType' and FT.ObjectID = @it
+									inner join #RelationshipFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and FT.[Length] is not null
+																	and FT.[Length] <> LEN(F.FieldValue)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		-- 6. Check if minimum length populated, if so is the field's minimum legnth valid?
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Relationship contains one or more field that have an invalid minimum length: [' + S.Names + ']'
+		from	#RelationshipTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' must have a minimum length of ' + cast(FT.[MinimumLength] as nvarchar), ', ') as Names
+							from	#RelationshipTable A
+									inner join FieldType FT on FT.Object = 'IntersectType' and FT.ObjectID = @it
+									inner join #RelationshipFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and FT.[MinimumLength] is not null
+																	and FT.[MinimumLength] > LEN(F.FieldValue)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		-- 7. Check if maximum length populated, if so is the field's maximum length valid?
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Relationship contains one or more field that have an invalid maximum length: [' + S.Names + ']'
+		from	#RelationshipTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' must have a maximum length of ' + cast(FT.[MaximumLength] as nvarchar), ', ') as Names
+							from	#RelationshipTable A
+									inner join FieldType FT on FT.Object = 'IntersectType' and FT.ObjectID = @it
+									inner join #RelationshipFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and FT.[MaximumLength] is not null
+																	and FT.[MaximumLength] < LEN(F.FieldValue)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		-- 8. If regex defined, validate against the Pattern field as defined on FieldType.
+		-- TODO: perhaps implement a CLR function here.
+		-- https://stackoverflow.com/questions/194652/sql-server-regular-expressions-in-t-sql
+
+	END	-------------------------------
+
+	-- Now upsert the valid relationships.
+	drop table if exists #ObjectMergeTableResult;
+	create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
+	CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+
+	--Resolve the Object/ObjectID combination from asset table.
+	update	T
+	set		T.Subject = S.Object,
+			T.SubjectID = S.ObjectID,
+			T.Object = O.Object,
+			T.ObjectID = O.ObjectID
+	from	#RelationshipTable T
+			left join AssetWithType S on S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
+			left join AssetWithType O on O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid;
+
+	--Resolve the Object/ObjectID combination from asset type table (for reference lists).
+	update	T
+	set		T.Subject = S.Object,
+			T.SubjectID = S.ObjectID
+	from	#RelationshipTable T
+			inner join AssetType S on @st = 'ReferenceItemType' and @stid = 0 and S.[uid] = T.SubjectUid and T.Subject is null;
+
+	update	T
+	set		T.Object = O.Object,
+			T.ObjectID = O.ObjectID
+	from	#RelationshipTable T
+			inner join AssetType O on @ot = 'ReferenceItemType' and @otid = 0 and O.[uid] = T.ObjectUid and T.Object is null;
+
+	-- Validate.
+	update	#RelationshipTable
+	set		Success = 0,
+			[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve subject of this relationship to a valid asset.'
+	where	Subject is null or SubjectID is null;
+
+	-- Validate.
+	update	#RelationshipTable
+	set		Success = 0,
+			[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve object of this relationship to a valid asset.'
+	where	Object is null or ObjectID is null;
+
+	merge into  [Intersect] T
+	using		(
+				select      *
+				from        #RelationshipTable
+				where		Success is null	-- We have not failed in validation.
+            ) S
+	on      ( T.IntersectTypeID = @it and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID )
+	when matched then
+		update set
+				T.UpdatedBy = @r,
+				T.UpdatedOn = getutcdate()
+	when not matched by target then
+		insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+		values  (@it, S.Subject, S.SubjectID, S.Object, S.ObjectID, 1, @r, getutcdate(), 1, getutcdate(), 'BULK_API')
+	output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
+
+	update	T
+	set		T.IntersectID = S.ID,
+			T.IsNew = IIF(S.[Action] = 'I', 1, 0)
+	from	#RelationshipTable T
+			inner join #ObjectMergeTableResult S on S.ItemNumber = T.ItemNumber;
+
+	-- Merge field data ---------------------------
+	merge into  Field T
+    using       (
+                select  distinct 
+                        A.IntersectID as ObjectID, 
+                        F.FieldTypeID,
+                        coalesce(F.LookupValue, F.FieldValue) as Value
+                from    #RelationshipFieldTable F
+                        inner join #RelationshipTable A on A.ItemNumber = F.ItemNumber 
+                            and A.ObjectID is not null 
+                            and F.FieldTypeID is not null
+							and A.Success is null	-- We have not failed in validation.
+                ) S
+    on          (
+                    T.FieldTypeID = S.FieldTypeID and 
+                    T.ObjectType = 'Intersect' and 
+					T.ObjectID = S.ObjectID
+                )
+    when		matched then
+	update		set
+					T.Value = S.Value
+    when		not matched by target then
+	insert		(FieldTypeID, ObjectType, ObjectID, Value)
+    values		(S.FieldTypeID, 'Intersect', S.ObjectID, S.Value);
+	-----------------------------------------------
+
+	update	#RelationshipTable
+	set		Success = 1
+	where	Success is null
+			and IntersectID is not null;
+
+end
+GO
