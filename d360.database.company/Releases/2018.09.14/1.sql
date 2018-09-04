@@ -130,7 +130,26 @@ alter table FieldType drop column [EffectiveStartDate]
 alter table FieldType drop column [EffectiveEndDate]
 GO
 
+-- GOV-5176
+ALTER TABLE ResponsibilityTypeRelationOverrideItem SET ( SYSTEM_VERSIONING = OFF  )
+GO
+drop table ResponsibilityTypeRelationOverrideItem_History
+GO
 
+ALTER TABLE ResponsibilityTypeRelationOverrideItem DROP PERIOD FOR SYSTEM_TIME; 
+alter table ResponsibilityTypeRelationOverrideItem drop column [EffectiveStartDate]
+alter table ResponsibilityTypeRelationOverrideItem drop column [EffectiveEndDate]
+GO
+
+ALTER TABLE ResponsibilityTypeRelationRuleResult SET ( SYSTEM_VERSIONING = OFF  )
+GO
+drop table ResponsibilityTypeRelationRuleResult_History
+GO
+
+ALTER TABLE ResponsibilityTypeRelationRuleResult DROP PERIOD FOR SYSTEM_TIME; 
+alter table ResponsibilityTypeRelationRuleResult drop column [EffectiveStartDate]
+alter table ResponsibilityTypeRelationRuleResult drop column [EffectiveEndDate]
+GO
 
 CREATE VIEW [dbo].[ResponsibilityAllAsset] with SCHEMABINDING as 
 	-- users
