@@ -281,8 +281,16 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         
         //adjust any dates to utc
         for (var p in this.form.value) {
-            if (this.form.value.hasOwnProperty(p) && this.form.value[p] instanceof Date) {
-                this.form.value[p] = this.getUTCDate(this.form.value[p]);
+            if (this.form.value.hasOwnProperty(p)) {
+                let field = this.fields.find(f => f.FieldName == p);
+
+                if (this.form.value[p] instanceof Date) {
+                    this.form.value[p] = this.getUTCDate(this.form.value[p]);
+                }
+                else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
+                    if (this.form.value[p] != null)
+                        this.form.value[p] = this.form.value[p].Value;
+                }
             }
         }
 

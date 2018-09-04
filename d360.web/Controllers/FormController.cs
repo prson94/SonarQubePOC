@@ -2676,6 +2676,7 @@ namespace d360.web.Controllers
             model.HideData3SixtyUsers = (settings.Any(i => i.SettingID == 9) ? bool.Parse(settings.Single(i => i.SettingID == 9).Value) : true);
             model.ShowAllUsersAPIKey = (settings.Any(i => i.SettingID == 57) ? bool.Parse(settings.Single(i => i.SettingID == 57).Value) : true);
             model.WorkflowCatchAllGroup = (settings.Any(i => i.SettingID == 58) ? Int32.Parse(settings.Single(i => i.SettingID == 58).Value) : 0);
+            model.MaxDropdownItems = (settings.Any(i => i.SettingID == 60) ? Int32.Parse(settings.Single(i => i.SettingID == 60).Value) : 100);
 
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2834,6 +2835,7 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 9, formModel.HideData3SixtyUsers.ToString().ToLower());
                 updateCompanySetting(settings, 57, formModel.ShowAllUsersAPIKey.ToString().ToLower());
                 updateCompanySetting(settings, 58, formModel.WorkflowCatchAllGroup.ToString());
+                updateCompanySetting(settings, 60, formModel.MaxDropdownItems.ToString());
 
                 #endregion
 
@@ -3768,6 +3770,50 @@ namespace d360.web.Controllers
             };
         }
 
+        [Route("FieldType_TypeAheadLookup"), NonNullableParameters]
+        public JsonNetResult FieldType_TypeAheadLookup(int fieldTypeId, string value = "", string query = "")
+        {
+            var selectList = new List<SelectListItem>();
+            var ft = Company.GetById<FieldType>(fieldTypeId);
+            string selectedValue = string.IsNullOrWhiteSpace(value) ? (string.IsNullOrWhiteSpace(ft.DefaultValue) ? "" : ft.DefaultValue) : value;
+
+            if (ft.AllowAllValue)
+                selectList.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
+
+            int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
+            var columns = $@"
+                V.FieldTypeID,
+                V.LookupObjectType,
+                V.LookupObjectID,
+                V.Value,
+                V.Text";
+
+            var selectedSql = $@"select {columns} 
+                from FieldLookupValue V 
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId and V.Value = @selectedValue 
+                union
+                ";
+
+            var itemsSql = $@"
+                {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
+                select top {maxItems} {columns}
+                from FieldLookupValue V
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId {(string.IsNullOrWhiteSpace(query) ? "" : " and V.Text like '%' + @query + '%' ")}
+                ";
+
+            var items = Company.Query<FieldLookupValue>(itemsSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID, selectedValue, query }).ToList();
+
+            selectList.AddRange(items.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = string.IsNullOrEmpty(selectedValue) ? false : i.Value.ToString() == selectedValue }));
+
+            selectList = selectList.OrderBy(i => i.Selected ? 0 : 1).ToList();
+
+            return new JsonNetResult
+            {
+                Data = selectList,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
         #endregion
 
         #region Field Generation

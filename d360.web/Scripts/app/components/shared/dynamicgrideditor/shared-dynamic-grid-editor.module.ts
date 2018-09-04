@@ -15,6 +15,7 @@ import {
     MultiSelectModule,
     SharedModule,
     TooltipModule,
+    AutoCompleteModule,
 } from 'primeng/primeng';
 
 import { CoreModule } from '../core.module';
@@ -38,6 +39,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
+
         //d3s
         CoreModule,
         SharedDeleteFormModule,
@@ -55,6 +57,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
         PipesModule,
         SharedModule,
         TooltipModule,
+        AutoCompleteModule,
 
         //color picker
         ColorPickerModule,

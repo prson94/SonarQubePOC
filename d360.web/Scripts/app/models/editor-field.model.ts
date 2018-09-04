@@ -8,6 +8,7 @@ export class EditorDropDownItem {
     Selected: boolean;
     Text: any;
     Value: any;
+    Disabled: boolean;
 }
 
 export class EditorField {
@@ -30,6 +31,7 @@ export class EditorField {
     ParentFieldTypeName: string;
     FieldTypeID: number;
     RecordCount: number;
+    UseTypeahead: boolean;
 }
 
 export class EditorCategory {

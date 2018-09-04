@@ -671,15 +671,46 @@ namespace d360.web.Controllers
                                 }
                                 else
                                 {
-                                    if (!f.IsRequired && !f.AllowMultipleValues) fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
-                                    if (f.AllowAllValue) fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
+                                    if (!f.IsRequired && !f.AllowMultipleValues)
+                                        fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
 
-                                    fld.Items.AddRange(
-                                        Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
-                                        .OrderBy(o => o.Text)
-                                        .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                        .ToList()
-                                    );
+                                    if (f.AllowAllValue)
+                                        fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
+
+                                    var items = new List<SelectListItem>();
+
+                                    if (f.AllowMultipleValues)
+                                    {
+                                        fld.Items.AddRange(
+                                            Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                                            .OrderBy(o => o.Text)
+                                            .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                            .ToList()
+                                            );
+                                    }
+                                    else
+                                    {
+                                        int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
+                                        var countSql = @"select count(*) 
+                                            from FieldLookupValue V where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId";
+
+
+                                        var count = Company.Query<int>(countSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID }).FirstOrDefault();
+
+                                        if (count > maxItems)
+                                        {
+                                            fld.UseTypeahead = true;
+                                        }
+                                        else
+                                        {
+                                            fld.Items.AddRange(
+                                                Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                                                .OrderBy(o => o.Text)
+                                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                                .ToList()
+                                                );
+                                        }
+                                    }
                                 }
                             }
                             catch
@@ -825,20 +856,22 @@ namespace d360.web.Controllers
                                 }
                                 else
                                 {
-
                                     if (!ft.IsRequired)
                                         fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
 
                                     if (ft.AllowAllValue)
                                         fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
 
-                                    var items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
+                                    var items = new List<SelectListItem>();
+
+
+                                    if (ft.AllowMultipleValues)
+                                    {
+                                        items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
                                             .OrderBy(o => o.Text)
                                             .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
                                             .ToList();
 
-                                    if (ft.AllowMultipleValues)
-                                    {
                                         var selected = new List<string>();
                                         // selected items need to go into multiplevalues array
                                         if (f != null && !string.IsNullOrWhiteSpace(f.Value))
@@ -856,6 +889,42 @@ namespace d360.web.Controllers
                                         {
                                             if (selected.Contains(item.Value)) item.Selected = true;
                                         }
+                                    }
+                                    else
+                                    {
+                                        int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
+                                        var countSql = @"select count(*) 
+                                            from FieldLookupValue V where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId";
+                                        string selectedValue = null;
+                                        if (f != null && !string.IsNullOrWhiteSpace(f.Value))
+                                            selectedValue = f.Value;
+                                        else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
+                                            selectedValue = ft.DefaultValue;
+
+                                        List<SelectListItem> selected = null;
+
+                                        var count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID }).FirstOrDefault();
+
+                                        if (count > maxItems)
+                                        {
+                                            fld.UseTypeahead = true;
+                                            if (!string.IsNullOrWhiteSpace(selectedValue) && selectedValue != null && int.TryParse(selectedValue, out var selectedValueInt))
+                                            {
+                                                selected = Company.FieldLookupValues.Where(i => i.FieldTypeID == ft.ID && i.LookupObjectType == ft.LookupObjectType && i.LookupObjectID == ft.LookupObjectID && i.Value == selectedValueInt)
+                                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = true })
+                                                .ToList();
+                                            }
+                                            items = selected;
+                                        }
+                                        else
+                                        {
+                                            fld.UseTypeahead = false;
+                                            items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
+                                                .OrderBy(o => o.Text)
+                                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                                .ToList();
+                                        }
+
                                     }
 
                                     fld.Items.AddRange(

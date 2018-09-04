@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ChangeDetectorRef, OnDestroy, ViewChild, AfterViewChecked, OnChanges } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { EditorField } from '../../../models/editor-field.model';
+import { EditorField, EditorDropDownItem } from '../../../models/editor-field.model';
 import { SelectItem, Editor } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
@@ -66,16 +66,40 @@ declare var CompanySettings;
                             </header>
                         </p-editor>                                                                                                             
                         <div *ngSwitchCase="'Lookup'">
-                            <p-multiSelect *ngIf="field?.MultiSelect;else singleSelectList" [formControlName]="field.FieldName" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
-                            <ng-template #singleSelectList>                                
-                                <select [formControlName]="field.FieldName" style="height:auto;width:100%;" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
-                                    <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
-                                    <ng-template #blankOption>
-                                        <option value=""></option>
-                                    </ng-template>
-                                    <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
-                                </select>
-                            </ng-template>                            
+                            <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect" [formControlName]="field.FieldName" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
+                            <ng-template #singleSelect>
+                                <ng-container *ngIf="!field.UseTypeahead">                                
+                                    <select [formControlName]="field.FieldName" style="height:auto;width:100%;" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
+                                        <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
+                                        <ng-template #blankOption>
+                                            <option value=""></option>
+                                        </ng-template>
+                                        <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
+                                    </select>
+                                </ng-container> 
+                                <ng-container *ngIf="field.UseTypeahead">
+                                    <p-autoComplete 
+                                        [delay]="250"
+                                        [field]="'Text'"
+                                        [formControlName]="field.FieldName" 
+                                        [ngModel]="typeAheadValue" 
+                                        (onSelect)="onSelect($event)"
+                                        [suggestions]="field.Items" 
+                                        (completeMethod)="search($event)" 
+                                        [forceSelection]="field.Required"
+                                        (onClear)="clearTypeahead($event)"
+                                        [dropdown]="true">
+                                        <ng-template let-item pTemplate="item">
+                                            <div *ngIf="item.Selected" style="font-weight: bold; color: #fff; background: #54a4da">
+                                                {{item.Text}}
+                                            </div>
+                                            <div *ngIf="!item.Selected">
+                                                {{item.Text}}
+                                            </div>
+                                        </ng-template>
+                                    </p-autoComplete>
+                                </ng-container>
+                            </ng-template>
                         </div>
                         <div *ngSwitchCase="'Relationship'">
                             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
@@ -159,6 +183,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private relationItems = [];
     private relationItemsLoading = false;
 
+    private typeAheadSource$ = new Subject<any>();
+    private typeAheadSub: any;
+    private typeAheadValue: EditorDropDownItem = null;
+
     private colorValue: string = '#000';
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
@@ -175,16 +203,27 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     setEditorContent(e: any) {
         //workaround for GOV-5287, bug with primeng see JIRA for issue details
 
-        if (this.quill != null) {
-            let contents = this.quill.getContents();
+        //console.log('setEditorContent', e);
+
+        if (this.ed == null)
+            return;
+
+        let quill = this.ed.getQuill();
+        //console.log('quill', quill);
+
+        if (e == null && quill != null) {
+            let contents = quill.getContents();
+
             if (contents != null && contents.ops != null) {
                 let content = contents.ops.find(i => i.insert != null && i.insert != '\n');
                 if (content != null) {
-                    this.field.Value = this.quill.root.innerHTML;
+                    //console.log('value', quill.container.querySelector('.ql-editor').innerHTML);
+                    this.field.Value = quill.container.querySelector('.ql-editor').innerHTML;
                     return;
-                }
+                } 
             }
         }
+
         //fallback to default behavior
         this.field.Value = e;
     }
@@ -223,8 +262,14 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0)
                     this.field.RecordCount = res.results.count;
                 this.ref.markForCheck();
-        });
+            });
 
+        this.typeAheadSub = this.fieldsService.getTypeaheadItems(this.typeAheadSource$)
+            .subscribe(res => {
+                //console.log('sub', res);
+                this.field.Items = <EditorDropDownItem[]>res;
+                this.ref.markForCheck();
+            });
 
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
@@ -255,10 +300,18 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
             }, 250);            
         }
+
+        if (this.field.FieldType == 'Lookup' && this.field.UseTypeahead) {
+            if (this.field.Items != null && this.field.Items.length > 0) {
+                let sel: EditorDropDownItem = this.field.Items.find(i => i.Selected == true);
+                this.typeAheadValue = sel;
+                this.onSelect(sel);
+            }
+        }
+
     }
 
     ngOnChanges() {
-
         if (this.ed != null && this.ed.quill != null)
             this.quill = this.ed.quill;
         else
@@ -407,4 +460,23 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         //console.log(e, this.relationItems, this.field);
     }
 
+    private search(e: any) {
+        //console.log('search', e, this.object, this.objectID, this.field);
+        this.typeAheadSource$.next({ fieldTypeID: this.field.FieldTypeID, value: this.field.Value, event: e });
+    }
+
+    private onSelect(e: EditorDropDownItem) {
+        if (e != null)
+            this.field.Value = e.Value;
+        else
+            this.field.Value = null;
+    }
+
+    private clearTypeahead(e: any) {
+        this.typeAheadValue = null;
+        this.field.Value = null;
+        //this.field.Items.forEach(i => i.Selected = false);
+        //this.form.controls[this.field.FieldName].setValue(null);
+        this.ref.markForCheck();
+    }
 }

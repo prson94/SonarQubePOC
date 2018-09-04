@@ -247,6 +247,17 @@ export class FieldsService extends BaseService implements IFieldsService {
             });
     }
 
+    getTypeaheadItems(e: Observable<any>): Observable<EditorDropDownItem[]> {
+        return e
+            .distinctUntilChanged()
+            .switchMap(e => {
+                let uri = `form/FieldType_TypeAheadLookup?fieldTypeId=${e.fieldTypeID}&query=${e.event.query}`;
+                if (e.value != null)
+                    uri += `&value=${e.value}`;
+                return this.http.get(uri).map(res => <EditorDropDownItem[]>res.json());
+            });
+    }
+
 }
 
 

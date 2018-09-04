@@ -175,6 +175,7 @@ namespace d360.web.Models
         public bool ClearHomePageBackgroundImage { get; set; } = false;
         public bool UseLegacyLineage { get; set; } = true;
         public string BrowserTitlePrefix { get; set; }
+        public int MaxDropdownItems { get; set; }
 
     }
 
@@ -193,6 +194,7 @@ namespace d360.web.Models
             Items = new List<SelectListItem>();
             ReadOnly = false;
             MultiSelect = false;
+            UseTypeahead = false;
         }
 
         [DataMember]
@@ -241,6 +243,9 @@ namespace d360.web.Models
 
         [DataMember]
         public int RecordCount { get; set; }
+        [DataMember]
+        public bool UseTypeahead{ get; set; }
+
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
