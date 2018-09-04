@@ -109,6 +109,27 @@ alter table AssetType drop column [EffectiveStartDate]
 alter table AssetType drop column [EffectiveEndDate]
 GO
 
+-- GOV-5388
+ALTER TABLE [Field] SET ( SYSTEM_VERSIONING = OFF  )
+GO
+drop table Field_History
+GO
+
+ALTER TABLE Field DROP PERIOD FOR SYSTEM_TIME; 
+alter table Field drop column [EffectiveStartDate]
+alter table Field drop column [EffectiveEndDate]
+GO
+
+ALTER TABLE [FieldType] SET ( SYSTEM_VERSIONING = OFF  )
+GO
+drop table FieldType_History
+GO
+
+ALTER TABLE FieldType DROP PERIOD FOR SYSTEM_TIME; 
+alter table FieldType drop column [EffectiveStartDate]
+alter table FieldType drop column [EffectiveEndDate]
+GO
+
 
 
 CREATE VIEW [dbo].[ResponsibilityAllAsset] with SCHEMABINDING as 
