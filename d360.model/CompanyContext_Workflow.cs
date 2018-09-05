@@ -162,9 +162,8 @@ namespace d360.model
                 foreach (var user in users)
                 {
                    var workflows = await GetUsersOutstandingWorkflows(user.ID);
-                
 
-                    if (workflows.Count() == 0) continue;
+                   
                     StringBuilder sb = new StringBuilder();
                     var subject = "Data3Sixty Daily Workflow Email";
                     //build email content
@@ -195,6 +194,7 @@ namespace d360.model
                         sb.Append("</tr>");
                         i++;
                     }
+                    if (i == 0) continue;
                     sb.Append("</tbody></table>");
 
                     sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/home' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
