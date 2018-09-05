@@ -9,6 +9,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                        <ul>
                             <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="userGuide">User Guide</a></li>
                             <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="adminGuide">Admin Guide</a></li>
+                            <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="whatIsNew">What's New</a></li>
                        </ul>
                     </div>
                 <span>`,
@@ -21,6 +22,7 @@ export class HeaderHelpComponent {
 
     private userGuide = SiteUrlHelpers.SITE_URL_STATIC_USER_GUIDE;
     private adminGuide = SiteUrlHelpers.SITE_URL_STATIC_ADMIN_GUIDE;
+    private whatIsNew = SiteUrlHelpers.SITE_URL_STATIC_WHAT_IS_NEW;
 
     constructor(
         private ref: ChangeDetectorRef

@@ -87,6 +87,7 @@ export class SiteUrlHelpers {
     //static content routes
     static SITE_URL_STATIC_USER_GUIDE = "static/help/Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
     static SITE_URL_STATIC_ADMIN_GUIDE = "static/help/Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
+    static SITE_URL_STATIC_WHAT_IS_NEW = "static/help/Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat's%2520new%7C_____0";
 
     static getDefaultRoute() {
         if (ResourceHomePage != null && ResourceHomePage != "" && ResourceHomePage != '/') {
