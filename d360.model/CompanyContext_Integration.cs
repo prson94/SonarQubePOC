@@ -717,7 +717,7 @@ when not matched by target then
 
                     #endregion
 
-                    retResults = (await cnn.QueryAsync<DatabaseBulkAssetResult>("select ItemNumber, ObjectID, SourceID, Message, Success, IsNew from #AssetTable", transaction: trans)).ToList();
+                    retResults = (await cnn.QueryAsync<DatabaseBulkAssetResult>("select ast.ItemNumber, ast.ObjectID, ast.SourceID, ast.Message, ast.Success, ast.IsNew, a.uid from #AssetTable ast inner join Asset a on ast.SourceID = a.SourceID", transaction: trans)).ToList();
                     trans.Commit();
 
                     results.ForEach(air =>
@@ -728,6 +728,7 @@ when not matched by target then
                             //air.ObjectID = dbr.ObjectID;
                             air.IsNew = dbr.IsNew;
                             air.Success = dbr.Success;
+                            air.uid = dbr.uid;
                             air.Message = dbr.Success ? (dbr.IsNew ? "Created" : "Updated") : $"Failed: {dbr.Message}";
                         }
                     });

@@ -20,6 +20,7 @@ namespace d360.core.entities
         public bool Success { get; set; }
         public bool IsNew { get; set; }
         public int ObjectID { get; set; }
+        public Guid uid { get; set; }
     }
 
     [JsonArray]
@@ -76,7 +77,7 @@ namespace d360.core.entities
         public bool IsNew { get; set; }
 
         public string Object { get; set; }
-        public int ObjectID { get; set; }
+        public int ObjectID { get; set; }        
     }
 
     [DataContract]
