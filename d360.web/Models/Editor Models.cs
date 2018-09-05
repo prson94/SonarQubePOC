@@ -175,6 +175,7 @@ namespace d360.web.Models
         public bool ClearHomePageBackgroundImage { get; set; } = false;
         public bool UseLegacyLineage { get; set; } = true;
         public string BrowserTitlePrefix { get; set; }
+        public bool WorkflowDigestEmailEnabled { get; set; }
         public int MaxDropdownItems { get; set; }
 
     }

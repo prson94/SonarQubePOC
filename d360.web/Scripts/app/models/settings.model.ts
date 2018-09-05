@@ -38,6 +38,7 @@ export class CompanySettings {
     HomePageBackgroundImage: string;
     ClearHomePageBackgroundImage: boolean = false;
     BrowserTitlePrefix: string;
+    WorkflowDigestEmailEnabled: boolean = false;
     MaxDropdownItems: number;
 }
 

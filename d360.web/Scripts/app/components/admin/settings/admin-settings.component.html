@@ -52,6 +52,10 @@
                     <div class="FieldName">Default recipient for workflow forms and emails</div>
                     <p-dropdown  [options]="groups" [(ngModel)]="companySettings.WorkflowCatchAllGroup" [style]="{ 'width' : '95%' }" ></p-dropdown>
                     <div class="directions">Determines the default recipient of a workflow form or email when the recipient in the setup of the Email Activity or Form Activity cannot be found.</div>
+                    <input type="checkbox" [(ngModel)]="companySettings.WorkflowDigestEmailEnabled" /> Daily email for workflow assignments <br />
+                    <div class="directions">
+                        Check to send a daily email to all users who have outstanding workflow assignments, summarizing new and total items.
+                    </div>
                 </div>
                 <div class="tile tile-detail">
                     <header>Styles</header>
