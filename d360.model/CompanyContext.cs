@@ -2574,6 +2574,7 @@ select @err";
                     switch (entry.State)
                     {
                         case EntityState.Added:
+                            o.uid = Guid.NewGuid();
                             var addCheck = Query<string>(sql).SingleOrDefault();
                             if (!string.IsNullOrEmpty(addCheck))
                                 throw new ConflictException("Relationship Type Cannot Be Created", addCheck);

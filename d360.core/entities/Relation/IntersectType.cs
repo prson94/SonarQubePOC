@@ -83,8 +83,8 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class IntersectTypeApiViewModel : BaseObject
     {
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Uid { get; set; }
+        [DataMember]
+        public Guid uid { get; set; }
 
         [DataMember]
         public string PredicateName { get; set; }
