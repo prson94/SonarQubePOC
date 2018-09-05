@@ -1607,6 +1607,24 @@ namespace d360.model
             return sb.ToString();
         }
 
+        private bool GetWorkflowResponsibilityHasUsers(int typeID, int stepID, long itemID)
+        {
+            return Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID }).Any();
+        }
+
+        private int GetWorkflowAdminGroup()
+        {
+            int defaultWorkflowUserGroup = 0;
+
+            var companySettings = Community.GetCompanySettings();
+
+            var defaultGroup = companySettings["WorkflowCatchAllGroup"] ?? "";
+
+            int.TryParse(defaultGroup, out defaultWorkflowUserGroup);
+
+            return defaultWorkflowUserGroup;
+        }
+
         private IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID)
         {
             var users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
@@ -1614,13 +1632,9 @@ namespace d360.model
             if(users == null || users.Count() == 0)
             {
                 //check if there is a system setting that says to use a group.
-                var companySettings = Community.GetCompanySettings();
+                var defaultWorkflowUserGroup = GetWorkflowAdminGroup();
 
-                var defaultGroup = companySettings["WorkflowCatchAllGroup"] ?? "";
-
-                int.TryParse(defaultGroup, out int defaultWorkflowUserGroup);
-
-                if(defaultWorkflowUserGroup > 0)
+                if (defaultWorkflowUserGroup > 0)
                 {
                     // a default workflow group has been defined for when there are no memebers in the resonponsibilities
                     return Query<core.entities.GlobalReportingResource>(@"select distinct	R.ResourceID, 
@@ -1682,7 +1696,7 @@ namespace d360.model
             return ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, objectInfo.Score, prefix, itemStep, supportHtml);
         }
 
-        public string ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, int? objectScore, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)
+        public string ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, int? objectScore, string prefix, WorkflowItemStep itemStep, bool supportHtml)
         {
             if (string.IsNullOrEmpty(bodyTemplate)) return string.Empty;
 
@@ -1911,6 +1925,54 @@ namespace d360.model
                 }
 
                 result = result.Replace("[OBJECT_TYPE]", itemLink);
+            }
+
+            if (result.Contains("[RECIPIENT_TYPE]"))
+            {
+                var recipientType = "";
+                if (itemStep != null && itemStep.Step != null)
+                {
+                    var stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+
+                    switch (stepSettings.RecipientType)
+                    {                        
+                        case EmailTaskRecipientType.Initiator:
+                            recipientType = "Initiator";
+                            break;
+                        case EmailTaskRecipientType.Responsibility:
+                            recipientType = "Responsibility";
+                            break;
+                        case EmailTaskRecipientType.SpecificUser:
+                            recipientType = "Specific User";
+                            break;                        
+                    }
+
+                    //check how many users would recieve this if responsibility
+                    if(stepSettings.RecipientType == EmailTaskRecipientType.Responsibility && !GetWorkflowResponsibilityHasUsers(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID))
+                    {
+                        var adminGroupId = GetWorkflowAdminGroup();
+
+                        if(adminGroupId <= 0)
+                        {
+                            recipientType = "You are receiving this email as a default user in the Administrator group";
+                        }
+                        else
+                        {
+                            var grp = Groups.Where(x => x.ID == adminGroupId).FirstOrDefault();
+
+                            if(grp != null)
+                            {
+                                recipientType = $"You are receiving this email as a default user in the {grp.Name} group";
+                            }
+                            else
+                            {
+                                recipientType = $"You are receiving this email as a default user in the (unknown group) group";
+                            }
+                        }
+                    }
+
+                }
+                result = result.Replace("[RECIPIENT_TYPE]", recipientType);
             }
 
             return result;

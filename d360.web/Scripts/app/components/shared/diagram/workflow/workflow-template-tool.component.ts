@@ -32,6 +32,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
         { value: '[SCORE]', label: 'Object Score' },
         { value: '[WORKFLOW_INITIATOR]', label: 'Workflow Initiator Name' },
         { value: '[ACTION_DETAILS]', label: 'Action Details' },
+        { value: '[RECIPIENT_TYPE]', label: 'Recipient Type' },
     ];
 
     private relationshipFields = [
