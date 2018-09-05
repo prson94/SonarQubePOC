@@ -3782,7 +3782,7 @@ namespace d360.web.Controllers
             if (ft.AllowAllValue)
                 selectList.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
 
-            int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
+            int maxItems = 20;
             var columns = $@"
                 V.FieldTypeID,
                 V.LookupObjectType,
