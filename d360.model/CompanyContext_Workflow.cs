@@ -94,7 +94,22 @@ namespace d360.model
             return true;
         }
 
-        public async Task SendDigestEmails()
+
+        private string GetUrlPrefix()
+        {
+            string prefix;
+            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                cnn.Open();
+
+                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
+
+                cnn.Close();
+            }
+
+            return prefix;
+        }
+        public async Task SendDigestEmails(EnvironmentLevel environment)
         {
             var companySettings = Community.GetCompanySettings();
 
@@ -115,40 +130,92 @@ namespace d360.model
                 var fromName = companySettings["WorkflowFromName"] ?? "Data3Sixty Workflow";
                 var fromEmail = companySettings["WorkflowFromEmail"] ?? "no-reply@data3sixty.com";
 
+                string tblHeader = string.Empty;
+                string tblTR = string.Empty;
+                string span = string.Empty;
+                string tblTRWhite = string.Empty;
+                        #region table formating
+
+                tblHeader = @"<table style='width: 692px; border-style: none; border-width: 0px; box-sizing: border-box; line-height: 18px;'><thead style='background-color: #999999; '>
+                    <tr>
+                    <th style='text-align:left;padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#FFF;'>Name</th>
+                    <th style='text-align:center;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#FFF;'>Version</th>
+                    <th style='text-align:left;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#FFF;'>Step</th>
+                    <th style='text-align:center;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#FFF;'>New</th>
+                    <th style='text-align:center;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#FFF;'>Total</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>";
+
+                tblTR = @"<tr style='background-color: #def1fd; box-sizing: border-box; color: #646464; display: table-row; border: 0px none #d9d9d9;'>";
+
+                tblTRWhite = @"<tr style='background-color: #FFF; box-sizing: border-box; color: #646464; display: table-row; border: 0px none #d9d9d9;'>";
+
+                span = @"<span style='border-collapse: collapse; box-sizing: border-box; color: #646464; display: inline; font-family: Trebuchet MS, Arial, Helvetica,sans-serif; font-size: 12px; font-weight: 400; height: auto; line-height: 18px;text-size-adjust:100%;width: auto; word-wrap: break-word;'>";
+
+                var rootUrl = $"https://{GetUrlPrefix()}.data3sixty.com";
+         
+                #endregion
+
                 // 3 get oustanding assignments
                 foreach (var user in users)
                 {
-                    var workflows = await GetUsersOutstandingWorkflows(user.ID);
+                   /var workflows = await GetUsersOutstandingWorkflows(user.ID);
+                
 
+                    if (workflows.Count() == 0) continue;
                     StringBuilder sb = new StringBuilder();
+                    var subject = "Data3Sixty Daily Workflow Email";
                     //build email content
                     // email summary
-                    sb.Append($"<b>You have {workflows.Count} outstanding workflows</b><br><br>");
+                    sb.Append("<p style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#0000;'>Please find listed below the outstanding workflow items assigned to you:</p>");
                     // email details
+                    if (environment != EnvironmentLevel.Production)
+                    {
+                        sb.Append($"<span style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#0000;'>({environment.ToString()}  environment)</span>");
+                        subject += $" ({environment.ToString()} environment)";
+                    }
+                    sb.Append(tblHeader);
+                    int i = 0;
                     foreach (var item in workflows)
                     {
-                        sb.Append($"Workflow <b>{item.WorkflowName}</b>");
-                        sb.Append($" Step <b>{item.StepName}</b>");
-                        sb.Append($" Started by <b>{item.StartedBy}</b>");
+                        if(i%2==0)
+                             sb.Append(tblTR);
+                        else
+                            sb.Append(tblTRWhite);
 
-                        sb.Append("<br>");
+                        var url = $"{rootUrl}/workflow/workflowlistnew/{item.Id}/{item.Version}/{item.StepId}/1";
+                        sb.Append($"<td style='text-align: left;padding-left:5px;'><a style='font-size:12px;font-family: Trebuchet MS, Arial, Helvetica, sans - serif;'  href='{url}'>{item.Name}</a></td>");
+                        sb.Append($"<td style='text-align: center'>{span}{item.Version}</span></td>");
+                        sb.Append($"<td style='text-align: left'>{span}{item.Step}</span></td>");
+                        sb.Append($"<td style='text-align: center'>{span}{item.New}</span></td>");
+                        sb.Append($"<td style='text-align: center'>{span}{item.Total}</span></td>");
+                       
+                        sb.Append("</tr>");
+                        i++;
                     }
+                    sb.Append("</tbody></table>");
+
+                    sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/home' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
 
                     var emailAddress = user.Email;
 
                     //emailAddress = "kmcnamee@infogix.com";
 
-
+                    var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family: Trebuchet MS, Arial, Helvetica, sans-serif;\">{sb.ToString()}</body></html>";
                     //send email
-                    await extensions.mail.SimpleMessage.SendMessage("Data3Sixty Daily Workflow Email", emailAddress, "", sb.ToString(), true, fromEmail, fromName);
+                    await extensions.mail.SimpleMessage.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);
                 }
             }
         }
 
+       
+
         private async Task<IEnumerable<dynamic>> GetUsersWithOutstandingWorkflows()
         {
-            return await Database.Connection.QueryAsync<dynamic>(@"select
-	distinct WIA.ResourceObjectID as ID, GRAA.Email
+            return await Database.Connection.QueryAsync<dynamic>(@"select 
+	 distinct WIA.ResourceObjectID as ID, GRAA.Email
                                 from
 	                                [workflow].[Type] WT
 	                                inner join workflow.[Version] WV on WT.ID = WV.TypeID
@@ -165,40 +232,48 @@ namespace d360.model
         private async Task<IEnumerable<dynamic>> GetUsersOutstandingWorkflows(int resourceId)
         {
             return await Database.Connection.QueryAsync<dynamic>(@"
-                                select
-	                                wt.name as 'WorkflowName'
-	                                ,wi.[object] as 'Object'
-	                                ,wi.[objectid] as 'ObjectID'
-	                                ,wi.startedOn as 'StartedOn'	                                                                    
-	                                ,gr.firstName + ' ' + gr.lastName as 'StartedBy'
-	                                ,case 
-										when wi.[object] = 'Issue' then it.Name
-										else assettype.name
-									end as 'TypeName'
-	                                ,assettype.[Object] as 'ObjectType'
-	                                ,assettype.ObjectID as 'ObjectTypeID'	                                
-                                    ,case 
-                                        when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
-                                        else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
-                                    end as 'ObjectName'	                                
-	                                ,wvs.name as 'StepName'	                                                                    
-                                    ,utility.getassetdisplayvalue(cod.id) as 'IssueObjectName'                                    
-                                from
-	                                [workflow].[type] wt
-	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
-	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
-	                                left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
-									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
-	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
-	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
-	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
-                                    inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
-                                    left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
-                                    left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
-                                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
-                                where
-                                    wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3                                     
-                                    order by StartedOn desc", new { r = resourceId });
+                    Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New
+                    from(
+                    select 
+                    wt.name as Name
+                    ,wt.id as Id
+                    ,wv.[version] as Version
+                    , wvs.name as Step
+                    ,wvs.Id as StepId
+                    ,count(1) as Total 
+                    from
+                    [workflow].[type] wt
+                    inner join [workflow].[version] wv on (wt.id = wv.typeid)
+                    inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
+                    inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+                    inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+                    inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+                    where
+                    wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
+                    group by wt.name, wt.id,wv.[version],wvs.name,wvs.Id 
+                    ) as wfm
+                    left join
+                    (
+                    select 
+	
+                    wt.id as Id
+                    ,wv.[version] as Version
+                    , wvs.name as Step
+                    ,wvs.Id as StepId
+                    ,count(1) as New
+                    from
+                    [workflow].[type] wt
+                    inner join [workflow].[version] wv on (wt.id = wv.typeid)
+                    inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
+                    inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+                    inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+                    inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+                    where
+                    wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3  and wia.CreatedOn > getdate()-1
+                    group by wt.name, wt.id,wv.[version],wvs.name,wvs.Id
+                    ) as Sub on
+                    wfm.Id =Sub.Id and wfm.Version=Sub.Version and wfm.StepId = sub.stepid
+                    order by wfm.Name asc,wfm.[version] desc,wfm.Step asc", new { r = resourceId });
         }
 
         public bool AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object)

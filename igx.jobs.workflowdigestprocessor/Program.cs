@@ -68,7 +68,9 @@ namespace igx.jobs.workflowdigestprocessor
 
                         #endregion
 
-                        await company.SendDigestEmails();
+               
+
+                        await company.SendDigestEmails(c.EnvironmentLevel);
                     }
                     catch (Exception ex)
                     {

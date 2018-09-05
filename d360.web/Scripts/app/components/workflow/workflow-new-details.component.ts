@@ -114,6 +114,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private selection: WorkflowAssignmentDetail[] = [];
     private showBulkFormEditor = false;
     private bulkEditorModel: BulkWorkflowFormModel;
+    private fromMail: boolean = false;
 
     constructor(private route: ActivatedRoute,
         private location: Location,
@@ -135,6 +136,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.resourceID = +params['resourceID'];
             this.version = +params['version'];
             this.stepId = +params['stepId'];
+            this.fromMail = params['fromMail'] === '1' ? true : false;
 
             this.headerBreadcrumbService.clearBreadcrumbs();    
 
@@ -152,9 +154,9 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             })
             .then(() => this.workflowService.getAssignedWorkflowInstancesSummary(this.workflowTypeId, this.resourceID, this.version, this.stepId))
             .then(res => {
-                this.isLoading = false;
-                this.assignmentSummary = res.item;
-            });
+                    this.isLoading = false;
+                    this.assignmentSummary = res.item;
+         });
                
     }
 
@@ -174,6 +176,9 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     }
 
     private close() {
+        if (this.fromMail) {
+            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_HOME_ROOT}`);
+        }
         this.location.back();
     }
 
