@@ -30,6 +30,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     @Input() objectType: string;
     @Output() stepChange = new EventEmitter();
     @ViewChild('ed') ed: Editor;
+    @ViewChild('fed') fed: Editor;
     private quill;
 
     private model: WorkflowForm = new WorkflowForm();
@@ -235,6 +236,25 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         this.workflowFieldsService.pushFormField(f);
         //console.log(this.step.fields.form.field);
+    }
+
+    appendFieldDescription(e: string) {
+        //console.log(this.step.settings.MessageBodyTemplate, this.quill);
+
+        if (this.fed != null && this.fed.quill != null)
+            this.quill = this.fed.quill;
+
+        if (this.quill != null) {
+            let pos = this.quill.getSelection(true);
+            let len = pos.index || this.quill.getLength();
+            this.quill.insertText(len > 0 ? len - 1 : 0, e, 'api');
+
+        } else {
+            this.step.fields.form['@description'] =
+                ((this.step.fields.form['@description'] == null) ? '' :
+                this.step.fields.form['@description'])
+                + e;
+        }
     }
 
     appendField(e: string) {

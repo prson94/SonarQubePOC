@@ -1602,17 +1602,24 @@ namespace d360.model
             }
         }
 
-        private string ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)
+        public string ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)
         {
+            return ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, objectInfo.Score, prefix, itemStep, supportHtml);
+        }
+
+        public string ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, int? objectScore, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)
+        {
+            if (string.IsNullOrEmpty(bodyTemplate)) return string.Empty;
+
             var result = bodyTemplate;
             //replace [OBJECT_NAME] with the object name            
             if (result.Contains("[OBJECT_NAME]"))
             {
                 ObjectDetail item = null;
-                if (objectInfo.Object == SystemObjects.Issue)
+                if (obj == SystemObjects.Issue)
                 {
-                    var issue = Issues.Where(i => i.ID == objectInfo.ObjectID).Include(x => x.IssueType).FirstOrDefault();
-                    
+                    var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
                     if (issue != null)
                     {
                         item = GetObjectDetail(issue.Object, issue.ObjectID);
@@ -1621,14 +1628,14 @@ namespace d360.model
                 else
                 {
                     //get the objects name
-                    item = GetObjectDetail(objectInfo.Object.ToString(), objectInfo.ObjectID);
+                    item = GetObjectDetail(obj.ToString(), objectID);
                 }
 
                 var itemLink = "(unknown item)";
 
                 if (item != null)
                 {
-                    if(supportHtml)
+                    if (supportHtml)
                         itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
                     else
                         itemLink = item.Name;
@@ -1640,9 +1647,9 @@ namespace d360.model
             if (result.Contains("[REL_OBJECT_NAME]"))
             {
                 var itemLink = "";
-                if (objectInfo.Object == SystemObjects.Intersect)
+                if (obj == SystemObjects.Intersect)
                 {
-                    var intersect = Intersects.Where(i => i.ID == objectInfo.ObjectID).FirstOrDefault();
+                    var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
 
                     if (intersect != null)
                     {
@@ -1664,9 +1671,9 @@ namespace d360.model
             if (result.Contains("[REL_SUBJECT_NAME]"))
             {
                 var itemLink = "";
-                if (objectInfo.Object == SystemObjects.Intersect)
+                if (obj == SystemObjects.Intersect)
                 {
-                    var intersect = Intersects.Where(i => i.ID == objectInfo.ObjectID).FirstOrDefault();
+                    var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
 
                     if (intersect != null)
                     {
@@ -1688,7 +1695,7 @@ namespace d360.model
             if (result.Contains("[ACTION_DETAILS]"))
             {
                 //get the details of the issue and add them in
-                var issue = Issues.Where(i => i.ID == objectInfo.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+                var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
                 var issueInfo = "(unknown)";
 
@@ -1707,7 +1714,7 @@ namespace d360.model
                     {
                         issueInfo += $"<br>Created By <b>{creator.FullName}</b>";
                     }
-                    
+
                     //get any field values for this issue
                     var fieldTypes = FieldTypes.Where(x => x.Object == "IssueType" && x.ObjectID == issue.IssueTypeID);
 
@@ -1717,7 +1724,7 @@ namespace d360.model
                     {
                         var field = fieldValues.Where(x => x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
-                        if(field != null)
+                        if (field != null)
                         {
                             issueInfo += $"<br><b>{fieldType.FriendlyName}</b>: {field.FormattedValue}";
                         }
@@ -1735,7 +1742,7 @@ namespace d360.model
                 {
                     var user = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
 
-                    if(user != null)
+                    if (user != null)
                     {
                         initiator = user.FullName;
                     }
@@ -1746,8 +1753,8 @@ namespace d360.model
 
             if (result.Contains("[SCORE]"))
             {
-                var score = objectInfo.Score.HasValue ? objectInfo.Score.Value.ToString() : "(unknown score)";
-                
+                var score = objectScore.HasValue ? objectScore.Value.ToString() : "(unknown score)";
+
                 result = result.Replace("[SCORE]", score);
             }
 
@@ -1769,15 +1776,14 @@ namespace d360.model
                     var fieldValue = "";
 
                     if (fieldId > 0)
-                    {
-                        var obj = objectInfo.Object.ToString();
-                        var fieldRecord = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == obj && x.FieldTypeID == fieldId).FirstOrDefault();
+                    {                        
+                        var fieldRecord = Fields.Where(x => x.ObjectID == objectID && x.ObjectType == obj.ToString() && x.FieldTypeID == fieldId).FirstOrDefault();
 
-                        if((obj ?? "").ToUpper() == "INTERSECT")
+                        if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
                         {
-                            var intersect = Intersects.Where(i => i.ID == objectInfo.ObjectID).FirstOrDefault();
+                            var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
 
-                            if(intersect != null)
+                            if (intersect != null)
                             {
                                 var ofieldRecord = Fields.Where(x => x.ObjectID == intersect.ObjectID && x.ObjectType == intersect.Object && x.FieldTypeID == fieldId).FirstOrDefault();
 
@@ -1793,7 +1799,7 @@ namespace d360.model
                             }
                         }
 
-                        if(fieldRecord != null)
+                        if (fieldRecord != null)
                             fieldValue = fieldRecord.FormattedValue;
                     }
 
@@ -1804,9 +1810,9 @@ namespace d360.model
             if (result.Contains("[OBJECT_TYPE]"))
             {
                 string path = null;
-                if (objectInfo.Object == SystemObjects.Issue)
+                if (obj == SystemObjects.Issue)
                 {
-                    var issue = Issues.Where(i => i.ID == objectInfo.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+                    var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
                     if (issue != null)
                     {
@@ -1816,7 +1822,7 @@ namespace d360.model
                 else
                 {
                     //get the objects name
-                    path = GetObjectTypePath(objectInfo.Object.ToString(), objectInfo.ObjectID);
+                    path = GetObjectTypePath(obj.ToString(), objectID);
                 }
 
                 var itemLink = "(unknown item)";
@@ -1834,7 +1840,7 @@ namespace d360.model
 
             return result;
         }
-        
+
         /// <summary>
         /// Gets a list of possible transitions based on a completed workflow item step.
         /// </summary>

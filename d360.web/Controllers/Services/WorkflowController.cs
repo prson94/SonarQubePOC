@@ -787,6 +787,9 @@ order by wi.StartedOn desc";
             var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemStep.ItemID && x.ResourceObjectID == Company.CurrentResourceID).Any();
 
 
+            //replace any tokens in hte description            
+            desc = Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), null, Company.CurrentCompanyDomain, itemStep, true);
+
             //parse the xml to get the form info
 
             return Request.CreateResponse<dynamic>(HttpStatusCode.OK, new
