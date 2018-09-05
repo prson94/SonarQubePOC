@@ -161,7 +161,7 @@ namespace d360.model
                 // 3 get oustanding assignments
                 foreach (var user in users)
                 {
-                   /var workflows = await GetUsersOutstandingWorkflows(user.ID);
+                   var workflows = await GetUsersOutstandingWorkflows(user.ID);
                 
 
                     if (workflows.Count() == 0) continue;
