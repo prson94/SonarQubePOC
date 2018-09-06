@@ -1365,7 +1365,7 @@ namespace d360.web.Controllers.Services
                     if (arrSort.Count > 0)
                     {
 
-                        var sRaw = arrSort.FirstOrDefault(s => s.FieldName == "last_modified");
+                        var sRaw = arrSort.FirstOrDefault(s => s.FieldName == "_last_modified");
                         if (sRaw != null)
                         {
                             orderSql += ((string.IsNullOrEmpty(orderSql)) ? " order by " : ", ") + "O.UpdatedOn";
