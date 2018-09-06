@@ -58,7 +58,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                         <span>{{data.StartedOn | date: 'shortDate'}}</span>
                                     </ng-template>
                                 </p-column>
-                                <p-column field="StartedBy" header="Started By" sortable="true"></p-column>    
+                                <p-column field="StartedBy" header="Started By" sortable="true" [filter]="!showSimpleFilter"></p-column>    
                                <p-column  [style]="{width:'35px'}" >
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">                                            
