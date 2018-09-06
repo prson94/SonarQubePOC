@@ -9,6 +9,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
+declare var CurrentResourceID;
+
 @Component({
     selector: 'd3s-workflow-new-detail',
     template: ` 
@@ -86,7 +88,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </p-dataTable>       
                             <div style="padding:10px">
                                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
-                                <button pButton type="button" (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 1"></button>
+                                <button pButton type="button" (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 1 || !isMe"></button>
                             </div>  
                         </div>
                     </div>
@@ -106,7 +108,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private version: number;
     private stepId: number;
     private assignmentSummary: WorkflowAssignmentSummary;
-
+    private isMe:boolean = true;
     private sub: any;
     private tempWorkflowtype = WorkflowType;
     private items: WorkflowAssignmentDetail[];
@@ -137,6 +139,8 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.version = +params['version'];
             this.stepId = +params['stepId'];
             this.fromMail = params['fromMail'] === '1' ? true : false;
+
+            this.isMe = this.resourceID ? this.resourceID == CurrentResourceID: true;
 
             this.headerBreadcrumbService.clearBreadcrumbs();    
 
