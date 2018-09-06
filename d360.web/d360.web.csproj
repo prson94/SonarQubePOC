@@ -2000,6 +2000,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-bulk-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-new-details.component.ts" />

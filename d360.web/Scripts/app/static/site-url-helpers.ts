@@ -12,6 +12,7 @@ export class SiteUrlHelpers {
     static SITE_URL_COMMUNITY_ROOT = 'community';
     static SITE_URL_HELP_ROOT = 'help';
     static SITE_URL_MONITOR_ROOT = 'monitor';
+    static SITE_URL_WORKFLOWMONITOR_ROOT = 'workflowmonitor';
     static SITE_URL_POLICY_ROOT = 'policy';
     static SITE_URL_GROUP_ROOT = 'group';
     static SITE_URL_RESOURCE_ROOT = 'resource';
