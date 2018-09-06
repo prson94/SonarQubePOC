@@ -79,10 +79,11 @@ declare var CompanySettings;
                                 </ng-container> 
                                 <ng-container *ngIf="field.UseTypeahead">
                                     <p-autoComplete 
+                                        [placeholder]="'Start typing to select an item'"
                                         [delay]="350"
                                         [field]="'Text'"
-                                        [style]="{'width':'90%'}"
-                                        [inputStyle]="{'width':'95%', 'border-right': 'none'}"
+                                        [style]="{'width':'100%'}"
+                                        [inputStyle]="{'width':'100%' }"
                                         [formControlName]="field.FieldName" 
                                         [ngModel]="typeAheadValue" 
                                         (onSelect)="onSelect($event)"
@@ -90,7 +91,7 @@ declare var CompanySettings;
                                         (completeMethod)="search($event)" 
                                         [forceSelection]="field.Required"
                                         (onClear)="clearTypeahead($event)"
-                                        [dropdown]="true">
+                                        [dropdown]="false">
                                         <ng-template let-item pTemplate="item">
                                             <div *ngIf="item.Selected" style="font-weight: bold; color: #fff; background: #54a4da">
                                                 {{item.Text}}
