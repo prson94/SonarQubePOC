@@ -1251,3 +1251,13 @@ p-treeTable td a {
     text-decoration: none;
     cursor: pointer;
 }
+
+.ui-autocomplete-dropdown.ui-button {
+    color: #000 !important;
+    background: #fff !important;
+    border-top: 1px solid #d6d6d6 !important;
+    border-bottom: 1px solid #d6d6d6 !important;
+    border-right: 1px solid #d6d6d6 !important;
+    border-left: none !important;
+    margin: 0 !important;
+}

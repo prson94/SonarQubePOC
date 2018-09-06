@@ -79,8 +79,10 @@ declare var CompanySettings;
                                 </ng-container> 
                                 <ng-container *ngIf="field.UseTypeahead">
                                     <p-autoComplete 
-                                        [delay]="250"
+                                        [delay]="350"
                                         [field]="'Text'"
+                                        [style]="{'width':'90%'}"
+                                        [inputStyle]="{'width':'95%', 'border-right': 'none'}"
                                         [formControlName]="field.FieldName" 
                                         [ngModel]="typeAheadValue" 
                                         (onSelect)="onSelect($event)"

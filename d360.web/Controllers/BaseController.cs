@@ -700,6 +700,16 @@ namespace d360.web.Controllers
                                         if (count > maxItems)
                                         {
                                             fld.UseTypeahead = true;
+                                            if (!string.IsNullOrWhiteSpace(f.DefaultValue) && int.TryParse(f.DefaultValue, out int selectedVal))
+                                            {
+                                                fld.Value = f.DefaultValue;
+                                                fld.Items.AddRange(
+                                                 Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value && o.Value == selectedVal)
+                                                .OrderBy(o => o.Text)
+                                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = true })
+                                                .ToList()
+                                                    );
+                                            }
                                         }
                                         else
                                         {
