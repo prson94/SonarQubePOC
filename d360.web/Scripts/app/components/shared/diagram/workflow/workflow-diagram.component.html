@@ -25,10 +25,11 @@
             <div>
                 <ng-container *ngIf="model != null && model.Event != null && model.Event.LastExecuted != null; else never">
                     {{model.Event.LastExecuted | date:'short'}}
+                    <a *ngIf="WorkflowChangeType[model?.Event?.ChangeType] == 'Schedule'" (click)="clearExecuted()">(clear)</a>
                 </ng-container>
                 <ng-template #never>
                     Never
-                </ng-template>
+                </ng-template>                
             </div>
         </div>
     </div>

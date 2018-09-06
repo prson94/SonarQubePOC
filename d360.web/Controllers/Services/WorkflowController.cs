@@ -2108,6 +2108,25 @@ order by wi.StartedOn desc";
             return Request.CreateResponse(HttpStatusCode.OK, results);
 
         }
+        
+        [Route("lastexecution/{id:int}"), HttpDelete]
+        public HttpResponseMessage DeleteLastExecution(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return Request.CreateErrorResponse(HttpStatusCode.Forbidden,new Exception("Access Denied"));
+
+            if(!Company.WorkflowEventRegistrations.Any(x=>x.ID == id))
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Workflow not found"));
+
+            var workflow = Company.WorkflowEventRegistrations.First(x => x.ID == id);
+
+            workflow.LastExecuted = null;
+
+            Company.SaveChanges();
+
+            return Request.CreateResponse(HttpStatusCode.OK, workflow);
+
+        }
 
         #region Helper Methods
 

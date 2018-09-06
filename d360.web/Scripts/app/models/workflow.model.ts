@@ -322,7 +322,7 @@ export class WorkflowEventRegistration {
     ConditionObject: any = {};
     Settings: string;
     SettingsObject: any = {};
-
+    LastExecuted: any;
     conditions: EventCondition[] = [];
 }
 

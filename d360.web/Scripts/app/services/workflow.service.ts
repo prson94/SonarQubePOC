@@ -497,4 +497,11 @@ export class WorkflowService extends BaseService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
+
+    clearLastExecutionDate(id: number) {
+        return this.http.delete(`services/workflow/lastexecution/${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 }

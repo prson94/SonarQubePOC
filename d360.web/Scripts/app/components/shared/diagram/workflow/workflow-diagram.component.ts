@@ -126,8 +126,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.isWindowVisible = true;
         }
 
-        this.isLoading = true;
-        //console.log(this.model);
+        this.isLoading = true;        
     }
 
     public ngOnChanges(changes: SimpleChanges) {
@@ -413,9 +412,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach(l => {
             links.push(this.convertToWorkflowModel(<LinkModel>l));
         });
-
-
-
+        
         let m = new WorkflowDiagramModel();
 
         this.model.Type.PublishedVersionID = publish ? -1 : null;
@@ -423,9 +420,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         m.Event = this.model.Event;
         m.Nodes = nodes;
         m.Links = links;
-
-        //console.log('save', m);
-
+        
         this.isLoading = true;
 
         this.workflowService.saveWorkflowDiagramModel(m)
@@ -1847,6 +1842,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
     //#endregion
+
+    private clearExecuted() {
+        this.workflowService.clearLastExecutionDate(this.id);
+        this.model.Event.LastExecuted = null;
+    }
 
 }
 
