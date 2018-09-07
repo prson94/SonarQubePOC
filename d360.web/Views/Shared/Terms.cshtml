@@ -92,16 +92,16 @@ for (var i = 0; i < Model.OrgsWithContracts.Count; i++)
                 @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(true)", id = "cb1" }) I am an employee of the Firm;
             </div>
             <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(true)", id = "cb2" }) I have authority to agree to the Terms of Use on behalf of the firm and to commit to the Firm to be bound by thereby; and
+                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(true)", id = "cb2" }) I have authority to agree to the Terms of Use on behalf of the Firm and to commit the Firm to be bound by thereby; and
             </div>
             <div style="margin-bottom: 10px">
-                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(true)", id = "cb3" }) I accept the Terms of use and agree to comply with and be bound thereby.
+                @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(true)", id = "cb3" }) I accept the Terms of Use and agree to comply with and be bound thereby.
             </div>
     }
     else
     {
         <div style="margin-bottom: 10px">
-            @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(false)", id = "cb1" }) Accept?
+            @Html.CheckBox("Accept", acceptance.Accepted, new { onclick = "clickCheckbox(false)", id = "cb1" }) I accept the Terms of Use and agree to comply with and be bound thereby.
         </div>
 }
             <div class="form-tools">
