@@ -148,8 +148,8 @@ namespace d360.model.workflow
                     return false;
                 DateTime currentDate = DateTime.UtcNow;
 
-                var numDays = (dt - currentDate).Days;
-
+                var numDays = (dt.Date - currentDate.Date).TotalDays;
+                    
                 if (Operator == CriteriaOperator.Equal)
                     return (numDays == (int)Value);
                 else if (Operator == CriteriaOperator.NotEqual)
