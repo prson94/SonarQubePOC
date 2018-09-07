@@ -413,6 +413,12 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                             .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i.Type) : GetFieldTypeSort($"Field{i.ID}", true, i.Type)))
                     );
                 }
+                
+                //check if after that there is no order by field because the key field is not listable
+                if(string.IsNullOrEmpty(orderFieldString))
+                {
+                    orderFieldString = "AssetID ASC";
+                }
             }
             else
             {
