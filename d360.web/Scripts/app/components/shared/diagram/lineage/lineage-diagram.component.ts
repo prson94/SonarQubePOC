@@ -1525,10 +1525,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private createFocalNode(): go.Node {
-        let nodeWidth = 150;
-        let nodeHeight = 75;
+        let nodeWidth = 150 * 1.15;
+        let nodeHeight = 75 * 1.35;
         let nodeBorderColor = '#000';
-        let nodeFontSize = 8;
+        let nodeFontSize = 10;
 
         return this.g(go.Node, "Spot",
             new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(go.Point.stringify),
