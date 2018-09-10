@@ -154,8 +154,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     appendField(e: string) {
-
-
         if (this.ed != null && this.ed.quill != null)
             this.quill = this.ed.quill;
 
@@ -165,13 +163,17 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             let pos = this.quill.getSelection(true);
             let len = pos.index || this.quill.getLength();
             this.quill.insertText(len > 0 ? len - 1 : 0, e, 'api');
+
+            //manually set the html in the model
+            this.step.settings.MessageBodyTemplate = this.quill.container.querySelector('.ql-editor').innerHTML;
              
         } else {
             this.step.settings.MessageBodyTemplate =
                 ((this.step.settings.MessageBodyTemplate == null) ? '' :
                     this.step.settings.MessageBodyTemplate)
-                    + e;
+                + e;
         }
+        this.stepChange.emit(this.step);
         
     }
 

@@ -239,7 +239,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     appendFieldDescription(e: string) {
-        //console.log(this.step.settings.MessageBodyTemplate, this.quill);
+        //console.log(this.step.fields.form['@description'], this.quill == null);
 
         if (this.fed != null && this.fed.quill != null)
             this.quill = this.fed.quill;
@@ -249,12 +249,17 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             let len = pos.index || this.quill.getLength();
             this.quill.insertText(len > 0 ? len - 1 : 0, e, 'api');
 
+            //manually set the html in the model
+            this.step.fields.form['@description'] = this.quill.container.querySelector('.ql-editor').innerHTML;
+
         } else {
             this.step.fields.form['@description'] =
                 ((this.step.fields.form['@description'] == null) ? '' :
                 this.step.fields.form['@description'])
                 + e;
         }
+        this.stepChange.emit(this.step);
+
     }
 
     appendField(e: string) {
@@ -268,12 +273,17 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             let len = pos.index || this.quill.getLength();
             this.quill.insertText(len > 0 ? len - 1 : 0, e, 'api');
 
+            //manually set the html in the model
+            this.step.settings.MessageBodyTemplate = this.quill.container.querySelector('.ql-editor').innerHTML;
+
         } else {
             this.step.settings.MessageBodyTemplate =
                 ((this.step.settings.MessageBodyTemplate == null) ? '' :
                     this.step.settings.MessageBodyTemplate)
                 + e;
         }
+
+        this.stepChange.emit(this.step);
 
     }
 
