@@ -59,7 +59,7 @@ namespace d360.web.Controllers.Services
 
         internal const string BASE_URI = "https://api.londonmarketgroup.co.uk";
 
-        public string @ref { get; set; }
+        public string rel { get; set; }
         public string href { get; set; }
     }
 
@@ -509,7 +509,7 @@ namespace d360.web.Controllers.Services
                         if (property.Value != null) exp.Add(property.Key, property.Value);
                     }                    
 
-                    exp.Add("_links", new List<JsonResultLinkModel> { new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO } });
+                    exp.Add("_links", new List<JsonResultLinkModel> { new JsonResultLinkModel { href = canoUri, rel = JsonResultLinkModel.CANO } });
 
                     responseMessage =   Request.CreateResponse(HttpStatusCode.OK, exp as object, "application/json");
                 }
@@ -1496,11 +1496,11 @@ namespace d360.web.Controllers.Services
 
                     var json = new JsonResultsModel { total = count, items = res, _links = new List<JsonResultLinkModel>() };
 
-                    json._links.Add(new JsonResultLinkModel { href = canoUri, @ref = JsonResultLinkModel.CANO });
+                    json._links.Add(new JsonResultLinkModel { href = canoUri, rel = JsonResultLinkModel.CANO });
                     if (showNextLink)
-                        json._links.Add(new JsonResultLinkModel { href = nextUri, @ref = JsonResultLinkModel.NEXT });
+                        json._links.Add(new JsonResultLinkModel { href = nextUri, rel = JsonResultLinkModel.NEXT });
                     if (showPrevLink)
-                        json._links.Add(new JsonResultLinkModel { href = prevUri, @ref = JsonResultLinkModel.PREV });
+                        json._links.Add(new JsonResultLinkModel { href = prevUri, rel = JsonResultLinkModel.PREV });
 
                     responseMessage = Request.CreateResponse(HttpStatusCode.OK, json, "application/json");
                 }
