@@ -322,7 +322,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         promises.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship, this.model.FieldType.LookupObjectFieldTypeID));
                     }
                     else if (this.lookups.Field_CardinalRelationships.length > 0) {
-                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalRelationships[0].value, this.model.FieldType.LookupObjectFieldTypeID));
+                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_FieldFromRelRelationships[0].value, this.model.FieldType.LookupObjectFieldTypeID));
 
                     }
                 } catch (e) {

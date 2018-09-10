@@ -100,6 +100,7 @@ export class FieldsService extends BaseService implements IFieldsService {
                 l.Field_Relationships = this.ftItemToSelectItem(r.Field_Relationships);
                 l.Field_CardinalRelationships = this.ftItemToSelectItem(r.Field_CardinalRelationships);
                 l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
+                l.Field_FieldFromRelRelationships = this.ftItemToSelectItem(r.Field_FieldFromRelRelationships);
                 l.Lookups = this.ftItemToSelectItem(r.Lookups);
                 l.Patterns = this.ftItemToSelectItem(r.Patterns);      
                 l.ComplexLookupRelations = r.ComplexLookupRelations;

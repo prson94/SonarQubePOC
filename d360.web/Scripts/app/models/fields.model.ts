@@ -233,6 +233,7 @@ export class Lookups {
     Field_CardinalReferenceRelationships: SelectItem[];
     ComplexLookupRelations: any[] = [];
     FilteredLookups: any[] = [];
+    Field_FieldFromRelRelationships: any[] = [];
 
     ReferenceTypes: SelectItem[] = new Array<SelectItem>();
 }

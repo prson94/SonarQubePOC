@@ -3583,6 +3583,11 @@ namespace d360.web.Controllers
                 (i.Object == sType && i.ObjectID == id && i.ObjectCardinality == Cardinality.One)
             ).ToList();
 
+            var fieldFromRelRelationships = allRelationships.Where(i =>
+                (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
+                (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+            ).ToList();
+
             var Field_Relationships = allRelationships
                 .Where(x=>x.PredicateType != PredicateType.InterTypeHierarchy)
                 .Select(i => new {
@@ -3613,6 +3618,13 @@ namespace d360.web.Controllers
                     value = $"{i.ID}"
                 });
 
+            var Field_FieldFromRelRelationships = fieldFromRelRelationships.Select(i => new {
+                title = ((i.Subject == sType && i.SubjectID == id) ?
+                        $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
+                        $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                value = $"{i.ID}"
+            });
+
             var patterns = new Dictionary<string, string>() {
                 { "Choose sample...", "" },
                 { "Email", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
@@ -3641,6 +3653,7 @@ namespace d360.web.Controllers
                     Attributes = attributes,
                     Field_Relationships,
                     Field_CardinalRelationships,
+                    Field_FieldFromRelRelationships,
                     Field_CardinalReferenceRelationships,
                     DataTypes = dataTypeOptions,
                     FilteredLookups = filteredLookups,

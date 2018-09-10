@@ -369,7 +369,7 @@
             <div class="row">
                 <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
                     <div class="FieldName">One-to-Many Relationship</div>
-                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.Field_CardinalRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalFieldFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.Field_FieldFromRelRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalFieldFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
                     <div class="FieldName">Selected Field</div>
