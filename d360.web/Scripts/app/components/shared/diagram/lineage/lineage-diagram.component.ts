@@ -196,6 +196,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.addDiagramListener('BackgroundSingleClicked', e => this.BackgroundSingleClicked(e));
         this.diagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
         this.diagram.addDiagramListener('LayoutCompleted', () => this.LayoutCompleted());
+        this.diagram.addDiagramListener('AnimationFinished', () => this.AnimationFinished());
 
 
         this.diagram.toolManager.linkingTool.linkValidation = (a, b, c, d) => this.canLink(a, b, c, d);
@@ -260,7 +261,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.isLoading = false;
                 this.isWindowVisible = windowVisible;
                 this.reOrderLayout();
-                
+
                 //workaround for IE11 not respecting initial diagram scale. 
                 //After layout is complete or a zoom button is pressed it is automatically set back to go.Diagram.None
                 this.diagram.autoScale = go.Diagram.UniformToFill;
@@ -316,7 +317,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                         selected: true
                     });
                 }
-
 
                 modelList.push(model);
             }
@@ -397,6 +397,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.refreshControls(null);  //set buttons/expanders to defaults
 
         this.diagram.commitTransaction("load_all_data");
+
         this.filterView(true);
         this.reOrderLayout();
     }
@@ -414,26 +415,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     this.diagram.model.setDataProperty(n, 'category', 'object');
             });
 
-            let node = this.diagram.findNodeForKey(this.focal.key);
-            if (node != null) {
-                //    this.diagram.model.setDataProperty(node.data, 'category', 'focal');
+            this.centerDiagram();
 
-                //let xpos = (this.diagram.viewportBounds.x + this.diagram.viewportBounds.width) / 2.0;
-                //let ypos = (this.diagram.viewportBounds.y + this.diagram.viewportBounds.height) / 2.0;
-                //xpos += node.actualBounds.width / 2;
-                //ypos += node.actualBounds.height / 2;
-
-                //node.position.set(new go.Point(xpos, ypos));
-                //this.diagram.centerRect(node.actualBounds);
-
-                //console.log('scale', this.diagram.viewportBounds, this.diagram.documentBounds, node.actualBounds);
-            }
-            //if (this.previousFocal != null) {
-            //    let p = this.diagram.findNodeForKey(this.previousFocal.key);
-            //    if (p != null)
-            //        this.diagram.model.setDataProperty(p.data, 'category', 'object');
         }
-
 
         //get filtered items
         let filteredNodes = [];
@@ -583,7 +567,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 }
             }
 
-
             this.diagram.layout.invalidateLayout();
             this.diagram.requestUpdate();
             this.diagram.commitTransaction("filter_data");
@@ -596,104 +579,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.canDelete = this.hasDeleteRelationshipsPermissions();
 
         this.setSourceValues(data);
-        this.toggleTabs(data);
         this.loadMenuItems();
-    }
-
-    private toggleTabs(data: LineageNode | LineageLink) {
-        //console.log(this.tab, data);
-        //if (data) {
-        //    this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
-        //    this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
-        //    this.showInfoTab = this.showLinkTabs || this.showNodeTabs;
-        //    this.selectedDetailPredicate = 0;
-
-        //    if (this.tab != 'info' && this.tab != 'add')
-        //        this.tab = 'info';
-
-        //    if (!this.showNodeTabs && !this.showLinkTabs) {
-        //        this.isWindowVisible = false;
-        //        return;
-        //    }
-
-        //    if ((this.tab == 'add' || this.tab == 'edit')) {
-        //        if (this.readonly)
-        //            this.tab = 'info';
-        //        if (this.tab == 'add' && !this.canAdd )
-        //            this.tab = 'info';
-        //        if (this.tab == 'edit' && (!this.canEdit || !(this.canAdd && data.isNew)))
-        //            this.tab = 'info';
-        //    } else if (this.tab == 'info' && !this.showInfoTab) {
-        //        if (!this.readonly) {
-        //            if (this.showLinkTabs)
-        //                if (this.canEdit || (this.canAdd && data.isNew))
-        //                    this.tab = 'edit';
-        //                else
-        //                    this.tab = 'info';
-        //            else
-        //                if (this.canAdd)
-        //                    this.tab = 'add';
-        //                else
-        //                    this.tab = 'info';
-        //        }
-        //        else {
-        //            this.tab = '';
-        //            this.isWindowVisible = false;
-        //        }
-        //    }
-
-        //    if (this.showNodeTabs) {
-        //        if (this.isWindowVisible == false)
-        //            this.tab = 'info';
-        //        this.isWindowVisible = true;
-        //    } else if ((this.showLinkTabs && this.readonly) || this.tab == '') {
-        //        this.tab = 'info';
-        //        this.isWindowVisible = true;
-        //    }
-
-        //    if (this.showNodeTabs && !this.readonly) {
-        //        if (this.canAdd || (this.canEdit && data.isNew))
-        //            this.tab = 'add';
-        //        else
-        //            this.tab = 'info';
-        //        this.isWindowVisible = true;
-        //    }
-
-        //    if (this.showLinkTabs && !this.readonly) {
-        //            this.tab = 'edit';
-        //        this.isWindowVisible = true;
-        //    }
-
-
-        //} else {
-        //    if (!this.readonly) {
-        //        if (this.tab == '')
-        //            this.tab = 'add';
-        //        this.showNodeTabs = false;
-        //        this.showLinkTabs = false;
-        //        this.showInfoTab = false;
-        //        this.isWindowVisible = true;
-        //    } else {
-        //        this.showNodeTabs = false;
-        //        this.showLinkTabs = false;
-        //        this.showInfoTab = false;
-        //        this.isWindowVisible = false;
-        //        this.tab = '';
-        //    }
-        //}
-    }
-
-    private toggleDetail(showDetail?: boolean)
-    {
-        //this.showDetail = showDetail == null ? !this.showDetail : showDetail;
-
-        //if (this.showDetail) {
-        //    this.overlayWidth = 700;
-        //    this.overlayMaxHeight = 700;
-        //} else {
-        //    this.overlayWidth = 500;
-        //    this.overlayMaxHeight = 700;
-        //}
     }
 
     private loadMenuItems() {
@@ -795,13 +681,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.loadMenuItems();
 
         if (this.readonly == false) {
-            this.toggleDetail(false);
             this.loadIntersectTypes()
                 .then(() => this.loadObjectTypes());
-        } else {
-            this.toggleDetail(true);
-        }
-
+        } 
     }
 
     private loadObjectTypes(): Promise<any> {
@@ -1142,6 +1024,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         let oOffset = this.overlayOffset - 125;
         this.diagramRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
         this.overlayMaxHeight = window.innerHeight - oOffset;
+
+        this.centerDiagram();
+
     }
 
     private zoomDiagram(v: number) {
@@ -1283,12 +1168,24 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private InitialLayoutCompleted() {
         this.diagram.scrollMode = go.Diagram.DocumentScroll;
+        this.centerDiagram();
     }
 
     private LayoutCompleted() {
+        this.centerDiagram();
+    }
+
+    private AnimationFinished() {
+        this.centerDiagram();
+
+    }
+
+    private centerDiagram() {
         if (this.focal != null) {
             let node = this.diagram.findNodeForKey(this.focal.key);
-            this.diagram.centerRect(node.actualBounds);
+            if (node != null) {
+                this.diagram.centerRect(node.actualBounds);
+            }
         }
     }
 
@@ -1333,7 +1230,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.currentSidebarView = editorView;
 
                 this.toggleReadOnly(false);
-                this.toggleTabs(this.selectedData);
                 this.setSourceValues(this.selectedData);
                 break;
             case 'save':
@@ -1344,7 +1240,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     } else {
                         this.save();
                         this.toggleReadOnly(true);
-                        this.toggleTabs(this.selectedData);
                         this.currentSidebarView = this.sidebarViews.find(s => s.name == 'Info'); //reset the view to the default
                     }
                 }
@@ -1618,7 +1513,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.makePort('R', go.Spot.Right, true, false)
         );
     }
-
 
     private createDefaultLink(): go.Link {
         return this.g(
