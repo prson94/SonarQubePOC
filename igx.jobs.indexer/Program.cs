@@ -54,7 +54,7 @@ namespace igx.jobs.indexer
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
                 
 #if DEBUG
-                //var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
+                companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
                 companies = companies.Where(x => x.CompanyID == 4).ToList();
 #endif
 
@@ -272,7 +272,7 @@ namespace igx.jobs.indexer
 	                ObjectArt.DisplayValue as 'SynonymFor',	
 	                I.Object as 'SynonymForObject',
 	                I.ObjectID as 'SynonymForObjectID',		
-	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
+	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ObjectID) as 'Url',	
 	                ArtType.Name as 'SynonymForObjectType',
                     P.Name as 'PredicateName'
                 from [intersect] I
