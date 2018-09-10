@@ -12,6 +12,8 @@ import {
     LineageView,
     LineageEditorModelV2,
     PredicateInfo,
+    AssetTypeFilter,
+    SidebarView,
 } from '../../../../models/lineage.model';
 
 import { MenuItem } from 'primeng/primeng';
@@ -79,7 +81,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private showEditTab = false;
     private showInfoTab = false;
     private showDetail = true;
-    public menuItems: MenuItem[] = [];
+    public menuItems: any[] = [];
     private editorMenuItems: MenuItem[] = [];
     private tab: string = 'info';
     private headerText = '';
@@ -89,6 +91,19 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private overlayWidth = 700;
     private history = [];
     private showPredicateNames = true;
+
+    private level = 1;
+    private previousLevel = 0;
+    private nKey = -1;
+    private model: any = null;
+    private focal: any = null;
+    private previousFocal: any = null;
+    private assetTypeFilters: AssetTypeFilter[] = [];
+    private levelList: any[] = []; 
+    private showSidebar = false;
+    private sidebarViews: SidebarView[] = [];
+    private currentSidebarView: SidebarView;
+
 
     private canAdd: boolean = false;
     private canEdit: boolean = false;
@@ -168,6 +183,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.diagram.nodeTemplateMap.add('object', this.createObjectNode());
         this.diagram.nodeTemplateMap.add('focal', this.createFocalNode());
+        this.diagram.nodeTemplateMap.add('hidden', this.createHiddenNode());
 
         this.diagram.linkTemplateMap.add('', this.createDefaultLink());
         this.diagram.linkTemplateMap.add('adding', this.createPendingAddLink());
@@ -179,6 +195,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.diagram.addDiagramListener('BackgroundSingleClicked', e => this.BackgroundSingleClicked(e));
         this.diagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
+        this.diagram.addDiagramListener('LayoutCompleted', () => this.LayoutCompleted());
+
 
         this.diagram.toolManager.linkingTool.linkValidation = (a, b, c, d) => this.canLink(a, b, c, d);
         this.diagram.commandHandler.deleteSelection = () => this.deleteSelection();
@@ -197,6 +215,32 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.allowDrop = true;
 
         console.log('initializeDiagram', this.diagram);
+
+        this.levelList = [
+            { value: 1, label: '1' },
+            { value: 2, label: '2' },
+            { value: 3, label: '3' },
+            { value: 0, label: 'Complete' },
+
+        ];
+
+        this.sidebarViews = [
+            {
+                name: 'Filter',
+                tabs: ['Filter'],
+                currentTab: 'Filter'
+            },
+            {
+                name: 'Info',
+                tabs: ['Summary','Details'],
+                currentTab: 'Summary'
+            },
+            {
+                name: 'Editor',
+                tabs: ['Edit', 'Summary'],
+                currentTab: 'Edit'
+            },
+        ];
 
         return this.populateDiagram();
     }
@@ -255,7 +299,24 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.name = d.name;
                 model.foreColor = d.foreColor;
                 model.backColor = d.backColor;
+
+                if (d.object == this.objectType && d.objectId == this.objectID) {
+                    model.category = 'focal';
+                    this.focal = model;
+                } else {
+                    model.category = 'object';
+                }
+
                 model.category = (d.object == this.objectType && d.objectId == this.objectID) ? 'focal' : 'object';
+
+                if (!this.assetTypeFilters.find(f => f.id == model.assetTypeId)){
+                    this.assetTypeFilters.push({
+                        id: model.assetTypeId,
+                        name: model.objectTypeName,
+                        selected: true
+                    });
+                }
+
 
                 modelList.push(model);
             }
@@ -336,7 +397,197 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.refreshControls(null);  //set buttons/expanders to defaults
 
         this.diagram.commitTransaction("load_all_data");
+        this.filterView(true);
         this.reOrderLayout();
+    }
+
+    private filterView(force: boolean = false) {
+
+        let filterLevel = false;
+        if (this.focal != null) {
+            filterLevel = (this.previousFocal == null || (this.previousFocal.key != this.focal.key || this.previousLevel != this.level));
+
+            this.diagram.model.nodeDataArray.forEach(n => {
+                if ((<any>n).key == this.focal.key)
+                    this.diagram.model.setDataProperty(n, 'category', 'focal');
+                else if ((<any>n).category != 'hidden')
+                    this.diagram.model.setDataProperty(n, 'category', 'object');
+            });
+
+            let node = this.diagram.findNodeForKey(this.focal.key);
+            if (node != null) {
+                //    this.diagram.model.setDataProperty(node.data, 'category', 'focal');
+
+                //let xpos = (this.diagram.viewportBounds.x + this.diagram.viewportBounds.width) / 2.0;
+                //let ypos = (this.diagram.viewportBounds.y + this.diagram.viewportBounds.height) / 2.0;
+                //xpos += node.actualBounds.width / 2;
+                //ypos += node.actualBounds.height / 2;
+
+                //node.position.set(new go.Point(xpos, ypos));
+                //this.diagram.centerRect(node.actualBounds);
+
+                //console.log('scale', this.diagram.viewportBounds, this.diagram.documentBounds, node.actualBounds);
+            }
+            //if (this.previousFocal != null) {
+            //    let p = this.diagram.findNodeForKey(this.previousFocal.key);
+            //    if (p != null)
+            //        this.diagram.model.setDataProperty(p.data, 'category', 'object');
+        }
+
+
+        //get filtered items
+        let filteredNodes = [];
+
+        this.assetTypeFilters.forEach(f => {
+            if (!f.selected) {
+                let nodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).assetTypeId == f.id && (<any>n).key != this.focal.key);
+                if (nodes != null) {
+                    filteredNodes = filteredNodes.concat(nodes);
+                }
+            }
+        });
+
+        //console.log('filteredNodes', filteredNodes);
+
+        //first filter by level
+        if (filterLevel || force) {
+            //prevents recalculation unless the level or focal node changes
+            this.previousLevel = this.level;
+            this.previousFocal = this.focal;
+
+            this.diagram.startTransaction("filter_data");
+
+            //remove hidden nodes and links
+            this.diagram.model.nodeDataArray.forEach(n => {
+                if ((<any>n).category == 'hidden') {
+                    let linksTo = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).to == (<any>n).key);
+                    let linksFrom = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).from == (<any>n).key);
+
+                    linksTo.forEach(l => this.diagramModelAsGraph().removeLinkData(l));
+                    linksFrom.forEach(l => this.diagramModelAsGraph().removeLinkData(l));
+                }
+            });
+            this.diagram.model.removeNodeDataCollection(this.diagram.model.nodeDataArray.filter(n => (<any>n).category == 'hidden'));
+
+            if (this.level == 0) {
+                //show everything
+                this.diagram.model.nodeDataArray.forEach(n => this.diagram.findNodeForKey((<any>n).key).visible = true);
+                this.diagramModelAsGraph().linkDataArray.forEach(l => this.diagram.findLinkForData(l).visible = true);
+            } else {
+                //hiding everything
+                this.diagram.model.nodeDataArray.forEach(n => this.diagram.findNodeForKey((<any>n).key).visible = false);
+                this.diagramModelAsGraph().linkDataArray.forEach(l => this.diagram.findLinkForData(l).visible = false);
+
+                let currentF = [];
+                let currentB = [];
+                let visitedF = [];
+                let visitedB = [];
+                currentF.push(this.diagram.model.nodeDataArray.find(n => (<any>n).key == this.focal.key));
+                currentB.push(this.diagram.model.nodeDataArray.find(n => (<any>n).key == this.focal.key));
+
+                let currentLevel = 0;
+
+                //show the nodes that are within the specified distance from the focal
+                while (currentLevel <= this.level) {
+                    let nextF = [];
+                    let nextB = [];
+
+                    currentF.forEach(c => {
+                        if (visitedF.indexOf(c.key) != -1 || filteredNodes.find(n => n.key == c.key) != null)
+                            return;
+                        visitedF.push(c.key);
+                        this.diagram.findNodeForKey(c.key).visible = true;
+
+                        let links = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).from == c.key);
+                        if (links != null) {
+                            links.forEach(l => {
+                                this.diagram.findLinkForData(l).visible = true;
+                                let n = this.diagram.model.nodeDataArray.find(n => (<any>n).key == (<any>l).to);
+                                if (n != null) {
+                                    nextF.push(n);
+                                }
+                            });
+                        }
+                    });
+
+                    currentB.forEach(c => {
+                        if (visitedB.indexOf(c.key) != -1 || filteredNodes.find(n => n.key == c.key) != null)
+                            return;
+                        visitedB.push(c.key);
+                        this.diagram.findNodeForKey(c.key).visible = true;
+
+                        let links = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).to == c.key);
+                        if (links != null) {
+                            links.forEach(l => {
+                                this.diagram.findLinkForData(l).visible = true;
+                                let n = this.diagram.model.nodeDataArray.find(n => (<any>n).key == (<any>l).from);
+                                if (n != null) {
+                                    nextB.push(n);
+                                }
+                            });
+                        }
+                    });
+
+                    currentF = nextF;
+                    currentB = nextB;
+
+                    currentLevel++;
+
+                    //add hidden nodes to show continuation if applicable
+                    if (currentLevel == this.level) {
+                        //console.log('reached', currentF, currentB);
+                        currentF.forEach(c => {
+                            let hasForward = this.diagramModelAsGraph().linkDataArray.find(l => (<any>l).from == c.key) != null;
+                            if (hasForward) {
+                                let n = new LineageNode();
+                                n.category = 'hidden';
+                                n.key = this.nKey.toString();
+
+                                this.diagram.model.addNodeData(n);
+                                let node = this.diagram.findNodeForKey(this.nKey.toString());
+                                node.selectable = false;
+
+                                let l = new LineageLink();
+                                l.to = this.nKey.toString();
+                                l.from = c.key;
+                                this.diagramModelAsGraph().addLinkData(l);
+                                let link = this.diagram.findLinkForData(l);
+                                link.selectable = false;
+
+                                this.nKey--;
+                            }
+                        });
+
+                        currentB.forEach(c => {
+                            let hasBackward = this.diagramModelAsGraph().linkDataArray.find(l => (<any>l).to == c.key) != null;
+                            if (hasBackward) {
+                                let n = new LineageNode();
+                                n.category = 'hidden';
+                                n.key = this.nKey.toString();
+
+                                this.diagram.model.addNodeData(n);
+                                let node = this.diagram.findNodeForKey(this.nKey.toString());
+                                node.selectable = false;
+
+                                let l = new LineageLink();
+                                l.from = this.nKey.toString();
+                                l.to = c.key;
+                                this.diagramModelAsGraph().addLinkData(l);
+                                let link = this.diagram.findLinkForData(l);
+                                link.selectable = false;
+
+                                this.nKey--;
+                            }
+                        });
+                    }
+                }
+            }
+
+
+            this.diagram.layout.invalidateLayout();
+            this.diagram.requestUpdate();
+            this.diagram.commitTransaction("filter_data");
+        }
     }
 
     private refreshControls(data: any) {
@@ -351,177 +602,178 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private toggleTabs(data: LineageNode | LineageLink) {
         //console.log(this.tab, data);
-        if (data) {
-            this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
-            this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
-            this.showInfoTab = this.showLinkTabs || this.showNodeTabs;
-            this.selectedDetailPredicate = 0;
+        //if (data) {
+        //    this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
+        //    this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
+        //    this.showInfoTab = this.showLinkTabs || this.showNodeTabs;
+        //    this.selectedDetailPredicate = 0;
 
-            if (this.tab != 'info' && this.tab != 'add')
-                this.tab = 'info';
+        //    if (this.tab != 'info' && this.tab != 'add')
+        //        this.tab = 'info';
 
-            if (!this.showNodeTabs && !this.showLinkTabs) {
-                this.isWindowVisible = false;
-                return;
-            }
+        //    if (!this.showNodeTabs && !this.showLinkTabs) {
+        //        this.isWindowVisible = false;
+        //        return;
+        //    }
 
-            if ((this.tab == 'add' || this.tab == 'edit')) {
-                if (this.readonly)
-                    this.tab = 'info';
-                if (this.tab == 'add' && !this.canAdd )
-                    this.tab = 'info';
-                if (this.tab == 'edit' && (!this.canEdit || !(this.canAdd && data.isNew)))
-                    this.tab = 'info';
-            } else if (this.tab == 'info' && !this.showInfoTab) {
-                if (!this.readonly) {
-                    if (this.showLinkTabs)
-                        if (this.canEdit || (this.canAdd && data.isNew))
-                            this.tab = 'edit';
-                        else
-                            this.tab = 'info';
-                    else
-                        if (this.canAdd)
-                            this.tab = 'add';
-                        else
-                            this.tab = 'info';
-                }
-                else {
-                    this.tab = '';
-                    this.isWindowVisible = false;
-                }
-            }
+        //    if ((this.tab == 'add' || this.tab == 'edit')) {
+        //        if (this.readonly)
+        //            this.tab = 'info';
+        //        if (this.tab == 'add' && !this.canAdd )
+        //            this.tab = 'info';
+        //        if (this.tab == 'edit' && (!this.canEdit || !(this.canAdd && data.isNew)))
+        //            this.tab = 'info';
+        //    } else if (this.tab == 'info' && !this.showInfoTab) {
+        //        if (!this.readonly) {
+        //            if (this.showLinkTabs)
+        //                if (this.canEdit || (this.canAdd && data.isNew))
+        //                    this.tab = 'edit';
+        //                else
+        //                    this.tab = 'info';
+        //            else
+        //                if (this.canAdd)
+        //                    this.tab = 'add';
+        //                else
+        //                    this.tab = 'info';
+        //        }
+        //        else {
+        //            this.tab = '';
+        //            this.isWindowVisible = false;
+        //        }
+        //    }
 
-            if (this.showNodeTabs) {
-                if (this.isWindowVisible == false)
-                    this.tab = 'info';
-                this.isWindowVisible = true;
-            } else if ((this.showLinkTabs && this.readonly) || this.tab == '') {
-                this.tab = 'info';
-                this.isWindowVisible = true;
-            }
+        //    if (this.showNodeTabs) {
+        //        if (this.isWindowVisible == false)
+        //            this.tab = 'info';
+        //        this.isWindowVisible = true;
+        //    } else if ((this.showLinkTabs && this.readonly) || this.tab == '') {
+        //        this.tab = 'info';
+        //        this.isWindowVisible = true;
+        //    }
 
-            if (this.showNodeTabs && !this.readonly) {
-                if (this.canAdd || (this.canEdit && data.isNew))
-                    this.tab = 'add';
-                else
-                    this.tab = 'info';
-                this.isWindowVisible = true;
-            }
+        //    if (this.showNodeTabs && !this.readonly) {
+        //        if (this.canAdd || (this.canEdit && data.isNew))
+        //            this.tab = 'add';
+        //        else
+        //            this.tab = 'info';
+        //        this.isWindowVisible = true;
+        //    }
 
-            if (this.showLinkTabs && !this.readonly) {
-                    this.tab = 'edit';
-                this.isWindowVisible = true;
-            }
+        //    if (this.showLinkTabs && !this.readonly) {
+        //            this.tab = 'edit';
+        //        this.isWindowVisible = true;
+        //    }
 
 
-        } else {
-            if (!this.readonly) {
-                if (this.tab == '')
-                    this.tab = 'add';
-                this.showNodeTabs = false;
-                this.showLinkTabs = false;
-                this.showInfoTab = false;
-                this.isWindowVisible = true;
-            } else {
-                this.showNodeTabs = false;
-                this.showLinkTabs = false;
-                this.showInfoTab = false;
-                this.isWindowVisible = false;
-                this.tab = '';
-            }
-        }
+        //} else {
+        //    if (!this.readonly) {
+        //        if (this.tab == '')
+        //            this.tab = 'add';
+        //        this.showNodeTabs = false;
+        //        this.showLinkTabs = false;
+        //        this.showInfoTab = false;
+        //        this.isWindowVisible = true;
+        //    } else {
+        //        this.showNodeTabs = false;
+        //        this.showLinkTabs = false;
+        //        this.showInfoTab = false;
+        //        this.isWindowVisible = false;
+        //        this.tab = '';
+        //    }
+        //}
     }
 
     private toggleDetail(showDetail?: boolean)
     {
-        this.showDetail = showDetail == null ? !this.showDetail : showDetail;
+        //this.showDetail = showDetail == null ? !this.showDetail : showDetail;
 
-        if (this.showDetail) {
-            this.overlayWidth = 700;
-            this.overlayMaxHeight = 700;
-        } else {
-            this.overlayWidth = 500;
-            this.overlayMaxHeight = 700;
-        }
+        //if (this.showDetail) {
+        //    this.overlayWidth = 700;
+        //    this.overlayMaxHeight = 700;
+        //} else {
+        //    this.overlayWidth = 500;
+        //    this.overlayMaxHeight = 700;
+        //}
     }
 
     private loadMenuItems() {
         this.menuItems = [];
+        let editable = (this.canAdd || this.canEdit || this.canDelete);
 
-        //console.log(this.permissions, this.hasModifyRelationshipsPermissions());
+        this.menuItems.push({
+            key: 'filter',
+            icon: 'fa fa-filter',
+            items: null,
+            title: 'Filter',
+            command: (e) => this.menuClick(e)
+        });
 
-        if (this.readonly && (this.canAdd || this.canEdit || this.canDelete)) {
+        if (!this.readonly) {
             this.menuItems.push({
-                icon: 'fa fa-pencil',
-                items: null,
-                title: 'Edit Lineage'
-            });
-        }
-
-        if (!this.readonly)
-            this.menuItems.push({
+                key: 'save',
                 icon: 'fa fa-floppy-o',
                 items: null,
-                title: 'Save Lineage'
+                title: 'Save Lineage',
+                command: (e) => this.menuClick(e)
             });
+        }
 
         let top = {
             icon: 'fa fa-eye',
             items: [{
-                icon: null,
+                key: 'relationship-labels',
+                icon: 'fa fa-check-square',
                 items: null,
-                label: 'Toggle Predicate Names'
+                label: 'Relationship Labels',
+                command: (e) => this.menuClick(e)
             }],
             title: ''
         }
-
         this.menuItems.push(top);
 
         this.menuItems.push({
+            key: 'zoom-in',
             icon: 'fa fa-search-plus',
             items: null,
-            title: 'Zoom in'
+            title: 'Zoom in',
+            command: (e) => this.menuClick(e)
         });
+
         this.menuItems.push({
+            key: 'zoom-out',
             icon: 'fa fa-search-minus',
             items: null,
-            title: 'Zoom out'
+            title: 'Zoom out',
+            command: (e) => this.menuClick(e)
 
         });
+
+        if (this.readonly && editable) {
+            this.menuItems.push({
+                key: 'edit',
+                icon: 'fa fa-pencil',
+                items: null,
+                title: 'Edit Lineage',
+                command: (e) => this.menuClick(e)
+            });
+        }
+
         this.menuItems.push({
+            key: 'info',
             icon: 'fa fa-info-circle',
             items: null,
-            title: 'Show/Hide Info'
+            title: 'Show/Hide Info',
+            command: (e) => this.menuClick(e)
         });
 
         if (!this.readonly)
             this.menuItems.push({
+                key: 'cancel',
                 icon: 'fa fa-remove',
                 items: null,
-                title: 'Cancel Changes'
+                title: 'Cancel Changes',
+                command: (e) => this.menuClick(e)
             });
-
-        if (this.history.length > 1) {
-            let hist = {
-                icon: 'fa fa-history',
-                items: [],
-                title: 'Navigation History'
-            };
-
-            this.history.forEach(h => {
-                hist.items.push({
-                    icon: null,
-                    title: h.object + h.objectId.toString(),
-                    items: null,
-                    command: () => {
-                        this.objectType = h.object;
-                        this.objectID = h.objectId;
-                        this.populateDiagram();
-                    }
-                });
-            });
-        }
-
     }
 
     private toggleReadOnly(readonly?: boolean) {
@@ -858,7 +1110,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     }
 
-
     private changeNode(e: LineageNode) {
 
         let node: LineageNode = this.diagram.model.findNodeDataForKey(e.key);
@@ -909,8 +1160,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.selection.count == 0) {
             this.selectedData = null;
         } else {
+
             //get a deep copy of the selection as an array
-            var sel = _.cloneDeep(this.selection.toArray());
+            //var sel = _.cloneDeep(this.selection.toArray());
+            let sel = this.selection.toArray().slice();
 
             if (sel != null && sel.length != 0) {
                 if (sel[0].data.diagramObjectType == DiagramObjectType.Link) {
@@ -932,9 +1185,15 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         var obj = e.diagram.selection.first().data;
         if (obj != null) {
             if (obj.diagramObjectType == DiagramObjectType.Node) {
-                this.objectType = obj.object;
-                this.objectID = obj.objectId;
-                this.populateDiagram();
+                let node = this.diagram.model.nodeDataArray.find(n => (<any>n).key == obj.key);
+                if (node != null) {
+                    this.objectType = (<any>node).object;
+                    this.objectID = (<any>node).objectId;
+                    this.focal = (<any>node);
+                    this.filterView();
+                }
+
+                //this.populateDiagram();
             }
         }
         return;
@@ -1023,45 +1282,137 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private InitialLayoutCompleted() {
-        this.diagram.scrollMode = go.Diagram.InfiniteScroll;
+        this.diagram.scrollMode = go.Diagram.DocumentScroll;
     }
 
-    public menuClick(e: MenuItem) {
-        //console.log('menuClick', e);
-        if (e.icon == 'fa fa-info-circle') {
-            this.isWindowVisible = !this.isWindowVisible;
-        } else if (e.icon == 'fa fa-pencil') {
-            this.toggleReadOnly(false);
-            this.toggleTabs(this.selectedData);
-            this.setSourceValues(this.selectedData);
-            this.isWindowVisible = true;
-        } else if (e.icon == 'fa fa-floppy-o') {
-            if (!this.isLoading) {
-                if (!this.valid()) {
-                    this.messagesService.showError('', this.errors.join('\n'));
-                    return;
-                } else {
-                    this.save();
-                    this.toggleReadOnly(true);
-                    this.toggleTabs(this.selectedData);
-                }
-            }
-            
-        } else if (e.icon == 'fa fa-remove') {
-            this.toggleReadOnly(true);
-            this.populateDiagram();
-            this.loadMenuItems();
-        } else if (e.icon == 'fa fa-search-plus') {
-            this.zoomDiagram(this.diagram.scale + .1);
-        } else if (e.icon == 'fa fa-search-minus') {
-            this.zoomDiagram(this.diagram.scale - .1);
-        } else if (e.icon == null && e.label == 'Toggle Predicate Names') {
-            this.showPredicateNames = !this.showPredicateNames;
-            this.diagramModelAsGraph().linkDataArray.forEach(l => {
-                this.diagram.model.setDataProperty(l, "text", null);
-            });
-
+    private LayoutCompleted() {
+        if (this.focal != null) {
+            let node = this.diagram.findNodeForKey(this.focal.key);
+            this.diagram.centerRect(node.actualBounds);
         }
+    }
+
+    public menuClick(event: any) {
+        //console.log('menuClick', e);
+        let e: any = event.item;
+
+        switch (e.key) {
+            case 'info':
+                if (!this.readonly) {
+                    //if we're in edit mode show the edit view instead
+                    let editorView = this.sidebarViews.find(s => s.name == 'Editor');
+                    this.showSidebar = (this.showSidebar && this.currentSidebarView == editorView) ? false : true;
+                    this.currentSidebarView = editorView;
+                } else {
+                    let infoView = this.sidebarViews.find(s => s.name == 'Info');
+                    this.showSidebar = (this.showSidebar && this.currentSidebarView == infoView) ? false : true;
+                    this.currentSidebarView = infoView;
+                }
+                break;
+            case 'filter':
+                let filterView = this.sidebarViews.find(s => s.name == 'Filter');
+                this.showSidebar = (this.showSidebar && this.currentSidebarView == filterView) ? false : true;
+                this.currentSidebarView = filterView;
+                break;
+            case 'zoom-in':
+                this.zoomDiagram(this.diagram.scale + .1);
+                break;
+            case 'zoom-out':
+                this.zoomDiagram(this.diagram.scale - .1);
+                break;
+            case 'relationship-labels':
+                this.showPredicateNames = !this.showPredicateNames;
+                e.icon = this.showPredicateNames ? 'fa fa-check-square' : 'fa fa-square-o';
+                this.diagramModelAsGraph().linkDataArray.forEach(l => {
+                    this.diagram.model.setDataProperty(l, "text", null);
+                });
+                break;
+            case 'edit':
+                let editorView = this.sidebarViews.find(s => s.name == 'Editor');
+                this.showSidebar = (this.showSidebar && this.currentSidebarView == editorView) ? false : true;
+                this.currentSidebarView = editorView;
+
+                this.toggleReadOnly(false);
+                this.toggleTabs(this.selectedData);
+                this.setSourceValues(this.selectedData);
+                break;
+            case 'save':
+                if (!this.isLoading) {
+                    if (!this.valid()) {
+                        this.messagesService.showError('', this.errors.join('\n'));
+                        return;
+                    } else {
+                        this.save();
+                        this.toggleReadOnly(true);
+                        this.toggleTabs(this.selectedData);
+                        this.currentSidebarView = this.sidebarViews.find(s => s.name == 'Info'); //reset the view to the default
+                    }
+                }
+                break;
+            case 'cancel':
+                this.currentSidebarView = this.sidebarViews.find(s => s.name == 'Info');
+                this.toggleReadOnly(true);
+                this.populateDiagram();
+                this.loadMenuItems();
+                break;
+        }
+
+        //if (e.key == 'fa fa-info-circle') {
+
+        //    //this.isWindowVisible = !this.isWindowVisible;
+        //    let infoView = this.sidebarViews.find(s => s.name == 'Info');
+        //    this.showSidebar = (this.showSidebar && this.currentSidebarView == infoView) ? false : true;
+        //    this.currentSidebarView = infoView;
+        //    console.log('reached', infoView, this.currentSidebarView, this.showSidebar)
+        //} else if (e.icon == 'fa fa-filter') {
+        //    let filterView = this.sidebarViews.find(s => s.name == 'Filter');
+        //    this.showSidebar = (this.showSidebar && this.currentSidebarView == filterView) ? false : true;
+        //    this.currentSidebarView = filterView;
+        //} else if (e.icon == 'fa fa-pencil') {
+        //    this.toggleReadOnly(false);
+        //    this.toggleTabs(this.selectedData);
+        //    this.setSourceValues(this.selectedData);
+        //    this.isWindowVisible = true;
+        //} else if (e.icon == 'fa fa-floppy-o') {
+        //    if (!this.isLoading) {
+        //        if (!this.valid()) {
+        //            this.messagesService.showError('', this.errors.join('\n'));
+        //            return;
+        //        } else {
+        //            this.save();
+        //            this.toggleReadOnly(true);
+        //            this.toggleTabs(this.selectedData);
+        //        }
+        //    }
+
+        //} else if (e.icon == 'fa fa-remove') {
+        //    this.toggleReadOnly(true);
+        //    this.populateDiagram();
+        //    this.loadMenuItems();
+        //} else if (e.icon == 'fa fa-search-plus') {
+        //    this.zoomDiagram(this.diagram.scale + .1);
+        //} else if (e.icon == 'fa fa-search-minus') {
+        //    this.zoomDiagram(this.diagram.scale - .1);
+        //} else if (e.icon == null && e.label == 'Show Relationship Labels' || e.label == 'Hide Relationship Labels') {
+        //    this.showPredicateNames = !this.showPredicateNames;
+        //    e.label = this.showPredicateNames ? 'Hide Relationship Labels' : 'Show Relationship Labels';
+        //    this.diagramModelAsGraph().linkDataArray.forEach(l => {
+        //        this.diagram.model.setDataProperty(l, "text", null);
+        //    });
+
+        //}
+    }
+
+    private changeTab(tab: string) {
+        this.currentSidebarView.currentTab = tab;
+    }
+
+    private selectAllFilters() {
+        this.assetTypeFilters.forEach(f => f.selected = true);
+    }
+
+    private selectNoneFilters() {
+        this.assetTypeFilters.forEach(f => f.selected = false);
     }
     //#endregion
 
@@ -1071,11 +1422,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
 
         let dg = this.g(go.Diagram, 'LineageDiagram', {
-            initialContentAlignment: go.Spot.Left,
+            initialContentAlignment: go.Spot.Center,
+//            initialViewportSpot: go.Spot.Center,
+  //          initialDocumentSpot: go.Spot.Center,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
-            initialPosition: new go.Point(125, 125),
+          //  initialPosition: new go.Point(125, 125),
             layout: this.g(go.LayeredDigraphLayout, {
                 direction: 0,
                 layerSpacing: 25,
@@ -1172,10 +1525,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private createFocalNode(): go.Node {
-        let nodeWidth = 150 * 1.15;
-        let nodeHeight = 75 * 1.35;
+        let nodeWidth = 150;
+        let nodeHeight = 75;
         let nodeBorderColor = '#000';
-        let nodeFontSize = 10;
+        let nodeFontSize = 8;
 
         return this.g(go.Node, "Spot",
             new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(go.Point.stringify),
@@ -1244,6 +1597,28 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.makePort('R', go.Spot.Right, true, false)
         );
     }
+
+    private createHiddenNode(): go.Node {
+        return this.g(go.Node, "Spot",
+            this.g(go.Panel, "Auto", {
+                width: 32,
+                height: 32
+            },
+                this.g(go.Shape, "RoundedRectangle", {
+                    stroke: 'transparent',
+                    fill: 'transparent',
+                    strokeWidth: 1,
+                    spot1: go.Spot.TopLeft,
+                    spot2: go.Spot.BottomRight,
+                    name: "NodeShape"
+                }
+                )
+            ),
+            this.makePort('L', go.Spot.Left, false, true),
+            this.makePort('R', go.Spot.Right, true, false)
+        );
+    }
+
 
     private createDefaultLink(): go.Link {
         return this.g(

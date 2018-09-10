@@ -87,6 +87,18 @@ export class LineageEditorModelV2 {
     OriginalLinks: LineageLink[] = [];
 }
 
+export class AssetTypeFilter {
+    id: number;
+    name: string;
+    selected: boolean = true;
+}
+
+export class SidebarView {
+    name: string;
+    tabs: string[] = [];
+    currentTab: string;
+}
+
 
 //#region enumerations
 

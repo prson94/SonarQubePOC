@@ -130,3 +130,118 @@
     -o-transform-origin: 5px 5px;
     transform-origin: 5px 5px;
 }
+
+.diagram-menubar.ui-menubar.ui-widget.ui-widget-content {
+    background: transparent;
+    color: #fff;
+    padding: 0;
+
+    a.ui-menuitem-link {
+        color: #fff;
+        text-align: left;
+    }
+}
+
+.diagram-header {
+    background: @igx-dark-blue;
+    height: 42px;
+
+    div.col {
+        padding: 5px;
+    }
+
+    .header {
+        padding: 5px;
+        color: #fff;
+        font-size: 1.2em;
+    }
+
+    span.ui-menuitem-text {
+        color: #000;
+    }
+
+    .ui-submenu-list a > .ui-menuitem-icon.fa {
+        color: #000;
+    }
+
+    .ui-submenu-list > li .ui-menuitem {
+        float: left;
+    }
+}
+
+.diagram-sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 33%;
+    max-width: 500px;
+    height: 100%;
+    z-index: 100;
+    background: #ebebeb;
+    height: 100%;
+    overflow-y: scroll;
+
+    .sidebar-content {
+        padding: 10px;
+
+        .tooltip-panel {
+            background: transparent;
+        }
+    }
+
+    .tab-bar {
+        background: @igx-light-blue-1;
+        color: #fff;
+
+        ul {
+            padding: 0;
+            margin: 0;
+
+            li {
+                cursor: pointer;
+                display: inline-block;
+                padding: 8px;
+
+                &.selected {
+                    background: @igx-light-blue-2;
+                }
+            }
+        }
+    }
+
+    small {
+        background-color: transparent !important;
+    }
+
+    .ui-paginator-bottom.ui-paginator.ui-widget.ui-widget-header {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    .ui-datatable-footer.ui-widget-header {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    span.ui-paginator-pages {
+        background: white;
+    }
+
+    a.ui-paginator-element {
+        &.ui-paginator-first {
+            background: white;
+        }
+
+        &.ui-paginator-prev {
+            background: white;
+        }
+
+        &.ui-paginator-next {
+            background: white;
+        }
+
+        &.ui-paginator-last {
+            background: white;
+        }
+    }
+}

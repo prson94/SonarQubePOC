@@ -1,158 +1,230 @@
-﻿<div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 43px; z-index: 900">
-    <d3s-overlay-window [width]="overlayWidth" [maxHeight]="overlayMaxHeight" padding="0" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''" [overflowScroll]="'visible'">
-        <div *ngIf="!showNodeTabs && !showLinkTabs && readonly" style="padding:10px;">Nothing selected</div>
-        <ul class="tab-menu" *ngIf="showNodeTabs || showLinkTabs || !readonly">
-            <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'" *ngIf="showInfoTab">
-                <i class="fa fa-info-circle fa-2x"></i>
-            </li>
-            <li (click)="selectTab('add')" class="tab-item" [class.selected]="tab == 'add'" *ngIf="!readonly && canAdd">
-                <i class="fa fa-plus fa-2x"></i>
-            </li>
-            <li (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'" *ngIf="!readonly && showLinkTabs && (canEdit || canAdd)">
-                <i class="fa fa-pencil fa-2x"></i>
-            </li>
-        </ul>
-        <div *ngIf="showNodeTabs || showLinkTabs || !readonly" [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
-            <ng-container *ngSwitchCase="'info'" >
-                <div *ngIf="showNodeTabs" style="overflow-y: scroll" [style.max-height]="(overlayMaxHeight - 100) + 'px'">
-                    <div style="float:right;">
-                        <button pButton type="button" [label]="showDetail ? 'Hide Detail' : 'Show Detail'" [icon]="showDetail ? 'fa fa-compress' : 'fa fa-expand'" (click)="toggleDetail()"></button>
-                    </div>
-                    <object-detail *ngIf="showDetail" [objectType]="selectedData.object" [objectID]="selectedData.objectId"></object-detail>
-                    <d3s-lineage-info *ngIf="!showDetail" [node]="selectedData" [diagram]="diagram" (selectionChange)="ChangedSelection()"></d3s-lineage-info>
-                </div>
-                <div *ngIf="showLinkTabs && readonly">
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="FieldName">Predicate</div>
-                            <div>
-                                {{selectedData.fullText || '[unknown]'}}
-                            </div>
-                        </div>
-                        <div class="col s12" *ngIf="selectedData != null && selectedData.predicates != null && selectedData.predicates.length > 0">
-                            <!--<div>
-                                <select [ngModel]="selectedDetailPredicate" style="width: 95%">
-                                    <option *ngFor="let p of selectedData.predicates; let i = index" [value]="index">{{p.name}}</option>
-                                </select>
-                            </div>-->
-                            <div>
-                                <object-detail [objectType]="'Intersect'" [objectID]="selectedData.predicates[0].intersectId"></object-detail>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length == 1">
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="FieldName">Predicate</div>
-                            <div>
-                                {{selectedData.fullText || '[unknown]'}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </ng-container>
-            <ng-container *ngSwitchCase="'add'" >
-                <div *ngIf="!readonly">
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="FieldName">
-                                Object Type
-                            </div>
-                            <div  >
-                                <select style="width: 100%" [ngModel]="selectedAssetTypeId" (ngModelChange)="selectObjectType($event);">
-                                    <option></option>
-                                    <option *ngFor="let o of objectTypes" [value]="o.value">{{o.label}}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col s12" *ngIf="selectedAssetTypeId == null || selectedAssetTypeId == ''" style="padding:5px">&nbsp;</div>
-                        <div class="col s12" *ngIf="selectedAssetTypeId != null && selectedAssetTypeId != ''">
-                            <div class="FieldName">
-                                Choose Objects
-                            </div>
-                            <div>
-                                <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <div [hidden]="!objectsLoading">
-                                    <d3s-loading isLoading="true"></d3s-loading>
-                                </div>
-                                <div [hidden]="objectsLoading">
-                                    <p-dataTable #dt
-                                                 [globalFilter]="gb"
-                                                 scrollable="true"
-                                                 scrollWidth="100%"
-                                                 [rowsPerPageOptions]="defaultPagingOptions"
-                                                 [value]="objects"
-                                                 [rows]="defaultInitialItemsPerPage"
-                                                 paginator="true"
-                                                 pageLinks="3"
-                                                 [(selection)]="selectedObjects"
-                                                 lazy="true"
-                                                 (onLazyLoad)="lazyLoad($event)"
-                                                 [totalRecords]="totalRecords">
-                                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                        <p-column selectionMode="multiple" [style]="{'width':'30px'}"></p-column>
-                                        <p-column field="name" header="Name"></p-column>
-                                    </p-dataTable>
-                                </div>
-                            </div>
-                        </div>
-                        <div *ngIf="addObjectsWarning != ''" style="padding: 10px">
-                            {{addObjectsWarning}}
-                        </div>
-                        <div class="col s12" *ngIf="selectedAssetTypeId != null">
-                            <button pButton label="Add Selected Objects" type="button" (click)="add()" [disabled]="selectedAssetTypeId == null || selectedObjects == null || selectedObjects.length < 1 || !canAdd"></button>
-                        </div>
-                    </div>
-                </div>
-            </ng-container>
-            <ng-container *ngSwitchCase="'edit'">
-                <div *ngIf="showLinkTabs">
-                    <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length >= 1 && selection?.count == 1">
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="FieldName">Choose Predicate(s)</div>
-                                <div>
-                                    <p-listbox [options]="filteredIntersectTypes"
-                                               [ngModel]="selectedData.predicates"
-                                               (ngModelChange)="changeIntersectType($event)"
-                                               [style]="{'width' : '95%' }"
-                                               dataKey="intersectTypeId"
-                                               optionLabel="name"
-                                               [disabled]="!(canEdit || (canAdd && selectedData.isNew))"
-                                               checkbox="true"
-                                               multiple="true">
-                                    </p-listbox>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div  *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length >= 1 && selection?.count > 1">
-                        <div class="row">
-                            <div class="col s12">
-                                More than one object is selected on the diagram. Please select a single link or node to edit it.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </ng-container>
-        </div>
-    </d3s-overlay-window>
-</div>
-
-<div class="tile tile-detail" *ngIf="isLoading">
+﻿<div class="tile tile-detail" *ngIf="isLoading">
     <div class="row">
         <div class="col s12">
             <d3s-loading isLoading="true"></d3s-loading>
         </div>
     </div>
 </div>
-<div class="tile tile-detail" [hidden]="isLoading">
-    <header>
-        &nbsp;
-        <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
-    </header>
-    <div class="row">
+<div class="tile tile-detail" style="padding: 0" [hidden]="isLoading">
+
+    <div class="row diagram-header">
+        <div class="col s4 pull-left" style="padding: 5px;color: #fff;font-size: 1.2em; padding-top: 10px;">
+            LINEAGE: {{focal?.name}} ({{focal?.objectTypeName}})
+        </div>
+        <div class="col s4" style="padding: 7px; text-align: center;">
+            <p-dropdown [options]="levelList" [ngModel]="level" (ngModelChange)="level = $event; filterView();" [style]="{'width' : '72px' }">
+            </p-dropdown>
+        </div>
+        <div class="col s4" style="padding: 5px; text-align: right; color: #fff; font-size: 1.2em;">
+            <p-menubar [model]="menuItems" [styleClass]="'diagram-menubar'"></p-menubar>
+            <!--<header>
+                <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
+            </header>-->
+        </div>
+    </div>
+    <div class="row" style="position: relative">
+        <div *ngIf="showSidebar" class="diagram-sidebar">
+            <div class="tab-bar">
+                <ul>
+                    <li *ngFor="let tab of currentSidebarView.tabs" [class.selected]="currentSidebarView.currentTab == tab" (click)="changeTab(tab)">
+                        {{tab}}
+                    </li>
+                </ul>
+            </div>
+            <div class="sidebar-content">
+                <div [ngSwitch]="currentSidebarView.name">
+                    <div *ngSwitchCase="'Info'">
+                        <div [ngSwitch]="currentSidebarView.currentTab">
+                            <div *ngSwitchCase="'Summary'">
+                                <ng-container *ngIf="selectedData != null">
+                                    <d3s-lineage-info *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node"
+                                                      [node]="selectedData"
+                                                      [diagram]="diagram"
+                                                      (selectionChange)="ChangedSelection()">
+                                    </d3s-lineage-info>
+                                    <ng-container *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link">
+                                        <div class="row">
+                                            <div class="col s12">
+                                                <div class="FieldName">Predicate</div>
+                                                <div>
+                                                    {{selectedData.fullText || '[unknown]'}}
+                                                </div>
+                                            </div>
+                                            <div *ngIf="selectedData.predicates != null && selectedData.predicates.length > 0" class="col s12">
+                                                <div>
+                                                    <object-detail [objectType]="'Intersect'" [objectID]="selectedData.predicates[0].intersectId"></object-detail>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                </ng-container>
+                            </div>
+                            <div *ngSwitchCase="'Details'">
+                                <ng-container *ngIf="selectedData != null">
+                                    <object-detail *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node"
+                                                   [objectType]="selectedData.object"
+                                                   [objectID]="selectedData.objectId">
+
+                                    </object-detail>
+                                    <ng-container *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link">
+                                        <div class="row">
+                                            <div class="col s12">
+                                                <div class="FieldName">Predicate</div>
+                                                <div>
+                                                    {{selectedData.fullText || '[unknown]'}}
+                                                </div>
+                                            </div>
+                                            <div *ngIf="selectedData.predicates != null && selectedData.predicates.length > 0" class="col s12">
+                                                <div>
+                                                    <object-detail [objectType]="'Intersect'" [objectID]="selectedData.predicates[0].intersectId"></object-detail>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngSwitchCase="'Filter'">
+                        <div [ngSwitch]="currentSidebarView.currentTab">
+                            <div *ngSwitchCase="'Filter'">
+                                <div class="row">
+                                    <div class="col s12">
+                                        <div class="FieldName">
+                                            Asset Types
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s6">
+                                        <div *ngFor="let filter of assetTypeFilters; let i=index">
+                                            <div *ngIf="i % 2 == 0" style="padding: 2px;">
+                                                <input type="checkbox" [(ngModel)]="filter.selected" /> {{filter.name}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col s6">
+                                        <div *ngFor="let filter of assetTypeFilters; let i=index">
+                                            <div *ngIf="i % 2 == 1" style="padding: 2px;">
+                                                <input type="checkbox" [(ngModel)]="filter.selected" /> {{filter.name}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s12 right" style="padding-top: 15px;">
+                                        <button pButton type="button" label="Select All" (click)="selectAllFilters()"></button>
+                                        <button pButton type="button" label="Deselect All" (click)="selectNoneFilters()"></button>
+                                        <button pButton type="button" label="Apply" (click)="filterView(true)"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngSwitchCase="'Editor'">
+                        <div [ngSwitch]="currentSidebarView.currentTab">
+                            <div *ngSwitchCase="'Edit'">
+                                <ng-container *ngIf="!readonly && (selectedData == null || selectedData.diagramObjectType == DiagramObjectType.Node)">
+                                    <div class="row">
+                                        <div class="col s12">
+                                            <div class="FieldName">
+                                                Object Type
+                                            </div>
+                                            <div>
+                                                <select style="width: 100%" [ngModel]="selectedAssetTypeId" (ngModelChange)="selectObjectType($event);">
+                                                    <option></option>
+                                                    <option *ngFor="let o of objectTypes" [value]="o.value">{{o.label}}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col s12" *ngIf="selectedAssetTypeId == null || selectedAssetTypeId == ''" style="padding:5px">&nbsp;</div>
+                                        <div class="col s12" *ngIf="selectedAssetTypeId != null && selectedAssetTypeId != ''">
+                                            <div class="FieldName">
+                                                Choose Objects
+                                            </div>
+                                            <div>
+                                                <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                                                <div [hidden]="!objectsLoading">
+                                                    <d3s-loading isLoading="true"></d3s-loading>
+                                                </div>
+                                                <div [hidden]="objectsLoading">
+                                                    <p-dataTable #dt
+                                                                 [globalFilter]="gb"
+                                                                 scrollable="true"
+                                                                 scrollWidth="100%"
+                                                                 [rowsPerPageOptions]="defaultPagingOptions"
+                                                                 [value]="objects"
+                                                                 [rows]="defaultInitialItemsPerPage"
+                                                                 paginator="true"
+                                                                 pageLinks="3"
+                                                                 [(selection)]="selectedObjects"
+                                                                 lazy="true"
+                                                                 (onLazyLoad)="lazyLoad($event)"
+                                                                 [totalRecords]="totalRecords">
+                                                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
+                                                        <p-column selectionMode="multiple" [style]="{'width':'30px'}"></p-column>
+                                                        <p-column field="name" header="Name"></p-column>
+                                                    </p-dataTable>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div *ngIf="addObjectsWarning != ''" style="padding: 10px">
+                                            {{addObjectsWarning}}
+                                        </div>
+                                        <div class="col s12" *ngIf="selectedAssetTypeId != null">
+                                            <button pButton label="Add Selected Objects" type="button" (click)="add()" [disabled]="selectedAssetTypeId == null || selectedObjects == null || selectedObjects.length < 1 || !canAdd"></button>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="!readonly && selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link">
+                                    <div class="row">
+                                        <div class="col s12">
+                                            <div class="FieldName">Choose Predicate(s)</div>
+                                            <div>
+                                                <p-listbox [options]="filteredIntersectTypes"
+                                                           [ngModel]="selectedData.predicates"
+                                                           (ngModelChange)="changeIntersectType($event)"
+                                                           [style]="{'width' : '95%' }"
+                                                           dataKey="intersectTypeId"
+                                                           optionLabel="name"
+                                                           [disabled]="!(canEdit || (canAdd && selectedData.isNew))"
+                                                           checkbox="true"
+                                                           multiple="true">
+                                                </p-listbox>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                            </div>
+                            <div *ngSwitchCase="'Summary'">
+                                <ng-container *ngIf="selectedData != null">
+                                    <d3s-lineage-info *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node"
+                                                      [node]="selectedData"
+                                                      [diagram]="diagram"
+                                                      (selectionChange)="ChangedSelection()">
+                                    </d3s-lineage-info>
+                                    <ng-container *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link">
+                                        <div class="row">
+                                            <div class="col s12">
+                                                <div class="FieldName">Predicate</div>
+                                                <div>
+                                                    {{selectedData.fullText || '[unknown]'}}
+                                                </div>
+                                            </div>
+                                            <div *ngIf="selectedData.predicates != null && selectedData.predicates.length > 0" class="col s12">
+                                                <div>
+                                                    <object-detail [objectType]="'Intersect'" [objectID]="selectedData.predicates[0].intersectId"></object-detail>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="col s12" style="padding: 0">
             <table>
                 <tbody>

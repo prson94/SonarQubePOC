@@ -15,6 +15,8 @@ import {
     ButtonModule,
     InputTextareaModule,
     ListboxModule,
+    DropdownModule,
+    MenubarModule,
 } from 'primeng/primeng';
 
 import { ImpactComponent } from './impact.component';
@@ -71,6 +73,8 @@ import { SharedObjectDetailsModule } from '../objectdetails/shared-object-detail
         ButtonModule,
         InputTextareaModule,
         ListboxModule,
+        DropdownModule,
+        MenubarModule,
 
     ],
     declarations: [
