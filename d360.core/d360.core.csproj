@@ -87,6 +87,7 @@
     <Compile Include="entities\Api\ApiNamespace.cs" />
     <Compile Include="entities\Api\ApiService.cs" />
     <Compile Include="entities\Asset.cs" />
+    <Compile Include="entities\AssetCrossReference.cs" />
     <Compile Include="entities\AssetType.cs" />
     <Compile Include="entities\Community\Client.cs" />
     <Compile Include="entities\Community\CompanyHelpResource.cs" />
