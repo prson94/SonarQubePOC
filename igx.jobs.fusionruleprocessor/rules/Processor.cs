@@ -424,17 +424,25 @@ namespace igx.jobs.fusionruleprocessor
 
         -- get igc integration jobs
         union        
-            select	distinct
-					R.ID,
-                    R.Description,
-                    R.FusionID,
-                    R.ObjectType,
-                    R.ObjectID
-			from	integration.synchedassettype sat
-					inner join [fusion].[Rule] R on R.FusionID = sat.OptionalID
-			where	R.[Enabled] = 1 
-					and sat.LastSynchOn > @lastRun
-					and sat.OptionalIDName is not null and sat.OptionalIDName = 'FusionID'
+        select	distinct
+		        R.ID,
+                R.Description,
+                R.FusionID,
+                R.ObjectType,
+                R.ObjectID
+        from	integration.synchedassettype sat
+		        inner join [fusion].[Rule] R on R.FusionID = sat.OptionalID and R.ObjectType = sat.Object and R.ObjectID = sat.ObjectID
+		        cross apply (
+					        select	top 1
+							        *
+					        from	integration.ExecutionAssetType
+					        where	SynchedAssetTypeID = sat.ID 
+							        and CompletedOn is not null 
+							        and CompletedOn > @lastRun 
+							        and [CurrentSourceAssetCount] > 0
+					        ) E
+        where	R.[Enabled] = 1 
+		        and sat.OptionalIDName is not null and sat.OptionalIDName = 'FusionID'
          ";
 
             return await company.QueryAsync<FusionRule>(sql, new { lastRun = lastPromotionRun });
