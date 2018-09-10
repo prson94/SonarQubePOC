@@ -19123,7 +19123,8 @@ from	Asset A
         inner join Taxonomy X on X.ID = A.ObjectID
         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'TaxonomyType' and T.ObjectID = @t
 		cross apply dbo.GetAssetTextPathById(A.ID, '/') P
-where (coalesce(x.[Level], 1) + @currentLevel) <= @maxLevel",
+where (coalesce(x.[Level], 1) + @currentLevel) <= @maxLevel
+option (maxrecursion 100)",
 new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyType.MaximumDepth ?? 1 }).Select(i => new { i.ID, i.Name }).ToList();
 
             var thisEntry = parents.FirstOrDefault(i => i.ID == id);
