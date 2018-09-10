@@ -46,6 +46,7 @@ namespace d360.web.Controllers.Services
         /// <summary>
         /// Gets all artifacts based on a given type ID.
         /// </summary>
+        /// <param name="id">The ID of the artifact type.</param>
         /// <returns>A list of artifacts.</returns>
         [Route("artifacts/{id:int}")]
         public HttpResponseMessage GetArtifactsByType(int id)
@@ -56,6 +57,8 @@ namespace d360.web.Controllers.Services
             var fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id).ToList();
             var fieldTypeIDs = fields.Select(i => i.ID).ToList();
             var filteredLookupDefinitions = Company.Filter<FieldTypeFilteredLookupDefinition>(i => fieldTypeIDs.Contains(i.FieldTypeID), i => i.FieldTypeFilteredLookupDisplayFields).ToList();
+            var parentIntersectType = Company.Filter<IntersectTypeDetail>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.PredicateType == PredicateType.InterTypeHierarchy).FirstOrDefault();
+
 
             foreach (var f in fields)
             {
@@ -179,14 +182,27 @@ namespace d360.web.Controllers.Services
 
             fields = null;
 
+            var parentColumns = "";
+            var parentJoins = "";
+
+            if (parentIntersectType != null)
+            {
+                parentColumns = ", P.[uid] as ParentUid, P.ObjectID as ParentID ";
+                parentJoins = $@"
+ left join [Intersect] PI on PI.IntersectTypeID = {parentIntersectType.ID} and PI.Object = O.Object and PI.ObjectID = O.ObjectID 
+ left join Asset P on P.Object = PI.Subject and P.ObjectID = PI.SubjectID";
+            }
+
             var querySql = $@"
 select	A.ID,
         {columns}
 		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url,
         O.UID as uid
+        {parentColumns}
 from	Artifact A 
         {joins}
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
+        {parentJoins} 
 where   A.ArtifactTypeID = @id 
         and O.ID not in ({GetNoReadSqlStatement()})
 for json path";
@@ -226,6 +242,8 @@ from    FieldWithRelation F
         /// <summary>
         /// Gets an artifact based on a given ID.
         /// </summary>
+        /// <param name="typeID">The ID of the artifact type.</param>
+        /// <param name="id">The ID of the specific artifact you want to retrieve.</param>
         /// <returns>An instance of an artifact.</returns>
         [Route("artifacts/{typeID:int}/{id:int}")]
         public HttpResponseMessage GetArtifact(int typeID, int id)
@@ -368,9 +386,12 @@ select	A.ID,
         {columns}
 		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url,
         O.Uid as Uid
+        , P.[uid] as ParentUid, P.ObjectID as ParentID
 from	Artifact A 
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
-        {joins}
+        {joins} 
+ left join [PredicateIntersect] PI on PI.PredicateType = {(int)PredicateType.InterTypeHierarchy} and PI.Object = O.Object and PI.ObjectID = O.ObjectID 
+ left join Asset P on P.Object = PI.Subject and P.ObjectID = PI.SubjectID
 where   A.ID = @id 
         and O.ID not in ({GetNoReadSqlStatement()})
 for json path";
