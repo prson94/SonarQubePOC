@@ -2249,12 +2249,15 @@
             <summary>
             Gets all artifacts based on a given type ID.
             </summary>
+            <param name="id">The ID of the artifact type.</param>
             <returns>A list of artifacts.</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifact(System.Int32,System.Int32)">
             <summary>
             Gets an artifact based on a given ID.
             </summary>
+            <param name="typeID">The ID of the artifact type.</param>
+            <param name="id">The ID of the specific artifact you want to retrieve.</param>
             <returns>An instance of an artifact.</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactsByTypeAndSearchModel(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">

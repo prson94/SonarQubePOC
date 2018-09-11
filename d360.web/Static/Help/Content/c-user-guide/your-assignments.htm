@@ -105,14 +105,22 @@
                         <li value="4">The <b>Count</b> column shows the number of forms that you need to complete for the workflow step.</li>
                     </ul>
                     <p class="p-top-padding"> For example, a workflow may be set up so that when a user edits a Business Term, you are sent a form  to approve the change. In this case, any Business Term changes awaiting your approval would be listed in one row, with the number of assignments of this type requiring your attention shown in the <b>Count</b> column.</p>
-                    <p class="p-top-padding">&#160;</p>
-                    <p>To respond to an assignment:</p>
+                    <p class="p-top-padding">In this topic, see:</p>
+                    <ul>
+                        <li value="1"><a href="#Respondi" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Responding to an assignment</a>
+                        </li>
+                        <li value="2"><a href="#Bulk" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Bulk responding to multiple assignments</a>
+                        </li>
+                        <li value="3"><a href="#Workflow" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Workflow assignment emails</a>
+                        </li>
+                    </ul>
+                    <h3><a name="Respondi"></a>Responding to an assignment</h3>
                     <ol>
                         <li value="1">From the <b>Your Assignments</b> panel on the home page, click the name of the workflow  that you want to address, for example:<p class="p-top-padding"><img src="../Resources/Images/user-guide/workflow-step-assignment3.png" class="img-vpadded" /></p><p class="p-top-padding">The <b>Edit</b> panel opens listing all instances of the workflow step which require your attention. The <b>Name</b> column lists the names of the asset that the workflow was raised on:</p><p class="p-top-padding"><img src="../Resources/Images/user-guide/workflow-step-assignment4.png" /></p><p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>You can hover over a name in the grid to see details of the asset that the workflow has been raised on, including the artifact type, fields and the asset ID. The same information can be seen by hovering over the information icon on the right. For action types, hovering over the information icon shows the action details including the information provided by the user who completed the action form.</p></li>
                         <li value="2">To complete the form for an individual item, click the name of the asset, or click the <b>Complete Form</b> icon to the right of the asset:<p class="p-top-padding"><img src="../Resources/Images/user-guide/workflow-step-assignment.png" /></p></li>
                         <li value="3">Complete the form by responding to any required fields, then click <b>Submit</b>:<p><img src="../Resources/Images/user-guide/workflow-step-assignment5.png" class="img-vpadded" /></p></li>
                     </ol>
-                    <h3>Bulk respond</h3>
+                    <h3><a name="Bulk"></a>Bulk responding to multiple assignments</h3>
                     <p>If you have multiple tasks assigned to you that relate to the same workflow step, you can save time by responding to  multiple assignments at once.</p>
                     <ol>
                         <li value="1">From the <b>Your Assignments</b> panel on the home page, open the <b>Edit</b> panel by clicking the name of the workflow that you want to address.</li>
@@ -120,6 +128,21 @@
                         <li value="3">After clicking <b>Bulk Respond</b>, you will be taken to the form where you can complete any required fields. For example:<p><img src="../Resources/Images/user-guide/assignments-bulk-respond3.png" class="img-vpadded" /></p></li>
                         <li value="4">When you have completed the form, click <b>Submit</b>  to respond to the selected assignments. </li>
                     </ol>
+                    <h3><a name="Workflow"></a>Workflow assignment emails</h3>
+                    <p>Your system may have been configured to send  email notifications to users who have outstanding workflow assignments. Depending on your system configuration, you may receive an email each time a new form assignment is triggered, or, your administrator may have set up your system to send one daily workflow summary email listing all of your open assignments. </p>
+                    <p>The subject of a workflow summary email indicates how many items require your attention,  and the body of the email lists the open assignments by workflow and step. For example:</p>
+                    <p>
+                        <img src="../Resources/Images/release-notes/workflow-email.png" />
+                    </p>
+                    <ul>
+                        <li style="font-weight: normal;" value="1"><span style="font-weight: bold;">Workflow</span> - Link to open the selected assignment details in the application. The email also contains a general link to open the <b>Your Assignments</b> panel on the home page of the application where all open assignments are listed.</li>
+                        <li value="2"><b>Step</b> - Name of the workflow step that triggered the assignment.</li>
+                        <li value="3"><b>New</b> - A count for new assignments. New is defined as new since the last summary email was sent.</li>
+                        <li value="4"><b>Total</b> - Total number of outstanding assignments for the workflow step. The total count includes new and existing assignments.</li>
+                    </ul>
+                    <p>&#160;</p>
+                    <p>A list of your outstanding assignments is always available from the <b>Your Assignments</b> panel on the home page, regardless of the workflow email configuration on your system.</p>
+                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>If you are an Administrator and want to configure workflow assignment emails for your organization, see <a href="../d-admin/workflow-summary-email.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Sending workflow assignment emails</a>.</p>
                 </div>
                 <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>
                 <div class="row collapse"><a style="display: scroll;position: fixed;bottom: 5px;right: 5px;" href="#top" title="Back to top"><img src="../Resources/Images/template/Top.png" /></a>
