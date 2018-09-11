@@ -2156,7 +2156,28 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
         {
             try
             {
+                //needs to be before delete before we say goodbye to our little friend.
+                var det = GetObjectDetail(type.ToString(), id);
+
                 Database.Connection.Execute("exec [DeleteObject] @Obj, @ObjectID, @ResourceID", new { Obj = type.ToString(), ObjectID = id, ResourceID = CurrentResourceID }, null, 120);
+
+                // add a removed message to the service bus
+                if (IsEventingEnabled)
+                {
+                    if (det != null)
+                    {                        
+                        var events = new List<EventInfo>();
+                        addQE(events, ChangeType.Delete, new EventObjectInfo
+                        {
+                            Object = type,
+                            ObjectID = id,
+                            ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), det.Type),
+                            ObjectTypeID = det.TypeID
+                        });
+                        QueueSource.CreateTopicMessages(events);
+                    }
+                }
+
                 return true;
             }
             catch (Exception ex)
