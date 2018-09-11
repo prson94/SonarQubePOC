@@ -4,7 +4,9 @@ using d360.extensions;
 using d360.model;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using Swashbuckle.Swagger.Annotations;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
@@ -20,7 +22,9 @@ namespace d360.web.Controllers.V2
     /// </summary>
     [ 
         ApiVersion("2.0"), 
-        RoutePrefix("api/v{version:apiVersion}/assets"), Authorize] //v{version:apiVersion}
+        RoutePrefix("api/v{version:apiVersion}/assets"), 
+        Authorize
+    ]
     public class AssetsController : BaseApiController
     {
         #region DI
@@ -61,8 +65,8 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Retrieves a list of all asset types classes.
         /// </summary>
-        /// <returns></returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("classes")]
+        /// <returns>Returns a list of asset type classes.</returns>
+        [HttpGet, Route("classes"), SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>))]
         public HttpResponseMessage GetAssetTypeClassesAsync()
         {
             var prefix = "Assets.GetAssetTypeClassesAsync => ";
@@ -86,7 +90,7 @@ namespace d360.web.Controllers.V2
         /// GET a list of asset types.
         /// </summary>
         /// <returns></returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("types")]
+        [HttpGet, Route("types"), SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>))]
         public async Task<HttpResponseMessage> GetAssetTypesAsync()
         {
             var prefix = "Assets.GetAssetTypesAsync => ";
@@ -125,7 +129,7 @@ order by	P.[Path]
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
-        [HttpPost, MapToApiVersion("2.0"), Route("{uid}")]
+        [HttpPost, Route("{uid}"), SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including an error messages.", typeof(List<DatabaseBulkAssetResult>))]
         public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid uid)
         {
             if (!Company.CurrentResourceIsAdmin)

@@ -144,7 +144,6 @@
     <Compile Include="entities\Relation\MapTypeTemplateItem.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
-    <Compile Include="entities\Score\ScoreTypeMetricVersion.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationOverrideItem.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationRule.cs" />
     <Compile Include="entities\ShoppingCart.cs" />
@@ -202,12 +201,11 @@
     <Compile Include="entities\Quality\PolicyTypeLevel.cs" />
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
-    <Compile Include="entities\Score\Score.cs" />
-    <Compile Include="entities\Score\ScoreType.cs" />
-    <Compile Include="entities\Score\ScoreMetric.cs" />
-    <Compile Include="entities\Score\ScoreTypeMetric.cs" />
     <Compile Include="entities\Transitive\AzureGraphModels.cs" />
     <Compile Include="entities\Transitive\AssetWithoutReadPermission.cs" />
+    <Compile Include="entities\Transitive\BulkOwnerImport.cs" />
+    <Compile Include="entities\Transitive\BulkRelationshipImport.cs" />
+    <Compile Include="entities\Transitive\BulkMetricImport.cs" />
     <Compile Include="entities\Transitive\GenerateAssetTypeSqlModel.cs" />
     <Compile Include="entities\Transitive\BulkAssetImport.cs" />
     <Compile Include="entities\Transitive\BulkLoadGetLoadColumnsModel.cs" />

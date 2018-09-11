@@ -6,40 +6,38 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [JsonArray]
-    [DataContract(Name="assets")]
-    public class BulkAssetImport : List<Dictionary<string, string>>
+    [DataContract(Name = "relationships")]
+    public class BulkRelationshipImport : List<RelationshipImportRequest>
     {
 
     }
 
-    public class AssetImportResult
+    public class RelationshipImportRequest
     {
         public int ItemNumber { get; set; }
-        public string SourceID { get; set; }
+        public string SubjectSourceID { get; set; }
+        public string ObjectSourceID { get; set; }
+        public int? PredicateType { get; set; }
+        public int IntersectTypeID { get; set; }
+
         public string Message { get; set; }
         public bool Success { get; set; }
-        public bool IsNew { get; set; }
-        public int ObjectID { get; set; }
-        public Guid uid { get; set; }
     }
 
     [DataContract]
-    public class DatabaseBulkAssetResult
+    public class DatabaseBulkRelationshipResult
     {
         [DataMember]
         public int ItemNumber { get; set; }
-        [DataMember]
-        public Guid uid { get; set; }
 
-        public string SourceID { get; set; }
+        [DataMember]
+        public int ID { get; set; }
+
         [DataMember]
         public string Message { get; set; }
         [DataMember]
         public bool Success { get; set; }
         [DataMember]
         public bool IsNew { get; set; }
-
-        public string Object { get; set; }
-        public int ObjectID { get; set; }        
     }
 }

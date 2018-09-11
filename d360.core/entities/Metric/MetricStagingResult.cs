@@ -9,8 +9,8 @@ namespace d360.core.entities.Metric
     public class MetricStagingResult : BaseObject
     {
         [Key, Column(Order = 1)]
-        public int MetricMapID { get; set; }
-
+        public int MapID { get; set; }
+         
         [Key, Column(Order = 2)]
         public DateTime EffectiveDate { get; set; }
 
@@ -27,6 +27,6 @@ namespace d360.core.entities.Metric
         public bool Processing { get; set; }
 
         [IgnoreDataMember]
-        public virtual MetricMap MetricMap { get; set; }
+        public virtual MetricMap Map { get; set; }
     }
 }

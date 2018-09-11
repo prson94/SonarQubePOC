@@ -6,28 +6,22 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Metric
 {
     [DataContract(Namespace = NAMESPACE), Table("Map", Schema = "metrics")]
-    public class MetricMap : BaseCreatedAndUpdatedLongObject
+    public class MetricMap : BaseCreatedAndUpdatedIntObject
     {
         [DataMember]
         public int GroupID { get; set; }
 
         [DataMember]
-        public long ItemID { get; set; }
+        public int ItemID { get; set; }
 
         [DataMember]
-        public string Object { get; set; }
-
-        [DataMember]
-        public int ObjectID { get; set; }
+        public int AssetTypeID { get; set; }
 
         [DataMember]
         public decimal Weight { get; set; }
 
         [DataMember]
-        public DateTime EffectiveStartDate { get; set; }
-
-        [DataMember]
-        public DateTime? EffectiveEndDate { get; set; }
+        public DateTime EffectiveDate { get; set; }
 
         [DataMember]
         public State State { get; set; } = State.Active;

@@ -37,8 +37,7 @@ import { MessagesService } from '../../../services/messages.service';
                             <d3s-admin-metric-condition-editor 
                                 [mapId]="mapId" 
                                 [fieldId]="0"
-                                [objectType]="objectType"
-                                [objectId]="objectId"
+                                [assetTypeId]="assetTypeId"
                                 [condition]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
                                 (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
@@ -48,8 +47,7 @@ import { MessagesService } from '../../../services/messages.service';
                             <d3s-admin-metric-condition-editor 
                                 [mapId]="mapId" 
                                 [fieldId]="selection?.FieldTypeID"
-                                [objectType]="objectType"
-                                [objectId]="objectId"
+                                [assetTypeId]="assetTypeId"
                                 [condition]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
                                 (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
@@ -76,8 +74,7 @@ import { MessagesService } from '../../../services/messages.service';
 
 export class AdminMetricConditionListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() mapId: number;
-    @Input() objectType: string;
-    @Input() objectId: number;
+    @Input() assetTypeId: number;
     @Input() conditions = [];
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();

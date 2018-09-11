@@ -6275,262 +6275,6 @@ where    A.RuleID = @id", new { id });
                     resourceType = null;
                     break;
                 #endregion
-                case SystemObjects.ScoreType:
-                    #region Fields
-                    var scoreType = Company.GetById<ScoreType>(id);
-                    if (scoreType != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = scoreType.GetName(i => i.Name), FieldName = "ScoreTypeName", FieldDescription = scoreType.GetDescription(i => i.Name), Value = scoreType.Name }
-                            }
-                        });
-
-                        if (!string.IsNullOrEmpty(scoreType.Description))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = scoreType.GetName(i => i.Description), FieldName = "ScoreTypeDescription", FieldDescription = scoreType.GetDescription(i => i.Description), Value = scoreType.Description }
-                            }
-                            });
-                        }
-                    }
-                    scoreType = null;
-                    break;
-                #endregion
-                case SystemObjects.ScoreTypeMetric:
-                    #region Fields
-                    var metric = Company.GetById<ScoreTypeMetric>(id);
-                    if (metric != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = metric.GetName(i => i.Name), FieldName = "StatisticTypeName", FieldDescription = metric.GetDescription(i => i.Name), Value = metric.Name }
-                            }
-                        });
-
-                        if (!string.IsNullOrEmpty(metric.Description))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = metric.GetName(i => i.Description), FieldName = "StatisticTypeDescription", FieldDescription = metric.GetDescription(i => i.Description), Value = metric.Description }
-                            }
-                            });
-                        }
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = metric.GetName(i => i.CheckType), FieldName = "StatisticTypeCheckType", FieldDescription = metric.GetDescription(i => i.CheckType), Value = metric.CheckType.GetDisplayName() }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = metric.GetName(i => i.MaximumScore), FieldName = "MetricMaximumScore", FieldDescription = metric.GetDescription(i => i.MaximumScore), Value = metric.MaximumScore.ToString() }
-                            }
-                        });
-
-                        var fields = XElement.Parse(metric.Configuration);
-                        int oID = 0;
-                        ObjectDetail dtl = null;
-
-                        switch (metric.CheckType)
-                        {
-                            case StatisticCheckType.Existence:              //1
-                                #region
-                                oID = int.Parse(fields.Element("ObjectID").Value);
-                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
-                                    }
-                                });
-                                dtl = null;
-                                break;
-                            #endregion
-                            //case StatisticCheckType.Count:                  //2
-                            //    #region
-                            //    oID = int.Parse(fields.Element("ObjectID").Value);
-                            //    dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
-                            //    model.rows.Add(new DetailReadOnlyRowModel
-                            //    {
-                            //        columns = 1,
-                            //        FirstColumnFields = new List<ReadOnlyField>
-                            //        {
-                            //            new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
-                            //        }
-                            //    });
-                            //    dtl = null;
-                            //    break;
-                            //#endregion
-                            case StatisticCheckType.PropertyValueCheck:     //3
-                                #region
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 2,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_PropertyName", Name = "Property Name", Value = fields.Element("PropertyName").Value }
-                                    },
-                                    SecondColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_PropertyValue", Name = "Property Value", Value = (fields.Element("PropertyValue") != null) ? fields.Element("PropertyValue").Value : "Not set" }
-                                    }
-                                });
-                                break;
-                            #endregion
-                            case StatisticCheckType.PropertyPopulated:  //4
-                                #region
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_PropertyName", Name = "Property Name", Value = fields.Element("PropertyName").Value }
-                                    }
-                                });
-                                break;
-                            #endregion
-                            case StatisticCheckType.Relationship:       //5
-                                #region
-                                var items = new List<string>();
-                                var html = string.Empty;
-
-                                try
-                                {
-                                    if (fields.Element("CheckObjects") != null)
-                                    {
-                                        var checkObjects = fields.Element("CheckObjects").Elements("Object").Select(co => new { Type = (SystemObjects)Enum.Parse(typeof(SystemObjects), co.Element("Type").Value), ID = int.Parse(co.Element("ID").Value) }).ToList();
-                                        checkObjects.ForEach(co =>
-                                        {
-                                            var cod = Company.GetObjectDetail(co.Type.ToString(), co.ID);
-                                            if (cod != null)
-                                            {
-                                                items.Add(cod.TextPath);
-                                            }
-                                        });
-                                    }
-                                    else
-                                    {
-                                        var cod = Company.GetObjectDetail(fields.Element("ObjectType").Value, int.Parse(fields.Element("ObjectID").Value));
-                                        if (cod != null)
-                                        {
-                                            items.Add(cod.TextPath);
-                                        }
-                                    }
-
-                                    foreach (var t in items.OrderBy(i => i))
-                                    {
-                                        html += (string.IsNullOrEmpty(html) ? t : " or " + t);
-                                    }
-                                }
-                                catch (Exception )
-                                {
-
-                                }
-
-                                if (string.IsNullOrEmpty(html)) html = "Not found";
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_Targets", Name = "Target(s)", Value = html }
-                                    }
-                                });
-                                dtl = null;
-                                break;
-                            #endregion
-                            case StatisticCheckType.FusionOwnership:    //6
-                                break;
-                            case StatisticCheckType.ScoreRollupViaRelationship:    //7
-                                #region
-                                oID = int.Parse(fields.Element("ObjectID").Value);
-                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
-                                    }
-                                });
-                                dtl = null;
-                                break;
-                            case StatisticCheckType.ScoreRollupViaOwnership:    //8
-                                oID = int.Parse(fields.Element("ObjectID").Value);
-                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
-                                    }
-                                });
-                                dtl = null;
-                                break;
-                            #endregion
-                            //case StatisticCheckType.EventMetric:        //9
-                            //    #region
-                            //    model.rows.Add(new DetailReadOnlyRowModel
-                            //    {
-                            //        columns = 2,
-                            //        FirstColumnFields = new List<ReadOnlyField>
-                            //        {
-                            //            new ReadOnlyField { FieldName = "Display_ValidField", Name = "Valid Field", Value = fields.Element("ValidField").Value }
-                            //        },
-                            //        SecondColumnFields = new List<ReadOnlyField>
-                            //        {
-                            //            new ReadOnlyField { FieldName = "Display_InvalidField", Name = "Invalid Field", Value = fields.Element("InvalidField").Value }
-                            //        }
-                            //    });
-                            //    model.rows.Add(new DetailReadOnlyRowModel
-                            //    {
-                            //        columns = 1,
-                            //        FirstColumnFields = new List<ReadOnlyField>
-                            //        {
-                            //            new ReadOnlyField { FieldName = "Display_Threshold", Name = "Threshold", Value = fields.Element("Threshold").Value }
-                            //        }
-                            //    });
-                            //    break;
-                            //#endregion
-                            case StatisticCheckType.PredicateMetric:    //10
-                                #region
-                                oID = int.Parse(fields.Element("Predicate").Value);
-                                var p = Company.GetById<Predicate>(oID);
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_Predicate", Name = "Predicate", Value = (p != null) ? p.Name : "Not found" }
-                                    }
-                                });
-                                p = null;
-                                break;
-                                #endregion
-                        }
-                    }
-                    metric = null;
-                    break;
-                #endregion
                 case SystemObjects.SurveyType:
                     #region Fields
                     var surveyType = Company.GetById<SurveyType>(id);
@@ -7597,29 +7341,6 @@ SELECT (
 
         #endregion
 
-        #region Scoring
-
-        [Route("scoring/types/{id:int}/metrics")]
-        public IEnumerable<dynamic> GetStatisticTypeMetricsByScoreType(int id, bool stripHtml = true)
-        {
-            var results = Company.Query<dynamic>(QueryConstants.ScoreTypeMetricDetailList, new { id });
-
-            results.ToList().ForEach(i =>
-            {
-                i.Description = HttpUtility.HtmlDecode(stripHtml ? System.Text.RegularExpressions.Regex.Replace(i.Description ?? "", @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty) : i.Description ?? "");
-            });
-
-            return results.AsEnumerable();
-        }
-
-        [Route("scoring/types")]
-        public IQueryable<ScoreType> GetScoreTypes()
-        {
-            return Company.Table<ScoreType>();
-        }
-
-        #endregion
-
         #region Taxonomy
 
         [Route("catalogs")]
@@ -8104,9 +7825,9 @@ where	Type = 'ReferenceItemType'
             return Company.Query<dynamic>(@"select 
                                     m.* ,
                                     i.[Name] as itemName,
-									a.[Name] as objectName
+									a.[Name] as assetTypeName
                                     from metrics.map m
-                                    inner join assettype a on a.[object] = m.[object] and a.objectid = m.objectid
+                                    inner join assettype a on a.ID = m.AssetTypeID
                                     inner join metrics.item i on i.id = m.itemid
                                     where m.[State] = 1 and m.groupid = @groupId", new { groupId }).ToList();
         }
@@ -8123,12 +7844,15 @@ where	Type = 'ReferenceItemType'
                                     where c.mapid = @mapId", new { mapId }).ToList();
         }
 
-        [Route("metrics/condition/fields/{objectType}/{objectId:int}")]
-        public List<FieldType> GetMetricConditionFields(string objectType, int objectId)
+        [Route("metrics/condition/fields/{assetTypeId:int}")]
+        public List<FieldType> GetMetricConditionFields(int assetTypeId)
         {
-            return Company.Query<FieldType>(@"select  f.* from fieldtype f
-                                inner join assettype t on t.id = f.assettypeid
-                                where t.object = @objectType and t.objectId = @objectId and f.[type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')", new { objectType, objectId }).ToList();
+            return Company.Query<FieldType>(@"
+select  * 
+from    FieldType
+where   AssetTypeID = @assetTypeId 
+        and [type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')", 
+        new { assetTypeId }).ToList();
         }
 
         #endregion

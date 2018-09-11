@@ -42,7 +42,7 @@ namespace d360.model
         #endregion
     }
 
-    public static class ConnectionExtensions
+    public static partial class ConnectionExtensions
     {
         public static IEnumerable<T> ProcessExecutionAssetType<T>(this SqlConnection cnn, long executionID, int synchedAssetTypeID, int assetTypeID, int resourceID, int section)
         {

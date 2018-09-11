@@ -39,6 +39,7 @@ namespace d360.web
             config.AddApiVersioning(o => {
                 o.AssumeDefaultVersionWhenUnspecified = true;
                 o.ReportApiVersions = true;
+                //o.ApiVersionSelector = new Microsoft.Web.Http.Versioning.CurrentImplementationApiVersionSelector(new Microsoft.Web.Http.Versioning.ApiVersioningOptions { ApiVersionReader = new Microsoft.Web.Http.Versioning.UrlSegmentApiVersionReader() });
             }); // API default Version assumed to be 1.0.
 
             var apiExplorer = config.AddVersionedApiExplorer(options => {
@@ -69,6 +70,7 @@ namespace d360.web
                     // included in the docs for a given API version. Like "SingleApiVersion", each call to "Version"
                     // returns an "Info" builder so you can provide additional metadata per API version.
                     c.MultipleApiVersions(versionSupportResolver, versionInfoBuilder);
+
                     //c.MultipleApiVersions(
                     // (apiDesc, version) =>
                     // {

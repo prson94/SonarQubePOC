@@ -497,10 +497,6 @@ namespace d360.web.Controllers
                     return EditRuleImplementation(form);
                 case "RULETYPE":
                     return EditRuleType(form);
-                case "SCORETYPE":
-                    return EditScoreType(form);
-                case "SCORETYPEMETRIC":
-                    return EditScoreTypeMetric(form);
                 case "SERVICE":
                     return EditService(form);
                 case "SURVEYTYPE":
@@ -588,10 +584,6 @@ namespace d360.web.Controllers
                     return DeletePolicyTypeLevel(form);
                 case "RULEIMPLEMENTATION":
                     return DeleteRuleImplementation(form);
-                case "SCORETYPE":
-                    return DeleteScoreType(form);
-                case "SCORETYPEMETRIC":
-                    return DeleteScoreTypeMetric(form);
                 case "SERVICE":
                     return DeleteCustomAPIService(form);
                 case "SURVEYTYPE":
@@ -694,10 +686,6 @@ namespace d360.web.Controllers
                     return AddRuleImplementation(form);
                 case "RULETYPE":
                     return AddRuleType(form);
-                case "SCORETYPE":
-                    return AddScoreType(form);
-                case "SCORETYPEMETRIC":
-                    return AddScoreTypeMetric(form);
                 case "SERVICE":
                     return AddService(form);
                 case "RULE":
@@ -11150,10 +11138,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "SourceID", Name = "Source ID", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Source ID", false, "", 1, 500) });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = DateTime.Now.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
-
-            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11172,12 +11157,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = item.ID.ToString() });
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = item.Name });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "SourceID", Name = "Source ID", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Source ID", false, "", 1, 500), Value = item.SourceID });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveStartDate.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveEndDate == null ? null : item.EffectiveEndDate.ToString() });
-
-            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = item.Description });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = item.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11194,7 +11175,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
                     (
                     select 
-	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
+	                    ID as [Value],
 	                    {0} + T.[Name] as [Text] 
                     from 
 	                    AssetType T 
@@ -11205,11 +11186,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = groupId.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Percentage.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null) });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = DateTime.Now.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
-
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "AssetType", Name = "Asset Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes });
 
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -11232,7 +11210,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
                     (
                     select 
-	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
+	                    ID as [Value],
 	                    {0} + T.[Name] as [Text] 
                     from 
 	                    AssetType T 
@@ -11243,11 +11221,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Percentage.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null), Value = map.Weight.ToString() });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveStartDate.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveEndDate.ToString() });
-
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.Object + '|' + map.ObjectID.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "AssetType", Name = "Asset Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.AssetTypeID.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
 
@@ -11296,21 +11271,21 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
             
-            var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
-	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
-	                    {0} + T.[Name] as [Text] 
-                    from 
-	                    AssetType T", QueryConstants.HighLevelTypeCaseStatement)).OrderBy(i => i.Text).ToList();
-            var conditions = Company.Query<dynamic>(@"select 
-	                                    c.*,
-	                                    t.FriendlyName as fieldName
-                                    from metrics.condition c
-                                    inner join fieldtype t on t.id = c.fieldtypeid
-                                    inner join metrics.map m on m.id = c.mapid
-                                    where c.mapid = @id", new { id }).ToList();
+            var assetTypes = Company.Query<SelectListItem>($@"
+select  ID as [Value],
+	    {QueryConstants.HighLevelTypeCaseStatement} + T.[Name] as [Text] 
+from    AssetType T").OrderBy(i => i.Text).ToList();
+
+            var conditions = Company.Query<dynamic>(@"
+select  c.*,
+        t.FriendlyName as fieldName
+from    metrics.condition c
+        inner join fieldtype t on t.id = c.fieldtypeid
+        inner join metrics.map m on m.id = c.mapid
+where   c.mapid = @id", new { id }).ToList();
 
             items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
-            objectTypes.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+            assetTypes.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
 
             return new JsonNetResult
             {
@@ -11319,7 +11294,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     Map = map,
                     Conditions = conditions,
                     Items = items,
-                    ObjectTypes = objectTypes
+                    AssetTypes = assetTypes
                 }
             };
         }
@@ -11445,18 +11420,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             if (model == null || model.Map.ID > 0)
                 return jsonException("Model is not valid", HttpStatusCode.BadRequest);
 
-            if (model.Map.Object == null || model.Map.ObjectID < 1)
-                return jsonException("Model is missing object type", HttpStatusCode.BadRequest);
+            if (model.Map.AssetTypeID < 1)
+                return jsonException("Model is missing asset type", HttpStatusCode.BadRequest);
 
             if (model.Map.ItemID < 1)
                 return jsonException("Model is missing metric item", HttpStatusCode.BadRequest);
 
             try
             {
+
                 model.Map.State = State.Active;
                 Company.Add(model.Map);
                 Company.SaveChanges();
-
 
                 model.Conditions.ForEach(c =>
                 {
@@ -11471,7 +11446,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Metric group added successfully", model.Map.ID.ToString(), "add", HttpStatusCode.OK);
+            return jsonSuccess("Mapping added successfully", model.Map.ID.ToString(), "add", HttpStatusCode.OK);
 
         }
 
@@ -11492,11 +11467,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
 
             map.ItemID = model.Map.ItemID;
-            map.Object = model.Map.Object;
-            map.ObjectID = model.Map.ObjectID;
+            map.AssetTypeID = model.Map.AssetTypeID;
             map.Weight = model.Map.Weight;
-            map.EffectiveEndDate = model.Map.EffectiveEndDate;
-            map.EffectiveStartDate = model.Map.EffectiveStartDate;
+            map.EffectiveDate = model.Map.EffectiveDate;
 
             model.Conditions.ForEach(c =>
             {
@@ -11530,140 +11503,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return jsonSuccess("Mapping updated successfully", model.Map.ID.ToString(), "edit", HttpStatusCode.OK);
         }
 
-        [HttpGet, ValidateInput(false), Route("MetricGroup/{id:int}")]
-        public JsonNetResult GetMetricGroup(int id)
-        {
-            var group = Company.GetById<MetricGroup>(id);
-            List<MetricGroup> children = new List<MetricGroup>();
-            if (group != null)
-                children = Company.MetricGroups.Where(g => g.ParentID == group.ID).ToList();
-
-            return new JsonNetResult
-            {
-                Data = new
-                {
-                    Group = group,
-                    Children = children
-                },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("MetricGroup"), ValidateInput(false)]
-        public JsonResult PostMetricGroup(MetricGroupFormModel model)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-            if (model == null || model.Group == null)
-                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
-
-            if (string.IsNullOrEmpty(model.Group.Name))
-                return jsonException("Group name is not valid", HttpStatusCode.BadRequest);
-
-
-            try
-            {
-                model.Group.State = State.Active;
-                Company.Add(model.Group);
-                Company.SaveChanges();
-            }
-            catch(Exception ex)
-            {
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-
-            return jsonSuccess("Metric group added successfully", model.Group.ID.ToString(), "add", HttpStatusCode.OK);
-            
-        }
-
-        [HttpPut, Route("MetricGroup"), ValidateInput(false)]
-        public JsonResult PutMetricGroup(MetricGroupFormModel model)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-            if (model == null || model.Group == null || model.Group.ID < 1)
-                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
-
-            var group = Company.GetById<MetricGroup>(model.Group.ID);
-
-            if (group == null)
-                return jsonException($"Group with id {model.Group.ID} could not be found", HttpStatusCode.NotFound);
-
-
-            group.ParentID = model.Group.ParentID;
-            group.Name = model.Group.Name;
-            group.Description = model.Group.Description;
-            group.EffectiveStartDate = model.Group.EffectiveStartDate;
-            group.EffectiveEndDate = model.Group.EffectiveEndDate;
-            group.SourceID = model.Group.SourceID;
-
-            try
-            {
-                Company.Update(group);
-
-                if (model.Children != null && model.Children.Count > 0)
-                {
-                    model.Children.ForEach(c =>
-                    {
-                        var child = Company.GetById<MetricGroup>(c.ID);
-                        if (child != null)
-                        {
-                            child.Weight = c.Weight;
-                            Company.Update(child);
-                        }
-                    });
-                }
-
-                Company.SaveChanges();
-            }
-            catch(Exception ex)
-            {
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-
-            return jsonSuccess("Group updated successfully", model.Group.ID.ToString(), "edit", HttpStatusCode.OK);
-
-        }
-
-        [ HttpDelete, ValidateInput(false), Route("MetricGroup")]
-        public JsonResult DeleteMetricGroup(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-            if (id < 1)
-                return jsonException($"The id {id} is not valid", HttpStatusCode.BadRequest);
-
-            var group = Company.GetById<MetricGroup>(id);
-
-            if (group == null)
-                return jsonException($"The group with id {id} could not be found", HttpStatusCode.NotFound);
-
-            try
-            {
-                var maps = Company.MetricMaps.Where(m => m.GroupID == group.ID).ToList();
-
-                maps.ForEach(m =>
-                {
-                    m.State = State.Deleted;
-                    var conditions = Company.MetricConditions.Where(c => c.MapID == m.ID).ToList();
-                    Company.MetricConditions.RemoveRange(conditions);
-                });
-
-                group.State = State.Deleted;
-                Company.SaveChanges();
-            }
-            catch(Exception ex)
-            {
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-
-            return jsonSuccess("Group deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
-        }
-
         [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  Route("MetricItem")]
         public JsonResult PostMetricItem(FormCollection form)
         {
@@ -11675,14 +11514,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 MetricItem m = new MetricItem
                 {
                     Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                    EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate")),
-                    EffectiveEndDate = null,
-                    SourceID = parseTextField(form, "SourceID")
+                    Description = parseTextField(form, "Description")
                 };
-
-                if (DateTime.TryParse(parseTextField(form, "EffectiveEndDate"), out var end))
-                    m.EffectiveEndDate = end;
 
                 Company.Add(m);
 
@@ -11716,13 +11549,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 m.Name = parseTextField(form, "Name");
                 m.Description = parseTextField(form, "Description");
-                m.EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate"));
-                m.EffectiveEndDate = null;
-                m.SourceID = parseTextField(form, "SourceID");
-
-                if (DateTime.TryParse(parseTextField(form, "EffectiveEndDate"), out var end))
-                    m.EffectiveEndDate = end;
-
 
                 Company.Update(m);
 
@@ -17698,460 +17524,6 @@ order by DN.DisplayValue");
         }
 
         #endregion
-
-        #endregion
-
-        #region ScoreType Form Get/Post
-
-        #region Field Generation
-
-        /// <param name="id">ScoreTypeID</param>
-        [Route("ScoreType_DeleteFields"), NonNullableParameters]
-        public JsonResult ScoreType_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<ScoreType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddScoreType")]
-        public JsonResult AddScoreType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("score type");
-
-                var a = new ScoreType
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                };
-
-                Company.Add(a);
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteScoreType")]
-        public JsonResult DeleteScoreType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("score type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ScoreType>(id);
-                if (model == null) throw new NotFoundException("score type");
-                
-                Company.Delete(model);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditScoreType")]
-        public JsonResult EditScoreType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("score type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ScoreType>(id);
-                if (model == null) throw new NotFoundException("score type");
-                
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-
-                Company.Update(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #region ScoreTypeMetric Form Get/Post
-
-        #region Field Generation
-
-        /// <param name="id">ScoreTypeMetricID</param>
-        [Route("ScoreTypeMetric_DeleteFields"), NonNullableParameters]
-        public JsonResult ScoreTypeMetric_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<ScoreTypeMetric>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region JSON Feeds
-
-        [Route("ScoreTypeMetric_FormData"), NonNullableParameters]
-        public JsonNetResult ScoreTypeMetric_FormData(int id)
-        {
-            var type = Company.GetById<ScoreTypeMetric>(id);
-            if (type == null) return new JsonNetResult { Data = null };
-
-            var model = new Dictionary<string, object>();
-            model.Add("ID", type.ID);
-            model.Add("Name", type.Name);
-            model.Add("CheckType", type.CheckType);
-            model.Add("Description", type.Description);
-            model.Add("Object", type.Object);
-            model.Add("ObjectID", type.ObjectID);
-            model.Add("ObjectCombined", $"{type.Object}|{type.ObjectID}");
-            model.Add("MaximumScore", type.MaximumScore);
-
-            var xml = XElement.Parse(type.Configuration);
-            switch (type.CheckType)
-            {
-                //case StatisticCheckType.Count:
-                case StatisticCheckType.Existence:
-                case StatisticCheckType.ScoreRollupViaRelationship:
-                case StatisticCheckType.ScoreRollupViaOwnership:
-                    model.Add("CheckObject", xml.Element("ObjectType").Value);
-                    model.Add("CheckObjectID", xml.Element("ObjectID").Value);
-                    break;
-                case StatisticCheckType.PropertyPopulated:
-                    model.Add("PropertyName", xml.Element("PropertyName").Value);
-                    break;
-                case StatisticCheckType.PropertyValueCheck:
-                    model.Add("PropertyName", xml.Element("PropertyName").Value);
-                    model.Add("PropertyValue", (xml.Element("PropertyValue") != null) ? xml.Element("PropertyValue").Value : "");
-                    break;
-                //case StatisticCheckType.EventMetric:
-                //    model.Add("ValidField", xml.Element("ValidField").Value);
-                //    model.Add("InvalidField", xml.Element("InvalidField").Value);
-                //    model.Add("Threshold", xml.Element("Threshold").Value);
-                //    break;
-                case StatisticCheckType.PredicateMetric:
-                    model.Add("Predicate", xml.Element("Predicate").Value);
-                    break;
-                case StatisticCheckType.Relationship:
-                    try
-                    {
-                        if (xml.Element("CheckObjects") != null && xml.Element("CheckObjects").Elements("Object").ToList().Count > 0)
-                        {
-                            model.Add("CheckObjects",
-                                xml.Element("CheckObjects")
-                                    .Elements("Object")
-                                    .Select(co => $"{co.Element("Type").Value}|{co.Element("ID").Value}").ToList()
-                                );
-                        }
-                        else if (xml.Element("CheckObjects") != null && xml.Element("CheckObjects").Elements("IntersectType").ToList().Count > 0)
-                        {
-                            model.Add("CheckObjects", xml.Element("CheckObjects").Elements("IntersectType").Select(e => $"{e.Value}").ToList());
-                        }
-                        else
-                        {
-                            model.Add("CheckObjects", new List<string> { $"{xml.Element("ObjectType").Value}|{xml.Element("ObjectID").Value}" });
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    break;
-            }
-
-            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [Route("ScoreTypeMetric_CheckTypeOptions")]
-        public JsonNetResult ScoreTypeMetric_CheckTypeOptions()
-        {
-            var models = StatisticCheckType.Existence.GetEnumList().Select(i => new KnockoutListItem(i.Name, ((int)i.ID).ToString()));
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [Route("ScoreTypeMetric_ObjectOptions")]
-        public JsonNetResult ScoreTypeMetric_ObjectOptions()
-        {
-            var models = Company.GetTypes().Select(i => new KnockoutListItem(i.Name, $"{i.ObjectType}|{i.ObjectTypeID}"));
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [Route("ScoreTypeMetric_CheckObjectOptions"), NonNullableParameters]
-        public JsonNetResult ScoreTypeMetric_CheckObjectOptions(SystemObjects type, int id, StatisticCheckType check)
-        {
-            var models = new List<KnockoutListItem>();
-
-            switch (check)
-            {
-                case StatisticCheckType.Existence:
-                    models.AddRange(Company.Query<KnockoutListItem>(@"
-SELECT	'AttributeType|'+ cast(T.ID as varchar) as value, 
-		'Attribute :' + T.Name as title
-from	AttributeType T
-		inner join AttributeTypeRelation R on R.AttributeTypeID = T.ID and T.ParentID is null and R.ObjectType = @type and R.ObjectID = @id
-union 
-SELECT	'ResponsibilityType|'+ cast(ID as varchar) as value, 
-		'Responsibility :' + Name as title 
-from	ResponsibilityType T
-		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and R.ObjectType = @type and R.ObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
-                    break;
-                case StatisticCheckType.PropertyValueCheck:
-                case StatisticCheckType.PropertyPopulated:
-                    switch (type)
-                    {
-                        case SystemObjects.ArtifactType:
-                            models.Add(new KnockoutListItem("Name", "Name"));
-                            models.Add(new KnockoutListItem("Description", "Description"));
-                            models.Add(new KnockoutListItem("Status", "Status"));
-                            break;
-                        case SystemObjects.ReferenceItemType:
-                            models.Add(new KnockoutListItem("Code", "Code"));
-                            break;
-                        case SystemObjects.TaxonomyType:
-                        case SystemObjects.PolicyType:
-                        case SystemObjects.RuleType:
-                            models.Add(new KnockoutListItem("Name", "Name"));
-                            models.Add(new KnockoutListItem("Description", "Description"));
-                            break;
-                    }
-                    models.AddRange(Company.GetFieldTypesByObject(type, id).Select(i => new KnockoutListItem { title = i.FriendlyName, value = i.Name }));
-                    break;
-                case StatisticCheckType.Relationship:
-                    models.AddRange(Company.Query<KnockoutListItem>(@"
-                    select  distinct 
-                            RT.ID as value, 
-                            RT.Name as title
-                    from    [IntersectType] RT
-                    where ((RT.Subject = @type and RT.SubjectID = @id) or (RT.Object = @type and RT.ObjectID = @id))", new { type = type.ToString(), id }).OrderBy(i => i.title));
-                    break;
-                case StatisticCheckType.FusionOwnership:
-                    //models.AddRange(Company.GetStatisticTypeCountCheckOptions().Select(i => new { title = i.Name, value = i.ID.ToString() }));
-                    break;
-                case StatisticCheckType.ScoreRollupViaRelationship:
-                    models.AddRange(Company.Query<KnockoutListItem>(@"
-select  distinct 
-        D.Object + '|' + cast(D.ObjectID as varchar) as value, 
-        'Relationship :' + D.TextPath as title
-from    [IntersectType] RT
-        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
-                                            and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
-                                            and ( 
-                                                (RT.Subject = @type and RT.SubjectID = @id) OR 
-                                                (RT.Object = @type and RT.ObjectID = @id) 
-                                                )", new { type = type.ToString(), id }).OrderBy(i => i.title));
-                    break;
-                case StatisticCheckType.ScoreRollupViaOwnership:
-                    models.AddRange(Company.GetStatisticTypeRollupCheckOptions().Select(i => new KnockoutListItem { title = i.Name, value = i.ID.ToString() }));
-                    break;                
-                case StatisticCheckType.PredicateMetric:
-                    models.AddRange(Company.Table<Predicate>().Select(i => new KnockoutListItem { title = i.Name, value = i.ID.ToString() }));
-                    break;
-            }
-
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        #endregion
-
-        string getXmlConfigurationFromFormFields(FormCollection form, StatisticCheckType checkType)
-        {
-            var fields = new XElement("fields");
-
-            switch (checkType)
-            {
-                //case StatisticCheckType.Count:
-                case StatisticCheckType.Existence:
-                case StatisticCheckType.ScoreRollupViaRelationship:
-                case StatisticCheckType.ScoreRollupViaOwnership:
-                    fields.Add(new XElement("ObjectType", form["CheckObject"]));
-                    fields.Add(new XElement("ObjectID", form["CheckObjectID"]));
-                    break;
-                case StatisticCheckType.PropertyPopulated:
-                    fields.Add(new XElement("PropertyName", form["PropertyName"]));
-                    break;
-                case StatisticCheckType.PropertyValueCheck:
-                    fields.Add(new XElement("PropertyName", form["PropertyName"]));
-                    fields.Add(new XElement("PropertyValue", form["PropertyValue"]));
-                    break;
-                case StatisticCheckType.Relationship:
-                    var rawCheckObjects = form["CheckObjects"];
-                    if (!string.IsNullOrEmpty(rawCheckObjects))
-                    {
-                        //remove formatting
-                        rawCheckObjects = rawCheckObjects.Replace("\r", "").Replace("\n", "").Replace(" ", "").Trim('[').Trim(']');
-
-                        var checkObjectStrings = rawCheckObjects.Split(',').ToList();
-                        var checksElement = new XElement("CheckObjects");
-                        checkObjectStrings.ForEach(i =>
-                        {
-                            var checkElement = new XElement("IntersectType", i.Trim('"'));
-                            checksElement.Add(checkElement);
-                        });
-                        fields.Add(checksElement);
-                    }
-                    break;                
-                case StatisticCheckType.PredicateMetric:
-                    fields.Add(new XElement("Predicate", form["Predicate"]));
-                    break;
-            }
-
-            return fields.ToString();
-        }
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddScoreTypeMetric")]
-        public JsonResult AddScoreTypeMetric(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("score type metric");
-
-                var a = new ScoreTypeMetric
-                {
-                    Name = parseTextField(form, "Name"),
-                    ScoreTypeID = parseIntField(form, "ScoreTypeID"),
-                    Description = parseTextField(form, "Description"),
-                    CheckType = (StatisticCheckType)Enum.Parse(typeof(StatisticCheckType), form["CheckType"]),
-                    MaximumScore = parseIntField(form, "MaximumScore"),
-                    Object = parseTextField(form, "Object"),
-                    ObjectID = parseIntField(form, "ObjectID")
-                };
-                a.Configuration = getXmlConfigurationFromFormFields(form, a.CheckType);
-
-                Company.Add(a);
-
-                var version = new ScoreTypeMetricVersion { CheckType = a.CheckType, Configuration = a.Configuration, Description = a.Description, MaximumScore = a.MaximumScore, Name = a.Name, ScoreTypeMetricID = a.ID };
-                Company.Add(version);
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteScoreTypeMetric")]
-        public JsonResult DeleteScoreTypeMetric(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("score type metric");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ScoreTypeMetric>(id);
-                if (model == null) throw new NotFoundException("score type");
-                
-                model.Deleted = true;
-                Company.Update(model);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditScoreTypeMetric")]
-        public JsonResult EditScoreTypeMetric(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("score type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ScoreTypeMetric>(id);
-                if (model == null) throw new NotFoundException("score type");
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-                model.MaximumScore = parseIntField(form, "MaximumScore");
-                model.CheckType = (StatisticCheckType)Enum.Parse(typeof(StatisticCheckType), form["CheckType"]);
-                model.Configuration = getXmlConfigurationFromFormFields(form, model.CheckType);
-
-                var version = new ScoreTypeMetricVersion { CheckType = model.CheckType, Configuration = model.Configuration, Description = model.Description, MaximumScore = model.MaximumScore, Name = model.Name, ScoreTypeMetricID = model.ID };
-                Company.Add(version);
-
-                Company.Update(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
 
         #endregion
 

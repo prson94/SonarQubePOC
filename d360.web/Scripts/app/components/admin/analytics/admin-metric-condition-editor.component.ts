@@ -74,8 +74,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     @Input() condition = null;
     @Input() mapId: number = -1;
     @Input() fieldId: number = -1;
-    @Input() objectType: string = "";
-    @Input() objectId: number = -1;
+    @Input() assetTypeId: number = -1;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
@@ -108,8 +107,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     ngOnChanges() {
-        if (this.fieldId < 1 && this.objectId > 0 && this.model != null) {
-            this.metricsService.getConditionFields(this.objectType, this.objectId)
+        if (this.fieldId < 1 && this.assetTypeId > 0 && this.model != null) {
+            this.metricsService.getConditionFields(this.assetTypeId)
                 .then(r => {
                     this.fields = r;
                 });
@@ -118,7 +117,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     load() {
         this.fields = [];
-        this.metricsService.getConditionFields(this.objectType, this.objectId)
+        this.metricsService.getConditionFields(this.assetTypeId)
             .then(r => {
                 this.fields = r;
             });
@@ -160,7 +159,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         if (field != null) {
             this.fieldType = field.Type;
             this.condition.fieldName = field.FriendlyName;
-            //console.log('changeFieldType', this.condition, field);
 
             if (field.Type == 'Lookup') {
                 this.lookups = [];
