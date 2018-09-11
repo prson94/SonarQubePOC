@@ -594,16 +594,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             command: (e) => this.menuClick(e)
         });
 
-        if (!this.readonly) {
-            this.menuItems.push({
-                key: 'save',
-                icon: 'fa fa-floppy-o',
-                items: null,
-                title: 'Save Lineage',
-                command: (e) => this.menuClick(e)
-            });
-        }
-
         let top = {
             icon: 'fa fa-eye',
             items: [{
@@ -640,6 +630,15 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 icon: 'fa fa-pencil',
                 items: null,
                 title: 'Edit Lineage',
+                command: (e) => this.menuClick(e)
+            });
+        }
+        if (!this.readonly) {
+            this.menuItems.push({
+                key: 'save',
+                icon: 'fa fa-floppy-o',
+                items: null,
+                title: 'Save Lineage',
                 command: (e) => this.menuClick(e)
             });
         }
@@ -847,6 +846,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.lineageService.postLineageDiagram(model)
             .then(r => {
                 //console.log('save response', r);
+                this.showSidebar = false;
                 this.isLoading = false;
                 this.populateDiagram();
                 if (r != null && r.type != null)
