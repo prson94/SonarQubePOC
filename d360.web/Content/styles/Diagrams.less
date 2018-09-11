@@ -169,7 +169,7 @@
     }
 }
 
-.diagram-sidebar {
+.sidebar-container {
     position: absolute;
     top: 0;
     right: 0;
@@ -177,6 +177,9 @@
     max-width: 500px;
     height: 100%;
     z-index: 100;
+}
+
+.diagram-sidebar {
     background: #ebebeb;
     height: 100%;
     overflow-y: scroll;
@@ -184,7 +187,7 @@
     .sidebar-content {
         padding: 10px;
 
-        .tooltip-panel {
+        .tooltip-panel:not(.tooltip-child) {
             background: transparent;
         }
     }
