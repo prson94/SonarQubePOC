@@ -109,7 +109,7 @@ namespace d360.model
 
             return prefix;
         }
-        public async Task SendDigestEmails(EnvironmentLevel environment)
+        public async Task SendDigestEmails(EnvironmentLevel environmentLevel)
         {
             var companySettings = Community.GetCompanySettings();
 
@@ -165,18 +165,22 @@ namespace d360.model
 
                    
                     StringBuilder sb = new StringBuilder();
-                    var subject = "Data3Sixty Daily Workflow Email";
+                    var subject = string.Empty;
+                    string environment = string.Empty;
                     //build email content
                     // email summary
-                    sb.Append("<p style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#0000;'>Please find listed below the outstanding workflow items assigned to you:</p>");
+                    sb.Append("<span style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#0000;'>Please find listed below the outstanding workflow items assigned to you:</span>");
                     // email details
-                    if (environment != EnvironmentLevel.Production)
+                    if (environmentLevel != EnvironmentLevel.Production)
                     {
-                        sb.Append($"<span style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#0000;'>({environment.ToString()}  environment)</span>");
-                        subject += $" ({environment.ToString()} environment)";
+                        sb.Append($"<br><span style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#0000;'>({environmentLevel.ToString()}  environment)</span><br><br>");
+                        environment = $"[{environmentLevel.ToString()}] ";
+                    }else {
+                        sb.Append("<br><br>");
                     }
                     sb.Append(tblHeader);
                     int i = 0;
+                    int totalNew = 0;
                     foreach (var item in workflows)
                     {
                         if(i%2==0)
@@ -193,11 +197,15 @@ namespace d360.model
                        
                         sb.Append("</tr>");
                         i++;
+                         totalNew += item.New;
+
                     }
                     if (i == 0) continue;
                     sb.Append("</tbody></table>");
 
                     sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/home' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
+
+                    subject = $"{environment}{totalNew} new workflow items require your attention";
 
                     var emailAddress = user.Email;
 
