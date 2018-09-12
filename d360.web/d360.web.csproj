@@ -796,6 +796,7 @@
     <Content Include="Static\Help\Content\d-admin\creating-surveys.htm" />
     <Content Include="Static\Help\Content\d-admin\customizing-govern.htm" />
     <Content Include="Static\Help\Content\d-admin\defining-fields.htm" />
+    <Content Include="Static\Help\Content\d-admin\email-notification-activity.htm" />
     <Content Include="Static\Help\Content\d-admin\establishing-artifacts.htm" />
     <Content Include="Static\Help\Content\d-admin\establishing-attributes.htm" />
     <Content Include="Static\Help\Content\d-admin\establishing-metamodel.htm" />
@@ -818,6 +819,7 @@
     <Content Include="Static\Help\Content\d-admin\managing-users.htm" />
     <Content Include="Static\Help\Content\d-admin\style-customizations.htm" />
     <Content Include="Static\Help\Content\d-admin\workflow-form.htm" />
+    <Content Include="Static\Help\Content\d-admin\workflow-summary-email.htm" />
     <Content Include="Static\Help\Content\f-api\api-building-url.htm" />
     <Content Include="Static\Help\Content\f-api\api-configuration.htm" />
     <Content Include="Static\Help\Content\f-api\api-end-users.htm" />
@@ -911,6 +913,10 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\delete-icon.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\edit-icon.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\email-backup-responsibility.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\email-notification.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\email-notification2.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\email-notification3.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\email-notification4.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table1.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table10.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\filter-table11.png" />
@@ -1010,6 +1016,9 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\workflows3.png" />
     <Content Include="Static\Help\Content\Resources\Images\api\api-credentials.png" />
     <Content Include="Static\Help\Content\Resources\Images\api\profile-button.png" />
+    <Content Include="Static\Help\Content\Resources\Images\release-notes\max-list-filter.png" />
+    <Content Include="Static\Help\Content\Resources\Images\release-notes\max-list-filter2.png" />
+    <Content Include="Static\Help\Content\Resources\Images\release-notes\workflow-email.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\CheckMark-EH24112014.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\checkmark-transparent-eh08032016.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\checkmark_black-EH18032015.png" />
@@ -1218,6 +1227,7 @@
     <Content Include="Static\Help\Data\SearchStem_Chunk0.js" />
     <Content Include="Static\Help\Data\SearchStem_Chunk1.js" />
     <Content Include="Static\Help\Data\SearchStem_Chunk2.js" />
+    <Content Include="Static\Help\Data\SearchStem_Chunk3.js" />
     <Content Include="Static\Help\Data\SearchTopic_Chunk0.js" />
     <Content Include="Static\Help\Data\SearchTopic_Chunk1.js" />
     <Content Include="Static\Help\Data\SearchUrl_Chunk0.js" />
