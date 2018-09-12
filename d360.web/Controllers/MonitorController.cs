@@ -144,5 +144,206 @@ where   A.RuleImplementationID = @id";
             return File(stream.ToArray(), "application/vnd.ms-excel", $"{detail.PluralizedName}.xlsx");
         }
 
+        [Route("workflowmonitor/items/download/excel.xls"), HttpGet, FileDownload]
+        public FileResult GetWorkFlowMonitorToExcel(int pagenum, int pagesize, string sortDataField, string sortOrder)
+        {
+
+            var filters = GetFilterValuesFromRequest(Request, true);
+            string typeSql = "";
+            foreach (var f in filters)
+            {
+                var ff = f as UiRequestFieldFilterValue;
+                if (ff == null) continue;
+                switch (ff.FieldName)
+                {
+                    case "WorkflowId":
+                        var types = ff.RawValue.Trim().TrimEnd(',');
+                        typeSql += $@" wt.id in ({types}) and ";
+                        break;
+                    case "Name":
+                        typeSql += $@" (case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
+                                    when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
+                                    else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '{ff.RawValue}%' and ";
+                        break;
+                    case "TypeName":
+                        typeSql += $@" case when wi.[object] = 'Issue' then it.Name else assettype.name end  Like '{ff.RawValue}%' and ";
+                        break;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(typeSql))
+            {
+                typeSql = typeSql.Trim().TrimEnd('a', 'n', 'd');
+                typeSql = "where " + typeSql;
+            }
+
+            sortDataField = string.IsNullOrEmpty(sortDataField) ? "WorkflowName" : sortDataField;
+            var stFieldType = sortDataField == "StartedOn" || sortDataField == "CompletedOn" ? "Date" : "string";
+            var sortsql = applySortSuffix(string.Empty, sortDataField, sortOrder, "Date", "desc", sortFieldType: stFieldType);
+          //  var pagingSql = applyPagingSuffix(string.Empty, pagenum, pagesize);
+
+            var sql = $@"
+                    select  wt.name as 'WorkflowName' ,
+                    case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
+                    when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
+                    else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)') end as 'Name',
+                    wi.[object] as 'Object' ,wi.[objectid] as 'ObjectID' ,
+                    wi.startedOn as 'StartedOn'	,
+                    wi.CompletedOn as 'CompletedOn',
+                    gr.firstName + ' ' + gr.lastName as 'StartedBy' ,
+                    case when wi.[object] = 'Issue' then it.Name else assettype.name end as 'TypeName' ,
+                    assettype.[Object] as 'Type' ,assettype.ObjectID as 'ObjectTypeID'	
+                    from [workflow].[type] wt 
+                    inner join [workflow].[version] wv on (wt.id = wv.typeid) 
+                    inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+                    left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
+                    left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
+                    inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
+                    outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
+                    left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
+                    {typeSql} 
+                    {sortsql} 
+                    ";
+
+               
+
+            var list = Company.Query<dynamic>(sql);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+            #region Create the list sheet
+
+            #region Header
+
+            document.SetCellValue(1, 1, "Workflow Name");
+            document.SetCellValue(1, 2, "Name");
+            document.SetCellValue(1, 3, "Type Name");
+            document.SetCellValue(1, 4, "Type");
+            document.SetCellValue(1, 5, "Started");
+            document.SetCellValue(1, 6, "Completed");
+
+            #endregion
+
+            int rowIndex = 1;
+            foreach (var row in list)
+            {
+                rowIndex++;
+
+                document.SetCellValue(rowIndex, 1, row.WorkflowName);
+                document.SetCellValue(rowIndex, 2, row.Name);
+                document.SetCellValue(rowIndex, 3, row.TypeName ?? "");
+                document.SetCellValue(rowIndex, 4, row.Type ?? "");
+                document.SetCellValue(rowIndex, 5, row.StartedOn??"");
+                SLStyle style = document.CreateStyle();
+                style.FormatCode = "mm/dd/yyyy";
+                document.SetCellStyle(rowIndex, 5, style);
+                document.SetCellValue(rowIndex, 6, row.CompletedOn??"");
+                style = document.CreateStyle();
+                style.FormatCode = "mm/dd/yyyy";
+                document.SetCellStyle(rowIndex, 6, style);
+
+            }
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"WorkflowItems {System.DateTime.Now.ToShortDateString()}.xlsx");
+
+
+        }
+        [Route("workflowmonitor/items"), HttpGet, NonNullableParameters]
+        public JsonNetResult GetWorkflowMonitor( int pagenum, int pagesize, string sortDataField, string sortOrder)
+        {
+
+            try
+            {
+                var filters = GetFilterValuesFromRequest(Request, true);
+                string typeSql="";
+                foreach (var f in filters)
+                {   var ff = f as UiRequestFieldFilterValue;
+                    if (ff == null) continue;
+                    switch (ff.FieldName)
+                    {
+                        case "WorkflowId":
+                            var types = ff.RawValue.Trim().TrimEnd(',');
+                            typeSql += $@" wt.id in ({types}) and ";
+                            break;
+                        case "Name":
+                            typeSql += $@" (case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
+                                        when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
+                                        else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '{ff.RawValue}%' and ";
+                            break;
+                        case "TypeName":
+                            typeSql += $@" case when wi.[object] = 'Issue' then it.Name else assettype.name end  Like '{ff.RawValue}%' and ";
+                            break;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(typeSql))
+                {
+                    typeSql = typeSql.Trim().TrimEnd( 'a','n','d');
+                    typeSql = "where " + typeSql;
+                }
+
+                sortDataField = string.IsNullOrEmpty(sortDataField) ? "WorkflowName" : sortDataField;
+                var stFieldType = sortDataField == "StartedOn"  || sortDataField == "CompletedOn" ? "Date" : "string";
+                var sortsql = applySortSuffix(string.Empty, sortDataField, sortOrder, "Date", "desc", sortFieldType: stFieldType);
+                var pagingSql = applyPagingSuffix(string.Empty, pagenum, pagesize);
+
+                var sql = $@"
+                        select wi.id as Id, wt.name as 'WorkflowName' ,
+                        case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
+                        when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
+                        else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)') end as 'Name',
+                        wi.[object] as 'Object' ,wi.[objectid] as 'ObjectID' ,
+                        wi.startedOn as 'StartedOn'	,
+                        wi.CompletedOn as 'CompletedOn',
+                        gr.firstName + ' ' + gr.lastName as 'StartedBy' ,
+                        case when wi.[object] = 'Issue' then it.Name else assettype.name end as 'TypeName' ,
+                        assettype.[Object] as 'Type' ,assettype.ObjectID as 'ObjectTypeID'	
+                        from [workflow].[type] wt 
+                        inner join [workflow].[version] wv on (wt.id = wv.typeid) 
+                        inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+                        left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
+                        left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
+                        inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
+                        outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
+                        left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+                        left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
+                        {typeSql} 
+                        {sortsql} 
+                        {pagingSql}";
+
+                var countSql = $@" select count(1)	
+                        from [workflow].[type] wt 
+                        inner join [workflow].[version] wv on (wt.id = wv.typeid) 
+                        inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+                        left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
+                        left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
+                        inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
+                        outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
+                        left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+                        left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)  {typeSql}";
+
+
+                var list = Company.Query<dynamic>(sql);
+                var totalCount = Company.Query<int>(countSql);
+
+                return new JsonNetResult
+                {
+                    Data = new { Items = list, Total = totalCount },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return jsonNetException(ex);
+            }
+        }
+
+
     }
 }

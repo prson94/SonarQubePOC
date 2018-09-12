@@ -12,6 +12,9 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 
 import { WorkflowMonitorRoutingModule } from './workflowmonitor.routes';
 import { WorkflowMonitorComponent } from './workflowmonitor.component';
+import { WorkflowMonitorListComponent } from './worflowmonitor-list.component';
+import { WorkflowMonitorListFilterComponent } from './workflowmonitor-list-filter.component';
+import { WorkflowMonitorListColumnFilterComponent } from './workflowmonitor-list-column-filter.components';
 
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
@@ -20,11 +23,16 @@ import {
     DataTableModule,
     SharedModule,
     DropdownModule,
+    SelectButtonModule,
     MultiSelectModule,
     InputTextModule,
     TooltipModule,
     ButtonModule,
 } from 'primeng/primeng';
+
+
+
+
 
 @NgModule({
     imports: [CommonModule,
@@ -39,6 +47,7 @@ import {
         SharedModule,
         MultiSelectModule,
         DropdownModule,
+        SelectButtonModule,
         InputTextModule,
         TooltipModule,
         ButtonModule,
@@ -52,7 +61,10 @@ import {
         SharedObjectDetailsModule
     ],
     declarations: [
-        WorkflowMonitorComponent,        
+        WorkflowMonitorComponent,   
+        WorkflowMonitorListComponent,
+        WorkflowMonitorListFilterComponent,
+        WorkflowMonitorListColumnFilterComponent,
     ],
     exports: [
         WorkflowMonitorComponent,        

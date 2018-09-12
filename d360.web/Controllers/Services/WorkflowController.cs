@@ -174,7 +174,64 @@ order by wi.StartedOn desc",
             };
             return result;
         }
-        
+
+        internal List<UiRequestFilterValue> GetFilterValuesFromRequest(HttpRequestBase Request, bool applyHiddenFilters = false)
+        {
+            var query = Request.Params;
+            var filters = new List<UiRequestFilterValue>();
+
+            int relfilterscount = 0;
+
+          
+
+            #region Field Filters
+
+            if (int.TryParse(query["filterscount"], out relfilterscount))
+            {
+                for (int i = 0; i < relfilterscount; i++)
+                {
+                    var fField = query["filterdatafield" + i];
+                    var fCondition = query["filtercondition" + i];
+                    var fValue = query["filtervalue" + i];
+
+                    if (fValue.EndsWith(".000")) fValue = fValue.Replace(".000", "");
+
+                    if (!string.IsNullOrEmpty(fValue))
+                    {
+                        filters.Add(new UiRequestFieldFilterValue
+                        {
+                            Condition = fCondition,
+                            FieldName = fField,
+                            RawValue = fValue
+                        });
+                    }
+                }
+            }
+
+            #endregion
+
+           
+
+            return filters;
+        }
+
+
+        [HttpGet, Route("workflowmonitor/filter/definition")]
+        public HttpResponseMessage GetFilerDefinition()
+        {
+            var filterColumns = new List<GridFilterColumn>();
+            filterColumns.Add(new GridFilterColumn { text = "Name", datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Type Name", datafield = "TypeName", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Initiated By", datafield = "ResourceId", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Requested By", datafield = "ResourceId", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+
+            return Request.CreateResponse(HttpStatusCode.OK,filterColumns);
+
+        }
+
+
+
+
 
         [Route("issue/type/{objectid:int}/{objecttype}"), HttpGet]
         public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype) 

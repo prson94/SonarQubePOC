@@ -2011,6 +2011,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\worflowmonitor-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-column-filter.components.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.routes.ts" />
@@ -2033,6 +2036,7 @@
     <TypeScriptCompile Include="Scripts\app\models\shopping-cart.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shortcuts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\tooltip-info.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\workflowmonitor.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\array-to-selectitem.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\permission-filter.pipe.ts" />
@@ -2262,6 +2266,7 @@
     <TypeScriptCompile Include="Scripts\app\services\tooltip-singleton.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tooltip.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow-fields.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\workflowmonitor.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\form-helpers.ts" />

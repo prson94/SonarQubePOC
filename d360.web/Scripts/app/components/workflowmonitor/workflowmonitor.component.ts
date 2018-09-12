@@ -11,7 +11,12 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
     selector: 'd3s-workflow-monitor',
     template: ` 
 <div class="row">
-    Workflow Monitor Is Awsome!
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div class="col s6">
+            <div class="tile tile-detail" *ngIf="!isLoading">
+                <d3s-workflowmonitor-list (selectionChange)="listChange($event)"></d3s-workflowmonitor-list>  
+            </div>
+        </div>
 </div>
               `,
     providers: []
@@ -36,4 +41,8 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
         this.clearSidebar();
         
     }    
+
+    listChange($event) {
+        console.log($event);
+    }
 }
