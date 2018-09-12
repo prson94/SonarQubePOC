@@ -116,6 +116,11 @@ drop table Field_History
 GO
 
 ALTER TABLE Field DROP PERIOD FOR SYSTEM_TIME; 
+
+alter table Field add UpdatedOn datetime constraint DF_Field_UpdatedOn default(getutcdate()) not null
+GO
+update Field set UpdatedOn = EffectiveStartDate
+GO
 alter table Field drop column [EffectiveStartDate]
 alter table Field drop column [EffectiveEndDate]
 GO
@@ -1752,4 +1757,104 @@ GO
 --alter table metrics.Map drop column [ObjectID]
 --alter table metrics.Map drop column [EffectiveStartDate]
 --alter table metrics.Map drop column [EffectiveEndDate]
+GO
+
+
+-- GOV-5387
+ALTER procedure [dbo].[ResponsibilityRuleShouldRun]
+	@id int-- = 70
+as
+begin
+	set nocount on;
+
+	--update ResponsibilityTypeRelationRule set LastRunOn = '7/20/2018 9:00:00 PM' where ID = 70
+	declare @shouldRun bit = 0 ,
+			@lastRunOn datetime,
+			@o varchar(50),
+			@oid int--,
+			--@ruleUpdatedOn datetime
+
+	select	@lastRunOn = coalesce(LastRunOn, '1/1/2000'),
+			@o = Object,
+			@oid = ObjectID--,
+	--		@ruleUpdatedOn = UpdatedOn
+	from	ResponsibilityTypeRelationRule
+	where	ID = @id
+
+	declare @assetMaxDate datetime,
+			@assetFieldMaxDate datetime,
+			@newUsers bit = 0,
+			@newAssets bit = 0--,
+	--		@ruleUpdated bit = 0
+
+	--if @ruleUpdatedOn > @lastRunOn
+	--begin
+	--	set	@ruleUpdated = 1
+	--end
+	select	@newUsers = IIF(count(1) > 0, 1, 0)
+	from	reporting.Global_Resource
+	where	CreatedOn > @lastRunOn
+
+	select	@assetMaxDate = max(A.CreatedOn)
+	from	Asset A
+			inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+
+	select	@assetMaxDate = IIF(max(A.UpdatedOn) > @assetMaxDate, max(A.UpdatedOn), @assetMaxDate)
+	from	Asset A
+			inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+
+	if @assetMaxDate > @lastRunOn
+	begin
+		set @newAssets = 1
+	end
+
+	if @newAssets = 0
+	begin
+		declare @fIDs table (FieldTypeID int)
+		insert into @fIDs
+			select	WF.FieldTypeID
+			from	ResponsibilityTypeRelationRule R
+					cross apply OPENJSON(R.Definition, '$.When') D--with ([When] nvarchar(max) '$.When', [Then] nvarchar(max) '$.Then') D
+					cross apply OPENJSON(D.value) with (
+							CheckType nvarchar(1) '$.CheckType',
+							FieldTypeID int '$.FieldTypeID'--,
+							--FieldTypeName nvarchar(250) '$.FieldTypeName' 
+						) WF
+			where	R.ID = @id
+					and WF.CheckType = 'F'
+
+		if exists(select 1 from @fIDs)
+		begin
+			select	@assetFieldMaxDate = max(F.UpdatedOn)
+			from	Field F 
+					inner join @fIDs FT on FT.FieldTypeID = F.FieldTypeID
+					inner join Asset A on A.ID = F.AssetID
+					inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+		end
+		else
+		begin
+			-- slow 3 seconds or so for 400k rows
+			/*select	@assetFieldMaxDate = max(F.EffectiveStartDate)
+			from	Field F 
+					inner join Asset A on A.ID = F.AssetID
+					inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid */
+			-- less than 1 sec for 400k rows
+			select	@assetFieldMaxDate = max(F.UpdatedOn)
+			from	Field F 
+					inner join FieldType FT on F.FieldTypeID = FT.id and FT.Object = @o and FT.ObjectID = @oid
+		end
+
+		if @assetFieldMaxDate > @lastRunOn
+		begin
+			set @newAssets = 1
+		end	
+	end
+
+	if @newUsers = 1 or @newAssets = 1
+	begin
+		set @shouldRun = 1
+	end
+
+	select @shouldRun
+end
 GO
