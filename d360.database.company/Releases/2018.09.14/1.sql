@@ -1614,3 +1614,142 @@ begin
 
 end
 GO
+
+
+
+alter table metrics.Map add AssetTypeID int null
+GO
+
+-- Convert to INTs instead of LONGs.
+ALTER TABLE [metrics].[Condition] DROP CONSTRAINT [FK_MetricCondition_MetricMap]
+GO
+ALTER TABLE [metrics].[MapResult] DROP CONSTRAINT [FK_MetricMapResult_MetricMap]
+GO
+ALTER TABLE [metrics].[StagingResult] DROP CONSTRAINT [FK_StagingResult_Map]
+GO
+ALTER TABLE [metrics].[Map] DROP CONSTRAINT [PK_MetricMap]
+GO
+
+alter table metrics.Map alter column ID int not null
+GO
+ALTER TABLE [metrics].[ConditionValue] DROP CONSTRAINT [FK_MetricConditionValue_MetricCondition]
+GO
+ALTER TABLE [metrics].[Condition] DROP CONSTRAINT [PK_MetricCondition]
+GO
+alter table metrics.[Condition] alter column MapID int not null
+GO
+ALTER TABLE [metrics].[Condition] ADD  CONSTRAINT [PK_MetricCondition] PRIMARY KEY NONCLUSTERED ( [MapID] ASC, [FieldTypeID] ASC )
+GO
+ALTER TABLE [metrics].[ConditionValue] DROP CONSTRAINT [PK_MetricConditionValue]
+GO
+alter table metrics.[ConditionValue] alter column MapID int not null
+GO
+ALTER TABLE [metrics].[ConditionValue] ADD  CONSTRAINT [PK_MetricConditionValue] PRIMARY KEY NONCLUSTERED ( [MapID] ASC, [FieldTypeID] ASC, [Value] ASC )
+GO
+ALTER TABLE [metrics].[ConditionValue]  WITH CHECK ADD  CONSTRAINT [FK_MetricConditionValue_MetricCondition] FOREIGN KEY([MapID], [FieldTypeID]) REFERENCES [metrics].[Condition] ([MapID], [FieldTypeID]) ON DELETE CASCADE
+GO
+ALTER TABLE [metrics].[ConditionValue] CHECK CONSTRAINT [FK_MetricConditionValue_MetricCondition]
+GO
+ALTER TABLE [metrics].[StagingResult] DROP CONSTRAINT [PK_MetricStagingResult]
+GO
+alter table metrics.[StagingResult] alter column MapID int not null
+GO
+ALTER TABLE [metrics].[StagingResult] ADD  CONSTRAINT [PK_MetricStagingResult] PRIMARY KEY NONCLUSTERED ( [MapID] ASC, [EffectiveDate] DESC, [AssetID] ASC )
+GO
+ALTER TABLE [metrics].[MapResult] DROP CONSTRAINT [PK_MetricMapResult]
+GO
+alter table metrics.[MapResult] alter column MapID int not null
+GO
+ALTER TABLE [metrics].[MapResult] ADD  CONSTRAINT [PK_MetricMapResult] PRIMARY KEY NONCLUSTERED ( [MapID] ASC, [ScoreID] ASC )
+GO
+ALTER TABLE [metrics].[Map] ADD  CONSTRAINT [PK_MetricMap] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+GO
+
+ALTER TABLE [metrics].[Condition]  WITH CHECK ADD  CONSTRAINT [FK_MetricCondition_MetricMap] FOREIGN KEY([MapID]) REFERENCES [metrics].[Map] ([ID]) ON DELETE CASCADE
+GO
+ALTER TABLE [metrics].[Condition] CHECK CONSTRAINT [FK_MetricCondition_MetricMap]
+GO
+ALTER TABLE [metrics].[MapResult]  WITH CHECK ADD  CONSTRAINT [FK_MetricMapResult_MetricMap] FOREIGN KEY([MapID]) REFERENCES [metrics].[Map] ([ID]) ON DELETE CASCADE
+GO
+ALTER TABLE [metrics].[MapResult] CHECK CONSTRAINT [FK_MetricMapResult_MetricMap]
+GO
+
+ALTER TABLE [metrics].[StagingResult]  WITH CHECK ADD  CONSTRAINT [FK_StagingResult_Map] FOREIGN KEY([MapID]) REFERENCES [metrics].[Map] ([ID]) ON DELETE CASCADE
+GO
+ALTER TABLE [metrics].[StagingResult] CHECK CONSTRAINT [FK_StagingResult_Map]
+GO
+-----------------------------------
+ALTER TABLE [metrics].[Group] DROP CONSTRAINT [DF_MetricGroup_EffectiveStartDate]
+GO
+alter table metrics.[Group] drop column [EffectiveStartDate]
+GO
+alter table metrics.[Group] drop column [EffectiveEndDate]
+GO
+alter table metrics.[Group] add [uid] uniqueidentifier constraint DF_MetricsGroup_uid default(newid()) not null
+GO
+alter table metrics.[Item] add [uid] uniqueidentifier constraint DF_MetricsItem_uid default(newid()) not null
+GO
+
+select * from metrics.[Map]
+
+alter table metrics.[Map] add EffectiveDate datetime null
+GO
+
+update metrics.[Map] set EffectiveDate = EffectiveStartDate
+--alter table metrics.[Map] alter column EffectiveDate datetime not null
+--GO
+
+CREATE TABLE [metrics].[StagingItem](
+	AssetUid uniqueidentifier not null,
+	MetricGroupUid uniqueidentifier not null,
+	MetricItemUid uniqueidentifier not null,
+	[EffectiveDate] date NOT NULL,
+	[Result] [bit] NOT NULL,
+	[Processing] [bit] NOT NULL,
+	[Archived] [bit] NOT NULL,
+	CONSTRAINT [PK_MetricStagingItem] PRIMARY KEY NONCLUSTERED ( AssetUid ASC, MetricGroupUid ASC, MetricItemUid ASC, [EffectiveDate] DESC )
+)
+GO
+
+ALTER TABLE [metrics].[StagingItem] ADD  CONSTRAINT [DF_MetricsStagingItem_Archived]  DEFAULT ((0)) FOR [Archived]
+GO
+
+ALTER TABLE [metrics].[StagingItem] ADD  CONSTRAINT [DF_MetricsStagingItem_Processing]  DEFAULT ((0)) FOR [Processing]
+GO
+
+CREATE CLUSTERED INDEX CIX_MetricStagingItem ON metrics.StagingItem (Archived ASC)
+GO
+
+ALTER TABLE [metrics].[Map] DROP CONSTRAINT [DF_MetricsMap_uid]
+GO
+alter table metrics.Map drop column [uid]
+GO
+
+ALTER TABLE [metrics].[Map] DROP CONSTRAINT [FK_MetricMap_MetricItem]
+GO
+ALTER TABLE [metrics].[Map] ALTER COLUMN ItemID int not null
+GO
+
+ALTER TABLE [metrics].[Item] DROP CONSTRAINT [PK_MetricItem]
+GO
+
+ALTER TABLE [metrics].[Item] ALTER COLUMN ID int not null
+GO
+
+ALTER TABLE [metrics].[Item] ADD  CONSTRAINT [PK_MetricItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+GO
+
+ALTER TABLE [metrics].[Map]  WITH CHECK ADD  CONSTRAINT [FK_MetricMap_MetricItem] FOREIGN KEY([ItemID]) REFERENCES [metrics].[Item] ([ID]) ON DELETE CASCADE
+GO
+ALTER TABLE [metrics].[Map] CHECK CONSTRAINT [FK_MetricMap_MetricItem]
+GO
+
+update	T
+set		T.AssetTypeID = S.ID
+from	metrics.Map T inner join AssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID
+GO
+--alter table metrics.Map drop column [Object]
+--alter table metrics.Map drop column [ObjectID]
+--alter table metrics.Map drop column [EffectiveStartDate]
+--alter table metrics.Map drop column [EffectiveEndDate]
+GO

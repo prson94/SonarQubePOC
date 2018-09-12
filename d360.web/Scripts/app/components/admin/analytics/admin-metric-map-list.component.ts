@@ -129,21 +129,22 @@ export class AdminMetricMapListComponent extends BaseComponent implements OnInit
     }
 
     isActive(item: Item): string {
-        if (item.EffectiveStartDate == null || item.EffectiveStartDate == "")
-            return 'Inactive';
+        //if (item.EffectiveStartDate == null || item.EffectiveStartDate == "")
+        //    return 'Inactive';
 
-        var start = new Date(item.EffectiveStartDate);
-        var end = new Date(item.EffectiveEndDate);
-        var now = new Date(Date.now());
+        //var start = new Date(item.EffectiveStartDate);
+        //var end = new Date(item.EffectiveEndDate);
+        //var now = new Date(Date.now());
 
-        if (start < now) {
-            if (item.EffectiveEndDate == null || item.EffectiveEndDate == "")
-                return 'Active';
-            if (end > now)
-                return 'Active';
-        }
+        //if (start < now) {
+        //    if (item.EffectiveEndDate == null || item.EffectiveEndDate == "")
+        //        return 'Active';
+        //    if (end > now)
+        //        return 'Active';
+        //}
 
-        return 'Inactive';
+        //return 'Inactive';
+        return 'Active';
 
     }
 };

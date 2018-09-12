@@ -32,8 +32,8 @@ export class Item {
     ID: number;
     Name: string;
     Description: string;
-    EffectiveStartDate: string;
-    EffectiveEndDate: string;
+    //EffectiveStartDate: string;
+    //EffectiveEndDate: string;
     SourceID: string;
 }
 

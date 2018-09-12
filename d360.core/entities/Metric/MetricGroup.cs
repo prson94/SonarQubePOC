@@ -25,12 +25,6 @@ namespace d360.core.entities.Metric
         public decimal Weight { get; set; }
 
         [DataMember]
-        public DateTime EffectiveStartDate { get; set; }
-
-        [DataMember]
-        public DateTime? EffectiveEndDate { get; set; }
-
-        [DataMember]
         public State State { get; set; } = State.Active;
 
         [DataMember, ForeignKey("ParentID")]
