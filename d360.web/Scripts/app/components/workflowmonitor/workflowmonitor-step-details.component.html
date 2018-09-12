@@ -1,0 +1,55 @@
+﻿<div *ngIf="visible" class="tile tile-detail">
+    <header>
+        {{step.Name}}
+        <d3s-tile-actions [hasClose]="true" (closeClick)="close()"></d3s-tile-actions>
+    </header>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <ng-container *ngIf="!isLoading && step != null">
+        <!-- common task properties -->
+        <ng-container *ngIf="step.StepType == StepType.Task">
+            <div class="row">
+                <div class="col s6">
+                    <div class="FieldName">
+                        Activity Type
+                    </div>
+                    <div>
+                        {{activityTypeName(step.ActivityType)}}
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+        <ng-container [ngSwitch]="step.ActivityType">
+            <ng-container *ngSwitchCase="WorkflowActivityType.EmailNotification">
+                <div class="row">
+                    <div class="col s6">
+                        <div class="FieldName">
+                            Recipient Type
+                        </div>
+                        <div>
+                            {{step.Settings.MessageRecipientType}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="FieldName">
+                            Subject
+                        </div>
+                        <div>
+                            {{step.Settings.MessageSubjectTemplate}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="FieldName">
+                            Body
+                        </div>
+                        <div [innerHtml]="step.Settings.MessageBodyTemplate">
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+        </ng-container>
+    </ng-container>
+</div>

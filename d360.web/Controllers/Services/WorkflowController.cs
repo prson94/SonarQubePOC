@@ -2185,6 +2185,72 @@ order by wi.StartedOn desc";
 
         }
 
+        [Route("item/{itemId:int}"), HttpGet]
+        public HttpResponseMessage GetWorkflowItemSteps(int itemId)
+        {
+            var item = Company.WorkflowItems.FirstOrDefault(i => i.ID == itemId);
+
+            if (item == null)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Item not found"));
+
+            var sql = @"select 
+	            IST.ID,
+	            IST.ItemID,
+	            IST.StepID,
+	            S.[Name],
+	            S.StepType,
+	            S.ActivityType,
+	            case when IST.CompletedOn is null then
+		            cast(0 as bit)
+	            else
+		            cast(1 as bit)
+	            end as Complete,
+	            IST.StartedOn,
+	            RS.FirstName + ' ' + RS.LastName as StartedBy,
+	            IST.CompletedOn,
+	            RC.FirstName + ' ' + RC.LastName as CompletedBy
+            from 
+            workflow.ItemStep IST
+            inner join workflow.Item I on I.ID = IST.ItemID
+            inner join workflow.VersionStep S on S.ID = IST.StepID
+            left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
+            left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
+            where IST.ItemID = @itemId";
+
+            var results = Company.Query<dynamic>(sql, new { itemId }).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, results);
+        }
+
+        [Route("versionstep/{id:int}"), HttpGet]
+        public HttpResponseMessage GetWorkflowVersionStepDetail(int id)
+        {
+            var sql = @"
+            select 
+	            vs.ID,
+	            vs.StepType,
+	            vs.ActivityType,
+	            vs.Settings as SettingsXml,
+                vs.Fields as FieldsXml,
+	            vs.[Name],
+				e.[Object],
+				e.ObjectID,
+				e.ChangeType
+			from workflow.versionstep vs
+			inner join workflow.version v on v.ID = vs.VersionID
+			inner join workflow.eventregistration e on e.TypeID = v.TypeID
+			where vs.ID = @id";
+
+            var versionStep = Company.Query<WorkflowStepDetail>(sql, new { id }).FirstOrDefault();
+
+            if (versionStep == null)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("step not found"));
+
+            versionStep.Settings = XmlToDynamic(versionStep.SettingsXml);
+            versionStep.Fields = XmlToDynamic(versionStep.FieldsXml);
+
+            return Request.CreateResponse(HttpStatusCode.OK, versionStep);
+        }
         #region Helper Methods
 
         private string GetConditionLabels(string conditions)

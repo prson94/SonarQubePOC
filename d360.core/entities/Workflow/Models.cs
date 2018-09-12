@@ -1,7 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using d360.core.enums.Workflow;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -53,5 +55,41 @@ namespace d360.core.entities.Workflow
     {
         public Type Type { get; set; } = new Type();
         public WorkflowEventRegistration Event { get; set; } = new WorkflowEventRegistration();
+    }
+
+    public class WorkflowStepDetail
+    {
+        [DataMember]
+        public int ID { get; set; }
+
+        [DataMember]
+        public StepType StepType { get; set; }
+
+        [DataMember]
+        public WorkflowActivityType ActivityType { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
+        public string SettingsXml { get; set; }
+
+        [DataMember]
+        public string FieldsXml { get; set; }
+
+        [DataMember]
+        public int ObjectID { get; set; }
+
+        [DataMember]
+        public ChangeType ChangeType { get; set; }
+
+        [DataMember]
+        public dynamic Settings { get; set; }
+
+        [DataMember]
+        public dynamic Fields { get; set; }
     }
 }

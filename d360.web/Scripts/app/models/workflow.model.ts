@@ -476,6 +476,20 @@ export class WorkflowAssignmentDetail {
     ActivityType: WorkflowActivityType;
 }
 
+export class WorkflowItemStep {
+    ID: number;
+    ItemID: number;
+    StepID: number;
+    Name: string;
+    StepType: StepType;
+    ActivityType: WorkflowActivityType;
+    Complete: boolean;
+    StartedOn: string;
+    StartedBy: string;
+    CompletedOn: string;
+    CompletedBy: string;
+}
+
 export class BulkWorkflowFormModel {
     ItemStepIDs: number[] = [];
     Fields: WorkflowFormField[] = [];
@@ -484,4 +498,18 @@ export class BulkWorkflowFormModel {
 export class EmailTaskRecipientTypeInfo {
     ID: number;
     Name: string;
+}
+
+export class WorkflowStepDetail {
+    ID: number;
+    StepType: StepType;
+    ActivityType: WorkflowActivityType;
+    SettingsXml: string;
+    FieldsXml: string;
+    Settings: any;
+    Fields: any;
+    Name: string;
+    Object: string;
+    ObjectID: number;
+    ChangeType: WorkflowChangeType;
 }

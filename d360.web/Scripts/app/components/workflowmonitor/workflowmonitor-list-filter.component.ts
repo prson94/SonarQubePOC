@@ -71,7 +71,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     }
 
     onFilterChange() {
-        debugger;
+        //debugger;
         let clone = _.clone(this.columfilter);
         if (this.itemfilter)
             clone.push(this.itemfilter)

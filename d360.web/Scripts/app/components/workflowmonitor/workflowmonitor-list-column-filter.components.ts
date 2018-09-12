@@ -90,7 +90,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        debugger;
+        //debugger;
         var bHasInternalFilters = this.internalFilters.length > 0;
         console.log(this.fields);
         if (changes["fields"] && this.fields != null && this.fields.length > 0) {

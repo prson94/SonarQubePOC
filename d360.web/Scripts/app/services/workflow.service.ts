@@ -24,6 +24,7 @@ import {
     EmailTaskRecipientTypeInfo,
     WorkflowChangeType,
     BulkWorkflowFormModel,
+    WorkflowItemStep,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -500,6 +501,20 @@ export class WorkflowService extends BaseService {
 
     clearLastExecutionDate(id: number) {
         return this.http.delete(`services/workflow/lastexecution/${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowItemSteps(itemId: number): Promise<WorkflowItemStep[]> {
+        return this.http.get(`services/workflow/item/${itemId}`)
+            .toPromise()
+            .then(response => <WorkflowItemStep[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowVersionStepDetail(versionStepId: number) {
+        return this.http.get(`services/workflow/versionstep/${versionStepId}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
