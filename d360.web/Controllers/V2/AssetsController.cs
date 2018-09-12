@@ -129,7 +129,7 @@ order by	P.[Path]
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
-        [HttpPost, Route("{uid}"), SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including an error messages.", typeof(List<DatabaseBulkAssetResult>))]
+        [HttpPost, Route("{uid}"), SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>))]
         public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid uid)
         {
             if (!Company.CurrentResourceIsAdmin)

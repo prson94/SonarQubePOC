@@ -4,7 +4,9 @@ using d360.extensions;
 using d360.model;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using Swashbuckle.Swagger.Annotations;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
@@ -62,7 +64,7 @@ namespace d360.web.Controllers.V2
         /// GET a list of relationship types.
         /// </summary>
         /// <returns></returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("types")]
+        [HttpGet, MapToApiVersion("2.0"), Route("types"), SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>))]
         public async Task<HttpResponseMessage> GetRelationshipTypesAsync()
         {
             var prefix = "Relationships.GetRelationshipTypesAsync => ";
@@ -116,7 +118,7 @@ where	coalesce(S.uid, I.SubjectUid) is not null
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
-        [HttpPost, MapToApiVersion("2.0"), Route("{uid}")]
+        [HttpPost, MapToApiVersion("2.0"), Route("{uid}"), SwaggerResponse(HttpStatusCode.OK, "A list of bulk relationship results, including any error messages.", typeof(List<DatabaseBulkRelationshipResult>))]
         public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid uid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -132,7 +134,7 @@ where	coalesce(S.uid, I.SubjectUid) is not null
                 if (intersectType == null)
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with UID {uid} could not be found.")));
 
-                var import = readRequestJsonContent<BulkAssetImport>(Request).Result;
+                var import = readRequestJsonContent<List<Dictionary<string, string>>>(Request).Result;
 
                 var results = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(
                     QueueSource, 
