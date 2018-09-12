@@ -6,6 +6,7 @@ using d360.model;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -23,7 +24,9 @@ namespace d360.web.Controllers.Services
     /// </summary>
     [ 
         ApiVersion("1.0"),
-        RoutePrefix("services/assets"), Authorize ]
+        RoutePrefix("services/assets"), 
+        Authorize 
+    ]
     public class AssetsController : BaseApiController
     {
         #region DI
@@ -67,7 +70,7 @@ namespace d360.web.Controllers.Services
         /// <param name="ot">The Object Type of the asset type.</param>
         /// <param name="otid">The Object Type ID of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
-        [HttpPost, MapToApiVersion("1.0"), Route("{ot}/{otid:int}/bulk")]
+        [HttpPost, Route("{ot}/{otid:int}/bulk"), SwaggerResponse(HttpStatusCode.OK, "A list of results based on the import, which may contain errors encountered for each item.", typeof(List<AssetImportResult>))]
         public async Task<IHttpActionResult> PostBulkAssetsAsync(SystemObjects ot, int otid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -116,7 +119,7 @@ namespace d360.web.Controllers.Services
         /// Takes a given set of relationships and bulk inserts/updates them.
         /// </summary>
         /// <returns>An HTTP status code and message.</returns>
-        [HttpPost, Route("relationships/bulk")]
+        [HttpPost, Route("relationships/bulk"), SwaggerResponse(HttpStatusCode.OK, "A list of results based on the import, which may contain errors encountered for each item.", typeof(List<DatabaseBulkRelationshipResult>))]
         public async Task<IHttpActionResult> PostBulkAssetRelationshipsAsync()
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -143,7 +146,7 @@ namespace d360.web.Controllers.Services
         /// Takes a given set of relationships and bulk inserts/updates them.
         /// </summary>
         /// <returns>An HTTP status code and message.</returns>
-        [HttpPost, Route("ownership/bulk")]
+        [HttpPost, Route("ownership/bulk"), SwaggerResponse(HttpStatusCode.OK, "A list of results based on the import, which may contain errors encountered for each item.", typeof(List<OwnerImportRequest>))]
         public async Task<IHttpActionResult> PostBulkAssetOwnersAsync()
         {
             if (!Company.CurrentResourceIsAdmin)

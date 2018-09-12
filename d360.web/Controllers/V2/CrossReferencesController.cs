@@ -3,6 +3,7 @@ using d360.extensions;
 using d360.model;
 using Dapper;
 using Microsoft.Web.Http;
+using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -37,20 +38,20 @@ namespace d360.web.Controllers.V2
         /// Returns all asset cross references
         /// </summary>
         /// <returns>An array of cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("")]
+        [HttpGet, MapToApiVersion("2.0"), Route(""), SwaggerResponse(HttpStatusCode.OK, "A full list of asset cross reference values.", typeof(List<AssetCrossReference>))]
         public async Task<HttpResponseMessage> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return Request.CreateResponse<IEnumerable<AssetCrossReference>>(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference"));            
+            return Request.CreateResponse(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference"));            
         }
 
         /// <summary>
         /// Returns asset cross reference values for the specified uid
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("{uid}")]
+        [HttpGet, MapToApiVersion("2.0"), Route("{uid}"), SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the public ID (uid) of the asset.", typeof(List<AssetCrossReference>))]
         public async Task<HttpResponseMessage> GetByUid(string uid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -63,7 +64,7 @@ namespace d360.web.Controllers.V2
         /// Returns asset cross reference values for the specified type and external id
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("{type}/{externalId}")]
+        [HttpGet, MapToApiVersion("2.0"), Route("{type}/{externalId}"), SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type and identifier of the asset.", typeof(List<AssetCrossReference>))]
         public async Task<HttpResponseMessage> GetByTypeID(string type, string externalId)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -76,7 +77,7 @@ namespace d360.web.Controllers.V2
         /// Returns asset cross reference values for the specified type
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("type/{type}")]
+        [HttpGet, MapToApiVersion("2.0"), Route("type/{type}"), SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type.", typeof(List<AssetCrossReference>))]
         public async Task<HttpResponseMessage> GetByType(string type)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -90,7 +91,7 @@ namespace d360.web.Controllers.V2
         /// Returns asset cross reference values for the specified data source
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("datasource/{dataSource}")]
+        [HttpGet, MapToApiVersion("2.0"), Route("datasource/{dataSource}"), SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the data source.", typeof(List<AssetCrossReference>))]
         public async Task<HttpResponseMessage> GetByDataSource(string dataSource)
         {
             if (!Company.CurrentResourceIsAdmin)

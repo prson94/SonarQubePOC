@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Web.Http.Description;
 using System.Web.Http.Routing;
 using Microsoft.Web.Http.Routing;
+using Microsoft.Web.Http.Versioning;
 
 namespace d360.web
 {
@@ -39,7 +40,12 @@ namespace d360.web
             config.AddApiVersioning(o => {
                 o.AssumeDefaultVersionWhenUnspecified = true;
                 o.ReportApiVersions = true;
-                //o.ApiVersionSelector = new Microsoft.Web.Http.Versioning.CurrentImplementationApiVersionSelector(new Microsoft.Web.Http.Versioning.ApiVersioningOptions { ApiVersionReader = new Microsoft.Web.Http.Versioning.UrlSegmentApiVersionReader() });
+                o.ApiVersionSelector = new CurrentImplementationApiVersionSelector(
+                    new ApiVersioningOptions { ApiVersionReader = new UrlSegmentApiVersionReader() }
+                );
+                o.ApiVersionReader = ApiVersionReader.Combine(
+                    new UrlSegmentApiVersionReader()
+                );
             }); // API default Version assumed to be 1.0.
 
             var apiExplorer = config.AddVersionedApiExplorer(options => {

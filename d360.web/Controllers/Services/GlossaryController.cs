@@ -13,6 +13,8 @@ using System.Collections;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Microsoft.Web.Http;
+using Swashbuckle.Swagger.Annotations;
+using d360.web.Models;
 
 namespace d360.web.Controllers.Services
 {
@@ -48,7 +50,7 @@ namespace d360.web.Controllers.Services
         /// </summary>
         /// <param name="id">The ID of the artifact type.</param>
         /// <returns>A list of artifacts.</returns>
-        [Route("artifacts/{id:int}")]
+        [Route("artifacts/{id:int}"), SwaggerResponse(HttpStatusCode.OK, "A list of artifacts based on the type.", typeof(List<ArtifactResultModel>))]
         public HttpResponseMessage GetArtifactsByType(int id)
         {
             var joins = "";
@@ -245,7 +247,7 @@ from    FieldWithRelation F
         /// <param name="typeID">The ID of the artifact type.</param>
         /// <param name="id">The ID of the specific artifact you want to retrieve.</param>
         /// <returns>An instance of an artifact.</returns>
-        [Route("artifacts/{typeID:int}/{id:int}")]
+        [Route("artifacts/{typeID:int}/{id:int}"), SwaggerResponse(HttpStatusCode.OK, "An artifact based on the type.", typeof(ArtifactResultModel))]
         public HttpResponseMessage GetArtifact(int typeID, int id)
         {
             var joins = "";
@@ -694,7 +696,7 @@ where   O.ID not in ({GetNoReadSqlStatement()})
         /// Gets all models based on a given type ID.
         /// </summary>
         /// <returns>A list of models.</returns>
-        [Route("models/{id:int}")]
+        [Route("models/{id:int}"), SwaggerResponse(HttpStatusCode.OK, "A list of models based on the type.", typeof(List<TaxonomyResultModel>))]
         public IQueryable<dynamic> GetModelsByType(int id)
         {
             var joins = "";

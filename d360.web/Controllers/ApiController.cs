@@ -7346,23 +7346,16 @@ SELECT (
         [Route("catalogs")]
         public HttpResponseMessage GetTaxonomyTypes()
         {
-            return Request.CreateResponse<dynamic>(
-                HttpStatusCode.OK,
-                Company.Query<TaxonomyType>(@"
+            var query = Company.Query<dynamic>(@"
 select	    FAT.ID,
 		    FAT.Name,
             ISNULL(FAT.Description,'') as Description,
 		    FAT.MaximumDepth,
-			FAT.DisplayFormat,
-			T.CreatedBy,
-			T.CreatedOn,
-			T.UpdatedBy,
-		    T.UpdatedOn,
             T.ID as AssetTypeID
 from	    TaxonomyType FAT
-		    inner join AssetType T on T.Object = 'TaxonomyType' and T.ObjectID = FAT.ID")
-            .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID })
-            );
+		    inner join AssetType T on T.Object = 'TaxonomyType' and T.ObjectID = FAT.ID");
+
+            return Request.CreateResponse<dynamic>(HttpStatusCode.OK, query);
         }
 
         [Route("TaxonomyType/{id:int}/levels")]

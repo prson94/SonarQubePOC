@@ -12,6 +12,48 @@ using System.Web.Mvc;
 
 namespace d360.web.Models
 {
+    #region V1 API Result Sample Models
+
+    [DataContract]
+    public class ArtifactResultModel
+    {
+        [DataMember]
+        public int ID { get; set; }
+        [DataMember]
+        public string Url { get; set; }
+        [DataMember]
+        public Guid uid { get; set; }
+        [DataMember]
+        public Guid? ParentUid { get; set; }
+        [DataMember]
+        public int? ParentID { get; set; }
+        [DataMember]
+        public string FieldApiName1 { get; set; }
+        [DataMember]
+        public string FieldApiNameN { get; set; }
+    }
+
+    [DataContract]
+    public class TaxonomyResultModel
+    {
+        [DataMember]
+        public int ID { get; set; }
+        [DataMember]
+        public string Url { get; set; }
+        [DataMember]
+        public string Parent { get; set; }
+        [DataMember]
+        public int? ParentID { get; set; }
+        [DataMember]
+        public string ParentUrl { get; set; }
+        [DataMember]
+        public string FieldApiName1 { get; set; }
+        [DataMember]
+        public string FieldApiNameN { get; set; }
+    }
+        
+    #endregion
+
     [DataContract(Name = "artifacts", Namespace = constants.NAMESPACE)]
     public class ArtifactModelRequestList : List<ArtifactModelRequest> { }
 

@@ -13,7 +13,7 @@ namespace d360.core.entities
     {
         #region Properties
 
-        [DataMember, NotMapped]
+        [NotMapped]
         public int? AssetTypeID { get; set; }
 
         [DataMember]
