@@ -1962,7 +1962,7 @@ namespace d360.model
 
                         if(adminGroupId <= 0)
                         {
-                            recipientType = "You are receiving this email as a default user in the Administrator group";
+                            recipientType = "Default - Administrators";
                         }
                         else
                         {
@@ -1970,11 +1970,11 @@ namespace d360.model
 
                             if(grp != null)
                             {
-                                recipientType = $"You are receiving this email as a default user in the {grp.Name} group";
+                                recipientType = $"Default - {grp.Name}";
                             }
                             else
                             {
-                                recipientType = $"You are receiving this email as a default user in the (unknown group) group";
+                                recipientType = $"Default - (unknown group)";
                             }
                         }
                     }
