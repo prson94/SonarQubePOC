@@ -740,6 +740,7 @@
     <Content Include="Scripts\app\polyfills.bundle.js" />
     <Content Include="Scripts\app\vendor.bundle.js" />
     <Content Include="Static\Help\Content\a-shared\legal-notice.htm" />
+    <Content Include="Static\Help\Content\b-release-notes\new-14sep.htm" />
     <Content Include="Static\Help\Content\b-release-notes\new-17aug.htm" />
     <Content Include="Static\Help\Content\b-release-notes\new-31aug.htm" />
     <Content Include="Static\Help\Content\b-release-notes\whats-new.htm" />
