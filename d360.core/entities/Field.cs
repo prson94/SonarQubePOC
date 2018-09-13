@@ -30,7 +30,7 @@ namespace d360.core.entities
         public int UpdatedBy { get; set; }
 
         [DataMember]
-        public DateTime? UpdatedOn { get; set; }
+        public DateTime UpdatedOn { get; set; }
 
         [IgnoreDataMember]
         public FieldType FieldType { get; set; }

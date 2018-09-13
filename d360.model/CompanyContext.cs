@@ -2403,6 +2403,8 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
                     var field = (Field)entry.Entity;
 
+                    field.UpdatedOn = DateTime.UtcNow;
+
                     if (field.FieldType != null && field.FieldType.Type == "Html")
                     {
                         var sanitizer = new HtmlSanitizer();

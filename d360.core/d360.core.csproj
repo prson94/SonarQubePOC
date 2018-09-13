@@ -118,6 +118,7 @@
     <Compile Include="entities\IssueTypeRelation.cs" />
     <Compile Include="entities\Metric\MetricConditionValue.cs" />
     <Compile Include="entities\Metric\MetricCondition.cs" />
+    <Compile Include="entities\Metric\MetricStagingResult.cs" />
     <Compile Include="entities\Metric\MetricScore.cs" />
     <Compile Include="entities\Metric\MetricMapResult.cs" />
     <Compile Include="entities\Metric\MetricMap.cs" />

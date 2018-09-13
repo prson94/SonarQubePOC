@@ -24,7 +24,9 @@ namespace d360.web.Controllers.V2
     /// </summary>
     [ 
         ApiVersion("2.0"), 
-        RoutePrefix("api/v{version:apiVersion}/metrics"), Authorize
+        RoutePrefix("api/v{version:apiVersion}/metrics"), 
+        Authorize,
+        ApiExplorerSettings(IgnoreApi = true)
     ]
     public class MetricsController : BaseApiController
     {

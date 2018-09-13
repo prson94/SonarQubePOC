@@ -11138,7 +11138,10 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "SourceID", Name = "Source ID", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Source ID", false, "", 1, 500) });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = DateTime.Now.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11157,8 +11160,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = item.ID.ToString() });
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = item.Name });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "SourceID", Name = "Source ID", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Source ID", false, "", 1, 500), Value = item.SourceID });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = item.Description });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveStartDate.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveEndDate == null ? null : item.EffectiveEndDate.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = item.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11175,7 +11182,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
                     (
                     select 
-	                    ID as [Value],
+	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
 	                    {0} + T.[Name] as [Text] 
                     from 
 	                    AssetType T 
@@ -11186,8 +11193,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = groupId.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Percentage.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null) });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "AssetType", Name = "Asset Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = DateTime.Now.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items });
+            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes });
 
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -11210,7 +11220,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
                     (
                     select 
-	                    ID as [Value],
+	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
 	                    {0} + T.[Name] as [Text] 
                     from 
 	                    AssetType T 
@@ -11221,8 +11231,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Percentage.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null), Value = map.Weight.ToString() });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "AssetType", Name = "Asset Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.AssetTypeID.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveStartDate.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveEndDate.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.Object + '|' + map.ObjectID.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
 
@@ -11270,22 +11283,22 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
 
             var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
-            
-            var assetTypes = Company.Query<SelectListItem>($@"
-select  ID as [Value],
-	    {QueryConstants.HighLevelTypeCaseStatement} + T.[Name] as [Text] 
-from    AssetType T").OrderBy(i => i.Text).ToList();
 
-            var conditions = Company.Query<dynamic>(@"
-select  c.*,
-        t.FriendlyName as fieldName
-from    metrics.condition c
-        inner join fieldtype t on t.id = c.fieldtypeid
-        inner join metrics.map m on m.id = c.mapid
-where   c.mapid = @id", new { id }).ToList();
+            var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
+	                    [Object] + '|' + cast(ObjectID as varchar) as [Value],
+	                    {0} + T.[Name] as [Text] 
+                    from 
+	                    AssetType T", QueryConstants.HighLevelTypeCaseStatement)).OrderBy(i => i.Text).ToList();
+            var conditions = Company.Query<dynamic>(@"select 
+	                                    c.*,
+	                                    t.FriendlyName as fieldName
+                                    from metrics.condition c
+                                    inner join fieldtype t on t.id = c.fieldtypeid
+                                    inner join metrics.map m on m.id = c.mapid
+                                    where c.mapid = @id", new { id }).ToList();
 
             items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
-            assetTypes.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+            objectTypes.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
 
             return new JsonNetResult
             {
@@ -11294,7 +11307,7 @@ where   c.mapid = @id", new { id }).ToList();
                     Map = map,
                     Conditions = conditions,
                     Items = items,
-                    AssetTypes = assetTypes
+                    ObjectTypes = objectTypes
                 }
             };
         }
@@ -11384,7 +11397,7 @@ where   c.mapid = @id", new { id }).ToList();
             return jsonSuccess("Condition updated successfully", model.MapID.ToString(), "edit", HttpStatusCode.OK);
         }
 
-        [ HttpDelete, ValidateInput(false), Route("MetricCondition")]
+        [HttpDelete, ValidateInput(false), Route("MetricCondition")]
         public JsonResult DeleteMetricCondition(int mapId, int fieldTypeId)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -11420,18 +11433,18 @@ where   c.mapid = @id", new { id }).ToList();
             if (model == null || model.Map.ID > 0)
                 return jsonException("Model is not valid", HttpStatusCode.BadRequest);
 
-            if (model.Map.AssetTypeID < 1)
-                return jsonException("Model is missing asset type", HttpStatusCode.BadRequest);
+            if (model.Map.Object == null || model.Map.ObjectID < 1)
+                return jsonException("Model is missing object type", HttpStatusCode.BadRequest);
 
             if (model.Map.ItemID < 1)
                 return jsonException("Model is missing metric item", HttpStatusCode.BadRequest);
 
             try
             {
-
                 model.Map.State = State.Active;
                 Company.Add(model.Map);
                 Company.SaveChanges();
+
 
                 model.Conditions.ForEach(c =>
                 {
@@ -11446,7 +11459,7 @@ where   c.mapid = @id", new { id }).ToList();
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Mapping added successfully", model.Map.ID.ToString(), "add", HttpStatusCode.OK);
+            return jsonSuccess("Metric group added successfully", model.Map.ID.ToString(), "add", HttpStatusCode.OK);
 
         }
 
@@ -11467,9 +11480,11 @@ where   c.mapid = @id", new { id }).ToList();
 
 
             map.ItemID = model.Map.ItemID;
-            map.AssetTypeID = model.Map.AssetTypeID;
+            map.Object = model.Map.Object;
+            map.ObjectID = model.Map.ObjectID;
             map.Weight = model.Map.Weight;
-            map.EffectiveDate = model.Map.EffectiveDate;
+            map.EffectiveEndDate = model.Map.EffectiveEndDate;
+            map.EffectiveStartDate = model.Map.EffectiveStartDate;
 
             model.Conditions.ForEach(c =>
             {
@@ -11503,7 +11518,141 @@ where   c.mapid = @id", new { id }).ToList();
             return jsonSuccess("Mapping updated successfully", model.Map.ID.ToString(), "edit", HttpStatusCode.OK);
         }
 
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  Route("MetricItem")]
+        [HttpGet, ValidateInput(false), Route("MetricGroup/{id:int}")]
+        public JsonNetResult GetMetricGroup(int id)
+        {
+            var group = Company.GetById<MetricGroup>(id);
+            List<MetricGroup> children = new List<MetricGroup>();
+            if (group != null)
+                children = Company.MetricGroups.Where(g => g.ParentID == group.ID).ToList();
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    Group = group,
+                    Children = children
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("MetricGroup"), ValidateInput(false)]
+        public JsonResult PostMetricGroup(MetricGroupFormModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
+            if (model == null || model.Group == null)
+                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
+
+            if (string.IsNullOrEmpty(model.Group.Name))
+                return jsonException("Group name is not valid", HttpStatusCode.BadRequest);
+
+
+            try
+            {
+                model.Group.State = State.Active;
+                Company.Add(model.Group);
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Metric group added successfully", model.Group.ID.ToString(), "add", HttpStatusCode.OK);
+
+        }
+
+        [HttpPut, Route("MetricGroup"), ValidateInput(false)]
+        public JsonResult PutMetricGroup(MetricGroupFormModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
+            if (model == null || model.Group == null || model.Group.ID < 1)
+                return jsonException("Model is not valid", HttpStatusCode.BadRequest);
+
+            var group = Company.GetById<MetricGroup>(model.Group.ID);
+
+            if (group == null)
+                return jsonException($"Group with id {model.Group.ID} could not be found", HttpStatusCode.NotFound);
+
+
+            group.ParentID = model.Group.ParentID;
+            group.Name = model.Group.Name;
+            group.Description = model.Group.Description;
+            group.EffectiveStartDate = model.Group.EffectiveStartDate;
+            group.EffectiveEndDate = model.Group.EffectiveEndDate;
+            group.SourceID = model.Group.SourceID;
+
+            try
+            {
+                Company.Update(group);
+
+                if (model.Children != null && model.Children.Count > 0)
+                {
+                    model.Children.ForEach(c =>
+                    {
+                        var child = Company.GetById<MetricGroup>(c.ID);
+                        if (child != null)
+                        {
+                            child.Weight = c.Weight;
+                            Company.Update(child);
+                        }
+                    });
+                }
+
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Group updated successfully", model.Group.ID.ToString(), "edit", HttpStatusCode.OK);
+
+        }
+
+        [HttpDelete, ValidateInput(false), Route("MetricGroup")]
+        public JsonResult DeleteMetricGroup(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
+
+            if (id < 1)
+                return jsonException($"The id {id} is not valid", HttpStatusCode.BadRequest);
+
+            var group = Company.GetById<MetricGroup>(id);
+
+            if (group == null)
+                return jsonException($"The group with id {id} could not be found", HttpStatusCode.NotFound);
+
+            try
+            {
+                var maps = Company.MetricMaps.Where(m => m.GroupID == group.ID).ToList();
+
+                maps.ForEach(m =>
+                {
+                    m.State = State.Deleted;
+                    var conditions = Company.MetricConditions.Where(c => c.MapID == m.ID).ToList();
+                    Company.MetricConditions.RemoveRange(conditions);
+                });
+
+                group.State = State.Deleted;
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Group deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
+        }
+
+        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("MetricItem")]
         public JsonResult PostMetricItem(FormCollection form)
         {
             try
@@ -11514,8 +11663,14 @@ where   c.mapid = @id", new { id }).ToList();
                 MetricItem m = new MetricItem
                 {
                     Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description")
+                    Description = parseTextField(form, "Description"),
+                    EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate")),
+                    EffectiveEndDate = null,
+                    SourceID = parseTextField(form, "SourceID")
                 };
+
+                if (DateTime.TryParse(parseTextField(form, "EffectiveEndDate"), out var end))
+                    m.EffectiveEndDate = end;
 
                 Company.Add(m);
 
@@ -11532,7 +11687,7 @@ where   c.mapid = @id", new { id }).ToList();
             }
         }
 
-        [ HttpPut, ValidateInput(false), Route("MetricItem")]
+        [HttpPut, ValidateInput(false), Route("MetricItem")]
         public JsonResult PutMetricItem(FormCollection form)
         {
             try
@@ -11549,6 +11704,13 @@ where   c.mapid = @id", new { id }).ToList();
 
                 m.Name = parseTextField(form, "Name");
                 m.Description = parseTextField(form, "Description");
+                m.EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate"));
+                m.EffectiveEndDate = null;
+                m.SourceID = parseTextField(form, "SourceID");
+
+                if (DateTime.TryParse(parseTextField(form, "EffectiveEndDate"), out var end))
+                    m.EffectiveEndDate = end;
+
 
                 Company.Update(m);
 
@@ -11565,7 +11727,7 @@ where   c.mapid = @id", new { id }).ToList();
             }
         }
 
-        [ HttpDelete, ValidateInput(false), Route("MetricItem")]
+        [HttpDelete, ValidateInput(false), Route("MetricItem")]
         public JsonResult DeleteMetricItem(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -11586,12 +11748,12 @@ where   c.mapid = @id", new { id }).ToList();
             {
                 return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-            
+
         }
         #endregion
 

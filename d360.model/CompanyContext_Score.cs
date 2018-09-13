@@ -33,6 +33,8 @@ namespace d360.model
 
         public DbSet<MetricScore> MetricScores { get; set; }
 
+        public DbSet<MetricStagingResult> MetricStagingResults { get; set; }
+
         #endregion
 
         #region Engine Methods

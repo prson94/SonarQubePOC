@@ -15,6 +15,18 @@ namespace d360.core.entities.Metric
         public int ItemID { get; set; }
 
         [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
+        public int ObjectID { get; set; }
+
+        [DataMember]
+        public DateTime EffectiveStartDate { get; set; }
+
+        [DataMember]
+        public DateTime? EffectiveEndDate { get; set; }
+
+        [DataMember]
         public int AssetTypeID { get; set; }
 
         [DataMember]
