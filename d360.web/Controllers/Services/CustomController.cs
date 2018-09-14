@@ -57,8 +57,6 @@ namespace d360.web.Controllers.Services
         internal const string NEXT = "next";
         internal const string PREV = "previous";
 
-        internal const string BASE_URI = "https://api.londonmarketgroup.co.uk";
-
         public string rel { get; set; }
         public string href { get; set; }
     }
@@ -492,8 +490,8 @@ namespace d360.web.Controllers.Services
 
                 //process multiselect values
                 GetMultiSelectValues(multiSelectDetails, asset);
-
-                var canoUri = JsonResultLinkModel.BASE_URI + Request.RequestUri.PathAndQuery;
+                
+                var canoUri = RequestUri();
 
                 //Determine whether it is JSON or XML to send back to caller, and format appropriately
                 HttpResponseMessage responseMessage = null;
@@ -1455,9 +1453,9 @@ namespace d360.web.Controllers.Services
                 var uri = Request.RequestUri;
                 var qs = uri.ParseQueryString();
 
-                var canoUri = JsonResultLinkModel.BASE_URI + uri.PathAndQuery;
-                var nextUri = JsonResultLinkModel.BASE_URI + uri.PathAndQuery;
-                var prevUri = JsonResultLinkModel.BASE_URI + uri.PathAndQuery;
+                var canoUri = RequestUri();
+                var nextUri = RequestUri();
+                var prevUri = RequestUri();
 
                 nextUri = (nextUri.Contains("_pageNum=")) ?
                     nextUri.Replace($"_pageNum={currentPageNumber}", $"_pageNum={currentPageNumber + 1}") :
@@ -1571,6 +1569,11 @@ namespace d360.web.Controllers.Services
 
                 return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
             }
+        }
+
+        private string RequestUri()
+        {
+            return Request.RequestUri.AbsoluteUri;
         }
 
 
