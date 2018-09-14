@@ -6,19 +6,20 @@ export class Group {
     Name: string;
     Description: string;
     Weight: number;
-    uid: string;
-    Children: Group[] = [];
+    EffectiveStartDate: string;
+    EffectiveEndDate: string;
+    SourceID: string;
 }
 
-//export class GroupForm {
-//    Group: Group = new Group();
-//    Children: Group[] = [];
-//}
+export class GroupForm {
+    Group: Group = new Group(); 
+    Children: Group[] = [];
+}
 
 export class MapForm {
     Map: Map;
     Items: Item[] = [];
-    AssetTypes: any[] = [];
+    ObjectTypes: any[] = [];
     Conditions: Condition[] = [];
 }
 
@@ -32,8 +33,8 @@ export class Item {
     ID: number;
     Name: string;
     Description: string;
-    //EffectiveStartDate: string;
-    //EffectiveEndDate: string;
+    EffectiveStartDate: string;
+    EffectiveEndDate: string;
     SourceID: string;
 }
 
@@ -41,12 +42,14 @@ export class Map {
     ID: number;
     GroupID: number;
     ItemID: number;
-    AssetTypeID: number;
+    Object: string;
+    ObjectID: number;
     Weight: number;
-    EffectiveDate: string | Date;
+    EffectiveStartDate: string | Date;
+    EffectiveEndDate: string | Date;
 
     itemName: string;
-    assetTypeName: string;
+    objectName: string;
 }
 
 export class Condition {
