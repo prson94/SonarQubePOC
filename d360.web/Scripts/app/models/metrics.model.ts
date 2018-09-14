@@ -9,6 +9,8 @@ export class Group {
     EffectiveStartDate: string;
     EffectiveEndDate: string;
     SourceID: string;
+
+    Children: Group[] = [];
 }
 
 export class GroupForm {
@@ -21,6 +23,8 @@ export class MapForm {
     Items: Item[] = [];
     ObjectTypes: any[] = [];
     Conditions: Condition[] = [];
+
+    AssetTypes: any[] = [];
 }
 
 export class ConditionForm {
@@ -50,6 +54,9 @@ export class Map {
 
     itemName: string;
     objectName: string;
+
+    EffectiveDate: string | Date;
+    AssetTypeID: number;
 }
 
 export class Condition {
