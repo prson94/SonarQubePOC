@@ -119,7 +119,11 @@ ALTER TABLE Field DROP PERIOD FOR SYSTEM_TIME;
 
 alter table Field add UpdatedOn datetime constraint DF_Field_UpdatedOn default(getutcdate()) not null
 GO
+disable trigger [Field_AfterUpsert] on Field
+GO
 update Field set UpdatedOn = EffectiveStartDate
+GO
+enable trigger [Field_AfterUpsert] on Field
 GO
 alter table Field drop column [EffectiveStartDate]
 alter table Field drop column [EffectiveEndDate]
@@ -246,7 +250,19 @@ GO
 delete assetCrossReference where TRY_CONVERT(uniqueidentifier, [uid]) is null
 GO
 
+ALTER TABLE [dbo].[AssetCrossReference] DROP CONSTRAINT [PK_AssetCrossReference] WITH ( ONLINE = OFF )
+GO
+
 alter table AssetCrossReference alter column [uid] uniqueidentifier not null
+GO
+
+ALTER TABLE [dbo].[AssetCrossReference] ADD  CONSTRAINT [PK_AssetCrossReference] PRIMARY KEY CLUSTERED 
+(
+	[DataSource] ASC,
+	[Type] ASC,
+	[ExternalID] ASC,
+	[uid] ASC
+)
 GO
 
 CREATE NONCLUSTERED INDEX [IX_AssetCrossReference_uid] ON [dbo].[AssetCrossReference]
@@ -259,15 +275,6 @@ CREATE NONCLUSTERED INDEX [IX_AssetCrossReference_uid_DataSource] ON [dbo].[Asse
 (
 	[uid] ASC,
 	[DataSource] ASC
-)
-GO
-
-ALTER TABLE [dbo].[AssetCrossReference] ADD  CONSTRAINT [PK_AssetCrossReference] PRIMARY KEY CLUSTERED 
-(
-	[DataSource] ASC,
-	[Type] ASC,
-	[ExternalID] ASC,
-	[uid] ASC
 )
 GO
 
@@ -1686,21 +1693,19 @@ GO
 -----------------------------------
 ALTER TABLE [metrics].[Group] DROP CONSTRAINT [DF_MetricGroup_EffectiveStartDate]
 GO
-alter table metrics.[Group] drop column [EffectiveStartDate]
-GO
-alter table metrics.[Group] drop column [EffectiveEndDate]
-GO
+--alter table metrics.[Group] drop column [EffectiveStartDate]
+--GO
+--alter table metrics.[Group] drop column [EffectiveEndDate]
+--GO
 alter table metrics.[Group] add [uid] uniqueidentifier constraint DF_MetricsGroup_uid default(newid()) not null
 GO
 alter table metrics.[Item] add [uid] uniqueidentifier constraint DF_MetricsItem_uid default(newid()) not null
 GO
 
-select * from metrics.[Map]
-
 alter table metrics.[Map] add EffectiveDate datetime null
 GO
 
-update metrics.[Map] set EffectiveDate = EffectiveStartDate
+--update metrics.[Map] set EffectiveDate = EffectiveStartDate
 --alter table metrics.[Map] alter column EffectiveDate datetime not null
 --GO
 

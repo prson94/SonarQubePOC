@@ -842,9 +842,7 @@
     <Content Include="Static\Help\Content\f-api\api-version.htm" />
     <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow10.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow11.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow2.png" />
-    <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow3.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow4.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow5.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\action-type-workflow6.png" />
@@ -1007,6 +1005,8 @@
     <Content Include="Static\Help\Content\Resources\Images\admin\users.PNG" />
     <Content Include="Static\Help\Content\Resources\Images\admin\view-lineage.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\web-inspector.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\workflow-form-tokens.png" />
+    <Content Include="Static\Help\Content\Resources\Images\admin\workflow-form.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflow-overview.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflow-overview_800x135.png" />
     <Content Include="Static\Help\Content\Resources\Images\admin\workflow-status2.png" />
@@ -1020,7 +1020,11 @@
     <Content Include="Static\Help\Content\Resources\Images\api\profile-button.png" />
     <Content Include="Static\Help\Content\Resources\Images\release-notes\max-list-filter.png" />
     <Content Include="Static\Help\Content\Resources\Images\release-notes\max-list-filter2.png" />
+    <Content Include="Static\Help\Content\Resources\Images\release-notes\whats-new.png" />
+    <Content Include="Static\Help\Content\Resources\Images\release-notes\workflow-assignment-email.png" />
     <Content Include="Static\Help\Content\Resources\Images\release-notes\workflow-email.png" />
+    <Content Include="Static\Help\Content\Resources\Images\release-notes\workflow-schedule.png" />
+    <Content Include="Static\Help\Content\Resources\Images\release-notes\workflow-tokens.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\CheckMark-EH24112014.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\checkmark-transparent-eh08032016.png" />
     <Content Include="Static\Help\Content\Resources\Images\Template\checkmark_black-EH18032015.png" />
@@ -1218,6 +1222,8 @@
     <Content Include="Static\Help\Data\SearchPhrase_Chunk12.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk13.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk14.js" />
+    <Content Include="Static\Help\Data\SearchPhrase_Chunk15.js" />
+    <Content Include="Static\Help\Data\SearchPhrase_Chunk16.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk2.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk3.js" />
     <Content Include="Static\Help\Data\SearchPhrase_Chunk4.js" />
