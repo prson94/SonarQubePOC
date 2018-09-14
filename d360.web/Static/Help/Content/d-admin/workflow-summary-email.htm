@@ -98,10 +98,12 @@
                         <img src="../Resources/Images/user-guide/your-assignments.png" />
                     </p>
                     <p>&#160;</p>
-                    <p>You can also notify users about their open tasks by sending an email when a new assignment is triggered. You can configure the system to send an email each time a new form assignment is triggered, or you can  group a user's assignments into one daily workflow summary email. See:</p>
+                    <p>You can notify users about their open assignments via email. When building a workflow with a Form activity, you can select an option to send an email each time a new form assignment is triggered. You can also enable an option to send a daily email to users with outstanding workflow assignments, summarizing their open tasks.</p>
+                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>These settings are independent of each other. You can choose to enable one, both or neither.</p>
+                    <p>See:</p>
                     <ul>
                         <li value="1"><a href="#Sending" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Sending notifications for each assignment</a> </li>
-                        <li value="2"><a href="#Sending2" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Sending a  workflow summary email</a>
+                        <li value="2"><a href="#Sending2" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Sending   workflow summary emails</a>
                         </li>
                     </ul>
                     <h3><a name="Sending"></a>Sending notifications for each assignment</h3>
@@ -110,9 +112,9 @@
                         <img src="../Resources/Images/admin/form-email-workflow.png" />
                     </p>
                     <p>If you select this option, an email notification will be sent to the relevant user with a link to complete the form. The user will receive an email each time a new form assignment is triggered. See <a href="workflow-form.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Creating a form</a> for more details.</p>
-                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>To avoid sending repeat emails, do not select this option if you would prefer to enable daily workflow summary emails.</p>
-                    <h3><a name="Sending2"></a>Sending a  workflow summary email</h3>
-                    <p>To control the number of workflow assignment emails that users receive, you can group open assignments into one daily workflow summary email. </p>
+                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>If you want to control the number of emails a user receives, you can choose not to select this option, and instead enable daily workflow summary emails.</p>
+                    <h3><a name="Sending2"></a>Sending   workflow summary emails</h3>
+                    <p>You can group a user's open assignments into one daily workflow summary email. </p>
                     <p>To enable this option, navigate to the <b>Workflow</b> section of the the <b>Administration</b> &gt; <b>Settings</b> page. For more details, see <a href="customizing-govern.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Customizing the application</a>. By default, this setting is not enabled and summary emails are not sent. </p>
                     <p>When this setting is enabled, a  daily summary email is sent to  users who have outstanding workflow assignments at 5am UTC. The summary email details any outstanding workflow assignments that were generated from a Form step in a workflow. The subject of a workflow summary email indicates how many items require  attention,  and the body of the email lists the open assignments by workflow, version and step. For example:</p>
                     <p>
@@ -126,7 +128,7 @@
                         <li value="5"><b>Total</b> - Total number of outstanding assignments for the workflow step. The total count includes new and existing assignments.</li>
                         <li value="6"><b>View all workflow assignments</b> - Link to the <b>Your Assignments</b> panel on the home page of the application where all open assignments are listed.</li>
                     </ul>
-                    <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>When you have enabled workflow summary emails, to avoid sending repeat emails, do not also select <b>Send form email?</b> when defining a Form activity on a workflow. </p>
+                    <p class="Tip" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Tip: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Tip: </span> </b> </span></span>If you have enabled the option to send workflow summary emails, you can optionally choose to disable the <b>Send form email?</b> option on Form activities in workflows to reduce the number of notifications a user receives. </p>
                     <p class="Note" data-mc-autonum="&lt;b&gt; &lt;span style=&quot;color: #028ccb;&quot; class=&quot;mcFormatColor&quot;&gt;Note: &lt;/span&gt; &lt;/b&gt; "><span class="autonumber"><span><b> <span style="color: #028ccb;" class="mcFormatColor">Note: </span> </b> </span></span>Emails sent as part of Email Notification workflow steps are not included in workflow summary emails and will continue to be sent separately.</p>
                 </div>
                 <div class="row collapse" style="font-size: 80%;color: #696969;">&#160;</div>

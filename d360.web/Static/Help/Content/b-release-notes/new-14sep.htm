@@ -102,14 +102,14 @@
                                 <td class="RN_New">
                                     <img src="../Resources/Images/template/ReleaseNotes_Star_21x22.png" style="width: 21;height: 22;" />New</td>
                                 <td>
-                                    <p><a href="#Workflow2" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Workflow email tokens</a>
+                                    <p><a href="#Workflow" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Workflow summary email</a>
                                     </p>
                                 </td>
                             </tr>
                             <tr>
                                 <td class="RN_New">
                                     <img src="../Resources/Images/template/ReleaseNotes_Star_21x22.png" style="width: 21;height: 22;" />New</td>
-                                <td><a href="#Workflow" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Workflow summary email</a>
+                                <td><a href="#Workflow2" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Workflow  tokens</a>
                                 </td>
                             </tr>
                             <tr>
@@ -239,30 +239,26 @@
                                         <tbody>
                                             <tr>
                                                 <td>
-                                                    <h4 class="FrontMatter"><a name="Workflow2"></a>Workflow email tokens</h4>
+                                                    <h4 class="FrontMatter"><a name="Workflow"></a>Workflow summary email</h4>
                                                 </td>
-                                                <td style="text-align: center;">&#160;</td>
+                                                <td>&#160;</td>
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <p>When building or editing a workflow with Email Notification or Form activities, administrators can add tokens as placeholders to build the body of an email. A new Recipient Type token has been added in this release to inform users why they have received an email notification or form assignment. For example, if the selected Recipient Type for the activity is to notify all Data Stewards, when the Recipient Type token is used, the email message would be "You are receiving this email as a default user in the Data Stewards group".</p>
-                                                </td>
-                                                <td style="text-align: center;">GOV-5331</td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="2">
-                                                    <p>&#160;</p>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p>In addition to using workflow tokens in Email Notification and Form activity emails, workflow tokens can now also be added to the Description field of a Form activity. This helps to provide users who are completing a form with the required context so that they can properly respond.</p>
+                                                    <p>A new option has been added to the <b>Administration</b> &gt; <b>Settings</b> page that adds the ability to send daily  emails to users with outstanding workflow assignments.</p>
                                                     <p data-mc-conditions="Default.Online_Only">
-                                                        <img src="../Resources/Images/release-notes/workflow-tokens.png" />
+                                                        <img src="../Resources/Images/release-notes/workflow-assignment-email.png" />
                                                     </p>
-                                                    <p data-mc-conditions="Default.Online_Only">See <a href="../d-admin/email-notification-activity.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Configuring email notifications</a>.</p>
+                                                    <p>The subject of the summary email indicates how many items require your attention. The body of the email lists any outstanding workflow assignments that were generated from a Form step in a workflow, summarizing new and total items, with  links to open the assignment details in the application. For example:</p>
+                                                    <p data-mc-conditions="Default.Online_Only">
+                                                        <img src="../Resources/Images/release-notes/workflow-email.png" />
+                                                    </p>
+                                                    <p>By default, this setting is not enabled and summary emails are not sent.</p>
+                                                    <p data-mc-conditions="Default.Online_Only">See <a href="../d-admin/workflow-summary-email.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Sending workflow assignment emails</a>.</p>
                                                 </td>
-                                                <td style="text-align: center;">GOV-4623</td>
+                                                <td style="text-align: center;">
+                                                    <p>GOV-4592</p>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -276,28 +272,36 @@
                                         <tbody>
                                             <tr>
                                                 <td>
-                                                    <h4 class="FrontMatter"><a name="Workflow"></a>Workflow summary email</h4>
+                                                    <h4 class="FrontMatter"><a name="Workflow2"></a>Workflow  tokens</h4>
                                                 </td>
-                                                <td>&#160;</td>
+                                                <td style="text-align: center;">&#160;</td>
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <p>To enable administrators to control the number of workflow assignment emails that users receive, a new option has been added to the <b>Administration</b> &gt; <b>Settings</b> page that adds the ability to send daily workflow summary emails to users with outstanding assignments. The daily summary email groups the open tasks into one email, rather than sending separate Form assignment emails.</p>
+                                                    <p>In addition to using workflow tokens in Email Notification and Form activity emails, workflow tokens can now also be added to the Description field of a Form activity. This helps to provide users who are completing a form with the required context so that they can properly respond.</p>
                                                     <p data-mc-conditions="Default.Online_Only">
-                                                        <img src="../Resources/Images/release-notes/workflow-assignment-email.png" />
+                                                        <img src="../Resources/Images/release-notes/workflow-tokens.png" />
                                                     </p>
-                                                    <p>When this setting is enabled, a  daily summary email is sent to  users who have outstanding workflow assignments. The summary email details any outstanding workflow assignments that were generated from a Form step in a workflow, and summarizes new and total items.</p>
-                                                    <p> To avoid receiving separate emails for each new assignment and only receive the summary email, the option <b>Send form email?</b> should not be selected when building a workflow with a Form activity. Note that emails sent as part of Email Notification workflow steps are not included in the summary email.</p>
-                                                    <p>By default, this setting is not enabled and summary emails are not sent. </p>
-                                                    <p>The subject of the summary email indicates how many items require your attention, and the body of the email contains  links to open the assignment details in the application, for example:</p>
-                                                    <p data-mc-conditions="Default.Online_Only">
-                                                        <img src="../Resources/Images/release-notes/workflow-email.png" />
-                                                    </p>
-                                                    <p data-mc-conditions="Default.Online_Only">See <a href="../d-admin/workflow-summary-email.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Sending workflow assignment emails</a>.</p>
                                                 </td>
-                                                <td style="text-align: center;">
-                                                    <p>GOV-4592</p>
+                                                <td style="text-align: center;">GOV-4623</td>
+                                            </tr>
+                                            <tr>
+                                                <td>&#160;</td>
+                                                <td style="text-align: center;">&#160;</td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p>When building or editing a workflow with Email Notification or Form activities, administrators can add tokens as placeholders to build the body of an email. </p>
+                                                    <p>A new Recipient Type token has been added in this release to inform users why they have received an email notification or form assignment.</p>
+                                                    <ul>
+                                                        <li value="1">If the Recipient Type is Specific User, the token is replaced with "Specific User" in the email.</li>
+                                                        <li value="2"> If the Recipient Type is Initiator, the token is replaced with "Initiator" in the email.</li>
+                                                        <li value="3">If the Recipient Type is  Responsibility, the token is replaced with "Responsibility" in the email.</li>
+                                                    </ul>
+                                                    <p>If the specified recipient cannot be found, the system will notify the default user or group as set by your administrator on the <b>Administration</b> &gt; <b>Settings</b> page. In this case, the Recipient Type token will be replaced with a note in the email for example "Default - Administrators".</p>
+                                                    <p data-mc-conditions="Default.Online_Only">See <a href="../d-admin/email-notification-activity.htm" class="Link_NoPageNumber MCXref xref xrefLink_NoPageNumber">Configuring email notifications</a>.</p>
                                                 </td>
+                                                <td style="text-align: center;">GOV-5331</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -633,7 +637,7 @@
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <p>The default maximum number of entries that a list can contain before the type to filter search is enabled is 10000. Although this default setting is correctly enforced throughout the application, the default value shown on the <b>Administration</b> &gt; <b>Settings</b> page was 100. This issue has now been resolved to show the correct default value on the <b>Administration</b> &gt; <b>Settings</b> page.</p>
+                                                    <p>The default maximum number of entries that a list can contain before the type to filter search is enabled is 10,000. Although this default setting is correctly enforced throughout the application, the default value shown on the <b>Administration</b> &gt; <b>Settings</b> page was 100. This issue has now been resolved to show the correct default value on the <b>Administration</b> &gt; <b>Settings</b> page.</p>
                                                 </td>
                                                 <td style="text-align: center;">GOV-5438</td>
                                             </tr>
