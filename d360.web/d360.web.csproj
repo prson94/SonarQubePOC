@@ -2023,6 +2023,8 @@
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-column-filter.components.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-email-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-form-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.module.ts" />

@@ -12,16 +12,18 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
     template: ` 
 <div class="row">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div class="col s6" [hidden]="detailVisible">
+    <div class="col s6">
         <div class="tile tile-detail" *ngIf="!isLoading">
             <d3s-workflowmonitor-list (selectionChange)="listChange($event)"></d3s-workflowmonitor-list>  
         </div>
     </div>
-    <div class="col s6" [hidden]="!detailVisible">
-        <d3s-workflow-monitor-step-details [versionStepId]="versionStepId" [(visible)]="detailVisible"></d3s-workflow-monitor-step-details>
-    </div>
     <div class="col s6">
-        <d3s-workflow-monitor-step-list [itemId]="itemId" (selectionChange)="stepChange($event)"></d3s-workflow-monitor-step-list>
+        <div class="tile tile-detail">
+            <d3s-workflow-monitor-step-list [itemId]="itemId" (selectionChange)="stepChange($event)"></d3s-workflow-monitor-step-list>
+        </div>
+        <div class="tile tile-detail" [hidden]="!detailVisible">
+            <d3s-workflow-monitor-step-details [itemStepId]="itemStepId" [(visible)]="detailVisible"></d3s-workflow-monitor-step-details>
+        </div>
     </div>
 </div>
               `,
@@ -29,7 +31,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 })
 
 export class WorkflowMonitorComponent extends BaseComponent implements OnInit, OnDestroy {
-    versionStepId: number = null;
+    itemStepId: number = null;
     itemId: number = null;
     detailVisible = false;
 
@@ -56,7 +58,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
     }
 
     stepChange($event) {
-        this.versionStepId = $event.data.StepID;
+        this.itemStepId = $event.ID;
         this.detailVisible = true;
     }
 }

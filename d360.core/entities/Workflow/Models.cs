@@ -63,6 +63,15 @@ namespace d360.core.entities.Workflow
         public int ID { get; set; }
 
         [DataMember]
+        public int TypeID { get; set; }
+
+        [DataMember]
+        public int ItemID { get; set; }
+
+        [DataMember]
+        public int StepID { get; set; }
+
+        [DataMember]
         public StepType StepType { get; set; }
 
         [DataMember]
@@ -72,24 +81,51 @@ namespace d360.core.entities.Workflow
         public string Name { get; set; }
 
         [DataMember]
-        public string Object { get; set; }
-
-        [DataMember]
         public string SettingsXml { get; set; }
 
         [DataMember]
         public string FieldsXml { get; set; }
 
         [DataMember]
+        public string ItemSettingsXml { get; set; }
+
+        [DataMember]
+        public string ItemFieldsXml { get; set; }
+
+        [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
         public int ObjectID { get; set; }
 
         [DataMember]
+        public string ObjectType { get; set; }
+
+        [DataMember]
+        public int ObjectTypeID { get; set; }
+
+        [DataMember]
         public ChangeType ChangeType { get; set; }
+
+        [DataMember]
+        public DateTime? StartedOn { get; set; }
+
+        [DataMember]
+        public DateTime? CompletedOn { get; set; }
 
         [DataMember]
         public dynamic Settings { get; set; }
 
         [DataMember]
         public dynamic Fields { get; set; }
+
+        [DataMember]
+        public dynamic ItemSettings { get; set; }
+
+        [DataMember]
+        public dynamic ItemFields { get; set; }
+
+        [DataMember]
+        public List<GlobalReportingResource> ResponsibleUsers { get; set; }
     }
 }

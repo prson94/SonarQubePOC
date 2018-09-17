@@ -513,8 +513,12 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getWorkflowVersionStepDetail(versionStepId: number) {
-        return this.http.get(`services/workflow/versionstep/${versionStepId}`)
+    exportItemSteps(itemId: number) {
+        window.location.assign(`services/workflow/item/${itemId}/excel/excel.xls`);
+    }
+
+    getWorkflowStepDetail(itemStepId: number) {
+        return this.http.get(`services/workflow/step/detail/${itemStepId}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

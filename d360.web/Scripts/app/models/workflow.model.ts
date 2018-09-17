@@ -483,6 +483,7 @@ export class WorkflowItemStep {
     Name: string;
     StepType: StepType;
     ActivityType: WorkflowActivityType;
+    Assignee: string;
     Complete: boolean;
     StartedOn: string;
     StartedBy: string;
@@ -508,7 +509,13 @@ export class WorkflowStepDetail {
     FieldsXml: string;
     Settings: any;
     Fields: any;
+    ItemSettingsXml: string;
+    ItemFieldsXml: string;
+    ItemSettings: any;
+    ItemFields: any;
     Name: string;
+    ObjectType: string;
+    ObjectTypeID: number;
     Object: string;
     ObjectID: number;
     ChangeType: WorkflowChangeType;

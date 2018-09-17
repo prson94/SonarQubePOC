@@ -3,7 +3,7 @@ import { BaseComponent } from '../shared/base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { WorkflowService } from '../../services/workflow.service';
-import { WorkflowItemStep, WorkflowActivityType, StepType, WorkflowDiagramNode, NodeModel, ActivityTypeInfo, DiagramObjectType, WorkflowStepDetail } from '../../models/workflow.model';
+import { WorkflowItemStep, WorkflowActivityType, StepType, WorkflowDiagramNode, NodeModel, ActivityTypeInfo, DiagramObjectType, WorkflowStepDetail, WorkflowChangeType } from '../../models/workflow.model';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 
 import * as _ from 'lodash';
@@ -16,13 +16,14 @@ import * as _ from 'lodash';
 })
 
 export class WorkflowMonitorStepDetailsComponent extends BaseComponent implements OnInit, OnChanges {
-    @Input() versionStepId: number;
+    @Input() itemStepId: number;
     @Input() visible: boolean = true;
     @Output() visibleChange = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
     step: WorkflowStepDetail = null;
     StepType = StepType;
     WorkflowActivityType = WorkflowActivityType;
+    WorkflowChangeType = WorkflowChangeType
     responsibilities: any[] = [];
     fields: any[] = [];
     
@@ -37,7 +38,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
             .then(r => this.responsibilities = r)
             .then(() => {
                 if (this.step != null)
-                    this.workflowService.getWorkflowFieldTypes(this.step.ObjectID, this.step.Object, true)
+                    this.workflowService.getWorkflowFieldTypes(this.step.ObjectTypeID, this.step.ObjectType, true)
                         .then(r => {
                             this.fields = r;
                         });
@@ -45,7 +46,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['versionStepId'] != null && (changes['versionStepId'].isFirstChange || (changes['versionStepId'].currentValue != changes['versionStepId'].previousValue))) {
+        if (changes['itemStepId'] != null && (changes['itemStepId'].isFirstChange || (changes['itemStepId'].currentValue != changes['itemStepId'].previousValue))) {
             this.load();
         }
     }
@@ -53,9 +54,9 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     load() {
         this.step = null;
 
-        if (this.versionStepId != null) {
+        if (this.itemStepId != null) {
             this.isLoading = true;
-            return this.workflowService.getWorkflowVersionStepDetail(this.versionStepId)
+            return this.workflowService.getWorkflowStepDetail(this.itemStepId)
                 .then(r => {
                     this.isLoading = false;
                     this.step = r;//this.convertToDiagramModel(r);

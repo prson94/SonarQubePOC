@@ -26,6 +26,9 @@ using System.Collections;
 using System.Text.RegularExpressions;
 using d360.web.Models.Attributes;
 using Microsoft.Web.Http;
+using Newtonsoft.Json.Linq;
+using d360.core.queue;
+using Dapper;
 
 namespace d360.web.Controllers.Services
 {
@@ -2193,64 +2196,319 @@ order by wi.StartedOn desc";
             if (item == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Item not found"));
 
-            var sql = @"select 
-	            IST.ID,
-	            IST.ItemID,
-	            IST.StepID,
-	            S.[Name],
-	            S.StepType,
-	            S.ActivityType,
-	            case when IST.CompletedOn is null then
-		            cast(0 as bit)
-	            else
-		            cast(1 as bit)
-	            end as Complete,
-	            IST.StartedOn,
-	            RS.FirstName + ' ' + RS.LastName as StartedBy,
-	            IST.CompletedOn,
-	            RC.FirstName + ' ' + RC.LastName as CompletedBy
-            from 
-            workflow.ItemStep IST
-            inner join workflow.Item I on I.ID = IST.ItemID
-            inner join workflow.VersionStep S on S.ID = IST.StepID
-            left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
-            left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
-            where IST.ItemID = @itemId";
-
-            var results = Company.Query<dynamic>(sql, new { itemId }).ToList();
+            var results = Company.Query<dynamic>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
-        [Route("versionstep/{id:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowVersionStepDetail(int id)
+        [Route("step/detail/{itemStepId:int}"), HttpGet]
+        public HttpResponseMessage GetWorkflowVersionStepDetail(int itemStepId)
         {
+            var itemStep = Company.WorkflowItemSteps.FirstOrDefault(i => i.ID == itemStepId);
+
             var sql = @"
-            select 
-	            vs.ID,
+	        select
+				vs.ID,
+                v.TypeID,
+                si.StepID,
+                si.ItemID,
 	            vs.StepType,
 	            vs.ActivityType,
 	            vs.Settings as SettingsXml,
                 vs.Fields as FieldsXml,
+				si.Settings as ItemSettingsXml,
+				si.Fields as ItemFieldsXml,
+                si.StartedOn,
+                si.CompletedOn,
 	            vs.[Name],
-				e.[Object],
-				e.ObjectID,
-				e.ChangeType
-			from workflow.versionstep vs
+				e.ChangeType,
+				e.[Object] as ObjectType,
+				e.ObjectID as ObjectTypeID,
+				i.[Object],
+				i.ObjectID
+			from workflow.itemstep si
+			inner join workflow.item i on i.id = si.itemid
+			inner join workflow.versionstep vs on vs.id = si.stepid
 			inner join workflow.version v on v.ID = vs.VersionID
 			inner join workflow.eventregistration e on e.TypeID = v.TypeID
-			where vs.ID = @id";
+			where si.ID = @itemStepId";
 
-            var versionStep = Company.Query<WorkflowStepDetail>(sql, new { id }).FirstOrDefault();
+            var detail = Company.Query<WorkflowStepDetail>(sql, new { itemStepId }).FirstOrDefault();
 
-            if (versionStep == null)
+            if (detail == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("step not found"));
 
-            versionStep.Settings = XmlToDynamic(versionStep.SettingsXml);
-            versionStep.Fields = XmlToDynamic(versionStep.FieldsXml);
+            detail.Settings = XmlToDynamic(detail.SettingsXml);
+            detail.Fields = XmlToDynamic(detail.FieldsXml);
+            detail.ItemSettings = XmlToDynamic(detail.ItemSettingsXml);
+            detail.ItemFields = XmlToDynamic(detail.ItemFieldsXml);
 
-            return Request.CreateResponse(HttpStatusCode.OK, versionStep);
+            if (detail.ItemSettings == null)
+                detail.ItemSettings = new JObject();
+            detail.ItemSettings.hasEmails = false;
+            detail.ItemSettings.hasForms = false;
+
+            List<string> resourceEmails = new List<string>();
+
+            //deal with xml to json nonsense and load detail values
+            if (detail.ActivityType == WorkflowActivityType.EmailNotification || detail.ActivityType == WorkflowActivityType.Form)
+            {
+                var eventInfo = new EventObjectInfo()
+                {
+                    Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Object),
+                    ObjectID = detail.ObjectID,
+                    ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), detail.ObjectType),
+                    ObjectTypeID = detail.ObjectTypeID,
+                };
+
+
+                if (detail.Settings != null)
+                {
+                    if (detail.Settings.MessageSubjectTemplate != null)
+                        detail.Settings.MessageSubjectTemplate = Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+
+                    if (detail.Settings.MessageBodyTemplate != null)
+                        detail.Settings.MessageBodyTemplate = Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+                }
+
+                if (detail?.Fields?.form != null)
+                {
+                    if (detail.Fields.form["@description"] != null)
+                        detail.Fields.form["@description"] = Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+                }
+
+                if (detail.ItemSettings.emails != null)
+                {
+                    var emails = detail.ItemSettings.emails;
+
+                    if (emails.email != null)
+                    {
+                        detail.ItemSettings.hasEmails = true;
+                        if (emails.email.GetType().Name != "JArray")
+                        {
+                            emails.email = new JArray(emails.email);
+                        }
+                    }
+                    else
+                    {
+                        detail.ItemSettings.emails.email = new JArray();
+                    }
+
+                    detail.ItemSettings.hasEmails = (emails.email.Count > 0);
+
+                    for (int i = 0; i < emails.email.Count; i++)
+                    {
+                        var e = emails.email[i];
+                        string address = e["@address"].Value;
+
+                        if (!resourceEmails.Any(r => r == address))
+                            resourceEmails.Add(address);
+
+                        var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
+                        if (res != null)
+                        {
+                            e.name = res.FullName;
+                            e.id = res.ResourceID;
+                        }
+                        else
+                        {
+                            e.name = (string)null;
+                            e.id = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    detail.ItemSettings.emails = new JObject();
+                    detail.ItemSettings.emails.email = new JArray();
+                }
+
+                if (detail.ItemFields == null)
+                {
+                    detail.ItemFields = new JObject();
+                    detail.ItemFields.form = new JArray();
+                }
+
+                if (detail.ItemFields.form != null)
+                {
+                    if (detail.ItemFields.form.GetType().Name != "JArray")
+                    {
+                        detail.ItemFields.form = detail.ItemFields.form = new JArray(detail.ItemFields.form);
+                    }
+                }
+                else
+                {
+                    detail.ItemFields.form = new JArray();
+                }
+
+                detail.ItemSettings.hasForms = (detail.ItemFields.form.Count > 0);
+                detail.ItemSettings.hasPendingForms = false;
+
+                if (int.TryParse(detail.ItemFields["@TotalResources"]?.Value, out int total))
+                {
+                    int numResponses = 0;
+                    if (!int.TryParse(detail.ItemFields["@NumberOfResponses"]?.Value, out numResponses))
+                        detail.ItemFields["@NumberOfResponses"] = 0;
+
+                    if (detail.ItemSettings.hasForms == false)
+                    {
+                        detail.ItemSettings.hasPendingForms = true;
+                    }
+                    else if (detail.Settings.FormResponseType == FormResponseType.FirstResponse)
+                    {
+                        detail.ItemSettings.hasPendingForms = detail.ItemSettings.hasForms == true ? false: true;
+                    }
+                    else if (detail.Settings.FormResponseType == FormResponseType.Majority && total > 0)
+                    {
+                        detail.ItemSettings.hasPendingForms = ((numResponses / total) <= 0.5);
+                    }
+                    else if (detail.Settings.FormResponseType == FormResponseType.All)
+                    {
+                        detail.ItemSettings.hasPendingForms = (numResponses != total);
+                    }
+                }
+
+                for(int i = 0; i < detail.ItemFields.form.Count; i++)
+                {
+                    var form = detail.ItemFields.form[i];
+
+                    if (form.field != null)
+                    {
+                        if (form.field.GetType().Name != "JArray")
+                        {
+                            form.field = new JArray(form.field);
+                        }
+                    }
+                    else
+                    {
+                        form.field = new JArray();
+                    }
+
+                    if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                    {
+                        var res = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == resId);
+                        if (res != null)
+                            form.resourceName = res.FullName;
+                    }
+                }
+            }
+
+            switch(detail.ActivityType)
+            {
+                case WorkflowActivityType.EmailNotification:
+                case WorkflowActivityType.Form:
+                    detail.ItemSettings.hasEmails = false;
+                    if (detail.ItemSettings.emails != null)
+                    {
+                        var emails = detail.ItemSettings.emails;
+
+                        if (emails.email != null)
+                        {
+                            detail.ItemSettings.hasEmails = true;
+                            if (emails.email.GetType().Name != "JArray")
+                            {
+                                emails.email = new JArray(emails.email);
+                            }
+                        }
+                        else
+                        {
+                            detail.ItemSettings.emails.email = new JArray();
+                        }
+
+                        detail.ItemSettings.hasEmails = (emails.email.Count > 0);
+
+                        for (int i = 0; i < emails.email.Count; i++)
+                        {
+                            var e = emails.email[i];
+                            string address = e["@address"].Value;
+                            var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
+                            if (res != null)
+                            {
+                                e.name = res.FullName;
+                                e.id = res.ResourceID;
+                            }
+                            else
+                            {
+                                e.name = (string)null;
+                                e.id = 0;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        detail.ItemSettings.emails = new { email = new JArray() };
+                    }
+                    break;
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, detail);
         }
+
+        [Route("item/{itemId:int}/excel/excel.xls"), HttpGet]
+        public HttpResponseMessage GetItemStepsExcel(int itemId)
+        {
+            var item = Company.WorkflowItems.FirstOrDefault(i => i.ID == itemId);
+
+            if (item == null)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Item not found"));
+
+            var results = Company.Query<dynamic>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
+
+            var document = new SLDocument();
+            document.AddWorksheet("Steps");
+
+            #region Create the list sheet
+
+            #region Header
+
+            var colIndex = 0;
+
+            document.SetCellValue(1, ++colIndex, "Step Name");
+            document.SetCellValue(1, ++colIndex, "Step Type");
+            document.SetCellValue(1, ++colIndex, "Complete");
+            document.SetCellValue(1, ++colIndex, "Activity Type");
+            document.SetCellValue(1, ++colIndex, "Assignee");
+            document.SetCellValue(1, ++colIndex, "Date Started");
+            document.SetCellValue(1, ++colIndex, "Date Completed");
+
+            #endregion
+
+            int rowIndex = 1;
+            foreach (var row in results)
+            {
+                var dataColIndex = 0;
+                rowIndex++;
+
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.StepType ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Complete ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.ActivityType ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Assignee ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.StartedOn != null ? row.StartedOn.ToShortDateString() : "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.CompletedOn != null ? row.CompletedOn.ToShortDateString() : "");
+            }
+
+            #endregion
+
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage result = null;
+            // serve the file to the client      
+            result = Request.CreateResponse(HttpStatusCode.OK);
+
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Workflow steps {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
+        }
+
         #region Helper Methods
 
         private string GetConditionLabels(string conditions)

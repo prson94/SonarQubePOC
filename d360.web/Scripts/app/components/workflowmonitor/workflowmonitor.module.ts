@@ -17,6 +17,8 @@ import { WorkflowMonitorListFilterComponent } from './workflowmonitor-list-filte
 import { WorkflowMonitorListColumnFilterComponent } from './workflowmonitor-list-column-filter.components';
 import { WorkflowMonitorStepListComponent } from './workflowmonitor-step-list.component';
 import { WorkflowMonitorStepDetailsComponent } from './workflowmonitor-step-details.component';
+import { WorkflowMonitorStepFormDetailsComponent } from './workflowmonitor-step-form-details.component';
+import { WorkflowMonitorStepEmailDetailsComponent } from './workflowmonitor-step-email-details.component';
 
 
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
@@ -71,6 +73,8 @@ import {
         WorkflowMonitorComponent,    
         WorkflowMonitorStepListComponent,
         WorkflowMonitorStepDetailsComponent,
+        WorkflowMonitorStepFormDetailsComponent,
+        WorkflowMonitorStepEmailDetailsComponent,
     ],
     exports: [
         WorkflowMonitorComponent,        

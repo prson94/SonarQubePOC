@@ -1380,6 +1380,30 @@ from	MapItem MI
 where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 		AND (TI.Subject = @target and TI.SubjectID = @targetID)";
 
+        public static string ShoppingCartItemList = @"
+                select 
+	                i.Object, 
+	                i.ObjectID, 
+	                d.[DisplayValue] as [Name],
+	                coalesce(d.TypeName, case when i.[Object] = 'ReferenceItemType' then 'Reference List' else null end) as ObjectTypeName,
+					u.Url  
+                from
+	                Shoppingcartitem i
+                left join assetdetail d on d.id = i.[Objectid]                
+				cross apply getasseturl(d.Type,d.TypeID,d.ObjectID) u
+                where 
+	                i.ShoppingCartID = @id";
+
+        public static string SiteNavPermissions = @"
+            select p.SiteNavID, p.Object, p.ObjectID, 
+			CASE p.Object WHEN 'Resource' then 'User' ELSE p.Object END
+			+ ' :: ' + coalesce(g.Name,r.FirstName + ' ' + r.Lastname) as Name from sitenavpermission p
+            left join [Group] g on g.ID = p.ObjectID and p.Object = 'Group'
+            left join reporting.Global_Resource r on r.ResourceID = p.ObjectID and p.Object = 'Resource'
+            where p.SiteNavID = @id";
+
+        #region Workflow
+
         public static string WorkflowDiagramNodes = @"
             select 
 	            cast(vs.ID as varchar) as [Key],
@@ -1509,28 +1533,6 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy
 				where t.State = 1
                 order by t.Name asc";
-
-        public static string ShoppingCartItemList = @"
-                select 
-	                i.Object, 
-	                i.ObjectID, 
-	                d.[DisplayValue] as [Name],
-	                coalesce(d.TypeName, case when i.[Object] = 'ReferenceItemType' then 'Reference List' else null end) as ObjectTypeName,
-					u.Url  
-                from
-	                Shoppingcartitem i
-                left join assetdetail d on d.id = i.[Objectid]                
-				cross apply getasseturl(d.Type,d.TypeID,d.ObjectID) u
-                where 
-	                i.ShoppingCartID = @id";
-
-        public static string SiteNavPermissions = @"
-            select p.SiteNavID, p.Object, p.ObjectID, 
-			CASE p.Object WHEN 'Resource' then 'User' ELSE p.Object END
-			+ ' :: ' + coalesce(g.Name,r.FirstName + ' ' + r.Lastname) as Name from sitenavpermission p
-            left join [Group] g on g.ID = p.ObjectID and p.Object = 'Group'
-            left join reporting.Global_Resource r on r.ResourceID = p.ObjectID and p.Object = 'Resource'
-            where p.SiteNavID = @id";
 
         public static string WorkflowVersionStepHistory = @"
    select 
@@ -1720,6 +1722,38 @@ select
                                     left outer join Issuetype IT on ISS.IssueTypeID = IT.ID
                                 where
                                      WT.ID in ({0}) and WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3";
+
+        public static string WorkflowItemSteps = @"select 
+	            IST.ID,
+	            IST.ItemID,
+	            IST.StepID,
+	            S.[Name],
+	            S.StepType,
+	            S.ActivityType,
+	            case when IST.CompletedOn is null then
+		            cast(0 as bit)
+	            else
+		            cast(1 as bit)
+	            end as Complete,
+	            IST.StartedOn,
+	            RS.FirstName + ' ' + RS.LastName as StartedBy,
+	            IST.CompletedOn,
+	            RC.FirstName + ' ' + RC.LastName as CompletedBy,
+                case when S.ActivityType = 3 then --form only
+                    dbo.[GetWorkflowResponsibleUsers](IST.ID, 0)
+                else
+                    null
+                end as Assignee
+            from 
+            workflow.ItemStep IST
+            inner join workflow.Item I on I.ID = IST.ItemID
+            inner join workflow.VersionStep S on S.ID = IST.StepID
+            left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
+            left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
+            where IST.ItemID = @itemId
+            order by IST.StartedOn, IST.CompletedOn";
+
+        #endregion
 
     }
 }
