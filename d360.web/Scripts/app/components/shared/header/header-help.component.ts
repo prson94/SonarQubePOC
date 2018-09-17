@@ -21,16 +21,9 @@ export class HeaderHelpComponent {
     public active: boolean = false;
     private hideHandle: number = 0;
 
-    private userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";//SiteUrlHelpers.SITE_URL_STATIC_USER_GUIDE;
-    private adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";//SiteUrlHelpers.SITE_URL_STATIC_ADMIN_GUIDE;
-    private whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";//SiteUrlHelpers.SITE_URL_STATIC_WHAT_IS_NEW;
-
-    /*
-    
-    static SITE_URL_STATIC_USER_GUIDE = "https://governhelp.data3sixty.com/preview/Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
-    static SITE_URL_STATIC_ADMIN_GUIDE = "https://governhelp.data3sixty.com/preview/Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
-    static SITE_URL_STATIC_WHAT_IS_NEW = "https://governhelp.data3sixty.com/preview/Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat's%2520new%7C_____0";
-     */
+    private userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
+    private adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
+    private whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
 
     constructor(
         private ref: ChangeDetectorRef
