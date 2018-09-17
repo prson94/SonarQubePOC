@@ -1453,9 +1453,25 @@ namespace d360.web.Controllers.Services
                 var uri = Request.RequestUri;
                 var qs = uri.ParseQueryString();
 
-                var canoUri = RequestUri();
-                var nextUri = RequestUri();
-                var prevUri = RequestUri();
+                var requestUri = RequestUri();
+
+                if (!requestUri.Contains("_pageSize="))
+                {
+                    //add in the page size with the default value
+                    if(string.IsNullOrEmpty(Request.RequestUri.Query))
+                    {
+                        requestUri += $"?_pageSize={pageSize}";
+                    }
+                    else
+                    {
+                        requestUri += $"&_pageSize={pageSize}";
+                    }
+                    
+                }
+
+                var canoUri = requestUri;
+                var nextUri = requestUri;
+                var prevUri = requestUri;
 
                 nextUri = (nextUri.Contains("_pageNum=")) ?
                     nextUri.Replace($"_pageNum={currentPageNumber}", $"_pageNum={currentPageNumber + 1}") :
@@ -1467,6 +1483,8 @@ namespace d360.web.Controllers.Services
 
                 var showPrevLink = (currentPageNumber > 1) && (count > ((currentPageNumber-1) * pageSize));
                 var showNextLink = (count > (currentPageNumber * pageSize));
+
+                
 
                 #endregion
 
