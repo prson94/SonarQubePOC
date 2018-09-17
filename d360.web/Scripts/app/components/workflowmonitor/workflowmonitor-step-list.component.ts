@@ -4,6 +4,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { WorkflowService } from '../../services/workflow.service';
 import { WorkflowItemStep, WorkflowActivityType, StepType } from '../../models/workflow.model';
+import { WorkflowHelpers } from '../../static/workflow-helpers';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-list',
@@ -21,7 +22,7 @@ import { WorkflowItemStep, WorkflowActivityType, StepType } from '../../models/w
         <p-column field="Name" header="Step Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>    
         <p-column field="StepType" header="Step Type" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'width': '95px'}">
             <ng-template let-col let-item="rowData" pTemplate type="body">
-                {{stepTypeName(item.StepType)}}
+                {{helper.stepTypeName(item.StepType)}}
             </ng-template>                                                        
         </p-column>  
         <p-column field="Complete" header="Complete" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'width': '90px'}">
@@ -34,7 +35,7 @@ import { WorkflowItemStep, WorkflowActivityType, StepType } from '../../models/w
         </p-column> 
         <p-column field="ActivityType" header="Activity Type" [sortable]="true" [filter]="!showSimpleFilter">
             <ng-template let-col let-item="rowData" pTemplate type="body">
-                {{activityTypeName(item.ActivityType)}}
+                {{helper.activityTypeName(item.ActivityType)}}
             </ng-template>                                                        
         </p-column>  
         <p-column *ngIf="showAssigneeColumn" field="Assignee" header="Assignee" [sortable]="true" [filter]="!showSimpleFilter"></p-column>    
@@ -58,6 +59,7 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
     @Input() itemId: number;
     @Output() selectionChange = new EventEmitter();
 
+    helper = WorkflowHelpers;
     itemSteps: WorkflowItemStep[] = [];
     selection: WorkflowItemStep = null;
 
@@ -92,34 +94,12 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
                         this.selectionChange.emit(this.selection);
                     }
                     this.ref.markForCheck();
-                    console.log('loaded', this.itemSteps);
+                    //console.log('loaded', this.itemSteps);
                 });
     }
 
     private export() {
         if (this.itemId != null && this.itemId > 0)
             this.workflowService.exportItemSteps(this.itemId);
-    }
-
-    private activityTypeName(workflowActivityType: WorkflowActivityType): string {
-        switch (workflowActivityType) {
-            case WorkflowActivityType.EmailNotification:
-                return 'Email Notification';
-            case WorkflowActivityType.FieldChange:
-                return 'Field Change';
-            case WorkflowActivityType.RelationshipUpdate:
-                return 'Relationship Update';
-            case WorkflowActivityType.StateChange:
-                return 'State Change';
-            case WorkflowActivityType.StatusChange:
-                return 'Status Change';
-            default:
-                return WorkflowActivityType[workflowActivityType];
-
-        } 
-    }
-
-    private stepTypeName(stepType: StepType): string {
-        return StepType[stepType];
     }
 }

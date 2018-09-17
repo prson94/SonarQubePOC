@@ -448,6 +448,14 @@ export enum EmailTaskRecipientType {
     SpecificUser
 }
 
+export enum IssueCriticality {
+    Negligible = 0,
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Critical = 4,
+}
+
 //#endregion
 
 export class WorkflowAssignmentSummary {
@@ -519,4 +527,25 @@ export class WorkflowStepDetail {
     Object: string;
     ObjectID: number;
     ChangeType: WorkflowChangeType;
+    ConditionXml: string;
+    Condition: any;
+    EventSettingsXml: string;
+    EventSettings: any;
+    IsIssueType: boolean;
+    IssueDetails: WorkflowStepIssueDetail;
+}
+
+
+export class WorkflowStepIssueDetail {
+    ID: number;
+    IssueID: number;
+    IssueTypeID: number;
+    IssueCriticality: IssueCriticality;
+    IssueName: string;
+    ObjectName: string;
+    ObjectTypeName: string;
+    Object: string;
+    ObjectID: number;
+    ObjectType: string;
+    ObjectTypeID: number;
 }

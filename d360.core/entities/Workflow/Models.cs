@@ -1,4 +1,5 @@
-﻿using d360.core.enums.Workflow;
+﻿using d360.core.enums;
+using d360.core.enums.Workflow;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -103,6 +104,17 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public int ObjectTypeID { get; set; }
+        [DataMember]
+        public string ConditionXml { get; set; }
+
+        [DataMember]
+        public string EventSettingsXml { get; set; }
+
+        [DataMember]
+        public dynamic Condition { get; set; }
+
+        [DataMember]
+        public dynamic EventSettings { get; set; }
 
         [DataMember]
         public ChangeType ChangeType { get; set; }
@@ -127,5 +139,26 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public List<GlobalReportingResource> ResponsibleUsers { get; set; }
+
+        [DataMember]
+        public bool IsIssueType { get; set; }
+
+        public WorkflowStepIssueDetail IssueDetails { get; set; }
     }
+
+    public class WorkflowStepIssueDetail
+    {
+        public int ID { get; set; }
+        public int IssueID { get; set; }
+        public int IssueTypeID { get; set; }
+        public IssueCriticality Criticality { get; set; }
+        public string IssueName { get; set; }
+        public string ObjectName { get; set; }
+        public string ObjectTypeName { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public string ObjectType { get; set; }
+        public int ObjectTypeID { get; set; }
+    }
+
 }

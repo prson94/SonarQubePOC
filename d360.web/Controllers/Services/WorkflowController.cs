@@ -2224,8 +2224,19 @@ order by wi.StartedOn desc";
 				e.ChangeType,
 				e.[Object] as ObjectType,
 				e.ObjectID as ObjectTypeID,
+				case when vs.StepType = 1 then
+					dbo.GetWorkflowConditionLabels(e.Condition) 
+				else
+					null
+				end as ConditionXml,
+				e.Settings as EventSettingsXml,
 				i.[Object],
-				i.ObjectID
+				i.ObjectID,
+				case when e.Object = 'IssueType' then
+					cast(1 as bit)
+				else
+					cast(0 as bit)
+				end as IsIssueType
 			from workflow.itemstep si
 			inner join workflow.item i on i.id = si.itemid
 			inner join workflow.versionstep vs on vs.id = si.stepid
@@ -2242,13 +2253,75 @@ order by wi.StartedOn desc";
             detail.Fields = XmlToDynamic(detail.FieldsXml);
             detail.ItemSettings = XmlToDynamic(detail.ItemSettingsXml);
             detail.ItemFields = XmlToDynamic(detail.ItemFieldsXml);
+            detail.Condition = detail.Condition == null ? null : XmlToDynamic(detail.ConditionXml);
+            detail.EventSettings = XmlToDynamic(detail.EventSettingsXml);
 
             if (detail.ItemSettings == null)
                 detail.ItemSettings = new JObject();
             detail.ItemSettings.hasEmails = false;
             detail.ItemSettings.hasForms = false;
+            detail.ItemSettings.hasConditions = false;
+
+            string issueObject = null;
+            int issueObjectId = 0;
+            if (detail.Condition != null && detail.Condition.Condition != null)
+            {
+                detail.Condition = detail.Condition.Condition;
+                if (detail.Condition.GetType().Name != "JArray")
+                    detail.Condition = new JArray(detail.Condition);
+                for (int i = 0; i < detail.Condition.Count; i++)
+                {
+                    var condition = detail.Condition[i];
+                    if (condition["@ContextualFieldID"] != null)
+                    {
+                        var fieldId = condition["@ContextualFieldID"].Value;
+                        switch (fieldId)
+                        {
+                            case "IssueObject":
+                                issueObject = condition["@Value"].Value;
+                                break;
+                            case "IssueObjectID":
+                                int.TryParse(condition["@Value"].Value, out issueObjectId);
+                                break;
+                        }
+                    }
+                    else
+                        detail.ItemSettings.hasConditions = true;
+                }
+            }
 
             List<string> resourceEmails = new List<string>();
+
+            if (detail.IsIssueType)
+            {
+                var issueSql = @"select 
+				        I.ID,
+				        S.ID as IssueID,
+				        T.ID as IssueTypeID,
+				        S.Criticality,
+				        T.[Name] as IssueName,
+				        D.DisplayValue as ObjectName,
+			            TA.[Name] as ObjectTypeName,
+				        A.[Object],
+				        A.ObjectID,
+				        TA.[Object] as ObjectType,
+				        TA.ObjectID as ObjectTypeID
+			        from workflow.item i
+			        inner join Issue s on s.ID = i.ObjectID
+			        inner join IssueType t on t.id = s.IssueTypeID
+			        inner join Asset A on A.Object = s.Object and A.ObjectID = s.ObjectID
+			        inner join AssetType TA on TA.ID = A.AssetTypeID
+			        cross apply dbo.GetAssetDisplayValueById(A.ID) D
+			         where i.ID = @itemId";
+
+                var issueDetails = Company.Query<WorkflowStepIssueDetail>(issueSql, new { itemId = detail.ItemID }).FirstOrDefault();
+                if (issueDetails != null)
+                {
+                    detail.IssueDetails = issueDetails;
+                }
+
+            }
+                
 
             //deal with xml to json nonsense and load detail values
             if (detail.ActivityType == WorkflowActivityType.EmailNotification || detail.ActivityType == WorkflowActivityType.Form)

@@ -22,7 +22,7 @@
                                 Activity Type:
                             </span>
                             <span>
-                                {{activityTypeName(step.ActivityType)}}
+                                {{helper.activityTypeName(step.ActivityType)}}
                             </span>
                         </div>
                     </ng-container>
@@ -79,7 +79,7 @@
                             Change Type:
                         </span>
                         <span>
-                            {{WorkflowChangeType[step.ChangeType]}}
+                            {{helper.changeTypeName(step.ChangeType)}}
                         </span>
                     </div>
                     <div class="col s4">
@@ -99,9 +99,42 @@
                         </span>
                     </div>
                 </div>
-                <!--<ng-container [ngSwitch]="step.StepType">
-
-                </ng-container>-->
+                <ng-container [ngSwitch]="step.StepType">
+                    <ng-container *ngSwitchCase="StepType.Start">
+                        <div *ngIf="step.IsIssueType && step.IssueDetails != null" class="row">
+                            <div class="col s6">
+                                <span class="FieldName">
+                                    Action Type:
+                                </span>
+                                <span>
+                                    {{step.IssueDetails.IssueName}}
+                                </span>
+                            </div>
+                            <div class="col s6">
+                                <span class="FieldName">
+                                    Asset:
+                                </span>
+                                <span>
+                                    {{step.IssueDetails.ObjectName}}
+                                </span>
+                            </div>
+                        </div>
+                        <div *ngIf="step.ItemSettings.hasConditions == true" class="row">
+                            <div class="col s12">
+                                <div class="FieldName">
+                                    Trigger Conditions:
+                                </div>
+                                <div class="panel-section">
+                                    <ng-container *ngFor="let condition of step.Condition">
+                                        <div *ngIf="condition['@ContextualFieldID'] == null">
+                                            {{condition['@FieldLabel']}} {{condition['@Operator'] == 'C' ? '[any value change]' : condition['@Operator']}} {{condition['@ValueLabel']}}
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                </ng-container>
             </ng-container>
         </ng-container>
     </div>
