@@ -54,6 +54,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
     }    
 
     listChange($event) {
+      // this.itemId = $event ?  $event.Id : 0;
         this.itemId = $event.Id;
     }
 

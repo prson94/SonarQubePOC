@@ -32,6 +32,7 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                                             <option *ngFor="let p of filter.Field?.Data?.filteritems" [value]="p">{{p}}</option>
                                         </select>
                                     </span>
+                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index" [(ngModel)]="filter.Data.value"  [showIcon]="true"    (onSelect)="onDateSelected($event,filter)" ></p-calendar>
                                     <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" required [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event" placeholder="Enter a value" style="width:100%;"> 
                                 </span>   
                         </div>
@@ -45,16 +46,14 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                               <a *ngIf="first" (click)="exportToExcel.emit()" class="fa-stack fa-lg" pTooltip="Export to Excel" >
                                 <i class="fa fa-download fa-stack-1x" style="color:black;"></i>                                
                             </a>
-                             <a *ngIf="first && filterForm.form.valid" (click)="onSubmit()" class="fa-stack fa-lg" pTooltip="Filter" >
+                             <a *ngIf="0"  class="fa-stack fa-lg" pTooltip="Filter" >
                                 <i class="fa fa-filter fa-stack-1x" style="color:darkblue;"></i>                                
                             </a>
-                            <a *ngIf="first && !filterForm.form.valid"  class="fa-stack fa-lg" pTooltip="Filter" >
-                                <i class="fa fa-filter fa-stack-1x" style="color:gray;"></i>                                
-                            </a>
+                           
                              
                         </div>                                                
                     </div>
-                    <div class="row" *ngIf="0">
+                    <div class="row">
                      
                         <div class="col s12 buttons">
                             <button pButton *ngIf="internalFilters.length > 0" type="submit" [disabled]="!filterForm.form.valid" style="width: '150px';" label="Filter Results"></button>
@@ -119,11 +118,9 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
 
     private onSubmit() {
-        let hasOwnerFilter = false;
-
+       
         this.filters = [];
         for (let internalFilter of this.internalFilters) {
-
             if (internalFilter.Type == FilterFieldType.Field) {
                 this.filters.push(internalFilter.Data);
             }
@@ -131,6 +128,10 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
         this.filtersChange.emit(this.filters);
 
 
+    }
+    private onDateSelected($event, filter) {
+         let d = new Date(Date.parse($event));
+        filter.Data.value = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
     }
 
     public resetFilters() {

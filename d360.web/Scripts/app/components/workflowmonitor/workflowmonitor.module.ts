@@ -33,6 +33,7 @@ import {
     InputTextModule,
     TooltipModule,
     ButtonModule,
+    CalendarModule,
 } from 'primeng/primeng';
 
 
@@ -56,6 +57,7 @@ import {
         InputTextModule,
         TooltipModule,
         ButtonModule,
+        CalendarModule,
 
         WorkflowMonitorRoutingModule,
 

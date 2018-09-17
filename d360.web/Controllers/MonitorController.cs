@@ -150,6 +150,8 @@ where   A.RuleImplementationID = @id";
 
             var filters = GetFilterValuesFromRequest(Request, true);
             string typeSql = "";
+            string whereSql = "";
+            string assignedSql = "";
             foreach (var f in filters)
             {
                 var ff = f as UiRequestFieldFilterValue;
@@ -160,13 +162,36 @@ where   A.RuleImplementationID = @id";
                         var types = ff.RawValue.Trim().TrimEnd(',');
                         typeSql += $@" wt.id in ({types}) and ";
                         break;
-                    case "Name":
+                    case "Asset":
                         typeSql += $@" (case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
-                                    when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
-                                    else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '{ff.RawValue}%' and ";
+                                        when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
+                                        else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '{ff.RawValue}%' and ";
                         break;
                     case "TypeName":
-                        typeSql += $@" case when wi.[object] = 'Issue' then it.Name else assettype.name end  Like '{ff.RawValue}%' and ";
+                        typeSql += $@" case when wi.[object] = 'Issue' then it.Name else assettype.name end  Like '%{ff.RawValue}%' and ";
+                        break;
+                    case "Type":
+                        typeSql += $@"assettype.[Object]='{ff.RawValue}' and ";
+                        break;
+                    case "StartedOn":
+                        typeSql += $@"datediff(day, wi.startedOn, '{ff.RawValue}') = 0 and ";
+                        break;
+                    case "CompletedOn":
+                        typeSql += $@"datediff(day, wi.CompletedOn, '{ff.RawValue}') = 0 and ";
+                        break;
+                    case "Status":
+                        typeSql += $@"case when count(s.StepID) > 0 then    
+                                            case when max(vs.ActivityType) = 3 then    'Waiting on user action'                   
+                                            else     'Incomplete'    end         
+                                            else        'Complete'    end ='{ff.RawValue}' and ";
+                        break;
+                    case "Initiator":
+                        typeSql += $@"( gr.firstName Like '{ff.RawValue}%' or gr.lastName Like '{ff.RawValue}%' or gr.firstName + ' ' + gr.lastName LIKE '{ff.RawValue}%' ) and ";
+                        break;
+                    case "AssignedTo":
+                        assignedSql = @"inner join workflow.ItemAssignment WIA on WIA.ItemID = WI.ID and WIA.ResourceObject = 'Resource'
+                                            inner join reporting.Global_Resource GRA on WIA.ResourceObjectID = GRA.ResourceID ";
+                        typeSql += $@"( gra.firstName Like '{ff.RawValue}%' or gra.lastName Like '{ff.RawValue}%' or gra.firstName + ' ' + gra.lastName LIKE '{ff.RawValue}%' ) and ";
                         break;
                 }
             }
@@ -174,40 +199,46 @@ where   A.RuleImplementationID = @id";
             if (!string.IsNullOrEmpty(typeSql))
             {
                 typeSql = typeSql.Trim().TrimEnd('a', 'n', 'd');
-                typeSql = "where " + typeSql;
+                whereSql = "where " + typeSql;
             }
 
-            sortDataField = string.IsNullOrEmpty(sortDataField) ? "WorkflowName" : sortDataField;
+            sortDataField = string.IsNullOrEmpty(sortDataField) ? "StartedOn" : sortDataField;
             var stFieldType = sortDataField == "StartedOn" || sortDataField == "CompletedOn" ? "Date" : "string";
             var sortsql = applySortSuffix(string.Empty, sortDataField, sortOrder, "Date", "desc", sortFieldType: stFieldType);
-          //  var pagingSql = applyPagingSuffix(string.Empty, pagenum, pagesize);
+            var pagingSql = applyPagingSuffix(string.Empty, pagenum, pagesize);
+            var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
+		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object]";
 
+            var fromSql = @"		from [workflow].[type] wt 
+                                inner join [workflow].[version] wv on (wt.id = wv.typeid) 
+                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+                                left join workflow.versionstep vs on vs.versionid = wi.id
+                                left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
+                                left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
+                                left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
+                                inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
+                                outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
+                                left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+                                left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) ";
             var sql = $@"
-                    select  wt.name as 'WorkflowName' ,
-                    case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
-                    when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
-                    else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)') end as 'Name',
-                    wi.[object] as 'Object' ,wi.[objectid] as 'ObjectID' ,
-                    wi.startedOn as 'StartedOn'	,
-                    wi.CompletedOn as 'CompletedOn',
-                    gr.firstName + ' ' + gr.lastName as 'StartedBy' ,
-                    case when wi.[object] = 'Issue' then it.Name else assettype.name end as 'TypeName' ,
-                    assettype.[Object] as 'Type' ,assettype.ObjectID as 'ObjectTypeID'	
-                    from [workflow].[type] wt 
-                    inner join [workflow].[version] wv on (wt.id = wv.typeid) 
-                    inner join [workflow].[item] wi on (wv.id = wi.versionid)	
-                    left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
-                    left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
-                    inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
-                    outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
-                    left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
-                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
-                    {typeSql} 
-                    {sortsql} 
-                    ";
+                         select wi.id as Id,                    
+                         wt.name as 'WorkflowName' ,                    
+                         assettype.[Object] as 'Type',                    
+                         case when wi.[object] = 'Issue' then it.Name else assettype.name end as 'TypeName' ,                    
+                         case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), 
+                         '(unknown relationship)')   when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id)  
+                         else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)') end as 'Asset',                    
+                         gr.firstName + ' ' + gr.lastName as 'Initiator' ,                    
+                         wi.startedOn as 'StartedOn',                    wi.CompletedOn as 'CompletedOn',                    
+                         case when count(s.StepID) > 0 then    case when max(vs.ActivityType) = 3 then    'Waiting on user action'                   
+                         else     'Incomplete'    end         else        'Complete'    end as [Status]   
+                        {fromSql}
+                        {assignedSql}
+                        {whereSql} 
+                        {groupby}";
 
-               
 
+            sql = $@"Select * from ({sql}) as A {sortsql} ";
             var list = Company.Query<dynamic>(sql);
 
             var document = new SLDocument();
@@ -217,11 +248,13 @@ where   A.RuleImplementationID = @id";
             #region Header
 
             document.SetCellValue(1, 1, "Workflow Name");
-            document.SetCellValue(1, 2, "Name");
+            document.SetCellValue(1, 2, "Type");
             document.SetCellValue(1, 3, "Type Name");
-            document.SetCellValue(1, 4, "Type");
-            document.SetCellValue(1, 5, "Started");
-            document.SetCellValue(1, 6, "Completed");
+            document.SetCellValue(1, 4, "Asset");
+            document.SetCellValue(1, 5, "Initiator");
+            document.SetCellValue(1, 6, "Started");
+            document.SetCellValue(1, 7, "Completed");
+            document.SetCellValue(1, 8, "Status");
 
             #endregion
 
@@ -231,17 +264,21 @@ where   A.RuleImplementationID = @id";
                 rowIndex++;
 
                 document.SetCellValue(rowIndex, 1, row.WorkflowName);
-                document.SetCellValue(rowIndex, 2, row.Name);
+                document.SetCellValue(rowIndex, 2, row.Type ?? "");
                 document.SetCellValue(rowIndex, 3, row.TypeName ?? "");
-                document.SetCellValue(rowIndex, 4, row.Type ?? "");
-                document.SetCellValue(rowIndex, 5, row.StartedOn??"");
+                document.SetCellValue(rowIndex, 4, row.Asset ?? "");
+                document.SetCellValue(rowIndex, 5, row.Initiator ?? "");
+                document.SetCellValue(rowIndex, 6, row.StartedOn??"");
                 SLStyle style = document.CreateStyle();
                 style.FormatCode = "mm/dd/yyyy";
-                document.SetCellStyle(rowIndex, 5, style);
-                document.SetCellValue(rowIndex, 6, row.CompletedOn??"");
-                style = document.CreateStyle();
-                style.FormatCode = "mm/dd/yyyy";
                 document.SetCellStyle(rowIndex, 6, style);
+
+                document.SetCellValue(rowIndex, 7, row.CompletedOn??"");
+                SLStyle style1 = document.CreateStyle();
+                style1.FormatCode = "mm/dd/yyyy";
+                document.SetCellStyle(rowIndex, 7, style1);
+
+                document.SetCellValue(rowIndex, 8, row.Status ?? "");
 
             }
 
@@ -261,6 +298,8 @@ where   A.RuleImplementationID = @id";
             {
                 var filters = GetFilterValuesFromRequest(Request, true);
                 string typeSql="";
+                string whereSql = "";
+                string assignedSql = "";
                 foreach (var f in filters)
                 {   var ff = f as UiRequestFieldFilterValue;
                     if (ff == null) continue;
@@ -270,13 +309,36 @@ where   A.RuleImplementationID = @id";
                             var types = ff.RawValue.Trim().TrimEnd(',');
                             typeSql += $@" wt.id in ({types}) and ";
                             break;
-                        case "Name":
+                        case "Asset":
                             typeSql += $@" (case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
                                         when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
                                         else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '{ff.RawValue}%' and ";
                             break;
                         case "TypeName":
-                            typeSql += $@" case when wi.[object] = 'Issue' then it.Name else assettype.name end  Like '{ff.RawValue}%' and ";
+                            typeSql += $@" case when wi.[object] = 'Issue' then it.Name else assettype.name end  Like '%{ff.RawValue}%' and ";
+                            break;
+                        case "Type":
+                            typeSql += $@"assettype.[Object]='{ff.RawValue}' and ";
+                            break;
+                        case "StartedOn":
+                            typeSql += $@"datediff(day, wi.startedOn, '{ff.RawValue}') = 0 and ";
+                            break;
+                        case "CompletedOn":
+                            typeSql += $@"datediff(day, wi.CompletedOn, '{ff.RawValue}') = 0 and ";
+                            break;
+                        case "Status":
+                            typeSql += $@"case when count(s.StepID) > 0 then    
+                                            case when max(vs.ActivityType) = 3 then    'Waiting on user action'                   
+                                            else     'Incomplete'    end         
+                                            else        'Complete'    end ='{ff.RawValue}' and ";
+                            break;
+                        case "Initiator":
+                            typeSql += $@"( gr.firstName Like '{ff.RawValue}%' or gr.lastName Like '{ff.RawValue}%' or gr.firstName + ' ' + gr.lastName LIKE '{ff.RawValue}%' ) and ";
+                            break;
+                        case "AssignedTo":
+                            assignedSql = @"inner join workflow.ItemAssignment WIA on WIA.ItemID = WI.ID and WIA.ResourceObject = 'Resource'
+                                            inner join reporting.Global_Resource GRA on WIA.ResourceObjectID = GRA.ResourceID ";
+                            typeSql += $@"( gra.firstName Like '{ff.RawValue}%' or gra.lastName Like '{ff.RawValue}%' or gra.firstName + ' ' + gra.lastName LIKE '{ff.RawValue}%' ) and ";
                             break;
                     }
                 }
@@ -284,48 +346,52 @@ where   A.RuleImplementationID = @id";
                 if (!string.IsNullOrEmpty(typeSql))
                 {
                     typeSql = typeSql.Trim().TrimEnd( 'a','n','d');
-                    typeSql = "where " + typeSql;
+                    whereSql = "where " + typeSql;
                 }
 
-                sortDataField = string.IsNullOrEmpty(sortDataField) ? "WorkflowName" : sortDataField;
+                sortDataField = string.IsNullOrEmpty(sortDataField) ? "StartedOn" : sortDataField;
                 var stFieldType = sortDataField == "StartedOn"  || sortDataField == "CompletedOn" ? "Date" : "string";
                 var sortsql = applySortSuffix(string.Empty, sortDataField, sortOrder, "Date", "desc", sortFieldType: stFieldType);
                 var pagingSql = applyPagingSuffix(string.Empty, pagenum, pagesize);
+                var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
+		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object]";
 
+               var fromSql = @"		from [workflow].[type] wt 
+                                inner join [workflow].[version] wv on (wt.id = wv.typeid) 
+                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+                                left join workflow.versionstep vs on vs.versionid = wi.id
+                                left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
+                                left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
+                                left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
+                                inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
+                                outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
+                                left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+                                left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) ";
                 var sql = $@"
-                        select wi.id as Id, wt.name as 'WorkflowName' ,
-                        case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
-                        when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
-                        else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)') end as 'Name',
-                        wi.[object] as 'Object' ,wi.[objectid] as 'ObjectID' ,
-                        wi.startedOn as 'StartedOn'	,
-                        wi.CompletedOn as 'CompletedOn',
-                        gr.firstName + ' ' + gr.lastName as 'StartedBy' ,
-                        case when wi.[object] = 'Issue' then it.Name else assettype.name end as 'TypeName' ,
-                        assettype.[Object] as 'Type' ,assettype.ObjectID as 'ObjectTypeID'	
-                        from [workflow].[type] wt 
-                        inner join [workflow].[version] wv on (wt.id = wv.typeid) 
-                        inner join [workflow].[item] wi on (wv.id = wi.versionid)	
-                        left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
-                        left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
-                        inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
-                        outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
-                        left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
-                        left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
-                        {typeSql} 
-                        {sortsql} 
+                         select wi.id as Id,                    
+                         wt.name as 'WorkflowName' ,                    
+                         assettype.[Object] as 'Type',                    
+                         case when wi.[object] = 'Issue' then it.Name else assettype.name end as 'TypeName' ,                    
+                         case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), 
+                         '(unknown relationship)')   when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id)  
+                         else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)') end as 'Asset',                    
+                         gr.firstName + ' ' + gr.lastName as 'Initiator' ,                    
+                         wi.startedOn as 'StartedOn',                    wi.CompletedOn as 'CompletedOn',                    
+                         case when count(s.StepID) > 0 then    case when max(vs.ActivityType) = 3 then    'Waiting on user action'                   
+                         else     'Incomplete'    end         else        'Complete'    end as [Status]   
+                        {fromSql}
+                        {assignedSql}
+                        {whereSql} 
+                        {groupby}
+                        ";
+
+                sql = $@"Select * from ({sql}) as A {sortsql} 
                         {pagingSql}";
 
                 var countSql = $@" select count(1)	
-                        from [workflow].[type] wt 
-                        inner join [workflow].[version] wv on (wt.id = wv.typeid) 
-                        inner join [workflow].[item] wi on (wv.id = wi.versionid)	
-                        left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
-                        left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
-                        inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
-                        outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
-                        left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
-                        left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)  {typeSql}";
+                          {fromSql}
+                          {assignedSql}
+                          {whereSql} ";
 
 
                 var list = Company.Query<dynamic>(sql);

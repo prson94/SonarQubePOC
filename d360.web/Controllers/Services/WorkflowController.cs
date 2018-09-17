@@ -222,13 +222,32 @@ order by wi.StartedOn desc",
         [HttpGet, Route("workflowmonitor/filter/definition")]
         public HttpResponseMessage GetFilerDefinition()
         {
-            var filterColumns = new List<GridFilterColumn>();
-            filterColumns.Add(new GridFilterColumn { text = "Name", datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-            filterColumns.Add(new GridFilterColumn { text = "Type Name", datafield = "TypeName", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-            filterColumns.Add(new GridFilterColumn { text = "Initiated By", datafield = "ResourceId", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-            filterColumns.Add(new GridFilterColumn { text = "Requested By", datafield = "ResourceId", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+            var sql = @" select distinct
+                    assettype.[Object] as 'Type'
+                    from [workflow].[type] wt 
+                    inner join [workflow].[version] wv on (wt.id = wv.typeid) 
+                    inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+                    left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
+                    left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
+                    inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
+                    outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
+                    left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)
+					where assettype.[Object] is not null
+					order by assettype.[Object]  asc  ";
+            var filterValues = Company.Query<string>(sql).ToList();
 
-            return Request.CreateResponse(HttpStatusCode.OK,filterColumns);
+            var filterColumns = new List<GridFilterColumn>();
+            filterColumns.Add(new GridFilterColumn { text = "Asset", datafield = "Asset", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Type", datafield = "Type", filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = filterValues,columntype=GridColumn.COLUMN_TYPE_COMBO });
+            filterColumns.Add(new GridFilterColumn { text = "Type Name", datafield = "TypeName", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Started", datafield = "StartedOn",  filtertype = GridColumn.FILTER_TYPE_DATE, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Completed", datafield = "CompletedOn", filtertype = GridColumn.FILTER_TYPE_DATE, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Assigned To", datafield = "AssignedTo", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Initiator", datafield = "Initiator", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Status", datafield = "Status", filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string> { "Complete", "Incomplete", "Waiting on user action" }, columntype = GridColumn.COLUMN_TYPE_COMBO });
+            
+            return Request.CreateResponse(HttpStatusCode.OK, filterColumns.OrderBy(x => x.text).ToList());
 
         }
 
