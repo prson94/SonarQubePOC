@@ -37,6 +37,7 @@ namespace d360.web.Controllers
             ViewData.Add("ResourceID", Company.CurrentResourceID);
             ViewData.Add("ResourceHomePage", Company.GetUserHomePage());
             ViewData.Add("Settings", Community.GetCompanySettings());
+            ViewData.Add("EnvironmentSettings", new Dictionary<string, string> { { "HelpBaseUri", System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString() } });
             ViewData.Add("SingleSignOn", IsSingleSignOn());
 
             var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();

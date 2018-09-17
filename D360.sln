@@ -70,12 +70,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Local.testsettings = Local.testsettings
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AWS", "AWS", "{B8E7DFC5-F74F-4453-9B57-8549C86A8D64}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.jobs.aws.bulkloader", "igx.jobs.aws.bulkloader\igx.jobs.aws.bulkloader.csproj", "{B3776792-1D60-454C-AE23-57CC59DC1D8E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.jobs.aws.reportlayer", "igx.jobs.aws.reportlayer\igx.jobs.aws.reportlayer.csproj", "{5A7D4F88-6CC0-4D7A-B5B7-C5A331919DD5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.workflowdigestprocessor", "igx.jobs.workflowdigestprocessor\igx.jobs.workflowdigestprocessor.csproj", "{CC659834-FB58-41BF-83AA-249FC84D009F}"
 EndProject
 Global
@@ -194,14 +188,6 @@ Global
 		{FBBF73AD-BB82-42E9-B2C8-917EDADE61B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBBF73AD-BB82-42E9-B2C8-917EDADE61B8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FBBF73AD-BB82-42E9-B2C8-917EDADE61B8}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{B3776792-1D60-454C-AE23-57CC59DC1D8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3776792-1D60-454C-AE23-57CC59DC1D8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3776792-1D60-454C-AE23-57CC59DC1D8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3776792-1D60-454C-AE23-57CC59DC1D8E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A7D4F88-6CC0-4D7A-B5B7-C5A331919DD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A7D4F88-6CC0-4D7A-B5B7-C5A331919DD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A7D4F88-6CC0-4D7A-B5B7-C5A331919DD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A7D4F88-6CC0-4D7A-B5B7-C5A331919DD5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CC659834-FB58-41BF-83AA-249FC84D009F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CC659834-FB58-41BF-83AA-249FC84D009F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC659834-FB58-41BF-83AA-249FC84D009F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -239,17 +225,14 @@ Global
 		{09735143-0F52-4A88-9DF2-CD0B6E19D34D} = {757CF48D-6728-4702-AC12-754629196548}
 		{FAEC7C8E-3C67-45A1-BE1D-F7B268627C9C} = {757CF48D-6728-4702-AC12-754629196548}
 		{FBBF73AD-BB82-42E9-B2C8-917EDADE61B8} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
-		{B8E7DFC5-F74F-4453-9B57-8549C86A8D64} = {757CF48D-6728-4702-AC12-754629196548}
-		{B3776792-1D60-454C-AE23-57CC59DC1D8E} = {B8E7DFC5-F74F-4453-9B57-8549C86A8D64}
-		{5A7D4F88-6CC0-4D7A-B5B7-C5A331919DD5} = {B8E7DFC5-F74F-4453-9B57-8549C86A8D64}
 		{CC659834-FB58-41BF-83AA-249FC84D009F} = {757CF48D-6728-4702-AC12-754629196548}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 31
+		SccNumberOfProjects = 29
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/
 		SccLocalPath0 = .
@@ -361,17 +344,9 @@ Global
 		SccProjectTopLevelParentUniqueName27 = D360.sln
 		SccProjectName27 = d360.database.company
 		SccLocalPath27 = d360.database.company
-		SccProjectUniqueName28 = igx.jobs.aws.reportlayer\\igx.jobs.aws.reportlayer.csproj
+		SccProjectUniqueName28 = igx.jobs.workflowdigestprocessor\\igx.jobs.workflowdigestprocessor.csproj
 		SccProjectTopLevelParentUniqueName28 = D360.sln
-		SccProjectName28 = igx.jobs.aws.reportlayer
-		SccLocalPath28 = igx.jobs.aws.reportlayer
-		SccProjectUniqueName29 = igx.jobs.aws.bulkloader\\igx.jobs.aws.bulkloader.csproj
-		SccProjectTopLevelParentUniqueName29 = D360.sln
-		SccProjectName29 = igx.jobs.aws.bulkloader
-		SccLocalPath29 = igx.jobs.aws.bulkloader
-		SccProjectUniqueName30 = igx.jobs.workflowdigestprocessor\\igx.jobs.workflowdigestprocessor.csproj
-		SccProjectTopLevelParentUniqueName30 = D360.sln
-		SccProjectName30 = igx.jobs.workflowdigestprocessor
-		SccLocalPath30 = igx.jobs.workflowdigestprocessor
+		SccProjectName28 = igx.jobs.workflowdigestprocessor
+		SccLocalPath28 = igx.jobs.workflowdigestprocessor
 	EndGlobalSection
 EndGlobal

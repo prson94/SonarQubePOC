@@ -5,6 +5,14 @@
     var ResourceHomePage = ViewData["ResourceHomePage"].ToString();
 
 
+    var environmentSettings = (Dictionary<string, string>)ViewData["EnvironmentSettings"];
+    var environmentSettingsJson = "";
+    foreach (var k in environmentSettings.Keys)
+    {
+        environmentSettingsJson += (string.IsNullOrEmpty(environmentSettingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, environmentSettings[k]);
+    }
+    environmentSettingsJson = "{" + environmentSettingsJson + "}";
+
     var settings = (Dictionary<string, string>)ViewData["Settings"];
     var settingsJson = "";
     foreach (var k in settings.Keys)
@@ -55,6 +63,7 @@
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
     <link rel="Shortcut Icon" href="@(companyIcon)" />
     <script type="text/javascript">
+        var EnvironmentSettings = @(Html.Raw(environmentSettingsJson));
         var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
         var ResourceHomePage = '@(ResourceHomePage)';

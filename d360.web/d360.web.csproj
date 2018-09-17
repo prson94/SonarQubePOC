@@ -2279,6 +2279,7 @@
     <TypeScriptCompile Include="Scripts\app\services\tooltip.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow-fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflowmonitor.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\static\environment-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\form-helpers.ts" />
