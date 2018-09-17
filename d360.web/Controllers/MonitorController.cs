@@ -312,7 +312,7 @@ where   A.RuleImplementationID = @id";
                         case "Asset":
                             typeSql += $@" (case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
                                         when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
-                                        else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '{ff.RawValue}%' and ";
+                                        else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '%{ff.RawValue}%' and ";
                             break;
                         case "TypeName":
                             typeSql += $@" case when wi.[object] = 'Issue' then it.Name else assettype.name end  Like '%{ff.RawValue}%' and ";
