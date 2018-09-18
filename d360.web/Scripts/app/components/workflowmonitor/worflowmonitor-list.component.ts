@@ -124,7 +124,8 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     OnFilterChange($event) {
-         this.filter = $event;
+        this.filter = $event;
+        this.currentPageNumber = 0;
         this.getData();
     }
     private loadWorkflowMonitorItems(event: LazyLoadEvent) {
