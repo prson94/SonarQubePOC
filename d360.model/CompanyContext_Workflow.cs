@@ -1001,11 +1001,16 @@ namespace d360.model
                 }
                 else
                 {
-                    var val = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value;
+                    var val = item.CurrentDate ? DateTime.UtcNow.Date.ToShortDateString() : item.Value;
                     //if the value is a form value get it
                     if (item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
                     {
                         val = GetFieldValueFromFormResponse(item, itemStep.ItemID);
+
+                        if(DateTime.TryParse(val,out DateTime tempDate))
+                        {
+                            val = tempDate.Date.ToShortDateString();
+                        }
                     }
 
                     // check if the field exists
