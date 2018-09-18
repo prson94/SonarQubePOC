@@ -36,6 +36,9 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? DelayStartUntil { get; set; }
 
+        [DataMember]
+        public int DeleteExecutionTimeoutHours { get; set; }
+
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationAssetType> IntegrationAssetTypes { get; set; }
     }

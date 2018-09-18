@@ -57,6 +57,9 @@ namespace d360.core.entities
         [DataMember]
         public int? RefreshIntervalOverride { get; set; }
 
+        [DataMember]
+        public int? DeleteExecutionTimeoutHours { get; set; }
+
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationSetting> IntegrationSetting { get; set; }
 

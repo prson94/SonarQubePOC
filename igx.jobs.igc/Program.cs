@@ -7,9 +7,11 @@ using d360.extensions.info;
 using d360.extensions.queue;
 using d360.model;
 using d360.utils.company;
+using Dapper;
 using igx.jobs;
 using igx.jobs.igc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -86,16 +88,43 @@ namespace igx.jobs
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
 #endif
 
-                            #region Do cleanup of really old execution assets, getting rid of ones older than 7 days.
+                            #region Do cleanup of really old execution assets, getting rid of ones older than delete timeout.
+
+                            SqlConnection cnn = null;
 
                             try
                             {
-                                var deleteDate = DateTime.UtcNow.AddDays(-7);
-                                company.Delete<IntegrationExecutionAssetType>(i => i.CompletedOn == null && i.StartedOn < deleteDate);
+                                cnn = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID);
+                                if (cnn.State != System.Data.ConnectionState.Open)
+                                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                                cnn.Execute(@"
+declare @dt datetime
+set @dt = getutcdate()
+
+delete  T
+from	integration.ExecutionAsset T
+		inner join integration.ExecutionAssetType EA on EA.ExecutionID = T.ExecutionID and EA.SynchedAssetTypeID = T.SynchedAssetTypeID
+		inner join integration.SynchedAssetType A on A.ID = T.SynchedAssetTypeID
+		inner join integration.Setting S on S.ID = A.IntegrationSettingID
+where	EA.CompletedOn is null
+		and EA.StartedOn < DATEADD(hh, -(coalesce(A.DeleteExecutionTimeoutHours, S.DeleteExecutionTimeoutHours)), @dt)
+
+delete  T
+from	integration.ExecutionAssetType T
+		inner join integration.SynchedAssetType A on A.ID = T.SynchedAssetTypeID
+		inner join integration.Setting S on S.ID = A.IntegrationSettingID
+where	T.CompletedOn is null
+		and T.StartedOn < DATEADD(hh, -(coalesce(A.DeleteExecutionTimeoutHours, S.DeleteExecutionTimeoutHours)), @dt)", new List<SqlParameter>());
                             }
                             catch (Exception cex)
                             {
                                 log.WriteLine($"Unable to remove old execution asset types for company ({c.CompanyID}) due to the following error: {cex.GetFullExceptionData()}"); ;
+                            }
+                            finally
+                            {
+                                if (cnn != null)
+                                    cnn.Dispose();
                             }
 
                             #endregion
