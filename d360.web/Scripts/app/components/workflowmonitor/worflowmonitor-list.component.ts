@@ -14,6 +14,7 @@ import {  GridFilterExpression } from "../../models/grid-definition.model";
     template: ` <d3s-loading [isLoading]="isEditing"></d3s-loading>                                                
                 <header>
                   WorkFlow Items
+                  <d3s-tile-actions  [hasExport]="true"  (exportClick)="export()" ></d3s-tile-actions>
                 </header>                    
                 <div class="row" >                    
                 <div class="col s12">                                                

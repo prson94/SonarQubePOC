@@ -43,14 +43,6 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                             <a *ngIf="internalFilters.length > 1" (click)="removeFilter(filter)" class="fa-stack fa-lg" pTooltip="Remove Filter" >
                                 <i class="fa fa-minus fa-stack-1x" style="color:red;"></i>                                
                             </a>
-                              <a *ngIf="first" (click)="exportToExcel.emit()" class="fa-stack fa-lg" pTooltip="Export to Excel" >
-                                <i class="fa fa-download fa-stack-1x" style="color:black;"></i>                                
-                            </a>
-                             <a *ngIf="0"  class="fa-stack fa-lg" pTooltip="Filter" >
-                                <i class="fa fa-filter fa-stack-1x" style="color:darkblue;"></i>                                
-                            </a>
-                           
-                             
                         </div>                                                
                     </div>
                     <div class="row">
@@ -69,7 +61,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     @Input() fields: GridFilterColumn[];
     @Input() filters: GridFilterExpression[] = [];
     @Output() filtersChange = new EventEmitter();
-    @Output() exportToExcel = new EventEmitter();
+ 
 
     connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
 
