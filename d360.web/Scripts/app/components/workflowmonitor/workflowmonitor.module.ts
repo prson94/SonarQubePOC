@@ -22,6 +22,7 @@ import { WorkflowMonitorStepEmailDetailsComponent } from './workflowmonitor-step
 
 
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
+import { D3SSharedModule } from '../shared/shared.module';
 
 import {
     GrowlModule,
@@ -65,7 +66,8 @@ import {
         CoreModule,
         TilesModule,
         SharedGridPagingInfoModule,        
-        SharedObjectDetailsModule
+        SharedObjectDetailsModule,
+        D3SSharedModule,
     ],
     declarations: [
         WorkflowMonitorComponent,   

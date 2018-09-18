@@ -142,7 +142,13 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public bool IsIssueType { get; set; }
+        [DataMember]
+        public int Version { get; set; }
 
+        [DataMember]
+        public bool IsPublishedVersion { get; set; }
+
+        [DataMember]
         public WorkflowStepIssueDetail IssueDetails { get; set; }
     }
 

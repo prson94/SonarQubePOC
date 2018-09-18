@@ -55,15 +55,18 @@
                 </ng-container>
 
                 <ng-container *ngSwitchCase="WorkflowActivityType.Form">
-                    <!--<ng-container *ngIf="step.Settings.SendFormEmail == 'true' && false">
+                    <ng-container *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true">
                         <d3s-workflow-monitor-step-email-details [step]="step"></d3s-workflow-monitor-step-email-details>
-                    </ng-container>-->
+                    </ng-container>
                     <div class="row">
                         <div class="col s12">
                             <div class="FieldName">
-                                Form Body:
+                                Form Description:
                             </div>
-                            <div class="panel-section FormFieldContent" [innerHTML]="step?.Fields?.form['@description']">
+                            <div *ngIf="step?.Fields?.form['@description'] != null" class="panel-section FormFieldContent" [innerHTML]="step?.Fields?.form['@description']">
+                            </div>
+                            <div *ngIf="step?.Fields?.form['@description'] == null" class="panel-section FormFieldContent" style="color: #aaa;">
+                                [empty]
                             </div>
                         </div>
                     </div>
@@ -101,24 +104,48 @@
                 </div>
                 <ng-container [ngSwitch]="step.StepType">
                     <ng-container *ngSwitchCase="StepType.Start">
-                        <div *ngIf="step.IsIssueType && step.IssueDetails != null" class="row">
-                            <div class="col s6">
+                        <div class="row">
+                            <div class="col s12">
                                 <span class="FieldName">
-                                    Action Type:
+                                    Version:
                                 </span>
                                 <span>
-                                    {{step.IssueDetails.IssueName}}
-                                </span>
-                            </div>
-                            <div class="col s6">
-                                <span class="FieldName">
-                                    Asset:
-                                </span>
-                                <span>
-                                    {{step.IssueDetails.ObjectName}}
+                                    {{step.Version}} {{step.IsPublishedVersion ? '(Published)' : ''}}
                                 </span>
                             </div>
                         </div>
+                        <div *ngIf="step.ChangeType == WorkflowChangeType.Schedule" class="row">
+                            <div class="col s12">
+                                <span class="FieldName">
+                                    Schedule Interval:
+                                </span>
+                                <span>
+                                    {{step?.EventSettings?.ScheduleInterval}}
+                                </span>
+                            </div>
+                        </div>
+                        <ng-container *ngIf="step.IsIssueType && step.IssueDetails != null">
+                            <div class="row">
+                                <div class="col s12">
+                                    <span class="FieldName">
+                                        Action Type:
+                                    </span>
+                                    <span>
+                                        {{step.IssueDetails.IssueName}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <span class="FieldName">
+                                        Asset:
+                                    </span>
+                                    <span>
+                                        {{step.IssueDetails.ObjectName}}
+                                    </span>
+                                </div>
+                            </div>
+                        </ng-container>
                         <div *ngIf="step.ItemSettings.hasConditions == true" class="row">
                             <div class="col s12">
                                 <div class="FieldName">

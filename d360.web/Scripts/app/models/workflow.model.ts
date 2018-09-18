@@ -532,6 +532,8 @@ export class WorkflowStepDetail {
     EventSettingsXml: string;
     EventSettings: any;
     IsIssueType: boolean;
+    Version: number;
+    IsPublishedVersion: boolean;
     IssueDetails: WorkflowStepIssueDetail;
 }
 

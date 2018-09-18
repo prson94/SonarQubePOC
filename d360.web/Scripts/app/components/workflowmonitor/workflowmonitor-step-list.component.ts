@@ -19,13 +19,13 @@ import { WorkflowHelpers } from '../../static/workflow-helpers';
     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
     <p-dataTable #dt [globalFilter]="gb" [value]="itemSteps" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowClick)="selectionChange.emit($event.data)">                                                                        
         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-        <p-column field="Name" header="Step Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>    
-        <p-column field="StepType" header="Step Type" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'width': '95px'}">
+        <p-column field="Name" header="Step Name" [sortable]="allowSort" [filter]="!showSimpleFilter"></p-column>    
+        <!--<p-column field="StepType" header="Step Type" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'width': '95px'}">
             <ng-template let-col let-item="rowData" pTemplate type="body">
                 {{helper.stepTypeName(item.StepType)}}
             </ng-template>                                                        
-        </p-column>  
-        <p-column field="Complete" header="Complete" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'width': '90px'}">
+        </p-column>  -->
+        <p-column field="Complete" header="Complete" [sortable]="allowSort" [filter]="!showSimpleFilter" [style]="{'width': '90px'}">
             <ng-template let-col let-item="rowData" pTemplate type="body">
                 <span>
                     <i *ngIf="item.Complete == true" class="fa fa-check enabled" title="True"></i>
@@ -33,18 +33,18 @@ import { WorkflowHelpers } from '../../static/workflow-helpers';
                 </span>
             </ng-template>                                                        
         </p-column> 
-        <p-column field="ActivityType" header="Activity Type" [sortable]="true" [filter]="!showSimpleFilter">
+        <p-column field="ActivityType" header="Activity Type" [sortable]="allowSort" [filter]="!showSimpleFilter">
             <ng-template let-col let-item="rowData" pTemplate type="body">
                 {{helper.activityTypeName(item.ActivityType)}}
             </ng-template>                                                        
         </p-column>  
-        <p-column *ngIf="showAssigneeColumn" field="Assignee" header="Assignee" [sortable]="true" [filter]="!showSimpleFilter"></p-column>    
-        <p-column field="StartedOn" header="Date Started" [sortable]="true" [filter]="!showSimpleFilter">
+        <p-column *ngIf="showAssigneeColumn" field="Assignee" header="Assignee" [sortable]="allowSort" [filter]="!showSimpleFilter"></p-column>    
+        <p-column field="StartedOn" header="Date Started" [sortable]="allowSort" [filter]="!showSimpleFilter">
             <ng-template let-col let-item="rowData" pTemplate type="body">
                 {{item.StartedOn | date:'shortDate'}}
             </ng-template>                                                        
         </p-column>  
-        <p-column field="CompletedOn" header="Date Completed" [sortable]="true" [filter]="!showSimpleFilter">
+        <p-column field="CompletedOn" header="Date Completed" [sortable]="allowSort" [filter]="!showSimpleFilter">
             <ng-template let-col let-item="rowData" pTemplate type="body">
                 {{item.CompletedOn | date:'shortDate'}}
             </ng-template>  
@@ -64,6 +64,7 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
     selection: WorkflowItemStep = null;
 
     showAssigneeColumn = false;
+    allowSort = false;
 
     constructor(private workflowService: WorkflowService, private ref: ChangeDetectorRef) {
         super();
@@ -74,7 +75,7 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['itemId'] != null && (changes['itemId'].isFirstChange || (changes['itemId'].currentValue != changes['itemId'].previousValue))) {
+        if ((changes['itemId'] != null && changes['itemId'].currentValue != 0) && (changes['itemId'].isFirstChange || (changes['itemId'].currentValue != changes['itemId'].previousValue))) {
             this.load();
         }
     }
@@ -84,7 +85,7 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
 
     load() {
         this.itemSteps = null;
-        if (this.itemId != null)
+        if (this.itemId != null && this.itemId != 0) {
             this.workflowService.getWorkflowItemSteps(this.itemId)
                 .then(r => {
                     this.itemSteps = r;
@@ -96,6 +97,7 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
                     this.ref.markForCheck();
                     //console.log('loaded', this.itemSteps);
                 });
+        } 
     }
 
     private export() {

@@ -50,12 +50,15 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
 
     ngOnDestroy() {
         this.clearSidebar();
-        
     }    
 
     listChange($event) {
-      // this.itemId = $event ?  $event.Id : 0;
-        this.itemId = $event.Id;
+        if ($event) {
+            this.itemId = $event.Id
+        } else {
+            this.itemId = null;
+            this.detailVisible = false;
+        }
     }
 
     stepChange($event) {

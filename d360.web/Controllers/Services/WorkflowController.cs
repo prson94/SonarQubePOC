@@ -2255,11 +2255,18 @@ order by wi.StartedOn desc";
 					cast(1 as bit)
 				else
 					cast(0 as bit)
-				end as IsIssueType
+				end as IsIssueType,
+				v.[Version],
+				case when v.ID = t.PublishedVersionID then
+					cast(1 as bit)
+				else
+					cast(0 as bit)
+				end as IsPublishedVersion
 			from workflow.itemstep si
 			inner join workflow.item i on i.id = si.itemid
 			inner join workflow.versionstep vs on vs.id = si.stepid
 			inner join workflow.version v on v.ID = vs.VersionID
+			inner join workflow.[type] t on t.id = v.typeid
 			inner join workflow.eventregistration e on e.TypeID = v.TypeID
 			where si.ID = @itemStepId";
 
@@ -2309,8 +2316,6 @@ order by wi.StartedOn desc";
                 }
             }
 
-            List<string> resourceEmails = new List<string>();
-
             if (detail.IsIssueType)
             {
                 var issueSql = @"select 
@@ -2340,7 +2345,6 @@ order by wi.StartedOn desc";
                 }
 
             }
-                
 
             //deal with xml to json nonsense and load detail values
             if (detail.ActivityType == WorkflowActivityType.EmailNotification || detail.ActivityType == WorkflowActivityType.Form)
@@ -2388,15 +2392,26 @@ order by wi.StartedOn desc";
 
                     detail.ItemSettings.hasEmails = (emails.email.Count > 0);
 
+                    var resourceEmails = new List<string>();
+
                     for (int i = 0; i < emails.email.Count; i++)
                     {
                         var e = emails.email[i];
                         string address = e["@address"].Value;
 
-                        if (!resourceEmails.Any(r => r == address))
-                            resourceEmails.Add(address);
+                        if (!resourceEmails.Any(r => r == address.ToLower()))
+                            resourceEmails.Add(address.ToLower());
+                    }
 
-                        var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
+                    //get all relevant resource info
+                    var emailResources = Company.GlobalReportingResources.Where(g => resourceEmails.Contains(g.Email.ToLower())).ToList();
+
+                    for (int i = 0; i < emails.email.Count; i++)
+                    {
+                        var e = emails.email[i];
+                        string address = e["@address"].Value;
+
+                        var res = emailResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
                         if (res != null)
                         {
                             e.name = res.FullName;
@@ -2408,6 +2423,7 @@ order by wi.StartedOn desc";
                             e.id = 0;
                         }
                     }
+
                 }
                 else
                 {
@@ -2460,6 +2476,8 @@ order by wi.StartedOn desc";
                     }
                 }
 
+                var resourceIds = new List<int>();
+
                 for(int i = 0; i < detail.ItemFields.form.Count; i++)
                 {
                     var form = detail.ItemFields.form[i];
@@ -2478,11 +2496,26 @@ order by wi.StartedOn desc";
 
                     if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
                     {
-                        var res = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == resId);
+                        if (!resourceIds.Any(r => r == resId))
+                            resourceIds.Add(resId);
+                    }
+                }
+
+                //get all relevant resource info
+                var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();
+
+                for (int i = 0; i < detail.ItemFields.form.Count; i++)
+                {
+                    var form = detail.ItemFields.form[i];
+
+                    if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                    {
+                        var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
                         if (res != null)
                             form.resourceName = res.FullName;
                     }
                 }
+
             }
 
             switch(detail.ActivityType)
