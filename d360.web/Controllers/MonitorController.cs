@@ -152,6 +152,7 @@ where   A.RuleImplementationID = @id";
             string typeSql = "";
             string whereSql = "";
             string assignedSql = "";
+            string havingSql = "";
             foreach (var f in filters)
             {
                 var ff = f as UiRequestFieldFilterValue;
@@ -165,7 +166,7 @@ where   A.RuleImplementationID = @id";
                     case "Asset":
                         typeSql += $@" (case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
                                         when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
-                                        else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '{ff.RawValue}%' and ";
+                                        else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '%{ff.RawValue}%' and ";
                         break;
                     case "TypeName":
                         typeSql += $@" case when wi.[object] = 'Issue' then it.Name else assettype.name end  Like '%{ff.RawValue}%' and ";
@@ -180,10 +181,10 @@ where   A.RuleImplementationID = @id";
                         typeSql += $@"datediff(day, wi.CompletedOn, '{ff.RawValue}') = 0 and ";
                         break;
                     case "Status":
-                        typeSql += $@"case when count(s.StepID) > 0 then    
+                        havingSql = $@"case when count(s.StepID) > 0 then    
                                             case when max(vs.ActivityType) = 3 then    'Waiting on user action'                   
                                             else     'Incomplete'    end         
-                                            else        'Complete'    end ='{ff.RawValue}' and ";
+                                            else        'Complete'    end ='{ff.RawValue}'";
                         break;
                     case "Initiator":
                         typeSql += $@"( gr.firstName Like '{ff.RawValue}%' or gr.lastName Like '{ff.RawValue}%' or gr.firstName + ' ' + gr.lastName LIKE '{ff.RawValue}%' ) and ";
@@ -200,6 +201,11 @@ where   A.RuleImplementationID = @id";
             {
                 typeSql = typeSql.Trim().TrimEnd('a', 'n', 'd');
                 whereSql = "where " + typeSql;
+            }
+
+            if (!string.IsNullOrEmpty(havingSql))
+            {
+                havingSql = $@"having ({havingSql})";
             }
 
             sortDataField = string.IsNullOrEmpty(sortDataField) ? "StartedOn" : sortDataField;
@@ -235,8 +241,9 @@ where   A.RuleImplementationID = @id";
                         {fromSql}
                         {assignedSql}
                         {whereSql} 
-                        {groupby}";
-
+                        {groupby}
+                        {havingSql}
+                        ";
 
             sql = $@"Select * from ({sql}) as A {sortsql} ";
             var list = Company.Query<dynamic>(sql);
@@ -300,6 +307,7 @@ where   A.RuleImplementationID = @id";
                 string typeSql="";
                 string whereSql = "";
                 string assignedSql = "";
+                string havingSql = "";
                 foreach (var f in filters)
                 {   var ff = f as UiRequestFieldFilterValue;
                     if (ff == null) continue;
@@ -327,10 +335,10 @@ where   A.RuleImplementationID = @id";
                             typeSql += $@"datediff(day, wi.CompletedOn, '{ff.RawValue}') = 0 and ";
                             break;
                         case "Status":
-                            typeSql += $@"case when count(s.StepID) > 0 then    
+                            havingSql = $@"case when count(s.StepID) > 0 then    
                                             case when max(vs.ActivityType) = 3 then    'Waiting on user action'                   
                                             else     'Incomplete'    end         
-                                            else        'Complete'    end ='{ff.RawValue}' and ";
+                                            else        'Complete'    end ='{ff.RawValue}'";
                             break;
                         case "Initiator":
                             typeSql += $@"( gr.firstName Like '{ff.RawValue}%' or gr.lastName Like '{ff.RawValue}%' or gr.firstName + ' ' + gr.lastName LIKE '{ff.RawValue}%' ) and ";
@@ -349,7 +357,12 @@ where   A.RuleImplementationID = @id";
                     whereSql = "where " + typeSql;
                 }
 
-                sortDataField = string.IsNullOrEmpty(sortDataField) ? "StartedOn" : sortDataField;
+                if (!string.IsNullOrEmpty(havingSql))
+                {
+                    havingSql = $@"having ({havingSql})"  ;
+                }
+
+                    sortDataField = string.IsNullOrEmpty(sortDataField) ? "StartedOn" : sortDataField;
                 var stFieldType = sortDataField == "StartedOn"  || sortDataField == "CompletedOn" ? "Date" : "string";
                 var sortsql = applySortSuffix(string.Empty, sortDataField, sortOrder, "Date", "desc", sortFieldType: stFieldType);
                 var pagingSql = applyPagingSuffix(string.Empty, pagenum, pagesize);
@@ -383,6 +396,7 @@ where   A.RuleImplementationID = @id";
                         {assignedSql}
                         {whereSql} 
                         {groupby}
+                        {havingSql}
                         ";
 
                 sql = $@"Select * from ({sql}) as A {sortsql} 
