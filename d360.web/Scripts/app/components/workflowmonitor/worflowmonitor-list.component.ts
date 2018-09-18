@@ -61,7 +61,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     private rowsPerPage: number = 10;
     private currentPageNumber: number = 0;
     private sortField: string = undefined;
-    private sortOrder: SortOrder = SortOrder.Ascending;
+    private sortOrder: SortOrder = SortOrder.Descending;
     private filter: GridFilterExpression[] = [];
      selection: any;
     @Output() selectionChange = new EventEmitter();
@@ -129,7 +129,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
     private loadWorkflowMonitorItems(event: LazyLoadEvent) {
         this.rowsPerPage = event.rows;
-        this.sortOrder = event.sortOrder;
+        this.sortOrder = event.sortField == undefined ? SortOrder.Descending: event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;

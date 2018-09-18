@@ -89,9 +89,9 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        //debugger;
+
         var bHasInternalFilters = this.internalFilters.length > 0;
-        console.log(this.fields);
+
         if (changes["fields"] && this.fields != null && this.fields.length > 0) {
             this.availableFilters = [];
             for (let field of this.fields) {
@@ -121,7 +121,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
        
         this.filters = [];
         for (let internalFilter of this.internalFilters) {
-            if (internalFilter.Type == FilterFieldType.Field) {
+            if (internalFilter.Type == FilterFieldType.Field && internalFilter.Data.value) {
                 this.filters.push(internalFilter.Data);
             }
         }

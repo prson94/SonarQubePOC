@@ -399,15 +399,11 @@ where   A.RuleImplementationID = @id";
                         {havingSql}
                         ";
 
+                var countSql = $@"Select count(1) from ({sql}) as A ";
+
                 sql = $@"Select * from ({sql}) as A {sortsql} 
                         {pagingSql}";
-
-                var countSql = $@" select count(1)	
-                          {fromSql}
-                          {assignedSql}
-                          {whereSql} ";
-
-
+                               
                 var list = Company.Query<dynamic>(sql);
                 var totalCount = Company.Query<int>(countSql);
 
