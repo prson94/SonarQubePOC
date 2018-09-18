@@ -36,12 +36,11 @@ import * as _ from 'lodash';
     </div>
     <div class="row">
         <div class="col s12">
-            <span class="FieldName">
+            <div class="FieldName">
                 Email Subject:
-            </span>
-            <span>
-                {{step.Settings.MessageSubjectTemplate}}
-            </span>
+            </div>
+            <div [innerHtml]="step.Settings.MessageSubjectTemplate">
+            </div>
         </div>
     </div>
     <div class="row">

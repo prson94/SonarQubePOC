@@ -2272,7 +2272,7 @@ order by wi.StartedOn desc";
             detail.Fields = XmlToDynamic(detail.FieldsXml);
             detail.ItemSettings = XmlToDynamic(detail.ItemSettingsXml);
             detail.ItemFields = XmlToDynamic(detail.ItemFieldsXml);
-            detail.Condition = detail.Condition == null ? null : XmlToDynamic(detail.ConditionXml);
+            detail.Condition =  XmlToDynamic(detail.ConditionXml);
             detail.EventSettings = XmlToDynamic(detail.EventSettingsXml);
 
             if (detail.ItemSettings == null)
