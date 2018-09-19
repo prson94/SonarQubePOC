@@ -1005,42 +1005,7 @@ namespace d360.web.Controllers
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server, false);
                 Company.SaveOrUpdate<Artifact>(model, fields, (parentID > 0 ? parentID : -1));
                 processFormDynamicRelationshipFields(SystemObjects.ArtifactType, model.ArtifactTypeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
-                               
-
-                #region Create Certify Workflow
-
-                try
-                {
-                    var certificationWorkflowEnabled = Company.WorkflowEventRegistrations.Where(x => x.Object == "ArtifactType" && x.ObjectID == model.ArtifactTypeID && x.Type.PublishedVersionID != null && x.Type.State == State.Active && x.ChangeType == core.enums.Workflow.ChangeType.RequestCertification).Any();
-
-                    if (certificationWorkflowEnabled)
-                    {
-                        //check for any outstanding certification workflows for this item
-                        var sql = @"select
-                                count(1)
-                            from
-                                workflow.eventregistration we
-                                inner join workflow.type wt on we.typeid = wt.id
-                                inner join workflow.version wv on wt.id = wv.typeid
-                                inner join workflow.item wi on wi.versionid = wv.id and(wi.[object] = 'Artifact' and wi.objectid = @id)
-                            where
-                                we.changetype = 8 and wi.completedOn is null";
-
-                        var count = Company.Query<int>(sql, new { id = id }).FirstOrDefault();
-
-                        if (count == 0)
-                        {
-                            Company.RequestObjectCertification(SystemObjects.Artifact, model.ID, SystemObjects.ArtifactType, model.ArtifactTypeID);
-                        }
-                    }
-                }
-                catch (Exception )
-                {
-
-                }
-
-                #endregion
-
+                
                 return jsonSuccess(model.ArtifactType.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
             }
             catch (BaseException ex)
