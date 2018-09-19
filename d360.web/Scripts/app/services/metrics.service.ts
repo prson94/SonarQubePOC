@@ -3,7 +3,7 @@ import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
-import { Group, Map, Item, Condition, MapForm, ConditionForm } from '../models/metrics.model';
+import { Group, GroupForm, Map, Item, Condition, MapForm, ConditionForm } from '../models/metrics.model';
 
 
 @Injectable()
@@ -19,27 +19,27 @@ export class MetricsService extends BaseService {
     }
 
     public getGroup(id: number): Promise<Group> {
-        return this.http.get(`/api/v2/metrics/groups/${id}`)
+        return this.http.get(`/api/metrics/group/${id}`)
             .toPromise()
             .then(response => <Group>response.json())
             .catch(err => this.handleError(err));
     }
 
-    public getGroupFormModel(id: number): Promise<Group> {
-        return this.http.get(`/api/v2/metrics/groups/${id}`)
+    public getGroupFormModel(id: number): Promise<GroupForm> {
+        return this.http.get(`/form/metricgroup/${id}`)
             .toPromise()
-            .then(response => <Group>response.json())
+            .then(response => <GroupForm>response.json())
             .catch(err => this.handleError(err));
     }
 
-    public saveGroup(model: Group): Promise<JsonResult> {
-        if (model.ID == null || model.ID < 1) { //add
-            return this.http.post('/api/v2/metrics/groups', model)
+    public saveGroup(model: GroupForm): Promise<JsonResult> {
+        if (model.Group.ID == null || model.Group.ID < 1) { //add
+            return this.http.post('form/metricgroup', model)
                 .toPromise()
                 .then(response => <JsonResult>response.json())
                 .catch(err => this.handleError(err));
         } else { //edit
-            return this.http.put(`/api/v2/metrics/groups/${model.ID}`, model)
+            return this.http.put('form/metricgroup', model)
                 .toPromise()
                 .then(response => <JsonResult>response.json())
                 .catch(err => this.handleError(err));
@@ -47,7 +47,7 @@ export class MetricsService extends BaseService {
     }
 
     public deleteGroup(id: number): Promise<JsonResult> {
-        return this.http.delete(`/api/v2/metrics/groups/${id}`)
+        return this.http.delete(`form/metricgroup?id=${id}`)
             .toPromise()
             .then(response => <JsonResult>response.json())
             .catch(err => this.handleError(err));
@@ -118,10 +118,10 @@ export class MetricsService extends BaseService {
     }
 
     public saveCondition(model: Condition): Promise<JsonResult> {
-            return this.http.post('form/MetricCondition', model)
-                .toPromise()
-                .then(response => response.json())
-                .catch(err => this.handleError(err));
+        return this.http.post('form/MetricCondition', model)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
     }
 
     public getLookupList(id: number): Promise<any[]> {
@@ -131,8 +131,8 @@ export class MetricsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    public getConditionFields(assetTypeId: number): Promise<any[]> {
-        return this.http.get(`api/metrics/condition/fields/${assetTypeId}`)
+    public getConditionFields(objectType: string, objectId: number): Promise<any[]> {
+        return this.http.get(`api/metrics/condition/fields/${objectType}/${objectId}`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
