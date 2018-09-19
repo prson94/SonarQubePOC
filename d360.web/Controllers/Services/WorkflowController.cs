@@ -540,8 +540,8 @@ order by wi.StartedOn desc";
                         break;
                     case FormResponseType.Majority:
                         //wait for all users to complete so we can determine what the majority says.
-                        //isCompleted = numberOfResponses >= (totalResources / 2) + 1;
-                        isCompleted = numberOfResponses >= totalResources;
+                       isCompleted = numberOfResponses >= (totalResources / 2) + 1;
+                        //isCompleted = numberOfResponses >= totalResources;
                         break;
                 }
 
