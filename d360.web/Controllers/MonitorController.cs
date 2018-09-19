@@ -265,7 +265,7 @@ where   A.RuleImplementationID = @id";
                                         else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '%{ff.RawValue}%' and ";
                         break;
                     case "TypeName":
-                        typeSql += $@"  coalesce(assettype.Name, it.Name) = '%{ff.RawValue}%' and ";
+                        typeSql += $@"  coalesce(assettype.Name, it.Name,ITypeName.Name)  LIKE '%{ff.RawValue}%' and ";
                         break;
                     case "Type":
                             switch(ff.RawValue)
