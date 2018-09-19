@@ -33,9 +33,6 @@ namespace d360.core.entities.Metric
         public decimal Weight { get; set; }
 
         [DataMember]
-        public DateTime EffectiveDate { get; set; }
-
-        [DataMember]
         public State State { get; set; } = State.Active;
 
         [IgnoreDataMember, NotMapped]
