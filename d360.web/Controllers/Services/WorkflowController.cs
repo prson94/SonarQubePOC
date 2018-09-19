@@ -867,7 +867,7 @@ order by wi.StartedOn desc";
 
 
             //replace any tokens in hte description            
-            desc = Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), null, Company.CurrentCompanyDomain, itemStep, true);
+            desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), null, Company.CurrentCompanyDomain, itemStep, true);
 
             //parse the xml to get the form info
 
@@ -2221,7 +2221,7 @@ order by wi.StartedOn desc";
         }
 
         [Route("step/detail/{itemStepId:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowVersionStepDetail(int itemStepId)
+        public async Task<HttpResponseMessage> GetWorkflowVersionStepDetail(int itemStepId)
         {
             var itemStep = Company.WorkflowItemSteps.FirstOrDefault(i => i.ID == itemStepId);
 
@@ -2361,16 +2361,16 @@ order by wi.StartedOn desc";
                 if (detail.Settings != null)
                 {
                     if (detail.Settings.MessageSubjectTemplate != null)
-                        detail.Settings.MessageSubjectTemplate = Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+                        detail.Settings.MessageSubjectTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
 
                     if (detail.Settings.MessageBodyTemplate != null)
-                        detail.Settings.MessageBodyTemplate = Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+                        detail.Settings.MessageBodyTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
                 }
 
                 if (detail?.Fields?.form != null)
                 {
                     if (detail.Fields.form["@description"] != null)
-                        detail.Fields.form["@description"] = Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+                        detail.Fields.form["@description"] = await Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
                 }
 
                 if (detail.ItemSettings.emails != null)
