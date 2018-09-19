@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import {  Condition, ConditionForm } from '../../../models/metrics.model';
+import { Condition, ConditionForm } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesService } from '../../../services/messages.service';
 
@@ -74,7 +74,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     @Input() condition = null;
     @Input() mapId: number = -1;
     @Input() fieldId: number = -1;
-    @Input() assetTypeId: number = -1;
+    @Input() objectType: string = "";
+    @Input() objectId: number = -1;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
@@ -107,8 +108,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     ngOnChanges() {
-        if (this.fieldId < 1 && this.assetTypeId > 0 && this.model != null) {
-            this.metricsService.getConditionFields(this.assetTypeId)
+        if (this.fieldId < 1 && this.objectId > 0 && this.model != null) {
+            this.metricsService.getConditionFields(this.objectType, this.objectId)
                 .then(r => {
                     this.fields = r;
                 });
@@ -117,7 +118,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     load() {
         this.fields = [];
-        this.metricsService.getConditionFields(this.assetTypeId)
+        this.metricsService.getConditionFields(this.objectType, this.objectId)
             .then(r => {
                 this.fields = r;
             });
@@ -154,11 +155,12 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     changeFieldType(e: any) {
         this.condition.FieldTypeID = +e;
-        
+
         let field = this.fields.find(f => f.ID == +e);
         if (field != null) {
             this.fieldType = field.Type;
             this.condition.fieldName = field.FriendlyName;
+            //console.log('changeFieldType', this.condition, field);
 
             if (field.Type == 'Lookup') {
                 this.lookups = [];

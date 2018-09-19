@@ -37,7 +37,8 @@ import { MessagesService } from '../../../services/messages.service';
                             <d3s-admin-metric-condition-editor 
                                 [mapId]="mapId" 
                                 [fieldId]="0"
-                                [assetTypeId]="assetTypeId"
+                                [objectType]="objectType"
+                                [objectId]="objectId"
                                 [condition]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
                                 (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
@@ -47,7 +48,8 @@ import { MessagesService } from '../../../services/messages.service';
                             <d3s-admin-metric-condition-editor 
                                 [mapId]="mapId" 
                                 [fieldId]="selection?.FieldTypeID"
-                                [assetTypeId]="assetTypeId"
+                                [objectType]="objectType"
+                                [objectId]="objectId"
                                 [condition]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
                                 (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
@@ -74,7 +76,8 @@ import { MessagesService } from '../../../services/messages.service';
 
 export class AdminMetricConditionListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() mapId: number;
-    @Input() assetTypeId: number;
+    @Input() objectType: string;
+    @Input() objectId: number;
     @Input() conditions = [];
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();
@@ -82,7 +85,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     @Output() conditionsChange = new EventEmitter();
 
     @Output() formModeChange = new EventEmitter();
-    
+
     private selection = null;
     private selectedIndex = -1;
     private formMode = FormMode.Default;

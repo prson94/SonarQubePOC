@@ -7826,6 +7826,17 @@ where   AssetTypeID = @assetTypeId
         new { assetTypeId }).ToList();
         }
 
+        [Route("metrics/condition/fields/{objectType}/{objectTypeId:int}")]
+        public List<FieldType> GetMetricConditionFields(string objectType, int objectTypeId)
+        {
+            return Company.Query<FieldType>(@"
+select  * 
+from    FieldType
+where   Object = @objectType and ObjectID = @objectTypeId 
+        and [type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')",
+        new { objectType, objectTypeId }).ToList();
+        }
+
         #endregion
 
         #region Cascading dropdown values

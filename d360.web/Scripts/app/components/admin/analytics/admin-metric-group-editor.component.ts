@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { Group } from '../../../models/metrics.model';
+import { Group, GroupForm } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesService } from '../../../services/messages.service';
 
@@ -16,7 +16,15 @@ import { MessagesService } from '../../../services/messages.service';
                                 Name
                             </div>
                             <div>
-                                <input type="text" [(ngModel)]="model.Name" style="width: 95%" />
+                                <input type="text" [(ngModel)]="model.Group.Name" style="width: 95%" />
+                            </div>
+                        </div>
+                        <div class="col s6">
+                            <div class="FieldName">
+                                Source ID
+                            </div>
+                            <div>
+                                <input type="text" [(ngModel)]="model.Group.SourceID" style="width: 95%" />
                             </div>
                         </div>
                         <div class="col s12">
@@ -24,7 +32,7 @@ import { MessagesService } from '../../../services/messages.service';
                                 Description
                             </div>
                             <div>
-                                <p-editor [(ngModel)]="model.Description" [style]="{'width' : '100%' }" [styleClass]="{'width' : '100%' }">
+                                <p-editor [(ngModel)]="model.Group.Description" [style]="{'width' : '100%' }" [styleClass]="{'width' : '100%' }">
                                 </p-editor>
                             </div>
                         </div>
@@ -65,10 +73,10 @@ import { MessagesService } from '../../../services/messages.service';
                     </div>
                 </div>
                 `,
-providers: [MetricsService, MessagesService]
+    providers: [MetricsService, MessagesService]
 })
 
-export class AdminMetricGroupEditorComponent extends BaseComponent implements OnInit{
+export class AdminMetricGroupEditorComponent extends BaseComponent implements OnInit {
     @Input() groupId: number = -1;
     @Input() parentId: number = -1;
     @Output() onCancel = new EventEmitter();
@@ -76,7 +84,7 @@ export class AdminMetricGroupEditorComponent extends BaseComponent implements On
 
     verb = "Add";
 
-    model: Group = null;
+    model: GroupForm = null;
     childrenWeight = 0;
 
     constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
@@ -101,11 +109,12 @@ export class AdminMetricGroupEditorComponent extends BaseComponent implements On
                 });
         } else {
             this.verb = "Add";
-            this.model = new Group();
+            this.model = new GroupForm();
+            this.model.Group = new Group();
             if (this.parentId > 0)
-                this.model.ParentID = this.parentId;
+                this.model.Group.ParentID = this.parentId;
             else
-                this.model.Weight = 1;;
+                this.model.Group.Weight = 1;;
             this.model.Children = [];
             this.sumWeights();
         }
@@ -125,10 +134,10 @@ export class AdminMetricGroupEditorComponent extends BaseComponent implements On
     valid() {
         let valid = true;
 
-        if (this.model == null || this.model == null) {
+        if (this.model == null || this.model.Group == null) {
             valid = false;
         } else {
-            if (this.model.Name == null || this.model.Name.length < 1)
+            if (this.model.Group.Name == null || this.model.Group.Name.length < 1)
                 valid = false;
 
             if (this.model.Children != null && this.model.Children.length > 1) {

@@ -52,7 +52,7 @@
       <HintPath>..\packages\Autofac.WebApi2.4.1.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="ComponentSpace.SAML2">
-      <HintPath>..\..\..\External Dlls\ComponentSpace.SAML2.dll</HintPath>
+      <HintPath>..\..\ComponentSpace.SAML2.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=1.50.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.50.4\lib\net451\Dapper.dll</HintPath>
@@ -68,7 +68,7 @@
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="gudusoft.gsqlparser">
-      <HintPath>..\..\..\External Dlls\gudusoft.gsqlparser.dll</HintPath>
+      <HintPath>..\..\gudusoft.gsqlparser.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.6.5.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.6.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
@@ -288,7 +288,6 @@
     </Reference>
     <Reference Include="System.Web.Http.OData, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.OData.5.7.0\lib\net45\System.Web.Http.OData.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -465,7 +464,6 @@
     <Content Include="Content\codemirror\eclipse.min.css">
       <DependentUpon>eclipse.css</DependentUpon>
     </Content>
-    <Content Include="Content\font-awesome.css" />
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
@@ -672,8 +670,6 @@
     <Content Include="Scripts\app\29.chunk.js" />
     <Content Include="Scripts\app\3.chunk.js" />
     <Content Include="Scripts\app\30.chunk.js" />
-    <Content Include="Scripts\app\31.chunk.js" />
-    <Content Include="Scripts\app\32.chunk.js" />
     <Content Include="Scripts\app\33.chunk.js" />
     <Content Include="Scripts\app\34.chunk.js" />
     <Content Include="Scripts\app\35.chunk.js" />
@@ -699,7 +695,6 @@
     <Content Include="Scripts\app\53.chunk.js" />
     <Content Include="Scripts\app\54.chunk.js" />
     <Content Include="Scripts\app\55.chunk.js" />
-    <Content Include="Scripts\app\56.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
@@ -1624,6 +1619,7 @@
     <Content Include="Views\Shared\Terms.cshtml" />
     <None Include="Properties\PublishProfiles\AU - East - Development.pubxml" />
     <None Include="Properties\PublishProfiles\AU - East - Uat.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-us-east-Nightly - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\EU - North - Development.pubxml" />
     <None Include="Properties\PublishProfiles\EU - North - Uat.pubxml" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />

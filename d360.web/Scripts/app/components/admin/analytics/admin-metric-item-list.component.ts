@@ -84,7 +84,7 @@ import { MessagesService } from '../../../services/messages.service';
                     </div>    
                 </div>
                 `,
-providers: [MetricsService]
+    providers: [MetricsService]
 })
 
 export class AdminMetricItemListComponent extends BaseComponent implements OnInit {
