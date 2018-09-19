@@ -116,7 +116,7 @@ select		RD.Type,
 			{QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
 			count(1) as [Count]
 from		ResponsibilityDetail RD 
-			inner join AssetType T on T.ID = RD.AssetTypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @id
+			inner join AssetType T on T.ID = RD.AssetTypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @id and RD.IsVisible = 1
 group by    RD.Type, 
             RD.TypeID, 
             { QueryConstants.HighLevelTypeCaseStatement} + T.Name 
