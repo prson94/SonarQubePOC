@@ -1743,11 +1743,20 @@ select
                     dbo.[GetWorkflowResponsibleUsers](IST.ID, 0)
                 else
                     null
-                end as Assignee
+                end as Assignee,
+				case when E.Object = 'IssueType' then
+					cast(1 as bit)
+				else
+					cast(0 as bit)
+				end as IsIssueType,
+				I.[Object],
+				I.ObjectID
             from 
             workflow.ItemStep IST
             inner join workflow.Item I on I.ID = IST.ItemID
             inner join workflow.VersionStep S on S.ID = IST.StepID
+			inner join workflow.[Version] V on V.ID = S.VersionID
+			inner join workflow.EventRegistration E on E.TypeID = V.TypeID
             left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
             left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
             where IST.ItemID = @itemId

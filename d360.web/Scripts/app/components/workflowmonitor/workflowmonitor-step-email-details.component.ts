@@ -2,8 +2,8 @@
 import { BaseComponent } from '../shared/base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { WorkflowHelpers } from '../../static/workflow-helpers';
 import { WorkflowStepDetail } from '../../models/workflow.model';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-email-details',
@@ -15,15 +15,7 @@ import * as _ from 'lodash';
                     Email Recipient Type:
                 </span>
                 <span>
-                    {{step.Settings.MessageRecipientType}}
-                </span>
-            </div>
-            <div>
-                <span class="FieldName">
-                    Include Previous Form Responses: 
-                </span>
-                <span>
-                    {{step.Settings.IncludePreviousFormResponses == 'true' ? 'Yes' : 'No'}}
+                    {{helper.recipientTypeName(emailSettings.MessageRecipientType)}}
                 </span>
             </div>
         </div>
@@ -44,10 +36,22 @@ import * as _ from 'lodash';
     </div>
     <div class="row">
         <div class="col s12">
+            <div>
+                <span class="FieldName">
+                    Include Previous Form Responses: 
+                </span>
+                <span>
+                    {{emailSettings.IncludePreviousFormResponses == 'true' ? 'Yes' : 'No'}}
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
             <div class="FieldName">
                 Email Subject:
             </div>
-            <div [innerHtml]="step.Settings.MessageSubjectTemplate">
+            <div [innerHtml]="emailSettings.MessageSubjectTemplate">
             </div>
         </div>
     </div>
@@ -56,7 +60,7 @@ import * as _ from 'lodash';
             <div class="FieldName">
                 Email Body:
             </div>
-            <div class="panel-section" [innerHtml]="step.Settings.MessageBodyTemplate">
+            <div class="panel-section" [innerHtml]="emailSettings.MessageBodyTemplate">
             </div>
         </div>
     </div>
@@ -67,8 +71,11 @@ import * as _ from 'lodash';
 
 export class WorkflowMonitorStepEmailDetailsComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() step: WorkflowStepDetail = null;
+    @Input() isAggregate: boolean = false;
     displayEmails: any[] = [];
     showAll = false;
+    emailSettings: any;
+    helper = WorkflowHelpers;
     
 
     constructor(private ref: ChangeDetectorRef) {
@@ -84,16 +91,24 @@ export class WorkflowMonitorStepEmailDetailsComponent extends BaseComponent impl
     }
 
     load() {
-        if (this.step != null && this.step.ItemSettings.emails.email != null) {
-            let sorted = this.step.ItemSettings.emails.email.slice();
+        if (this.step != null) {
+            if (!this.isAggregate && this.step.ItemSettings.emails.email != null) {
+                let sorted = this.step.ItemSettings.emails.email.slice();
 
-            sorted.sort((a, b) => {
-                if (a['@address'] < b['@address']) return -1
-                if (a['@address'] > b['@address']) return 1
-                return 0;
-            });
+                sorted.sort((a, b) => {
+                    if (a['@address'] < b['@address']) return -1
+                    if (a['@address'] > b['@address']) return 1
+                    return 0;
+                });
 
-            this.displayEmails = sorted;
+                this.displayEmails = sorted;
+            }
+
+            if (this.isAggregate)
+                this.emailSettings = this.step.EventSettings;
+            else
+                this.emailSettings = this.step.Settings;
+
         }
         this.ref.markForCheck();
     }

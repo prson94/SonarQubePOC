@@ -16,13 +16,17 @@ import { WorkflowMonitorListComponent } from './worflowmonitor-list.component';
 import { WorkflowMonitorListFilterComponent } from './workflowmonitor-list-filter.component';
 import { WorkflowMonitorListColumnFilterComponent } from './workflowmonitor-list-column-filter.components';
 import { WorkflowMonitorStepListComponent } from './workflowmonitor-step-list.component';
+import { WorkflowMonitorStepGridComponent } from './workflowmonitor-step-grid.component';
 import { WorkflowMonitorStepDetailsComponent } from './workflowmonitor-step-details.component';
 import { WorkflowMonitorStepFormDetailsComponent } from './workflowmonitor-step-form-details.component';
 import { WorkflowMonitorStepEmailDetailsComponent } from './workflowmonitor-step-email-details.component';
+import { WorkflowMonitorActionDetailsComponent } from './workflowmonitor-action-details.component';
+
 
 
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 import { D3SSharedModule } from '../shared/shared.module';
+import { SimpleAccordionModule } from '../shared/simple-accordion.part';
 
 import {
     GrowlModule,
@@ -68,17 +72,20 @@ import {
         SharedGridPagingInfoModule,        
         SharedObjectDetailsModule,
         D3SSharedModule,
+        SimpleAccordionModule,
     ],
     declarations: [
         WorkflowMonitorComponent,   
         WorkflowMonitorListComponent,
         WorkflowMonitorListFilterComponent,
         WorkflowMonitorListColumnFilterComponent,
-        WorkflowMonitorComponent,    
+        WorkflowMonitorComponent,   
+        WorkflowMonitorStepGridComponent,
         WorkflowMonitorStepListComponent,
         WorkflowMonitorStepDetailsComponent,
         WorkflowMonitorStepFormDetailsComponent,
         WorkflowMonitorStepEmailDetailsComponent,
+        WorkflowMonitorActionDetailsComponent,
     ],
     exports: [
         WorkflowMonitorComponent,        

@@ -497,6 +497,9 @@ export class WorkflowItemStep {
     StartedBy: string;
     CompletedOn: string;
     CompletedBy: string;
+    IsIssueType: boolean;
+    Object: string;
+    ObjectID: number;
 }
 
 export class BulkWorkflowFormModel {

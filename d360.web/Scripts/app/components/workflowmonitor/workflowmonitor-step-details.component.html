@@ -160,6 +160,17 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <span class="FieldName">
+                                    Send Aggregate Email: 
+                                </span>
+                                <span>
+                                    {{(step?.EventSettings?.SendAggregateEmail == 'true' ? 'Yes' : 'No')}}
+                                </span>
+                            </div>
+                        </div>
+                        <d3s-workflow-monitor-step-email-details *ngIf="step?.EventSettings?.SendAggregateEmail == 'true'" [step]="step" [isAggregate]="true"></d3s-workflow-monitor-step-email-details>
                     </ng-container>
                 </ng-container>
             </ng-container>
