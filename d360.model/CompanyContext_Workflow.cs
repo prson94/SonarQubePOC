@@ -1300,8 +1300,7 @@ namespace d360.model
 
                 users.Add(res);
 
-                Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{res.Email}].");
-                emailedUsers.Add(res.Email);
+                Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{res.Email}].");                
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
             {
@@ -1320,8 +1319,6 @@ namespace d360.model
 
                 foreach (var email in settings.SpecificUser.Split(';'))
                 {
-                    emailedUsers.Add(email);
-
                     var res = GlobalReportingResources.Where(x => string.Compare(x.Email, email, true) == 0).FirstOrDefault();
 
                     if (res == null)
@@ -2054,7 +2051,7 @@ namespace d360.model
 
         private async Task<string> GetWorkflowAssignedResponsibility(int typeId, int stepId, long itemId)
         {
-            return await Database.Connection.QuerySingleAsync<string>("[utility].[GetAssignedResponsibilityNameForWorkflow] @id, @stepId, @itemId", new { id = typeId, @stepId = stepId, @itemId = itemId });
+            return await Database.Connection.QueryFirstOrDefaultAsync<string>("[utility].[GetAssignedResponsibilityNameForWorkflow] @id, @stepId, @itemId", new { id = typeId, @stepId = stepId, @itemId = itemId });
         }
 
         #endregion
