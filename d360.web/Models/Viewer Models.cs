@@ -716,9 +716,20 @@ namespace d360.web.Models
         [DataMember]
         public string FieldDescription { get; set; }
         
-
         [DataMember]
         public string LookupGridUrl { get; set; }
+
+        [DataMember]
+        public string LookupObjectType { get; set; }
+
+        [DataMember]
+        public int LookupObjectID { get; set; }
+
+        [DataMember]
+        public int LookupFieldTypeID { get; set; }
+
+        [DataMember]
+        public int LookupType { get; set; }
 
         [DataMember]
         public bool HideHeader { get; set; }

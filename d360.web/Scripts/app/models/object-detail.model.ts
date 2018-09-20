@@ -49,6 +49,10 @@ export class DetailField {
     HideHeader: boolean;
     HideFilter: boolean;
     LookupGridUrl: string;
+    LookupObjectID: number;
+    LookupObjectType: string;
+    LookupFieldTypeID: number;
+    LookupType: number;
     MultipleValues: any;
     Name: string;
     Row: any;

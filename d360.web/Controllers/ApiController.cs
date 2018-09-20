@@ -1863,7 +1863,11 @@ order by 'Name'";
                                 HideHeader = def.HideHeader,
                                 HideFooter = def.HideFooter,
                                 HideFilter = true,
-                                LookupGridUrl = $"/api/FilteredLookupField/{type}/{id}/{def.ID}/values"
+                                LookupGridUrl = $"/api/FilteredLookupField/{type}/{id}/{def.ID}/values",
+                                LookupFieldTypeID = def.ID,
+                                LookupObjectID = id,
+                                LookupObjectType = type,
+                                LookupType = (int)DataType.FilteredLookup
                             }
                         },
                         Category = ft.Category
@@ -2099,7 +2103,11 @@ from    [Lookup] I
                                     HideHeader = def.HideHeader,
                                     HideFooter = def.HideFooter,
                                     HideFilter = true,
-                                    LookupGridUrl = $"/api/FusionLookupField/{fusionAttributeID}/{def.ID}/values"
+                                    LookupGridUrl = $"/api/FusionLookupField/{fusionAttributeID}/{def.ID}/values",
+                                    LookupFieldTypeID = def.ID,
+                                    LookupObjectType = "FusionAttribute",
+                                    LookupObjectID = fusionAttributeID,
+                                    LookupType = (int)DataType.FusionLookup
                                 }
                             },
                             Category = k.Category
@@ -2619,6 +2627,121 @@ order by    rnk, [Name]";
 
         #region Complex Lookup Fields
 
+        [HttpGet, Route("dynamiclookup/export/{type}/{id:int}/{fieldTypeID:int}/{lookupType:int}/excel.xls")]
+        public async Task<HttpResponseMessage> ExportDynamicLookup(string type, int id, int fieldTypeID, int lookupType)
+        {
+            string resultString = "";
+
+            var ft = Company.GetById<FieldType>(fieldTypeID);
+
+            switch((DataType)lookupType)
+            {
+                case DataType.RefListRelationship:
+                    resultString = await GetReferenceListItemsField(id).Content.ReadAsStringAsync();
+                    break;
+                case DataType.ComplexRelationLookup:
+                    resultString = await GetComplexLookupGridField(type, id, fieldTypeID).Content.ReadAsStringAsync();
+                    break;
+                case DataType.OwnershipLookup:
+                    resultString = await GetOwnershipLookupGridField(type, id, fieldTypeID).Content.ReadAsStringAsync();
+                    break;
+                case DataType.FilteredLookup:
+                    resultString = await GetFilteredLookupGridField(type, id, fieldTypeID).Content.ReadAsStringAsync();
+                    break;
+                case DataType.FusionLookup:
+                    resultString = await GetFusionLookupGridField(id, fieldTypeID).Content.ReadAsStringAsync();
+                    break;
+                default:
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, new Exception("invalid lookup type"));
+
+            }
+
+            dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            int colIndex = 1;
+            for(int i = 0; i < result.Columns.Count; i++)
+            {
+                var colField = result.Columns[i].datafield.Value;
+                var dataType = "string";
+
+                for (int k = 0; k < result.Fields.Count; k++)
+                {
+                    var field = result.Fields[k];
+                    if (field["name"].Value == colField)
+                    {
+                        dataType = field["type"].Value;
+                        break;
+                    }
+
+                }
+
+                document.SetCellValue(1, colIndex, result.Columns[i].text.Value);
+
+                int rowIndex = 2;
+
+                for (int j = 0; j < result.Values.Count; j++)
+                {
+                    var value = result.Values[j][colField].Value;
+                    switch (dataType.ToUpper())
+                    {
+                        case "DECIMAL":
+                            double dVal = 0;
+                            if (double.TryParse(value, out dVal))
+                                document.SetCellValue(rowIndex, colIndex, dVal);
+                            else
+                                document.SetCellValue(rowIndex, colIndex, value);
+                            break;
+                        case "NUMBER":
+                            int intVal = 0;
+                            if (int.TryParse(value, out intVal))
+                                document.SetCellValue(rowIndex, colIndex, intVal);
+                            else
+                                document.SetCellValue(rowIndex, colIndex, value);
+                            break;
+                        case "DATE":
+                            if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
+                            {
+                                document.SetCellValue(rowIndex, colIndex, dateVal);
+
+                                SLStyle style = document.CreateStyle();
+                                style.FormatCode = "m/d/yyyy";
+                                document.SetCellStyle(rowIndex, colIndex, style);
+                            }
+                            break;
+                        default:
+                            var doc = new HtmlAgilityPack.HtmlDocument();
+                            doc.LoadHtml(value + "");
+                            var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                            if (txt.StartsWith("="))
+                                txt = "'" + txt;
+                            document.SetCellValue(rowIndex, colIndex, txt);
+                            break;
+                    }
+                    rowIndex++;
+                }
+                colIndex++;
+            }
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage response = null;
+            // serve the file to the client      
+            response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StreamContent(stream);
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            response.Content.Headers.ContentLength = stream.Length;
+            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Items {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return response;
+        }
+
         private List<DetailReadOnlyRowModel> RenderComplexLookupField(string type, int id, int fieldTypeID)
         {
             var list = new List<DetailReadOnlyRowModel>();
@@ -2642,7 +2765,11 @@ order by    rnk, [Name]";
                                         HideHeader = lookup.HideHeader,
                                         HideFooter = lookup.HideFooter,
                                         HideFilter = lookup.HideFilter,
-                                        LookupGridUrl = $"/api/ComplexLookupField/{type}/{id}/{ft.ID}/values"
+                                        LookupGridUrl = $"/api/ComplexLookupField/{type}/{id}/{ft.ID}/values",
+                                        LookupObjectID = id,
+                                        LookupObjectType = type,
+                                        LookupFieldTypeID = ft.ID,
+                                        LookupType = (int)DataType.ComplexRelationLookup
                                     }
                                 },
                         Category = ft.Category
@@ -3671,7 +3798,11 @@ end",
                                         HideHeader = false,
                                         HideFooter = false,
                                         HideFilter = false,
-                                        LookupGridUrl = $"/api/ReferenceListItemsField/{referenceItemTypeID}/values"
+                                        LookupGridUrl = $"/api/ReferenceListItemsField/{referenceItemTypeID}/values",
+                                        LookupObjectType = "ReferenceListItem",
+                                        LookupObjectID = referenceItemTypeID,
+                                        LookupFieldTypeID = 0,
+                                        LookupType = (int)DataType.RefListRelationship
                                     }
                                 },
                                 Category = ft.Category
@@ -3719,7 +3850,7 @@ end",
                     }
 
                     columns.Add(gc);
-                    gridFields.Add(new GridField { name = "{f.Name}", type = getGridFieldTypeForColumn(f) });
+                    gridFields.Add(new GridField { name = $"{f.Name}", type = getGridFieldTypeForColumn(f) });
                 }
                 foreach (var f in fieldTypes.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
                 {
@@ -3785,7 +3916,11 @@ where   R.ReferenceItemTypeID = {id}
                                         HideHeader = lookup.HideHeader,
                                         HideFooter = lookup.HideFooter,
                                         HideFilter = lookup.HideFilter,
-                                        LookupGridUrl = $"/api/OwnershipLookupField/{type}/{id}/{ft.ID}/values"
+                                        LookupGridUrl = $"/api/OwnershipLookupField/{type}/{id}/{ft.ID}/values",
+                                        LookupObjectType = type,
+                                        LookupObjectID = id,
+                                        LookupFieldTypeID = ft.ID,
+                                        LookupType = (int)DataType.OwnershipLookup
                                     }
                                 },
                         Category = ft.Category

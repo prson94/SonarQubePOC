@@ -133,6 +133,10 @@ export class ObjectDetailService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getLookupGridExport(type: string, id: number, fieldTypeID: number, lookupType: number) {
+        window.location.assign(`api/dynamiclookup/export/${type}/${id}/${fieldTypeID}/${lookupType}/excel.xls`);
+    }
+
     deleteSynonym(synonym: Synonym): Promise<JsonResult> {
         if (synonym.IntersectID)
             return this.deleteDynamicWithResult(this.http, 'synonym', synonym.IntersectID);

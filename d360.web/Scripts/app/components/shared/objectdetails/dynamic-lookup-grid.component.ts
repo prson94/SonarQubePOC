@@ -5,13 +5,15 @@ import { LookupGrid, GridColumn, GridField, GridFilterColumn } from '../../../mo
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
+import { DetailField } from '../../../models/object-detail.model';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 
 
 @Component({
     selector: 'd3s-dynamic-lookup-grid',    
     template: `     <div>                
                         <header>
-                            &nbsp;<d3s-tile-actions [hasFilterMode]="!hideFilter && !hideHeader" [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="dt2.exportCSV()"></d3s-tile-actions>
+                            &nbsp;<d3s-tile-actions [hasFilterMode]="!hideFilter && !hideHeader" [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export(null)"></d3s-tile-actions>
                         </header>   
                     </div>      
                     <input #gb type="text" [hidden]="!showSimpleFilter || hideFilter || hideHeader" pInputText size="100" placeholder="Search..." class="grid-simple-filter" />
@@ -44,11 +46,13 @@ import { BaseComponent } from '../base.component';
                         </p-column>                                                                                         
                     </p-dataTable>                                    
                 
-                `
+                `,
+    providers: [ObjectDetailService]
 })
 
 export class DynamicLookupGridComponent extends BaseComponent implements OnInit {
     @Input() data: LookupGrid;
+    @Input() field: DetailField;
     @Input() hideFooter = false;
     @Input() hideHeader = false;
     @Input() hideFilter = true;
@@ -58,7 +62,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
 
     visibleColumns;
 
-    constructor(private router: Router) {
+    constructor(private router: Router, private objectDetailService: ObjectDetailService) {
         super();
     }
     
@@ -119,8 +123,9 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url)); 
     }
 
-    export(grid) {
-        console.log(grid);
+    export() {
+        //console.log('export', this.field);
+        this.objectDetailService.getLookupGridExport(this.field.LookupObjectType, this.field.LookupObjectID, this.field.LookupFieldTypeID, this.field.LookupType);
     }
 
     customSort(e: any, col: any) {        
