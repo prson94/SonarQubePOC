@@ -1542,7 +1542,7 @@ namespace d360.model
             SaveItemStepEmailedUsers(item, emailedUsers);
         }
 
-        private string GenerateFormResponsesEmailContent(long itemId)
+        public string GenerateFormResponsesEmailContent(long itemId)
         {
             var formResponses = WorkflowItemSteps.Where(x => x.ItemID == itemId && x.Step.ActivityType == WorkflowActivityType.Form).Include(x => x.Step);
 

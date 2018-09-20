@@ -2356,6 +2356,9 @@ order by wi.StartedOn desc";
 
                         if (detail.Settings.MessageBodyTemplate != null)
                             detail.Settings.MessageBodyTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+
+                        if (detail.Settings.IncludePreviousFormResponses != null && detail.Settings.IncludePreviousFormResponses == "true")
+                            detail.Settings.MessageBodyTemplate += Company.GenerateFormResponsesEmailContent(itemStep.ItemID);
                     }
 
                     if (detail?.Fields?.form != null)
