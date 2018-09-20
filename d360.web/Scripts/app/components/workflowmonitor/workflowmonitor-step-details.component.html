@@ -160,7 +160,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div *ngIf="step.ChangeType == WorkflowChangeType.Schedule"  class="row">
                             <div class="col s12">
                                 <span class="FieldName">
                                     Send Aggregate Email: 

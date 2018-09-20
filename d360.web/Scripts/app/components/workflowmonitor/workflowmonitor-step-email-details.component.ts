@@ -34,7 +34,7 @@ import { WorkflowStepDetail } from '../../models/workflow.model';
             </div>
         </div> 
     </div>
-    <div class="row">
+    <div *ngIf="!isAggregate" class="row">
         <div class="col s12">
             <div>
                 <span class="FieldName">
