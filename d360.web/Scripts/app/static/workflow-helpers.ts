@@ -32,16 +32,16 @@ export class WorkflowHelpers {
             case 'SpecificUser':
                 return 'Specific User';
             default:
-                return EmailTaskRecipientType[recipientType];
+                return recipientType;
         }
     }
 
-    static formResponseType(responseType: FormResponseType): string {
+    static formResponseTypeName(responseType: string): string {
         switch (responseType) {
-            case FormResponseType.FirstResponse:
+            case 'FirstResponse':
                 return 'First Response';
             default:
-                return FormResponseType[responseType];
+                return responseType;
         }
     }
 }

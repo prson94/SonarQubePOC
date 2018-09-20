@@ -70,6 +70,16 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <span class="FieldName">
+                                Form Response Type:
+                            </span>
+                            <span>
+                                {{helper.formResponseTypeName(step.Settings.FormResponseType)}}
+                            </span>
+                        </div>
+                    </div>
                     <d3s-workflow-monitor-step-form-details [step]="step"></d3s-workflow-monitor-step-form-details>
                 </ng-container>
             </ng-container>

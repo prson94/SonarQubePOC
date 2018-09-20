@@ -2277,37 +2277,39 @@ order by wi.StartedOn desc";
             detail.ItemSettings.hasForms = false;
             detail.ItemSettings.hasConditions = false;
 
-            string issueObject = null;
-            int issueObjectId = 0;
-            if (detail.Condition != null && detail.Condition.Condition != null)
+            try
             {
-                detail.Condition = detail.Condition.Condition;
-                if (detail.Condition.GetType().Name != "JArray")
-                    detail.Condition = new JArray(detail.Condition);
-                for (int i = 0; i < detail.Condition.Count; i++)
+                string issueObject = null;
+                int issueObjectId = 0;
+                if (detail.Condition != null && detail.Condition.Condition != null)
                 {
-                    var condition = detail.Condition[i];
-                    if (condition["@ContextualFieldID"] != null)
+                    detail.Condition = detail.Condition.Condition;
+                    if (detail.Condition.GetType().Name != "JArray")
+                        detail.Condition = new JArray(detail.Condition);
+                    for (int i = 0; i < detail.Condition.Count; i++)
                     {
-                        var fieldId = condition["@ContextualFieldID"].Value;
-                        switch (fieldId)
+                        var condition = detail.Condition[i];
+                        if (condition["@ContextualFieldID"] != null)
                         {
-                            case "IssueObject":
-                                issueObject = condition["@Value"].Value;
-                                break;
-                            case "IssueObjectID":
-                                int.TryParse(condition["@Value"].Value, out issueObjectId);
-                                break;
+                            var fieldId = condition["@ContextualFieldID"].Value;
+                            switch (fieldId)
+                            {
+                                case "IssueObject":
+                                    issueObject = condition["@Value"].Value;
+                                    break;
+                                case "IssueObjectID":
+                                    int.TryParse(condition["@Value"].Value, out issueObjectId);
+                                    break;
+                            }
                         }
+                        else
+                            detail.ItemSettings.hasConditions = true;
                     }
-                    else
-                        detail.ItemSettings.hasConditions = true;
                 }
-            }
 
-            if (detail.IsIssueType)
-            {
-                var issueSql = @"select 
+                if (detail.IsIssueType)
+                {
+                    var issueSql = @"select 
 				        I.ID,
 				        S.ID as IssueID,
 				        T.ID as IssueTypeID,
@@ -2327,191 +2329,41 @@ order by wi.StartedOn desc";
 			        cross apply dbo.GetAssetDisplayValueById(A.ID) D
 			         where i.ID = @itemId";
 
-                var issueDetails = Company.Query<WorkflowStepIssueDetail>(issueSql, new { itemId = detail.ItemID }).FirstOrDefault();
-                if (issueDetails != null)
-                {
-                    detail.IssueDetails = issueDetails;
-                }
-
-            }
-
-            //deal with xml to json nonsense and load detail values
-            if (detail.ActivityType == WorkflowActivityType.EmailNotification || detail.ActivityType == WorkflowActivityType.Form)
-            {
-                var eventInfo = new EventObjectInfo()
-                {
-                    Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Object),
-                    ObjectID = detail.ObjectID,
-                    ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), detail.ObjectType),
-                    ObjectTypeID = detail.ObjectTypeID,
-                };
-
-
-                if (detail.Settings != null)
-                {
-                    if (detail.Settings.MessageSubjectTemplate != null)
-                        detail.Settings.MessageSubjectTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
-
-                    if (detail.Settings.MessageBodyTemplate != null)
-                        detail.Settings.MessageBodyTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
-                }
-
-                if (detail?.Fields?.form != null)
-                {
-                    if (detail.Fields.form["@description"] != null)
-                        detail.Fields.form["@description"] = await Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
-                }
-
-                if (detail.ItemSettings.emails != null)
-                {
-                    var emails = detail.ItemSettings.emails;
-
-                    if (emails.email != null)
+                    var issueDetails = Company.Query<WorkflowStepIssueDetail>(issueSql, new { itemId = detail.ItemID }).FirstOrDefault();
+                    if (issueDetails != null)
                     {
-                        detail.ItemSettings.hasEmails = true;
-                        if (emails.email.GetType().Name != "JArray")
-                        {
-                            emails.email = new JArray(emails.email);
-                        }
-                    }
-                    else
-                    {
-                        detail.ItemSettings.emails.email = new JArray();
-                    }
-
-                    detail.ItemSettings.hasEmails = (emails.email.Count > 0);
-
-                    var resourceEmails = new List<string>();
-
-                    for (int i = 0; i < emails.email.Count; i++)
-                    {
-                        var e = emails.email[i];
-                        string address = e["@address"].Value;
-
-                        if (!resourceEmails.Any(r => r == address.ToLower()))
-                            resourceEmails.Add(address.ToLower());
-                    }
-
-                    //get all relevant resource info
-                    var emailResources = Company.GlobalReportingResources.Where(g => resourceEmails.Contains(g.Email.ToLower())).ToList();
-
-                    for (int i = 0; i < emails.email.Count; i++)
-                    {
-                        var e = emails.email[i];
-                        string address = e["@address"].Value;
-
-                        var res = emailResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
-                        if (res != null)
-                        {
-                            e.name = res.FullName;
-                            e.id = res.ResourceID;
-                        }
-                        else
-                        {
-                            e.name = (string)null;
-                            e.id = 0;
-                        }
+                        detail.IssueDetails = issueDetails;
                     }
 
                 }
-                else
+
+                //deal with xml to json nonsense and load detail values
+                if (detail.ActivityType == WorkflowActivityType.EmailNotification || detail.ActivityType == WorkflowActivityType.Form)
                 {
-                    detail.ItemSettings.emails = new JObject();
-                    detail.ItemSettings.emails.email = new JArray();
-                }
-
-                if (detail.ItemFields == null)
-                {
-                    detail.ItemFields = new JObject();
-                    detail.ItemFields.form = new JArray();
-                }
-
-                if (detail.ItemFields.form != null)
-                {
-                    if (detail.ItemFields.form.GetType().Name != "JArray")
+                    var eventInfo = new EventObjectInfo()
                     {
-                        detail.ItemFields.form = detail.ItemFields.form = new JArray(detail.ItemFields.form);
-                    }
-                }
-                else
-                {
-                    detail.ItemFields.form = new JArray();
-                }
+                        Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Object),
+                        ObjectID = detail.ObjectID,
+                        ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), detail.ObjectType),
+                        ObjectTypeID = detail.ObjectTypeID,
+                    };
 
-                detail.ItemSettings.hasForms = (detail.ItemFields.form.Count > 0);
-                detail.ItemSettings.hasPendingForms = false;
 
-                if (int.TryParse(detail.ItemFields["@TotalResources"]?.Value, out int total))
-                {
-                    int numResponses = 0;
-                    if (!int.TryParse(detail.ItemFields["@NumberOfResponses"]?.Value, out numResponses))
-                        detail.ItemFields["@NumberOfResponses"] = 0;
+                    if (detail.Settings != null)
+                    {
+                        if (detail.Settings.MessageSubjectTemplate != null)
+                            detail.Settings.MessageSubjectTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
 
-                    if (detail.ItemSettings.hasForms == false)
-                    {
-                        detail.ItemSettings.hasPendingForms = true;
-                    }
-                    else if (detail.Settings.FormResponseType == FormResponseType.FirstResponse)
-                    {
-                        detail.ItemSettings.hasPendingForms = detail.ItemSettings.hasForms == true ? false: true;
-                    }
-                    else if (detail.Settings.FormResponseType == FormResponseType.Majority && total > 0)
-                    {
-                        detail.ItemSettings.hasPendingForms = ((numResponses / total) <= 0.5);
-                    }
-                    else if (detail.Settings.FormResponseType == FormResponseType.All)
-                    {
-                        detail.ItemSettings.hasPendingForms = (numResponses != total);
-                    }
-                }
-
-                var resourceIds = new List<int>();
-
-                for(int i = 0; i < detail.ItemFields.form.Count; i++)
-                {
-                    var form = detail.ItemFields.form[i];
-
-                    if (form.field != null)
-                    {
-                        if (form.field.GetType().Name != "JArray")
-                        {
-                            form.field = new JArray(form.field);
-                        }
-                    }
-                    else
-                    {
-                        form.field = new JArray();
+                        if (detail.Settings.MessageBodyTemplate != null)
+                            detail.Settings.MessageBodyTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
                     }
 
-                    if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                    if (detail?.Fields?.form != null)
                     {
-                        if (!resourceIds.Any(r => r == resId))
-                            resourceIds.Add(resId);
+                        if (detail.Fields.form["@description"] != null)
+                            detail.Fields.form["@description"] = await Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
                     }
-                }
 
-                //get all relevant resource info
-                var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();
-
-                for (int i = 0; i < detail.ItemFields.form.Count; i++)
-                {
-                    var form = detail.ItemFields.form[i];
-
-                    if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
-                    {
-                        var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
-                        if (res != null)
-                            form.resourceName = res.FullName;
-                    }
-                }
-
-            }
-
-            switch(detail.ActivityType)
-            {
-                case WorkflowActivityType.EmailNotification:
-                case WorkflowActivityType.Form:
-                    detail.ItemSettings.hasEmails = false;
                     if (detail.ItemSettings.emails != null)
                     {
                         var emails = detail.ItemSettings.emails;
@@ -2531,11 +2383,26 @@ order by wi.StartedOn desc";
 
                         detail.ItemSettings.hasEmails = (emails.email.Count > 0);
 
+                        var resourceEmails = new List<string>();
+
                         for (int i = 0; i < emails.email.Count; i++)
                         {
                             var e = emails.email[i];
                             string address = e["@address"].Value;
-                            var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
+
+                            if (!resourceEmails.Any(r => r == address.ToLower()))
+                                resourceEmails.Add(address.ToLower());
+                        }
+
+                        //get all relevant resource info
+                        var emailResources = Company.GlobalReportingResources.Where(g => resourceEmails.Contains(g.Email.ToLower())).ToList();
+
+                        for (int i = 0; i < emails.email.Count; i++)
+                        {
+                            var e = emails.email[i];
+                            string address = e["@address"].Value;
+
+                            var res = emailResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
                             if (res != null)
                             {
                                 e.name = res.FullName;
@@ -2547,13 +2414,155 @@ order by wi.StartedOn desc";
                                 e.id = 0;
                             }
                         }
+
                     }
                     else
                     {
-                        detail.ItemSettings.emails = new { email = new JArray() };
+                        detail.ItemSettings.emails = new JObject();
+                        detail.ItemSettings.emails.email = new JArray();
                     }
-                    break;
+
+                    if (detail.ItemFields == null)
+                    {
+                        detail.ItemFields = new JObject();
+                        detail.ItemFields.form = new JArray();
+                    }
+
+                    if (detail.ItemFields.form != null)
+                    {
+                        if (detail.ItemFields.form.GetType().Name != "JArray")
+                        {
+                            detail.ItemFields.form = detail.ItemFields.form = new JArray(detail.ItemFields.form);
+                        }
+                    }
+                    else
+                    {
+                        detail.ItemFields.form = new JArray();
+                    }
+
+                    detail.ItemSettings.hasForms = (detail.ItemFields.form.Count > 0);
+                    detail.ItemSettings.hasPendingForms = false;
+
+                    if (int.TryParse(detail.ItemFields["@TotalResources"]?.Value, out int total))
+                    {
+                        int numResponses = 0;
+                        if (!int.TryParse(detail.ItemFields["@NumberOfResponses"]?.Value, out numResponses))
+                            detail.ItemFields["@NumberOfResponses"] = 0;
+
+                        if (detail.ItemSettings.hasForms == false)
+                        {
+                            detail.ItemSettings.hasPendingForms = true;
+                        }
+                        else if (detail.Settings.FormResponseType == FormResponseType.FirstResponse)
+                        {
+                            detail.ItemSettings.hasPendingForms = detail.ItemSettings.hasForms == true ? false : true;
+                        }
+                        else if (detail.Settings.FormResponseType == FormResponseType.Majority && total > 0)
+                        {
+                            detail.ItemSettings.hasPendingForms = ((numResponses / total) <= 0.5);
+                        }
+                        else if (detail.Settings.FormResponseType == FormResponseType.All)
+                        {
+                            detail.ItemSettings.hasPendingForms = (numResponses != total);
+                        }
+                    }
+
+                    var resourceIds = new List<int>();
+
+                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
+                    {
+                        var form = detail.ItemFields.form[i];
+
+                        if (form.field != null)
+                        {
+                            if (form.field.GetType().Name != "JArray")
+                            {
+                                form.field = new JArray(form.field);
+                            }
+                        }
+                        else
+                        {
+                            form.field = new JArray();
+                        }
+
+                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                        {
+                            if (!resourceIds.Any(r => r == resId))
+                                resourceIds.Add(resId);
+                        }
+                    }
+
+                    //get all relevant resource info
+                    var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();
+
+                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
+                    {
+                        var form = detail.ItemFields.form[i];
+
+                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                        {
+                            var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
+                            if (res != null)
+                                form.resourceName = res.FullName;
+                        }
+                    }
+
+                }
+
+                switch (detail.ActivityType)
+                {
+                    case WorkflowActivityType.EmailNotification:
+                    case WorkflowActivityType.Form:
+                        detail.ItemSettings.hasEmails = false;
+                        if (detail.ItemSettings.emails != null)
+                        {
+                            var emails = detail.ItemSettings.emails;
+
+                            if (emails.email != null)
+                            {
+                                detail.ItemSettings.hasEmails = true;
+                                if (emails.email.GetType().Name != "JArray")
+                                {
+                                    emails.email = new JArray(emails.email);
+                                }
+                            }
+                            else
+                            {
+                                detail.ItemSettings.emails.email = new JArray();
+                            }
+
+                            detail.ItemSettings.hasEmails = (emails.email.Count > 0);
+
+                            for (int i = 0; i < emails.email.Count; i++)
+                            {
+                                var e = emails.email[i];
+                                string address = e["@address"].Value;
+                                var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
+                                if (res != null)
+                                {
+                                    e.name = res.FullName;
+                                    e.id = res.ResourceID;
+                                }
+                                else
+                                {
+                                    e.name = (string)null;
+                                    e.id = 0;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            detail.ItemSettings.emails = new { email = new JArray() };
+                        }
+                        break;
+                }
             }
+            catch(Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
+            }
+
+           
 
             return Request.CreateResponse(HttpStatusCode.OK, detail);
         }
