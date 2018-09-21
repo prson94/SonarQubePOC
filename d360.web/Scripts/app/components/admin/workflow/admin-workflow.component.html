@@ -6,14 +6,14 @@
                 <d3s-admin-workflow-list 
                                              (onViewClick)="viewReadOnlyDiagram($event)" 
                                              (onDeleteClick)="currentID = $event; workflow = null; mode = PageMode.Delete;" 
-                                             (onEditClick)="currentID = $event; workflow = null; mode = PageMode.Editor"
+                                             (onEditClick)="currentID = $event.ID;cloneWorkflow=$event.isClone; workflow = null; mode = PageMode.Editor"
                                              (onAddClick)="add()"></d3s-admin-workflow-list>
             </div>
             <div *ngSwitchCase="PageMode.ReadOnlyDiagram">
                 <d3s-workflow-diagram [id]="currentID" readonly="true" hasClose="true" (onCloseClick)="closeEditor()"></d3s-workflow-diagram>
             </div>
             <div *ngSwitchCase="PageMode.Editor">
-                <d3s-admin-workflow-editor [id]="currentID" (onClose)="mode = PageMode.Default" (onSave)="save($event);" [model]="workflow"></d3s-admin-workflow-editor>
+                <d3s-admin-workflow-editor [id]="currentID" (onClose)="mode = PageMode.Default" (onSave)="save($event);" [model]="workflow" [isClone]="cloneWorkflow" (onWorkflowNameChange)="cloneWorkflow=$event"></d3s-admin-workflow-editor>
             </div>
             <div *ngSwitchCase="PageMode.DiagramEditor">
                 <d3s-workflow-diagram 

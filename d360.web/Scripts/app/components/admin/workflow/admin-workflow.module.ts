@@ -21,7 +21,7 @@ import { AdminWorkflowEditorComponent } from './admin-workflow-editor.component'
 import { AdminWorkflowDeleteComponent } from './admin-workflow-delete.component';
 
 import { AdminWorkflowRoutingModule } from './admin-workflow.routes';
-
+import { DirectivesModule } from '../../../directives/directives.module';
 
 
 import {
@@ -61,6 +61,7 @@ import {
         TilesModule,
         WorkflowDiagramModule,
         D3SEditorHeaderModule,
+        DirectivesModule,
 
     ],
     declarations: [        

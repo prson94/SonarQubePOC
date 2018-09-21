@@ -271,6 +271,14 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    cloneWorkflowDiagramModel(id: number): Promise<number> {
+        //returns workflowtype newly created id
+        return this.http.get(`services/workflow/diagram/clone/${id}`)
+            .toPromise()
+            .then(response => <number>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getLookupList(id: number): Promise<any[]> {
         return this.http.get(`api/lookup/list/${id}`)
             .toPromise()

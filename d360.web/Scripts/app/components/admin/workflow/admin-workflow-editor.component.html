@@ -12,7 +12,7 @@
                 Name
             </div>
             <div>
-                <input type="text" [ngModel]="model.Type.Name" (ngModelChange)="model.Type.Name = $event; validate();" style="width: 95%" />
+                <input type="text" [ngModel]="model.Type.Name" (ngModelChange)="isClone=false;onWorkflowNameChange.emit(isClone);model.Type.Name = $event; validate();" style="width: 95%" [d3s-text-highlight]="isClone"  />
             </div>
             <div class="FieldName">
                 Change Type
@@ -162,7 +162,7 @@
     <div class="row">
         <div class="col s12"><div class="errorMessage">{{errorMessage}}</div></div>
     </div>
-    <div class="row" style="padding-top: 8px;">
+    <div  *ngIf="!isLoading" class="row" style="padding-top: 8px;">
         <div class="col s12">
             <div>
                 <button type="button" pButton label="Cancel" (click)="onClose.emit()"></button>

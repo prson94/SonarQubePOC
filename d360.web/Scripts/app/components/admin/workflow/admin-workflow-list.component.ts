@@ -31,10 +31,11 @@ import { Router } from '@angular/router';
     </p-column> 
     <p-column field="UpdatedBy" header="Updated By" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
   <p-column field="Published" header="Status" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column> 
-  <p-column [style]="{width:'200px'}">
+  <p-column [style]="{width:'215px'}">
         <ng-template let-item="rowData" pTemplate type="body">
             <div class="RowTools">
-                <a style="cursor:pointer;" (click)="onEditClick.emit(item.ID)"><i class="fa fa-pencil"></i></a>    
+                <a style="cursor:pointer;" (click)="onEditClick.emit({ID:item.ID,isClone:false})"><i class="fa fa-pencil"></i></a> 
+                <a style="cursor:pointer;" (click)="cloneWorkflow(item.ID)"><i class="fa fa-copy"></i></a> 
                 <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.ID)"><i class="fa fa-trash-o"></i></a>    
                 <a style="cursor:pointer;" (click)="onViewClick.emit(item.ID)"><i class="fa fa-eye"></i></a>    
                 <a style="cursor:pointer;" (click)="navigate(item.ID)"><i class="fa fa-television"></i></a>                                      
@@ -65,6 +66,15 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
         this.load();
     }
 
+    cloneWorkflow(id) {
+      
+        this.isLoading = true;
+        this.workflowService.cloneWorkflowDiagramModel(id)
+            .then(id => {
+                this.isLoading = false;
+                this.onEditClick.emit({ ID: id, isClone: true });
+            })
+    }
     load() {
         this.isLoading = true;
 

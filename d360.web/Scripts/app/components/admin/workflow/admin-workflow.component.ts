@@ -20,6 +20,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     private currentID: number = 1;
     private newWorkflowID: number = 0;
     private workflow: WorkflowDiagramModel;
+    private cloneWorkflow:boolean=false;
 
     constructor(rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);

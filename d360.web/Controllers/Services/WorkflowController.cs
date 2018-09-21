@@ -1289,7 +1289,176 @@ order by wi.StartedOn desc";
 
             return Request.CreateResponse(HttpStatusCode.OK, fields);
         }
-        
+
+        [Route("diagram/clone/{id:int}"), HttpGet]
+        public HttpResponseMessage CloneWorkflowDiagramModel(int id)
+        {
+            try
+            {
+
+                // int versionID = 0;
+                var otype = Company.WorkflowTypes.Find(id);
+                if (otype == null || otype.State != core.enums.State.Active)
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
+
+                //Workflow type creation
+
+                var @type = new d360.core.entities.Workflow.Type();
+
+
+                @type.ID = 0;
+                @type.CreatedBy = Company.CurrentResourceID;
+                @type.CreatedOn = DateTime.UtcNow;
+                @type.UpdatedBy = Company.CurrentResourceID;
+                @type.UpdatedOn = DateTime.UtcNow;
+                @type.Name = otype.Name + " (Copy)";
+                @type.Description = otype.Description;
+                @type.State = core.enums.State.Active;
+
+                Company.Add(@type);
+                Company.SaveChanges();
+
+
+                //
+
+                var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == otype.ID).OrderByDescending(v => v.Version).First();
+                var omodel = GetWorkflowDiagram(id, currentVersion?.Version);
+
+                var @version = new WorkflowVersion();
+                @version.ID = 0;
+                @version.TypeID = @type.ID;
+                @version.CreatedBy = Company.CurrentResourceID;
+                @version.CreatedOn = DateTime.UtcNow;
+                @version.UpdatedBy = Company.CurrentResourceID;
+                @version.UpdatedOn = DateTime.UtcNow;
+                @version.Version = 1;
+
+                Company.Add(@version);
+                //versionID = @version.ID;
+
+                Company.SaveChanges();
+
+
+                var @event = new WorkflowEventRegistration();
+
+                @event.ID = 0;
+                @event.Object = omodel.Event.Object;
+                @event.ObjectID = omodel.Event.ObjectID;
+                @event.TypeID = @type.ID;
+                @event.ChangeType = omodel.Event.ChangeType;
+                @event.Condition = omodel?.Event?.Condition ?? "";
+                @event.Settings = omodel?.Event?.Settings ?? "";
+                @event.State = core.enums.State.Active;
+
+                Company.Add(@event);
+                Company.SaveChanges();
+
+
+
+
+                Dictionary<int, int> keyMapping = new Dictionary<int, int>();
+
+                omodel.Nodes.ForEach(n => {
+                    int key = 0;
+                    int.TryParse(n.Key, out key);
+
+                    var step = new WorkflowVersionStep();
+                    step.ID = 0;
+                    step.Name = n.Name;
+                    step.StepType = n.StepType;
+                    step.ActivityType = n.ActivityType;
+                    step.XPosition = n.XPosition;
+                    step.YPosition = n.YPosition;
+                    step.VersionID = @version.ID;
+                    step.Settings = n.Settings;
+                    step.State = core.enums.State.Active;
+
+                    if (string.IsNullOrEmpty(n.Fields))
+                        step.Fields = null;
+                    else
+                        step.Fields = n.Fields;
+
+                    Company.Add(step);
+                    Company.SaveChanges();
+                    keyMapping.Add(key, step.ID);
+                });
+
+
+                //2nd loop to handle mappings
+                omodel.Nodes.ForEach(n =>
+                {
+                    if (n.ActivityType == WorkflowActivityType.FieldChange)
+                    {
+
+                        int key;
+                        if (!int.TryParse(n.Key, out key)) return;
+                        if (keyMapping.ContainsKey(key))
+                            key = keyMapping[key];
+
+                        var node = Company.GetById<WorkflowVersionStep>(key);
+                        node.Settings = MapWorkflowFieldSettings(node.Settings, keyMapping);
+
+                    }
+                    if (n.ActivityType == WorkflowActivityType.RelationshipChange)
+                    {
+                        int key;
+                        if (!int.TryParse(n.Key, out key)) return;
+                        if (keyMapping.ContainsKey(key))
+                            key = keyMapping[key];
+
+                        var node = Company.GetById<WorkflowVersionStep>(key);
+                        node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
+
+                    }
+                });
+                Company.SaveChanges();
+
+                if (omodel?.Links?.Count > 0)
+                {
+                    omodel.Links.ForEach(l =>
+                    {
+                        int from = 0;
+                        int to = 0;
+
+                        int.TryParse(l.FromKey, out from);
+                        int.TryParse(l.ToKey, out to);
+
+                        var link = new WorkflowVersionStepTransition();
+
+                        link.FromVersionStepID = keyMapping[from];
+                        link.ToVersionStepID = keyMapping[to];
+                        link.Name = l.Name;
+                        link.TransitionType = l.TransitionType;
+                        //need to map new form conditions to their appropriate step id's 
+                    
+                        l.Condition = MapWorkflowConditionsFromXml(l.Condition, keyMapping);
+
+                        link.Condition = l.Condition;
+                        link.Settings = l.Settings;
+                        link.FromPortID = l.FromPortID;
+                        link.ToPortID = l.ToPortID;
+                        link.State = core.enums.State.Active;
+
+                        Company.Add(link);
+
+                    });
+                    Company.SaveChanges();
+                }
+
+
+
+                return Request.CreateResponse(HttpStatusCode.OK, @type.ID);
+
+            }
+            catch (Exception e)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, e);
+            }
+
+
+        }
+
+
         [Route("diagram/save"), HttpPost]
         public HttpResponseMessage PostWorkflowDiagramModel(WorkflowDiagramModel model)
         {
@@ -2681,6 +2850,34 @@ order by wi.StartedOn desc";
             }
 
             return null;
+        }
+
+
+        private string MapWorkflowConditionsFromXml(string condtionXml, Dictionary<int, int> mappings)
+        {
+            
+                if (!string.IsNullOrEmpty(condtionXml))
+                {
+                    XElement root = XElement.Parse(condtionXml);
+
+                    IEnumerable<XElement> conditions =
+                                    from el in root.Elements("Condition")
+                                    where el.Attribute("VersionStepID") != null
+                                    select el;
+
+                    foreach (XElement el in conditions)
+                    {
+                        if (mappings.ContainsKey((int)el.Attribute("VersionStepID")))
+                        {
+                            el.Attribute("VersionStepID").SetValue(mappings[(int)el.Attribute("VersionStepID")]);
+                        }
+
+                    }
+                    return root.ToString();
+                }
+                return condtionXml;
+
+               
         }
 
         /// <summary>

@@ -32,7 +32,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
     @ViewChild('ed2') ed: Editor;
-
+    @Input() isClone: boolean = false;
+    @Output() onWorkflowNameChange = new EventEmitter();
     private workflowObjectTypes: WorkflowObjectType[] = [];
     private defaultWorkflowObject = new WorkflowObjectType();
     private changesTypes: ChangeTypeInfo[] = [];
@@ -48,7 +49,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private isValid = false;
     private errorMessage = "";
     private hideShoppingCart = true;
-
+    
     WorkflowChangeType = WorkflowChangeType;
     EmailTaskRecipientType = EmailTaskRecipientType;
 
