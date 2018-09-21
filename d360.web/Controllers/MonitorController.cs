@@ -289,11 +289,7 @@ where   A.RuleImplementationID = @id";
                         typeSql += $@"datediff(day, wi.CompletedOn, '{ff.RawValue}') = 0 and ";
                         break;
                     case "Status":
-                        havingSql = $@"case when count(s.StepID) > 0 and  max(vs.ActivityType) = 3 and  wi.CompletedOn is null  
-                                        then    'Waiting on user action'    
-                                    when wi.CompletedOn is null    
-                                        then 'Incomplete'             
-                                    else        'Complete'    end ='{ff.RawValue}'";
+                        typeSql +=  ff.RawValue == "Pending" ? " wi.CompletedOn is null and " : " wi.CompletedOn is not null and ";
                         break;
                     case "Initiator":
                         typeSql += $@"( gr.firstName Like '{ff.RawValue}%' or gr.lastName Like '{ff.RawValue}%' or gr.firstName + ' ' + gr.lastName LIKE '{ff.RawValue}%' ) and ";
@@ -361,11 +357,8 @@ where   A.RuleImplementationID = @id";
                          '(unknown relationship)')   when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id)  
                          else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)') end as 'Asset',                    
                          gr.firstName + ' ' + gr.lastName as 'Initiator' ,                    
-                         wi.startedOn as 'StartedOn',                    wi.CompletedOn as 'CompletedOn',                    
-                        case when count(s.StepID) > 0 and  max(vs.ActivityType) = 3 and  wi.CompletedOn is null  
-                            then    'Waiting on user action'    
-                        when wi.CompletedOn is null    
-                            then 'Incomplete'             
+                         wi.startedOn as 'StartedOn',                    wi.CompletedOn as 'CompletedOn',
+                        case when   wi.CompletedOn is null then    'Pending'            
                         else        'Complete'    end as [Status]  
                         {fromSql}
                         {assignedSql}

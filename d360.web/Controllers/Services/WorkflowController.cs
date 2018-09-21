@@ -234,7 +234,7 @@ order by wi.StartedOn desc",
             filterColumns.Add(new GridFilterColumn { text = "Completed", datafield = "CompletedOn", filtertype = GridColumn.FILTER_TYPE_DATE, columntype = GridColumn.COLUMN_TYPE_STRING });
             filterColumns.Add(new GridFilterColumn { text = "Assigned To", datafield = "AssignedTo", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
             filterColumns.Add(new GridFilterColumn { text = "Initiator", datafield = "Initiator", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-            filterColumns.Add(new GridFilterColumn { text = "Status", datafield = "Status", filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string> { "Complete", "Incomplete", "Waiting on user action" }, columntype = GridColumn.COLUMN_TYPE_COMBO });
+            filterColumns.Add(new GridFilterColumn { text = "Status", datafield = "Status", filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string> { "Complete", "Pending" }, columntype = GridColumn.COLUMN_TYPE_COMBO });
             
             return Request.CreateResponse(HttpStatusCode.OK, filterColumns.OrderBy(x => x.text).ToList());
 

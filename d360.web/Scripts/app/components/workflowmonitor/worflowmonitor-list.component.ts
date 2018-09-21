@@ -46,7 +46,6 @@ import {  GridFilterExpression } from "../../models/grid-definition.model";
                         <span>{{data.CompletedOn | date: 'shortDate'}}</span>
                         </ng-template>
                         </p-column> 
-                        <p-column field="Status" header="Status" sortable="true" [filter]="!showSimpleFilter"></p-column>  
                       </p-dataTable>                          
                     </div>
                 </div>                                  
