@@ -181,6 +181,22 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.formMode = FormMode.Deleting;
     }
 
+    edit(item: any) {
+        this.usedIn = [];
+        this.usedIn = this.usedFields.filter(u => u.stepId == this.step.key && u.fieldId == item['@id']);
+
+        let i = this.step.fields.form.field.find(f => f['@id'] == item['@id']);
+        this.newField = i;
+        this.newField['@oldId'] = this.newField['@id'];
+        this.newField['@oldType'] = this.newField['@type'];
+
+        //trigger load of type list
+        this.changeType(this.newField['@type']);
+
+        this.formMode = FormMode.Editing;
+        //console.log(this.newField, this.usedIn, item, this.step.fields.form.field);
+    }
+
     confirmDelete() {
         let i = this.step.fields.form.field.findIndex(f => f['@id'] == this.deletingField['@id']);
 
@@ -215,19 +231,49 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     save() {
         let count = this.step.fields.form.field.filter(f => f['@type'] == this.newField['@type']).length + 1;
-
-        this.newField['@id'] = this.newField['@type'].toString().toLowerCase() + count.toString();
-
+        let typeChanged = (this.newField['@oldType'] != this.newField['@type']);
+        let existing = null;
         let f = {};
+
+        if (this.newField['@oldId'] != null) {
+            if (typeChanged) {
+                let i = this.step.fields.form.field.findIndex(f => f['@id'] == this.newField['@oldId']);
+
+                if (i >= 0) {
+                    existing = _.cloneDeep(this.step.fields.form.field[i]);
+                    this.step.fields.form.field.splice(i, 1);
+                }
+
+                this.newField['@id'] = this.newField['@type'].toString().toLowerCase() + count.toString();
+            } else {
+                existing = this.step.fields.form.field.find(e => e['@id'] == this.newField['@id']);
+            }
+
+            delete this.newField['@oldType'];
+            delete this.newField['@oldId'];
+        }
+        else
+            this.newField['@id'] = this.newField['@type'].toString().toLowerCase() + count.toString();
+
+        if (existing != null) {
+            this.workflowFieldsService.deleteFormField({'@stepId':this.step.key,'@id':existing['@id']});
+            f = existing;
+        }
+
         f['@id'] = this.newField['@id'];
         f['@label'] = this.newField['@label'];
         f['@type'] = this.newField['@type'];
-        if (this.newField['@type'] == 'list') f['@referenceFieldId'] = this.newField['@referenceFieldId'];
+        if (this.newField['@type'] == 'list')
+            f['@referenceFieldId'] = this.newField['@referenceFieldId'];
+        else
+            delete f['@referenceFieldId'];
 
         f['@stepId'] = this.step.key;
 
-
-        this.step.fields.form.field.push(_.cloneDeep(this.newField));
+        if (existing == null || typeChanged)
+            this.step.fields.form.field.push(_.cloneDeep(this.newField));
+        else
+            this.workflowFieldsService.forceFormFieldUpdate();
 
         this.newField = {};
         this.formMode = FormMode.Default;
@@ -235,7 +281,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
 
         this.workflowFieldsService.pushFormField(f);
-        //console.log(this.step.fields.form.field);
+        //console.log(existing, this.newField);
     }
 
     appendFieldDescription(e: string) {

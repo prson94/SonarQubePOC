@@ -2,7 +2,6 @@
 import { Subject} from 'rxjs/Subject';
 import { WorkflowChangeType } from '../models/workflow.model';
 
-
 @Injectable()
 export class WorkflowFieldsService {
 
@@ -61,12 +60,16 @@ export class WorkflowFieldsService {
         this.formFieldsSource.next(this.formFields);
     }
 
+    forceFormFieldUpdate() {
+        this.formFieldsSource.next(this.formFields);
+    }
+
+
     deleteFormField(field: any) {
         let i = this.formFields.findIndex(f => f['@stepId'] == field['@stepId'] && f['@id'] == field['@id']);
         if (i > -1) {
             this.formFields.splice(i, 1);
             this.formFieldsSource.next(this.formFields);
-           // console.log(this.formFields);
         }
     }
 

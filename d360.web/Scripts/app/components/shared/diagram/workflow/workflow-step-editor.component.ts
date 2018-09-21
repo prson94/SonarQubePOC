@@ -198,6 +198,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 }
             }
         });
+
+        this.stepChange.emit(this.step);
     }
 
     traverseDiagram(key: any, upstreamSteps: any[]) {
