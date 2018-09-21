@@ -15902,6 +15902,7 @@ order by DN.DisplayValue");
                 existing.Context = model.Context;
                 existing.ApplyToType = model.ApplyToType;
                 existing.IsVisible = model.IsVisible;
+                existing.UpdatedOn = DateTime.UtcNow;
 
                 var previousDefinition = existing.Definition;
                 existing.SetRawFromDefinition();
@@ -15951,6 +15952,8 @@ order by DN.DisplayValue");
                 {
                     throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_Filter_Value_Required);
                 }
+
+                model.UpdatedOn = DateTime.UtcNow;
                 Company.Add(model);
 
                 // Process this rule.

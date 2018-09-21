@@ -61,6 +61,10 @@ namespace d360.core.entities
         {
             Definition = JsonConvert.SerializeObject(StructuredDefinition);
         }
+
+        [DataMember]
+        public DateTime UpdatedOn { get; set; }
+        
     }
 
     public class ResponsibilityRuleDefinition
