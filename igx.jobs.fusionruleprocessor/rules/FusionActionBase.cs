@@ -12,10 +12,33 @@ namespace igx.jobs.fusionruleprocessor
     {
         public FusionActionBase()
         {
+            
+
+            
             Stats = new FusionRuleStepStatistics();
         }
 
-        public static int EXECUTION_TIMEOUT = 600;
+        private static int _executionTimout = 0;
+        public static int ExecutionTimeout {
+            get
+            {
+                if (_executionTimout > 0) return _executionTimout;
+
+                var tmp = CoreFunction.GetConfigValueByKey("FusionRuleExecuteQueryTimeout");
+
+                if (int.TryParse(tmp, out int tmpInt))
+                {
+                    _executionTimout = tmpInt;
+                }
+                else
+                {
+                    _executionTimout = 1200;
+                }
+
+                return _executionTimout;
+            }
+            
+        }
         public FusionRuleStepModel Step { get; set; }
         public int CompanyId { get; set; }
         public d360.core.entities.FusionRule Rule { get; set; }

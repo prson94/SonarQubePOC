@@ -55,7 +55,7 @@ namespace igx.jobs.fusionruleprocessor
 	                            f.ObjectType = @objectParentType and f.RuleStepId = @stepId
                         ";
 
-            await company.ExecuteAsync(sql, new { stepId = Step.ID, objectParentType = Rule.ObjectType.Replace("Type", ""), targetType = promoteToObject, objectParentId = promoteToObjectID }, commandTimeout: EXECUTION_TIMEOUT);
+            await company.ExecuteAsync(sql, new { stepId = Step.ID, objectParentType = Rule.ObjectType.Replace("Type", ""), targetType = promoteToObject, objectParentId = promoteToObjectID }, commandTimeout: ExecutionTimeout);
 
 #if DEBUG
             await PrintTempTableContents(company, Log, "fieldvalues");
@@ -92,7 +92,7 @@ namespace igx.jobs.fusionruleprocessor
 					update set T.Value = S.Value
 			when	not matched then
 					insert (ObjectType, ObjectID, FieldTypeID, Value) values (S.ObjectType, S.ObjectID, S.FieldTypeID, S.Value);
-            ", commandTimeout: EXECUTION_TIMEOUT);
+            ", commandTimeout: ExecutionTimeout);
         }
 
         private async Task UpdateModifiedAssets(SqlConnection company)
@@ -107,7 +107,7 @@ namespace igx.jobs.fusionruleprocessor
 			on		T.Object = S.ObjectType and T.ObjectID = S.ObjectID
 			when	matched then
 					update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0;
-            ", commandTimeout: EXECUTION_TIMEOUT);
+            ", commandTimeout: ExecutionTimeout);
         }
 
         private async Task MergePromotionResults(SqlConnection company, FusionRuleStepModel step, FusionRule rule)
@@ -137,7 +137,7 @@ namespace igx.jobs.fusionruleprocessor
 					WHEN	NOT MATCHED THEN
 							INSERT (AttributeID, AttributeType, ObjectType, ObjectID, RuleID, RuleStepID, ObjectTypeID, CreatedOn, UpdatedOn) 
 							VALUES (S.AttributeID, S.AttributeType, S.ObjectType, S.ObjectID, S.RuleID, S.RuleStepID, S.PromotedObjectTypeID, getutcdate(), getutcdate());    
-                        ", new { RuleID = rule.ID, RuleStepID = step.ID, ObjectTypeID = PromoteToObjectID }, commandTimeout: EXECUTION_TIMEOUT);
+                        ", new { RuleID = rule.ID, RuleStepID = step.ID, ObjectTypeID = PromoteToObjectID }, commandTimeout: ExecutionTimeout);
         }
 
         protected void LoadParentSearchOptions()
@@ -171,7 +171,7 @@ namespace igx.jobs.fusionruleprocessor
 		                                );
 
 		                                CREATE UNIQUE CLUSTERED INDEX PK_tempfieldValues ON #fieldValues ([ObjectType] ASC,[ObjectID] ASC,[FieldTypeID] ASC);
-                                ", commandTimeout: EXECUTION_TIMEOUT);
+                                ", commandTimeout: ExecutionTimeout);
         }
 
         protected async Task<IEnumerable<string>> GetKeyFields(SqlConnection company)
@@ -208,7 +208,7 @@ namespace igx.jobs.fusionruleprocessor
                                 #promotionKeyHash ph
                                 inner join assetdetail ad on ph.keyhash = ad.keyhash";
 
-                await company.ExecuteAsync(sql, new { objectType = Rule.ObjectType.Replace("Type", "") }, commandTimeout: EXECUTION_TIMEOUT);
+                await company.ExecuteAsync(sql, new { objectType = Rule.ObjectType.Replace("Type", "") }, commandTimeout: ExecutionTimeout);
 
                 return;
             }
@@ -227,7 +227,7 @@ namespace igx.jobs.fusionruleprocessor
                                 inner join [intersect] i on (i.IntersectTypeID = @it and i.objectid = ad.[objectID] and i.object = ad.[object] and i.subjectid = p.ParentID and i.subject = ad.object)";
 
 
-            await company.ExecuteAsync(sql, new { objectType = Rule.ObjectType.Replace("Type",""), it = PromoteToParentChildIntersectTypeID }, commandTimeout: EXECUTION_TIMEOUT);
+            await company.ExecuteAsync(sql, new { objectType = Rule.ObjectType.Replace("Type",""), it = PromoteToParentChildIntersectTypeID }, commandTimeout: ExecutionTimeout);
 
             return;
         }

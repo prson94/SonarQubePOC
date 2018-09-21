@@ -161,7 +161,7 @@ namespace igx.jobs.fusionruleprocessor
 	                            WHEN NOT MATCHED THEN
 	                                INSERT  (ObjectID, ParentID)
 	                                VALUES  (S.ObjectID, S.ParentID) ;                       
-                        ", new { ParentSearchObjectID = ParentObjectID }, transaction:transaction,  commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+                        ", new { ParentSearchObjectID = ParentObjectID }, transaction:transaction,  commandTimeout: FusionActionBase.ExecutionTimeout);
                         }
                         break;
                     case FusionRuleParentSearchTypes.FusionOwner:
@@ -184,7 +184,7 @@ namespace igx.jobs.fusionruleprocessor
 	                            WHEN NOT MATCHED THEN
 	                                INSERT  (ObjectID, ParentID)
 	                                VALUES  (S.ObjectID, S.ParentID) ;                       
-                        ", new { ParentSearchObjectID = ParentObjectID }, transaction: transaction, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+                        ", new { ParentSearchObjectID = ParentObjectID }, transaction: transaction, commandTimeout: FusionActionBase.ExecutionTimeout);
                         }
                         break;
                     case FusionRuleParentSearchTypes.ResultFromStep:
@@ -214,7 +214,7 @@ namespace igx.jobs.fusionruleprocessor
 	                            WHEN NOT MATCHED THEN
 	                                INSERT  (ObjectID, ParentID)
 	                                VALUES  (S.ObjectID, S.ParentID);                        
-                        ", new { RuleID = Rule.ID, RuleStepID = ParentObjectID }, transaction: transaction, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+                        ", new { RuleID = Rule.ID, RuleStepID = ParentObjectID }, transaction: transaction, commandTimeout: FusionActionBase.ExecutionTimeout);
                         break;
                 }
 
@@ -257,7 +257,7 @@ namespace igx.jobs.fusionruleprocessor
 							INSERT (IntersectTypeID,[Subject], SubjectID, [Object], ObjectID, State,CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Deleted, Visible) 
 							VALUES (@IntersectTypeID, 'Artifact', S.ParentID, 'Artifact', S.ObjectID, 1,0,getutcdate(), 0,getutcdate(),0,1);";
 
-            await company.ExecuteAsync(sql, new { IntersectTypeID = intersectTypeId }, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+            await company.ExecuteAsync(sql, new { IntersectTypeID = intersectTypeId }, commandTimeout: FusionActionBase.ExecutionTimeout);
         }
 
         private async Task CreateNewArtifacts(SqlConnection company, int ruleId, int ruleStepId)
@@ -279,7 +279,7 @@ namespace igx.jobs.fusionruleprocessor
 	                        INSERT  (ArtifactTypeID, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy, Visible)
 	                        VALUES  (@promoteToId, getutcdate(), 0, getutcdate(), 0, 1)                        
                         output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;";
-            await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact", rulestepid = ruleStepId, ruleid = ruleId }, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+            await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact", rulestepid = ruleStepId, ruleid = ruleId }, commandTimeout: FusionActionBase.ExecutionTimeout);
         }
     }
 }

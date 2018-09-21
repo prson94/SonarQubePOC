@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.WebJobs;
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.jobs.fusionruleprocessor
 {
@@ -20,7 +20,7 @@ namespace igx.jobs.fusionruleprocessor
     public static class FusionRuleProcessor
     {
         const string functionName = "Fusion_ProcessRules";
-        // const string timing = "0 * * * * *";
+       //  const string timing = "0 * * * * *";
         const string timing = "0 */10 * * * *";
         //const string timing = "*/5 0 * * * *";
 
@@ -29,11 +29,13 @@ namespace igx.jobs.fusionruleprocessor
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
+
 #if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 5).ToList();
+                var companies = d360.utils.company.CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 4).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot().ToList();
 #endif
+
                 foreach (var company in companies)
                 {
                     try

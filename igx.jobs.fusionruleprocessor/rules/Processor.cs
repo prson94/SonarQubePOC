@@ -256,7 +256,7 @@ namespace igx.jobs.fusionruleprocessor
 					            inner join FusionAttribute FA on FA.ID in (select id from #items) and FA.Deleted = 0
                         where 
                                 RS.RuleID = @id
-            ", new { id = rule.ID }, transaction:transaction, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+            ", new { id = rule.ID }, transaction:transaction, commandTimeout: FusionActionBase.ExecutionTimeout);
 
                     await company.ExecuteAsync(@"insert into #fields
 			            select  FA.ID,
@@ -275,7 +275,7 @@ namespace igx.jobs.fusionruleprocessor
 					            inner join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'FusionAttribute' and (F.ObjectID = FA.ID OR F.ObjectID = FA.ParentID)
                         where 
                                 RS.RuleID = @id
-            ", new { id = rule.ID }, transaction:transaction, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+            ", new { id = rule.ID }, transaction:transaction, commandTimeout: FusionActionBase.ExecutionTimeout);
                 }
                 else if (rule.ObjectType == "FusionQueryAttributeType")
                 {
@@ -296,7 +296,7 @@ namespace igx.jobs.fusionruleprocessor
                                 from[fusion].[RuleStepMapping] M
                                     inner join[fusion].[RuleStep] RS on M.RuleStepID = RS.ID and(M.SourceFieldName = 'ID' OR M.IsConstantValue = 1)
                                     inner join FusionQueryAttribute FA on FA.ID in (select id from #items) and FA.Deleted = 0
-                                where RS.RuleID = @id", new { id = rule.ID }, transaction:transaction, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+                                where RS.RuleID = @id", new { id = rule.ID }, transaction:transaction, commandTimeout: FusionActionBase.ExecutionTimeout);
 
                     await company.ExecuteAsync(@"insert into #fields
 			                    select FA.ID,                                        
@@ -313,7 +313,7 @@ namespace igx.jobs.fusionruleprocessor
                                         inner join FusionQueryAttribute FA on FA.ID in (select id from #items) and FA.Deleted = 0
 					                    inner join Field F on F.ObjectType = 'FusionQueryAttribute' and F.ObjectID = FA.ID
                                         inner join FieldType FT on FT.ID = F.FieldTypeID and M.SourceFieldName = FT.Name                                        
-                                where RS.RuleID = @id", new { id = rule.ID }, transaction:transaction, commandTimeout: FusionActionBase.EXECUTION_TIMEOUT);
+                                where RS.RuleID = @id", new { id = rule.ID }, transaction:transaction, commandTimeout: FusionActionBase.ExecutionTimeout);
                 }
 
                 transaction.Commit();
