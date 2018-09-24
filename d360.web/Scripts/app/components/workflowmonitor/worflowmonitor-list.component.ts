@@ -23,7 +23,7 @@ import {  GridFilterExpression } from "../../models/grid-definition.model";
                     </d3s-workflowmonitor-top-level-filter>
                 </div>
                     <div class="col s12">                
-                        <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" 
+                        <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" styleClass="overridePaginator" 
                         #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" 
                         [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)"
                         [rows]="rowsPerPage" paginator="true" pageLinks="3"  (onLazyLoad)="loadWorkflowMonitorItems($event)" [rowsPerPageOptions]="defaultPagingOptions">
