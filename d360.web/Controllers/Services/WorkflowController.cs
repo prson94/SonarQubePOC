@@ -2528,6 +2528,34 @@ order by wi.StartedOn desc";
 
                         if (detail.Settings.IncludePreviousFormResponses != null && detail.Settings.IncludePreviousFormResponses == "true")
                             detail.Settings.MessageBodyTemplate += Company.GenerateFormResponsesEmailContent(itemStep.ItemID);
+
+                        if (detail.Settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
+                        {
+                            detail.ItemSettings.Responsibilities = new JObject();
+                            List<dynamic> responsibilitiesList = new List<dynamic>();
+
+
+                            if (detail.Settings.ResponsibilityTypeID.GetType().Name != "JArray")
+                            {
+                                detail.Settings.ResponsibilityTypeID = new JArray(detail.Settings.ResponsibilityTypeID);
+                            }
+
+                            for(int i = 0; i < detail.Settings.ResponsibilityTypeID.Count; i++)
+                            {
+                                var resId = detail.Settings.ResponsibilityTypeID[i].Value;
+                                if (int.TryParse(resId, out int resIdInt))
+                                {
+                                    var resp = Company.GetById<ResponsibilityType>(resIdInt);
+                                    if (resp != null)
+                                    {
+                                        responsibilitiesList.Add(new { id = resp.ID, name = resp.Name });
+                                    }
+                                }
+                            }
+
+                            detail.ItemSettings.Responsibilities = JToken.FromObject(responsibilitiesList);
+                        }
+
                     }
 
                     if (detail?.Fields?.form != null)

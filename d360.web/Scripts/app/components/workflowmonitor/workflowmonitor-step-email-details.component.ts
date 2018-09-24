@@ -3,7 +3,7 @@ import { BaseComponent } from '../shared/base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { WorkflowHelpers } from '../../static/workflow-helpers';
-import { WorkflowStepDetail } from '../../models/workflow.model';
+import { WorkflowStepDetail, EmailTaskRecipientType } from '../../models/workflow.model';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-email-details',
@@ -17,6 +17,14 @@ import { WorkflowStepDetail } from '../../models/workflow.model';
                 <span>
                     {{helper.recipientTypeName(emailSettings.MessageRecipientType)}}
                 </span>
+            </div>
+            <div *ngIf="emailSettings.MessageRecipientType == 'Responsibility'">
+                <div class="FieldName">
+                    Email Responsibilities:
+                </div>
+                <div *ngFor="let res of step.ItemSettings.Responsibilities">
+                    {{res.name}}
+                </div>
             </div>
         </div>
         <div class="col s6" *ngIf="step.ItemSettings.hasEmails == true">

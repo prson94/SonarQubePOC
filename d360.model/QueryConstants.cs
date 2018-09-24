@@ -1723,7 +1723,8 @@ select
                                 where
                                      WT.ID in ({0}) and WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3";
 
-        public static string WorkflowItemSteps = @"select 
+        public static string WorkflowItemSteps = @"
+            select 
 	            IST.ID,
 	            IST.ItemID,
 	            IST.StepID,
@@ -1739,9 +1740,11 @@ select
 	            RS.FirstName + ' ' + RS.LastName as StartedBy,
 	            IST.CompletedOn,
 	            RC.FirstName + ' ' + RC.LastName as CompletedBy,
-                case when S.ActivityType = 3 then --form only
+                case when S.ActivityType = 3 and IST.CompletedOn is null then --form only
                     dbo.[GetWorkflowResponsibleUsers](IST.ID, 0)
-                else
+                when S.ActivityType = 3 and IST.CompletedOn is not null then
+					Forms.Responses
+				else
                     null
                 end as Assignee,
 				case when E.Object = 'IssueType' then
@@ -1759,6 +1762,14 @@ select
 			inner join workflow.EventRegistration E on E.TypeID = V.TypeID
             left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
             left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
+			outer apply (
+				select 
+					string_agg(G.FirstName + ' ' + G.LastName, ',') as Responses
+				from workflow.itemstep
+				cross apply Fields.nodes('/fields[1]/form') AS x(r)
+				inner join reporting.Global_Resource G on G.ResourceID = r.value('@ResourceID','int')
+				where ID = IST.ID
+			) Forms
             where IST.ItemID = @itemId
             order by IST.StartedOn, IST.CompletedOn";
 
