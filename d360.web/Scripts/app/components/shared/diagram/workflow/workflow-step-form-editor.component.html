@@ -116,8 +116,12 @@
                 <d3s-tile-actions hideTooltip="true" hasAdd="true" (addClick)="add()"></d3s-tile-actions>
             </header>
             <p-dataTable [value]="step.fields.form.field" selectionMode="single" [immutable]="false">
-                <p-column field="@type" header="Type"></p-column>
                 <p-column field="@label" header="Label"></p-column>
+                <p-column field="@type" header="Type">
+                    <ng-template let-item="rowData" pTemplate type="body">
+                        {{getTypeLabel(item)}}
+                    </ng-template>
+                </p-column>
                 <p-column [style]="{'width':'40px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
                         <div class="RowTools">

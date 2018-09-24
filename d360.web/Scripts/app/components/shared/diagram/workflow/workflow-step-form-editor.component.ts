@@ -165,6 +165,10 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
+        //load lists, needed for labels
+        this.changeType('list');
+        this.changeType('relationshipType');
+
         //console.log('initFields', this.step.settings);
     }
 
@@ -349,7 +353,24 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                 });
         }
     }
-    
+
+    private getTypeLabel(i: any) {
+        switch (i['@type']) {
+            case 'list':
+                if (this.lookups == null)
+                    return 'List';
+                let list = this.lookups.find(l => l.value.toString() == i['@referenceFieldId']);
+                return 'List' + (list == null ? '' : ' :: ' + list.label);
+            case 'relationshipType':
+                if (this.intersectTypes == null)
+                    return 'Relationship';
+                let rel = this.intersectTypes.find(l => l.IntersectTypeID.toString() == i['@intersectTypeId']);
+                return 'Relationship' + (rel == null ? '' : ( ' :: ' + ((rel.PredicateName != null && rel.PredicateName.length > 0) ? `[${rel.PredicateName}] ` : ' ') + rel.TargetName));
+            default:
+                return (i['@type'].charAt(0).toUpperCase() + i['@type'].substr(1));
+        }
+    }
+
     validateField() {
         if (this.newField['@label'] == null || this.newField['@label'].length < 1 || this.newField['@type'] == null || this.newField['@type'] == '')
            return false;

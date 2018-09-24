@@ -40,6 +40,9 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     private responsibilities = [];
     private fields = [];
 
+    private lookups = [];
+    private intersectTypes = [];
+
     constructor(private responsibilityService: ResponsibilityTypeService, private ref: ChangeDetectorRef, private workflowService: WorkflowService) {
         super();
     }
@@ -71,6 +74,9 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                         }
                     }
                 }
+                if (this.step.activityType == WorkflowActivityType.Form) {
+                    this.getLookups();
+                }
             }
         }
         this.isLoading = false
@@ -87,6 +93,18 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         if (r != null)
             return r.Name;
         return "";
+    }
+
+    getLookups() {
+        this.workflowService.getAllowIntersectTypes(this.object, this.objectId)
+            .then(r => {
+                this.intersectTypes = r;
+            });
+
+        this.workflowService.getWorkflowVersionStepFormLookups(this.object, this.objectId)
+            .then(r => {
+                this.lookups = r;
+            });
     }
 
     isHtml(i: any): boolean {
@@ -112,6 +130,23 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         }
 
         return val;
+    }
+
+    private getTypeLabel(i: any) {
+        switch (i['@type']) {
+            case 'list':
+                if (this.lookups == null)
+                    return 'List';
+                let list = this.lookups.find(l => l.value.toString() == i['@referenceFieldId']);
+                return 'List' + (list == null ? '' : ' :: ' + list.label);
+            case 'relationshipType':
+                if (this.intersectTypes == null)
+                    return 'Relationship';
+                let rel = this.intersectTypes.find(l => l.IntersectTypeID.toString() == i['@intersectTypeId']);
+                return 'Relationship' + (rel == null ? '' : (' :: ' + ((rel.PredicateName != null && rel.PredicateName.length > 0) ? `[${rel.PredicateName}] ` : ' ') + rel.TargetName));
+            default:
+                return (i['@type'].charAt(0).toUpperCase() + i['@type'].substr(1));
+        }
     }
 
 }
