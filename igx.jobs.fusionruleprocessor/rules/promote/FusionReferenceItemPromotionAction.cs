@@ -42,35 +42,60 @@ namespace igx.jobs.fusionruleprocessor
             }
 
 
-            // merge the fields temp table based on the code field to the reference item table
-            // if not matched insert
+            // copy n items to current promotion job table
+            // do this until we get all the rows from promotedItems table
+            var itemsToPromoteCount = itemsToPromote.Count;
+            var transactionSize = PromotionChunkSize;
+            var totalTransactions = (itemsToPromoteCount / transactionSize) + (itemsToPromoteCount % transactionSize > 0 ? 1 : 0);
 
-            await company.ExecuteAsync(@"
-                    MERGE
-	                    INTO    ReferenceItem d
-	                    USING   (
-			                    SELECT	f.ID, f.Value, f.ObjectType
-			                    FROM	#fields f
-                                    INNER Join
-                                        (SELECT MIN(RowId) as RowId, Value
-                                         FROM #fields 
-                                         WHERE TargetFieldName = 'Code' and id in @ids
-                                         GROUP BY Value) as f2 ON f.RowId = f2.RowId                                    
-			                    ) S
-	                    ON      (d.ReferenceItemTypeID = @promoteToId and d.Code = S.Value)
-	                    WHEN NOT MATCHED THEN
-	                        INSERT  (ReferenceItemTypeID, Code, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
-	                        VALUES  (@promoteToId, S.Value, getutcdate(), 0, getutcdate(), 0)
-                        WHEN MATCHED THEN
-                            UPDATE SET UpdatedOn = getutcdate(), UpdatedBy = 0
-                        output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;
-                ", new { promoteToId = PromoteToObjectID, ids = itemsToPromote, targetType = PromoteToObject.Replace("Type", "") });
+            for (var i = 0; i < totalTransactions; i++)
+            {
+                using (var transaction = company.BeginTransaction())
+                {
+                    var startIndex = i * transactionSize + 1;
+                    var endIndex = startIndex + transactionSize - 1;
+                    if (endIndex > itemsToPromoteCount) endIndex = itemsToPromoteCount;
+
+                    //create a sublist of items from items to promote for specified index range
+                    var subList = itemsToPromote.GetRange(startIndex - 1, endIndex - startIndex + 1);
+
+
+                    // merge the fields temp table based on the code field to the reference item table
+                    // if not matched insert
+                    await company.ExecuteAsync(@"
+                        MERGE
+	                        INTO    ReferenceItem d
+	                        USING   (
+			                        SELECT	f.ID, f.Value, f.ObjectType
+			                        FROM	#fields f
+                                        INNER Join
+                                            (SELECT MIN(RowId) as RowId, Value
+                                             FROM #fields 
+                                             WHERE TargetFieldName = 'Code' and id in @ids
+                                             GROUP BY Value) as f2 ON f.RowId = f2.RowId                                    
+			                        ) S
+	                        ON      (d.ReferenceItemTypeID = @promoteToId and d.Code = S.Value)
+	                        WHEN NOT MATCHED THEN
+	                            INSERT  (ReferenceItemTypeID, Code, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
+	                            VALUES  (@promoteToId, S.Value, getutcdate(), 0, getutcdate(), 0)
+                            WHEN MATCHED THEN
+                                UPDATE SET UpdatedOn = getutcdate(), UpdatedBy = 0
+                            output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;
+                    ", new { promoteToId = PromoteToObjectID, ids = subList, targetType = PromoteToObject.Replace("Type", "") }, transaction:transaction);
+
+
+                    await PerformPostPromote(company, PromoteToObjectID, PromoteToObject, itemsToPromote, transaction);
+
+                    transaction.Commit();
+                }
+            }
+
             
 #if DEBUG
             await PrintTempTableContents(company, Log, "promotedItems");
 #endif
 
-            await PerformPostPromote(company, PromoteToObjectID, PromoteToObject);
+            
         }
     }
 }

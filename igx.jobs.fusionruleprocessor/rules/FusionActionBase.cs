@@ -39,6 +39,38 @@ namespace igx.jobs.fusionruleprocessor
             }
             
         }
+
+        private static int _promotionChunkSize = 0;
+        public static int PromotionChunkSize
+        {
+            get
+            {
+                if (_promotionChunkSize > 0) return _promotionChunkSize;
+
+                string tmp = "";
+
+                try
+                {
+                    tmp = CoreFunction.GetConfigValueByKey("FusionRulePromoteChunkSize");
+                }
+                catch
+                {
+
+                }
+
+                if (int.TryParse(tmp, out int tmpInt))
+                {
+                    _promotionChunkSize = tmpInt;
+                }
+                else
+                {
+                    _promotionChunkSize = 200;
+                }
+
+                return _promotionChunkSize;
+            }
+
+        }
         public FusionRuleStepModel Step { get; set; }
         public int CompanyId { get; set; }
         public d360.core.entities.FusionRule Rule { get; set; }

@@ -66,20 +66,41 @@ namespace igx.jobs.fusionruleprocessor
 
             // figure out which artifacts already exist and put them in the items to promote table
             await DetermineExisting(company, keyFields);
-
-            // add new records for any items that havent already been promoted to the artifact table
-            await CreateNewArtifacts(company, Rule.ID, Step.ID);
-
-            // add intersects for parents from promotionParents table
-            await CreateParentIntersects(company, Rule.ID, Step.ID);
-
-            Stats.PromotedArtifacts = await GetNewItemCount(company);
                         
+            // copy n items to current promotion job table
+            // do this until we get all the rows from promotedItems table
+            var itemsToPromoteCount = itemsToPromote.Count;
+            var transactionSize = PromotionChunkSize;
+            var totalTransactions = (itemsToPromoteCount / transactionSize) + (itemsToPromoteCount % transactionSize > 0 ? 1 : 0);
+
+            for (var i = 0; i < totalTransactions; i++)
+            {
+                using (var transaction = company.BeginTransaction())
+                {
+                    var startIndex = i * transactionSize + 1;                    
+                    var endIndex = startIndex + transactionSize - 1;
+                    if (endIndex > itemsToPromoteCount) endIndex = itemsToPromoteCount;
+
+                    //create a sublist of items from items to promote for specified index range
+                    var subList = itemsToPromote.GetRange(startIndex-1, endIndex - startIndex + 1);
+
+                    await CreateNewArtifacts(company, Rule.ID, Step.ID, transaction, subList);
+                           
+                    // add intersects for parents from promotionParents table
+                    await CreateParentIntersects(company, Rule.ID, Step.ID, transaction, subList);
+
+                    Stats.PromotedArtifacts += await GetNewItemCount(company, subList, transaction);
+
+                    await PerformPostPromote(company, PromoteToObjectID, PromoteToObject, subList, transaction);
+
+                    transaction.Commit();
+                }
+            }
+
 #if DEBUG
             await PrintTempTableContents(company, Log, "promotedItems");
 #endif
 
-            await PerformPostPromote(company, PromoteToObjectID, PromoteToObject);            
         }
 
         private async Task<int> GetPromotionParentChildRelationshipID(SqlConnection company)
@@ -233,11 +254,11 @@ namespace igx.jobs.fusionruleprocessor
 
         }
 
-        private async Task CreateParentIntersects(SqlConnection company, int ruleId, int stepId)
+        private async Task CreateParentIntersects(SqlConnection company, int ruleId, int stepId, SqlTransaction transaction, List<int> itemsToPromote)
         {
             //get the intersecttype for this object
             var intersectTypeId = (await company.QueryAsync<int>("select id from intersecttypedetail where subject = 'ArtifactType' and [object] = 'ArtifactType' and [objectid] = @id and PredicateType = 3",
-                        new { id = PromoteToObjectID })).FirstOrDefault();
+                        new { id = PromoteToObjectID }, transaction: transaction)).FirstOrDefault();
 
             if (intersectTypeId <= 0) return; // no valid parent intersect type
 
@@ -251,16 +272,17 @@ namespace igx.jobs.fusionruleprocessor
 						from	#promotionParents pp
                                 inner join #promotedItems pI on (pp.objectid = pI.attributeid)
                                 left outer join [intersect] I on(pp.ParentID = I.SubjectID and pI.ObjectID = I.ObjectID and I.IntersectTypeID = @IntersectTypeID)																			
+                        where pI.attributeID in @items
                         ) as S
                     ON		T.ID = S.ID
 					WHEN	NOT MATCHED THEN
 							INSERT (IntersectTypeID,[Subject], SubjectID, [Object], ObjectID, State,CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Deleted, Visible) 
 							VALUES (@IntersectTypeID, 'Artifact', S.ParentID, 'Artifact', S.ObjectID, 1,0,getutcdate(), 0,getutcdate(),0,1);";
 
-            await company.ExecuteAsync(sql, new { IntersectTypeID = intersectTypeId }, commandTimeout: FusionActionBase.ExecutionTimeout);
+            await company.ExecuteAsync(sql, new { IntersectTypeID = intersectTypeId, items = itemsToPromote }, commandTimeout: FusionActionBase.ExecutionTimeout, transaction: transaction);
         }
 
-        private async Task CreateNewArtifacts(SqlConnection company, int ruleId, int ruleStepId)
+        private async Task CreateNewArtifacts(SqlConnection company, int ruleId, int ruleStepId, SqlTransaction transaction, List<int> itemsToPromote)
         {
             // merge
             var sql = @"MERGE
@@ -273,13 +295,15 @@ namespace igx.jobs.fusionruleprocessor
 									#fields ftemp                                    
                                 where
                                     not exists(select 1 from #promotedItems tmp where tmp.attributeID = ftemp.ID) 
+                                        and
+                                    ftemp.ID in @items
 			                    ) S
 	                    ON      (1 != 1)
 	                    WHEN NOT MATCHED THEN
 	                        INSERT  (ArtifactTypeID, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy, Visible)
 	                        VALUES  (@promoteToId, getutcdate(), 0, getutcdate(), 0, 1)                        
                         output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;";
-            await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact", rulestepid = ruleStepId, ruleid = ruleId }, commandTimeout: FusionActionBase.ExecutionTimeout);
+            await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact", rulestepid = ruleStepId, ruleid = ruleId, items = itemsToPromote }, commandTimeout: FusionActionBase.ExecutionTimeout, transaction: transaction);
         }
     }
 }

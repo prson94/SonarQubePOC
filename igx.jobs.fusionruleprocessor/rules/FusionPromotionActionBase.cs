@@ -30,7 +30,8 @@ namespace igx.jobs.fusionruleprocessor
             await company.ExecuteAsync(@"IF OBJECT_ID('tempdb..#promotedItems') IS NOT NULL
 			                                DROP TABLE #promotedItems;
 
-		                                create table #promotedItems (                                            
+		                                create table #promotedItems (    
+                                            ID int identity,
 			                                AttributeID int, 
                                             AttributeType varchar(20),
 			                                ObjectID int,
@@ -39,9 +40,21 @@ namespace igx.jobs.fusionruleprocessor
                                 ");
         }
 
-        protected async Task PerformPostPromote(SqlConnection company, int promoteToObjectID, string promoteToObject)
+        protected async Task CreateCurrentPromotionItemsTemp(SqlConnection company, SqlTransaction transaction, int startIndex, int endIndex)
+        {
+            await company.ExecuteAsync($@"
+                        IF OBJECT_ID('tempdb..#currentPromotionItems') IS NOT NULL
+			                                DROP TABLE #currentPromotionItems;
+
+                        SELECT * INTO #currentPromotionItems FROM #promotedItems where id >= {startIndex} and id <= {endIndex}", transaction: transaction);
+        }
+
+        
+        protected async Task PerformPostPromote(SqlConnection company, int promoteToObjectID, string promoteToObject, List<int> itemsToPromote, SqlTransaction transaction = null)
         {            
-            var sql = @"insert into #fieldValues
+            var sql = @"truncate table #fieldValues;
+
+                        insert into #fieldValues
                             select distinct
 	                            p.ObjectType as ObjectType,
 	                            p.ObjectId as ObjectID,
@@ -52,30 +65,30 @@ namespace igx.jobs.fusionruleprocessor
                                 inner join #promotedItems p on (f.Id = p.AttributeId)
 	                            inner join fieldtype ft on (f.TargetFieldTypeID = ft.ID and ft.[Object] = @targetType and ft.[ObjectId] = @objectParentId)                            
                             where
-	                            f.ObjectType = @objectParentType and f.RuleStepId = @stepId
+	                            f.ObjectType = @objectParentType and f.RuleStepId = @stepId and p.attributeid in @items
                         ";
 
-            await company.ExecuteAsync(sql, new { stepId = Step.ID, objectParentType = Rule.ObjectType.Replace("Type", ""), targetType = promoteToObject, objectParentId = promoteToObjectID }, commandTimeout: ExecutionTimeout);
+            await company.ExecuteAsync(sql, new { items = itemsToPromote, stepId = Step.ID, objectParentType = Rule.ObjectType.Replace("Type", ""), targetType = promoteToObject, objectParentId = promoteToObjectID }, commandTimeout: ExecutionTimeout, transaction:transaction);
 
 #if DEBUG
-            await PrintTempTableContents(company, Log, "fieldvalues");
+            await PrintTempTableContents(company, Log, "fieldvalues", transaction);
 #endif
 
             Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Target[{promoteToObject}] Target ID[{promoteToObjectID}] Merging Fields Starting...");
 
             //merge the field values
-            await MergeFieldValues(company);
+            await MergeFieldValues(company, transaction);
 
             Log.WriteLine($"Company ID[{CompanyId}] Rule ID[{Rule.ID}] Step ID[{Step.ID}] Action[{Step.Action}] Target[{promoteToObject}] Target ID[{promoteToObjectID}] Merging Fields DONE!");
 
             // log the items we promoted
-            await MergePromotionResults(company, Step, Rule);
+            await MergePromotionResults(company, Step, Rule, itemsToPromote, transaction);
 
             // update asset table updateon / updated by for existing items so it triggers audit
-            await UpdateModifiedAssets(company);
+            await UpdateModifiedAssets(company, transaction);
         }
 
-        private async Task MergeFieldValues(SqlConnection company)
+        private async Task MergeFieldValues(SqlConnection company, SqlTransaction transaction = null)
         {
             await company.ExecuteAsync(@"
                 merge	Field as T
@@ -92,10 +105,10 @@ namespace igx.jobs.fusionruleprocessor
 					update set T.Value = S.Value
 			when	not matched then
 					insert (ObjectType, ObjectID, FieldTypeID, Value) values (S.ObjectType, S.ObjectID, S.FieldTypeID, S.Value);
-            ", commandTimeout: ExecutionTimeout);
+            ", commandTimeout: ExecutionTimeout, transaction: transaction);
         }
 
-        private async Task UpdateModifiedAssets(SqlConnection company)
+        private async Task UpdateModifiedAssets(SqlConnection company, SqlTransaction transaction = null)
         {
             await company.ExecuteAsync(@"
                 merge	Asset as T
@@ -107,10 +120,10 @@ namespace igx.jobs.fusionruleprocessor
 			on		T.Object = S.ObjectType and T.ObjectID = S.ObjectID
 			when	matched then
 					update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0;
-            ", commandTimeout: ExecutionTimeout);
+            ", commandTimeout: ExecutionTimeout, transaction: transaction);
         }
 
-        private async Task MergePromotionResults(SqlConnection company, FusionRuleStepModel step, FusionRule rule)
+        private async Task MergePromotionResults(SqlConnection company, FusionRuleStepModel step, FusionRule rule, List<int> itemsToPromote, SqlTransaction transaction = null)
         {
             await company.ExecuteAsync(@"
                                 MERGE	[fusion].[RulePromotion] AS T
@@ -122,7 +135,7 @@ namespace igx.jobs.fusionruleprocessor
 									@RuleID as RuleID,
 									@ObjectTypeID as PromotedObjectTypeID,
 									@RuleStepID as RuleStepID
-                            from #promotedItems 
+                            from #promotedItems p where p.AttributeID in @items
 							) as S
 					ON		T.RuleID = S.RuleID
 							and T.RuleStepID = S.RuleStepID 
@@ -137,7 +150,7 @@ namespace igx.jobs.fusionruleprocessor
 					WHEN	NOT MATCHED THEN
 							INSERT (AttributeID, AttributeType, ObjectType, ObjectID, RuleID, RuleStepID, ObjectTypeID, CreatedOn, UpdatedOn) 
 							VALUES (S.AttributeID, S.AttributeType, S.ObjectType, S.ObjectID, S.RuleID, S.RuleStepID, S.PromotedObjectTypeID, getutcdate(), getutcdate());    
-                        ", new { RuleID = rule.ID, RuleStepID = step.ID, ObjectTypeID = PromoteToObjectID }, commandTimeout: ExecutionTimeout);
+                        ", new { items = itemsToPromote, RuleID = rule.ID, RuleStepID = step.ID, ObjectTypeID = PromoteToObjectID }, commandTimeout: ExecutionTimeout, transaction: transaction);
         }
 
         protected void LoadParentSearchOptions()
@@ -232,9 +245,15 @@ namespace igx.jobs.fusionruleprocessor
             return;
         }
 
-        protected async Task<int> GetNewItemCount(SqlConnection company)
+        protected async Task<int> GetNewItemCount(SqlConnection company, List<int> itemsToPromote = null, SqlTransaction transaction = null)
         {
-            return await (company.ExecuteScalarAsync<int>("select count(1) from #promotedItems;"));
+            var sql = "";
+            if (itemsToPromote == null)
+                sql = "select count(1) from #promotedItems;";
+            else
+                sql = "select count(1) from #promotedItems where attributeid in @items;";
+
+            return await (company.ExecuteScalarAsync<int>(sql, new { items = itemsToPromote }, transaction: transaction));
         }
 
 
