@@ -130,7 +130,13 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Date:
                     return int.Parse(val);                    
                 case CriteriaValueDataType.Lookup:
-                    return int.Parse(val);    
+                    {
+                        if (int.TryParse(val, out int res))
+                            return res;
+                        else
+                            return -1;
+                    }
+                    
             }
 
             throw new Exception("ERROR - INVALID DATA TYPE SPECIFIED TO PARSE VALUE");
