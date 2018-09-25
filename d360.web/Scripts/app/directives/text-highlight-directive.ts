@@ -1,4 +1,4 @@
-﻿import { Directive, ElementRef, Input, AfterViewChecked } from '@angular/core';
+﻿import { Directive, ElementRef, Input, AfterViewChecked, HostListener } from '@angular/core';
 
 @Directive({
     selector: '[d3s-text-highlight]'
@@ -12,7 +12,10 @@ export class TextHighlightDirective implements AfterViewChecked  {
     constructor(private el: ElementRef) {
     }
 
-
+    @HostListener('click', ['$event.target'])
+    onClick($event) {
+        this.isHighlight = false;
+    }
     ngAfterViewChecked(): void {
         if (this.isHighlight) {
             this.el.nativeElement.focus();
