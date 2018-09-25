@@ -1639,7 +1639,7 @@ namespace d360.model
             return defaultWorkflowUserGroup;
         }
 
-        private IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID)
+        public IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID)
         {
             var users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
 

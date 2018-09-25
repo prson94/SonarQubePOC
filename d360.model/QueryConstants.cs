@@ -1740,20 +1740,25 @@ select
 	            RS.FirstName + ' ' + RS.LastName as StartedBy,
 	            IST.CompletedOn,
 	            RC.FirstName + ' ' + RC.LastName as CompletedBy,
-                case when S.ActivityType = 3 and IST.CompletedOn is null then --form only
-                    dbo.[GetWorkflowResponsibleUsers](IST.ID, 0)
-                when S.ActivityType = 3 and IST.CompletedOn is not null then
+                convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') as MessageRecipientType,
+                case when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
+					RS.FirstName + ' ' + RS.LastName
+                when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
+					coalesce(convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
+				when S.ActivityType = 3 and IST.CompletedOn is not null then
 					Forms.Responses
 				else
                     null
                 end as Assignee,
+                IST.Fields,
 				case when E.Object = 'IssueType' then
 					cast(1 as bit)
 				else
 					cast(0 as bit)
 				end as IsIssueType,
 				I.[Object],
-				I.ObjectID
+				I.ObjectID,
+                E.TypeID
             from 
             workflow.ItemStep IST
             inner join workflow.Item I on I.ID = IST.ItemID

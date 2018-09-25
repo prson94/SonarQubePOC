@@ -58,6 +58,16 @@
                     <ng-container *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true">
                         <d3s-workflow-monitor-step-email-details [step]="step"></d3s-workflow-monitor-step-email-details>
                     </ng-container>
+                    <div *ngIf="step.ItemSettings.hasEmails == false && step.Settings.MessageRecipientType == 'Responsibility'" class="row">
+                        <div class="col s12">
+                            <div class="FieldName">
+                                Form Responsibilities:
+                            </div>
+                            <div *ngFor="let res of step.ItemSettings.Responsibilities">
+                                {{res.name}}
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col s12">
                             <div class="FieldName">

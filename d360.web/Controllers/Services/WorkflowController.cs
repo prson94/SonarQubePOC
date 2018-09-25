@@ -2375,6 +2375,30 @@ order by wi.StartedOn desc";
 
             var results = Company.Query<dynamic>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
+            foreach(var r in results)
+            {
+                if (r.ActivityType == (int)WorkflowActivityType.Form && r.Complete == false && (r.MessageRecipientType == "Responsibility" || r.MessageRecipientType == "None"))
+                {
+                    var users = Company.GetWorkflowUsersBasedOnResponsibility((int)r.TypeID, (int)r.StepID, (int)r.ItemID).ToList();
+                    var fields = XmlToDynamic(r.Fields);
+
+                    if (fields.form != null)
+                    {
+                        if (fields.form.GetType().Name != "JArray")
+                            fields.form = new JArray(fields.form);
+
+                        for(int i = 0; i < fields.form.Count; i++)
+                        {
+                            var ix = users.FindIndex(u => u.ResourceID.ToString() == fields.form[i]["@ResourceID"].Value);
+                            if (ix > -1)
+                                users.RemoveAt(ix);
+                        }
+                    }
+
+                    r.Assignee = string.Join(", ", users.Select(u => u.FullName));
+                }
+            }
+
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
@@ -2397,6 +2421,8 @@ order by wi.StartedOn desc";
 				si.Fields as ItemFieldsXml,
                 si.StartedOn,
                 si.CompletedOn,
+                si.StartedBy,
+                si.CompletedBy,
 	            vs.[Name],
 				e.ChangeType,
 				e.[Object] as ObjectType,
@@ -2668,6 +2694,28 @@ order by wi.StartedOn desc";
                     }
 
                     var resourceIds = new List<int>();
+
+                    if (detail.ActivityType == WorkflowActivityType.Form)
+                    {
+                        List<GlobalReportingResource> users = new List<GlobalReportingResource>();
+
+
+                        if (detail.CompletedOn == null)
+                        {
+                            if (detail.Settings.MessageRecipientType == "Initiator")
+                            {
+                                var initiator = Company.GlobalReportingResources.FirstOrDefault(u => u.ResourceID == detail.StartedBy);
+                                if (initiator != null)
+                                    users.Add(initiator);
+                            }
+                            else if (detail.Settings.MessageRecipientType == "None" || detail.Settings.MessageRecipientType == "Responsibility")
+                            {
+                                users = Company.GetWorkflowUsersBasedOnResponsibility(detail.TypeID, detail.StepID, detail.ItemID).ToList();
+                            }
+
+                            detail.AssignedUsers = users;
+                        }
+                    }
 
                     for (int i = 0; i < detail.ItemFields.form.Count; i++)
                     {

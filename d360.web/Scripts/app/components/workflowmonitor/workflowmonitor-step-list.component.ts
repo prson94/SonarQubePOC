@@ -8,14 +8,17 @@ import { WorkflowItemStep, WorkflowActivityType, StepType } from '../../models/w
 @Component({
     selector: 'd3s-workflow-monitor-step-list',
     template: ` 
-    <header style="min-height: 32px">
-        {{(isIssueType ? '' : 'Steps')}}
-        <d3s-tile-actions [hasExport]="true" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" (exportClick)="export()"></d3s-tile-actions>
+    <header *ngIf="!isIssueType" style="min-height: 32px">
+        Steps
+        <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
     </header>
     <simple-accordion *ngIf="isIssueType" [active]="true" [header]="'Action'">
         <d3s-workflow-monitor-action-details [id]="objectId"></d3s-workflow-monitor-action-details>
     </simple-accordion>
     <simple-accordion *ngIf="isIssueType" [active]="true" [header]="'Steps'">
+        <header>
+            <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+        </header>
         <div style="padding: 5px">
             Select a step to view details:    
         </div>

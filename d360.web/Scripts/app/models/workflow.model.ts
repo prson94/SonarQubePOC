@@ -538,6 +538,7 @@ export class WorkflowStepDetail {
     Version: number;
     IsPublishedVersion: boolean;
     IssueDetails: WorkflowStepIssueDetail;
+    AssignedUsers: any[] = [];
 }
 
 

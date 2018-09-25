@@ -8,8 +8,8 @@ import { WorkflowHelpers } from '../../static/workflow-helpers';
 @Component({
     selector: 'd3s-workflow-monitor-step-grid',
     template: ` 
-    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-    <p-dataTable #dt [globalFilter]="gb" [value]="itemSteps" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowClick)="selectionChange.emit($event.data)">                                                                        
+   <!-- <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">  -->                                            
+    <p-dataTable #dt [value]="itemSteps" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowClick)="selectionChange.emit($event.data)">                                                                        
         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
         <p-column field="Name" header="Step Name" [sortable]="allowSort" [filter]="!showSimpleFilter"></p-column>    
         <p-column field="Complete" header="Complete" [sortable]="allowSort" [filter]="!showSimpleFilter" [style]="{'width': '90px'}">

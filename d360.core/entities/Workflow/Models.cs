@@ -123,6 +123,12 @@ namespace d360.core.entities.Workflow
         public DateTime? StartedOn { get; set; }
 
         [DataMember]
+        public int StartedBy { get; set; }
+
+        [DataMember]
+        public int CompletedBy { get; set; }
+
+        [DataMember]
         public DateTime? CompletedOn { get; set; }
 
         [DataMember]
@@ -139,6 +145,9 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public List<GlobalReportingResource> ResponsibleUsers { get; set; }
+
+        [DataMember]
+        public List<GlobalReportingResource> AssignedUsers { get; set; }
 
         [DataMember]
         public bool IsIssueType { get; set; }
