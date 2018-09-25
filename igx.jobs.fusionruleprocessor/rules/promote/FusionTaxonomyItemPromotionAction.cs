@@ -71,7 +71,7 @@ namespace igx.jobs.fusionruleprocessor
 
                     // add new records for any items that havent already been promoted to the taxonomy table
 
-                    await PerformPostPromote(company, PromoteToObjectID, PromoteToObject, itemsToPromote, transaction);
+                    await PerformPostPromote(company, PromoteToObjectID, PromoteToObject, subList, transaction);
 
                     transaction.Commit();
                 }
