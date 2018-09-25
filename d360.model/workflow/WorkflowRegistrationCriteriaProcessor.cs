@@ -153,13 +153,16 @@ namespace d360.model.workflow
 
                                     if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
                                     {
-                                        return string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0;
+                                    //
+                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
                                     }
                                     else
                                     {
                                         //true operator
-                                        return string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0;
-                                    }                                    
+                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
+                                        
+                                    }
+                                break;
                                 }
                         case core.enums.Workflow.FormResponseType.All:
                                 {
