@@ -555,7 +555,7 @@ namespace d360.model
             Console.WriteLine("DEBUG - PROCESSING START ITEM STEP.");
 
             var transitions = WorkflowVersionStepTransitions
-                .Where(i => i.FromVersionStepID == firstVersionStep.ID && i.TransitionType != TransitionType.Timer)
+                .Where(i => i.FromVersionStepID == firstVersionStep.ID && i.TransitionType != TransitionType.Timer && i.State == State.Active)
                 .ToList();
 
             //take any settings from the event registration and apply them in this start step
@@ -623,7 +623,7 @@ namespace d360.model
         public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo)
         {
             var transition = WorkflowVersionStepTransitions
-                .Where(i => i.ID == versionStepTransitionID).FirstOrDefault();
+                .Where(i => i.ID == versionStepTransitionID && i.State == State.Active).FirstOrDefault();
 
             if (transition == null) throw new Exception("ERROR - UNABLE TO LOCATE THE SPECIFIED WORKFLOW TRANSITION STEP");
 
@@ -1262,7 +1262,7 @@ namespace d360.model
 
             // get the transitions for this step and add events
             var transitions = WorkflowVersionStepTransitions
-            .Where(i => i.FromVersionStepID == itemStep.StepID && i.TransitionType != TransitionType.Timer)
+            .Where(i => i.FromVersionStepID == itemStep.StepID && i.TransitionType != TransitionType.Timer && i.State == State.Active)
             .ToList();
 
             if (transitions.Count > 0)
@@ -2008,31 +2008,7 @@ namespace d360.model
             return result;
         }
 
-        /// <summary>
-        /// Gets a list of possible transitions based on a completed workflow item step.
-        /// </summary>
-        /// <param name="itemStepID">The workflow item step ID.
-        /// <returns>A list of possible transitions.</returns>
-        public List<WorkflowVersionStepTransition> GetTransitionsForCompletedStep(long itemStepID)
-        {
-            var itemStep = getWorkflowItemStep(itemStepID, true);
-            return GetTransitionsForCompletedStep(itemStep);
-        }
-
-        /// <summary>
-        /// Gets a list of possible transitions based on a completed workflow item step.
-        /// </summary>
-        /// <param name="itemStep">The workflow item step model.</param>
-        /// <returns>A list of possible transitions.</returns>
-        public List<WorkflowVersionStepTransition> GetTransitionsForCompletedStep(WorkflowItemStep itemStep)
-        {
-            return WorkflowVersionStepTransitions
-                .Include(i => i.FromVersionStep)
-                .Include(i => i.ToVersionStep)
-                .Where(i => i.FromVersionStepID == itemStep.StepID)
-                .ToList();
-        }
-
+        
         /// <summary>
         /// Gets the active workflow item step based on a given ID.
         /// </summary>
