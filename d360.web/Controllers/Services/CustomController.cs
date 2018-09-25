@@ -35,11 +35,6 @@ namespace d360.web.Controllers.Services
 
     internal class MultiSelectField
     {
-        public MultiSelectField(int entityFieldTypeID, string itemOverrideName = null)
-        {
-            this.EntityFieldTypeID = entityFieldTypeID;
-            this.ItemName = itemOverrideName ?? "item";
-        }
 
         public int EntityFieldTypeID { get; set; }
 
@@ -47,6 +42,8 @@ namespace d360.web.Controllers.Services
         public object[] Items { get; set; }
         public List<int> Values { get; set; } = new List<int>();
         public List<int> Fields { get; set; } = new List<int>();
+        public string XmlFieldOverrideName { get; set; }
+        public string JsonFieldOverrideName { get; set; }
     }
 
 
@@ -205,7 +202,7 @@ namespace d360.web.Controllers.Services
 
         #region Multiselect Helpers
         
-        private void GetMultiSelectValues(Dictionary<FieldType, MultiSelectField> multiSelectDetails, dynamic asset)
+        private void GetMultiSelectValues(Dictionary<FieldType, MultiSelectField> multiSelectDetails, dynamic asset, bool asJson)
         {
             if (multiSelectDetails.Any())
             {
@@ -217,7 +214,13 @@ namespace d360.web.Controllers.Services
                     //clear out previous values
                     mlList.Value.Values = new List<int>();
 
-                    if (dic.TryGetValue(mlList.Key.Name, out object val))
+                    var key = mlList.Key.Name;
+                    if (mlList.Value.JsonFieldOverrideName != null && asJson)
+                        key = mlList.Value.JsonFieldOverrideName;
+                    if (mlList.Value.XmlFieldOverrideName != null && !asJson)
+                        key = mlList.Value.XmlFieldOverrideName;
+
+                    if (dic.TryGetValue(key, out object val))
                     {
                         if (val == null)
                             continue;
@@ -238,6 +241,12 @@ namespace d360.web.Controllers.Services
 
                     //clear out previous values
                     field.Value.Items = null;
+
+                    var key = field.Key.Name;
+                    if (field.Value.JsonFieldOverrideName != null && asJson)
+                        key = field.Value.JsonFieldOverrideName;
+                    if (field.Value.XmlFieldOverrideName != null && !asJson)
+                        key = field.Value.XmlFieldOverrideName;
 
                     //based on the field type get the properties for the reference list type
                     if (field.Key.LookupObjectType != "ReferenceItem" || field.Key.LookupObjectID <= 0)
@@ -284,7 +293,7 @@ namespace d360.web.Controllers.Services
                     
                     var assetObj = asset as IDictionary<string, object>;
                     //remove the original values as they are no longer needed
-                    assetObj.Remove(field.Key.Name);
+                    assetObj.Remove(key);
 
                 }
             }
@@ -300,7 +309,11 @@ namespace d360.web.Controllers.Services
                     if (field.Value.Items == null || field.Value.Items.Count() < 1)
                         continue;
 
-                    var p = DynamicHelper.GetXElement(field.Key.Name, namespaces, asset);
+                    var key = field.Key.Name;
+                    if (field.Value.XmlFieldOverrideName != null)
+                        key = field.Value.XmlFieldOverrideName;
+
+                    var p = DynamicHelper.GetXElement(key, namespaces, asset);
                     asset.Add(p);
 
                     foreach (var i in field.Value.Items)
@@ -322,8 +335,12 @@ namespace d360.web.Controllers.Services
             {
                 foreach (var field in multiSelectDetails)
                 {
-                    if (!dic.ContainsKey(field.Key.Name))
-                        dic.Add(field.Key.Name, field.Value.Items);
+                    var key = field.Key.Name;
+                    if (field.Value.JsonFieldOverrideName != null)
+                        key = field.Value.JsonFieldOverrideName;
+
+                    if (!dic.ContainsKey(key))
+                        dic.Add(key, field.Value.Items);
                 }
             }
         }
@@ -462,7 +479,13 @@ namespace d360.web.Controllers.Services
                         case "LOOKUP":
                             if (f.FieldType.AllowMultipleValues)
                             {
-                                multiSelectDetails.Add(f.FieldType, new MultiSelectField(f.EntityFieldTypeID, f.ItemNameOverride));
+                                multiSelectDetails.Add(f.FieldType, new MultiSelectField
+                                {
+                                    EntityFieldTypeID = f.EntityFieldTypeID,
+                                    ItemName = f.ItemNameOverride ?? "item",
+                                    JsonFieldOverrideName = f.JsonFieldNameOverride,
+                                    XmlFieldOverrideName = f.XmlFieldNameOverride
+                                });
                                 columnSql += $", F{fID}.Value as [{fieldName}]";
                             }
                             else
@@ -489,7 +512,7 @@ namespace d360.web.Controllers.Services
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
 
                 //process multiselect values
-                GetMultiSelectValues(multiSelectDetails, asset);
+                GetMultiSelectValues(multiSelectDetails, asset, asJson);
                 
                 var canoUri = RequestUri();
 
@@ -1044,7 +1067,14 @@ namespace d360.web.Controllers.Services
 
                     if (f.FieldType.Type == "Lookup" && f.FieldType.AllowMultipleValues)
                     {
-                        multiSelectDetails.Add(f.FieldType, new MultiSelectField(f.EntityFieldTypeID, f.ItemNameOverride));
+
+                        multiSelectDetails.Add(f.FieldType, new MultiSelectField
+                        {
+                            EntityFieldTypeID = f.EntityFieldTypeID,
+                            ItemName = f.ItemNameOverride ?? "item",
+                            JsonFieldOverrideName = f.JsonFieldNameOverride,
+                            XmlFieldOverrideName = f.XmlFieldNameOverride
+                        });
                         formattedValueColumnSql =  $"F{fID}.Value";
                     }
 
@@ -1499,7 +1529,7 @@ namespace d360.web.Controllers.Services
                         var dic = (IDictionary<string, object>)res[i];
                         var exp = new ExpandoObject() as IDictionary<string, Object>;
 
-                        GetMultiSelectValues(multiSelectDetails, res[i]);
+                        GetMultiSelectValues(multiSelectDetails, res[i], true);
                         ConvertMultiSelectValueToJson(multiSelectDetails, res[i]);
 
                         foreach (var property in dic)
@@ -1534,7 +1564,7 @@ namespace d360.web.Controllers.Services
 
                     foreach (var a in assets)
                     {
-                        GetMultiSelectValues(multiSelectDetails, a);
+                        GetMultiSelectValues(multiSelectDetails, a, false);
 
                         var xNode = DynamicHelper.ConvertToXml(a, itemNode, namespaces, xItems);
                         (xNode as XElement).Add(new XAttribute("id", a.id));
