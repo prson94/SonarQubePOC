@@ -128,7 +128,7 @@ namespace igx.jobs.aws.reportlayer
 
         static void Main(string[] args)
         {
-            if (Config == null)
+           if (Config == null)
             {
                 Config = new ConfigurationBuilder()
                     .AddJsonFile("appsettings.json", true, true)
@@ -893,6 +893,40 @@ Union
     null as Email,
     Name as Resourcename
 FROM [dbo].[Group]";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region REPORING USERS
+
+                        fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'ResourceType'").ToList();
+                        var fjoins = string.Empty;
+                        var ffields = string.Empty;
+                        fieldTypes.ForEach(f => {
+                            fjoins += $@" left join field as [Type_{f.ID}] on 
+                                        [Type_{f.ID}].fieldtypeId={f.ID} and [Type_{f.ID}].ObjectType='Resource' and [Type_{f.ID}].ObjectId=r.resourceid ";
+                            ffields += $@",[Type_{f.ID}].FormattedValue as [{f.FriendlyName}]";
+                        });
+
+                        objectName = $"{SCHEMA}.[Reporting_Users]";
+                        viewNames.Add(objectName);
+
+                        selectSql = $@"select 
+                                    r.FirstName ,
+                                    r.LastName ,
+                                    r.Email, 
+                                    r.ResourceID,
+                                    '/Resource/' + cast(r.ResourceID as varchar(250)) as ResourceURI,
+                                     r.DateLastLoggedIn,r.[Status],r.IsAdministrator
+                                    {ffields}
+                                    from reporting.Global_Resource as r
+                                    {fjoins}";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
