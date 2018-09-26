@@ -885,7 +885,7 @@ FROM [dbo].[Group]";
                             ffields += $@",[Type_{f.ID}].FormattedValue as [{f.FriendlyName}]";
                         });
 
-                        objectName = $"{SCHEMA}.[Reporting_Users]";
+                        objectName = $"{SCHEMA}.[Users]";
                         viewNames.Add(objectName);
 
                         selectSql = $@"select 
