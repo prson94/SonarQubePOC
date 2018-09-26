@@ -454,9 +454,63 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.diagram.model.removeNodeDataCollection(this.diagram.model.nodeDataArray.filter(n => (<any>n).category == 'hidden'));
 
             if (this.level == 0) {
-                //show everything
-                this.diagram.model.nodeDataArray.forEach(n => this.diagram.findNodeForKey((<any>n).key).visible = true);
+                //hide everything
+                this.diagram.model.nodeDataArray.forEach(n => this.diagram.findNodeForKey((<any>n).key).visible = false);
                 this.diagramModelAsGraph().linkDataArray.forEach(l => this.diagram.findLinkForData(l).visible = true);
+
+                //traverse the diagram to figure out what to show
+                let focal = this.diagram.model.nodeDataArray.find(n => (<any>n).key == this.focal.key);
+                let current = [];
+                current.push(focal);
+                let visited = [];
+                while(current.length > 0) {
+                    let next = [];
+                    current.forEach(c => {
+                        let links = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).from == c.key);
+                        links.forEach(l => {
+                            //this.diagram.findLinkForData(l).visible = (filteredNodes.find(f => f.key == (<any>l).to) == null)
+                            if (visited.indexOf((<any>l).to) != -1)
+                                return;
+                            let node = this.diagram.model.findNodeDataForKey((<any>l).to);
+                            if (node != null) {
+                                let isVisible = (filteredNodes.find(f => f.key == (<any>node).key) == null);
+                                if (isVisible) {
+                                    next.push(node);
+                                    this.diagram.findNodeForKey(node.key).visible = true
+                                }
+
+                                visited.push((<any>node).key);
+                            }
+                        });
+                    });
+                    current = next;
+                }
+
+                current = [];
+                current.push(focal);
+                while (current.length > 0) {
+                    let next = [];
+                    current.forEach(c => {
+                        let links = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).to == c.key);
+                        links.forEach(l => {
+                            //this.diagram.findLinkForData(l).visible = (filteredNodes.find(f => f.key == (<any>l).from) == null)
+                            if (visited.indexOf((<any>l).from) != -1)
+                                return;
+                            let node = this.diagram.model.findNodeDataForKey((<any>l).from);
+                            if (node != null) {
+                                let isVisible = (filteredNodes.find(f => f.key == (<any>node).key) == null);
+                                if (isVisible) {
+                                    next.push(node);
+                                    this.diagram.findNodeForKey(node.key).visible = true
+                                }                              
+                                visited.push((<any>node).key);
+                            }
+                        });
+                    });
+                    current = next;
+                }
+
+                this.diagram.findNodeForKey((<any>focal).key).visible = true;
             } else {
                 //hiding everything
                 this.diagram.model.nodeDataArray.forEach(n => this.diagram.findNodeForKey((<any>n).key).visible = false);
