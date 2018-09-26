@@ -17232,22 +17232,31 @@ order by DN.DisplayValue");
                     {
                         Company.RuleResultQualifiers.RemoveRange(items);
 
-                        Company.SaveChanges();
+                       // Company.SaveChanges();
                     }
                 }
 
                 Company.RuleResultQualifierTypes.RemoveRange(qualifiers);
 
-                Company.SaveChanges();
+              //  Company.SaveChanges();
 
                 //delete rule results for this implementation
                 var res = Company.RuleResults.Where(x => x.RuleImplementationID == id);
                 if (res.Any())
                 {
+                    foreach(var ruleResult in res)
+                    {
+                        var ruleResultFusionAttributes = Company.RuleResultFusionAttributes.Where(x => x.RuleResultID == ruleResult.ID);
+                        if (ruleResultFusionAttributes.Any())
+                        {
+                            Company.RuleResultFusionAttributes.RemoveRange(ruleResultFusionAttributes);
+                           // Company.SaveChanges();
+                        }
+                    }
                     Company.RuleResults.RemoveRange(res);
-                    Company.SaveChanges();
+                    //Company.SaveChanges();
                 }
-
+                Company.SaveChanges();
                 Company.Delete(model);
 
                 dynamic custom = new
