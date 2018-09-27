@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, ResponseContentType, Response } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { TreeNode } from 'primeng/components/common/api';
@@ -134,7 +134,26 @@ export class ObjectDetailService extends BaseService {
     }
 
     getLookupGridExport(type: string, id: number, fieldTypeID: number, lookupType: number) {
-        window.location.assign(`api/dynamiclookup/export/${type}/${id}/${fieldTypeID}/${lookupType}/excel.xls`);
+        let uri = `api/dynamiclookup/export/${type}/${id}/${fieldTypeID}/${lookupType}/excel.xls`;
+        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(d => this.downloadFile(d));              
+
+        //window.location.assign(`api/dynamiclookup/export/${type}/${id}/${fieldTypeID}/${lookupType}/excel.xls`);
+    }
+
+    downloadFile(data: Response) {
+        var filename = `Item List ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data.blob());
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
 
     deleteSynonym(synonym: Synonym): Promise<JsonResult> {
