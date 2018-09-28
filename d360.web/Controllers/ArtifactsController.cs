@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using Dapper;
 
 namespace d360.web.Controllers
 {
@@ -51,6 +52,7 @@ namespace d360.web.Controllers
             var dbArgs = new Dapper.DynamicParameters();
 
             var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
+
 
             dbArgs.Add("typeId", assetType.ID);
 
@@ -147,7 +149,8 @@ where   A.Type = 'ArtifactType'
             fields.Add(new FieldType { Type = "Number", Name = "AssetID", FriendlyName = "Asset ID" });
             fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
-            var results = Company.Query<dynamic>(sql, dbArgs);            
+            
+            var results = Company.Query<dynamic>(sql + " OPTION (RECOMPILE)", dbArgs);            
             var document = GenerateDefaultSpreadsheet(fields, results);
             
             var stream = new MemoryStream();
