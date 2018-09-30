@@ -6,13 +6,14 @@
 \d360.web\Scripts\app\*.chunk.js
 \d360.web\Scripts\app\*.bundle.js
 
+# Ignore cache files
+*.cache
 
 # Ignore .cer files
 *.cer
 
 # Ignore .pubxml files
 *.pubxml
-
 
 # Ignore all files in the Temp sub-folder
 \node_modules
@@ -30,4 +31,15 @@
 \d360.web\Content\styles\ContentFormatting.css
 \d360.web\Content\styles\Tooltip.css
 \d360.web\Content\styles\typeahead.css
+
+# Ignore retrieved packages except 2 required DLLs
+\.vs
+\.nuget
+\packages
+!repositories.config
+!\packages\gudusoft.gsqlparser.dll
+!\packages\ComponentSpace.SAML2.dll
+
+# Ignore user settings
+*.user
 
