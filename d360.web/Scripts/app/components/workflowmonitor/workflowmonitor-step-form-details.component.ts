@@ -1,7 +1,5 @@
 ﻿import { Component, OnInit, OnChanges, Input, ChangeDetectionStrategy, ChangeDetectorRef, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import {  WorkflowStepDetail } from '../../models/workflow.model';
 import * as _ from 'lodash';
 
@@ -20,7 +18,12 @@ import * as _ from 'lodash';
                         Form completed by {{form.resourceName}}
                     </div>
                     <div *ngFor="let f of form.field">
-                        <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? f['@value'] : f['@displayvalue'])}}
+                        <ng-container *ngIf="f['@fieldtype'] == 'date'">
+                            <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? getDate(f['@value']) : getDate(f['@displayvalue']))}}
+                        </ng-container>
+                        <ng-container *ngIf="f['@fieldtype'] != 'date'">
+                            <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? f['@value'] : f['@displayvalue'])}}
+                        </ng-container>
                     </div>
                 </div>
             </ng-container>
@@ -59,15 +62,12 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
         if (this.step != null) {
             if (this.step.ItemSettings.hasPendingForms) {
                 this.pendingFormList = this.step.AssignedUsers.map(a => a.FirstName + ' ' + a.LastName).join(', ');
-                //let completed = this.step.ItemFields.form.map(f => f['@ResourceID']);
-
-                //this.pendingFormList = this.step.ItemSettings.emails.email
-                //    .filter(e => e.id != 0 && completed.indexOf(e.id.toString()) == -1)
-                //    .map(e => e.name)
-                //    .filter((e, i, s) => s.indexOf(e) === i) //remove dupes
-                //    .join(', ');
             }
         }
         this.ref.markForCheck();
+    }
+
+    getDate(val: string): string {
+        return new Date(val).toLocaleDateString();
     }
 }
