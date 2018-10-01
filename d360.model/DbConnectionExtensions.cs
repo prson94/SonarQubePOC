@@ -269,99 +269,28 @@ insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, 
 	where	T.RuleID is null",
 transaction: trans, commandTimeout: 7200);
 
-                    //                    cnn.Execute(@"
-                    //merge	ResponsibilityTypeRelationRuleResult as T
-                    //    using	(
-                    //		    select	distinct
-                    //				    *
-                    //		    from	#resp
-                    //		    ) as S
-                    //    on		(
-                    //		    S.RuleID = T.RuleID
-                    //		    and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
-                    //		    and S.AssetID = T.AssetID 
-                    //		    and S.AssetTypeID = T.AssetTypeID 
-                    //		    and S.SecurityAsset = T.SecurityAsset 
-                    //		    and S.SecurityAssetID = T.SecurityAssetID 
-                    //		    and S.ApplyToType = T.ApplyToType
-                    //		    and S.Overridden = T.Overridden
-                    //		    and S.OverrideID = T.OverrideID
-                    //		    )
-                    //    when	not matched by source and T.RuleID not in (select RuleID from #ResponsibilityTypeConsideredRules) then
-                    //		    delete
-                    //    when	matched then
-                    //    update	set
-                    //		    T.Context = S.Context,
-                    //		    T.PermissionsBitMask = S.PermissionsBitMask,
-                    //		    T.IsVisible = S.IsVisible
-                    //    when	not matched by target then
-                    //    insert	(RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, PermissionsBitMask, IsVisible, Overridden, OverrideID)
-                    //    values	(S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.AssetTypeID, S.SecurityAsset, S.SecurityAssetID, S.Context, S.ApplyToType, S.PermissionsBitMask, S.IsVisible, S.Overridden, S.OverrideID);",
-                    //                    transaction: trans, commandTimeout: 7200);
-                    /*
-and (
-					    T.Context <> S.Context 
-					    or (T.Context is null and S.Context is not null)
-					    or (T.Context is not null and S.Context is null)
-					    or T.PermissionsBitMask <> S.PermissionsBitMask 
-					    or T.IsVisible <> S.IsVisible
-					    )                     
-                     */
-                    #endregion
-
-                    #region Merge overrides into final table
-
-                    //                    cnn.Execute(@"
-                    //merge	ResponsibilityTypeRelationRuleResult as T
-                    //using	(
-                    //		select	0 as RuleID,
-                    //				I.ID,
-                    //				I.ResponsibilityTypeID,
-                    //				A.ID as AssetID,
-                    //				A.Object,
-                    //				A.ObjectID,
-                    //				A.AssetTypeID,
-                    //				T.Object as Type,
-                    //				T.ObjectID as TypeID,
-                    //				I.SecurityAsset,
-                    //				I.SecurityAssetID,
-                    //				R.PermissionsBitMask,
-                    //				I.Context
-                    //		from	Asset A
-                    //				inner join AssetType T on T.ID = A.AssetTypeID
-                    //				inner join ResponsibilityTypeRelation R on R.ObjectType = T.Object and R.ObjectID = T.ObjectID
-                    //				inner join ResponsibilityTypeRelationOverrideItem I on I.AssetID = A.ID and I.ResponsibilityTypeID = R.ResponsibilityTypeID
-                    //		) as S 
-                    //on		(
-                    //		S.RuleID = T.RuleID
-                    //		and S.ID = T.OverrideID
-                    //		)
-                    //when	matched then
-                    //update	set
-                    //		T.SecurityAsset = S.SecurityAsset,
-                    //		T.SecurityAssetID = S.SecurityAssetID,
-                    //		T.PermissionsBitMask = S.PermissionsBitMask,
-                    //		T.Context = S.Context
-                    //when	not matched by target then
-                    //		insert (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, PermissionsBitMask, Context, ApplyToType, IsVisible, Overridden, OverrideID)
-                    //		values (S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.AssetTypeID, S.SecurityAsset, S.SecurityAssetID, S.PermissionsBitMask, S.Context, 0, 1, 0, S.ID);", transaction: trans, commandTimeout: 7200);
-                    /*
-                        when	matched and (
-                                            T.SecurityAsset <> S.SecurityAsset 
-                                            or T.SecurityAssetID <> S.SecurityAssetID
-                                            or T.PermissionsBitMask <> S.PermissionsBitMask 
-                                            or T.Context <> S.Context 
-                                            or (T.Context is null and S.Context is not null)
-                                            or (T.Context is not null and S.Context is null)
-                                            ) then 
-                                         */
-                    #endregion
+                    
+                    #endregion                    
 
                     trans.Commit();
                 }
                 catch
                 {
-                    trans.Rollback();
+                    try
+                    {
+                        trans.Rollback();
+                    }
+                    catch (Exception ex2)
+                    {
+
+                        // This catch block will handle any errors that may have occurred
+                        // on the server that would cause the rollback to fail, such as
+                        // a closed connection.
+
+                        Console.WriteLine("Rollback Exception Type: {0}", ex2.GetType());
+                        Console.WriteLine("  Message: {0}", ex2.Message);
+
+                    }
                     throw;
                 }
             }
