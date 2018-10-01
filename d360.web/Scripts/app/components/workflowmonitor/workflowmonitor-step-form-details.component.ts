@@ -61,7 +61,8 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
         this.pendingFormList = '';
         if (this.step != null) {
             if (this.step.ItemSettings.hasPendingForms) {
-                this.pendingFormList = this.step.AssignedUsers.map(a => a.FirstName + ' ' + a.LastName).join(', ');
+                if (this.step.AssignedUsers != null)
+                    this.pendingFormList = this.step.AssignedUsers.map(a => a.FirstName + ' ' + a.LastName).join(', ');
             }
         }
         this.ref.markForCheck();
