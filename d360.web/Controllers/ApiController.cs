@@ -4993,7 +4993,7 @@ where    A.RuleID = @id", new { id });
 
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
 
-            return Company.Query<string>(sql, new { obj = type.ToString(), id = id, fieldId = fieldType.ID }).FirstOrDefault();
+            return Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
         }
 
         /// <summary>
@@ -7669,7 +7669,7 @@ from	    TaxonomyType FAT
         {
             var sql = $"select top {num} d.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  cross apply [dbo].GetAssetDisplayValueById(ast.id) d cross apply [dbo].GetAssetUrl(ast.[object],astt.objectid, ast.objectid) u where ast.[object] = @typeName and astt.objectId = @typeId and d.DisplayValue like @search";
 
-            return Company.Query<BreadcrumbTypeAheadModel>(sql, new { typeName = objectType.ToString(), typeId = objectId, search = $"{q}%" });            
+            return Company.Query<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });            
         }
 
         #endregion
