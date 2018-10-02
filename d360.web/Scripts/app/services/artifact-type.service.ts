@@ -112,4 +112,11 @@ export class ArtifactTypeService extends BaseService {
     public deleteArtifactType(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'artifacttype', id);
     }
+
+    public getFilterListItems(id: number, type: string, fieldTypeId: number) {
+        return this.http.get(`api/${type}/${id}/grid/definition/filterValues/${fieldTypeId}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 }
