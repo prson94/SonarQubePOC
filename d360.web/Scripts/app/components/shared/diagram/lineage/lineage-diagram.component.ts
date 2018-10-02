@@ -1237,7 +1237,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private centerDiagram() {
         if (this.focal != null) {
             let node = this.diagram.findNodeForKey(this.focal.key);
-            if (node != null) {
+            if (node != null && !isNaN(node.actualBounds.x) && !isNaN(node.actualBounds.y)) {
                 this.diagram.centerRect(node.actualBounds);
             }
         }
