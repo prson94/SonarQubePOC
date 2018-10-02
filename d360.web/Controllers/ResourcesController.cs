@@ -19,6 +19,7 @@ using SpreadsheetLight;
 using System.IO;
 using d360.web.Models.Attributes;
 using d360.web.Filters;
+using Dapper;
 
 namespace d360.web.Models
 {
@@ -197,7 +198,7 @@ from	FollowDetail F
         where  {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
             RD.AssetID != 0 and RD.ApplyToType = 0";
 
-            var query = Company.Query<dynamic>(sql, new { resourceID, type, id, responsibilityTypeId });
+            var query = Company.Query<dynamic>(sql, new { resourceID, type = new DbString { Value = type, IsFixedLength = true, Length = 20, IsAnsi = true }, id, responsibilityTypeId });
 
             #region Create the list sheet
 
