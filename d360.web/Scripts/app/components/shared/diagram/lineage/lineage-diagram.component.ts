@@ -269,7 +269,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private parseData(data: any) {
-        this.diagram.startTransaction("load_all_data");
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
         dm.nodeDataArray = [];
         dm.linkDataArray = [];
@@ -396,13 +395,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.refreshControls(null);  //set buttons/expanders to defaults
 
-        this.diagram.commitTransaction("load_all_data");
-
         this.filterView(true);
         this.reOrderLayout();
     }
 
     private filterView(force: boolean = false) {
+        console.log('filterView', this.level);
 
         let filterLevel = false;
         if (this.focal != null) {
@@ -438,8 +436,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             //prevents recalculation unless the level or focal node changes
             this.previousLevel = this.level;
             this.previousFocal = this.focal;
-
-            this.diagram.startTransaction("filter_data");
 
             //remove hidden nodes and links
             this.diagram.model.nodeDataArray.forEach(n => {
@@ -623,7 +619,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
             this.diagram.layout.invalidateLayout();
             this.diagram.requestUpdate();
-            this.diagram.commitTransaction("filter_data");
         }
     }
 
