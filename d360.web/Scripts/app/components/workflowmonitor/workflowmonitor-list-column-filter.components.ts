@@ -33,7 +33,7 @@ import { setTimeout } from 'timers';
                                             <option *ngFor="let p of filter.Field?.Data?.filteritems" [value]="p">{{p}}</option>
                                         </select>
                                     </span>
-                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index" [(ngModel)]="filter.Data.value"  [showIcon]="true"    (onSelect)="onDateSelected($event,filter)" ></p-calendar>
+                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index" [(ngModel)]="filter.Data.value" placeholder="mm/dd/yyyy"   [showIcon]="true" (onBlur)="onDateBlur(filter)"   (onSelect)="onDateSelected($event,filter)" ></p-calendar>
                                     <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" required [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event" placeholder="Enter a value" style="width:100%;"> 
                                 </span>   
                         </div>
@@ -126,9 +126,19 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
     private onDateSelected($event, filter) {
         let d = new Date(Date.parse($event));
-        filter.Data.value = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+        if (d.toString() != "Invalid Date")
+            filter.Data.value = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
     }
 
+    private onDateBlur(filter) {
+
+        let d = new Date(Date.parse(filter.Data.value));
+
+        if (d.toString() != "Invalid Date")
+            filter.Data.value = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+        else
+            filter.Data.value = null;
+    }
     public resetFilters() {
         this.internalFilters.splice(0, this.internalFilters.length);
         this.internalFilters.push(new FilterExpression());
