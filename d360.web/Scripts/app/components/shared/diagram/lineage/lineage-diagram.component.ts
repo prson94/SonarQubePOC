@@ -400,7 +400,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private filterView(force: boolean = false) {
-        console.log('filterView', this.level);
 
         let filterLevel = false;
         if (this.focal != null) {
