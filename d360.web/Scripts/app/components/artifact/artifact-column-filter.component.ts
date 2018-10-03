@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
 import { SelectItem  } from 'primeng/primeng';
 import { ArtifactService } from '../../services/artifacts.service';
 import { RelationshipsService } from '../../services/relationships.service';
@@ -49,7 +49,8 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                             <span *ngSwitchDefault>
                                 <span  [ngSwitch]="filter.Field?.Data?.filtertype">
                                     <span *ngSwitchCase="'list' || 'checkedlist'"   >
-                                        <select [name]="'FilterValue_' + index" [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event" required style="width:100%;" placeholder="Choose a field">                                            
+                                        <d3s-loading [isLoading]="isLoadingFilter"></d3s-loading>
+                                        <select *ngIf="!isLoadingFilter" [name]="'FilterValue_' + index" [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event" required style="width:100%;" placeholder="Choose a field">                                            
                                             <option *ngFor="let p of filter.Field?.Data?.filteritems" [value]="p">{{p}}</option>
                                         </select>
                                     </span>
@@ -112,13 +113,15 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
     private selectedFilter: any;
 
+    private isLoadingFilter = false;
+
     private ownerShipFilter: FilterField = {
         Data: null,
         Name: 'Owned by',
         Type: FilterFieldType.Owner
     };
 
-    constructor(private relationshipsService: RelationshipsService, private attributeTypeService: AttributeTypeService, private artifactTypeService: ArtifactTypeService) {        
+    constructor(private relationshipsService: RelationshipsService, private attributeTypeService: AttributeTypeService, private artifactTypeService: ArtifactTypeService, private ref: ChangeDetectorRef) {        
         
     }
 
@@ -229,12 +232,23 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         this.filterChanged.emit({ filter: this.filters, relationshipFilter: this.relationshipFilters });
     }
 
-    private changeFilterField(target, filter) {             
-    
+    private changeFilterField(target, filter) {    
+        console.log('changeFilterField', target, filter);
         if (target.Type == FilterFieldType.Field) {
             filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
             filter.Type = FilterFieldType.Field;
+
+            if (target.Data.filtertype == 'list') {
+                let fieldId: number = +target.Data.datafield.replace('Field', '');
+                this.isLoadingFilter = true;
+                this.artifactTypeService.getFilterListItems(this.artifactType.ID, 'ArtifactType', fieldId).
+                    then(r => {
+                        filter.Field.Data.filteritems = r;
+                        this.isLoadingFilter = false;
+                        this.ref.markForCheck();
+                    });
+            }
 
             if (target.Data.columntype == "dropdownlist" || target.Data.columntype == "numberinput")
                 filter.Data.condition = "EQUAL";            

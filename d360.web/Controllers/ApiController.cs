@@ -556,7 +556,7 @@ namespace d360.web.Controllers
                 {
                     groups.Add(new GridColumnGroup { align = "center", name = i.Category.Replace(" ", ""), text = i.Category });
                 }
-                columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged));
+                columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged, false));
 
                 fields.Add(getGridFieldForColumn(i));
             });
@@ -566,7 +566,7 @@ namespace d360.web.Controllers
         {
             items.ForEach(i =>
             {
-                GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
+                GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true, false));
 
                 col.id = i.ID.ToString();
                 col.relatedfield = relatedField;
@@ -1029,6 +1029,17 @@ where   h.ID <> @t order by h.[Level] desc;
                 TopLevelFilterColumns = topLevelFilterFields,
                 IsReadOnly = isReadOnly
             });
+        }
+
+        [HttpGet, Route("{type}/{id:int}/grid/definition/filterValues/{fieldTypeId:int}")]
+        public HttpResponseMessage GetGridFilterItems(int fieldTypeId)
+        {
+            var ft = Company.GetById<FieldType>(fieldTypeId);
+            if (ft == null)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("field type"));
+
+            var gridColumn = getGridColumnForColumn(ft, 0, false, true);
+            return Request.CreateResponse(HttpStatusCode.OK, gridColumn.filteritems);
         }
 
         #endregion
