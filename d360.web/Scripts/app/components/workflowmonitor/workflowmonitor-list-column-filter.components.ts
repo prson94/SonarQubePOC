@@ -1,7 +1,8 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
-import { GridFilterExpression, GridFilterColumn,  GridFilterFieldType } from '../../models/grid-definition.model';
+import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../../models/grid-definition.model';
 import { FilterField, FilterFieldType, FilterExpression } from '../../models/filter-field.model';
+import { setTimeout } from 'timers';
 
 @Component({
     selector: 'd3s-workflowmonitor-list-column-filter',
@@ -32,7 +33,7 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                                             <option *ngFor="let p of filter.Field?.Data?.filteritems" [value]="p">{{p}}</option>
                                         </select>
                                     </span>
-                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index" [(ngModel)]="filter.Data.value"  [showIcon]="true"    (onSelect)="onDateSelected($event,filter)" ></p-calendar>
+                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index" [(ngModel)]="filter.Data.value" placeholder="mm/dd/yyyy"   [showIcon]="true" (onBlur)="onDateBlur(filter)"   (onSelect)="onDateSelected($event,filter)" ></p-calendar>
                                     <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" required [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event" placeholder="Enter a value" style="width:100%;"> 
                                 </span>   
                         </div>
@@ -53,7 +54,8 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                         </div>
                     </div>
                 </form>
-                `
+                `,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 
@@ -61,7 +63,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     @Input() fields: GridFilterColumn[];
     @Input() filters: GridFilterExpression[] = [];
     @Output() filtersChange = new EventEmitter();
- 
+
 
     connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
 
@@ -73,11 +75,12 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
     private selectedFilter: any;
 
+    constructor(private ref: ChangeDetectorRef) { }
 
 
     ngOnInit() {
 
-       this.addFilter();
+        this.addFilter();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -110,7 +113,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
 
     private onSubmit() {
-       
+
         this.filters = [];
         for (let internalFilter of this.internalFilters) {
             if (internalFilter.Type == FilterFieldType.Field && internalFilter.Data.value) {
@@ -122,10 +125,20 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
     }
     private onDateSelected($event, filter) {
-         let d = new Date(Date.parse($event));
-        filter.Data.value = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+        let d = new Date(Date.parse($event));
+        if (d.toString() != "Invalid Date")
+            filter.Data.value = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
     }
 
+    private onDateBlur(filter) {
+
+        let d = new Date(Date.parse(filter.Data.value));
+
+        if (d.toString() != "Invalid Date")
+            filter.Data.value = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+        else
+            filter.Data.value = null;
+    }
     public resetFilters() {
         this.internalFilters.splice(0, this.internalFilters.length);
         this.internalFilters.push(new FilterExpression());
@@ -141,7 +154,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
             filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
             filter.Type = FilterFieldType.Field;
-       
+
             if (target.Data.columntype == "dropdownlist" || target.Data.columntype == "numberinput")
                 filter.Data.condition = "EQUAL";
             else
@@ -155,17 +168,23 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
             else
                 filter.Data.fieldtype = GridFilterFieldType.Normal;
         }
-        
+
     }
 
     private addFilter() {
         this.internalFilters.push(new FilterExpression());
+        setTimeout(() => {
+            this.ref.markForCheck();
+        }, 50);
     }
 
 
     private removeFilter(filter: FilterExpression) {
         let index = this.internalFilters.indexOf(filter);
         this.internalFilters.splice(index, 1);
+        setTimeout(() => {
+            this.ref.markForCheck();
+        }, 50);
     }
 };
 
