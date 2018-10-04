@@ -99,7 +99,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private focal: any = null;
     private previousFocal: any = null;
     private assetTypeFilters: AssetTypeFilter[] = [];
-    private levelList: any[] = []; 
+    private levelList: any[] = [];
     private showSidebar = false;
     private sidebarViews: SidebarView[] = [];
     private currentSidebarView: SidebarView;
@@ -122,7 +122,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.objectSearchSub = this.lineageService.getLineageObjects(this.objectSource$)
             .subscribe(res => {
-                                this.objects = res.results.results;
+                this.objects = res.results.results;
                 if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0)
                     this.totalRecords = res.results.count;
 
@@ -147,7 +147,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.diagram.div = null;
             if (this.palette != null && this.palette.div != null)
                 this.palette.div = null;
-            
+
             this.selectedData = null;
 
             this.initializeDiagram();
@@ -172,7 +172,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     //#region helper methods
 
-    private initializeDiagram(): Promise<any> {    
+    private initializeDiagram(): Promise<any> {
 
         if (this.diagram != null) {
             this.reOrderLayout();
@@ -233,7 +233,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             },
             {
                 name: 'Info',
-                tabs: ['Summary','Details'],
+                tabs: ['Summary', 'Details'],
                 currentTab: 'Summary'
             },
             {
@@ -309,7 +309,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
                 model.category = (d.object == this.objectType && d.objectId == this.objectID) ? 'focal' : 'object';
 
-                if (!this.assetTypeFilters.find(f => f.id == model.assetTypeId)){
+                if (!this.assetTypeFilters.find(f => f.id == model.assetTypeId)) {
                     this.assetTypeFilters.push({
                         id: model.assetTypeId,
                         name: model.objectTypeName,
@@ -458,7 +458,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 let current = [];
                 current.push(focal);
                 let visited = [];
-                while(current.length > 0) {
+                while (current.length > 0) {
                     let next = [];
                     current.forEach(c => {
                         let links = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).from == c.key);
@@ -497,7 +497,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                                 if (isVisible) {
                                     next.push(node);
                                     this.diagram.findNodeForKey(node.key).visible = true
-                                }                              
+                                }
                                 visited.push((<any>node).key);
                             }
                         });
@@ -730,7 +730,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.readonly == false) {
             this.loadIntersectTypes()
                 .then(() => this.loadObjectTypes());
-        } 
+        }
     }
 
     private loadObjectTypes(): Promise<any> {
@@ -768,7 +768,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.lazyLoad({
             first: 0,
             rows: 10,
-            globalFilter: (this.globalFilterRef != null && this.globalFilterRef.nativeElement != null) ? this.globalFilterRef.nativeElement.value : '' 
+            globalFilter: (this.globalFilterRef != null && this.globalFilterRef.nativeElement != null) ? this.globalFilterRef.nativeElement.value : ''
         });
     }
 
@@ -869,7 +869,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     lns.predicate = p.name;
                     model.Links.push(lns);
                 });
-                
+
             } else {
                 model.Links.push(ln);
             }
@@ -1106,7 +1106,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 }
 
                 //console.log('ChangedSelection', _.cloneDeep(this.selectedData));
-                
+
             }
         }
 
@@ -1144,7 +1144,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         let sel = this.diagram.selection.toArray();
         let deleteParts: go.Part[] = [];
-        
+
         sel.forEach(n => {
             if (n.data.diagramObjectType == DiagramObjectType.Node) {
                 //focal node cannot be deleted
@@ -1159,7 +1159,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
             else if (n.data.diagramObjectType == DiagramObjectType.Link) {
                 if (!this.canDelete && !n.data.isNew)
-                        return;
+                    return;
                 deleteParts.push(n);
             }
         });
@@ -1167,7 +1167,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.removeParts(deleteParts, false);
         this.diagram.commitTransaction("Delete");
     }
-    
+
     private LinkDrawn(e: any) {
         //console.log('LinkDrawn', e);
         let data = e.subject.data;
@@ -1366,12 +1366,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         let dg = this.g(go.Diagram, 'LineageDiagram', {
             initialContentAlignment: go.Spot.Center,
-//            initialViewportSpot: go.Spot.Center,
-  //          initialDocumentSpot: go.Spot.Center,
+            //            initialViewportSpot: go.Spot.Center,
+            //          initialDocumentSpot: go.Spot.Center,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
-          //  initialPosition: new go.Point(125, 125),
+            //  initialPosition: new go.Point(125, 125),
             layout: this.g(go.LayeredDigraphLayout, {
                 direction: 0,
                 layerSpacing: 25,
@@ -1574,14 +1574,14 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.g(go.Shape, {
                 stroke: "gray", strokeWidth: 2
             },
-                new go.Binding("stroke", "valid", function (h) { return h  ? "gray" : "#f00" }),
+                new go.Binding("stroke", "valid", function (h) { return h ? "gray" : "#f00" }),
                 {
                     toolTip: this.bindTooltip("fullText")
                 }
             ),
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
-                new go.Binding("stroke", "valid", function (h) { return h  ? "gray" : "#f00" }),
-                new go.Binding("fill", "valid", function (h) { return h  ? "gray" : "#f00" })), // the arrowhead
+                new go.Binding("stroke", "valid", function (h) { return h ? "gray" : "#f00" }),
+                new go.Binding("fill", "valid", function (h) { return h ? "gray" : "#f00" })), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
                     visible: false,
@@ -1621,7 +1621,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 {
                     toolTip: this.showTooltip("Pending Add")
                 }
-            ), 
+            ),
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
@@ -1751,7 +1751,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         return this.g(go.Adornment, "Auto",
             this.g(go.Shape, { fill: "#333" }),
             this.g(go.TextBlock, { margin: 4, text: text, stroke: "#fff" }
-        ));
+            ));
     }
 
     private bindTooltip(prop: string): go.Adornment {

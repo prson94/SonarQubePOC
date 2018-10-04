@@ -179,7 +179,7 @@ from	FollowDetail F
 		    inner join Asset A on A.AssetTypeID = T.ID
             cross apply [dbo].GetAssetTextPathById(A.ID, ' / ') TP
 		where {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
-            ResourceID = @resourceID and AssetID = 0 and ApplyToType = 1
+            ResourceID = @resourceID and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
 		
 		union all
 
@@ -196,7 +196,7 @@ from	FollowDetail F
                 cross apply [dbo].GetAssetTextPathById(RD.AssetID, ' / ') TP
 		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @type and T.ObjectID = @id
         where  {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
-            RD.AssetID != 0 and RD.ApplyToType = 0";
+            RD.AssetID != 0 and RD.ApplyToType = 0 and RD.IsVisible = 1";
 
             var query = Company.Query<dynamic>(sql, new { resourceID, type = new DbString { Value = type, IsFixedLength = true, Length = 20, IsAnsi = true }, id, responsibilityTypeId });
 
