@@ -25,34 +25,6 @@ namespace d360.model
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultFixed);
 
-
-            using (SqlTransaction trans = cnn.BeginTransaction())
-            {
-                try
-                {
-
-                }
-                catch
-                {
-                    try
-                    {
-                        trans.Rollback();
-                    }
-                    catch (Exception ex)
-                    {
-
-                        // This catch block will handle any errors that may have occurred
-                        // on the server that would cause the rollback to fail, such as
-                        // a closed connection.
-
-                        Console.WriteLine("Rollback Exception Type: {0}", ex.GetType());
-                        Console.WriteLine("  Message: {0}", ex.Message);
-
-                    }
-                    throw;
-                }
-            }
-
             #region Create temporary tables
 
             using (SqlTransaction trans = cnn.BeginTransaction())
