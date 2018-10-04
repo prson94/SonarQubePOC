@@ -15390,6 +15390,10 @@ order by TP.TextPath";
             {
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                //setting all permission as default
+                int allPermissions = Permission.DeleteAsset.GetList().Sum(i => i.Value);
+                model.ResponsibilityTypeRelations.ToList().
+                    ForEach( x => { x.PermissionsBitMask = allPermissions;});
 
                 Company.Add(model);
 
