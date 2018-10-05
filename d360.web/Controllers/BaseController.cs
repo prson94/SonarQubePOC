@@ -214,6 +214,11 @@ namespace d360.web.Controllers
             telemetry = null;
         }
 
+        internal ErrorResponse getErrorResponse(string title, string message)
+        {
+            return new ErrorResponse { title = title, message = message };
+        }
+
         #region Private Methods
 
         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "ID", string nameColumnOverride = "")

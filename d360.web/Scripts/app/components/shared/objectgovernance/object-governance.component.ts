@@ -13,7 +13,7 @@ import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div class="row" style="display:flex" *ngIf="!isLoading" [ngClass]="{'activeTab':hasActiveTab()}">
                         <div class="col s12" [ngClass]="{'inactive': (hasActiveTab() && !showHealthDetails), 'active-left':showHealthDetails, 'l3':showStatus, 'l4':!showStatus}">                                                        
-                            <d3s-object-health [score]="statistics?.Score" [objectType]="objectType" [objectID]="objectID" [showDetails]="showHealthDetails" (showDetailsChange)="showHealthDetails=$event;showIssueDetails=false;showBoardDetails=false;"></d3s-object-health>                            
+                            <d3s-object-health [score]="statistics?.Score" [uid]="uid" [objectType]="objectType" [objectID]="objectID" [showDetails]="showHealthDetails" (showDetailsChange)="showHealthDetails=$event;showIssueDetails=false;showBoardDetails=false;"></d3s-object-health>                            
                         </div>
                         <div class="col s12" [ngClass]="{'inactive': (hasActiveTab() && !showIssueDetails), 'active':showIssueDetails, 'l3':showStatus, 'l4':!showStatus}">                                                        
                             <d3s-object-issues [issueCount]="statistics?.IssueCount" [lastIssueDate]="statistics?.IssueLast" [showDetails]="showIssueDetails" (showDetailsChange)="showIssueDetails=$event;showHealthDetails=false;showBoardDetails=false;"></d3s-object-issues>
@@ -26,7 +26,7 @@ import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
                         </div>
                     </div>
                     <div style="padding:20px;" *ngIf="showHealthDetails || showIssueDetails || showBoardDetails">
-                        <d3s-object-health-details *ngIf="showHealthDetails" [objectType]="objectType" [objectID]="objectID" [objectName]="objectName"></d3s-object-health-details>                    
+                        <d3s-object-health-details *ngIf="showHealthDetails" [uid]="uid" [objectName]="objectName"></d3s-object-health-details>
                         <d3s-workflow-issue-details *ngIf="showIssueDetails" [objectType]="objectType" [objectID]="objectID" [objectName]="objectName" (countsChanged)="updateCounts()"></d3s-workflow-issue-details>
                         <d3s-social-board *ngIf="showBoardDetails" [objectType]="objectType" [objectID]="objectID" [objectName]="objectName" (countsChanged)="updateCounts()"></d3s-social-board>
                     </div>
@@ -61,6 +61,7 @@ import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
 })
 
 export class ObjectGovernanceComponent extends BaseComponent implements OnChanges,OnDestroy {
+    @Input() uid: string;
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;
@@ -83,7 +84,7 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
     }    
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.objectType && this.objectID)
+        if (this.objectType && this.objectID && this.uid)
             this.load();
     }
 

@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using System.Data;
 using d360.core.resources;
 using System.Data.SqlClient;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace d360.core
 {
@@ -103,7 +105,23 @@ namespace d360.core
             if (place == -1)
                 return Source;
 
-            return Source.Remove(place, Find.Length).Insert(place, Replace);            
+            return Source.Remove(place, Find.Length).Insert(place, Replace);
+        }
+
+
+        public static byte[] GetD3sHash(this string inputString)
+        {
+            HashAlgorithm algorithm = SHA256.Create();  //or use SHA256.Create();
+            return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
+        }
+
+        public static string GetD3sHashString(this string inputString)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in GetD3sHash(inputString))
+                sb.Append(b.ToString("X2"));
+
+            return sb.ToString();
         }
     }
 
@@ -150,7 +168,7 @@ namespace d360.core
     {
         public static string GetFullExceptionData(this Exception ex)
         {
-            if(ex.InnerException != null && ex.InnerException.InnerException != null && ex.InnerException.InnerException.GetType() == typeof(SqlException))
+            if (ex.InnerException != null && ex.InnerException.InnerException != null && ex.InnerException.InnerException.GetType() == typeof(SqlException))
             {
                 SqlException sqlException = (SqlException)ex.InnerException.InnerException;
 
@@ -162,7 +180,7 @@ namespace d360.core
                     sb.Append(sqlError.Message);
                 }
 
-                return sb.ToString();                
+                return sb.ToString();
             }
 
             string error = "";

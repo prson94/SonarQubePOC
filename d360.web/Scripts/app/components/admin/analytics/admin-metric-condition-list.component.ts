@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
-import { Condition } from '../../../models/metrics.model';
+import { MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { MessagesService } from '../../../services/messages.service';
 
@@ -17,40 +17,35 @@ import { MessagesService } from '../../../services/messages.service';
                     <div [ngSwitch]="formMode">
                         <div *ngSwitchCase="FormMode.Default">
                             <p-dataTable #dt [value]="conditions" selectionMode="single"  [(selection)]="selection">
-                                <p-column field="fieldName" header="Field"></p-column>
-                                <p-column field="operatorName" header="Operator">
-                                </p-column>
-                                <p-column field="Value" header="Value">
-                                </p-column> 
-                                <p-column field="andOrName" header="And Or">
-                                </p-column>                          
-                                <p-column  [style]="{width:'40px'}">
+                                <p-column field="FieldTypeName" header="Field"></p-column>
+                                <p-column field="OperatorText" header="Operator" [style]="{width:'100px'}"></p-column>
+                                <p-column field="ValuesText" header="Value"></p-column>
+                                <p-column [style]="{width:'100px'}">
                                     <ng-template let-condition="rowData" let-i="rowIndex" pTemplate type="body">
                                         <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="selection = condition; delete(i)"><i class="fa fa-trash-o"></i></a>                                    
+                                            <a style="cursor:pointer;" (click)="selection = condition; edit(i)"><i class="fa fa-pencil"></i></a>   
+                                            <a style="cursor:pointer;" (click)="selection = condition; delete(i)"><i class="fa fa-trash-o"></i></a>   
                                         </div>
                                     </ng-template>
                                 </p-column> 
-                            </p-dataTable>  
+                            </p-dataTable>   
                         </div>
                         <div *ngSwitchCase="FormMode.Adding">
                             <d3s-admin-metric-condition-editor 
-                                [mapId]="mapId" 
-                                [fieldId]="0"
-                                [objectType]="objectType"
-                                [objectId]="objectId"
-                                [condition]="selection"
+                                [uid]="metricUid" 
+                                [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
+                                [assetTypeUid]="assetTypeUid"
+                                [(condition)]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
                                 (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
                             </d3s-admin-metric-condition-editor>
                         </div>
                         <div *ngSwitchCase="FormMode.Editing">
                             <d3s-admin-metric-condition-editor 
-                                [mapId]="mapId" 
-                                [fieldId]="selection?.FieldTypeID"
-                                [objectType]="objectType"
-                                [objectId]="objectId"
-                                [condition]="selection"
+                                [uid]="metricUid" 
+                                [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
+                                [assetTypeUid]="assetTypeUid"
+                                [(condition)]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
                                 (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
                             </d3s-admin-metric-condition-editor>
@@ -75,23 +70,22 @@ import { MessagesService } from '../../../services/messages.service';
 })
 
 export class AdminMetricConditionListComponent extends BaseComponent implements OnInit, OnChanges {
-    @Input() mapId: number;
-    @Input() objectType: string;
-    @Input() objectId: number;
+    @Input() metricUid: string;
+    @Input() assetTypeUid: string;
     @Input() conditions = [];
+    @Input() metricConditionListFieldTypes: MetricFieldTypeViewModel[] = [];
+
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();
     @Output() addClick = new EventEmitter();
     @Output() conditionsChange = new EventEmitter();
 
     @Output() formModeChange = new EventEmitter();
-
-    private selection = null;
+    
+    private selection: MetricAssetVersionConditionViewModel = null;
     private selectedIndex = -1;
     private formMode = FormMode.Default;
     FormMode = FormMode;
-
-
 
     private operators = [
         { value: 'eq', label: '=' },
@@ -100,11 +94,6 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         { value: 'lte', label: '<=' },
         { value: 'gt', label: '>' },
         { value: 'gte', label: '>=' },
-    ];
-
-    private andOr = [
-        { value: 'a', label: 'And' },
-        { value: 'o', label: 'Or' },
     ];
 
     constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
@@ -117,15 +106,18 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
 
     ngOnChanges() {
         this.load();
-
     }
 
     load(): Promise<any> {
         this.isLoading = true;
 
         this.conditions.forEach(c => {
-            c.operatorName = this.operators.find(o => o.value == c.Operator).label;
-            c.andOrName = this.andOr.find(o => o.value == c.AndOr).label;
+            c.OperatorText = this.operators.find(o => o.value == c.Operator).label;
+
+            let field = this.metricConditionListFieldTypes.find(f => f.ID == c.FieldTypeID);
+            if (field != null) {
+                c.FieldTypeName = field.Name;
+            }
         });
         this.isLoading = false;
 
@@ -133,13 +125,15 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     }
 
     add() {
-        this.selection = new Condition();
-        this.selection.MapID = this.mapId;
+        this.selection = new MetricAssetVersionConditionViewModel();
+        this.selection.IsEditMode = false;
+        //this.selection. = this.mapId;
         this.formMode = FormMode.Adding;
         this.formModeChange.emit(this.formMode);
     }
 
     edit(e: any) {
+        this.selection.IsEditMode = true;
         this.formMode = FormMode.Editing;
         this.formModeChange.emit(this.formMode);
     }
@@ -157,11 +151,12 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         this.formModeChange.emit(this.formMode);
     }
 
-    save(e: any) {
-        e.operatorName = this.operators.find(o => o.value == e.Operator).label;
-        e.andOrName = this.andOr.find(o => o.value == e.AndOr).label;
+    save(e: MetricAssetVersionConditionViewModel) {
+        e.OperatorText = this.operators.find(o => o.value == e.Operator).label;
 
-        this.conditions.push(e);
+        if (!e.IsEditMode) {
+            this.conditions.push(e);
+        }
 
         this.conditions.slice();
         this.conditionsChange.emit(this.conditions);

@@ -188,6 +188,19 @@ namespace d360.web.Models
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
+    public class ErrorResponse
+    {
+        [DataMember]
+        public string type { get; set; } = "error";
+
+        [DataMember]
+        public string title { get; set; } = "An error occured";
+
+        [DataMember]
+        public string message { get; set; } = "error";
+    }
+
+    [DataContract(Namespace = constants.NAMESPACE)]
     public class EditableField : ReadOnlyField
     {
         public EditableField()
@@ -969,17 +982,66 @@ namespace d360.web.Models
         public string ErrorMessage { get; set; }
     }
 
-    public class MetricGroupFormModel
+    public class MetricAssetViewModel
     {
-        public MetricGroup Group { get; set; }
-        public List<MetricGroup> Children { get; set; } = new List<MetricGroup>();
+        #region From metric asset itself
+
+        public Guid Uid { get; set; }
+
+        public Guid? ParentUid { get; set; }
+
+        public Guid AssetTypeUid { get; set; }
+
+        public bool IsGroup { get; set; }
+
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        #endregion
+
+        #region From metric asset version
+
+        public DateTime EffectiveDate { get; set; }
+
+        public decimal Weight { get; set; }
+
+        [StringLength(1)]
+        public string ConditionAndOr { get; set; }
+
+        #endregion
+
+        #region From metric asset version condition
+
+        public List<MetricAssetVersionConditionViewModel> Conditions { get; set; } = new List<MetricAssetVersionConditionViewModel>();
+
+        #endregion
+
+        //public List<MetricAssetViewModel> Children { get; set; } = new List<MetricAssetViewModel>();
 
     }
 
-    public class MetricMapFormModel
+    public class MetricAssetVersionConditionViewModel
     {
-        public MetricMap Map { get; set; }
-        public List<MetricCondition> Conditions { get; set; } = new List<MetricCondition>();
+        public int FieldTypeID { get; set; }
+
+        [StringLength(10)]
+        public string Operator { get; set; }
+
+        public string Values { get; set; }
     }
 
+    public class MetricFieldTypeViewModel
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public List<MetricFieldTypeValueViewModel> Values { get; set; }
+    }
+
+    public class MetricFieldTypeValueViewModel
+    {
+        public int Value { get; set; }
+        public string Text { get; set; }
+    }
 }
