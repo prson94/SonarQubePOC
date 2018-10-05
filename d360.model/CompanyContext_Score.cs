@@ -276,7 +276,7 @@ from	h
                 var row = table.NewRow();
                 row["AssetUid"] = item.AssetUid;
                 row["MetricAssetUid"] = item.MetricAssetUid;
-                row["Date"] = item.EffectiveDate ?? DateTime.UtcNow.Date;
+                row["EffectiveDate"] = item.EffectiveDate ?? DateTime.UtcNow.Date;
                 row["Result"] = item.Result;
                 row["IsValidAsset"] = false;
                 row["IsValidMetric"] = false;
