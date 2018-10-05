@@ -66,5 +66,4 @@
 /d360.web/Content/styles/ang.css
 /d360.web/package-lock.json
 
-/d360.database.company/d360.database.company.dbmdl
-/d360.database.company/d360.database.company.jfm
+/d360.database.company

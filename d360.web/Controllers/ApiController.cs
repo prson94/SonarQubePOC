@@ -556,7 +556,7 @@ namespace d360.web.Controllers
                 {
                     groups.Add(new GridColumnGroup { align = "center", name = i.Category.Replace(" ", ""), text = i.Category });
                 }
-                columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged));
+                columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged, false));
 
                 fields.Add(getGridFieldForColumn(i));
             });
@@ -566,7 +566,7 @@ namespace d360.web.Controllers
         {
             items.ForEach(i =>
             {
-                GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
+                GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true, false));
 
                 col.id = i.ID.ToString();
                 col.relatedfield = relatedField;
@@ -1029,6 +1029,17 @@ where   h.ID <> @t order by h.[Level] desc;
                 TopLevelFilterColumns = topLevelFilterFields,
                 IsReadOnly = isReadOnly
             });
+        }
+
+        [HttpGet, Route("{type}/{id:int}/grid/definition/filterValues/{fieldTypeId:int}")]
+        public HttpResponseMessage GetGridFilterItems(int fieldTypeId)
+        {
+            var ft = Company.GetById<FieldType>(fieldTypeId);
+            if (ft == null)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("field type"));
+
+            var gridColumn = getGridColumnForColumn(ft, 0, false, true);
+            return Request.CreateResponse(HttpStatusCode.OK, gridColumn.filteritems);
         }
 
         #endregion
@@ -4995,7 +5006,7 @@ where    A.RuleID = @id", new { id });
 
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
 
-            return Company.Query<string>(sql, new { obj = type.ToString(), id = id, fieldId = fieldType.ID }).FirstOrDefault();
+            return Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
         }
 
         /// <summary>
@@ -7671,7 +7682,7 @@ from	    TaxonomyType FAT
         {
             var sql = $"select top {num} d.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  cross apply [dbo].GetAssetDisplayValueById(ast.id) d cross apply [dbo].GetAssetUrl(ast.[object],astt.objectid, ast.objectid) u where ast.[object] = @typeName and astt.objectId = @typeId and d.DisplayValue like @search";
 
-            return Company.Query<BreadcrumbTypeAheadModel>(sql, new { typeName = objectType.ToString(), typeId = objectId, search = $"{q}%" });            
+            return Company.Query<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });            
         }
 
         #endregion
@@ -8119,6 +8130,25 @@ where	Type = 'ReferenceItemType'
             return Company.ApiEntityUris.Where(x => x.EntityID == entity.ID).ToList();
         }
 
+        #endregion
+
+        #region LogClientError
+        [HttpPost, Route("log/clienterror")]
+        public HttpResponseMessage SaveClientError(ClientErrorModel model)
+        {
+            try
+            {
+                IDictionary<string, string> properties = new Dictionary<string, string>();
+                properties.Add("name", model.Name);
+                properties.Add("stacktrace", model.Stack);
+                this.SendException(new ClientSideException(model.Message), properties);
+                return Request.CreateResponse(HttpStatusCode.OK);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
         #endregion
     }
 } 

@@ -361,6 +361,7 @@
     <Compile Include="enums\TemplateAction.cs" />
     <Compile Include="enums\Workflow\CriteriaOperator.cs" />
     <Compile Include="exceptions\BaseException.cs" />
+    <Compile Include="exceptions\ClientSideException.cs" />
     <Compile Include="exceptions\ConflictException.cs" />
     <Compile Include="exceptions\GenericException.cs" />
     <Compile Include="exceptions\InvalidFieldException.cs" />

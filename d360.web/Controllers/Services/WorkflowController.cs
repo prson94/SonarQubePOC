@@ -2685,7 +2685,7 @@ order by wi.StartedOn desc";
                         }
                         else if (detail.Settings.FormResponseType == FormResponseType.Majority && total > 0)
                         {
-                            detail.ItemSettings.hasPendingForms = ((numResponses / total) <= 0.5);
+                            detail.ItemSettings.hasPendingForms = ((numResponses / (double)total) <= 0.5);
                         }
                         else if (detail.Settings.FormResponseType == FormResponseType.All)
                         {

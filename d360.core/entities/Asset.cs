@@ -3,6 +3,7 @@ using d360.core.enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -17,7 +18,7 @@ namespace d360.core.entities
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid uid { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]
@@ -32,10 +33,10 @@ namespace d360.core.entities
         [DataMember]
         public Guid UID { get; set; }
 
-        [IgnoreDataMember, ReadOnly(true)]
+        [IgnoreDataMember, ReadOnly(true), Column(TypeName = "varchar"), StringLength(50)]
         public string KeyHash { get; set; }
 
-        [IgnoreDataMember, ReadOnly(true)]
+        [IgnoreDataMember, ReadOnly(true), Column(TypeName = "varchar"), StringLength(50)]
         public string FieldHash { get; set; }
 
         [IgnoreDataMember]

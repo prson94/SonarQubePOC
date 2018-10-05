@@ -9,16 +9,22 @@ export class BaseService {
     
     constructor(protected messages: MessagesService) {  }
 
-    handleError(error: HttpErrorResponse) {
+    handleError(error: HttpErrorResponse) {  
+
+        this.messages.saveClientError(error)
+            .then(res => {
+                console.log("Error logged on server");
+            });
+
         if (error.error instanceof Error) {
             // A client-side or network error occurred. Handle it accordingly.
             console.log('An error occurred[client side]:', error.error.message);
-        } else {
+        } else {        
             // server side error
-            //console.log('An error occurred[server side]', error);
+            console.log('An error occurred[server side]', error);
             if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
         }
-        return Promise.reject(error.error || error);
+        return Promise.reject(error.message || error);
     }
     
     protected deleteDynamicWithResult(http: Http, type: string, id: number): Promise<JsonResult> {

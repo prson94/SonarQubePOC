@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -11,13 +13,13 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid uid { get; set; }
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(250)]
         public string DataSource { get; set; }
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Type { get; set; }
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(250)]
         public string ExternalID { get; set; }
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string FieldHash { get; set; }
     }
 }

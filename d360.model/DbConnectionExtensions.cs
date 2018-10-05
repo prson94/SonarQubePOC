@@ -14,7 +14,7 @@ namespace d360.model
     public static class DbConnectionExtensions
     {
         #region Responsibility Rule Generation
-        
+
         /// <summary>
         /// Re-process responsibility rules. By default this will re-process ALL rules unless passing a specific rule ID.
         /// </summary>
@@ -25,11 +25,12 @@ namespace d360.model
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultFixed);
 
+            #region Create temporary tables
+
             using (SqlTransaction trans = cnn.BeginTransaction())
             {
                 try
                 {
-                    #region Create temporary tables
 
                     cnn.Execute(@"
     drop table if exists #resp;
@@ -74,23 +75,50 @@ namespace d360.model
     CREATE CLUSTERED INDEX CIX_TempResponsibilityTypeConsideredRules ON #ResponsibilityTypeConsideredRules (RuleID);
     ", transaction: trans);
 
-                    #endregion
-
-                    List<ResponsibilityTypeRelationRule> rules = null;
-                    if (ruleID.HasValue)
+                    trans.Commit();
+                }
+                catch
+                {
+                    try
                     {
-                        rules = cnn.Query<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule where ID = @id", new { id = ruleID.Value }, transaction: trans).ToList();
+                        trans.Rollback();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        rules = cnn.Query<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule", transaction: trans).ToList();
+
+                        // This catch block will handle any errors that may have occurred
+                        // on the server that would cause the rollback to fail, such as
+                        // a closed connection.
+
+                        Console.WriteLine("Rollback Exception Type: {0}", ex.GetType());
+                        Console.WriteLine("  Message: {0}", ex.Message);
+
                     }
+                    throw;
+                }
+            }
 
-                    string ruleFailureLog = "";
+            #endregion
 
-                    List<int> rulesRequiringRun = new List<int>();
+            List<ResponsibilityTypeRelationRule> rules = null;
 
-                    rules.ForEach(rule =>
+            if (ruleID.HasValue)
+            {
+                rules = cnn.Query<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule where ID = @id", new { id = ruleID.Value }).ToList();
+            }
+            else
+            {
+                rules = cnn.Query<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule").ToList();
+            }
+
+            string ruleFailureLog = "";
+            List<int> rulesRequiringRun = new List<int>();
+
+            rules.ForEach(rule =>
+            {
+                using (SqlTransaction trans = cnn.BeginTransaction())
+                {
+                    try
                     {
                         var shouldrunRule = cnn.Query<bool>("exec ResponsibilityRuleShouldRun @id", new { id = rule.ID }, transaction: trans).Single();
 
@@ -120,7 +148,7 @@ namespace d360.model
                                 {
                                     var thenSql = cnn.GetThenResultsSql(rule, false, false, "A.AssetID");
                                     var whenSql = cnn.GetWhenResultsSql(rule, false);
-                                    sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {string.Format(thenSql, (string.IsNullOrEmpty(whenSql) ? "" : $"cross apply ({whenSql}) A") )}";
+                                    sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {string.Format(thenSql, (string.IsNullOrEmpty(whenSql) ? "" : $"cross apply ({whenSql}) A"))}";
                                     cnn.Execute(sqlToExecute, transaction: trans, commandTimeout: 1200);
                                 }
                                 catch (Exception ex)
@@ -131,8 +159,36 @@ namespace d360.model
 
                             cnn.Execute("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = rule.ID }, transaction: trans);
                         }
-                    });
 
+                        trans.Commit();
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            trans.Rollback();
+                        }
+                        catch (Exception ex)
+                        {
+
+                            // This catch block will handle any errors that may have occurred
+                            // on the server that would cause the rollback to fail, such as
+                            // a closed connection.
+
+                            Console.WriteLine("Rollback Exception Type: {0}", ex.GetType());
+                            Console.WriteLine("  Message: {0}", ex.Message);
+
+                        }
+                        throw;
+                    }
+                }
+              
+            });
+
+            using (SqlTransaction trans = cnn.BeginTransaction())
+            {
+                try
+                {
                     #region  Insert into temporary ruleID table to ignore.
 
                     var ruleIdTable = new System.Data.DataTable();
@@ -269,99 +325,28 @@ insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, 
 	where	T.RuleID is null",
 transaction: trans, commandTimeout: 7200);
 
-                    //                    cnn.Execute(@"
-                    //merge	ResponsibilityTypeRelationRuleResult as T
-                    //    using	(
-                    //		    select	distinct
-                    //				    *
-                    //		    from	#resp
-                    //		    ) as S
-                    //    on		(
-                    //		    S.RuleID = T.RuleID
-                    //		    and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
-                    //		    and S.AssetID = T.AssetID 
-                    //		    and S.AssetTypeID = T.AssetTypeID 
-                    //		    and S.SecurityAsset = T.SecurityAsset 
-                    //		    and S.SecurityAssetID = T.SecurityAssetID 
-                    //		    and S.ApplyToType = T.ApplyToType
-                    //		    and S.Overridden = T.Overridden
-                    //		    and S.OverrideID = T.OverrideID
-                    //		    )
-                    //    when	not matched by source and T.RuleID not in (select RuleID from #ResponsibilityTypeConsideredRules) then
-                    //		    delete
-                    //    when	matched then
-                    //    update	set
-                    //		    T.Context = S.Context,
-                    //		    T.PermissionsBitMask = S.PermissionsBitMask,
-                    //		    T.IsVisible = S.IsVisible
-                    //    when	not matched by target then
-                    //    insert	(RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, PermissionsBitMask, IsVisible, Overridden, OverrideID)
-                    //    values	(S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.AssetTypeID, S.SecurityAsset, S.SecurityAssetID, S.Context, S.ApplyToType, S.PermissionsBitMask, S.IsVisible, S.Overridden, S.OverrideID);",
-                    //                    transaction: trans, commandTimeout: 7200);
-                    /*
-and (
-					    T.Context <> S.Context 
-					    or (T.Context is null and S.Context is not null)
-					    or (T.Context is not null and S.Context is null)
-					    or T.PermissionsBitMask <> S.PermissionsBitMask 
-					    or T.IsVisible <> S.IsVisible
-					    )                     
-                     */
-                    #endregion
 
-                    #region Merge overrides into final table
-
-                    //                    cnn.Execute(@"
-                    //merge	ResponsibilityTypeRelationRuleResult as T
-                    //using	(
-                    //		select	0 as RuleID,
-                    //				I.ID,
-                    //				I.ResponsibilityTypeID,
-                    //				A.ID as AssetID,
-                    //				A.Object,
-                    //				A.ObjectID,
-                    //				A.AssetTypeID,
-                    //				T.Object as Type,
-                    //				T.ObjectID as TypeID,
-                    //				I.SecurityAsset,
-                    //				I.SecurityAssetID,
-                    //				R.PermissionsBitMask,
-                    //				I.Context
-                    //		from	Asset A
-                    //				inner join AssetType T on T.ID = A.AssetTypeID
-                    //				inner join ResponsibilityTypeRelation R on R.ObjectType = T.Object and R.ObjectID = T.ObjectID
-                    //				inner join ResponsibilityTypeRelationOverrideItem I on I.AssetID = A.ID and I.ResponsibilityTypeID = R.ResponsibilityTypeID
-                    //		) as S 
-                    //on		(
-                    //		S.RuleID = T.RuleID
-                    //		and S.ID = T.OverrideID
-                    //		)
-                    //when	matched then
-                    //update	set
-                    //		T.SecurityAsset = S.SecurityAsset,
-                    //		T.SecurityAssetID = S.SecurityAssetID,
-                    //		T.PermissionsBitMask = S.PermissionsBitMask,
-                    //		T.Context = S.Context
-                    //when	not matched by target then
-                    //		insert (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, PermissionsBitMask, Context, ApplyToType, IsVisible, Overridden, OverrideID)
-                    //		values (S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.AssetTypeID, S.SecurityAsset, S.SecurityAssetID, S.PermissionsBitMask, S.Context, 0, 1, 0, S.ID);", transaction: trans, commandTimeout: 7200);
-                    /*
-                        when	matched and (
-                                            T.SecurityAsset <> S.SecurityAsset 
-                                            or T.SecurityAssetID <> S.SecurityAssetID
-                                            or T.PermissionsBitMask <> S.PermissionsBitMask 
-                                            or T.Context <> S.Context 
-                                            or (T.Context is null and S.Context is not null)
-                                            or (T.Context is not null and S.Context is null)
-                                            ) then 
-                                         */
                     #endregion
 
                     trans.Commit();
                 }
                 catch
                 {
-                    trans.Rollback();
+                    try
+                    {
+                        trans.Rollback();
+                    }
+                    catch (Exception ex)
+                    {
+
+                        // This catch block will handle any errors that may have occurred
+                        // on the server that would cause the rollback to fail, such as
+                        // a closed connection.
+
+                        Console.WriteLine("Rollback Exception Type: {0}", ex.GetType());
+                        Console.WriteLine("  Message: {0}", ex.Message);
+
+                    }
                     throw;
                 }
             }
@@ -398,7 +383,9 @@ and (
                     {
                         if (w.FieldTypeID > 0)
                         {
-                            whenSql += $"inner join Field F{fCount} on F{fCount}.ObjectType = A.Object and F{fCount}.ObjectID = A.ObjectID and F{fCount}.FieldTypeID = {w.FieldTypeID} and F{fCount}.Value = '{w.Value}' ";
+
+                            whenSql += $"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
+                            whenSql += $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
                         }
                         else
                         {
@@ -431,7 +418,7 @@ and (
             string obj = "";
             string uniqueIdField = "ID";
 
-            if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object !=null))
+            if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null))
             {
                 thenSql = $@"select {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}";
 
@@ -460,7 +447,8 @@ and (
                     {
                         if (rc.FieldTypeID > 0)
                         {
-                            thenSql += $"inner join Field F{tCount} on F{tCount}.ObjectType = '{obj}' and F{tCount}.ObjectID = O.{uniqueIdField} and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
+                            thenSql += $"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ";
+                            thenSql += $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{rc.Value}' ) FV{tCount}";
                         }
                         else
                         {
@@ -491,8 +479,8 @@ and (
                 }
             }
 
-            if(!string.IsNullOrEmpty(thenSql) || !string.IsNullOrEmpty(whenSuffix))
-            thenSql += " {0} " + whenSuffix;
+            if (!string.IsNullOrEmpty(thenSql) || !string.IsNullOrEmpty(whenSuffix))
+                thenSql += " {0} " + whenSuffix;
 
             return thenSql;
         }
@@ -513,22 +501,22 @@ and (
 
         #endregion
 
-        public static int UpdateFieldMove(this DbConnection cnn, FieldType toField,FieldType fromField ,int currentResourceID)
+        public static int UpdateFieldMove(this DbConnection cnn, FieldType toField, FieldType fromField, int currentResourceID)
         {
             string updateSql = $" Update fieldtype set ColumnOrder ={toField.ColumnOrder},UpdatedBy = {currentResourceID} where Id={toField.ID};";
-            if (fromField!=null)
-            updateSql += $" Update fieldtype set ColumnOrder ={fromField.ColumnOrder},UpdatedBy = {currentResourceID} where Id={fromField.ID};";
+            if (fromField != null)
+                updateSql += $" Update fieldtype set ColumnOrder ={fromField.ColumnOrder},UpdatedBy = {currentResourceID} where Id={fromField.ID};";
             return cnn.Execute(updateSql);
         }
 
         public static int UpdateFieldMove(this DbConnection cnn, List<FieldType> fields, int currentResourceID)
         {
             StringBuilder updateSql = new StringBuilder();
-            foreach(var f in fields)
+            foreach (var f in fields)
             {
-                updateSql.Append( $" Update fieldtype set ColumnOrder ={f.ColumnOrder},UpdatedBy = {currentResourceID} where Id={f.ID};");
+                updateSql.Append($" Update fieldtype set ColumnOrder ={f.ColumnOrder},UpdatedBy = {currentResourceID} where Id={f.ID};");
             }
-            
+
             return cnn.Execute(updateSql.ToString());
         }
     }
