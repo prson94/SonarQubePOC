@@ -2640,7 +2640,7 @@ order by    rnk, [Name]";
 
         private void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
         {
-            var valueString = value.ToString();
+            var valueString = value?.ToString() ?? "";
             switch (dataType.ToUpper())
             {
                 case "DECIMAL":
