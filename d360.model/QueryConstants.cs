@@ -874,9 +874,9 @@ select	R.SubjectName + ' ' + coalesce(R.PredicateName, 'stores') + ' ' + R.Objec
 		(
 		select substring(
 						(
-						SELECT  ', ' + D.TextPath AS 'data()' 
+						SELECT  ', ' + D.DisplayValue AS 'data()' 
 						from	MapSequenceContext MSC
-								inner join cache.ObjectDetails D on MSC.Object = D.Object and MSC.ObjectID = D.ObjectID and MSC.MapSequenceID = MS.ID
+								inner join AssetDetail D on MSC.[Object] = D.[Object] and MSC.ObjectID = D.ObjectID and MSC.MapSequenceID = MS.ID
 						FOR		XML PATH('')
 						), 2, 2500)
 		) as Contexts,
@@ -931,15 +931,6 @@ where	(
 		)
 order by MS.Sequence";
 
-        public static string ScoreTypeMetricDetailList = @"
-select	S.*,
-		D.Name as ObjectName
-from	ScoreTypeMetric S
-		inner join cache.ObjectDetails D on D.Object = S.Object and D.ObjectID = S.ObjectID 
-where   S.ScoreTypeID = @id and S.Deleted = 0
-order by D.Name, S.Name";
-
-
         public static string SynonymTypes = @"
         declare	@ot varchar(50),
 		        @otid int
@@ -951,13 +942,18 @@ order by D.Name, S.Name";
 
 
         select 
-            d.Name, d.Object + '|' + cast(d.ObjectID as varchar(50)) as [Value], d.Object, d.ObjectID from intersecttype IT        
-        inner join cache.ObjectDetails d on
+            d.[Name], d.[Object] + '|' + cast(d.ObjectID as varchar(50)) as [Value], d.[Object], d.ObjectID from intersecttype IT        
+        inner join (
+			select A.[Name], A.[Object], A.ObjectID from AssetType A
+			union all
+			select TN.[Name], 'IntersectType' as [Object], ID as ObjectID from IntersectType T
+			cross apply dbo.GetIntersectTypeNames(T.ID) TN
+		) d on
 	        case when IT.Subject = @ot then
 		        IT.Object
 	        else
 		        IT.Subject
-	        end = d.Object 
+	        end = d.[Object] 
 	        and
 	        case when IT.SubjectID = @otid then
 		        IT.ObjectID
@@ -977,9 +973,9 @@ from	Asset A
         inner join AssetType T on T.ID = A.AssetTypeID  and A.Object = @object and A.ObjectID = @objectId 
 
 select		D.Object + '|' + cast(D.ObjectID as varchar) + '|' + cast(P.ID as varchar) as ID,
-			D.ObjectTypeName + ' :: ' + D.TextPath as Name,
+			D.TypeName + ' :: ' + D.DisplayValue as Name,
             O.TargetingSubject
-from cache.ObjectDetails d		
+from AssetDetail d		
 {0}
 			inner join (
 						select	case 
@@ -1001,11 +997,11 @@ from cache.ObjectDetails d
 															    (IT.Subject = @ot and IT.SubjectID = @otid) OR
 															    (IT.Object = @ot and IT.ObjectID = @otid)
 															    )
-						) O on O.Object = D.ObjectType and O.ObjectID = D.ObjectTypeID and D.ObjectTypeName is not null and D.Object + '|' + cast(D.ObjectID as varchar) <> @object + '|' + cast(@objectId as varchar)
+						) O on O.Object = D.Type and O.ObjectID = D.TypeID and D.Object + '|' + cast(D.ObjectID as varchar) <> @object + '|' + cast(@objectId as varchar)
             inner join [Predicate] P on P.ID = @predicateId
 			where (@query = '') or (@query != '' and d.textpath like '%'+@query+'%')
-order by	D.ObjectTypeName,
-			D.TextPath
+order by	D.TypeName,
+			D.DisplayValue
 ";
 
         public static string SynonymsByObjectList = @"
@@ -1268,13 +1264,13 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
     select D.Object + cast(D.ObjectID as varchar),
 				    D.Object,
 				    D.ObjectID,
-				    D.ObjectTypeName,
-				    D.ObjectTypeName,
-				    D.ObjectType,
-				    D.ObjectTypeID,
-				    D.TextPath,
-				    D.IconBackColor,
-				    D.IconForeColor,
+				    D.TypeName as ObjectTypeName,
+				    D.TypeName as ObjectTypeName,
+				    D.Type as ObjectType,
+				    D.TypeID as ObjectTypeID,
+				    D.DisplayValue as TextPath,
+				    D.BackColor as IconBackColor,
+				    D.ForeColor as IconForeColor,
 				    case 
 					    when I.Subject = @type and I.SubjectID = @id then coalesce(P.Name, 'uses')
 					    else coalesce(P.Inverse, 'used in')
@@ -1286,7 +1282,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
     inner join IntersectType T on I.IntersectTypeID = T.ID AND
 	    ((T.Subject = @typeName and T.SubjectID = @typeId and T.Object = 'FusionAttributeType') OR
 	     (T.Object = @typeName and T.ObjectID = @typeId and T.Subject ='FusionAttributeTYpe'))
-    inner join cache.ObjectDetails D on D.Object = case 
+    inner join AssetDetail D on D.Object = case 
 												    when I.Subject = @type and I.SubjectID = @id then I.Object
 												    else I.Subject
 											       end 
@@ -1298,6 +1294,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
     left join Predicate P on P.ID = T.PredicateID
     where
     (I.Subject = @type AND I.SubjectID = @id) OR (I.Object = @type AND I.ObjectID = @id);
+
 
     insert into @links
 	    select	@type + cast(@id as varchar),
