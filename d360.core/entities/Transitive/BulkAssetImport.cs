@@ -7,9 +7,30 @@ namespace d360.core.entities
 {
     [JsonArray]
     [DataContract(Name="assets")]
-    public class BulkAssetImport : List<Dictionary<string, string>>
+    public class AssetInserts : List<AssetInsert>
     {
 
+    }
+
+    [DataContract(Name = "asset")]
+    public class AssetInsert : Dictionary<string, string>
+    {
+        [DataMember]
+        public Guid? ParentUid { get; set; }
+    }
+
+    [JsonArray]
+    [DataContract(Name = "assets")]
+    public class AssetUpdates : List<AssetUpdate>
+    {
+
+    }
+
+    [DataContract(Name = "asset")]
+    public class AssetUpdate : Dictionary<string, string>
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
     }
 
     public class AssetImportResult

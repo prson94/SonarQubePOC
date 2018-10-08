@@ -66,7 +66,11 @@ namespace d360.web.Controllers.V2
         /// Retrieves a list of all asset types classes.
         /// </summary>
         /// <returns>Returns a list of asset type classes.</returns>
-        [HttpGet, Route("classes"), SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>))]
+        [
+            HttpGet, 
+            Route("classes"), 
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>))
+        ]
         public HttpResponseMessage GetAssetTypeClassesAsync()
         {
             var prefix = "Assets.GetAssetTypeClassesAsync => ";
@@ -90,7 +94,11 @@ namespace d360.web.Controllers.V2
         /// GET a list of asset types.
         /// </summary>
         /// <returns></returns>
-        [HttpGet, Route("types"), SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>))]
+        [
+            HttpGet, 
+            Route("types"), 
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>))
+        ]
         public async Task<HttpResponseMessage> GetAssetTypesAsync()
         {
             var prefix = "Assets.GetAssetTypesAsync => ";
@@ -122,18 +130,21 @@ order by	P.[Path]
             }
         }
 
-        #region Bulk Assets
-
         /// <summary>
-        /// Takes a given set of assets and bulk inserts/updates them.
+        /// Adds a given set of assets based on the specific asset type Uid.
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
-        [HttpPost, Route("{uid}"), SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>))]
-        public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid uid)
+        [
+            HttpPost, 
+            Route("{uid}"), 
+            SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>))
+        ]
+        public async Task<IHttpActionResult> PostAssetsAsync(Guid uid, AssetInserts assets)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update assets of this type.")));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
 
             var prefix = "Assets.PostBulkAssetsAsync => ";
             var errorMessage = "";
@@ -143,11 +154,11 @@ order by	P.[Path]
                 var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with UID {uid} could not be found.")));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
 
-                var import = readRequestJsonContent<BulkAssetImport>(Request).Result;
+                //var assets = readRequestJsonContent<BulkAssetImport>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).BulkAssetsImport(QueueSource, Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID, assetType, import);
+                var results = (Company.Database.Connection as SqlConnection).InsertAssets(QueueSource, Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID, assetType, assets);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -156,11 +167,51 @@ order by	P.[Path]
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Updates a given set of assets based on the specific asset type Uid.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assets">The payload of your request.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPut,
+            Route("{uid}"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>))
+        ]
+        public async Task<IHttpActionResult> PutAssetsAsync(Guid uid, AssetUpdates assets)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
+
+            var prefix = "Assets.PostBulkAssetsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+
+                if (assetType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
+
+                //var assets = readRequestJsonContent<BulkAssetImport>(Request).Result;
+
+                var results = (Company.Database.Connection as SqlConnection).UpdateAssets(QueueSource, Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID, assetType, assets);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
 
     }
 }

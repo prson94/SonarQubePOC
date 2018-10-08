@@ -214,9 +214,24 @@ namespace d360.web.Controllers
             telemetry = null;
         }
 
-        internal ErrorResponse getErrorResponse(string title, string message)
+        internal System.Web.Http.IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
         {
-            return new ErrorResponse { title = title, message = message };
+            return ResponseMessage(
+                Request.CreateResponse(
+                    status,
+                    new ErrorResponse { title = title, message = message }
+                )
+            );
+        }
+
+        internal System.Web.Http.IHttpActionResult successMessageResponse(HttpStatusCode status, string title, string message)
+        {
+            return ResponseMessage(
+                Request.CreateResponse(
+                    status,
+                    new ConfirmResponse { title = title, message = message }
+                )
+            );
         }
 
         #region Private Methods

@@ -84,8 +84,7 @@ namespace d360.web.Models
 
         public int PredicateID { get; set; }
     }
-
-
+    
     public class NymAllocationModel
     {
         public SystemObjects Object { get; set; }
@@ -198,6 +197,19 @@ namespace d360.web.Models
 
         [DataMember]
         public string message { get; set; } = "error";
+    }
+
+    [DataContract(Namespace = constants.NAMESPACE)]
+    public class ConfirmResponse
+    {
+        [DataMember]
+        public string type { get; set; } = "confirm";
+
+        [DataMember]
+        public string title { get; set; } = "Success";
+
+        [DataMember]
+        public string message { get; set; } = "success";
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
@@ -725,8 +737,7 @@ namespace d360.web.Models
         [Display(Name = "Job Title")]
         public string Title { get; set; }
     }
-
-
+    
     public class TermsModel
     {
         public TermsModel() { }
@@ -926,8 +937,7 @@ namespace d360.web.Models
         public LineageEditorModel BusinessModel { get; set; }
         public LineageEditorTechnicalModel TechnicalModel { get; set; }
     }
-
-
+    
     public class LineageEditorRow
     {
 
