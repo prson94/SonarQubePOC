@@ -241,6 +241,7 @@ namespace igx.jobs.bulkloadprocessor
                         break;
                     case "P":   // Promotions
                         executeWithTry(companyConnection, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
+                        company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
                         break;
                     case "R":   // Relations                                
                         await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Relate);

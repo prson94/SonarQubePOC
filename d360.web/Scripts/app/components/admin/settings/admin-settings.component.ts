@@ -109,4 +109,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         if (r.test(this.companySettings.DefaultRoute))
             this.routeValidationMessage = "The value entered must be a relative url (ex: /artifact/1)";
     }
+
+    rebuildDisplayValues() {
+        this.companySettingsService.postDisplayRebuildRequest();
+    }
 }

@@ -5,6 +5,7 @@ import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { AuthenticationProperties } from '../models/authentication-properties.model';
 import { SelectItem } from 'primeng/primeng';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class CompanySettingsService extends BaseService implements ICompanySettingsService {
@@ -38,6 +39,14 @@ export class CompanySettingsService extends BaseService implements ICompanySetti
         return this.http.get(`/form/CompanySettings/groups`)
             .toPromise()
             .then(response => <SelectItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postDisplayRebuildRequest(): Promise<JsonResult> {
+        return this.http
+            .post(`form/rebuildDisplayValues`,'')
+            .toPromise()
+            .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
     }
 }

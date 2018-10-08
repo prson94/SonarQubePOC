@@ -46,11 +46,11 @@
                         The maximum number of items to show in a dropdown list before enabling typeahead search.
                     </div>
                     <input type="number" [(ngModel)]="companySettings.MaxDropdownItems" style="width: 95%" /> <br />
-                </div>    
+                </div>
                 <div class="tile tile-detail">
                     <header>Workflow</header>
                     <div class="FieldName">Default recipient for workflow forms and emails</div>
-                    <p-dropdown  [options]="groups" [(ngModel)]="companySettings.WorkflowCatchAllGroup" [style]="{ 'width' : '95%' }" ></p-dropdown>
+                    <p-dropdown [options]="groups" [(ngModel)]="companySettings.WorkflowCatchAllGroup" [style]="{ 'width' : '95%' }"></p-dropdown>
                     <div class="directions">Determines the default recipient of a workflow form or email when the recipient in the setup of the Email Activity or Form Activity cannot be found.</div>
                     <input type="checkbox" [(ngModel)]="companySettings.WorkflowDigestEmailEnabled" /> Daily email for workflow assignments <br />
                     <div class="directions">
@@ -85,6 +85,16 @@
                     </div>
                     <div>
                         <input type="text" [ngModel]="companySettings.DefaultRoute" (ngModelChange)="companySettings.DefaultRoute = $event; validateRoute();" style="width: 95%" />
+                    </div>
+                    <div class="errorMessage">
+                        {{routeValidationMessage}}
+                    </div>
+                </div>
+                <div class="tile tile-detail">
+                    <header>Cached Display Values</header>
+                    <div class="directions">To submit a request to rebuild the cache of Govern object display values click the below button.</div>
+                    <div>
+                        <button pButton type="button" (click)="rebuildDisplayValues()" label="Rebuild Display Value Cache" style="padding: 10px 15px 10px 15px;"></button>
                     </div>
                     <div class="errorMessage">
                         {{routeValidationMessage}}

@@ -2230,6 +2230,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
         public bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1) where T : BaseIntObject, IFieldsObject
         {
+            
             var isUpdate = IsPersistent(entity);
             
             var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
@@ -2256,7 +2257,24 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 AddOrUpdateFields(fields);
             }
 
+            CreateOrUpdateDisplayValue(0,attr.Type.ToString(), entity.ID);
+
             return returnValue;
+        }
+
+        private void CreateOrUpdateDisplayValue(int assetId, string objectType, int objectId)
+        {
+            Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type",""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
+        }
+
+        public void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType)
+        {
+            Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
+        }
+
+        public void RebuildDisplayValuesRequest()
+        {
+            Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
         }
 
         private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
@@ -2272,7 +2290,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
         public override int SaveChanges()
         {
-            int returnValue = 0;
+            int returnValue = 0;            
             var changedFields = new List<Field>();
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added))
@@ -2288,24 +2306,10 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             }
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added /*| EntityState.Unchanged*/ | EntityState.Modified | EntityState.Deleted))
-            {             
+            {
+                
                 #region Business logic : IUpdatedMetadata
-                // this is a workaround to the issue that
-                // the field table needs the id from the artifact / model / etc table so we insert into main table
-                // then insert the fields with the id from 1.  This causes 1 to update.  The below interface
-                // can be used and if its within 5 seconds we dont also reupdate the update datetime.
-                /*if (entry.State == EntityState.Unchanged && entry.Entity is IUpdatedMetadata && entry.Entity is IRequiredCreatedOnMetadata)
-                {
-                    var oWhen = entry.Entity as IRequiredCreatedOnMetadata;
-
-                    if (oWhen.CreatedOn.AddSeconds(5) < DateTime.UtcNow)
-                    {
-                        var o = entry.Entity as IUpdatedMetadata;
-                        o.UpdatedBy = CurrentResourceID;
-                        o.UpdatedOn = DateTime.UtcNow;
-                    }
-                }
-                else*/ if (entry.Entity is IUpdatedMetadata)
+                if (entry.Entity is IUpdatedMetadata)
                 {
                     var o = entry.Entity as IUpdatedMetadata;
                     o.UpdatedBy = CurrentResourceID;
@@ -2952,6 +2956,7 @@ select @err";
 
             return returnValue;
         }
+
 
         private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities, List<Field> changedFields)
         {

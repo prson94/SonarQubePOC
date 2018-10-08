@@ -1718,6 +1718,9 @@ namespace d360.web.Controllers
                     action = "edit"
                 };
 
+                //update affected display values
+                Company.CreateOrUpdateTypeDisplayValuesAsync(model.AssetType.ObjectID, model.AssetType.Object.ToString());
+
                 return jsonSuccess(model.AssetType.Name + " successfully updated.", model.AssetType.ObjectID.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
@@ -20261,7 +20264,22 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-        
+
         #endregion
+
+        #region UpdateDisplayValues
+
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildDisplayValues")]
+        public JsonResult RebuildDisplayValues(string objectType, object[] param)
+        {
+            if(!Company.CurrentResourceIsAdmin) return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            Company.RebuildDisplayValuesRequest();
+
+            return jsonSuccess("request submitted.", "", "add", HttpStatusCode.Created);
+        }
+
+        #endregion
+
     }
 }
