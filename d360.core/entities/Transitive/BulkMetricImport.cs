@@ -18,9 +18,11 @@ namespace d360.core.entities
         [DataMember]
         public Guid AssetUid { get; set; }
         [DataMember]
-        public Guid MetricAssetUid { get; set; }
+        public Guid MetricGroupUid { get; set; }
         [DataMember]
-        public DateTime? EffectiveDate { get; set; }
+        public Guid MetricItemUid { get; set; }
+        [DataMember]
+        public DateTime? Date { get; set; }
         [DataMember]
         public bool Result { get; set; }
     }
@@ -31,111 +33,73 @@ namespace d360.core.entities
         [DataMember]
         public Guid AssetUid { get; set; }
         [DataMember]
-        public Guid MetricAssetUid { get; set; }
+        public Guid MetricGroupUid { get; set; }
         [DataMember]
-        public DateTime EffectiveDate { get; set; }
+        public Guid MetricItemUid { get; set; }
+        [DataMember]
+        public DateTime Date { get; set; }
         [DataMember]
         public bool Result { get; set; }
-
         public bool IsValidAsset { get; set; }
-        public bool IsValidMetric { get; set; }
-        public bool IsValidMetricDate { get; set; }
-
+        public bool IsValidMetricGroup { get; set; }
+        public bool IsValidMetricItem { get; set; }
         [DataMember]
         public bool IsSuccess { get; set; }
         [DataMember]
         public string ErrorMessage { get; set; }
     }
 
-    #region Used in Metrics API to display the metric results by asset.
-
     [JsonArray]
-    [DataContract(Name = "metrics")]
-    public class MetricAssetHierarchyModels : List<MetricAssetHierarchyModel>
+    [DataContract(Name = "metricGroups")]
+    public class MetricGroupHierarchyModels : List<MetricGroupHierarchyModel>
     {
 
     }
 
-    [DataContract(Name = "metric")]
-    public class MetricAssetHierarchyModel : BaseObject
+    public abstract class MetricHierarchyModel : BaseObject
     {
-        [DataMember]
-        public Guid Uid { get; set; }
-
-        [DataMember]
-        public Guid? ParentUid { get; set; }
-
-        public int Level { get; set; }
-
-        [DataMember]
-        public bool IsGroup { get; set; }
-
-        [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public string Description { get; set; }
-
         [DataMember]
         public decimal Weight { get; set; }
-
-        [DataMember]
-        public bool Value { get; set; }
-
-        //[DataMember]
-        //public List<MetricAssetHierarchyModel> Metrics { get; set; }
     }
 
-    #endregion
-
-    #region Used in Metrics API to define the metrics when calling the definition by asset type.
-
-    [JsonArray]
-    [DataContract(Name = "metrics")]
-    public class MetricAssetTypeHierarchyModels : List<MetricAssetTypeHierarchyModel>
+    [DataContract(Name = "metricGroup")]
+    public class MetricGroupHierarchyModel : MetricHierarchyModel
     {
-
-    }
-
-    [DataContract(Name = "metric")]
-    public class MetricAssetTypeHierarchyModel : BaseObject
-    {
-        [DataMember]
-        public Guid Uid { get; set; }
-        public Guid? ParentUid { get; set; }
+        // These fields below just help figure the hierarchy out, and should not be sent back to client.
+        public int ID { get; set; }
+        public int? ParentID { get; set; }
         public int Level { get; set; }
-        [DataMember]
-        public bool IsGroup { get; set; }
-        [DataMember]
-        public string Name { get; set; }
+        public string RawItems { get; set; }
 
         [DataMember]
-        public decimal Weight { get; set; }
-
-        public string ConditionsJson { get; set; }
-
-
+        public string MetricGroupName { get; set; }
         [DataMember]
-        public List<MetricAssetTypeHierarchyModel> Metrics { get; set; }
-
+        public Guid MetricGroupUid { get; set; }
         [DataMember]
-        public List<MetricConditionHierarchyModel> Conditions { get; set; }
+        public List<MetricGroupHierarchyModel> Groups { get; set; }
+        [DataMember]
+        public List<MetricItemHierarchyModel> Items { get; set; }
+    }
+
+    [DataContract(Name = "metricItem")]
+    public class MetricItemHierarchyModel : MetricHierarchyModel
+    {
+        [DataMember]
+        public string MetricItemName { get; set; }
+        [DataMember]
+        public Guid MetricItemUid { get; set; }
+        [DataMember]
+        public List<MetricItemConditionHierarchyModel> Conditions { get; set; }
     }
 
     [DataContract(Name = "metricItemCondition")]
-    public class MetricConditionHierarchyModel : BaseObject
+    public class MetricItemConditionHierarchyModel : BaseObject
     {
         [DataMember]
         public string FieldName { get; set; }
-
         [DataMember]
         public string Operator { get; set; }
-
-        public string ValueJson { get; set; }
-
         [DataMember]
-        public List<string> Values { get; set; }
+        public string Value { get; set; }
     }
-
-    #endregion
 }

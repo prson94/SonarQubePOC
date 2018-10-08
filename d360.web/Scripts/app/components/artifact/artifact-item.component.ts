@@ -35,7 +35,7 @@ declare var CompanySettings;
                     <div class="row" *ngIf="showSocialScoreBar">
                         <div class="col s12">
                              <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                <d3s-object-governance [objectType]="'Artifact'" [objectID]="artifact?.ID" [uid]="artifact?.Uid" [objectName]="artifact?.DisplayValue" [status]="artifact?.Status" [isWorkflowEnabled]="artifact?.HasWorkflow"></d3s-object-governance>
+                                <d3s-object-governance [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.DisplayValue" [status]="artifact?.Status" [isWorkflowEnabled]="artifact?.HasWorkflow"></d3s-object-governance>
                             </div>
                         </div>
                     </div>
@@ -115,7 +115,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 }
                 this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
 
-                this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.DisplayValue, this.artifact.AssetID, this.artifact.AssetTypeID, this.artifact.Uid);
+                this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.DisplayValue, this.artifact.AssetID, this.artifact.AssetTypeID);
                 this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), this.artifact.HasDashboards, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                 if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-sitemap'], `/sidebar/children${this.objectContextUrl()}`));
 

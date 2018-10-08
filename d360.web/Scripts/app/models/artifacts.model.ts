@@ -16,7 +16,6 @@ export class Artifact {
     HasDashboards: boolean;
     HasWorkflow: boolean;
     HasChildArtifacts: boolean;
-    Uid: string;
     ID: number;
     AssetID: number;
     AssetTypeID: number;

@@ -1,12 +1,9 @@
 ﻿export class PointBreakdown {
-    Uid: string;
-    ParentUid: string;
-    Level: number;
-    IsGroup: boolean;
     Name: string;
-    Description: string;
-    Weight: number;
+    ID: number;
     Value: boolean;
+    GroupID: number;
+    ParentID: number;
 }
 
 export class ScorePoint {

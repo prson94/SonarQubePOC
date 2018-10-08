@@ -18,7 +18,6 @@ export class Model {
 export class ModelHierarchy {
     HasChildren: boolean;   
     ID: number;
-    Uid: string;
     AssetID: number;
     DisplayValue: string;
     TextPath: string;

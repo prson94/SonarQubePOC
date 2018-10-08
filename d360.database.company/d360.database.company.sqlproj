@@ -101,7 +101,6 @@
     <Folder Include="Releases\2018.08.31" />
     <Folder Include="Releases\2018.09.14" />
     <Folder Include="Releases\2018.09.28" />
-    <Folder Include="Releases\2018.10.12" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -113,10 +112,5 @@
     <None Include="Releases\2018.08.31\1.sql" />
     <None Include="Releases\2018.09.14\1.sql" />
     <None Include="Releases\2018.09.28\1.sql" />
-    <None Include="Releases\2018.10.12\Data.sql" />
-    <None Include="Releases\2018.10.12\Misc.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <Build Include="Releases\2018.10.12\Metrics.sql" />
   </ItemGroup>
 </Project>

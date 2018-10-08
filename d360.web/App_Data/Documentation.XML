@@ -2554,48 +2554,19 @@
             This service houses all endpoints handling metrics and scoring for assets throughout your environment.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.MetricsController.GetAssetById(System.Guid)">
+        <member name="M:d360.web.Controllers.V2.MetricsController.GetGroupById(System.Int32)">
             <summary>
-            Gets a metric by its ID.
+            Gets a metric group by its internal ID.
             </summary>
-            <param name="uid">The public ID for the metric.</param>
-            <returns>The metric.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.V2.MetricsController.UpsertAsset(d360.web.Models.MetricAssetViewModel)">
-            <summary>
-            Add or updates a metric.
-            </summary>
-            <param name="model">The definition of the metric itself. If updating an existing metric, ensure that you populate the Uid property.</param>
-            <returns>An HTTP status code with an appropriate status message.</returns>
+            <param name="id">The internal ID (whole number) for the metric group.</param>
+            <returns>The metric group.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.MetricsController.GetMetricHierarchyByAssetTypeAsync(System.Guid,System.Nullable{System.DateTime})">
             <summary>
-            Gets a hierarchical structure of metrics and conditions associated with the asset type UID provided.
+            Gets a hierarchical structure of metric groups, items, and metric conditions associated with the asset typeUID provided.
             </summary>
             <param name="assetTypeUid">The UID of the asset type.</param>
             <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past or future effective date.</param>
-            <returns>An HTTP status code and message.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.V2.MetricsController.GetMetricHierarchyByAssetAsync(System.Guid,System.Nullable{System.DateTime})">
-            <summary>
-            Gets a hierarchical structure of metrics associated with the asset UID provided, for a given effective date. If no effective date is provided, today's date is used.
-            </summary>
-            <param name="assetUid">The UID of the asset.</param>
-            <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.</param>
-            <returns>An HTTP status code and message.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.V2.MetricsController.GetMetricStructureByAssetType(System.Guid)">
-            <summary>
-            Gets a administrative hierarchical structure of metrics associated with the asset type UID provided.
-            </summary>
-            <param name="assetTypeUid">The UID of the asset type.</param>
-            <returns>An HTTP status code and message.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.V2.MetricsController.GetMetricFieldsByAssetType(System.Guid)">
-            <summary>
-            Gets a administrative hierarchical structure of metrics associated with the asset type UID provided.
-            </summary>
-            <param name="assetTypeUid">The UID of the asset type.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.MetricsController.PostBulkMetricsToStagingAsync(d360.core.entities.BulkMetricsImport)">

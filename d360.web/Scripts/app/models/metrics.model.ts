@@ -1,44 +1,5 @@
 ﻿import { FieldType } from "./fields.model";
 
-export class MetricAssetViewModel {
-    Uid: string;
-    ParentUid: string;
-    AssetTypeUid: string;
-    IsGroup: boolean;
-    Name: string;
-    Description: string;
-    EffectiveDate: string | Date;
-    Weight: number;
-    ConditionAndOr: string;
-
-    Conditions: MetricAssetVersionConditionViewModel[] = [];
-}
-
-export class MetricAssetVersionConditionViewModel {
-    FieldTypeID: number;
-    Operator: string;
-    Values: string;//[] = [];
-
-    // Transitive values used for UI logic only.
-    FieldType: MetricFieldTypeViewModel;
-    FieldTypeName: string;
-    ValuesText: string;
-    OperatorText: string;
-    IsEditMode: boolean;
-}
-
-export class MetricFieldTypeViewModel {
-    ID: number;
-    Name: string;
-    Type: string;
-    Values: MetricFieldTypeValueViewModel[] = [];
-}
-export class MetricFieldTypeValueViewModel {
-    Value: number;
-    Text: string;
-}
-
-
 export class Group {
     ID: number;
     ParentID: number;

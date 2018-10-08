@@ -36,7 +36,7 @@ declare var CompanySettings;
                         <div class="row" *ngIf="showSocialScoreBar">
                             <div class="col s12">
                                  <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                    <d3s-object-governance [uid]="selected?.Uid" [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.DisplayValue"></d3s-object-governance>
+                                    <d3s-object-governance [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.DisplayValue"></d3s-object-governance>
                                 </div>
                             </div>
                         </div>

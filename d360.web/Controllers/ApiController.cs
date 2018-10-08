@@ -2640,7 +2640,7 @@ order by    rnk, [Name]";
 
         private void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
         {
-            var valueString = value?.ToString() ?? "";
+            var valueString = value.ToString();
             switch (dataType.ToUpper())
             {
                 case "DECIMAL":
@@ -4560,7 +4560,6 @@ from	    PolicyType FAT
             var querySql = $@"
 select	top 100 percent 
         A.ID, 
-        OA.[Uid],
         OA.ID as AssetID, 
         P.SubjectID as ParentID,
         TD.DisplayValue,
@@ -4851,7 +4850,6 @@ order by    Name
 
                 var querySql = string.Format(@"
 select	O.ID as AssetID,
-        O.[Uid],
         A.ID,
         A.Threshold,
         A.RuleDimensionID,
@@ -7905,94 +7903,84 @@ where	Type = 'ReferenceItemType'
 
         #region Metrics
 
-        [Route("metrics/assettypes")]
-        public HttpResponseMessage GetMetricAssetTypes()
+        [Route("metrics/groups")]
+        public IQueryable<MetricGroup> GetMetricGroups()
         {
-            List<AssetTypeClass> classes = new List<AssetTypeClass>() {
-                AssetTypeClass.Glossary,
-                AssetTypeClass.Model,
-                AssetTypeClass.Policy
-            };
-            var models = Company.Filter<AssetType>(i => classes.Contains(i.Class)).Select(i => new {
-                Uid = i.uid,
-                i.Name,
-                i.Class
-            }).ToList().Select(i => new {
-                i.Uid,
-                i.Name,
-                Class = i.Class.GetDisplayName()
-            }).OrderBy(i => i.Class).ThenBy(i => i.Name);
+            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
 
-            return Request.CreateResponse(HttpStatusCode.OK, models);
+            return Company.MetricGroups.Where(m => m.State == State.Active);
         }
 
-        //        [Route("metrics/groups")]
-        //        public IQueryable<MetricGroup> GetMetricGroups()
-        //        {
-        //            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+        [Route("metrics/items")]
+        public IQueryable<MetricItem> GetMetricItems()
+        {
+            return Company.Table<MetricItem>();
+        }
 
-        //            return Company.MetricGroups.Where(m => m.State == State.Active);
-        //        }
+        [Route("metrics/group/{id:int}")]
+        public MetricGroup GetMetricGroup(int id)
+        {
+            return Company.GetById<MetricGroup>(id);
+        }
 
-        //        [Route("metrics/items")]
-        //        public IQueryable<MetricItem> GetMetricItems()
-        //        {
-        //            return Company.Table<MetricItem>();
-        //        }
+        [Route("metrics/item/{id:int}")]
+        public MetricItem GetMetricItem(int id)
+        {
+            return Company.MetricItems.FirstOrDefault(i => i.ID == id);
+        }
 
-        //        [Route("metrics/group/{id:int}")]
-        //        public MetricGroup GetMetricGroup(int id)
-        //        {
-        //            return Company.GetById<MetricGroup>(id);
-        //        }
+        [Route("metrics/map/{id:int}")]
+        public MetricMap GetMetricMap(int id)
+        {
+            return Company.MetricMaps.FirstOrDefault(i => i.ID == id);
+        }
 
-        //        [Route("metrics/item/{id:int}")]
-        //        public MetricItem GetMetricItem(int id)
-        //        {
-        //            return Company.MetricItems.FirstOrDefault(i => i.ID == id);
-        //        }
+        [Route("metrics/maps/{groupId:int}")]
+        public List<dynamic> GetMetricMaps(int groupId)
+        {
+            return Company.Query<dynamic>(@"select 
+                                    m.* ,
+                                    i.[Name] as itemName,
+									a.[Name] as assetTypeName
+                                    from metrics.map m
+                                    inner join assettype a on a.ID = m.AssetTypeID
+                                    inner join metrics.item i on i.id = m.itemid
+                                    where m.[State] = 1 and m.groupid = @groupId", new { groupId }).ToList();
+        }
 
-        //        [Route("metrics/map/{id:int}")]
-        //        public MetricMap GetMetricMap(int id)
-        //        {
-        //            return Company.MetricMaps.FirstOrDefault(i => i.ID == id);
-        //        }
+        [Route("metrics/map/{mapId:int}/conditions")]
+        public List<dynamic> GetMetricConditions(int mapId)
+        {
+            return Company.Query<dynamic>(@"select 
+	                                    c.*,
+	                                    t.FriendlyName as fieldName
+                                    from metrics.condition c
+                                    inner join fieldtype t on t.id = c.fieldtypeid
+                                    inner join metrics.map m on m.id = c.mapid
+                                    where c.mapid = @mapId", new { mapId }).ToList();
+        }
 
-        //        [Route("metrics/maps/{groupId:int}")]
-        //        public List<dynamic> GetMetricMaps(int groupId)
-        //        {
-        //            return Company.Query<dynamic>(@"select 
-        //                                    m.* ,
-        //                                    i.[Name] as itemName,
-        //									a.[Name] as assetTypeName
-        //                                    from metrics.map m
-        //                                    inner join assettype a on a.ID = m.AssetTypeID
-        //                                    inner join metrics.item i on i.id = m.itemid
-        //                                    where m.[State] = 1 and m.groupid = @groupId", new { groupId }).ToList();
-        //        }
+        [Route("metrics/condition/fields/{assetTypeId:int}")]
+        public List<FieldType> GetMetricConditionFields(int assetTypeId)
+        {
+            return Company.Query<FieldType>(@"
+select  * 
+from    FieldType
+where   AssetTypeID = @assetTypeId 
+        and [type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')", 
+        new { assetTypeId }).ToList();
+        }
 
-        //        [Route("metrics/map/{mapId:int}/conditions")]
-        //        public List<dynamic> GetMetricConditions(int mapId)
-        //        {
-        //            return Company.Query<dynamic>(@"select 
-        //	                                    c.*,
-        //	                                    t.FriendlyName as fieldName
-        //                                    from metrics.condition c
-        //                                    inner join fieldtype t on t.id = c.fieldtypeid
-        //                                    inner join metrics.map m on m.id = c.mapid
-        //                                    where c.mapid = @mapId", new { mapId }).ToList();
-        //        }
-
-        //        [Route("metrics/condition/fields/{assetTypeId:int}")]
-        //        public List<FieldType> GetMetricConditionFields(int assetTypeId)
-        //        {
-        //            return Company.Query<FieldType>(@"
-        //select  * 
-        //from    FieldType
-        //where   AssetTypeID = @assetTypeId 
-        //        and [type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')", 
-        //        new { assetTypeId }).ToList();
-        //        }
+        [Route("metrics/condition/fields/{objectType}/{objectTypeId:int}")]
+        public List<FieldType> GetMetricConditionFields(string objectType, int objectTypeId)
+        {
+            return Company.Query<FieldType>(@"
+select  * 
+from    FieldType
+where   Object = @objectType and ObjectID = @objectTypeId 
+        and [type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')",
+        new { objectType, objectTypeId }).ToList();
+        }
 
         #endregion
 
@@ -8130,25 +8118,6 @@ where	Type = 'ReferenceItemType'
             return Company.ApiEntityUris.Where(x => x.EntityID == entity.ID).ToList();
         }
 
-        #endregion
-
-        #region LogClientError
-        [HttpPost, Route("log/clienterror")]
-        public HttpResponseMessage SaveClientError(ClientErrorModel model)
-        {
-            try
-            {
-                IDictionary<string, string> properties = new Dictionary<string, string>();
-                properties.Add("name", model.Name);
-                properties.Add("stacktrace", model.Stack);
-                this.SendException(new ClientSideException(model.Message), properties);
-                return Request.CreateResponse(HttpStatusCode.OK);
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-            }
-        }
         #endregion
     }
 } 

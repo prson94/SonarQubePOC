@@ -28,7 +28,6 @@ namespace d360.web.Controllers
         {
             var models = Company.Query<dynamic>($@"
 select	A.ObjectID as ID,
-        A.[Uid],
         A.DisplayValue,
         A.DisplayValue as TextPath,
         P.SubjectID as ParentID,
@@ -69,7 +68,6 @@ cross apply (select count(1) as [Count] from ResponsibilityDetail where Resource
 
             var sql = $@"
 select	A.ObjectID as ID, 
-        A.[Uid],
         P.SubjectID as ParentID, 
         A.TypeID as TaxonomyTypeID,
         {editRightsColumnStatement}

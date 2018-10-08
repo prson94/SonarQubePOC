@@ -34,7 +34,6 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
     @Input() score: any = null;
 
     @Input() showDetails: boolean = false;    
-    @Input() uid: string;
     @Input() objectID: number;
     @Input() objectType: string;
     @Output() showDetailsChange = new EventEmitter();
@@ -51,7 +50,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
     }
         
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.objectType && this.objectID && this.uid) {
+        if (this.objectType && this.objectID) {
             this.loadSeriesData();
             this.loadScoreData();
         }
@@ -194,7 +193,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
 
     private loadScoreData() {
         this.isLoading = true;
-        this.scoreService.getAverageScore(this.uid).
+        this.scoreService.getAverageScore(this.objectID, this.objectType).
             then(res => {
                 this.averageScore = res;
                 this.isLoading = false;
@@ -202,7 +201,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
     }
 
     private loadSeriesData() {
-        this.scoreService.getScoreHistory(this.uid).
+        this.scoreService.getScoreHistory(this.objectID, this.objectType).
             then(res => {
                 this.lastCalculatedDate = res.length > 0 ? Date.parse(res[res.length-1].Date) : null;
                 let data = res.map(val => {

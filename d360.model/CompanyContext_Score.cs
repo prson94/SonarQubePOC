@@ -15,26 +15,44 @@ using System.Threading.Tasks;
 
 namespace d360.model
 {
-    partial class CompanyContext : BaseContext
+    partial class CompanyContext: BaseContext
     {
         #region DbSets
 
-        public DbSet<MetricAsset> MetricAssets { get; set; }
+        public DbSet<MetricCondition> MetricConditions { get; set; }
 
-        public DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
+        public DbSet<MetricConditionValue> MetricConditionValues { get; set; }
 
-        public DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
+        public DbSet<MetricGroup> MetricGroups { get; set; }
+
+        public DbSet<MetricItem> MetricItems { get; set; }
+
+        public DbSet<MetricMap> MetricMaps { get; set; }
+
+        public DbSet<MetricMapResult> MetricMapResults { get; set; }
+
+        public DbSet<MetricScore> MetricScores { get; set; }
+
+        public DbSet<MetricStagingResult> MetricStagingResults { get; set; }
 
         #endregion
 
         #region Engine Methods
+
+        public IEnumerable<dynamic> GetStatisticTypeRollupCheckOptions()
+        {
+            var sql = @"select * from (
+			select	'ArtifactType|' + cast(ID as varchar(15)) as ID, 'Artifacts :: ' + Name as Name from ArtifactType
+			) O order by Name";
+            return Query<dynamic>(sql).ToList();
+        }
 
         public ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id)
         {
             var model = new ObjectStatisticTileModel { Items = new List<ObjectStatisticTileItemModel>() };
 
             var list = Database.Connection.Query<RawObjectStatistic>("[tile].[GetObjectStatistics] @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).ToList();
-
+            
             var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
             list.ForEach(i =>
@@ -42,17 +60,17 @@ namespace d360.model
                 switch (i.Group)
                 {
                     case "Comments":
-                        model.CommentCount = i.Value.GetValueOrDefault();
+                        model.CommentCount = i.Value.GetValueOrDefault();                        
                         model.CommentLast = i.MostRecent;
                         break;
                     case "Followers":
-                        model.FollowerCount = i.Value.GetValueOrDefault();
+                        model.FollowerCount = i.Value.GetValueOrDefault();                        
                         break;
                     case "Score":
-                        model.Score = i.Value;
+                        model.Score = i.Value;                        
                         break;
                     case "Issues":
-                        model.IssueCount = i.Value.GetValueOrDefault();
+                        model.IssueCount = i.Value.GetValueOrDefault();                        
                         model.IssueLast = i.MostRecent;
                         break;
                     default:
@@ -69,185 +87,109 @@ namespace d360.model
 
     public static partial class ConnectionExtensions
     {
-        public static MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(this SqlConnection cnn, Guid assetTypeUid, DateTime? effectiveDate)
+        public static MetricGroupHierarchyModels GetMetricDefinitionHierarchyByAssetType(this SqlConnection cnn, Guid assetTypeUid, DateTime? effectiveDate)
         {
             if (!effectiveDate.HasValue)
-                effectiveDate = DateTime.UtcNow.Date;
+                effectiveDate = DateTime.UtcNow;
 
-            //declare @effectiveDate date = '10/2/2018', @assetTypeUid uniqueidentifier = '8371C4C6-E17E-4620-BA8B-AE0301966E0E';
             var sql = @"
-with h as (
-	select	A.[Uid],
-			A.Name,
-			A.ParentUid,
-			A.IsGroup,
-			V.Weight,
-			max(V.EffectiveDate) OVER(PARTITION BY V.[Uid]) as MetricMaxEffectiveDate,
-			1 as [Level]
-	from	metrics.AssetVersion V
-			inner join metrics.Asset A on A.[Uid] = V.[Uid] 
-										and A.AssetTypeUid = @assetTypeUid 
-										and V.EffectiveDate <= @effectiveDate 
-										and A.State = 1
-	where	A.ParentUid is null
+with GH as (
+	select	G.ID,
+			G.ParentID,
+			G.[Uid] as MetricGroupUid,
+			G.Name as MetricGroupName,
+			G.[Weight],
+			0 as [Level],
+			(
+			select	I.[Uid] as MetricItemUid,
+					I.Name as MetricItemName,
+					M.[Weight],
+					(
+					select	F.Name as FieldName,
+							AndOr,
+							Operator,
+							Value
+					from	[metrics].[Condition] C
+							inner join  FieldType F on F.ID = C.FieldTypeID
+					where	MapID = M.ID
+					for json path
+					)as Conditions
+			from	metrics.Item I
+					cross apply (
+						select	min(IM.ID) as ID
+						from	metrics.Map IM
+								inner join AssetType IA on IA.[uid] = @assetTypeUid and IA.ID = IM.AssetTypeID
+						where	IM.ItemID = I.ID
+								and IM.GroupID = G.ID
+								and IM.EffectiveDate <= @effectiveDate
+								and IM.[State] in (1)
+					) MM
+					inner join metrics.Map M on M.ID = MM.ID	
+			for json path		
+			) as RawItems
+	from	metrics.[Group] G 
+			cross apply (
+				select	min(IM.ID) as ID
+				from	metrics.Map IM
+						inner join AssetType IA on IA.[uid] = @assetTypeUid and IA.ID = IM.AssetTypeID
+				where	IM.GroupID = G.ID
+						and IM.EffectiveDate <= @effectiveDate
+						and IM.[State] in (1)
+			) OM
 	union all
-	select	A.[Uid],
-			A.Name,
-			A.ParentUid,
-			A.IsGroup,
-			V.Weight,
-			max(V.EffectiveDate) OVER(PARTITION BY V.[Uid]) as MetricMaxEffectiveDate,
-			h.[Level]+1 as [Level]
-	from	metrics.AssetVersion V
-			inner join metrics.Asset A on A.[Uid] = V.[Uid] 
-										and V.EffectiveDate <= @effectiveDate 
-										and A.State = 1
-			inner join h on h.[Uid] = A.ParentUid
+	select	P.ID,
+			P.ParentID,
+			P.[Uid] as MetricGroupUid,
+			P.Name as MetricGroupName,
+			P.[Weight],
+			C.[Level]-1 as [Level],
+			null as RawItems
+	from	metrics.[Group] P 
+			inner join GH C on C.ParentID = P.ID
 )
 
-select	[Uid],
-		ParentUid,
-		[Level],
-		Name,
-		IsGroup,
-		Weight,
-		(
-			select	F.Name as FieldName,
-					C.Operator,
-					C.ValueJson
-			from	[metrics].[AssetVersionCondition] C
-					inner join FieldType F on F.ID = C.FieldTypeID
-			where	[Uid] = h.[Uid]
-					and EffectiveDate = h.MetricMaxEffectiveDate
-			for json path
-		) as ConditionsJson
-from	h
-order by [Level] asc";
+select	ID,
+		ParentID,
+		MetricGroupUid,
+		MetricGroupName,
+		[Weight],
+		RawItems,
+		min([Level]) as [Level]
+from	GH
+group by ID,
+		ParentID,
+		MetricGroupUid,
+		MetricGroupName,
+		[Weight],
+		RawItems
+order by min([Level]) asc";
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-            var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }).ToList();
+            var results = cnn.Query<MetricGroupHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }).ToList();
 
-            var model = new MetricAssetTypeHierarchyModels();
+            var model = new MetricGroupHierarchyModels();
 
             foreach (var i in results)
             {
-                if (!string.IsNullOrEmpty(i.ConditionsJson))
+                if (i.RawItems != "[]" && !string.IsNullOrEmpty(i.RawItems))
                 {
-                    i.Conditions = JsonConvert.DeserializeObject<List<MetricConditionHierarchyModel>>(i.ConditionsJson);
-                    i.Conditions.ForEach(c =>
-                    {
-                        if (!string.IsNullOrEmpty(c.ValueJson))
-                        {
-                            c.Values = JsonConvert.DeserializeObject<List<string>>(c.ValueJson);
-                        }
-                    });
+                    i.Items = JsonConvert.DeserializeObject<List<MetricItemHierarchyModel>>(i.RawItems);
                 }
 
-                if (i.ParentUid.HasValue)
+                if (i.ParentID.HasValue)
                 {
-                    var p = model.SingleOrDefault(o => o.Uid == i.ParentUid.Value);
-                    if (p != null)
-                    {
-                        if (p.Metrics == null)
-                            p.Metrics = new List<MetricAssetTypeHierarchyModel>();
+                    var p = model.Single(o => o.ID == i.ParentID.Value);
+                    if (p.Groups == null)
+                        p.Groups = new List<MetricGroupHierarchyModel>();
 
-                        p.Metrics.Add(i);
-                    }
+                    p.Groups.Add(i);
                 }
                 else
                 {
                     model.Add(i);
                 }
-            }
-
-            return model;
-        }
-
-        public static MetricAssetHierarchyModels GetMetricHierarchyByAsset(this SqlConnection cnn, Guid assetUid, DateTime? effectiveDate)
-        {
-            if (!effectiveDate.HasValue)
-                effectiveDate = DateTime.UtcNow.Date;
-
-            var sql = @"
-declare @assetTypeUid uniqueidentifier;
-select	@assetTypeUid = T.[Uid]
-from	dbo.Asset A
-		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
-
-with h as (
-	select	A.[Uid],
-			A.Name,
-			A.Description,
-			A.ParentUid,
-			A.IsGroup,
-			V.Weight,
-			max(V.EffectiveDate) OVER(PARTITION BY V.[Uid]) as MetricMaxEffectiveDate,
-			1 as [Level]
-	from	metrics.AssetVersion V
-			inner join metrics.Asset A on A.[Uid] = V.[Uid] 
-										and A.AssetTypeUid = @assetTypeUid 
-										and V.EffectiveDate <= @effectiveDate 
-										and A.State = 1
-	where	A.ParentUid is null
-	union all
-	select	A.[Uid],
-			A.Name,
-			A.Description,
-			A.ParentUid,
-			A.IsGroup,
-			V.Weight,
-			max(V.EffectiveDate) OVER(PARTITION BY V.[Uid]) as MetricMaxEffectiveDate,
-			h.[Level]+1 as [Level]
-	from	metrics.AssetVersion V
-			inner join metrics.Asset A on A.[Uid] = V.[Uid] 
-										and V.EffectiveDate <= @effectiveDate 
-										and A.State = 1
-			inner join h on h.[Uid] = A.ParentUid
-)
-
-select	h.[Uid],
-		h.ParentUid,
-		h.[Level],
-		h.Name,
-		h.Description,
-	    h.IsGroup,
-		h.Weight,
-		coalesce(M.[Value], 0) as Value
-from	h
-		outer apply (
-			select	max(EffectiveDate) OVER(PARTITION BY AssetUid, MetricAssetUid) as EffectiveDate,
-					[Value]
-			from	metrics.ScoreItem 
-			where	AssetUid = @assetUid
-					and MetricAssetUid = h.[Uid]
-		) M";
-
-            if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { assetUid, effectiveDate = effectiveDate.Value }).ToList();
-
-            var model = new MetricAssetHierarchyModels();
-
-            foreach (var i in results)
-            {
-            //    if (i.ParentUid.HasValue)
-            //    {
-            //        var p = model.SingleOrDefault(o => o.Uid == i.ParentUid.Value);
-            //        if (p != null)
-            //        {
-            //            if (p.Metrics == null)
-            //                p.Metrics = new List<MetricAssetHierarchyModel>();
-
-            //            p.Metrics.Add(i);
-            //        }
-            //    }
-            //    else
-            //    {
-                    model.Add(i);
-            //    }
             }
 
             return model;
@@ -260,14 +202,15 @@ from	h
             var table = new System.Data.DataTable();
 
             table.Columns.Add("AssetUid", typeof(Guid));
-            table.Columns.Add("MetricAssetUid", typeof(Guid));
-            table.Columns.Add("EffectiveDate", typeof(DateTime));
+            table.Columns.Add("MetricGroupUid", typeof(Guid));
+            table.Columns.Add("MetricItemUid", typeof(Guid));
+            table.Columns.Add("Date", typeof(DateTime));
             table.Columns.Add("Result", typeof(bool));
             table.Columns.Add("IsValidAsset", typeof(bool));
-            table.Columns.Add("IsValidMetric", typeof(bool));
+            table.Columns.Add("IsValidMetricGroup", typeof(bool));
+            table.Columns.Add("IsValidMetricItem", typeof(bool));
             table.Columns.Add("IsValidMetricDate", typeof(bool));
             table.Columns.Add("IsSuccess", typeof(bool));
-            table.Columns.Add("ErrorMessage", typeof(string));
 
             #region Generate data sets
 
@@ -275,11 +218,13 @@ from	h
             {
                 var row = table.NewRow();
                 row["AssetUid"] = item.AssetUid;
-                row["MetricAssetUid"] = item.MetricAssetUid;
-                row["EffectiveDate"] = item.EffectiveDate ?? DateTime.UtcNow.Date;
+                row["MetricGroupUid"] = item.MetricGroupUid;
+                row["MetricItemUid"] = item.MetricItemUid;
+                row["Date"] = item.Date ?? DateTime.UtcNow.Date;
                 row["Result"] = item.Result;
                 row["IsValidAsset"] = false;
-                row["IsValidMetric"] = false;
+                row["IsValidMetricGroup"] = false;
+                row["IsValidMetricItem"] = false;
                 row["IsValidMetricDate"] = false;
                 row["IsSuccess"] = true;
                 table.Rows.Add(row);
@@ -303,19 +248,22 @@ from	h
                     cnn.Execute(@"
     create table #MetricsTable (
 	    AssetUid uniqueidentifier not null,
-	    MetricAssetUid uniqueidentifier not null,
-	    EffectiveDate date not null,
+	    MetricGroupUid uniqueidentifier not null,
+	    MetricItemUid uniqueidentifier not null,
+	    [Date] date not null,
 	    [Result] [bit] not null,
 
         IsValidAsset bit not null,
-        IsValidMetric bit not null,
+        IsValidMetricGroup bit not null,
+        IsValidMetricItem bit not null,
         IsValidMetricDate bit not null,
         IsSuccess bit not null,
         ErrorMessage nvarchar(2500) null
     )", transaction: trans);
 
                     cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempMetricsTable_AssetUid ON #MetricsTable ( AssetUid ASC )", transaction: trans);
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempMetricsTable_MetricAssetUid ON #MetricsTable ( MetricAssetUid ASC )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempMetricsTable_MetricGroupUid ON #MetricsTable ( MetricGroupUid ASC )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempMetricsTable_MetricItemUid ON #MetricsTable ( MetricItemUid ASC )", transaction: trans);
                     cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempMetricsTable_IsSuccess ON #MetricsTable ( IsSuccess ASC )", transaction: trans);
 
                     var bulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans)
@@ -326,11 +274,13 @@ from	h
                     };
 
                     bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
-                    bulkCopy.ColumnMappings.Add("MetricAssetUid", "MetricAssetUid");
-                    bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
+                    bulkCopy.ColumnMappings.Add("MetricGroupUid", "MetricGroupUid");
+                    bulkCopy.ColumnMappings.Add("MetricItemUid", "MetricItemUid");
+                    bulkCopy.ColumnMappings.Add("Date", "Date");
                     bulkCopy.ColumnMappings.Add("Result", "Result");
                     bulkCopy.ColumnMappings.Add("IsValidAsset", "IsValidAsset");
-                    bulkCopy.ColumnMappings.Add("IsValidMetric", "IsValidMetric");
+                    bulkCopy.ColumnMappings.Add("IsValidMetricGroup", "IsValidMetricGroup");
+                    bulkCopy.ColumnMappings.Add("IsValidMetricItem", "IsValidMetricItem");
                     bulkCopy.ColumnMappings.Add("IsValidMetricDate", "IsValidMetricDate");
                     bulkCopy.ColumnMappings.Add("IsSuccess", "IsSuccess");
 
@@ -348,13 +298,23 @@ from    #MetricsTable T
 
                     #endregion
 
-                    #region Resolve Metric
+                    #region Resolve Metric Group
 
                     cnn.Execute(@"
 update  T
-set     T.IsValidMetric = IIF(S.[Uid] is not null, 1, 0)
+set     T.IsValidMetricGroup = IIF(S.ID is not null, 1, 0)
 from    #MetricsTable T
-		left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1", transaction: trans);
+		left join metrics.[Group] S on S.[uid] = T.MetricGroupUid", transaction: trans);
+
+                    #endregion
+
+                    #region Resolve Metric Item
+
+                    cnn.Execute(@"
+update  T
+set     T.IsValidMetricItem = IIF(S.ID is not null, 1, 0)
+from    #MetricsTable T
+		left join metrics.[Item] S on S.[uid] = T.MetricItemUid", transaction: trans);
 
                     #endregion
 
@@ -362,14 +322,18 @@ from    #MetricsTable T
 
                     cnn.Execute(@"
 update  T
-set     T.IsValidMetricDate = IIF(M_M.EffectiveDate is not null, 1, 0)
+set     T.IsValidMetricDate = IIF(M_M.ID is not null, 1, 0)
 from    #MetricsTable T
-        left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
+        left join metrics.[Group] M_G on M_G.[uid] = T.MetricGroupUid		
+        left join metrics.[Item] M_I on M_I.[uid] = T.MetricItemUid
         outer apply (
-                    select  max(EffectiveDate) as EffectiveDate
-                    from    metrics.AssetVersion
-                    where   [Uid] = A.[Uid]
-                            and EffectiveDate <= T.[EffectiveDate]
+                    select  min(ID) as ID,
+                            min(EffectiveDate) as EffectiveDate
+                    from    metrics.Map 
+                    where   GroupID = M_G.ID 
+                            and ItemID = M_I.ID 
+                            and EffectiveDate <= T.[Date]
+                            and [State] not in (2,3)
                     ) M_M", transaction: trans);
 
                     #endregion
@@ -380,7 +344,8 @@ from    #MetricsTable T
 update  #MetricsTable
 set     IsSuccess = case 
                     when IsValidAsset = 0 then 0
-                    when IsValidMetric = 0 then 0
+                    when IsValidMetricGroup = 0 then 0
+                    when IsValidMetricItem = 0 then 0
                     when IsValidMetricDate = 0 then 0
                     else 1
                   end,
@@ -391,11 +356,15 @@ set     ErrorMessage = 'Invalid asset specified; '
 where   IsValidAsset = 0;
 
 update  #MetricsTable
-set     ErrorMessage = 'Invalid metric specified; '
-where   IsValidMetric = 0;
+set     ErrorMessage = 'Invalid metric group specified; '
+where   IsValidMetricGroup = 0;
 
 update  #MetricsTable
-set     ErrorMessage = 'Invalid metric specified for the date provided; '
+set     ErrorMessage = 'Invalid metric item specified; '
+where   IsValidMetricItem = 0;
+
+update  #MetricsTable
+set     ErrorMessage = 'Invalid metric group/item specified for the date provided; '
 where   IsValidMetricDate = 0;
 
 update  #MetricsTable
@@ -409,7 +378,7 @@ where   ErrorMessage = ''
                     #region Load valid items into staging table
 
                     cnn.Execute(@"
-merge into  [metrics].StagingScoreItem T
+merge into  [metrics].StagingItem T
 using       (
             select      *
             from        #MetricsTable
@@ -417,15 +386,16 @@ using       (
             ) S
 on          (
                 S.AssetUid = T.AssetUid and 
-                S.MetricAssetUid = T.MetricAssetUid and 
-                S.EffectiveDate = T.EffectiveDate
+                S.MetricGroupUid = T.MetricGroupUid and 
+                S.MetricItemUid = T.MetricItemUid and
+                S.[Date] = T.EffectiveDate
             )
 when matched then
     update set
             T.Result = S.Result
 when not matched by target then
-    insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived)
-    values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0);", transaction: trans);
+    insert  (AssetUid, MetricGroupUid, MetricItemUid, EffectiveDate, Result, Processing, Archived)
+    values  (S.AssetUid, S.MetricGroupUid, S.MetricItemUid, S.[Date], S.Result, 0, 0);", transaction: trans);
 
                     #endregion
 

@@ -32,7 +32,7 @@ declare var CompanySettings;
                     </div>
                     <div class="col s12" *ngIf="showSocialScoreBar">
                         <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                            <d3s-object-governance [uid]="rule?.Uid" [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name" [status]="rule?.Status"></d3s-object-governance>
+                            <d3s-object-governance [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name" [status]="rule?.Status"></d3s-object-governance>
                         </div>
                     </div>
                 </div>

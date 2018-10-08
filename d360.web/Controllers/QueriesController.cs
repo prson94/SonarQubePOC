@@ -148,18 +148,122 @@ order by	R.LastName, R.FirstName", new { id }).ToList();
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("{assetUid:Guid}/ScoreHistoryByObject")]
-        public JsonNetResult GetScoreHistoryByObject(Guid assetUid)
+//        [Route("{resourceID:int}/{responsibilityTypeID:int}/ResponsibilitiesByResource")]
+//        public JsonNetResult GetResponsibilitiesByResource(int resourceID, int responsibilityTypeID)
+//        {
+//            var query = Company.Query<dynamic>(@"
+//select		ObjectType,
+//			ObjectID,
+//			ObjectName,
+//			ObjectTypeName,
+//			ObjectUrl,
+//			CurrentScore,
+//			ResponsibleObjectID as OwnerID 
+//from		ResponsibilityDetailForResource
+//where		Visible = 1 
+//			and ResponsibilityTypeID = @r
+//			and ResponsibleObjectID = @id 
+//group by	ObjectType,
+//			ObjectID,
+//			ObjectName,
+//			ObjectTypeName,
+//			ObjectUrl,
+//			CurrentScore,
+//			ResponsibleObjectID
+//order by	ObjectTypeName, ObjectName", new { id = resourceID, r = responsibilityTypeID }).ToList();
+
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
+
+        [Route("{type}/{id:int}/ScoreHistoryByObject")]
+        public JsonNetResult GetScoreHistoryByObject(SystemObjects type, int id)
         {
-            var query = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid", new { assetUid });
+            var query = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id });
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("{assetUid:Guid}/AverageScoreByObjectType")]
-        public JsonNetResult GetAverageScoreByObjectType(Guid assetUid)
+        [Route("{type}/{id:int}/AverageScoreByObjectType")]
+        public JsonNetResult GetAverageScoreByObjectType(SystemObjects type, int id)
         {
-            var query = Company.Query<dynamic>(@"EXEC GetAverageScoreByObjectType @assetUid", new { assetUid }).SingleOrDefault();
+            var query = Company.Query<dynamic>(@"EXEC GetAverageScoreByObjectType @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id }).SingleOrDefault();
             return new JsonNetResult{ Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        [Route("{type}/{id:int}/PointBreakdownByObject")]
+        public JsonNetResult GetPointBreakdownByObject(SystemObjects type, int id, string date = null)
+        {
+            //           var query = Company.Query<dynamic>(@"
+            //select	M.ID,
+            //		G.Name + ': ' + I.Name as Name,
+            //		MR.Value
+            //from	metrics.Score S
+            //		inner join metrics.MapResult MR on MR.ScoreID = S.ID
+            //		inner join metrics.Map M on M.ID = MR.MapID
+            //		inner join metrics.[Group] G on G.ID = M.GroupID
+            //		inner join metrics.ITem I on I.ID = M.ItemID
+            //where	getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate
+            //		and S.Object = @type and S.ObjectID = @id", 
+            //           new {
+            //               type = new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 },
+            //               id = id
+            //           });
+
+            var query = @"
+ with groups as (
+	select	null as ID, 
+			g1.ID as GroupID, 
+			null as [Value], 
+			g1.ParentID, 
+			g1.[Name],
+			g1.Weight,
+			null as MapID
+	from	metrics.[Group] g1
+			inner join metrics.Map m1 on m1.GroupID = g1.ID and m1.[State] = 1
+			inner join metrics.MapResult r1 on r1.MapID = m1.ID
+			inner join metrics.Score s1 on s1.ID = r1.ScoreID
+	where	g1.[State] = 1 and s1.[Object] = @type and s1.ObjectID = @id
+	union all
+	select	null as ID,  
+			g2.ID as GroupID, 
+			null as [Value], 
+			g2.ParentID as ParentID, 
+			g2.[Name],
+			g2.Weight,
+			null as MapID
+	from	metrics.[group] g2
+			inner join groups g3 on g3.ParentID = g2.ID
+	where	g2.[State] = 1
+)
+select distinct * from groups
+union all
+select		MS.ID, 
+			MS.GroupID, 
+			r.[Value], 
+			g.ParentID, 
+			i.[Name],
+			m.Weight,
+            MS.MapID
+from		(
+			select		max(s.ID) as ID, 
+						g.ID as GroupID, 
+						m.ID as MapID
+			from		metrics.Score s
+						inner join metrics.MapResult r on r.ScoreID = s.ID
+						inner join metrics.Map m on m.ID = r.MapID and m.[State] = 1
+						inner join metrics.Item i on i.ID = m.ItemID
+						inner join metrics.[Group] g on g.ID = m.GroupID and g.[State] = 1
+			where		s.[Object] = @type and s.ObjectID = @id
+						and @date between S.EffectiveStartDate and S.EffectiveEndDate
+			group by  g.ID, m.ID
+			) MS
+			inner join metrics.MapResult r on r.ScoreID = MS.ID and r.MapID = MS.MapID
+			inner join metrics.Map m on m.ID = r.MapID and m.[State] = 1
+			inner join metrics.Item i on i.ID = m.ItemID
+			inner join metrics.[Group] g on g.ID = MS.GroupID and g.[State] = 1";
+
+            var results = Company.Query<dynamic>(query, new { type = type.ToString(), id, date = date ?? DateTime.UtcNow.ToString() });
+
+            return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [Route("{type}/{id:int}/SocialBreakdown")]

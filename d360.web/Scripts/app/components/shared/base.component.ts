@@ -11,7 +11,6 @@ import { StringConstants } from '../../static/string-constants';
 import { FormHelpers } from '../../static/form-helpers';
 import { JsonResult } from '../../models/jsonresult.model';
 import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
-import { HttpErrorResponse } from '@angular/common/http';
 
 declare var CompanySettings;
 
@@ -19,7 +18,6 @@ export class BaseComponent {
     public isLoading = false;
 
     //current object info
-    uid: string;
     assetID: number;
     assetTypeID: number;
     objectID: number;
@@ -143,12 +141,11 @@ export class BaseComponent {
         }
     }
 
-    setObjectInfo(objectType: string, objectID: number, objectName?: string, assetID?: number, assetTypeID?: number, uid?: string) {
+    setObjectInfo(objectType: string, objectID: number, objectName?: string, assetID?: number, assetTypeID?: number) {
         this.assetID = assetID;
         this.assetTypeID = assetTypeID;
         this.objectType = objectType;
         this.objectID = objectID;
-        this.uid = uid;
         if (objectName != undefined) this.objectName = objectName;
     }
 
@@ -188,10 +185,6 @@ export class BaseComponent {
         if (result.type == 'error') messagesService.showError(result.title, result.message);
         else messagesService.showInfoMessage(result.title, result.message != null ? result.message : defaultMessage);
     }    
-
-    showHttpErrorMessage(messagesService: MessagesService, err: HttpErrorResponse) {
-        messagesService.showError("An error occurred", err.error);
-    }  
 
     public getLocaleDateString(): string {
         return FormHelpers.getLocaleDateString();
