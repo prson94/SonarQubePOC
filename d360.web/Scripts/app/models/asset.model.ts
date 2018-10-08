@@ -1,4 +1,10 @@
-﻿export class AssetTypeEditorModel {
+﻿export class AssetTypeMetricModel {
+    Uid: string;
+    Name: string;
+    Class: string
+}
+
+export class AssetTypeEditorModel {
     IconBackColor: string;
     IconForeColor: string;
     SelectedPredicateID: number;

@@ -1,0 +1,79 @@
+﻿<header>{{verb}} {{child}} Measure</header>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="row" *ngIf="!isLoading">
+    <div class="col l6 m12 s12">
+        <div class="row">
+            <div class="col l6 m12 s12">
+                <div class="FieldNameRequired">Name</div>
+                <input type="text" [(ngModel)]="model.Name" style="width: 100%" />
+            </div>
+            <div class="col l6 m12 s12">
+                <p-checkbox [(ngModel)]="model.IsGroup" binary="true" label="Grouping?"></p-checkbox>
+            </div>
+        </div>
+        <div class="section">
+            <div class="row">
+                <div class="col l6 m12 s12">
+                    <div class="FieldNameRequired">
+                        Effective Date
+                    </div>
+                    <div class="directions">Provide a date that this measure becomes effective.</div>
+                    <div>
+                        <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'95%'}"></p-calendar>
+                    </div>
+                </div>
+                <div class="col l6 m12 s12">
+                    <div class="FieldNameRequired">
+                        Weight
+                    </div>
+                    <div class="directions">Weight must be a value between 0 and 1</div>
+                    <div>
+                        <p-spinner #weight size="30" [(ngModel)]="model.Weight" (ngModelChange)="model.Weight = clamp($event, 0, 1, 3)" [min]="0" [max]="1" [step]="0.05"></p-spinner>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col l6 m12 s12">
+        <div class="row">
+            <div class="col s12">
+                <div class="FieldName">Description</div>
+                <div>
+                    <p-editor [(ngModel)]="model.Description" [style]="{'width' : '100%' }" [styleClass]="{'width' : '100%' }"></p-editor>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" *ngIf="!isLoading">
+    <div class="col s12">
+        <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup">
+            <div class="row">
+                <div class="col l3 m12 s12">
+                    <div class="FieldName">
+                        Condition Type
+                    </div>
+                    <div class="directions">
+                        Choose which type of operator you want to use between each condition. The AND operator will ensure that all conditions are met. The OR operator ensures that at least one of the conditions applies.
+                    </div>
+                    <div><p-radioButton name="grpConditionAndOr" value="a" label="And" [(ngModel)]="model.ConditionAndOr"></p-radioButton></div>
+                    <div><p-radioButton name="grpConditionAndOr" value="o" label="Or" [(ngModel)]="model.ConditionAndOr"></p-radioButton></div>
+                </div>
+                <div class="col l9 m12 s12">
+                    <d3s-admin-metric-condition-list [(conditions)]="model.Conditions"
+                        [(metricConditionListFieldTypes)]="metricEditorFieldTypes"
+                        [metricUid]="model?.Uid"
+                        [assetTypeUid]="model?.AssetTypeUid"
+                        (formModeChange)="conditionFormMode = $event">
+                    </d3s-admin-metric-condition-list>
+                </div>
+            </div>
+        </simple-accordion>
+    </div>
+</div>
+<div class="row" *ngIf="!isLoading">
+    <div class="col s12" style="padding-top: 15px">
+        <button pButton type="button" label="Save" [disabled]="!valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
+        <button pButton type="button" label="Cancel" (click)="cancel()" [disabled]="conditionFormMode != FormMode.Default"></button>
+    </div>
+</div>

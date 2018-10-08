@@ -99,7 +99,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                 this.actionName = 'Add';
 
                 this.commonFormData.PermissionOptions.forEach(op => {
-                    op.Selected = false;    // Reset to default.
+                    op.Selected = true;    // Reset to default.
                 });
             }
         }

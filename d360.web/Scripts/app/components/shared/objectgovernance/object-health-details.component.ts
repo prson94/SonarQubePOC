@@ -30,11 +30,11 @@ const Highcharts = require('highcharts/highstock.src');
 	                                <tr [ttSelectableRow]="rowNode">
 		                                <td  style="width:60%;">
 			                                <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-			                                <span *ngIf="item.MapID" [innerText]="item.Name"></span>
-                                            <b *ngIf="!item.MapID"><span [innerText]="item.Name"></span></b>
+			                                <span *ngIf="!item.IsGroup" [innerText]="item.Name"></span>
+                                            <b *ngIf="item.IsGroup"><span [innerText]="item.Name"></span></b>
 		                                </td>
                                         <td  style="width:20%;text-align:right">
-                                            <span *ngIf="item.MapID">
+                                            <span *ngIf="!item.IsGroup">
                                                 <i *ngIf="item.Value" class="fa fa-check enabled" title="Passed"></i>
                                                 <i *ngIf="!item.Value" class="fa fa-times disabled" title="Failed"></i>
                                             </span>
@@ -56,13 +56,12 @@ const Highcharts = require('highcharts/highstock.src');
 })
 
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges{
-    @Input() objectID: number;
-    @Input() objectType: string;
+    @Input() uid: string;
     @Input() objectName: string;
 
     scoreHistory: Object;
     averageScore: number;
-    scoreDate: string = null;
+    scoreDate: Date = null;
     
     private pointBreakdown: PointBreakdown[] = [];
     private pointBreakdownTree: TreeNode[] = [];
@@ -74,11 +73,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let requiresLoad: boolean = false;
         for (let p in changes) {
-            if (p == 'objectType') {
-                requiresLoad = changes['objectType'].currentValue != changes['objectType'].previousValue;
-            }
-            if (p == 'objectID') {
-                requiresLoad = changes['objectID'].currentValue != changes['objectID'].previousValue;
+            if (p == 'uid') {
+                requiresLoad = changes['uid'].currentValue != changes['uid'].previousValue;
             }
         }
 
@@ -89,11 +85,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
     private loadSeriesData() {
-        this.scoreService.getAverageScore(this.objectID, this.objectType)
+        this.scoreService.getAverageScore(this.uid)
             .then(res => {
                 this.averageScore = (res == null || res.AverageScore == null) ? 0 : res.AverageScore;
             })
-            .then(() => this.scoreService.getScoreHistory(this.objectID, this.objectType))
+            .then(() => this.scoreService.getScoreHistory(this.uid))
             .then(res => {
                 let data = res.map(val => {
                     return [Date.parse(val.Date), val.Score];
@@ -169,54 +165,39 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     private loadPoints() {
         this.isLoading = true;
-        this.scoreService.getPointBreakdown(this.objectID, this.objectType, this.scoreDate)
+        this.scoreService.getPointBreakdown(this.uid, this.scoreDate)
             .then(res => {
 
                 this.pointBreakdown = res;
                 this.pointBreakdownTree = [];
 
                 let tree = (node: any) => {
-                    let childGroups = this.pointBreakdown.filter(p => p.ParentID == node.data.GroupID && p.ID == null && p.ParentID != null); //any relevant groups
-                    let childScores = this.pointBreakdown.filter(p => p.GroupID == node.data.GroupID && p.ID != null);
-
+                    let childItems = this.pointBreakdown.filter(p => p.ParentUid == node.data.Uid && p.ParentUid != null);
 
                     node.leaf = true;
                     node.children = null;
 
-                    //console.log('childGroups', childGroups);
-                    if (childScores != null && childScores.length > 0) {
+                    if (childItems != null && childItems.length > 0) {
 
                         node.leaf = false;
                         node.children = [];
 
-                        childScores.forEach(c => {
-                            node.children.push({
+                        childItems.forEach(c => {
+
+                            var child = {
                                 data: c,
                                 expanded: true,
                                 leaf: true
-                            });
-                        });
-                    }
+                            };
 
-
-                    if (childGroups != null && childGroups.length > 0) {
-                        node.leaf = false;
-                        if (node.children == null)
-                            node.children = [];
-
-                        childGroups.forEach(c => {
-                            var child = {
-                                data: c,
-                                expanded: true
-                            }
                             tree(child);
+
                             node.children.push(child);
                         });
                     }
-
                 };
 
-                this.pointBreakdown.filter(p => p.ID == null && p.ParentID == null).forEach(p => {
+                this.pointBreakdown.filter(p => !p.ParentUid).forEach(p => {
                     var root = {
                         data: p,
                         leaf: false,
@@ -226,7 +207,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
                     tree(root);
                     this.pointBreakdownTree.push(root);
-
                 });
 
                 //console.log(this.pointBreakdownTree);
