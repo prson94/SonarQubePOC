@@ -14,28 +14,29 @@ import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/sh
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
 import { AdminAnalyticsComponent } from './admin-analytics.component';
-import { AdminMetricGroupEditorComponent } from './admin-metric-group-editor.component';
-import { AdminMetricGroupListComponent } from './admin-metric-group-list.component';
-import { AdminMetricItemListComponent } from './admin-metric-item-list.component';
-import { AdminMetricMapListComponent } from './admin-metric-map-list.component';
+import { AdminMetricAssetTypeListComponent } from './admin-metric-asset-type-list.component';
 import { AdminMetricConditionListComponent } from './admin-metric-condition-list.component';
-import { AdminMetricMapEditorComponent } from './admin-metric-map-editor.component';
 import { AdminMetricConditionEditorComponent } from './admin-metric-condition-editor.component';
-import { AdminMeasuresComponent } from './admin-measures.component';
-
 import { AdminAnalyticsRoutingModule } from './admin-analytics.routes';
+import { AdminMetricEditorComponent } from './admin-metric-editor.component';
+import { AdminMetricListComponent } from './admin-metric-list.component';
 
 import {
     ButtonModule,
+    CalendarModule,
+    DataTableModule,
     DropdownModule,
     EditorModule,
+    CheckboxModule,
     InputTextModule,
     MultiSelectModule,
+    RadioButtonModule,
     SharedModule,
-    DataTableModule,
+    SpinnerModule,
     TreeTableModule,
-    CalendarModule,
 } from 'primeng/primeng';
+import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -47,14 +48,17 @@ import {
 
         //prime
         ButtonModule,
+        CalendarModule,
+        DataTableModule,
         DropdownModule,
         EditorModule,
+        CheckboxModule,
         InputTextModule,
         MultiSelectModule,
+        RadioButtonModule,
         SharedModule,
-        DataTableModule,
+        SpinnerModule,
         TreeTableModule,
-        CalendarModule,
 
         //d3s        
         CoreModule,
@@ -63,17 +67,15 @@ import {
         SharedObjectDetailsModule,
         SharedDynamicGridEditorModule,
         TilesModule,
+        SimpleAccordionModule,
     ],
     declarations: [
         AdminAnalyticsComponent,
-        AdminMetricGroupEditorComponent,
-        AdminMetricGroupListComponent,
-        AdminMetricItemListComponent,
-        AdminMetricMapListComponent,
+        AdminMetricAssetTypeListComponent,
         AdminMetricConditionListComponent,
-        AdminMetricMapEditorComponent,
         AdminMetricConditionEditorComponent,
-        AdminMeasuresComponent,
+        AdminMetricEditorComponent,
+        AdminMetricListComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

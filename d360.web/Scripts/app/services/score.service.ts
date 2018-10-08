@@ -9,24 +9,23 @@ export class ScoreService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getPointBreakdown(objectID: number, objectType: string, date: string = null): Promise<PointBreakdown[]> {
-        let uri = `queries/${objectType}/${objectID}/PointBreakdownByObject` + (date == null ? '' : `?date=${date}`);
-
+    getPointBreakdown(assetUid: string, date: Date = null): Promise<PointBreakdown[]> {
+        let uri = `/api/v2/metrics/${assetUid}/pointbreakdown` + (date == null ? '' : `?effectiveDate=${date}`);
         return this.http.get(uri)
             .toPromise()
             .then(response => <PointBreakdown[]>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getScoreHistory(objectID: number, objectType: string): Promise<ScorePoint[]> {
-        return this.http.get(`queries/${objectType}/${objectID}/ScoreHistoryByObject`)
+    getScoreHistory(assetUid: string): Promise<ScorePoint[]> {
+        return this.http.get(`queries/${assetUid}/ScoreHistoryByObject`)
             .toPromise()
             .then(response => <ScorePoint[]>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getAverageScore(objectID: number, objectType: string): Promise<AverageScore> {
-        return this.http.get(`queries/${objectType}/${objectID}/AverageScoreByObjectType`)
+    getAverageScore(assetUid: string): Promise<AverageScore> {
+        return this.http.get(`queries/${assetUid}/AverageScoreByObjectType`)
             .toPromise()
             .then(response => <AverageScore>response.json())
             .catch(err => this.handleError(err));

@@ -9,7 +9,13 @@ export class BaseService {
     
     constructor(protected messages: MessagesService) {  }
 
-    handleError(error: HttpErrorResponse) {        
+    handleError(error: HttpErrorResponse) {  
+
+        this.messages.saveClientError(error)
+            .then(res => {
+                console.log("Error logged on server");
+            });
+
         if (error.error instanceof Error) {
             // A client-side or network error occurred. Handle it accordingly.
             console.log('An error occurred[client side]:', error.error.message);

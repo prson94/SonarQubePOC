@@ -23,7 +23,6 @@ namespace d360.core.entities
         public Guid ID { get; set; }
     }
 
-
     [Serializable, DataContract(Namespace = NAMESPACE)]
     public abstract class BaseIntObject : BaseObject
     {
@@ -100,6 +99,26 @@ namespace d360.core.entities
         }
 
         private DateTime? updatedon = null;
+    }
+
+    [Serializable, DataContract(Namespace = NAMESPACE)]
+    public abstract class BaseCreatedObject : BaseObject
+    {
+        public int? CreatedBy { get; set; }
+
+        public DateTime? CreatedOn
+        {
+            get
+            {
+                return this.createdon.HasValue
+                   ? this.createdon.Value
+                   : DateTime.UtcNow;
+            }
+
+            set { this.createdon = value; }
+        }
+
+        private DateTime? createdon = null;
     }
 
     [Serializable, DataContract(Namespace = NAMESPACE)]

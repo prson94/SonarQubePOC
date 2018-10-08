@@ -116,14 +116,9 @@
     <Compile Include="entities\Issue.cs" />
     <Compile Include="entities\IssueType.cs" />
     <Compile Include="entities\IssueTypeRelation.cs" />
-    <Compile Include="entities\Metric\MetricConditionValue.cs" />
-    <Compile Include="entities\Metric\MetricCondition.cs" />
-    <Compile Include="entities\Metric\MetricStagingResult.cs" />
-    <Compile Include="entities\Metric\MetricScore.cs" />
-    <Compile Include="entities\Metric\MetricMapResult.cs" />
-    <Compile Include="entities\Metric\MetricMap.cs" />
-    <Compile Include="entities\Metric\MetricGroup.cs" />
-    <Compile Include="entities\Metric\MetricItem.cs" />
+    <Compile Include="entities\Metric\MetricAsset.cs" />
+    <Compile Include="entities\Metric\MetricAssetVersion.cs" />
+    <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
     <Compile Include="entities\Organization\ContractAcceptance.cs" />
     <Compile Include="entities\Organization\OrganizationType.cs" />
     <Compile Include="entities\Organization\OrganizationRegistration.cs" />
@@ -366,6 +361,7 @@
     <Compile Include="enums\TemplateAction.cs" />
     <Compile Include="enums\Workflow\CriteriaOperator.cs" />
     <Compile Include="exceptions\BaseException.cs" />
+    <Compile Include="exceptions\ClientSideException.cs" />
     <Compile Include="exceptions\ConflictException.cs" />
     <Compile Include="exceptions\GenericException.cs" />
     <Compile Include="exceptions\InvalidFieldException.cs" />
