@@ -253,9 +253,9 @@ with types as	(
 				union
 				select	[Object] as [Object],
 						ObjectID
-				from	cache.ObjectDetails
-				where	ObjectType = @type 
-						and ObjectTypeID = @id
+				from	AssetDetail
+				where	[Type] = @type 
+						and TypeID = @id
 				)
 select	A.FormattedValue as Name 
 from	AttributeDetail A
@@ -522,13 +522,16 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @ID AND A.[State] = 1";
 
         public static string LookupAllocations = @"
 	SELECT	FT.Name as FieldTypeName,
-			D.ObjectID,
-			D.Name as ObjectName,
-			D.ObjectType,
-			D.ObjectTypeName,
-            D.Url as ObjectUrl
+			FT.ObjectID,
+			coalesce(D.[Name], ITN.[Name]) as ObjectName,
+			FT.[Object] as ObjectType,
+			null as ObjectTypeName,
+            AUrl.[Url] as ObjectUrl
 	FROM	FieldType FT
-			inner join cache.ObjectDetails D on D.[Object] = FT.[Object] and D.ObjectID = FT.ObjectID
+			left join AssetType D on FT.[Object] <> 'IntersectType' and D.[Object] = FT.[Object] and D.ObjectID = FT.ObjectID
+			left join IntersectType T on FT.[Object] = 'IntersectType' and T.ID = FT.ObjectID
+			outer apply [dbo].[GetAssetUrl](D.[Object], D.ID, D.ObjectID) AUrl
+			outer apply dbo.GetIntersectTypeNames(T.ID) ITN
 	WHERE	FT.LookupObjectType = @type
             AND FT.LookupObjectID = @id";
 

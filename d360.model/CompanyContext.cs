@@ -1567,9 +1567,10 @@ select	SourceObject,
 		TargetObjectName,
 		TargetTypeName,
 		C.[Count],
-		D.Url as TargetUrl
+		AUrl.[Url] as TargetUrl
 from	cache.Relationships R
-        inner join cache.ObjectDetails D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID
+		inner join AssetDetail D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID
+		cross apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) AUrl
 		outer apply (
 					select	count(1) as [Count]
 					from	FusionAttributeType
