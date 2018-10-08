@@ -171,7 +171,7 @@ namespace d360.web.Controllers.Services
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this reference list.");
 
                 var listToRemove = Company.GetById<ReferenceItemType>(id);
-                if (listToRemove == null)
+                if (listToRemove != null)
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format("The list could not be found that matches the ID {0}", id));
                 }
