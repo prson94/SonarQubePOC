@@ -17423,6 +17423,9 @@ order by DN.DisplayValue");
 
                 model.Order = Company.Count<RuleResultQualifierType>(r => r.RuleImplementationID == model.RuleImplementationID) + 1;
 
+                if (Company.RuleResultQualifierTypes.Any(x => x.RuleImplementationID == model.RuleImplementationID && string.Compare(x.Name, model.Name, true) == 0))
+                    return jsonException("A rule result qualifier type with the same name already exists.  Please make sure you use a unique name.", HttpStatusCode.Conflict);
+
                 Company.RuleResultQualifierTypes.Add(model);
                 Company.SaveChanges();
             }
@@ -17449,6 +17452,10 @@ order by DN.DisplayValue");
 
                 if (!Company.HasAssetPermission(SystemObjects.Rule, qualifier.RuleImplementation.RuleID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+
+                if (Company.RuleResultQualifierTypes.Any(x => x.RuleImplementationID == model.RuleImplementationID && string.Compare(x.Name, model.Name, true) == 0 && x.ID != qualifier.ID))
+                    return jsonException("A rule result qualifier type with the same name already exists.  Please make sure you use a unique name.", HttpStatusCode.Conflict);
 
                 qualifier.Name = model.Name;
                 qualifier.ResolutionObject = model.ResolutionObject;
