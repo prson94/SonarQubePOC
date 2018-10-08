@@ -577,13 +577,16 @@ order by wi.StartedOn desc";
 
                 if (isCompleted)
                 {
+                    SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", Company.CurrentResourceID.ToString() } });
                     await Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null? obj.TypeID:-1), ObjectType = type });
                 }
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
             }            
             catch (Exception ex)
-            {                
+            {
+                SendException(ex, new Dictionary<string, string> { { "WorkflowItemID", "itemId" } });
+
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);                
             }
         }

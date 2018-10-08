@@ -168,15 +168,7 @@ namespace d360.web.Controllers
                    select r
                 );
         }
-
-        //[Route("responsibilities/{type}/{id:int}")]
-        //internal IQueryable<dynamic> GetResponsibilities(SystemObjects type, int id)
-        //{
-        //    return Company.Query<dynamic>(
-        //        QueryConstants.ResponsibilityList,
-        //        new { ObjectType = type.ToString(), ObjectID = id }
-        //    ).AsQueryable();
-        //}
+        
 
         internal string GetNoReadSqlStatement(string identifier = null)
         {
@@ -232,6 +224,15 @@ namespace d360.web.Controllers
                     new ConfirmResponse { title = title, message = message }
                 )
             );
+        }
+
+        internal void SendEvent(string eventName, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
+        {
+            if (properties == null) properties = new Dictionary<string, string>();
+            var telemetry = new TelemetryClient();
+            properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            telemetry.TrackEvent(eventName, properties, metrics);
+            telemetry = null;
         }
 
         #region Private Methods
@@ -1152,6 +1153,15 @@ namespace d360.web.Controllers
             var telemetry = new TelemetryClient();
             properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
             telemetry.TrackException(ex, properties, metrics);
+            telemetry = null;
+        }
+
+        internal void SendEvent(string eventName, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
+        {
+            if (properties == null) properties = new Dictionary<string, string>();
+            var telemetry = new TelemetryClient();
+            properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            telemetry.TrackEvent(eventName, properties, metrics);
             telemetry = null;
         }
 
