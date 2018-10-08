@@ -269,92 +269,80 @@ namespace d360.web.Controllers.Services
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        void Process(List<LineageModel> currentNodes, List<LineageModel> list, List<Node> nodes, bool forward = true)
+        void Process(LineageModel current, List<LineageModel> list, List<Node> nodes, bool forward = true)
         {
-            while (currentNodes.Any(c => !c.Processed))
+            if (forward)
             {
-                var nextNodes = new List<LineageModel>();
-
-                foreach (var current in currentNodes.Where(c => !c.Processed))
+                if (string.IsNullOrEmpty(current.ObjectPrefix))
                 {
-                    if (forward)
-                    {
-                        if (string.IsNullOrEmpty(current.ObjectPrefix))
-                        {
-                            current.ObjectPrefix = "Grp";
-                        }
-
-                        //Add to node collection.
-                        if (!nodes.Any(i => i.key == $"{current.ObjectPrefix}.{current.ObjectAssetID}"))
-                        {
-                            nodes.Add(new Node
-                            {
-                                key = $"{current.ObjectPrefix}.{current.ObjectAssetID}",
-                                assetId = current.ObjectAssetID,
-                                @object = current.Object,
-                                objectId = current.ObjectID,
-                                intersectId = current.IntersectID,
-                                state = (int)current.State,
-                                intersectGroupId = current.IntersectGroupID,
-                                name = current.ObjectName,
-                                backColor = current.ObjectBackColor,
-                                foreColor = current.ObjectForeColor,
-                                objectTypeName = current.ObjectTypeName,
-                                objectType = current.ObjectType,
-                                objectTypeId = current.ObjectTypeID,
-                                assetTypeId = current.ObjectAssetTypeID
-                            });
-                        }
-
-                        current.Processed = true;
-                        foreach (var o in list.Where(i => i.SubjectAssetID == current.ObjectAssetID && !i.Processed))
-                        {
-                            o.SubjectPrefix = current.ObjectPrefix;
-                            nextNodes.Add(o);
-                        }
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(current.SubjectPrefix))
-                        {
-                            current.SubjectPrefix = "Grp";
-                        }
-
-                        //Add to node collection.
-                        if (!nodes.Any(i => i.key == $"{current.SubjectPrefix}.{current.SubjectAssetID}"))
-                        {
-                            nodes.Add(new Node
-                            {
-                                key = $"{current.SubjectPrefix}.{current.SubjectAssetID}",
-                                assetId = current.SubjectAssetID,
-                                @object = current.Subject,
-                                objectId = current.SubjectID,
-                                intersectId = current.IntersectID,
-                                state = (int)current.State,
-                                intersectGroupId = current.IntersectGroupID,
-                                name = current.SubjectName,
-                                backColor = current.SubjectBackColor,
-                                foreColor = current.SubjectForeColor,
-                                objectTypeName = current.SubjectTypeName,
-                                objectType = current.SubjectType,
-                                objectTypeId = current.SubjectTypeID,
-                                assetTypeId = current.SubjectAssetTypeID
-                            });
-                        }
-
-                        current.Processed = true;
-
-                        foreach (var o in list.Where(i => i.ObjectAssetID == current.SubjectAssetID && !i.Processed))
-                        {
-                            o.ObjectPrefix = current.SubjectPrefix;
-                            nextNodes.Add(o);
-                        }
-                    }
+                    current.ObjectPrefix = "Grp";//RandomString(5);
                 }
-                currentNodes = nextNodes;
+                
+                //Add to node collection.
+                if (!nodes.Any(i => i.key == $"{current.ObjectPrefix}.{current.ObjectAssetID}"))
+                {
+                    nodes.Add(new Node {
+                        key = $"{current.ObjectPrefix}.{current.ObjectAssetID}",
+                        assetId = current.ObjectAssetID,
+                        @object = current.Object,
+                        objectId = current.ObjectID,
+                        intersectId = current.IntersectID,
+                        state = (int)current.State,
+                        intersectGroupId = current.IntersectGroupID,
+                        name = current.ObjectName,
+                        backColor = current.ObjectBackColor,
+                        foreColor = current.ObjectForeColor,
+                        objectTypeName = current.ObjectTypeName,
+                        objectType = current.ObjectType,
+                        objectTypeId = current.ObjectTypeID,
+                        assetTypeId = current.ObjectAssetTypeID
+                    });
+                }
+
+                current.Processed = true;
+                foreach (var o in list.Where(i => i.SubjectAssetID == current.ObjectAssetID && !i.Processed)) //!i.Processed && 
+                {
+                    o.SubjectPrefix = current.ObjectPrefix;
+                    Process(o, list, nodes, forward);
+                }
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(current.SubjectPrefix))
+                {
+                    current.SubjectPrefix =  "Grp";//RandomString(5);
+                }
+
+                //Add to node collection.
+                if (!nodes.Any(i => i.key == $"{current.SubjectPrefix}.{current.SubjectAssetID}"))
+                {
+                    nodes.Add(new Node {
+                        key = $"{current.SubjectPrefix}.{current.SubjectAssetID}",
+                        assetId = current.SubjectAssetID,
+                        @object = current.Subject,
+                        objectId = current.SubjectID,
+                        intersectId = current.IntersectID,
+                        state = (int)current.State,
+                        intersectGroupId = current.IntersectGroupID,
+                        name = current.SubjectName,
+                        backColor = current.SubjectBackColor,
+                        foreColor = current.SubjectForeColor,
+                        objectTypeName = current.SubjectTypeName,
+                        objectType = current.SubjectType,
+                        objectTypeId = current.SubjectTypeID,
+                        assetTypeId = current.SubjectAssetTypeID
+                    });
+                }
+
+                current.Processed = true;
+
+                foreach (var o in list.Where(i => i.ObjectAssetID == current.SubjectAssetID && !i.Processed)) //!i.Processed && 
+                {
+                    o.ObjectPrefix = current.SubjectPrefix;
+                    Process(o, list, nodes, forward);
+                }
             }
         }
-
 
         [Route("{object}/{id:int}/lineage")]
         public HttpResponseMessage GetLineage(SystemObjects @object, int id)
@@ -374,8 +362,8 @@ namespace d360.web.Controllers.Services
             {
                 if (!current.Processed)
                 {
-                    Process(new List<LineageModel>() { current }, list, nodes, true);
-                    Process(new List<LineageModel>() { current }, list, nodes, false);
+                    Process(current, list, nodes, true);
+                    Process(current, list, nodes, false);
                 }
             });
 
