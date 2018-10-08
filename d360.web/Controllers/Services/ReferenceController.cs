@@ -136,7 +136,7 @@ namespace d360.web.Controllers.Services
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this item.");
 
                 var itemToRemove = Company.GetById<ReferenceItem>(id);
-                if (itemToRemove.ReferenceItemTypeID != typeID)
+                if (itemToRemove.ReferenceItemTypeID == typeID)
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format("The assigned list for this item does not match the list ID {0}", typeID));
                 }
