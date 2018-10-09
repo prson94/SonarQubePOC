@@ -22,6 +22,8 @@ using IdentityModel;
 using IdentityModel.Client;
 using System.Configuration;
 using System.Web;
+using System.Net.Http;
+using System.Net;
 
 namespace d360.web
 {
@@ -324,7 +326,14 @@ from	Resource R
 
                 return null;
             }
-            var di = new DiscoveryClient(authority);
+
+            HttpClientHandler httpHandler = new HttpClientHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            };
+
+            var di = new DiscoveryClient(authority, httpHandler);
+            
             di.Policy.ValidateIssuerName = jwtDiscoveryValidateIssuerName;
             var disco = await di.GetAsync();
             

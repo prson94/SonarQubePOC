@@ -34,7 +34,7 @@ namespace igx.jobs.displayvalueupdateprocessor
     {
         const string functionName = "DisplayValueUpdateProcessor";
         
-        public static async Task Run([QueueTrigger("%DisplayValueUpdateQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
+        public static async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
         {
             var updateInfo = JsonConvert.DeserializeObject<DisplayUpdateInfo>(myQueueItem);
 
