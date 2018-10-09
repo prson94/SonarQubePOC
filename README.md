@@ -8,4 +8,4 @@ The repo is currently set to build and release on every check-in to the current 
 
 Current Build - [![Build Status](https://data3sixty.visualstudio.com/govern-build/_apis/build/status/govern-build%20-%20CI)](https://data3sixty.visualstudio.com/govern-build/_build/latest?definitionId=21)
 
-Current Release - ![Release Status](https://data3sixty.vsrm.visualstudio.com/_apis/public/Release/badge/e117c703-6955-42ef-95e7-0e36c5fab280/1/1)
+Current Release - [![Release Status](https://data3sixty.vsrm.visualstudio.com/_apis/public/Release/badge/e117c703-6955-42ef-95e7-0e36c5fab280/1/1)](https://ci.preview.data3sixty.com/home)
