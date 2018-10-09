@@ -43,19 +43,29 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
+
+
         /// <summary>
-        /// Gets a metric by its ID.
+        /// Gets a metric by its Uid.
         /// </summary>
-        /// <param name="uid">The public ID for the metric.</param>
+        /// <param name="uid">The public identifier for the metric.</param>
         /// <returns>The metric.</returns>
         [
             HttpGet,
             Route("{uid}"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(MetricAsset))
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(MetricAsset)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that either your metric was not found.", typeof(ErrorResponse))
         ]
-        public MetricAsset GetAssetById(Guid uid)
+        public IHttpActionResult GetAssetById(Guid uid)
         {
-            return Company.Filter<MetricAsset>(i => i.Uid == uid, i => i.Children).SingleOrDefault();
+            var metricAsset = Company.Filter<MetricAsset>(i => i.Uid == uid, i => i.Children).SingleOrDefault();
+
+            if (metricAsset == null)
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error locating metric", $"Metric with Uid of {uid.ToString()} not found.");
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, metricAsset));
         }
 
         /// <summary>
@@ -66,25 +76,36 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route(""),
-            SwaggerResponse(HttpStatusCode.Created, "A message indicating the status of the ADD request.", typeof(string)),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the UPDATE request.", typeof(string))
+            SwaggerResponse(HttpStatusCode.Created, "A message indicating the status of the ADD request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the UPDATE request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not autheorized to make this change.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate what was incorrect about your request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that either your metric or parent metric was not found.", typeof(ErrorResponse))
         ]
         public IHttpActionResult UpsertAsset(MetricAssetViewModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this metric."));
+            {
+                return errorMessageResponse(HttpStatusCode.Unauthorized, "Error updating metric", "You are not allowed to update this metric.");
+            }
 
             if (model == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "You are have provided a null metric."));
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided a null metric.");
+            }
 
             MetricAsset metricAsset = null;
-            var isNew = false;
+            var isNew = true;
 
             if (model.Uid != Guid.Empty)
             {
+                isNew = false;
+
                 metricAsset = Company.Filter<MetricAsset>(i => i.Uid == model.Uid).SingleOrDefault();
                 if (metricAsset == null)
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Metric not found."));
+                {
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating metric", "Metric not found.");
+                }
 
                 metricAsset.Description = model.Description;
                 metricAsset.Name = model.Name;
@@ -103,7 +124,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.AssetTypeUid == Guid.Empty)
                 {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Asset type not found or is empty."));
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating metric", "Asset type not found or is empty.");
                 }
 
                 if (model.ParentUid != Guid.Empty && model.ParentUid.HasValue)
@@ -111,13 +132,13 @@ namespace d360.web.Controllers.V2
                     var parentMetricAsset = Company.Filter<MetricAsset>(i => i.Uid == model.ParentUid).SingleOrDefault();
                     if (parentMetricAsset == null)
                     {
-                        return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Parent metric not found."));
+                        return errorMessageResponse(HttpStatusCode.NotFound, "Error updating metric", "Parent metric not found.");
                     }
                     else
                     {
                         if (parentMetricAsset.AssetTypeUid != metricAsset.AssetTypeUid)
                         {
-                            return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Parent metric must belong to the same asset type."));
+                            return errorMessageResponse(HttpStatusCode.NotFound, "Error updating metric", "Parent metric must belong to the same asset type.");
                         }
                     }
                     metricAsset.ParentUid = model.ParentUid;
@@ -158,35 +179,41 @@ namespace d360.web.Controllers.V2
             {
                 if (metricAssetVersion.Weight != model.Weight)
                 {
-                    return ResponseMessage(
-                        Request.CreateResponse(
-                            HttpStatusCode.BadRequest,
-                            getErrorResponse("Error updating metric", "You may not alter the weight of this metric without also altering its effective date.")
-                        )
-                    );
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the weight of this metric without also altering its effective date.");
                 }
                 if (metricAssetVersion.ConditionAndOr != model.ConditionAndOr)
                 {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, getErrorResponse("Error updating metric", "You may not alter the condition type of this metric without also altering its effective date.")));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the condition type of this metric without also altering its effective date.");
                 }
 
                 string existingConditionHash = string.Join("|", metricAssetVersion.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.ValueJson)));
                 existingConditionHash = existingConditionHash.GetD3sHashString();
                 if (newConditionHash != existingConditionHash)
                 {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, getErrorResponse("Error updating metric", "You may not alter the conditions of this metric without also altering its effective date.")));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the conditions of this metric without also altering its effective date.");
                 }
             }
 
             Company.SaveChanges();
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, "Metric updated."));
+            return successMessageResponse(
+                    isNew ? HttpStatusCode.Created : HttpStatusCode.OK,
+                    $"Metric {(isNew ? "added" : "updated")}.",
+                    $"The specified metric was successfully {(isNew ? "added" : "updated")}."
+            );
         }
 
+        /// <summary>
+        /// Allows you to remove a metric based on its Uid.
+        /// </summary>
+        /// <param name="uid">The public identifier for the metric.</param>
+        /// <returns>A status for the DELETE request.</returns>
         [
             HttpDelete,
             Route("{uid}"),
-            SwaggerResponse(HttpStatusCode.Created, "A message indicating the status of the UPDATE request.", typeof(string))
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
         ]
         public IHttpActionResult DeleteById(Guid uid)
         {
@@ -196,12 +223,12 @@ namespace d360.web.Controllers.V2
             var model = Company.Filter<MetricAsset>(i => i.Uid == uid).SingleOrDefault();
 
             if (model == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Metric not found."));
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing metric", "Metric not found.");
 
             model.State = State.Deleted;
             Company.SaveChanges();
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, "Metric removed."));
+            return successMessageResponse(HttpStatusCode.OK, "Metric removed.", "Metric successfully removed.");
         }
 
         /// <summary>
@@ -234,7 +261,7 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown Error", errorMessage));
             }
         }
 
@@ -247,7 +274,8 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{assetUid:Guid}/pointbreakdown"),
-            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetTypeHierarchyModels))]
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels))
+        ]
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetAsync(Guid assetUid, DateTime? effectiveDate = null)
         {
             /*

@@ -98,7 +98,7 @@ namespace d360.web.Controllers.Services
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with Object {sType} and ObjectID {otid} could not be found.")));
                 }
                 
-                var import = readRequestJsonContent<BulkAssetImport>(Request).Result;
+                var import = readRequestJsonContent<List<Dictionary<string, string>>>(Request).Result;
                 
                 var results = await ( (Company.Database.Connection as SqlConnection).BulkAssetsImport(Company.CurrentResourceID, ot, otid, import));
 

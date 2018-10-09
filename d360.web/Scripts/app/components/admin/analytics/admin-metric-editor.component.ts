@@ -96,10 +96,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
                 this.onSave.emit();
             })
             .catch(e => {
-                console.log(JSON.parse(e._body));
-                this.showMessageForResult(this.messagesService, JSON.parse(e._body));
-                //this.showHttpErrorMessage(this.messagesService, e);
-                //this.messagesService.showError("An error occured", "Not able to save metric.");
+            //    //console.log(JSON.parse(e._body));
+            //    this.showMessageForResult(this.messagesService, e._body);
+            //    //this.showHttpErrorMessage(this.messagesService, e);
+            //    //this.messagesService.showError("An error occured", "Not able to save metric.");
                 this.isLoading = false;
             });
     }

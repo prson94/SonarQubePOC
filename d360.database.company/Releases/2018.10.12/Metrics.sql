@@ -42,10 +42,6 @@ CREATE TABLE [metrics].[Asset] (
 )
 GO;
 
-ALTER TABLE [metrics].[Asset]  WITH CHECK ADD  CONSTRAINT [FK_MetricAsset_Parent] FOREIGN KEY([ParentUid]) REFERENCES [metrics].[Asset] ([Uid]) ON DELETE NO ACTION
-ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_Parent]
-GO;
-
 CREATE TABLE [metrics].[AssetVersion] (
 	[Uid] uniqueidentifier NOT NULL,
 	EffectiveDate date NOT NULL,
@@ -131,10 +127,14 @@ insert into [metrics].[Asset]
 			inner join AssetType A on A.ID = M.AssetTypeID
 			inner join metrics.[Group] P on P.ID = M.GroupID
 
+ALTER TABLE [metrics].[Asset]  WITH CHECK ADD  CONSTRAINT [FK_MetricAsset_Parent] FOREIGN KEY([ParentUid]) REFERENCES [metrics].[Asset] ([Uid]) ON DELETE NO ACTION
+ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_Parent]
+GO;
+
 insert into [metrics].[AssetVersion]
 	select	distinct
 			[Uid],
-			[EffectiveStartDate] as EffectiveDate,
+			[EffectiveStartDate] as EffectiveDate, --CreatedOn as EffectiveDate,
 			[Weight],
 			'a' as ConditionAndOr,
 			0, null,
@@ -142,6 +142,7 @@ insert into [metrics].[AssetVersion]
 			coalesce([UpdatedBy], 0) as [UpdatedBy]
 	from	metrics.[Group]
 	where	[uid] <> '00000000-0000-0000-0000-000000000000'
+	        and [Uid] in (select [Uid] from metrics.Asset)
 
 insert into [metrics].[AssetVersion]
 	select	distinct

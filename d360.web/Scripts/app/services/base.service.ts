@@ -14,16 +14,22 @@ export class BaseService {
         this.messages.saveClientError(error)
             .then(res => {
                 console.log("Error logged on server");
-            });
 
-        if (error.error instanceof Error) {
-            // A client-side or network error occurred. Handle it accordingly.
-            console.log('An error occurred[client side]:', error.error.message);
-        } else {        
-            // server side error
-            console.log('An error occurred[server side]', error);
-            if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
-        }
+                if (error.error instanceof Error) {
+                    // A client-side or network error occurred. Handle it accordingly.
+                    console.log('An error occurred[client side]:', error.error.message);
+                } else {
+                    // server side error
+                    console.log('An error occurred[server side]', error);
+                    if (error.error instanceof JsonResult) {
+                        this.messages.showError(error.error.title, error.error.message);
+                    }
+                    else {
+                        if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
+                    }
+
+                }
+            });
         return Promise.reject(error.message || error);
     }
     

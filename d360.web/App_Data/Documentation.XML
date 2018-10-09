@@ -2556,9 +2556,9 @@
         </member>
         <member name="M:d360.web.Controllers.V2.MetricsController.GetAssetById(System.Guid)">
             <summary>
-            Gets a metric by its ID.
+            Gets a metric by its Uid.
             </summary>
-            <param name="uid">The public ID for the metric.</param>
+            <param name="uid">The public identifier for the metric.</param>
             <returns>The metric.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.MetricsController.UpsertAsset(d360.web.Models.MetricAssetViewModel)">
@@ -2567,6 +2567,13 @@
             </summary>
             <param name="model">The definition of the metric itself. If updating an existing metric, ensure that you populate the Uid property.</param>
             <returns>An HTTP status code with an appropriate status message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.MetricsController.DeleteById(System.Guid)">
+            <summary>
+            Allows you to remove a metric based on its Uid.
+            </summary>
+            <param name="uid">The public identifier for the metric.</param>
+            <returns>A status for the DELETE request.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.MetricsController.GetMetricHierarchyByAssetTypeAsync(System.Guid,System.Nullable{System.DateTime})">
             <summary>
@@ -2640,11 +2647,20 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,d360.core.entities.AssetInserts)">
             <summary>
-            Takes a given set of assets and bulk inserts/updates them.
+            Adds a given set of assets based on the specific asset type Uid.
             </summary>
             <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assets">The payload of your request.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,d360.core.entities.AssetUpdates)">
+            <summary>
+            Updates a given set of assets based on the specific asset type Uid.
+            </summary>
+            <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">

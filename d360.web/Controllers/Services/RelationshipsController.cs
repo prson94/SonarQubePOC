@@ -261,101 +261,6 @@ namespace d360.web.Controllers.Services
             public List<Link> OriginalLinks { get; set; }
         }
 
-        private static Random random = new Random();
-        public static string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-              .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
-
-        void Process(List<LineageModel> currentNodes, List<LineageModel> list, List<Node> nodes, bool forward = true)
-        {
-            while (currentNodes.Any(c => !c.Processed))
-            {
-                var nextNodes = new List<LineageModel>();
-
-                foreach (var current in currentNodes.Where(c => !c.Processed))
-                {
-                    if (forward)
-                    {
-                        if (string.IsNullOrEmpty(current.ObjectPrefix))
-                        {
-                            current.ObjectPrefix = "Grp";
-                        }
-
-                        //Add to node collection.
-                        if (!nodes.Any(i => i.key == $"{current.ObjectPrefix}.{current.ObjectAssetID}"))
-                        {
-                            nodes.Add(new Node
-                            {
-                                key = $"{current.ObjectPrefix}.{current.ObjectAssetID}",
-                                assetId = current.ObjectAssetID,
-                                @object = current.Object,
-                                objectId = current.ObjectID,
-                                intersectId = current.IntersectID,
-                                state = (int)current.State,
-                                intersectGroupId = current.IntersectGroupID,
-                                name = current.ObjectName,
-                                backColor = current.ObjectBackColor,
-                                foreColor = current.ObjectForeColor,
-                                objectTypeName = current.ObjectTypeName,
-                                objectType = current.ObjectType,
-                                objectTypeId = current.ObjectTypeID,
-                                assetTypeId = current.ObjectAssetTypeID
-                            });
-                        }
-
-                        current.Processed = true;
-                        foreach (var o in list.Where(i => i.SubjectAssetID == current.ObjectAssetID && !i.Processed))
-                        {
-                            o.SubjectPrefix = current.ObjectPrefix;
-                            nextNodes.Add(o);
-                        }
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(current.SubjectPrefix))
-                        {
-                            current.SubjectPrefix = "Grp";
-                        }
-
-                        //Add to node collection.
-                        if (!nodes.Any(i => i.key == $"{current.SubjectPrefix}.{current.SubjectAssetID}"))
-                        {
-                            nodes.Add(new Node
-                            {
-                                key = $"{current.SubjectPrefix}.{current.SubjectAssetID}",
-                                assetId = current.SubjectAssetID,
-                                @object = current.Subject,
-                                objectId = current.SubjectID,
-                                intersectId = current.IntersectID,
-                                state = (int)current.State,
-                                intersectGroupId = current.IntersectGroupID,
-                                name = current.SubjectName,
-                                backColor = current.SubjectBackColor,
-                                foreColor = current.SubjectForeColor,
-                                objectTypeName = current.SubjectTypeName,
-                                objectType = current.SubjectType,
-                                objectTypeId = current.SubjectTypeID,
-                                assetTypeId = current.SubjectAssetTypeID
-                            });
-                        }
-
-                        current.Processed = true;
-
-                        foreach (var o in list.Where(i => i.ObjectAssetID == current.SubjectAssetID && !i.Processed))
-                        {
-                            o.ObjectPrefix = current.SubjectPrefix;
-                            nextNodes.Add(o);
-                        }
-                    }
-                }
-                currentNodes = nextNodes;
-            }
-        }
-
-
         [Route("{object}/{id:int}/lineage")]
         public HttpResponseMessage GetLineage(SystemObjects @object, int id)
         {
@@ -365,51 +270,11 @@ namespace d360.web.Controllers.Services
 
             #endregion
 
-            var list = Company.Query<LineageModel>(sql, new { o = @object.ToString(), oid = id }).ToList();
+            var list = Company.Query<string>(sql, new { o = @object.ToString(), oid = id }).ToList();
 
-            var nodes = new List<Node>();
-            var links = new List<Link>();
+            var json = Newtonsoft.Json.JsonConvert.DeserializeObject(string.Join("",list));
 
-            list.ForEach(current =>
-            {
-                if (!current.Processed)
-                {
-                    Process(new List<LineageModel>() { current }, list, nodes, true);
-                    Process(new List<LineageModel>() { current }, list, nodes, false);
-                }
-            });
-
-            links = list.Select(i => new Link { from = $"{i.SubjectPrefix}.{i.SubjectAssetID}", to = $"{i.ObjectPrefix}.{i.ObjectAssetID}", intersectId = i.IntersectID, state = (int)i.State, predicate = i.Predicate, intersectTypeId = i.IntersectTypeID }).ToList();
-
-            //add the focal node as a placeholder if no lineage is present
-            if (nodes.Count < 1)
-            {
-                var objectDetail = Company.GetObjectDetail(@object.ToString(), id);
-                var assetDetail = Company.GetAssetDetail(objectDetail.AssetID.GetValueOrDefault());
-
-                if (assetDetail != null && objectDetail != null)
-                    nodes.Add(new Node()
-                    {
-                        key = null,
-                        assetId = objectDetail.AssetID.GetValueOrDefault(),
-                        name = objectDetail.Name,
-                        objectTypeName = objectDetail.TypeName,
-                        @object = @object.ToString(),
-                        objectId = id,
-                        objectType = objectDetail.Type,
-                        objectTypeId = objectDetail.TypeID,
-                        backColor = objectDetail.IconBackColor,
-                        foreColor = objectDetail.IconForeColor,
-                        assetTypeId = assetDetail.AssetTypeID,
-                    });
-
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, new
-            {
-                nodes,
-                links
-            });
+            return Request.CreateResponse(HttpStatusCode.OK, json);
         }
 
         [Route("save/lineage"), HttpPost]

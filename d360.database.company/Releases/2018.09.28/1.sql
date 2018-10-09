@@ -73,6 +73,8 @@ GO;
 DROP INDEX IX_Field_AssetID_Include_FormatedValue_FieldTypeID ON [dbo].[Field]
 GO;
 
+CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_date] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE ( [UpdatedOn])
+GO;
 
 
 ALTER TRIGGER [dbo].[Field_AfterUpsert]
@@ -110,8 +112,7 @@ AS
 			inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID;
 GO;
 
-
-alter view [dbo].[AssetDetail]
+ALTER view [dbo].[AssetDetail]
 as
 	select	A.ID,
 			A.AssetTypeID,
@@ -138,9 +139,11 @@ as
 	from	AssetWithType A
 			cross apply dbo.GetAssetDisplayValueById(A.ID) D	--left join GetAssetDisplayValue() D on D.ID = A.ID
 			--left join GetAssetKeyHash() K on K.ID = A.ID
-			cross apply [dbo].[GetAssetKeyHashById](A.ID) K
+			outer apply [dbo].[GetAssetKeyHashById](A.ID) K
 			left join GetAssetFieldHash() F on F.ID = A.ID
 GO;
+
+
 
 alter procedure [bulkload].[Promotions]
 --declare
@@ -3285,4 +3288,345 @@ BEGIN
 	SET NOCOUNT ON
 	delete AssetType where Object = 'TaxonomyType' and ObjectID in (select ID from deleted)
 END
+GO;
+
+ALTER FUNCTION [lineage].[GetTrailForObject]
+(	
+	@Object varchar(50), 
+	@ObjectID int,
+	@Forward bit,
+	@Depth int = 10
+)
+RETURNS @tbl TABLE
+(
+	IntersectID int, 
+	IntersectTypeID int, 
+	[Subject] varchar(50), 
+	SubjectID int, 
+	[Object] varchar(50), 
+	ObjectID int, 
+	[State] int, 
+	PredicateID int, 
+	PredicateName varchar(max), 
+	PredicateInverse varchar(max), 
+	PredicateType int, 
+	Visited bit,
+	Depth int
+)
+AS
+BEGIN
+
+
+	--TESTING---------------------
+	--declare @tbl table (IntersectID int, IntersectTypeID int, Subject varchar(50), SubjectID int, Object varchar(50), ObjectID int, State int, PredicateID int, PredicateName varchar(max), PredicateInverse varchar(max), PredicateType int, Visited bit);
+	--declare @Object varchar(50);
+	--declare @ObjectID int;
+	--declare @Forward bit;
+
+	--select @Object = 'Artifact',
+	--	   @ObjectID = 973683,
+	--	   @Forward = 1;
+	-------------------------------
+
+
+	insert into @tbl
+	select 
+		P.*,
+		0 as Visited,
+		0 as Depth 
+	from PredicateIntersect P
+	where 
+		((@Forward = 1 and [Subject] = @Object and SubjectID = @ObjectID) OR
+		(@Forward = 0 and [Object] = @Object and ObjectID = @ObjectID)) AND
+		PredicateType = 1;
+		
+
+	declare @level int = 1;
+	declare @i int;
+	select @i = count(*) from @tbl where Visited = 0;
+
+	while @i != 0 and @level <= @Depth
+	begin
+		declare @intersectId int;
+		select top 1 @intersectId = IntersectID from @tbl where Visited = 0; 
+
+		update @tbl
+		set Visited = 1
+		where IntersectID = @intersectId;
+
+		insert into @tbl
+		select 
+			P.*,
+			0 as Visited,
+			@level as Depth 
+		from PredicateIntersect P
+		cross apply (select * from @tbl where IntersectID = @intersectId) I
+		where 
+			((@Forward = 1 and P.[Subject] = I.[Object] and P.SubjectID = I.ObjectID) OR
+			(@Forward = 0 and P.[Object] = I.[Subject] and P.ObjectID = I.SubjectID)) AND
+			P.PredicateType = 1 AND P.IntersectID not in (select IntersectID from @tbl);
+
+		select @i = count(*) from @tbl where Visited = 0;
+		set @level = @level + 1
+	end
+
+	RETURN
+END
+GO;
+
+ALTER procedure [lineage].[GetByObject]
+--declare
+	@Object varchar(50),-- = 'Artifact',
+	@ObjectID int-- = 19
+as
+begin
+	declare @usedIntersectIDs table(ID int)
+	declare @contextAssetID bigint
+	declare @currentLevel int = 0
+	
+	declare @levelResults table (IntersectTypeID int, IntersectID int, Subject varchar(50), SubjectID int, Object varchar(50), ObjectID int, [State] int, PredicateName nvarchar(250))
+
+	IF OBJECT_ID('tempdb..#lineage') IS NOT NULL DROP TABLE #lineage;
+		create table #lineage (ID uniqueidentifier null, IntersectTypeID int, [Level] int, IntersectID int, Subject varchar(50), SubjectID int, Object varchar(50), ObjectID int, [State] int, PredicateName nvarchar(250));
+
+	CREATE INDEX index_lineage_temp ON #lineage ([Level] ASC,[Object] ASC, [ObjectID] ASC);
+
+
+	select @contextAssetID = ID from Asset where Object = @Object and ObjectID = @ObjectID
+
+	-- GET DOWNSTREAM (FORWARD) LINEAGE ----
+	set @currentLevel = @currentLevel + 1
+	insert into @levelResults
+		select	I.IntersectTypeID,
+				I.IntersectID,
+				I.Subject,
+				I.SubjectID,
+				I.Object,
+				I.ObjectID,
+				I.State,
+				I.PredicateName
+		from	PredicateIntersect I
+		where	I.Subject = @Object and I.SubjectID = @ObjectID and I.PredicateType = 1
+
+	insert into @usedIntersectIDs
+		select IntersectID from @levelResults
+
+	while exists(select 1 from @levelResults)
+	begin
+		declare @newLevel int = @currentLevel + 1
+
+		insert into #lineage
+			select	newid(),
+					IntersectTypeID,
+					@currentLevel,
+					IntersectID,
+					Subject,
+					SubjectID,
+					Object,
+					ObjectID,
+					State,
+					PredicateName
+			from	@levelResults
+
+		delete @levelResults
+
+		insert into @levelResults
+			select	O.IntersectTypeID,
+					O.IntersectID,
+					O.Subject,
+					O.SubjectID,
+					O.Object,
+					O.ObjectID,
+					O.State,
+					O.PredicateName
+			from	PredicateIntersect O
+					inner join #lineage S on S.[Level] = @currentLevel and O.Subject = S.Object and O.SubjectID = S.ObjectID and O.PredicateType = 1
+			where	O.IntersectID not in (select ID from @usedIntersectIDs)
+
+		insert into @usedIntersectIDs
+			select IntersectID from @levelResults
+			print @currentLevel
+		set @currentLevel = @newLevel
+	end
+	
+	-- GET UPSTREAM (BACKWARD) LINEAGE -----
+	set @currentLevel = -1
+	insert into @levelResults
+		select	I.IntersectTypeID,
+				I.IntersectID,
+				I.Subject,
+				I.SubjectID,
+				I.Object,
+				I.ObjectID,
+				I.State,
+				I.PredicateName
+		from	PredicateIntersect I
+		where	I.Object = @Object and I.ObjectID = @ObjectID and I.PredicateType = 1
+
+	insert into @usedIntersectIDs
+		select IntersectID from @levelResults
+
+	while exists(select 1 from @levelResults)
+	begin
+		set @newLevel = @currentLevel - 1
+
+		insert into #lineage
+			select	newid(),
+					IntersectTypeID,
+					@currentLevel,
+					IntersectID,
+					Subject,
+					SubjectID,
+					Object,
+					ObjectID,
+					State,
+					PredicateName
+			from	@levelResults
+
+		delete @levelResults
+
+		insert into @levelResults
+			select	S.IntersectTypeID,
+					S.IntersectID,
+					S.Subject,
+					S.SubjectID,
+					S.Object,
+					S.ObjectID,
+					S.State,
+					S.PredicateName
+			from	PredicateIntersect S
+					inner join #lineage O on O.[Level] = @currentLevel and O.Subject = S.Object and O.SubjectID = S.ObjectID and S.PredicateType = 1
+			where	S.IntersectID not in (select ID from @usedIntersectIDs)
+
+		insert into @usedIntersectIDs
+			select IntersectID from @levelResults
+
+		set @currentLevel = @newLevel
+	end
+
+	--select * from @lineage
+
+	----Hold the raw lineage records.
+	--declare @tbl table (IntersectID int, IntersectTypeID int, 
+	--					Subject varchar(50), SubjectID int, Object varchar(50), ObjectID int, [State] int, 
+	--					PredicateID int, PredicateName nvarchar(250), PredicateInverse nvarchar(250), PredicateType int, 
+	--					IntersectGroupID int null
+	--					)
+
+	---- Get the direct lineage going backward from the provided object.
+	--insert into @tbl
+	--	select	L.IntersectID,
+	--			L.IntersectTypeID,
+	--			L.[Subject],
+	--			L.SubjectID,
+	--			L.[Object],
+	--			L.ObjectID,
+	--			L.[State],
+	--			L.PredicateID,
+	--			L.PredicateName,
+	--			L.PredicateInverse,
+	--			L.PredicateType,
+	--			G.IntersectGroupID 
+	--	from	lineage.GetTrailForObject(@Object, @ObjectID, 0) L	
+	--			left join IntersectGroupItem G on G.IntersectID = L.IntersectID
+
+	---- Get the direct lineage going foreward from the provided object.
+	--insert into @tbl
+	--	select	L.IntersectID,
+	--			L.IntersectTypeID,
+	--			L.[Subject],
+	--			L.SubjectID,
+	--			L.[Object],
+	--			L.ObjectID,
+	--			L.[State],
+	--			L.PredicateID,
+	--			L.PredicateName,
+	--			L.PredicateInverse,
+	--			L.PredicateType,
+	--			G.IntersectGroupID 
+	--	from	lineage.GetTrailForObject(@Object, @ObjectID, 1) L	
+	--			left join IntersectGroupItem G on G.IntersectID = L.IntersectID
+
+	---- Hold the intersect IDs that are part of an IntersectGroup from one of the retrieved intersects above.
+	--declare @groupIntersects table (IntersectGroupID int, IntersectID int)
+
+	---- Get the intersects that are part of an IntersectGroup from one of intersects above, but not yet pulled back in the temp table (i.e. does not exist in the lineage)
+	--insert into @groupIntersects
+	--	select	GI.IntersectGroupID,
+	--			GI.IntersectID
+	--	from	@tbl O
+	--			inner join IntersectGroupItem GI on GI.IntersectGroupID = O.IntersectGroupID and GI.IntersectID not in (select IntersectID from @tbl)
+
+	---- Get the intersect record itself, for each ID pulled back as part of the group query above.
+	--insert into @tbl
+	--	select	P.IntersectID,
+	--			P.IntersectTypeID,
+	--			P.[Subject],
+	--			P.SubjectID,
+	--			P.[Object],
+	--			P.ObjectID,
+	--			P.[State],
+	--			P.PredicateID,
+	--			P.PredicateName,
+	--			P.PredicateInverse,
+	--			P.PredicateType,
+	--			G.IntersectGroupID
+	--	from	PredicateIntersect P
+	--			inner join @groupIntersects G on G.IntersectID = P.IntersectID
+
+	---- Go back for each group intersectID retrieved above and get backward-facing lineage, that is not already present in the lineage @tbl
+	--insert into @tbl
+	--	select	Src.IntersectID,
+	--			Src.IntersectTypeID,
+	--			Src.[Subject],
+	--			Src.SubjectID,
+	--			Src.[Object],
+	--			Src.ObjectID,
+	--			Src.[State],
+	--			Src.PredicateID,
+	--			Src.PredicateName,
+	--			Src.PredicateInverse,
+	--			Src.PredicateType,
+	--			null
+	--	from	PredicateIntersect P
+	--			inner join @groupIntersects G on G.IntersectID = P.IntersectID
+	--			cross apply lineage.GetTrailForObject(P.Subject, P.SubjectID, 0) Src
+	--	where	Src.IntersectID not in (select IntersectID from @tbl)
+
+
+	-- Return the full results to the caller.
+	select	distinct
+			I.IntersectID,
+			cast(NULL as int) as IntersectGroupID, --I.IntersectGroupID,
+			T.IntersectTypeID,
+			SA.ID as SubjectAssetID,
+			I.Subject,
+			I.SubjectID,
+			SA.DisplayValue as SubjectName,
+			SA.BackColor as SubjectBackColor,
+			SA.ForeColor as SubjectForeColor,
+			SA.TypeName as SubjectTypeName,
+			SA.Type as SubjectType,
+			SA.TypeID as SubjectTypeID,
+			SA.AssetTypeID as SubjectAssetTypeID,
+
+			OA.ID as ObjectAssetID,
+			I.Object,
+			I.ObjectID,
+			OA.DisplayValue as ObjectName,
+			OA.BackColor as ObjectBackColor,
+			OA.ForeColor as ObjectForeColor,
+			OA.TypeName as ObjectTypeName,
+			OA.Type as ObjectType,
+			OA.TypeID as ObjectTypeID,
+			OA.AssetTypeID as ObjectAssetTypeID,
+
+			I.[State],
+
+			I.PredicateName as [Predicate]
+	from	#lineage I --@tbl I
+			inner join [Intersect] T on T.ID = I.IntersectID
+			inner join AssetDetail SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+			inner join AssetDetail OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+end
 GO;
