@@ -17,7 +17,7 @@ import { setTimeout } from 'timers';
         }    
   `],
     template: ` 
-                <form (ngSubmit)="onSubmit()" (keydown.enter)="$event.preventDefault()" #filterForm="ngForm">
+                <form (ngSubmit)="onSubmit()"   (keydown.enter)="$event.preventDefault()" #filterForm="ngForm">
                     <div *ngFor="let filter of internalFilters;let first=first;let last=last;let index=index" class="row filter">
                         <div class="col s1 FieldName">Filter:</div>
                         <div class="col s4">
