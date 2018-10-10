@@ -4,6 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/fusion.service';
 import { FusionConfigurationDetails } from '../../models/fusion.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { MessagesService } from '../../services/messages.service';
 
 @Component({
     selector: 'd3s-fusion-manual-load',
@@ -22,7 +23,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     <p><a style="cursor:pointer" (click)="downloadTemplate()">Download Template</a> - Use the template to load new data to the {{fusionName}} fusion data.</p>
                                     <div class="row">
                                         <h4 style="margin-top:20px;margin-bottom:5px;">Upload Data from a spreadsheet</h4>
-                                        <p-fileUpload name="file[]" [url]="fileUploadUrl()" (onUpload)="onUpload($event)" 
+                                        <p-fileUpload name="file[]" [url]="fileUploadUrl()" (onUpload)="onUpload($event)" (onError)="onErrorFileUpload($event)"
                                                 multiple="multiple" accept=".xls,.xlsx" maxFileSize="10000000">
                                             <ng-template pTemplate="content">
                                                 <ul *ngIf="uploadedFiles.length">
@@ -54,7 +55,8 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
-        private fusionService: FusionService
+        private fusionService: FusionService,
+        private messagesService: MessagesService
     ) {
         super();
     }
@@ -71,6 +73,16 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
         });
     }
 
+    onErrorFileUpload(event: any) {
+        
+        if (event.xhr &&  event.xhr.status == 500) {
+            let msg: string = "";
+            msg += event.xhr.statusText;
+            this.messagesService.showError('Error', msg);
+        }
+      
+    }
+
     ngOnDestroy() {
         this.sub.unsubscribe();
     }
@@ -80,9 +92,19 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     }
 
     private onUpload(event) {
+        let msg: string = "";
+        
         for (let file of event.files) {
             this.uploadedFiles.push(file);
+            msg += file.name + "; ";
         }
+
+        if (event.xhr &&  event.xhr.status == 200) {
+            
+            msg += event.xhr.statusText;
+            this.messagesService.showInfoMessage('Success', msg);
+        }
+
     }
 
     private downloadTemplate() {

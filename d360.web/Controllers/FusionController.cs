@@ -225,6 +225,23 @@ namespace d360.web.Controllers
 
                         #region Get the target fusion attribute type rows
 
+                        #region import File Record Column Validation
+                        if(targetAttributeType.Name.Trim().ToLower()!= xls.GetCellValueAsString(1, 1).Trim().ToLower())
+                        {
+                            var errMsg = string.Format("{0} is not uploaded. Column {1} could not be uploaded because it is {2}.",file.FileName, targetAttributeType.Name, xls.GetCellValueAsString(1,  1));
+                            throw new InvalidFieldException(errMsg);
+                        }
+
+                        for (int i = 0; i < targetAttributeTypeFields.Count; i++)
+                        {
+                            if (targetAttributeTypeFields[i].Name.Trim().ToLower() != xls.GetCellValueAsString(1, i + currentColumnIndex + 1).Trim().ToLower())
+                            {
+                                var errMsg = string.Format("{0} is not uploaded. Column {1} could not be uploaded because it is {2}.",file.FileName, targetAttributeTypeFields[i].Name, xls.GetCellValueAsString(1, i + currentColumnIndex + 1));
+                                throw new InvalidFieldException(errMsg);
+                                
+                            }
+                        }
+                        #endregion  
                         currentRowIndex = 2;    // Reset the current row index.
                         while (currentRowIndex <= endRowIndex)
                         {
@@ -295,7 +312,15 @@ namespace d360.web.Controllers
                     }
                 }
                 
-                return new HttpStatusCodeResult(HttpStatusCode.OK, "File uploaded and queued for processing.");
+                return new HttpStatusCodeResult(HttpStatusCode.OK, "file  uploaded and queued for processing.");
+            }
+            catch (InvalidFieldException ex)
+            {
+                SendException(ex, new Dictionary<string, string>() {
+                            { "FusionID", id.ToString() },
+                            { "FusionAttributeTypeID", attributeTypeID.ToString() }
+                });
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ex.StatusDescription); //jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
             }
             catch (BaseException ex)
             {
