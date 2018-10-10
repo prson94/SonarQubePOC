@@ -95,11 +95,11 @@ where coalesce(Q.UpdatedOn, dateadd(minute, -10, getutcdate())) >= dateadd(minut
 			    RuleResultQualifierTypeID,
 			    ResolvedObject as Object,
 			    ResolvedObjectID as ObjectID,
-			    D.ObjectType,
-			    D.ObjectTypeID
+			    D.Type as ObjectType,
+			    D.TypeID as ObjectTypeID
 	    into	#tbl
 	    from	RuleResultQualifier Q
-			    inner join cache.ObjectDetails D on D.Object = Q.ResolvedObject and D.ObjectID = Q.ResolvedObjectID
+			    inner join AssetDetail D on D.Object = Q.ResolvedObject and D.ObjectID = Q.ResolvedObjectID
 	    where	ResolvedObject is not null 
 			    and EventNotificationSent = 0
 

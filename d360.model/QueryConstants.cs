@@ -1257,7 +1257,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 
     declare @typeName varchar(50), @typeId int;
 
-    select @typeName=ObjectType, @typeId=ObjectTypeID from cache.ObjectDetails
+	select @typeName=Type, @typeId=TypeID from AssetDetail
     where object = @type and objectid = @id;
 
     insert into @nodes
@@ -1336,12 +1336,20 @@ select
 	FA.DisplayValue as AttributeName,
 	P.ObjectType as [Object],
 	P.ObjectID,
-	D.Name as ObjectName,
-	D.NgUrl as ObjectUrl,
+	D.[Name] as ObjectName,
+	D.[Url] as ObjectUrl,
 	P.CreatedOn,
 	P.UpdatedOn
 from fusion.RulePromotion P
-join cache.ObjectDetails D on D.Object = P.ObjectType and D.ObjectID = P.ObjectID
+cross apply (
+	select A.DisplayValue as [Name], AUrl.[Url] as [Url] from AssetDetail A
+	cross apply [dbo].[GetAssetUrl](A.[Object], A.TypeID, A.ObjectID) AUrl
+	where A.[Object] = P.ObjectType and A.ObjectID = P.ObjectID
+	union all
+	select N.[Name], null as Url from [Intersect] I
+	cross apply dbo.GetIntersectNames(I.ID) N 
+	where 'Intersect' = P.ObjectType and I.ID = P.ObjectID
+) D 
 join FusionQueryAttribute FA ON P.AttributeID = FA.ID and P.AttributeType = 'FusionQueryAttribute'
 where P.RuleStepID = @id;";
 
@@ -1545,9 +1553,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	coalesce(s.[Object], I.[Object]) as [Object],
 	coalesce(s.ObjectID, I.ObjectID) as ObjectID,
 	coalesce(dv.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName) as [Name], 
-	D.ObjectTypeName,
+	coalesce(D.TypeName, DITN.Name) as ObjectTypeName,
 	UL.[Url] as NgUrl, 
-	D.TextPath,
+	coalesce(D.DisplayValue, DIN.Name) as TextPath,
 	VS.[Name] as StepName, 
 	dbo.GetWorkflowResponsibleUsers(IST.ID, 0) as Assignments,
 	convert(varchar(max),VS.Settings) as Settings,
@@ -1601,7 +1609,11 @@ from
 	cross apply dbo.GetAssetDisplayValueById(A.ID) DV
 	cross apply dbo.GetAssetUrl(A.[Object], AST.ObjectID, A.ObjectID) UL
 	inner join workflow.VersionStep VS on VS.ID = IST.StepID
-	left join cache.ObjectDetails D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
+	left join AssetDetail D on D.Object = I.Object and D.ObjectID = I.ObjectID
+	left join [Intersect] DI on 'Intersect' = I.Object and DI.ID = I.ObjectID
+    left join IntersectType DIT on DIT.ID = DI.IntersectTypeID
+	outer apply dbo.GetIntersectNames(DI.ID) DIN	
+	outer apply dbo.GetIntersectTypeNames(DIT.ID) DITN
 	left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
 	left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
 	inner join workflow.[Version] V on V.ID = VS.VersionID

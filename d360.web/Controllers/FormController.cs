@@ -13727,18 +13727,18 @@ order by D.LastName, D.FirstName";
                     sql = $@"
 select	D.[Object], 
         D.ObjectID, 
-        D.TextPath as Name
-from	cache.ObjectDetails D with(nolock)
+        D.DisplayValue as [Name]
+from	AssetDetail D with(nolock)
 		left join [IntersectDetail] I on	I.IntersectTypeID = {it} and (
 											 ( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
 											 ( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
 											)
-where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
-        and D.ObjectTypeID <> D.ObjectID 
-        and D.ObjectTypeID <> 0
+where	D.Type = @targetType and D.TypeID = @targetTypeID 
+        and D.TypeID <> D.ObjectID 
+        and D.TypeID <> 0
         and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
         and I.ID is null
-order by D.TextPath";
+order by D.DisplayValue";
                     break;
             }
 
@@ -18698,15 +18698,15 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
                     join p on t.parentid = p.id and t.parentid is not null and t.id != p.id
                     )
                     select 
-	                    d.Name,
+	                    d.DisplayValue as Name,
 	                    d.Url, 
-	                    d.IconForeColor, 
-	                    d.IconBackColor, 
-	                    d.[Description],
-	                    d.objecttypeid
+	                    d.ForeColor as IconForeColor, 
+	                    d.BackColor as IconBackColor, 
+	                    cast(null as nvarchar) as [Description],
+	                    d.TypeID as objecttypeid
                     from p
-                    join cache.objectdetails d on d.objectid = p.id and d.[object] = @type
-                    where d.name like @query + '%'
+                    join AssetDetail d on d.objectid = p.id and d.[object] = @type
+                    where d.DisplayValue like @query + '%'
                     ";
             return new JsonNetResult
             {
