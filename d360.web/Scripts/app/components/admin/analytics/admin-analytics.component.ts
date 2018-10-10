@@ -52,7 +52,7 @@ export class AdminAnalyticsComponent extends AdminBaseComponent implements OnIni
 
     ngOnInit() {
         this.metricsService.getAssetTypes()
-            .then(r => {
+            .subscribe(r => {
                 this.models = r;
                 this.isLoading = false;
                 if (this.models.length && this.models.length > 0) {

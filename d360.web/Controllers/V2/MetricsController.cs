@@ -94,6 +94,16 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided a null metric.");
             }
 
+            if (string.IsNullOrEmpty(model.Name))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided an invalid name.");
+            }
+
+            if (model.Weight == 0)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must supply a weight greater than 0.");
+            }
+
             MetricAsset metricAsset = null;
             var isNew = true;
 

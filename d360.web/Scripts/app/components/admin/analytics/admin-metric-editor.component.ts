@@ -85,19 +85,25 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
 
     save() {
         this.isLoading = true;
-
-        if (this.model.EffectiveDate != null)
+        var prevDate: string | Date = null;
+        if (this.model.EffectiveDate != null) {
+            prevDate = this.model.EffectiveDate;
             this.model.EffectiveDate = new Date(<string>this.model.EffectiveDate).toISOString();
+        }
+            
 
         this.metricsService.saveMetric(this.model)
-            .then(r => {
-                this.isLoading = false; 
+            .subscribe(r => {
+                this.isLoading = false;
                 this.showMessageForResult(this.messagesService, r);
                 this.onSave.emit();
             },
             e => {
+                this.model.EffectiveDate = prevDate;
                 this.isLoading = false;
-                this.messagesService.showError(e.title, e.message);
+            },
+            () => {
+                console.log('complete');
             });
     }
 

@@ -2,7 +2,7 @@
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
@@ -37,6 +37,7 @@ import {
     TreeTableModule,
 } from 'primeng/primeng';
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
+import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
 
 
 @NgModule({
@@ -80,7 +81,15 @@ import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
         AdminMetricListComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: XHRBackend,
+            useClass: AuthenticationConnectionBackend
+        },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: ErrorNotifyInterceptor,
+            multi: true
+        }
     ]
 })
 export class AdminAnalyticsModule { }

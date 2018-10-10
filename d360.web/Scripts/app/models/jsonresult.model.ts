@@ -1,9 +1,12 @@
 ﻿//{"type":"confirm","title":"Success!","action":"add","message":"test32 successfully created.","id":"50032","context":null,"custom":null}
 
-export class JsonResult {
+export class JsonCoreResult {
     type: string;
     title: string;
     message: string;
+}
+
+export class JsonResult extends JsonCoreResult {
     action: string;
     id: string;
     statusCode: string;
@@ -11,6 +14,7 @@ export class JsonResult {
     customdata: any;
 
     constructor(data: any) {
+        super();
         this.type = data.type || null;
         this.title = data.title || null;
         this.message = data.message || null;
@@ -19,7 +23,6 @@ export class JsonResult {
         this.statusCode = data.statusCode || null;
         this.context = data.context || null;
         this.customdata = data.customdata || null;
-
     }
 
     get isError(): boolean {

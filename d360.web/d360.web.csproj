@@ -2025,6 +2025,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
+    <TypeScriptCompile Include="Scripts\app\http-interceptors\error-notify-interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />

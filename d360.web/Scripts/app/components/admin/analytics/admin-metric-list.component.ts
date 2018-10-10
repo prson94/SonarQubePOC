@@ -115,7 +115,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.metrics = [];
         this.metricTree = [];
         this.metricsService.getMetricsByAssetType(this.assetType.Uid)
-            .then(r => {
+            .subscribe(r => {
 
                 this.metrics = r;
                 if (this.metrics) {
@@ -135,7 +135,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                 }
 
                 this.metricsService.getFieldTypeViewModelsByAssetType(this.assetType.Uid)
-                    .then(f => {
+                    .subscribe(f => {
                         this.metricListFieldTypes = f;
                         this.isLoading = false;
                     });

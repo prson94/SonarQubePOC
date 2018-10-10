@@ -11,17 +11,6 @@ export class BaseService {
     
     constructor(protected messages: MessagesService) {  }
 
-    handleHttpApiError(error: HttpErrorResponse) {
-        //try {
-        //    this.messages.showError(error.error.title, error.error.message);
-        //} catch (e) {
-        //    console.log(e);
-        //}
-
-        //return Observable.of<JsonResult>(error.error || new JsonResult({ title: "Server error", message: "Error occurred", type: "error" }));
-        return Observable.throw(error.error || new JsonResult({ title: "Server error", message: "Error occurred", type: "error" }));
-    }
-
     handleError(error: Response) {  //HttpErrorResponse
 
         this.messages.saveLegacyClientError(error)//.saveClientError(error)
