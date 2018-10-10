@@ -36,11 +36,12 @@ namespace igx.jobs.workflowsubscriber
 
         public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
         {
+            var companyId = 0;
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
-
                 log.WriteLine($"WorkflowSubscriber trigger function processed:  {brokeredMessage.MessageId}");
+                CoreFunction.AITrackEvent(functionName,"WorkflowSubscriber triggered", new Dictionary<string, string> { { "MessageID", brokeredMessage.MessageId } });
 
                 var info = brokeredMessage.GetBody<EventInfo>();
 
@@ -53,6 +54,7 @@ namespace igx.jobs.workflowsubscriber
                     CompanyPrefix = info.DomainPrefix,
                     IsAdministrator = true
                 };
+                companyId = info.CompanyID;
                 var cache = new DummyCachingProvider();
                 var queue = new AzureQueueSource();
                 var community = new CommunityContext(cache, queue, sec);
@@ -64,6 +66,7 @@ namespace igx.jobs.workflowsubscriber
                 if (info.WorkflowItemID <= 0)
                 {
                     log.WriteLine($"Debug - New [{info.Action}] event received.");
+                    CoreFunction.AITrackEvent(functionName, "WorkflowSubscriber starting new workflow instance", new Dictionary<string, string> { { "CompanyID", info.CompanyID.ToString() }, { "Action", info.Action.ToString() } });
 
                     var sObject = info.Object.ObjectType.ToString();
 
@@ -93,6 +96,7 @@ namespace igx.jobs.workflowsubscriber
                     //load the workflow instance and check how many events have been generated.  if greater than threashold then stop.  Do not raise more events
                     // throw an error this section prevents workflows that go on forever and flood the bus with data...
                     log.WriteLine($"Debug - New [{info.Action}] event received.  With an open workflow instance.");
+                    CoreFunction.AITrackEvent(functionName, "WorkflowSubscriber continuing existing workflow instance", new Dictionary<string, string> { { "CompanyID", info.CompanyID.ToString() }, { "Action", info.Action.ToString() }, { "WorkflowItemID", info.WorkflowItemID.ToString() } });
 
                     var workflowInstance = company.WorkflowItems.Where(x => x.ID == info.WorkflowItemID).FirstOrDefault();
 
@@ -113,12 +117,14 @@ namespace igx.jobs.workflowsubscriber
                     if (info.VersionStepTransitionID > 0)  //this event is to evaluate a workflow transition
                     {
                         log.WriteLine($"Debug - Event is a workflow transition.");
+                        CoreFunction.AITrackEvent(functionName, "WorkflowSubscriber starting new transition", new Dictionary<string, string> { { "CompanyID", info.CompanyID.ToString() }, { "Action", info.Action.ToString() }, { "WorkflowItemID", info.WorkflowItemID.ToString() }, { "VersionStepTransitionID", info.VersionStepTransitionID.ToString() } });
 
                         await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID, info.Object);
                     }
                     else if (info.ItemStepID > 0) // this event is to evauluate a workflow step
                     {
                         log.WriteLine($"Debug - Event is an item step.");
+                        CoreFunction.AITrackEvent(functionName, "WorkflowSubscriber starting new transition", new Dictionary<string, string> { { "CompanyID", info.CompanyID.ToString() }, { "Action", info.Action.ToString() }, { "WorkflowItemID", info.WorkflowItemID.ToString() }, { "ItemStepID", info.ItemStepID.ToString() } });
 
                         await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info.Object);
                     }
@@ -128,7 +134,7 @@ namespace igx.jobs.workflowsubscriber
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex);
+                CoreFunction.AITrackException(functionName, ex, companyId);
                 log.WriteLine("Exception: " + ex.GetFullExceptionData());
             }
 

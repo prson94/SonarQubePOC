@@ -238,16 +238,18 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
             filter.Type = FilterFieldType.Field;
-
-            if (target.Data.filtertype == 'list') {
+            
+            if (target.Data.filtertype == 'list' && target.Data.datafield != null && target.Data.datafield.toLowerCase() != 'parent') {
                 let fieldId: number = +target.Data.datafield.replace('Field', '');
-                this.isLoadingFilter = true;
-                this.artifactTypeService.getFilterListItems(this.artifactType.ID, 'ArtifactType', fieldId).
-                    then(r => {
-                        filter.Field.Data.filteritems = r;
-                        this.isLoadingFilter = false;
-                        this.ref.markForCheck();
-                    });
+                    if (!isNaN(fieldId)) {
+                        this.isLoadingFilter = true;
+                        this.artifactTypeService.getFilterListItems(this.artifactType.ID, 'ArtifactType', fieldId).
+                            then(r => {
+                                filter.Field.Data.filteritems = r;
+                                this.isLoadingFilter = false;
+                                this.ref.markForCheck();
+                            });
+                    }
             }
 
             if (target.Data.columntype == "dropdownlist" || target.Data.columntype == "numberinput")

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("igx.jobs.databasecleaner")]
+[assembly: AssemblyTitle("igx.jobs.displayvaluechecker")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("igx.jobs.databasecleaner")]
+[assembly: AssemblyProduct("igx.jobs.displayvaluechecker")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("be8136ff-c54d-4c40-b563-cb13c08c84cf")]
+[assembly: Guid("be8136ff-c54d-4c40-b543-cb13c08c84cf")]
 
 // Version information for an assembly consists of the following four values:
 //

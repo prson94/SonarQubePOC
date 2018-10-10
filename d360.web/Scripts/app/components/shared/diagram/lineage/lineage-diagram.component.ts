@@ -300,7 +300,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.foreColor = d.foreColor;
                 model.backColor = d.backColor;
 
-                if (d.object == this.objectType && d.objectId == this.objectID) {
+                if (d.object == this.objectType && d.objectId == this.objectID && d.key.startsWith('C1')) {
                     model.category = 'focal';
                     this.focal = model;
                 } else {
