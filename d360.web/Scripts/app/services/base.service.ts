@@ -3,34 +3,51 @@ import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/throw';
 
 @Injectable()
 export class BaseService {
     
     constructor(protected messages: MessagesService) {  }
 
-    handleError(error: HttpErrorResponse) {  
+    handleHttpApiError(error: HttpErrorResponse) {
+        //try {
+        //    this.messages.showError(error.error.title, error.error.message);
+        //} catch (e) {
+        //    console.log(e);
+        //}
 
-        this.messages.saveClientError(error)
+        //return Observable.of<JsonResult>(error.error || new JsonResult({ title: "Server error", message: "Error occurred", type: "error" }));
+        return Observable.throw(error.error || new JsonResult({ title: "Server error", message: "Error occurred", type: "error" }));
+    }
+
+    handleError(error: Response) {  //HttpErrorResponse
+
+        this.messages.saveLegacyClientError(error)//.saveClientError(error)
             .then(res => {
-                console.log("Error logged on server");
+                var json = error.json();
+                console.log(json);//("Error logged on server");
 
-                if (error.error instanceof Error) {
+                if (json instanceof Error) {
                     // A client-side or network error occurred. Handle it accordingly.
-                    console.log('An error occurred[client side]:', error.error.message);
+                    console.log('An error occurred[client side]:', error.statusText);//error.error.message);
                 } else {
                     // server side error
                     console.log('An error occurred[server side]', error);
-                    if (error.error instanceof JsonResult) {
-                        this.messages.showError(error.error.title, error.error.message);
-                    }
-                    else {
-                        if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
-                    }
+                    //if (json.title) {
+                    //    //if (error.error.Message && error.error.ExceptionMessage)
+                    //    //    this.messages.showError(error.error.Message, error.error.ExceptionMessage);
+                    //    //else
+                    //    this.messages.showError(json.title, json.message);
+                    //}
+                    //else {
+                    //    if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
+                    //}
 
                 }
             });
-        return Promise.reject(error.message || error);
+        return Promise.reject(error.body || error); //.error
     }
     
     protected deleteDynamicWithResult(http: Http, type: string, id: number): Promise<JsonResult> {

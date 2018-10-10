@@ -41,9 +41,9 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.load();
     }
 
-    load(): Promise<any> {
+    load() {
         this.isLoading = true;
-        return this.metricsService.getAssetTypes()
+        this.metricsService.getAssetTypes()
             .then(r => {
                 this.models = r;
                 this.isLoading = false;

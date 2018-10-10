@@ -1,7 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
+import { HttpModule, XHRBackend } from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
@@ -43,6 +44,7 @@ import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
         DeprecatedI18NPipesModule,
         FormsModule,
         HttpModule,
+        HttpClientModule,
 
         AdminAnalyticsRoutingModule,
 

@@ -216,6 +216,9 @@ namespace d360.web.Controllers
 
         internal System.Web.Http.IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
         {
+            //return ResponseMessage(
+            //    Request.CreateErrorResponse(status, title, new ApplicationException(message))
+            //    );
             return ResponseMessage(
                 Request.CreateResponse(
                     status,

@@ -1,5 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
+//import { HttpClient } from '@angular/common/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
@@ -38,6 +39,6 @@ export class MetricsService extends BaseService {
         return this.http.post(`/api/v2/metrics`, model)
             .toPromise()
             .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .catch((err: Response) => this.handleError(err));
     }
 }

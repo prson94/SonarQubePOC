@@ -5,6 +5,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { MessagesService } from '../../../services/messages.service';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
+import 'rxjs/add/operator/catch';
 
 @Component({
     selector: 'd3s-admin-metric-editor',
@@ -28,7 +29,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     verb = "Add";
     child = "";
 
-    //model: MetricAssetViewModel = null;
     assetType: any = null;
     metricItem: any = null;
     conditionFormMode = FormMode.Default;
@@ -91,16 +91,13 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
 
         this.metricsService.saveMetric(this.model)
             .then(r => {
+                this.isLoading = false; 
                 this.showMessageForResult(this.messagesService, r);
-                this.isLoading = false;
                 this.onSave.emit();
-            })
-            .catch(e => {
-            //    //console.log(JSON.parse(e._body));
-            //    this.showMessageForResult(this.messagesService, e._body);
-            //    //this.showHttpErrorMessage(this.messagesService, e);
-            //    //this.messagesService.showError("An error occured", "Not able to save metric.");
+            },
+            e => {
                 this.isLoading = false;
+                this.messagesService.showError(e.title, e.message);
             });
     }
 
