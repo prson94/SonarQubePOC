@@ -241,15 +241,24 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             
             if (target.Data.filtertype == 'list' && target.Data.datafield != null && target.Data.datafield.toLowerCase() != 'parent') {
                 let fieldId: number = +target.Data.datafield.replace('Field', '');
-                    if (!isNaN(fieldId)) {
-                        this.isLoadingFilter = true;
-                        this.artifactTypeService.getFilterListItems(this.artifactType.ID, 'ArtifactType', fieldId).
-                            then(r => {
-                                filter.Field.Data.filteritems = r;
-                                this.isLoadingFilter = false;
-                                this.ref.markForCheck();
-                            });
-                    }
+                if (!isNaN(fieldId)) {
+                    this.isLoadingFilter = true;
+                    this.artifactTypeService.getFilterListItems(this.artifactType.ID, 'ArtifactType', fieldId).
+                        then(r => {
+                            filter.Field.Data.filteritems = r;
+                            this.isLoadingFilter = false;
+                            this.ref.markForCheck();
+                        });
+                }
+            }
+            else if (target.Data.filtertype == 'list' && target.Data.datafield != null && target.Data.datafield.toLowerCase() == 'parent') {
+                this.isLoadingFilter = true;
+                this.artifactTypeService.getObjectTypeParentsListItems(this.artifactType.ID, 'ArtifactType').
+                    then(r => {
+                        filter.Field.Data.filteritems = r;
+                        this.isLoadingFilter = false;
+                        this.ref.markForCheck();
+                    });
             }
 
             if (target.Data.columntype == "dropdownlist" || target.Data.columntype == "numberinput")

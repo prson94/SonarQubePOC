@@ -634,17 +634,14 @@ namespace d360.web.Controllers
                     if (hasParentType)
                     {
 
-                        columns.Insert(1,new GridColumn
+                        columns.Insert(1, new GridColumn
                         {
                             text = d360.core.resources.Fields.Parent_Name,
                             datafield = "Parent",
                             columntype = GridColumn.COLUMN_TYPE_DROPDOWN,
                             filtertype = GridColumn.FILTER_TYPE_LIST,
                             filterable = true,
-                            filteritems = Company.Query<string>(@"select D.DisplayValue from Artifact A
-                                inner join Asset B on B.[Object] = 'Artifact' and B.ObjectID = A.ID
-                                cross apply dbo.GetAssetDisplayValueById(B.ID) D
-                                where A.ArtifactTypeID = @parentId order by D.DisplayValue", new { parentId = parentType.ID }).ToList(),
+                            filteritems = new List<string>(),
                             columnWidth = 200
                         });
                     }
@@ -1029,6 +1026,24 @@ where   h.ID <> @t order by h.[Level] desc;
                 TopLevelFilterColumns = topLevelFilterFields,
                 IsReadOnly = isReadOnly
             });
+        }
+
+        
+        [HttpGet, Route("{type}/{id:int}/grid/definition/parentValues")]
+        public async Task<HttpResponseMessage> GetGridParentFilterItems(string type, int id)
+        {
+            if ((type ?? "").ToUpper() == "ARTIFACTTYPE")
+            {
+                var parentType = Company.GetParentType<ArtifactType>(id);
+
+                if(parentType == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("parent"));
+
+                var res = await Company.QueryAsync<string>("select ADV.DisplayValue from AssetDisplayValue ADV inner join Asset A on (A.ID = ADV.AssetID) inner join AssetType ATT on (A.AssetTypeID = ATT.ID) where ATT.[Object] = 'ArtifactType' and ATT.[ObjectID] = @objID order by 1", new { objID = parentType.ID });
+
+                return Request.CreateResponse(HttpStatusCode.OK, res);
+            }
+
+            return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("parent"));
         }
 
         [HttpGet, Route("{type}/{id:int}/grid/definition/filterValues/{fieldTypeId:int}")]
@@ -7678,11 +7693,11 @@ from	    TaxonomyType FAT
         }
 
         [Route("breadcrumb/typeahead")]
-        public IEnumerable<BreadcrumbTypeAheadModel> GetBreadcrumbTypeahead(string q, int num, SystemObjects objectType, int objectId)
+        public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetBreadcrumbTypeahead(string q, int num, SystemObjects objectType, int objectId)
         {
-            var sql = $"select top {num} d.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  cross apply [dbo].GetAssetDisplayValueById(ast.id) d cross apply [dbo].GetAssetUrl(ast.[object],astt.objectid, ast.objectid) u where ast.[object] = @typeName and astt.objectId = @typeId and d.DisplayValue like @search";
+            var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrl(ast.[object],astt.objectid, ast.objectid) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
 
-            return Company.Query<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });            
+            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });            
         }
 
         #endregion

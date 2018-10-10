@@ -389,6 +389,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             dm.addLinkData(linkList[i]);
         }
 
+        let n = this.diagram.findNodeForKey(this.focal.key);
+        n.isSelected = true;
+        this.selectedData = this.focal;
+
         //get deep copy of lists
         this.initialLinks = _.cloneDeep(linkList);
         this.initialNodes = _.cloneDeep(modelList);

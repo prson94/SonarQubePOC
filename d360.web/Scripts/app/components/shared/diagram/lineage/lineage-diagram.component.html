@@ -17,9 +17,6 @@
         </div>
         <div class="col s4" style="padding: 5px; text-align: right; color: #fff; font-size: 1.2em;">
             <p-menubar [model]="menuItems" [styleClass]="'diagram-menubar'"></p-menubar>
-            <!--<header>
-                <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
-            </header>-->
         </div>
     </div>
     <div class="row" style="position: relative">
@@ -59,6 +56,9 @@
                                             </div>
                                         </ng-container>
                                     </ng-container>
+                                    <div *ngIf="selectedData == null">
+                                        Nothing selected
+                                    </div>
                                 </div>
                                 <div *ngSwitchCase="'Details'">
                                     <ng-container *ngIf="selectedData != null">
@@ -83,6 +83,9 @@
                                             </div>
                                         </ng-container>
                                     </ng-container>
+                                    <div *ngIf="selectedData == null">
+                                        Nothing selected
+                                    </div>
                                 </div>
                             </div>
                         </div>
