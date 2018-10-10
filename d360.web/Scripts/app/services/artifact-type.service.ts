@@ -119,4 +119,11 @@ export class ArtifactTypeService extends BaseService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
+
+    public getObjectTypeParentsListItems(id: number, type: string) {
+        return this.http.get(`api/${type}/${id}/grid/definition/parentValues`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 }

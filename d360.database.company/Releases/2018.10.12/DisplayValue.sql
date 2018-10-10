@@ -1,8 +1,11 @@
-﻿
+﻿drop table [dbo].[AssetDisplayValue]
+go
+
 CREATE TABLE [dbo].[AssetDisplayValue](
 	[AssetID] [bigint] NOT NULL,
 	[DisplayValue] [nvarchar](max) NOT NULL,
 	[DisplayValueHash] [nvarchar](50) NULL,	
+	[DisplayValuePrefix] [nvarchar](250) NOT NULL,
 	[UpdatedOn] [datetime] NOT NULL DEFAULT(getutcdate())	
  CONSTRAINT [PK_AssetDisplayValue] PRIMARY KEY NONCLUSTERED 
 (
@@ -11,6 +14,12 @@ CREATE TABLE [dbo].[AssetDisplayValue](
 )
 go
 
+create nonclustered index IX_AssetDisplayValue_DisplayValuePrefix on dbo.AssetDisplayValue(DisplayValuePrefix)
+
+go
+
+drop procedure UpdateDependentObjectTypeDisplayValues
+go
 
 create PROCEDURE UpdateDependentObjectTypeDisplayValues		
 	@ChangedObject varchar(20),
@@ -61,6 +70,9 @@ BEGIN
 END
 go
 
+drop procedure GenerateAssetDisplayValue
+go
+
 create PROCEDURE GenerateAssetDisplayValue	
 	@AssetID bigint,
 	@Object varchar(20),
@@ -92,13 +104,14 @@ BEGIN
 			UPDATE AssetDisplayValue
 				SET DisplayValue = A.DisplayValue,
 					DisplayValueHash = @DisplayValueHash,
+					DisplayValuePrefix = SUBSTRING(A.DisplayValue, 1, 250),
 					UpdatedOn = getutcdate()
 				FROM GetAssetDisplayValueById(@AssetID) A		
 				where AssetID = @AssetID	
 	end
 	else
 	begin
-			insert into AssetDisplayValue (AssetID,DisplayValue,DisplayValueHash,UpdatedOn) values(@AssetID,@displayValue,@DisplayValueHash,getutcdate())
+			insert into AssetDisplayValue (AssetID,DisplayValue,DisplayValueHash,DisplayValuePrefix, UpdatedOn) values(@AssetID,@displayValue,@DisplayValueHash,SUBSTRING(@displayValue, 1, 250),getutcdate())
 	end	
 
 	Declare @assetObjectType varchar(20);
@@ -109,6 +122,9 @@ BEGIN
 	exec UpdateDependentObjectTypeDisplayValues @assetObjectType,@assetObjectID	
 END
 GO
+
+drop procedure GenerateAssetTypeDisplayValues
+go
 
 CREATE PROCEDURE GenerateAssetTypeDisplayValues	
 	@AssetTypeID int
@@ -126,11 +142,12 @@ BEGIN
 			--delete by the asset type
 			delete from AssetDisplayValue where assetid in (select id from asset where assettypeid = @AssetTypeID);
 
-			insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash, UpdatedOn)
+			insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
 				select
 					A.ID,
 					ADV.DisplayValue,
 					CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2) as DisplayValueHash,
+					SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix,
 					getutcdate()
 				from
 					Asset A
@@ -164,7 +181,8 @@ BEGIN
 END
 GO
 
-
+drop procedure GenerateAllAssetTypeDisplayValues
+go
 
 CREATE PROCEDURE GenerateAllAssetTypeDisplayValues	
 AS
@@ -181,16 +199,17 @@ BEGIN
 			--delete by the asset type
 			delete from AssetDisplayValue;
 
-			insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash, UpdatedOn)
+			insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
 				select
 					A.ID,
 					ADV.DisplayValue,
 					CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2) as DisplayValueHash,
+					SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix,
 					getutcdate()
 				from
 					Asset A
 					cross apply GetAssetDisplayValueByID(A.ID) ADV		
-				where ADV.DisplayValue is not null and A.[Object] != 'FusionAttribute'		
+				where ADV.DisplayValue is not null and A.[Object] not in( 'FusionAttribute','FusionQueryAttribute')	
 
 		lbexit:
       IF @trancount = 0
@@ -218,6 +237,8 @@ BEGIN
 END
 GO
 
+drop procedure CheckDisplayValues
+go
 
 CREATE PROCEDURE CheckDisplayValues	
 	
@@ -228,18 +249,23 @@ BEGIN
 	SET NOCOUNT ON;
 
 	-- CHECK FOR ASSETS MISSING DISPLAY VALUES AND INSERT THEM
-	insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash, UpdatedOn)
+	insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
 				select
 					A.ID,
 					ADV.DisplayValue,
 					CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2) as DisplayValueHash,
+					SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix,
 					getutcdate()
 				from
 					Asset A
 					cross apply GetAssetDisplayValueByID(A.ID) ADV		
 				where ADV.DisplayValue is not null and not exists ( select 1 from assetdisplayvalue ad where ad.assetid = A.id)	
-					and A.[Object] != 'FusionAttribute'
+					and A.[Object] not in( 'FusionAttribute','FusionQueryAttribute')
 	
 END
 GO
+
+
+--exec GenerateAllAssetTypeDisplayValues
+
 
