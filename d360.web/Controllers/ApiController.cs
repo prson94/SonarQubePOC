@@ -4168,10 +4168,10 @@ where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id";
                     break;
                 case SystemObjects.MapType:
                     sql = @"
-select	TextPath as Name, 
+select	C.DisplayValue as Name, 
 		ObjectID as ID, 
 		[Object] as [Type] 
-from	[cache].ObjectDetails C 
+from	AssetDetail C 
 		inner join (
 			select	distinct 
 					case 
@@ -4185,7 +4185,7 @@ from	[cache].ObjectDetails C
 			from	[Intersect]
 			where	IntersectTypeID = @intersectTypeId
 		) I on I.O = C.Object and I.OID = C.ObjectID
-order by C.TextPath";
+order by C.DisplayValue";
                     break;
                 default:
                     sql = "";

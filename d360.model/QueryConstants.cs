@@ -1497,14 +1497,14 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 ";
 
         public static string WorkflowList = @"
-                select t.ID
+                  select t.ID
                     ,t.Name
                     ,t.CreatedOn
 					,coalesce(rc.FirstName + ' ' + rc.LastName, '') as CreatedBy
                     ,t.UpdatedOn
 					,coalesce(ru.FirstName + ' ' + ru.LastName, '') as UpdatedBy
                     ,e.ChangeType
-                    ,coalesce(d.Name, it_t.Name, st.Name) as TypeName,
+                    ,coalesce(d.Name, ITN.Name, it_t.Name, st.Name) as TypeName,
 					case when t.PublishedVersionID is not null then
 						'Version ' + cast(v.Version as varchar) + ' Published'
 					else
@@ -1533,8 +1533,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 					end as [Type]
                 from workflow.type t
                 inner join workflow.eventregistration e on e.typeid = t.id
-                left join [cache].objectdetails d on d.object = e.object and d.objectid = e.objectid  
+                left join AssetType D on D.Object = E.Object and D.ObjectID = e.ObjectID 
                 left join issuetype it_t on e.object = 'IssueType' and it_t.id = e.objectid
+				left join IntersectType IT on e.Object = 'IntersectType' and e.objectid = IT.ID
+				outer apply dbo.GetIntersectTypeNames(IT.ID) ITN
                 left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
