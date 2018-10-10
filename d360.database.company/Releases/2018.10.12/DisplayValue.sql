@@ -14,8 +14,7 @@ CREATE TABLE [dbo].[AssetDisplayValue](
 )
 go
 
-create nonclustered index IX_AssetDisplayValue_DisplayValuePrefix on dbo.AssetDisplayValue(DisplayValuePrefix)
-
+create clustered index IX_AssetDisplayValue_DisplayValuePrefix_AssetID on dbo.AssetDisplayValue(DisplayValuePrefix, AssetID)
 go
 
 drop procedure UpdateDependentObjectTypeDisplayValues
@@ -267,5 +266,4 @@ GO
 
 
 --exec GenerateAllAssetTypeDisplayValues
-
 
