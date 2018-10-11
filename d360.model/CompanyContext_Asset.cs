@@ -143,7 +143,7 @@ left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_REL.Subject = 
             {
                 parentOuterSqlColumn = @"ParentID, Parent, ParentUrl,";
                 parentSqlColumn = @"arp.ParentArtifactID as ParentID, parp.DisplayValue as Parent, '' as ParentUrl, ";                
-                parentSqlJoin = @" inner join [utility].[ArtifactAssetParent] arp on a.id = arp.assetid cross apply [dbo].[GetArtifactDisplayValue](arp.ParentAssetID) parp";
+                parentSqlJoin = @" inner join [utility].[ArtifactAssetParent] arp on a.id = arp.assetid inner join AssetDisplayValue parp on parp.AssetID = arp.ParentAssetID";
             }
 
             #endregion
@@ -323,7 +323,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
             }
             else
             {
-                dbArgs.Add("simpleFilter", $"{wildcardValue(simpleFilter)}", System.Data.DbType.String, System.Data.ParameterDirection.Input);             
+                dbArgs.Add("simpleFilter", $"{wildcardValue(simpleFilter)}", System.Data.DbType.String, System.Data.ParameterDirection.Input, 250);             
 
                 var simpleFilterIDs = string.Join(",", selectFields.Select(i => i.ID));
                 var fieldFromRelationshipAssets = selectFields.Any(i => i.Type == "FieldFromRelationship") ? $@"union
@@ -351,9 +351,9 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                         inner join (
 		                            select	SF.AssetID
 		                            from	Field SF{tableHints}                                     
-                                    inner join[utility].[ArtifactAssetParent] arp on SF.AssetID = arp.AssetID cross apply [dbo].[GetArtifactDisplayValue](arp.ParentAssetID) parp
+                                    inner join[utility].[ArtifactAssetParent] arp on SF.AssetID = arp.AssetID inner join AssetDisplayValue parp on (parp.assetid = arp.ParentAssetID)
                                     where	FieldTypeID in ({simpleFilterIDs})				                            
-                                            and (FormattedValue like @simpleFilter OR parp.DisplayValue like @simpleFilter)
+                                            and (FormattedValue like @simpleFilter OR parp.DisplayValuePrefix like @simpleFilter)
                                     group by SF.AssetID
 		                            {joinInfo} 
                                    {fieldFromRelationshipAssets}");
