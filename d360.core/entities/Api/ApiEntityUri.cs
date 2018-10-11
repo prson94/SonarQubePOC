@@ -1,5 +1,6 @@
 ﻿using d360.core.entities.Contracts;
 using d360.core.enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -15,6 +16,7 @@ namespace d360.core.entities
         public ApiUriType UriType { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(500)]
         public string Format { get; set; }
 
         [ForeignKey("EntityID"), IgnoreDataMember]

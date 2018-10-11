@@ -2,6 +2,7 @@
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -14,6 +15,7 @@ namespace d360.core.entities.Workflow
         public int TypeID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]

@@ -17,6 +17,7 @@ namespace d360.core.entities
         public int SynchedAssetTypeID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(100)]
         public string SourceID { get; set; }
 
         [DataMember]

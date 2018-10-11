@@ -15,8 +15,10 @@ namespace d360.core.entities
         [DataMember]
         public string Name { get; set; }
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(2)]
         public string Alpha2 { get; set; }
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(3)]
         public string Alpha3b { get; set; }
     }
 }

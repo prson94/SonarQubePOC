@@ -31,6 +31,7 @@ namespace d360.core.entities
         public bool AllowFilter { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string ItemNameOverride { get; set; }
 
         [NotMapped]

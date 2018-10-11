@@ -15,9 +15,11 @@ namespace d360.core.entities
         public int ResourceID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string Route { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string Name { get; set; }
 
         [DataMember]
@@ -27,6 +29,7 @@ namespace d360.core.entities
         public bool IsOverride { get; set; } = false;
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]

@@ -29,7 +29,7 @@ namespace d360.core.entities
         [DataMember]
         public int ObjectID { get; set; }
 
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string ObjectType { get; set; }
 
         [DataMember]

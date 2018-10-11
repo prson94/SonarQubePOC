@@ -2,6 +2,8 @@
 using System.Runtime.Serialization;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -9,6 +11,7 @@ namespace d360.core.entities
     public class MapRuleItem : BaseIntObject, IIntObject, ICreatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string SourceOwner { get; set; }
         [DataMember]
         public int? SourceOwnerID { get; set; }
@@ -16,6 +19,7 @@ namespace d360.core.entities
         public int SourceFusionAttributeID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string TargetOwner { get; set; }
         [DataMember]
         public int? TargetOwnerID { get; set; }

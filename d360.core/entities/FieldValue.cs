@@ -12,7 +12,7 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class FieldValue : BaseIntObject
     {
-        [Column(Order = 1, TypeName = "varchar"), DataMember, StringLength(25)]
+        [Column(Order = 1, TypeName = "varchar"), DataMember, StringLength(50)]
         public string ObjectType { get; set; }
 
         [Column(Order = 2), DataMember]

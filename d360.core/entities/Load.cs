@@ -13,6 +13,7 @@ namespace d360.core.entities
         #region Properties
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(2)]
         public string Action { get; set; }
 
         [DataMember, Column(TypeName = "varchar"), StringLength(10)]

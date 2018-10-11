@@ -27,9 +27,11 @@ namespace d360.core.entities.Workflow
         public TransitionType TransitionType { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(10)]
         public string FromPortID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(10)]
         public string ToPortID { get; set; }
 
         [DataMember]

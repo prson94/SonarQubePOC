@@ -13,21 +13,25 @@ namespace d360.core.entities
         public int? ParentID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string Name { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string Route { get; set; }
 
         [DataMember]
         public int? SortOrder { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]
         public int? ObjectID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(100)]
         public string Icon { get; set; }
 
         [DataMember]

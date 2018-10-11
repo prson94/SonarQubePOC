@@ -15,7 +15,7 @@ namespace d360.core.entities
     {
         [DataMember, Key, Column(Order = 1)]
         public int ShoppingCartID { get; set; }
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember, Key, Column(Order = 2, TypeName = "varchar"), StringLength(250)]
         public string Object { get; set; }
         [DataMember, Key, Column(Order = 3)]
         public int ObjectID { get; set; }
