@@ -236,7 +236,7 @@ where   A.RuleImplementationID = @id";
                     objType = "ReferenceItemType";
                      break;
                 case "Fusion":
-                    objType = "Fusion";
+                    objType = "FusionType";
                     break;
             }
             return objType;
@@ -347,7 +347,7 @@ where   A.RuleImplementationID = @id";
                             'Relationship'                    
                             when assettype.[Object] = 'ReferenceItemType' then 
                             'Reference List'  
-                            when assettype.[Object] = 'Fusion' then
+                            when assettype.[Object] = 'FusionType'  then
                             'Fusion'
                             else
                             ''
