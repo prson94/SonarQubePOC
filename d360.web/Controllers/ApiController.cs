@@ -3058,6 +3058,7 @@ end",
                             var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
                             var tbTypePrefix = $"FT{pos}_{multiFieldReferencePosition}";
                             var tbDetailPrefix = $"FD{pos}_{multiFieldReferencePosition}";
+                            var tbTypeDetailPrefix = $"FDT{pos}_{multiFieldReferencePosition}";
                             var tbFAPrefix = $"FA{pos}_{multiFieldReferencePosition}";
 
                             // Determine the join syntax for the eventual query.
@@ -3067,8 +3068,10 @@ end",
 ({tbTypePrefix}.Object = '{i.Object}' and {tbTypePrefix}.ObjectID = {i.ObjectID} and {tbPrefix}.Object = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}) OR
 ({tbTypePrefix}.Subject = '{i.Object}' and {tbTypePrefix}.SubjectID = {i.ObjectID} and {tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn})
 )
-		left join cache.ObjectDetails {tbDetailPrefix} on {tbDetailPrefix}.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
-												and {tbDetailPrefix}.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
+		left join AssetDetail {tbDetailPrefix} on {tbDetailPrefix}.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
+		and {tbDetailPrefix}.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
+		left join AssetType {tbTypeDetailPrefix} on {tbTypeDetailPrefix}.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
+		and {tbTypeDetailPrefix}.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
 		left join FusionAttribute {tbFAPrefix} on case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end = 'FusionAttribute'
 												and {tbFAPrefix}.ID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
 ";
@@ -3076,10 +3079,10 @@ end",
                             //Create the column/field to display the visible column cell.
                             var fc = new ComplexColumnModel
                             {
-                                DisplayColumn = $"coalesce({tbDetailPrefix}.Name, {tbFAPrefix}.TextPath)",
+                                DisplayColumn = $"coalesce({tbFAPrefix}.TextPath, {tbDetailPrefix}.DisplayValue, {tbTypeDetailPrefix}.Name)",
                                 text = i.OverrideDisplayName ?? i.FieldTypeName.Replace("Related Item~", ""),
                                 datafield = $"{dataField}",
-                                SortColumn = i.SortOrder > 0 ? $"coalesce({tbDetailPrefix}.Name, {tbFAPrefix}.TextPath)" : string.Empty,
+                                SortColumn = i.SortOrder > 0 ? $"coalesce({tbFAPrefix}.TextPath, {tbDetailPrefix}.DisplayValue, {tbTypeDetailPrefix}.Name)" : string.Empty,
                                 OutputColumn = true,
                                 Width = i.Width
                             };
