@@ -11,32 +11,22 @@ export class BaseService {
     
     constructor(protected messages: MessagesService) {  }
 
-    handleError(error: Response) {  //HttpErrorResponse
+    handleError(error: HttpErrorResponse) {
 
-        this.messages.saveLegacyClientError(error)//.saveClientError(error)
+        this.messages.saveClientError(error)
             .then(res => {
-                var json = error.json();
-                console.log(json);//("Error logged on server");
 
-                if (json instanceof Error) {
+                if (error instanceof Error) {
                     // A client-side or network error occurred. Handle it accordingly.
                     console.log('An error occurred[client side]:', error.statusText);//error.error.message);
                 } else {
                     // server side error
                     console.log('An error occurred[server side]', error);
-                    //if (json.title) {
-                    //    //if (error.error.Message && error.error.ExceptionMessage)
-                    //    //    this.messages.showError(error.error.Message, error.error.ExceptionMessage);
-                    //    //else
-                    //    this.messages.showError(json.title, json.message);
-                    //}
-                    //else {
-                    //    if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
-                    //}
-
+                    if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
                 }
             });
-        return Promise.reject(error.body || error); //.error
+
+        return Promise.reject(error.error || error);
     }
     
     protected deleteDynamicWithResult(http: Http, type: string, id: number): Promise<JsonResult> {

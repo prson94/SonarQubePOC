@@ -2,6 +2,7 @@
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
+using d360.web.Models;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
@@ -139,7 +140,8 @@ order by	P.[Path]
         [
             HttpPost, 
             Route("{uid}"), 
-            SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>))
+            SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request..", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostAssetsAsync(Guid uid, AssetInserts assets)
         {
@@ -180,7 +182,8 @@ order by	P.[Path]
         [
             HttpPut,
             Route("{uid}"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>))
+            SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request..", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PutAssetsAsync(Guid uid, AssetUpdates assets)
         {
