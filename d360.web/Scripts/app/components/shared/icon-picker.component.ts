@@ -52,6 +52,8 @@ import { FormsModule } from '@angular/forms';
                         <option value="fa-comments-o">comments empty</option>
                         <option value="fa-credit-card">credit-card</option>
                         <option value="fa-credit-card-alt">credit-card-alt</option>
+                        <option value="fa-cube">cube</option>
+                        <option value="fa-cubes">cubes</option>
                         <option value="fa-dashboard">dashboard</option>
                         <option value="fa-database">database</option>
                         <option value="fa-desktop">desktop</option>
