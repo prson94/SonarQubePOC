@@ -2,6 +2,7 @@
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -26,6 +27,7 @@ namespace d360.core.entities
         public DateTime? DateAccepted { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string AdministratorEmail { get; set; }
 
         [DataMember]

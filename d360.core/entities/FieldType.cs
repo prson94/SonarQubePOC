@@ -33,7 +33,7 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description"), Column(TypeName = "varchar"), StringLength(25)]
         public string Type { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupObjectType_Name", Description = "LookupObjectType_Description"), Column(TypeName = "varchar"), StringLength(250)]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupObjectType_Name", Description = "LookupObjectType_Description"), Column(TypeName = "varchar"), StringLength(25)]
         public string LookupObjectType { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupObjectID_Name", Description = "LookupObjectID_Description")]
@@ -58,6 +58,7 @@ namespace d360.core.entities
         public int? MaximumLength { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Pattern_Name", Description = "Pattern_Description")]
+        [Column(TypeName = "varchar"), StringLength(1000)]
         public string Pattern { get; set; }
 
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]

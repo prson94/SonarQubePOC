@@ -31,8 +31,10 @@ namespace d360.core.entities
         }
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string KeyHash { get; set; }
 
+        [Column(TypeName = "varchar"), StringLength(250)]
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string FieldHash { get; set; }
 

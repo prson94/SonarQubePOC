@@ -1,5 +1,6 @@
 ﻿using d360.core.entities.Contracts;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -18,6 +19,7 @@ namespace d360.core.entities
         public int Order { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string ResolutionObject { get; set; }
 
         [DataMember]

@@ -17,6 +17,7 @@ namespace d360.core.entities
         public int RowIndex { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]

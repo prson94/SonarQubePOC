@@ -17,6 +17,7 @@ namespace d360.core.entities
         public string Value { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string ResolvedObject { get; set; }
 
         [DataMember]

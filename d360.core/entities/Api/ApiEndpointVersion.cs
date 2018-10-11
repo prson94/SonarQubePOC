@@ -1,5 +1,6 @@
 ﻿using d360.core.entities.Contracts;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -12,6 +13,7 @@ namespace d360.core.entities
         public int EndpointID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(100)]
         public string UriPrefix { get; set; }
 
         [DataMember]

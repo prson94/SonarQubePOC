@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
@@ -12,6 +13,7 @@ namespace d360.core.entities
         public int FusionQueryAttributeTypeID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string SourceID { get; set; }
 
         [DataMember]

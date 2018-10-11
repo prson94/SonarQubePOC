@@ -1,5 +1,6 @@
 ﻿using d360.core.enums;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -15,9 +16,11 @@ namespace d360.core.entities
         public bool IncludeInPropertyRequest { get; set; } = true;
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string SourceField { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string TargetField { get; set; }
 
         [DataMember]
@@ -30,9 +33,11 @@ namespace d360.core.entities
         public string DefaultValue { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(10)]
         public string ArrayValueDelimiter { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string ArrayValueFieldName { get; set; }
 
         [DataMember]

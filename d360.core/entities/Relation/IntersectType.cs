@@ -20,6 +20,7 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         [ReadOnly(true)]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string Name { get; set; }
 
         [DataMember]

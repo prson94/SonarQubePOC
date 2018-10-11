@@ -1,5 +1,6 @@
 ﻿using d360.core.entities.Contracts;
 using d360.core.enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -12,9 +13,11 @@ namespace d360.core.entities
         public int ServiceID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string Node{ get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string Namespace { get; set; }
 
         [ForeignKey("ServiceID"), IgnoreDataMember]

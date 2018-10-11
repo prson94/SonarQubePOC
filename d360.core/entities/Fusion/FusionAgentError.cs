@@ -3,6 +3,7 @@ using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
@@ -13,6 +14,7 @@ namespace d360.core.entities
         public int FusionID { get; set; }
 
         [DataMember]
+        [Column(TypeName = "varchar"), StringLength(250)]
         public string MachineName { get; set; }
 
         [DataMember]
