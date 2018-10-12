@@ -18,3 +18,18 @@ GROUP BY ruleimplementationid, name
 HAVING COUNT(1) > 1)
 
 ALTER TABLE ruleresultqualifiertype ADD CONSTRAINT DF_RuleResultQualifierType_RuleImplementationID_Name UNIQUE(RuleImplementationID, Name)
+
+-- BEGIN GOV-5718 DUPLICATED COMMENTS DUE TO DUPLICATED USERS IN ASSET TABLE
+-- delete duplicated resources in asset table
+with R as (
+select *, row_number() over(partition by [object], objectid order by (select null)) as rn
+from asset where [object] = 'Resource'
+)
+delete R
+where rn > 1;
+go
+
+-- add constraint
+ALTER TABLE Asset ADD CONSTRAINT UC_Asset_Object_ObjectID UNIQUE ([Object],[ObjectID]);
+go
+-- END GOV-5718 DUPLICATED COMMENTS DUE TO DUPLICATED USERS IN ASSET TABLE
