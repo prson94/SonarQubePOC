@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
@@ -23,7 +24,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class Policy : PolicyModel, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata
+    public class Policy : PolicyModel, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         public Policy()
         {
@@ -62,6 +63,17 @@ namespace d360.core.entities
 
         [ForeignKey("ParentID"), IgnoreDataMember]
         public virtual ICollection<Policy> Children { get; set; }
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.Policy,
+                ObjectID = ID,
+                ObjectType = SystemObjects.PolicyType,
+                ObjectTypeID = PolicyTypeID
+            };
+        }
 
         public FieldsObjectModel GetFieldsObjectInfo()
         {
