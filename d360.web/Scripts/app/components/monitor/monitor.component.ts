@@ -13,18 +13,21 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
     template: ` 
 <div class="row">
     <div class="col s12" [class.m6]="!expandRow">
-        <d3s-monitor-filter [hidden]="isFiltered" (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
+        
         
         <d3s-monitor-assignments *ngIf="isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
         
-        <d3s-monitor-list 
-                [workflowTypes]="selectedWorkflowTypes" 
-                (selectionChange)="selectedWorkflowType = $event" 
-                [objectType]="objectType" 
-                [objectId]="objectId" 
-                (filteredTypes)="filteredTypes = $event"
-                (onLoadComplete)="loadComplete($event)">
-        </d3s-monitor-list>
+        <div class="tile tile-detail" style="padding-bottom: 15px">
+            <d3s-monitor-filter [hidden]="isFiltered" (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
+            <d3s-monitor-list 
+                    [workflowTypes]="selectedWorkflowTypes" 
+                    (selectionChange)="selectedWorkflowType = $event" 
+                    [objectType]="objectType" 
+                    [objectId]="objectId" 
+                    (filteredTypes)="filteredTypes = $event"
+                    (onLoadComplete)="loadComplete($event)">
+            </d3s-monitor-list>
+        </div>
 
         <d3s-monitor-assignments *ngIf="!isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
     </div>

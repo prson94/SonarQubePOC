@@ -9,10 +9,10 @@ import { WorkflowListItem } from '../../models/workflow.model';
     template: ` 
 
 
-<div class="tile tile-detail" style="padding-bottom: 15px">
+<div>
     <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
     <div *ngIf="!isLoading">
-        <header>Choose Workflow Types</header>
+        <header>Workflow Versions</header>
         <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
     </div>
 </div>
