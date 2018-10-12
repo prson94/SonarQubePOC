@@ -13,7 +13,16 @@ import { WorkflowListItem } from '../../models/workflow.model';
     <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
     <div *ngIf="!isLoading">
         <header>Workflow Versions</header>
-        <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+        
+        <div class="row">
+            <div class="col s3 FieldName">Workflow Types</div>
+            <div class="col s9">
+                <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
+                <div *ngIf="!isLoading">
+                    <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+                </div>        
+            </div>
+        </div>   
     </div>
 </div>
 
