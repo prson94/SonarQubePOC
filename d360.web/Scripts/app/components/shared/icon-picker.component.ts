@@ -76,6 +76,8 @@ import { FormsModule } from '@angular/forms';
                         <option value="fa-filter">filter</option>
                         <option value="fa-fire">fire</option>
                         <option value="fa-flag">flag</option>
+                        <option value="fa-flag-o">flag alt</option>
+                        <option value="fa-flag-checkered">flag checkered</option>
                         <option value="fa-flask">flask</option>
                         <option value="fa-folder">folder-close</option>
                         <option value="fa-folder-open">folder-open</option>
@@ -112,6 +114,7 @@ import { FormsModule } from '@angular/forms';
                         <option value="fa-paw">paw</option>
                         <option value="fa-pencil">pencil</option>
                         <option value="fa-picture-o">picture</option>
+                        <option value="fa-pie-chart">pie chart</option>
                         <option value="fa-plane">plane</option>
                         <option value="fa-plus">plus</option>
                         <option value="fa-plus-circle">plus-circle</option>
@@ -158,6 +161,7 @@ import { FormsModule } from '@angular/forms';
                         <option value="fa-trophy">trophy</option>
                         <option value="fa-truck">truck</option>
                         <option value="fa-umbrella">umbrella</option>
+                        <option value="fa-university">university</option>                        
                         <option value="fa-upload">upload</option>                        
                         <option value="fa-user">user</option>
                         <option value="fa-user-md">user-md</option>
