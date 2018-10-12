@@ -18391,7 +18391,7 @@ order by DN.DisplayValue");
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 // delete any existing allocations
-                var rels = Company.Filter<NymRelation>(x => x.Object == model.Object.ToString() && x.ObjectID == model.ObjectID);
+                var rels = Company.Filter<NymRelation>(x => x.Object == model.Object.ToString() && x.ObjectID == model.ObjectID).ToList();
 
                 foreach (var rel in rels)
                 {
