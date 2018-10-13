@@ -984,15 +984,15 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                 assetTable.Rows.Add(row);
 
-                foreach (var k in model.Keys.Where(k => k != "ParentUid"))
+                foreach (var k in model.Fields.Keys.Where(k => k != "ParentUid"))
                 {
-                    if (!string.IsNullOrEmpty(model[k]))
+                    if (!string.IsNullOrEmpty(model.Fields[k]))
                     {
                         var fieldRow = assetFieldTable.NewRow();
 
                         fieldRow["ItemNumber"] = i;
                         fieldRow["FieldName"] = k.Trim();
-                        fieldRow["FieldValue"] = (model[k] + "").Trim();
+                        fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
 
                         assetFieldTable.Rows.Add(fieldRow);
                     }
@@ -1042,15 +1042,15 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                 assetTable.Rows.Add(row);
 
-                foreach (var k in model.Keys.Where(k => k != "Uid"))
+                foreach (var k in model.Fields.Keys.Where(k => k != "Uid"))
                 {
-                    if (!string.IsNullOrEmpty(model[k]))
+                    if (!string.IsNullOrEmpty(model.Fields[k]))
                     {
                         var fieldRow = assetFieldTable.NewRow();
 
                         fieldRow["ItemNumber"] = i;
                         fieldRow["FieldName"] = k.Trim();
-                        fieldRow["FieldValue"] = (model[k] + "").Trim();
+                        fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
 
                         assetFieldTable.Rows.Add(fieldRow);
                     }
@@ -1136,7 +1136,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                     
                     var assetFieldBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
 
-                    assetFieldBulkCopy.BatchSize = assetTable.Rows.Count;
+                    assetFieldBulkCopy.BatchSize = assetFieldTable.Rows.Count;
                     assetFieldBulkCopy.DestinationTableName = "#AssetFieldTable";
                     assetFieldBulkCopy.BulkCopyTimeout = 3600;
 

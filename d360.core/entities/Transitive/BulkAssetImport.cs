@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
@@ -13,10 +14,13 @@ namespace d360.core.entities
     }
 
     [DataContract(Name = "asset")]
-    public class AssetInsert : Dictionary<string, string>
+    public class AssetInsert// : DynamicObject//Dictionary<string, string>
     {
         [DataMember]
         public Guid? ParentUid { get; set; }
+
+        [DataMember]
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
     [JsonArray]
@@ -27,10 +31,13 @@ namespace d360.core.entities
     }
 
     [DataContract(Name = "asset")]
-    public class AssetUpdate : Dictionary<string, string>
+    public class AssetUpdate// : Dictionary<string, string>
     {
         [DataMember]
         public Guid Uid { get; set; }
+
+        [DataMember]
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
     public class AssetImportResult

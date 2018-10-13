@@ -214,7 +214,7 @@ where		T.CompletedOn is null
             {
                 if (_client == null)
                 {
-                    var handler = new HttpClientHandler { UseCookies = false };
+                    var handler = new HttpClientHandler { SslProtocols = System.Security.Authentication.SslProtocols.Tls, UseCookies = false };
                     _client = new HttpClient(handler,false);
                     _client.Timeout = new TimeSpan(1, 0, 0);
                     _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
