@@ -1560,16 +1560,18 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
         public List<DetailDisplayableRelationship> GetDetailDisplayableRelationships(SystemObjects type, int id)
         {
             return Query<DetailDisplayableRelationship>(@"
-select	SourceObject,
+ select	SourceObject,
 		SourceObjectID,
 		TargetObject,
 		TargetObjectID,
-		TargetObjectName,
-		TargetTypeName,
+		FA.TextPath as TargetObjectName,
+		FAT.TextPath as TargetTypeName,
 		C.[Count],
 		AUrl.[Url] as TargetUrl
 from	cache.Relationships R
 		inner join AssetDetail D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID
+		inner join FusionAttribute FA on FA.ID = R.TargetObjectID
+		inner join FusionAttributeType FAT on FAT.ID = FA.FusionAttributeTypeID
 		cross apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) AUrl
 		outer apply (
 					select	count(1) as [Count]
@@ -1578,8 +1580,6 @@ from	cache.Relationships R
 					) C
 where	R.SourceObject = 'FusionAttribute'
 		and R.TargetObject = 'FusionAttribute'
-		--and R.SourceTypeID = 301
-        --and R.SourceObject =  @type
         and R.SourceObjectID = @id
         and R.TargetTypeID = 302", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
         }
