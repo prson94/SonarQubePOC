@@ -7,13 +7,6 @@ import { WorkflowListItem } from '../../models/workflow.model';
 @Component({
     selector: 'd3s-monitor-filter',
     template: ` 
-
-
-<div>
-    <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
-    <div *ngIf="!isLoading">
-        <header>Workflow Versions</header>
-        
         <div class="row">
             <div class="col s3 FieldName">Workflow Types</div>
             <div class="col s9">
@@ -23,11 +16,7 @@ import { WorkflowListItem } from '../../models/workflow.model';
                 </div>        
             </div>
         </div>   
-    </div>
-</div>
-
-
-              `,
+           `,
     providers: [WorkflowService],
 })
 

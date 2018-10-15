@@ -17,17 +17,16 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
         
         <d3s-monitor-assignments *ngIf="isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
         
-        <div class="tile tile-detail" style="padding-bottom: 15px">
-            <d3s-monitor-filter [hidden]="isFiltered" (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
-            <d3s-monitor-list 
-                    [workflowTypes]="selectedWorkflowTypes" 
-                    (selectionChange)="selectedWorkflowType = $event" 
-                    [objectType]="objectType" 
-                    [objectId]="objectId" 
-                    (filteredTypes)="filteredTypes = $event"
-                    (onLoadComplete)="loadComplete($event)">
-            </d3s-monitor-list>
-        </div>
+        <d3s-monitor-workflow-version 
+            (onFilterChanged)="selectedWorkflowTypes = $event"
+            [selectAll]="selectAll"
+            [selectedWorkflowTypes]="selectedWorkflowTypes" 
+            (onMonitorListChanged)="selectedWorkflowTypeChange($event)" 
+            [objectType]="objectType" 
+            [objectId]="objectId" 
+            (onMonitorFilterTypesChanged)="filteredTypes = $event"
+            (onMonitorListLoadCompleted)="loadComplete($event)">
+        </d3s-monitor-workflow-version>
 
         <d3s-monitor-assignments *ngIf="!isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
     </div>
@@ -123,5 +122,9 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
     loadComplete(e: any) {
         this.expandRow = e.rows == 0;
+    }
+
+    selectedWorkflowTypeChange($event) {
+        this.selectedWorkflowType = $event;
     }
 }

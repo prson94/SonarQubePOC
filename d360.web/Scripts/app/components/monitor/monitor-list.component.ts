@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { WorkflowListItem } from '../../models/workflow.model';
@@ -11,10 +11,6 @@ import { Router } from '@angular/router';
 <div>
     <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
     <div *ngIf="!isLoading">
-        <header>
-            &nbsp;&nbsp;
-            <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
-        </header>
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
         <p-dataTable #dt [globalFilter]="gb" [value]="workflowItems" selectionMode="single" [rows]="15" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="true" [pageLinks]="3" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>            
@@ -29,8 +25,10 @@ import { Router } from '@angular/router';
 })
 
 export class MonitorListComponent extends BaseComponent implements OnInit, OnChanges {
+
     @Input() workflowTypes: any[];
     @Input() selection: any;
+    @Input() showSimpleFilter: boolean;
     @Output() selectionChange = new EventEmitter();
     @Input() objectType: string;
     @Input() objectId: number;
@@ -45,11 +43,12 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     ngOnInit() {
-        this.load();
+        //this.load();
     }
 
-    ngOnChanges() {
-        this.load();
+    ngOnChanges(changes: SimpleChanges) {
+        if (!(changes['showSimpleFilter'] && changes['showSimpleFilter'].currentValue != changes['showSimpleFilter'].previousValue))
+            this.load();
     }
 
     private load() {
