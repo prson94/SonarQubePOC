@@ -136,7 +136,7 @@ order by	P.[Path]
         }
 
         /// <summary>
-        /// Adds a given set of assets based on the specific asset type Uid.
+        /// Adds a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -185,7 +185,7 @@ order by	P.[Path]
         }
 
         /// <summary>
-        /// Updates a given set of assets based on the specific asset type Uid.
+        /// Updates a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -236,7 +236,7 @@ order by	P.[Path]
         #region Batch
 
         /// <summary>
-        /// Adds a given set of assets based on the specific asset type Uid.
+        /// Adds a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -316,7 +316,7 @@ order by	P.[Path]
         }
 
         /// <summary>
-        /// Updates a given set of assets based on the specific asset type Uid.
+        /// Updates a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
