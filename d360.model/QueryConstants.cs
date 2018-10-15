@@ -976,7 +976,6 @@ select		D.Object + '|' + cast(D.ObjectID as varchar) + '|' + cast(P.ID as varcha
 			D.TypeName + ' :: ' + D.DisplayValue as Name,
             O.TargetingSubject
 from AssetDetail d		
-{0}
 			inner join (
 						select	case 
 									when IT.Subject = @ot and IT.SubjectID = @otid then IT.Object
@@ -999,7 +998,7 @@ from AssetDetail d
 															    )
 						) O on O.Object = D.Type and O.ObjectID = D.TypeID and D.Object + '|' + cast(D.ObjectID as varchar) <> @object + '|' + cast(@objectId as varchar)
             inner join [Predicate] P on P.ID = @predicateId
-			where (@query = '') or (@query != '' and d.textpath like '%'+@query+'%')
+			where (@query = '') or (@query != '' and d.DisplayValue like '%'+@query+'%')
 order by	D.TypeName,
 			D.DisplayValue
 ";
