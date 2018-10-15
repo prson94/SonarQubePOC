@@ -381,8 +381,8 @@ order by wi.StartedOn desc";
             }
         }
 
-        [HttpPost, Route("ReassignWorkflowObject/{itemId:int}/{workflowId:int}/{objectId:int}/{objectType}")]
-        public HttpResponseMessage ReassignWorkflowObject(int itemId, int workflowId, int objectId, string objectType)
+        [HttpPost, Route("ReassignWorkflowObject/{itemId:int}/{workflowId:int}/{objectId:int}/{objectType}/{itemStepId:int}")]
+        public HttpResponseMessage ReassignWorkflowObject(int itemId, int workflowId, int objectId, string objectType, int itemStepId)
         {
             try
             {
@@ -405,6 +405,17 @@ order by wi.StartedOn desc";
 
                 workflowItem.CompletedBy = Company.CurrentResourceID;
                 workflowItem.CompletedOn = DateTime.UtcNow;
+
+                //mark the form as completed as well since it was reassisnged
+                var workflowItemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepId).FirstOrDefault();
+
+                if (workflowItemStep == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Workflow item step id.");
+                }
+
+                workflowItemStep.CompletedBy = Company.CurrentResourceID;
+                workflowItemStep.CompletedOn = DateTime.UtcNow;
 
                 Company.SaveChanges();
 
