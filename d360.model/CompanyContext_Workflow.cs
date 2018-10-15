@@ -296,13 +296,17 @@ namespace d360.model
 
             if (orgIssue == null) throw new Exception("invalid workflow issue");
 
+            var obj = GetObjectDetail(@object, objectId);
+
+            if (obj == null) throw new Exception("Unable to find object details of object to reassign to");
+
             //add new issue record
             var issue = new Issue
             {
                 Object = @object,
                 ObjectID = objectId,
-                ObjectType = "IssueType",
-                ObjectTypeID = reg.TypeID,
+                ObjectType = obj.Type,
+                ObjectTypeID = obj.TypeID,
                 CreatedBy = CurrentResourceID,
                 CreatedOn = DateTime.UtcNow,
                 UpdatedBy = CurrentResourceID,
