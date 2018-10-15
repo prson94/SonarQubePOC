@@ -250,17 +250,17 @@ namespace d360.web.Controllers
         [HttpGet, Route("{type}/{id:int}/lineagenode")]
         public JsonNetResult GetLineageNodeDataForObject(string type, int id)
         {
-            var sql = @"	select 
-		                [name],
-		                IconForeColor as foreColor,
-		                IconBackColor as backColor,
-		                [object],
-		                objectId,
-		                objectType,
-		                objectTypeId,
-		                objectTypeName
-	                from cache.ObjectDetails
-	                where [object] = @type and objectid = @id";
+            var sql = @"select 
+	DisplayValue as [name],
+	ForeColor as foreColor,
+	BackColor as backColor,
+	[object],
+	objectId,
+	Type as objectType,
+	TypeID as objectTypeId,
+	TypeName as objectTypeName
+from AssetDetail
+where [object] = @type and objectid = @id";
 
             return new JsonNetResult
             {

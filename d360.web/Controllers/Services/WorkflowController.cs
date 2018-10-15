@@ -58,10 +58,10 @@ select		distinct
 			,wi.CompletedOn as DateCompleted
             ,case when wi.CompletedOn is null then cast(0 as bit) else cast(1 as bit) end as IsCompleted
 			,'' as Step
-			,A.ObjectID
-			,A.Name
-			,A.[Object]
-			,A.Url
+			,coalesce(D.ObjectID, T.ObjectID) as ObjectID
+			,coalesce(D.DisplayValue, T.[Name]) as [Name]
+			,coalesce(D.[Object], T.[Object]) as [Object]
+			,coalesce(DUrl.[Url], TUrl.[Url]) as [Url]
 			,R.FirstName + ' ' + R.LastName as RaisedBy			
 			,'' as Notes					
 			,IT.ID as IssueType
@@ -83,8 +83,11 @@ select		distinct
             end as ActivityName
 from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
-			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
-			left outer join cache.ObjectDetails A on A.[Object] = I.[Object] and A.ObjectID = I.ObjectID            		
+			inner join IssueType IT on (I.IssueTypeID = IT.ID)							
+			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
+			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
+			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
@@ -258,10 +261,10 @@ select		distinct
 			,wi.CompletedOn as DateCompleted
             ,case when wi.CompletedOn is null then cast(0 as bit) else cast(1 as bit) end as IsCompleted
 			,'' as Step
-			,A.ObjectID
-			,A.Name
-			,A.[Object]
-			,A.Url
+			,coalesce(D.ObjectID, T.ObjectID) as ObjectID
+			,coalesce(D.DisplayValue, T.[Name]) as [Name]
+			,coalesce(D.[Object], T.[Object]) as [Object]
+			,coalesce(DUrl.[Url], TUrl.[Url]) as [Url]
 			,R.FirstName + ' ' + R.LastName as RaisedBy			
 			,'' as Notes					
 			,IT.ID as IssueType
@@ -284,7 +287,10 @@ select		distinct
 from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id) and I.[object] = @obj and I.[objectid] = @id
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
-			left outer join cache.ObjectDetails A on A.[Object] = I.[Object] and A.ObjectID = I.ObjectID            		
+			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
+			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
+			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl            		
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource'
@@ -767,7 +773,7 @@ order by wi.StartedOn desc";
 
                     if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
-                    var itemSql = "select i.Name as Text, i.ObjectType + '|' + cast(i.ObjectID as varchar) as Value from cache.objectdetails i where i.objecttype = @objectType and i.objecttypeid = @objectTypeId and i.[object] != @objectType order by 1";
+                    var itemSql = "select i.Name as Text, i.Object + '|' + cast(i.ObjectID as varchar) as Value from AssetType i where i.object = @objectType and i.objectid = @objectTypeId order by 1";
                                         
                     item.Values = new List<System.Web.Mvc.SelectListItem>();
 
@@ -970,7 +976,7 @@ order by wi.StartedOn desc";
 
                         if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
-                        var itemSql = "select i.Name as Text, i.ObjectType + '|' + cast(i.ObjectID as varchar) as Value from cache.objectdetails i where i.objecttype = @objectType and i.objecttypeid = @objectTypeId and i.[object] != @objectType order by 1";
+                        var itemSql = "select i.Name as Text, i.Object + '|' + cast(i.ObjectID as varchar) as Value from AssetType i where i.object = @objectType and i.objectid = @objectTypeId order by 1";
 
                         item.Values = new List<System.Web.Mvc.SelectListItem>();
 
@@ -1165,15 +1171,18 @@ order by wi.StartedOn desc";
 	                        ,i.updatedon as 'UpdatedOn'
 	                        ,i.completedon as 'CompletedOn'
                             ,i.numberofevents as 'NumberOfEvents'
-	                        ,od.name as 'Name'
-                            ,od.NgUrl as 'Url'
+	                        ,coalesce(od.DisplayValue,IName.Name) as 'Name'
+                            ,AUrl.[Url] as 'Url'
                             ,i.id as 'ItemID'
                           from
 	                        [workflow].[version] v
 	                        inner join [workflow].item i on v.id = i.versionid
-	                        inner join [cache].objectdetails od on i.objectid = od.objectid and i.[object] = od.[object]                            
+	                        left join AssetDetail od on i.objectid = od.objectid and i.[object] = od.[object] 
+							outer apply [dbo].[GetAssetUrl](od.[Object], od.TypeID, od.ObjectID) AUrl
+							left join [Intersect] IT on i.Object = 'Intersect' and I.ObjectID = IT.ID
+							outer apply dbo.GetIntersectNames(IT.ID) IName	                         
                           where 
-	                        v.id = @id
+	                        coalesce(od.ID, it.ID) is not null and v.id = @id
             ";
 
             var types = Company.Query<dynamic>(sql, new { id = versionId }).ToList();
