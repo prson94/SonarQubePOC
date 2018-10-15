@@ -172,9 +172,9 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    reassignObject(itemId: number, workflowId: number, objectId: number, objectType: string): Promise<JsonResult> {
+    reassignObject(itemId: number, workflowId: number, objectId: number, objectType: string, stepId:number): Promise<JsonResult> {
         return this.http
-            .post(`services/workflow/ReassignWorkflowObject/${itemId}/${workflowId}/${objectId}/${objectType}`,null)
+            .post(`services/workflow/ReassignWorkflowObject/${itemId}/${workflowId}/${objectId}/${objectType}/${stepId}`,null)
             .toPromise()
             .then(res => <any>res.json())
             .catch(err => this.handleError(err));

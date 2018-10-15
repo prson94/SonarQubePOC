@@ -116,6 +116,8 @@
     <None Include="Releases\2018.10.12\Data.sql" />
     <None Include="Releases\2018.10.12\Misc.sql" />
     <None Include="Releases\2018.10.12\DisplayValue.sql" />
+    <None Include="Releases\2018.10.12\CacheDetails-Update.sql" />
+    <None Include="Releases\2018.10.12\CacheDetails-Rollback.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Releases\2018.10.12\Metrics.sql" />

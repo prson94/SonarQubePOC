@@ -42,7 +42,7 @@ namespace d360.model
 		case 
 			when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
 			when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
-			else coalesce(C_D.Name, 'Default') 
+			else coalesce(D.TypeName, IT.[Name], 'Default') 
 		end as ObjectName,
 		L.Notes,
 		'MyFile.' + L.Extension as FilePath,
@@ -68,7 +68,8 @@ namespace d360.model
 		T.C as Total,
         R.FirstName + ' ' + R.LastName as Requestor
 from	[Load] L
-		left join Cache.ObjectDetails C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 		
+		left join AssetDetail D on D.[Type] = L.[Object] and D.TypeID = L.ObjectID		
+		outer apply dbo.GetIntersectTypeNames(L.ObjectID) IT
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
