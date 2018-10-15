@@ -3068,21 +3068,32 @@ end",
 ({tbTypePrefix}.Object = '{i.Object}' and {tbTypePrefix}.ObjectID = {i.ObjectID} and {tbPrefix}.Object = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}) OR
 ({tbTypePrefix}.Subject = '{i.Object}' and {tbTypePrefix}.SubjectID = {i.ObjectID} and {tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn})
 )
-		left join AssetDetail {tbDetailPrefix} on {tbDetailPrefix}.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
-		and {tbDetailPrefix}.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
-		left join AssetType {tbTypeDetailPrefix} on {tbTypeDetailPrefix}.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
-		and {tbTypeDetailPrefix}.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
-		left join FusionAttribute {tbFAPrefix} on case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end = 'FusionAttribute'
-												and {tbFAPrefix}.ID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
+outer apply (
+	select DisplayValue as [Name], {tbDetailPrefix}DU.[Url] as [Url] from AssetDetail {tbDetailPrefix}D
+	cross apply [dbo].[GetAssetUrl]({tbDetailPrefix}D.[Object], {tbDetailPrefix}D.TypeID, {tbDetailPrefix}D.ObjectID) {tbDetailPrefix}DU
+	where {tbDetailPrefix}D.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
+		and {tbDetailPrefix}D.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
+	union all
+	select [Name], {tbDetailPrefix}TU.[Url] as [Url] from AssetType {tbDetailPrefix}T
+	cross apply [dbo].[GetAssetUrl]({tbDetailPrefix}T.[Object], {tbDetailPrefix}T.ObjectID, {tbDetailPrefix}T.ObjectID) {tbDetailPrefix}TU
+	where {tbDetailPrefix}T.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
+		and {tbDetailPrefix}T.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
+		
+	union all
+	select TextPath as [Name], {tbDetailPrefix}FU.[Url] as [Url] from FusionAttribute {tbDetailPrefix}F
+	cross apply [dbo].[GetAssetUrl]('FusionAttribute', {tbDetailPrefix}F.FusionAttributeTypeID, {tbDetailPrefix}F.ID) {tbDetailPrefix}FU
+	where 'FusionAttribute' = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
+		and {tbDetailPrefix}F.ID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
+  ) {tbDetailPrefix}
 ";
 
                             //Create the column/field to display the visible column cell.
                             var fc = new ComplexColumnModel
                             {
-                                DisplayColumn = $"coalesce({tbFAPrefix}.TextPath, {tbDetailPrefix}.DisplayValue, {tbTypeDetailPrefix}.Name)",
+                                DisplayColumn = $"{tbDetailPrefix}.Name",
                                 text = i.OverrideDisplayName ?? i.FieldTypeName.Replace("Related Item~", ""),
                                 datafield = $"{dataField}",
-                                SortColumn = i.SortOrder > 0 ? $"coalesce({tbFAPrefix}.TextPath, {tbDetailPrefix}.DisplayValue, {tbTypeDetailPrefix}.Name)" : string.Empty,
+                                SortColumn = i.SortOrder > 0 ? $"{tbDetailPrefix}.Name" : string.Empty,
                                 OutputColumn = true,
                                 Width = i.Width
                             };

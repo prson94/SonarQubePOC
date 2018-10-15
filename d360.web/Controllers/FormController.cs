@@ -18292,34 +18292,8 @@ order by DN.DisplayValue");
         {
             query = query.Replace("_", "[_]").Replace("%", "[%]");
 
-            string joinStatement = "";
-
-            switch (type.ToLower())
-            {
-                case "artifacttype":
-                    joinStatement = "inner join artifact a on a.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
-                    break;
-                case "taxonomytype":
-                    joinStatement = "inner join taxonomy t on  t.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
-                    break;
-                case "policytype":
-                    joinStatement = "inner join policy a on  a.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
-                    break;
-                case "attributetype":
-                    joinStatement = "inner join attributetype a on  a.id = d.ObjectID and d.Object = @type and d.ObjectTypeID = @typeId and d.ObjectType = @type";
-                    break;
-                case "fusionattributetype":
-                    joinStatement = "inner join fusionattribute a on  a.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
-                    break;
-                case "domaingroup":
-                    joinStatement = "inner join domainitem a on  a.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
-                    break;
-
-            }
-
-
             var list = new List<EditableField>();
-            var items = Company.Query<dynamic>(string.Format(QueryConstants.SynonymOptions, joinStatement), new { predicateId,  type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objectId = objId, typeId, query }).ToList();
+            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { predicateId,  type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objectId = objId, typeId, query }).ToList();
             var typeIsSubject = true;
             if (items.Count > 0)
             {
