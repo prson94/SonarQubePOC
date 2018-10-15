@@ -1,1 +1,0 @@
-define({r:0.5,st:'Stem',n:1,t:[0,74],u:['../Content/a-shared/legal-notice.htm'],s:['$','e','ownership','where'],p:[['$',83],['allow',96],['assets',59],['case',58],['customizable',40],['endpoints',42],['found',79],['in',39],['list',48],['now',3],['parent',48],['required',72],['shows',16],['the',5],['to',7],['users',44],['you',45]]});

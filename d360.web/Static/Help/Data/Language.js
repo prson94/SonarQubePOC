@@ -1,1 +1,0 @@
-define({'skin':{'default':{},'infogix_skin':{}},'toc':{'default':{'OpenBookIconAlternateText':'Open Book','ClosedBookIconAlternateText':'Closed Book','TopicIconAlternateText':'Topic Icon','MarkAsNewIconAlternateText':'New Topic'}}});

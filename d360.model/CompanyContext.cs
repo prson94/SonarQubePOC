@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Contracts;
-using d360.core.entities.Queues;
 using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.enums.Workflow;

@@ -2663,6 +2663,29 @@
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,d360.core.entities.AssetInserts)">
+            <summary>
+            Adds a given set of assets based on the specific asset type Uid.
+            </summary>
+            <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assets">The payload of your request.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutBulkAssetsAsync(System.Guid,d360.core.entities.AssetUpdates)">
+            <summary>
+            Updates a given set of assets based on the specific asset type Uid.
+            </summary>
+            <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assets">The payload of your request.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetExecutionStatus(System.Guid)">
+            <summary>
+            GETs the status of an execution record, including the results for the execution.
+            </summary>
+            <param name="uid">The execution ID to retrieve status for.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.

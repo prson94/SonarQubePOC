@@ -78,6 +78,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
+    <Compile Include="entities\Api\ApiExecution.cs" />
     <Compile Include="entities\Api\ApiEntityFieldTypeMultiSelectField.cs" />
     <Compile Include="entities\Api\ApiEntityUri.cs" />
     <Compile Include="entities\Api\ApiEntityFieldType.cs" />
@@ -178,7 +179,6 @@
     <Compile Include="entities\Relation\Predicate.cs" />
     <Compile Include="entities\Social\CommentVote.cs" />
     <Compile Include="entities\Social\CommentCount.cs" />
-    <Compile Include="entities\Queues\BulkLoadQueue.cs" />
     <Compile Include="entities\Audit.cs" />
     <Compile Include="entities\AuditField.cs" />
     <Compile Include="entities\Community\CompanySetting.cs" />
@@ -372,6 +372,7 @@
     <Compile Include="exceptions\UnauthorizedException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="queue\ApiExecutionInfo.cs" />
     <Compile Include="queue\DisplayUpdateInfo.cs" />
     <Compile Include="queue\IntegrationQueueModel.cs" />
     <Compile Include="queue\EventInfo.cs" />

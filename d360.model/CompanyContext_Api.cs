@@ -24,6 +24,8 @@ namespace d360.model
 
         public DbSet<ApiEntityUri> ApiEntityUris { get; set; }
 
+        public DbSet<ApiExecution> ApiExecutions { get; set; }
+
         public DbSet<ApiNamespace> ApiNamespaces { get; set; }
 
         #endregion

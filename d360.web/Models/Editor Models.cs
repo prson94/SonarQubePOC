@@ -180,39 +180,6 @@ namespace d360.web.Models
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
-    public class CreateResponse
-    {
-        [DataMember]
-        public string Message { get; set; }
-    }
-
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class ErrorResponse
-    {
-        [DataMember]
-        public string type { get; set; } = "error";
-
-        [DataMember]
-        public string title { get; set; } = "An error occured";
-
-        [DataMember]
-        public string message { get; set; } = "error";
-    }
-
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class ConfirmResponse
-    {
-        [DataMember]
-        public string type { get; set; } = "confirm";
-
-        [DataMember]
-        public string title { get; set; } = "Success";
-
-        [DataMember]
-        public string message { get; set; } = "success";
-    }
-
-    [DataContract(Namespace = constants.NAMESPACE)]
     public class EditableField : ReadOnlyField
     {
         public EditableField()

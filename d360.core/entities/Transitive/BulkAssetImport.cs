@@ -59,14 +59,12 @@ namespace d360.core.entities
         [DataMember]
         public Guid uid { get; set; }
 
-        public string SourceID { get; set; }
         [DataMember]
         public string Message { get; set; }
         [DataMember]
         public bool Success { get; set; }
-        [DataMember]
+        
         public bool IsNew { get; set; }
-
         public string Object { get; set; }
         public int ObjectID { get; set; }        
     }

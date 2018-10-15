@@ -422,7 +422,8 @@ on          (
             )
 when matched then
     update set
-            T.Result = S.Result
+            T.Result = S.Result,
+            T.Archived = 0
 when not matched by target then
     insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived)
     values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0);", transaction: trans);

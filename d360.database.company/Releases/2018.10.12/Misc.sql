@@ -416,3 +416,22 @@ BEGIN
 	
 END
 GO;
+
+alter table [integration].[ExecutionAssetTypeMetric] add [MisalignedResponsibilities] int CONSTRAINT [DF_IntegrationExecutionAssetTypeMetric_MisalignedResponsibilities]  DEFAULT (0) not null
+GO;
+
+--alter proc [integration].[ProcessExecutionAssetType]
+
+
+CREATE TABLE api.Execution (
+	ExecutionID uniqueidentifier NOT NULL,
+	ResourceID int NOT NULL,
+	Total int NOT NULL,
+	Processed int NOT NULL,
+	Error int NOT NULL,
+	StartedOn datetime NOT NULL,
+	CompletedOn datetime NULL,
+	Fields nvarchar(2500) NULL,
+	CONSTRAINT PK_ApiExecution PRIMARY KEY NONCLUSTERED ( ExecutionID DESC )
+)
+GO;
