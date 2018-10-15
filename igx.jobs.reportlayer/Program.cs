@@ -120,6 +120,8 @@ namespace igx.jobs.reportlayer
 
                 companies.ForEach(c =>
                 {
+                    var reservedNames = new List<string>() { "id", "uid", "assetid", "displayvalue", "parentid", "textpath", "level", "levelname", "leveldescription", "parentdisplayvalue", "currentscore", "url" };
+
                     var viewNames = new List<string>();
                     string SCHEMA = "reporting";
 
@@ -135,49 +137,49 @@ namespace igx.jobs.reportlayer
                             var objectType = "Artifact";
                             var prefix = "Glossary";
                             string objectID;
-                            List<FieldType> fieldTypes = null;
 
                             var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
-                            #region Artifact Type
+                            var assetTypes = companyConnection.Query<AssetType>($"select * from AssetType where [Class] in ({(int)AssetTypeClass.Glossary}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})").ToList();
+                            var fieldTypes = companyConnection.Query<FieldType>($"select * from FieldType where AssetTypeID in (select ID from AssetType where [Class] in ({(int)AssetTypeClass.Glossary}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy}))").ToList();
 
-                            var artifactTypes = companyConnection.Query<ArtifactType>("select * from ArtifactType").ToList();
-
-                            try
+                            assetTypes.ForEach(o =>
                             {
-                                fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'ArtifactType'").ToList();
-                            }
-                            catch (Exception)
-                            {
-                                fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'ArtifactType'").ToList();
-                            }
-
-                            artifactTypes.ForEach(o =>
-                            {
-                            #region Object Views
-
-                            var joins = "";
+                                var joins = "";
                                 var columns = "";
-                                var reservedNames = new List<string>() { "id", "displayvalue", "parentid", "parentdisplayvalue", "currentscore", "url" };
 
-                                getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Artifact", out joins, out columns, reservedNames, "A.ObjectID");
+                                objectName = pluralize.Pluralize(cleanObjectName(o.Name));
 
-                                objectName = $"{prefix}_{pluralize.Pluralize(cleanObjectName(o.Name))}";
-                                if (objectName.Length > 128)
-                                    objectName = objectName.Substring(0, 128);
+                                if (objectName.Length > 100)
+                                    objectName = objectName.Substring(0, 100);
 
-                                objectName = $"{SCHEMA}.[{objectName}]";
+                                objectName = $"{SCHEMA}.[{o.Class.ToString()}_{objectName}]";
+
                                 viewNames.Add(objectName);
 
-                                var parentIntersectType = companyConnection.Query<IntersectTypeDetail>("select * from IntersectTypeDetail where Object = 'ArtifactType' and ObjectID = @id and PredicateType = @pt", new { id = o.ID, pt = (int)PredicateType.InterTypeHierarchy }).FirstOrDefault();
+                                // Get fields for asset
+                                getDynamicFieldJoinStatements(
+                                    fieldTypes.Where(f => f.AssetTypeID == o.ID).ToList(), 
+                                    o.Object.Replace("Type", ""), 
+                                    out joins, 
+                                    out columns, 
+                                    reservedNames, 
+                                    "A.ID");
 
-                                var parentSqlColumn = @"";
-                                var parentSqlJoin = @"";
 
-                                if (parentIntersectType != null)
+                                if (o.Class == AssetTypeClass.Glossary)
                                 {
-                                    parentSqlColumn = @"P.ParentID, P.DisplayValue as ParentDisplayValue, ";
-                                    parentSqlJoin = @" outer apply (
+                                    #region Glossary
+
+                                    var parentIntersectType = companyConnection.Query<IntersectTypeDetail>($"select * from IntersectTypeDetail where Object = '{o.Object}' and ObjectID = {o.ObjectID} and PredicateType = @pt", new { id = o.ObjectID, pt = (int)PredicateType.InterTypeHierarchy }).FirstOrDefault();
+
+                                    var parentSqlColumn = @"";
+                                    var parentSqlJoin = @"";
+
+                                    if (parentIntersectType != null)
+                                    {
+                                        parentSqlColumn = @"P.ParentID, P.DisplayValue as ParentDisplayValue, ";
+                                        parentSqlJoin = @" outer apply (
 				    select	I.SubjectID as ParentID,
                             ID.DisplayValue
 				    from	[PredicateIntersect] I
@@ -185,103 +187,85 @@ namespace igx.jobs.reportlayer
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
                             left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
 				    ) P";
-                                }
+                                    }
 
 
-                                selectSql = $@"
-select  A.ID, 
+                                    selectSql = $@"
+select  A.ObjectID as ID,
+        A.ID as AssetID,
         A.DisplayValue, 
         {parentSqlColumn}
         {columns} 
         dbo.GenerateObjectUrl('{objectType}', A.TypeID, A.ObjectID) as Url, 
         cast(S.Value * 100 as int) as CurrentScore 
 from    AssetDetail A 
-        left join [metrics].[Score] S on S.Object = 'Artifact' and S.ObjectID = A.ObjectID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
+        outer apply (
+					select	max(EffectiveDate) as EffectiveDate
+					from	[metrics].[Score] 
+					where	[AssetUid] = A.[Uid] 
+							and EffectiveDate <= getutcdate()
+					) MS
+		left join metrics.Score S on S.AssetUid = A.[Uid] and S.EffectiveDate = MS.EffectiveDate
         {joins} 
         {parentSqlJoin} 
-where   A.Type = 'ArtifactType' and A.TypeID = {o.ID}";
+where   A.Type = '{o.Object}' and A.TypeID = {o.ObjectID}";
 
-                                objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+                                    #endregion Glossary
+                                }
+                                else
+                                {
+                                    #region Model/Policy
 
-                                viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                                viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                                executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-                        });
-
-                            artifactTypes = null;
-
-                            #endregion
-
-                            #region Information Model Type
-
-                            prefix = "Glossary";
-                            objectType = "Taxonomy";
-                            prefix = "Model";
-
-                            var taxonomyTypes = companyConnection.Query<TaxonomyType>("select * from TaxonomyType").ToList();
-
-                            try
-                            {
-                                fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'TaxonomyType'").ToList();
-                            }
-                            catch (Exception)
-                            {
-                                fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'TaxonomyType'").ToList();
-                            }
-
-                            taxonomyTypes.ForEach(o =>
-                            {
-                            #region Object Views
-
-                            var joins = "";
-                                var columns = "";
-                                var reservedNames = new List<string>() { "id", "parentid", "textpath", "level", "levelname", "leveldescription", "currentscore", "url" };
-
-                                getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Taxonomy", out joins, out columns, reservedNames);
-
-                                objectName = $"{SCHEMA}.[{prefix}_{pluralize.Pluralize(cleanObjectName(o.Name))}]";
-                                viewNames.Add(objectName);
-
-                                selectSql = $@"
+                                    selectSql = $@"
 with h as (
-	select	T.ID,
-			T.TaxonomyTypeID,
+	select	A.ID as AssetID,
+			A.[Uid],
+			A.ObjectID as ID,
+			A.TypeID,
 			null as ParentID,
-			D.DisplayValue as TextPath,
+			A.DisplayValue as TextPath,
 			1 as [Level]
-	from	Taxonomy T
-			inner join dbo.GetAssetDisplayValue() D on D.Object = '{objectType}' and D.ObjectID = T.ID
-			left join PredicateIntersect I on I.Object = '{objectType}' and I.ObjectID = T.ID and I.PredicateType = 4
-	where	T.TaxonomyTypeID = {o.ID} and I.IntersectID is null
+	from	AssetDetail A
+			left join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 4
+	where	A.[Type] = '{o.Object}' and A.TypeID = {o.ObjectID}
+			and I.IntersectID is null
 	union all
-	select	T.ID,
-			T.TaxonomyTypeID,
+	select	C.ID as AssetID,
+			C.[Uid],
+			C.ObjectID as ID,
+			C.TypeID,
 			P.ID as ParentID,
-			P.TextPath + '/' + D.DisplayValue as TextPath,
+			P.TextPath + '/' + C.DisplayValue as TextPath,
 			P.[Level] + 1 as [Level]
-	from	Taxonomy T
-			inner join dbo.GetAssetDisplayValue() D on D.Object = '{objectType}' and D.ObjectID = T.ID
-			inner join PredicateIntersect I on I.Object = '{objectType}' and I.ObjectID = T.ID and I.PredicateType = 4
-			inner join h as P on I.Subject = '{objectType}' and I.SubjectID = P.ID
-	where	T.TaxonomyTypeID = {o.ID}
+	from	AssetDetail C
+			inner join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType = 4
+			inner join h as P on I.Subject = C.Object and I.SubjectID = P.ID
+	where	C.[Type] = '{o.Object}' and C.TypeID = {o.ObjectID}
 )
 
-select  A.ID, 
+select  A.[Uid],
+		A.ID, 
         A.ParentID, 
         A.TextPath, 
         A.[Level], 
         L.Name as LevelName, 
         L.Description as LevelDescription,
         {columns} 
-        dbo.GenerateObjectUrl('{objectType}', A.TaxonomyTypeID, A.ID) as Url, 
+        dbo.GenerateObjectUrl('{o.Object.Replace("Type", "")}', A.TypeID, A.ID) as Url, 
         cast(S.Value * 100 as int) as CurrentScore
 from    h as A  
         {joins} 
-        left join [metrics].[Score] S on S.Object = '{objectType}' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
-        left join TaxonomyTypeLevel L on L.TaxonomyTypeID = A.TaxonomyTypeID and L.[Level] = A.[Level]";
+        outer apply (
+					select	max(EffectiveDate) as EffectiveDate
+					from	[metrics].[Score] 
+					where	[AssetUid] = A.[Uid] 
+							and EffectiveDate <= getutcdate()
+					) MS
+		left join metrics.Score S on S.AssetUid = A.[Uid] and S.EffectiveDate = MS.EffectiveDate
+        left join {o.Object.Replace("Type", "")}TypeLevel L on L.{o.Object.Replace("Type", "")}TypeID = A.TypeID and L.[Level] = A.[Level]";
+
+                                    #endregion Model/Policy
+                                }
 
                                 objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -289,96 +273,9 @@ from    h as A
                                 viewSql += $@" VIEW {objectName} AS {selectSql}";
 
                                 executeSqlWithTry(companyConnection, viewSql);
+                            });
 
-                            #endregion
-                        });
-
-                            taxonomyTypes = null;
-
-                            #endregion
-
-                            #region Policy Type
-
-                            objectType = "Policy";
-                            prefix = "Policy";
-
-                            var policyTypes = companyConnection.Query<PolicyType>("select * from PolicyType").ToList();
-
-                            try
-                            {
-                                fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'PolicyType'").ToList();
-                            }
-                            catch (Exception)
-                            {
-                                fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'PolicyType'").ToList();
-                            }
-
-                            policyTypes.ForEach(o =>
-                            {
-                            #region Object Views
-
-                            var joins = "";
-                                var columns = "";
-                                var reservedNames = new List<string>() { "id", "textpath", "parentid", "level", "levelname", "leveldescription", "currentscore", "url" };
-
-                                getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Policy", out joins, out columns, reservedNames);
-
-                                objectName = $"{SCHEMA}.[{prefix}_{pluralize.Pluralize(cleanObjectName(o.Name))}]";
-                                viewNames.Add(objectName);
-
-                                selectSql = $@"
-with h as (
-	select	T.ID,
-			T.PolicyTypeID,
-			null as ParentID,
-			D.DisplayValue,
-			D.DisplayValue as TextPath,
-			1 as [Level]
-	from	Policy T
-			inner join dbo.GetAssetDisplayValue() D on D.Object = '{objectType}' and D.ObjectID = T.ID
-			left join PredicateIntersect I on I.Object = '{objectType}' and I.ObjectID = T.ID and I.PredicateType = 4
-	where	T.PolicyTypeID = {o.ID} and I.IntersectID is null
-	union all
-	select	T.ID,
-			T.PolicyTypeID,
-			P.ID as ParentID,
-			D.DisplayValue,
-			P.TextPath + '/' + D.DisplayValue as TextPath,
-			P.[Level] + 1 as [Level]
-	from	Policy T
-			inner join dbo.GetAssetDisplayValue() D on D.Object = '{objectType}' and D.ObjectID = T.ID
-			inner join PredicateIntersect I on I.Object = '{objectType}' and I.ObjectID = T.ID and I.PredicateType = 4
-			inner join h as P on I.Subject = '{objectType}' and I.SubjectID = P.ID
-	where	T.PolicyTypeID = {o.ID}
-)
-
-select  A.ID, 
-        A.ParentID, 
-        A.TextPath, 
-        A.[Level], 
-        L.Name as LevelName, 
-        L.Description as LevelDescription,
-        {columns} 
-        dbo.GenerateObjectUrl('{objectType}', A.PolicyTypeID, A.ID) as Url, 
-        cast(S.Value * 100 as int) as CurrentScore
-from    h as A  
-        {joins} 
-        left join [metrics].[Score] S on S.Object = '{objectType}' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
-        left join PolicyTypeLevel L on L.PolicyTypeID = A.PolicyTypeID and L.[Level] = A.[Level]";
-
-                                objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                                viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                                viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                                executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-                        });
-
-                            policyTypes = null;
-
-                            #endregion
+                            assetTypes = null;
 
                             #region General Views
 
@@ -423,19 +320,27 @@ from	Asset A
                             viewNames.Add(objectName);
 
                             selectSql = @"
-SELECT M.[ID] as MapID
-     ,M.[GroupID]
-     ,M.[ItemID]
-     ,M.[Object]
-     ,M.[ObjectID]
-     ,M.[Weight]
-     ,M.[EffectiveStartDate]
-     ,M.[EffectiveEndDate]
-      ,g.[Name]                    as GroupName
-      ,I.[Description]            as RuleDefinition
- FROM [metrics].[Map] M
- Inner Join [metrics].[Item] I on I.ID = M.ItemID
- Inner Join [metrics].[Group] G on G.ID = M.GroupID";
+select	A.AssetTypeUid,
+		A.[Uid],
+		A.Name,
+		A.ParentUid,
+		A.IsGroup,
+		V.Weight,
+		max(V.EffectiveDate) OVER(PARTITION BY V.[Uid]) as MetricMaxEffectiveDate,
+		(
+			select	F.Name as FieldName,
+					C.Operator,
+					C.ValueJson
+			from	[metrics].[AssetVersionCondition] C
+					inner join FieldType F on F.ID = C.FieldTypeID
+			where	[Uid] = A.[Uid]
+					and EffectiveDate = V.EffectiveDate
+			for json path
+		) as ConditionsJson
+from	metrics.AssetVersion V
+		inner join metrics.Asset A on A.[Uid] = V.[Uid] 
+									and V.EffectiveDate <= getutcdate()
+									and A.State = 1";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -465,7 +370,13 @@ select  A.ObjectID as ID,
         cast(S.Value * 100 as int) as CurrentScorePct
 from    AssetDetail A  
 		left join PredicateIntersect I on I.Object = 'Artifact' and I.ObjectID = A.ID and I.PredicateType = 3
-    	left join [metrics].[Score] S on S.Object = 'Artifact' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
+        outer apply (
+					select	max(EffectiveDate) as EffectiveDate
+					from	[metrics].[Score] 
+					where	[AssetUid] = A.[Uid] 
+							and EffectiveDate <= getutcdate()
+					) MS
+		left join metrics.Score S on S.AssetUid = A.[Uid] and S.EffectiveDate = MS.EffectiveDate
 where	A.AssetTypeClass = 1";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -495,6 +406,8 @@ where	A.AssetTypeClass = 1";
 		                            ,ATT.Name as AssetTypeName
                                     ,i.ObjectType as [Type]
                                     ,a.ID as AssetID
+                                    ,a.[Uid]
+                                    ,ATT.[Uid] as AssetTypeUid
                             from    Issue i
                                     inner Join IssueType t on t.ID = i.IssueTypeID
 		                            left join AssetType ATT on ATT.[Object] = i.ObjectType and ATT.ObjectID = i.ObjectTypeID
