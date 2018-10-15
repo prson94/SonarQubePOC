@@ -15,8 +15,9 @@ import { Router } from '@angular/router';
         <p-dataTable #dt [globalFilter]="gb" [value]="workflowItems" selectionMode="single" [rows]="15" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="true" [pageLinks]="3" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>            
             <p-column field="Name" header="Workflow Name" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
-            <p-column field="ObjectTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"  filterMatchMode="contains"></p-column>  
-            <p-column header="Status" field="Status" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>      
+            <p-column field="ObjectTypeName" header="Type Name" sortable="true" [filter]="!showSimpleFilter"  filterMatchMode="contains"></p-column>  
+            <p-column header="Status" field="Status" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>  
+            <p-column field="Version" header="Version" sortable="true" [filter]="!showSimpleFilter"  filterMatchMode="contains"></p-column>  
          </p-dataTable>
     </div>     
 </div>
@@ -43,7 +44,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     ngOnInit() {
-        //this.load();
+        this.load();
     }
 
     ngOnChanges(changes: SimpleChanges) {

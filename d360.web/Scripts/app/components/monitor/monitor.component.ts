@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnChanges, Input, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnChanges, Input, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -18,13 +18,13 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
         <d3s-monitor-assignments *ngIf="isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
         
         <d3s-monitor-workflow-version 
-            (onFilterChanged)="selectedWorkflowTypes = $event"
+            (onFilterChanged)="onFilterChanged($event)"
             [selectAll]="selectAll"
             [selectedWorkflowTypes]="selectedWorkflowTypes" 
-            (onMonitorListChanged)="selectedWorkflowTypeChange($event)" 
+            (onMonitorListChanged)="onMonitorListChanged($event)" 
             [objectType]="objectType" 
             [objectId]="objectId" 
-            (onMonitorFilterTypesChanged)="filteredTypes = $event"
+            (onMonitorFilterTypesChanged)="onMonitorFilterTypesChanged($event)"
             (onMonitorListLoadCompleted)="loadComplete($event)">
         </d3s-monitor-workflow-version>
 
@@ -58,7 +58,8 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
     </div>
 </div>
               `,
-    providers: [ ObjectDetailService ]
+    providers: [ObjectDetailService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -82,6 +83,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         protected router: Router,
         protected route: ActivatedRoute,
         private objectDetailService: ObjectDetailService,
+        private ref:ChangeDetectorRef,
         rightSidebarService: RightSidebarService) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -124,7 +126,18 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         this.expandRow = e.rows == 0;
     }
 
-    selectedWorkflowTypeChange($event) {
-        this.selectedWorkflowType = $event;
+    onMonitorListChanged($event) {
+        this.selectedWorkflowType = $event ? $event : {};
+        this.ref.markForCheck();
     }
+
+    onFilterChanged($event) {
+        this.selectedWorkflowTypes = $event ? $event : [];
+        this.ref.markForCheck();
+    }
+
+    onMonitorFilterTypesChanged($event) {
+        this.filteredTypes = $event ? $event : [];
+        this.ref.markForCheck();
+     }
 }

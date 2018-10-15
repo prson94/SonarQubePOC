@@ -9,7 +9,9 @@
     Output,
     EventEmitter,
     OnChanges,
-    SimpleChanges
+    SimpleChanges,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef
 } from '@angular/core';
 import { PermissionsService } from '../../../../services/permissions.service';
 import { DiagramBaseComponent } from '../diagram-base.component';
@@ -46,7 +48,8 @@ declare var window: any;
 @Component({
     selector: 'd3s-workflow-diagram',
     templateUrl: './workflow-diagram.component.html',
-    providers: [PermissionsService, WorkflowService, ObjectDetailService, UriBasedService]
+    providers: [PermissionsService, WorkflowService, ObjectDetailService, UriBasedService],
+    changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class WorkflowDiagramComponent extends DiagramBaseComponent implements OnInit, OnChanges {
     @Input() id: number = 0;
@@ -113,6 +116,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
         private uriBasedService: UriBasedService,
+        private ref:ChangeDetectorRef,
         private objectDetailService: ObjectDetailService) {
         super();
     }
@@ -435,7 +439,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             .then(() => this.initializePalette())
             .then(() => this.initializeFormFields())
             .then(() => this.getObjectName())
-            .then(() => this.isWindowVisible = (this.monitorView || !this.isReadOnly));
+            .then(() => this.isWindowVisible = (this.monitorView || !this.isReadOnly))
+            .then(() => this.ref.markForCheck());
+            
     }
 
     //#endregion
