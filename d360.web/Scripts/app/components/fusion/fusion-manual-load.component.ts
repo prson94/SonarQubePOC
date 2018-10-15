@@ -77,7 +77,7 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
         
         if (event.xhr &&  event.xhr.status == 500) {
             let msg: string = "";
-            msg += event.xhr.statusText;
+            msg += event.xhr.responseText;
             this.messagesService.showError('Error', msg);
         }
       
@@ -88,7 +88,7 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     }
 
     private fileUploadUrl() {
-        return `internal/fusion/${this.fusionTypeID}/configurations/${this.fusionID}/template/${this.selectedFusionAttributeTypeId}`;
+        return `services/fusion/${this.fusionTypeID}/configurations/${this.fusionID}/template/${this.selectedFusionAttributeTypeId}`;
     }
 
     private onUpload(event) {
@@ -101,7 +101,7 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
 
         if (event.xhr &&  event.xhr.status == 200) {
             
-            msg += event.xhr.statusText;
+            msg += event.xhr.responseText;
             this.messagesService.showInfoMessage('Success', msg);
         }
 
