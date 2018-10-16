@@ -11,8 +11,8 @@ import * as _ from 'lodash';
     selector: 'd3s-workflowmonitor-top-level-filter',
     template: ` 
                     <div class="row">
-                        <div class="col s3 FieldName">Workflow Types</div>
-                        <div class="col s9">
+                        <div class="col s2 FieldName" style="padding-left: 0px">Workflow Types</div>
+                        <div class="col s10" style="padding-right: 0px">
                            <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
                             <div *ngIf="!isLoading">
                                 <p-multiSelect [options]="items" [style]="{'width':'100%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>

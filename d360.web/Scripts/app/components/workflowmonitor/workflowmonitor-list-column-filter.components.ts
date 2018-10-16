@@ -19,8 +19,8 @@ import { setTimeout } from 'timers';
     template: ` 
                 <form (ngSubmit)="onSubmit()"   (keydown.enter)="$event.preventDefault()" #filterForm="ngForm">
                     <div *ngFor="let filter of internalFilters;let first=first;let last=last;let index=index" class="row filter">
-                        <div class="col s1 FieldName">Filter:</div>
-                        <div class="col s4">
+                        <div class="col s2 FieldName" style="padding-left: 0px">Filter:</div>
+                        <div class="col s4" style="padding-right: 0px">
                             <select [name]="'FilterField_' + index" required [ngModel]="filter.Field" (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">
                                <option  [value]=""></option>
                                 <option *ngFor="let p of availableFilters" [ngValue]="p">{{p.Name}}</option>
@@ -37,7 +37,7 @@ import { setTimeout } from 'timers';
                                     <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" required [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event" placeholder="Enter a value" style="width:100%;"> 
                                 </span>   
                         </div>
-                        <div class="col s3">
+                        <div class="col s2">
                             <a (click)="addFilter()" class="fa-stack fa-lg overlayed-primary" pTooltip="Add Filter">                                
                                 <i class="fa fa-plus fa-stack-1x" style="color:darkgreen;"></i>                                
                             </a> 
