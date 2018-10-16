@@ -30,6 +30,7 @@ import {
     TooltipModule,
     ButtonModule,
 } from 'primeng/primeng';
+import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.component';
 
 @NgModule({
     imports: [CommonModule,   
@@ -62,6 +63,7 @@ import {
         MonitorFilterComponent,     
         MonitorListComponent,    
         MonitorAssignmentsComponent, 
+        MonitorWorkflowVersionComponent,
     ],
     exports: [
         MonitorComponent,

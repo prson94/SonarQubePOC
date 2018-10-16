@@ -150,6 +150,8 @@ namespace d360.core.entities.Workflow
         public List<GlobalReportingResource> AssignedUsers { get; set; }
 
         [DataMember]
+        public bool IsAssignedLoginUser { get; set; }
+        [DataMember]
         public bool IsIssueType { get; set; }
         [DataMember]
         public int Version { get; set; }
