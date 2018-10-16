@@ -16,6 +16,9 @@ namespace d360.core.entities.Workflow
         public long ItemID { get; set; }
 
         [DataMember]
+        public int? StepID { get; set; }
+
+        [DataMember]
         [Column(TypeName = "varchar"), StringLength(50)]
         public string ResourceObject { get; set; }
 

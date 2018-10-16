@@ -347,13 +347,17 @@ order by wi.StartedOn desc";
             };
         }
 
-        [HttpPost, Route("ReassignWorkflowResource/{itemId:int}/{resourceId:int}")]
-        public HttpResponseMessage ReassignWorkflowResource(int itemId, int resourceId)
+        [HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}")]
+        public HttpResponseMessage ReassignWorkflowResource(int itemStepId, int resourceId)
         {
             try
             {
+                var itemStep = Company.WorkflowItemSteps.FirstOrDefault(x => x.ID == itemStepId);
+                if (itemStep == null)
+                    throw new Exception("item step id not found");
+
                 //remove all the current version step items assignments
-                var currentAssignments = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId);
+                var currentAssignments = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemStep.ItemID);
 
                 if(currentAssignments != null)
                 {
@@ -366,7 +370,8 @@ order by wi.StartedOn desc";
 
                 var assignment = new WorkflowItemAssignment
                 {
-                    ItemID = itemId,
+                    ItemID = itemStep.ItemID,
+                    StepID = itemStep.StepID,
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
                     ResourceObject = "Resource",

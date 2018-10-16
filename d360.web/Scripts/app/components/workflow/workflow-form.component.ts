@@ -284,7 +284,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             });
         }
         else if (this.reassignType == 'resource') {
-            this.workflowService.reassignUser(this.workflowItemId, this.selectedReassignResource).then(result => {
+            this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource).then(result => {
                 this.showMessageForResult(this.messagesService, result, 'Successfully Assigned');
                 this.isLoading = false;
                 this.isCompleted = true;

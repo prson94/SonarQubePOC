@@ -1143,7 +1143,7 @@ namespace d360.model
             }
         }
 
-        private void SaveItemAssignments(IEnumerable<core.entities.GlobalReportingResource> users, long itemId)
+        private void SaveItemAssignments(IEnumerable<core.entities.GlobalReportingResource> users, long itemId, int? stepId)
         {
             foreach (var user in users)
             {
@@ -1152,6 +1152,7 @@ namespace d360.model
                     CreatedBy = 0,
                     CreatedOn = DateTime.UtcNow,
                     ItemID = itemId,
+                    StepID = stepId,
                     ResourceObject = "Resource",
                     ResourceObjectID = user.ResourceID,
                     UpdatedBy = 0,
@@ -1408,7 +1409,7 @@ namespace d360.model
                 SaveItemStepEmailedUsers(item, emailedUsers);
             }
 
-            SaveItemAssignments(users, itemId);
+            SaveItemAssignments(users, itemId, item.StepID);
         }
 
         private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings, List<string> items)
