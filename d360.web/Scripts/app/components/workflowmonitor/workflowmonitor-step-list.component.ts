@@ -59,6 +59,10 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
 
     load() {
         this.itemSteps = null;
+        this.object = null;
+        this.objectId = 0;
+        this.isIssueType = false;
+        this.selection = null;
         if (this.itemId != null && this.itemId != 0) {
             this.workflowService.getWorkflowItemSteps(this.itemId)
                 .then(r => {
