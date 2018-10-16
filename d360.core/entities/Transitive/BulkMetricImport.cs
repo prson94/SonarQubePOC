@@ -90,8 +90,7 @@ namespace d360.core.entities
 
     #region Used in Metrics API to define the metrics when calling the definition by asset type.
 
-    [JsonArray]
-    [DataContract(Name = "metrics")]
+    [JsonArray, DataContract(Name = "metrics")]
     public class MetricAssetTypeHierarchyModels : List<MetricAssetTypeHierarchyModel>
     {
 

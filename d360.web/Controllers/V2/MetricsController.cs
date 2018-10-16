@@ -257,9 +257,11 @@ namespace d360.web.Controllers.V2
         /// <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past or future effective date.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
-            HttpGet,
+            HttpGet, 
             Route("{assetTypeUid:Guid}/definition"),
-            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metrics and conditions.", typeof(MetricAssetTypeHierarchyModels))
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset type based on the provided uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metrics and conditions.", typeof(MetricAssetTypeHierarchyModels)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetTypeAsync(Guid assetTypeUid, DateTime? effectiveDate = null)
         {
@@ -267,17 +269,21 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the metric heirarchy for this asset type.")));
 
             var prefix = "Metrics.GetMetricHierarchyByAssetTypeAsync => ";
-            var errorMessage = "";
 
             try
             {
+                var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
+
+                if (assetType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {assetTypeUid} could not be found."));
+
                 var result = (Company.Database.Connection as SqlConnection).GetMetricDefinitionHierarchyByAssetType(assetTypeUid, effectiveDate);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown Error", errorMessage));
