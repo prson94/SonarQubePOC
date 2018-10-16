@@ -54,18 +54,27 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{uid}"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(MetricAsset)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that either your metric was not found.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your metric was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
         public IHttpActionResult GetAssetById(Guid uid)
         {
-            var metricAsset = Company.Filter<MetricAsset>(i => i.Uid == uid, i => i.Children).SingleOrDefault();
-
-            if (metricAsset == null)
+            try
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Error locating metric", $"Metric with Uid of {uid.ToString()} not found.");
-            }
+                var metricAsset = Company.Filter<MetricAsset>(i => i.Uid == uid, i => i.Children).SingleOrDefault();
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, metricAsset));
+                if (metricAsset == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error locating metric", $"Metric with Uid of {uid.ToString()} not found.");
+                }
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, metricAsset));
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving metric", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+            }
         }
 
         /// <summary>
@@ -459,12 +468,18 @@ for		json path").ToList();
         [
             HttpPost,
             Route("results"),
-            SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<BulkMetricTemporaryTableModel>))
+            SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<BulkMetricTemporaryTableModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
         public IHttpActionResult PostBulkMetricsToStagingAsync(BulkMetricsImport model)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships of this type."));
+
+            if (model == null)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty data set. Please check your request and submit again."));
 
             var prefix = "Metrics.PostBulkMetricsToStagingAsync => ";
             var errorMessage = "";
