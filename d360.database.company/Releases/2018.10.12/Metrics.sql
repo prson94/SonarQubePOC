@@ -488,3 +488,89 @@ GO;
 DROP TABLE [metrics].ScoreBackup
 GO;
 --Before dropping tables above...
+
+--ALTER procedure [metrics].[LoadFromStaging]
+--GO;
+
+CREATE FUNCTION metrics.AssetMeetsConditions
+(
+	@metricUid uniqueidentifier,
+	@effectiveDate date,
+	@assetUid uniqueidentifier
+)
+RETURNS bit
+AS
+BEGIN
+	--declare @metricUid uniqueidentifier = '281056bc-e4ee-4a5b-b7c6-8333e5785cf2',
+	--		@effectiveDate date = '2018-09-25',
+	--		@assetUid uniqueidentifier = 'c82f1f66-ffbf-41b6-b4d5-55958f0b0548'
+
+	declare @valid bit = 0
+
+	declare @conditions table (FieldTypeID int, Operator varchar(10), ValueJson nvarchar(max))
+	insert into @conditions
+		select	FieldTypeID,
+				Operator,
+				ValueJson
+		from	[metrics].[AssetVersionCondition]
+		where	[Uid] = @metricUid
+				and EffectiveDate = @effectiveDate
+
+	if exists (select 1 from @conditions)
+	begin
+		declare @stats table (Val bit)
+		insert into @stats
+			select	case 
+						when C.Operator = 'eq' then
+							case 
+								when C.ValueJson = F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'neq' then
+							case 
+								when C.ValueJson <> F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'lt' then
+							case 
+								when C.ValueJson < F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'lte' then
+							case 
+								when C.ValueJson <= F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'gt' then
+							case 
+								when C.ValueJson > F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'gte' then
+							case 
+								when C.ValueJson >= F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end	
+						else cast(1 as bit)
+					end as Valid
+			from	Field F
+					inner join @conditions C on C.FieldTypeID = F.FieldTypeID
+					inner join dbo.Asset A on A.ID = F.AssetID and A.[Uid] = @assetUid
+		if exists(select 1 from @stats where Val = 0)
+		begin
+			set @valid = 0 -- there is at least one condition that is not a match.
+		end
+		else
+		begin
+			set @valid = 1 --default
+		end
+	end
+	else
+	begin
+		set @valid = 1
+	end
+
+	return @valid
+END
+GO;
+

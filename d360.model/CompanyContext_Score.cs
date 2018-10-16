@@ -182,34 +182,39 @@ select	@assetTypeUid = T.[Uid]
 from	dbo.Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
 
+drop table if exists #tbl
+create table #tbl ([Uid] uniqueidentifier, Name nvarchar(250), Description nvarchar(max), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date)
+
+insert into #tbl 
+	select	A.[Uid],
+			A.Name,
+			A.Description,
+			A.ParentUid,
+			A.IsGroup,
+			V.Weight,
+			V.EffectiveDate
+	from	metrics.AssetVersion V
+			inner join (
+					select		IA.[Uid],
+								max(IV.EffectiveDate) as EffectiveDate
+					from		metrics.AssetVersion IV
+								inner join metrics.Asset IA on IA.[Uid] = IV.[Uid] 
+															and IA.AssetTypeUid = @assetTypeUid 
+															and IV.EffectiveDate <= @effectiveDate 
+															and IA.State = 1
+					group by	IA.[Uid]
+			) MV on MV.[Uid] = V.[Uid] AND MV.EffectiveDate = V.EffectiveDate
+			inner join metrics.Asset A on A.[Uid] = V.[Uid];
+
 with h as (
-	select	A.[Uid],
-			A.Name,
-			A.Description,
-			A.ParentUid,
-			A.IsGroup,
-			V.Weight,
-			max(V.EffectiveDate) OVER(PARTITION BY V.[Uid]) as MetricMaxEffectiveDate,
+	select	*,
 			1 as [Level]
-	from	metrics.AssetVersion V
-			inner join metrics.Asset A on A.[Uid] = V.[Uid] 
-										and A.AssetTypeUid = @assetTypeUid 
-										and V.EffectiveDate <= @effectiveDate 
-										and A.State = 1
-	where	A.ParentUid is null
+	from	#tbl
+	where	ParentUid is null
 	union all
-	select	A.[Uid],
-			A.Name,
-			A.Description,
-			A.ParentUid,
-			A.IsGroup,
-			V.Weight,
-			max(V.EffectiveDate) OVER(PARTITION BY V.[Uid]) as MetricMaxEffectiveDate,
+	select	A.*,
 			h.[Level]+1 as [Level]
-	from	metrics.AssetVersion V
-			inner join metrics.Asset A on A.[Uid] = V.[Uid] 
-										and V.EffectiveDate <= @effectiveDate 
-										and A.State = 1
+	from	#tbl A
 			inner join h on h.[Uid] = A.ParentUid
 )
 
@@ -223,12 +228,20 @@ select	h.[Uid],
 		coalesce(M.[Value], 0) as Value
 from	h
 		outer apply (
-			select	max(EffectiveDate) OVER(PARTITION BY AssetUid, MetricAssetUid) as EffectiveDate,
-					[Value]
-			from	metrics.ScoreItem 
+			select	I.EffectiveDate,
+					I.[Value]
+			from	metrics.ScoreItem I
+					inner join (
+						select	max(EffectiveDate) as EffectiveDate
+						from	metrics.ScoreItem I
+						where	AssetUid = @assetUid
+								and MetricAssetUid = h.[Uid]
+								and EffectiveDate <= @effectiveDate
+					) MI on MI.EffectiveDate = I.EffectiveDate
 			where	AssetUid = @assetUid
 					and MetricAssetUid = h.[Uid]
-		) M";
+		) M 
+where	metrics.AssetMeetsConditions(h.[Uid], h.EffectiveDate, @assetUid) = 1";
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);

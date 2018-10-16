@@ -36,6 +36,7 @@ import {
     SpinnerModule,
     TreeTableModule,
 } from 'primeng/primeng';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
 
@@ -57,6 +58,7 @@ import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-
         EditorModule,
         CheckboxModule,
         InputTextModule,
+        InputTextareaModule,
         MultiSelectModule,
         RadioButtonModule,
         SharedModule,

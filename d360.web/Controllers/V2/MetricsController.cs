@@ -299,7 +299,9 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{assetUid:Guid}/pointbreakdown"),
-            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels))
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetAsync(Guid assetUid, DateTime? effectiveDate = null)
         {
@@ -309,17 +311,21 @@ namespace d360.web.Controllers.V2
                                 @assetUid uniqueidentifier = '5DFA86D6-9DFE-4BB6-B417-F75E3BC9E095';
             */
             var prefix = "Metrics.GetMetricHierarchyByAssetAsync => ";
-            var errorMessage = "";
 
             try
             {
+                var asset = Company.Filter<Asset>(i => i.uid == assetUid).SingleOrDefault();
+
+                if (asset == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with UID {assetUid} could not be found."));
+
                 var result = (Company.Database.Connection as SqlConnection).GetMetricHierarchyByAsset(assetUid, effectiveDate);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
