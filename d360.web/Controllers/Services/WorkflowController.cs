@@ -2399,6 +2399,7 @@ order by wi.StartedOn desc";
                     }
 
                     r.Assignee = string.Join(", ", users.Select(u => u.FullName));
+                    r.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
                 }
             }
 
@@ -2717,6 +2718,7 @@ order by wi.StartedOn desc";
                             }
 
                             detail.AssignedUsers = users;
+                            detail.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ?false : true;
                         }
                     }
 

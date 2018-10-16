@@ -4,6 +4,9 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { WorkflowItemStep, WorkflowActivityType, StepType } from '../../models/workflow.model';
 import { WorkflowHelpers } from '../../static/workflow-helpers';
+import { Router } from '@angular/router';
+
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-workflow-monitor-step-grid',
@@ -11,7 +14,12 @@ import { WorkflowHelpers } from '../../static/workflow-helpers';
    <!-- <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">  -->                                            
     <p-dataTable #dt [value]="itemSteps" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowClick)="selectionChange.emit($event.data)">                                                                        
         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-        <p-column field="Name" header="Step Name" [sortable]="allowSort" [filter]="!showSimpleFilter"></p-column>    
+        <p-column field="Name" header="Step Name" [sortable]="allowSort" [filter]="!showSimpleFilter">
+            <ng-template pTemplate type="body" let-item="rowData">
+                <a *ngIf="item.IsAssignedLoginUser=='True'" (click)="doSelect(item)">{{item.Name}}</a>
+                <span *ngIf="item.IsAssignedLoginUser!='True'">{{item.Name}}</span>
+            </ng-template>
+        </p-column>     
         <p-column field="Complete" header="Complete" [sortable]="allowSort" [filter]="!showSimpleFilter" [style]="{'width': '90px'}">
             <ng-template let-col let-item="rowData" pTemplate type="body">
                 <span>
@@ -52,7 +60,7 @@ export class WorkflowMonitorStepGridComponent extends BaseComponent implements O
     showAssigneeColumn = false;
     allowSort = false;
 
-    constructor(private ref: ChangeDetectorRef) {
+    constructor(private ref: ChangeDetectorRef,private router:Router) {
         super();
     }
 
@@ -69,5 +77,9 @@ export class WorkflowMonitorStepGridComponent extends BaseComponent implements O
             this.selectionChange.emit(this.selection);
         }
         this.ref.markForCheck();
+    }
+
+    doSelect(item) {
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${item.WorkflowTypeId}/${item.Version}/${item.StepID};resourceID=${CurrentResourceID}`);
     }
 }
