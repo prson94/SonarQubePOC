@@ -2,6 +2,10 @@
 import { BaseComponent } from '../shared/base.component';
 import {  WorkflowStepDetail } from '../../models/workflow.model';
 import * as _ from 'lodash';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-workflow-monitor-step-form-details',
@@ -28,9 +32,14 @@ import * as _ from 'lodash';
                 </div>
             </ng-container>
             <ng-container *ngIf="step.ItemSettings.hasPendingForms == true && step.ItemSettings.hasEmails == true">
-                <div class="panel-section warning">           
-                    Awaiting forms from: {{pendingFormList}}
-                </div>
+               <div class="row panel-section warning">
+                        <div class="col s11">
+                                    Awaiting forms from: {{pendingFormList}}
+                        </div>   
+			            <div class="col s1" style="align:right">
+                             <a  *ngIf="step.IsAssignedLoginUser" style="cursor:pointer;" (click)="doSelect()"><i class="fa fa-edit"></i></a>
+                        </div>  
+             </div>
             </ng-container>
         </div>
     </div>
@@ -45,7 +54,7 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     pendingFormList: string = '';
 
 
-    constructor(private ref: ChangeDetectorRef) {
+    constructor(private ref: ChangeDetectorRef,private router:Router) {
         super();
     }
 
@@ -71,4 +80,8 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     getDate(val: string): string {
         return new Date(val).toLocaleDateString();
     }
+
+    doSelect() {
+       this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${this.step.TypeID}/${this.step.Version}/${this.step.StepID};resourceID=${CurrentResourceID}`);
+  }
 }

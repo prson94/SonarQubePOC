@@ -539,6 +539,9 @@ export class WorkflowStepDetail {
     IsPublishedVersion: boolean;
     IssueDetails: WorkflowStepIssueDetail;
     AssignedUsers: any[] = [];
+    StepID: number;
+    TypeID: number;
+    IsAssignedLoginUser: boolean;
 }
 
 
