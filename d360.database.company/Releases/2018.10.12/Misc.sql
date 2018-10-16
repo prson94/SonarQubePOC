@@ -435,3 +435,23 @@ CREATE TABLE api.Execution (
 	CONSTRAINT PK_ApiExecution PRIMARY KEY NONCLUSTERED ( ExecutionID DESC )
 )
 GO;
+
+--alter procedure asset.BulkUpsert
+
+create function [utility].[GetHash](
+	@value nvarchar(max)
+)
+RETURNS varchar(32)
+AS
+BEGIN
+    DECLARE @hash varchar(32)
+
+    SELECT @hash = CONVERT(
+					varchar(32), 
+					SUBSTRING(HASHBYTES('SHA1', @value), 3, 32), 
+					2)
+
+    RETURN @hash
+END
+GO;
+
