@@ -24,21 +24,29 @@ import { Title } from '@angular/platform-browser';
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter"></p-column>                                                            
                         <p-column field="Inverse" header="Inverse" sortable="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Type" header="Functional Type" sortable="true" [filter]="!showSimpleFilter"></p-column>                
-                        <p-column [style]="{width:'40px'}">
+                        <p-column field="Type" header="Functional Type" sortable="true" [filter]="!showSimpleFilter"></p-column>              
+                        <p-column [style]="{width:'30px'}">
                             <ng-template let-predicate="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="!predicate.IsSystem">
                                     <a style="cursor:pointer;" (click)="selected=predicate;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </ng-template>
                         </p-column>                            
-                        <p-column  [style]="{width:'40px'}">
+                        <p-column  [style]="{width:'30px'}">
                             <ng-template let-predicate="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="!predicate.IsUsed && !predicate.IsSystem">                                
                                     <a style="cursor:pointer;" (click)="selected=predicate;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                             </ng-template>
-                        </p-column>                            
+                        </p-column>    
+                        <p-column [style]="{width:'30px'}">
+                            <ng-template let-predicate="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <d3s-preview-tooltip objectType="Predicate" [objectId]="predicate.ID" icon="info">
+                                    </d3s-preview-tooltip>
+                                </div>
+                            </ng-template>
+                        </p-column>  
                     </p-dataTable> 
                 </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Predicate'" [title]="'Predicate'" [selection]="selected" (saveClick)="savePredicate($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     

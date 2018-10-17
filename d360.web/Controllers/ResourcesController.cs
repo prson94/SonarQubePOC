@@ -24,7 +24,7 @@ using Dapper;
 namespace d360.web.Models
 {
     public class QuestionTypeModel
-    { 
+    {
         public string Name { get; set; }
         public string Description { get; set; }
         public int ResponseTypeID { get; set; }
@@ -83,7 +83,7 @@ namespace d360.web.Controllers
             {
                 sBuilder.Append(data[i].ToString("x2"));
             }
-            
+
             return new RedirectResult($"https://secure.gravatar.com/avatar/{sBuilder.ToString()}?s={size}&d=mm");
         }
 
@@ -212,7 +212,7 @@ from	FollowDetail F
             #endregion
 
             int r = 1;
-            foreach(var item in query)
+            foreach (var item in query)
             {
                 r++;
                 document.SetCellValue(r, 1, item.ResponsibilityType);
@@ -267,7 +267,7 @@ from	FollowDetail F
                     //add each of the values to the html output
                     //enqueue unique attribute ids
                     foreach (var item in valuePairs)
-                    {                        
+                    {
                         sb.Append(string.Concat(Enumerable.Repeat("&nbsp;", (level * 3))));
                         sb.Append("<b>" + item.name + ":</b> ");
                         sb.Append(item.value);
@@ -280,7 +280,7 @@ from	FollowDetail F
                 }
             }
 
-            return Content(sb.ToString(),"text/html");
+            return Content(sb.ToString(), "text/html");
         }
 
         [HttpGet, Route("fieldvalues/{id:int}/{attribute:int}/templates/tooltip/preview")]
@@ -299,7 +299,7 @@ from	AttributeDetail A
 order by A.ID, FT.SortOrder", new { id, attribute });
 
             int PreviousObjectID = -1;
-            foreach(var val in fieldValues)
+            foreach (var val in fieldValues)
             {
                 if (PreviousObjectID != val.ID && PreviousObjectID > 0) sb.Append("<div class='separator'>&nbsp;</div>");
 
@@ -315,7 +315,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
         [HttpGet, Route("Comment/Votes/{commentId:int}/templates/tooltip/{voteAction}")]
         public ContentResult _RenderCommentVoteTooltip(int commentId, string voteAction)
-        {            
+        {
             var voteDirection = (voteAction ?? string.Empty).ToUpper() == "UP" ? 1 : -1;
 
             var voters = Company.Query<string>(@"   select 
@@ -327,7 +327,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 		                                                    and
 	                                                    cv.vote = @vote", new { id = commentId, vote = voteDirection });
 
-            if(!voters.Any())
+            if (!voters.Any())
                 return Content("", "text/html");
 
             StringBuilder sb = new StringBuilder();
@@ -351,7 +351,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                 int id = int.Parse(itemid);
 
                 html = Company.RenderTooltip(templateAction, type, id);
-                
+
                 if (type == SystemObjects.Resource)
                 {
 
@@ -433,7 +433,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     {
                         i.ID,
                         i.Name
-                    }), 
+                    }),
                 JsonRequestBehavior.AllowGet
             );
         }
@@ -446,7 +446,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                 Response.StatusCode = (int)HttpStatusCode.Forbidden;
                 return null;
             }
-            
+
             var list = Company.Table<LookupType>();
 
             var total = list.Count();
@@ -506,9 +506,9 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                                 case "Name":
                                     list = list.Where(f => f.Name == fValue);
                                     break;
-                                //case "System":
-                                //    list = list.Where(f => f.System.Contains(fValue));
-                                //    break;
+                                    //case "System":
+                                    //    list = list.Where(f => f.System.Contains(fValue));
+                                    //    break;
 
                             }
                             break;
@@ -543,7 +543,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             #endregion
 
             var items = list//.Skip(pagenum * pagesize)
-                //.Take(pagesize)
+                            //.Take(pagesize)
                 .Select(i => new
                 {
                     i.ID,
@@ -562,7 +562,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         {
             return Json(Company.GetLookupItemsAsDictionary(typeID), JsonRequestBehavior.AllowGet);
         }
-        
+
         [HttpPost, Route("UpdateFollowStatus"), NonNullableParameters, AjaxValidateAntiForgeryToken]
         public JsonResult UpdateFollowStatus(SystemObjects type, int id, bool includeChildren = false)
         {
@@ -597,14 +597,12 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                 string desc = "";
                 string dispName = "";
                 string typeName = "";
+                string uid = "";
                 ObjectDetail det = null;
 
                 if (Company.HasAssetDefaultReadPermission(objectType, objectID))
                 {
                     det = Company.GetObjectDetail(objectType, objectID);
-
-                    if (det == null)
-                        throw new NotFoundException(objectType);
 
                     show = true;
 
@@ -629,8 +627,9 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
                     desc = Company.Query<string>(descSql, new { ty = objectType, obj = objectID }).FirstOrDefault();
 
-                     dispName = det != null ? det.Name : "";
-                     typeName = det != null ? det.TypeName : "";
+                    dispName = det != null ? det.Name : "";
+                    typeName = det != null ? det.TypeName : "";
+                    uid = det?.UID?.ToString() ?? "";
 
                     if (objectType == "TaxonomyType")
                     {
@@ -638,7 +637,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         desc = Company.Query<string>(desSql, new { ty = objectType, id = objectID }).FirstOrDefault();
                         typeName = "Model Type";
                     }
-                    else  if (objectType == "Fusion")
+                    else if (objectType == "Fusion")
                     {
                         var fusionSql = @"select f.name from fusion f 
                                             where f.id=@id";
@@ -653,10 +652,18 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     else if (objectType == "ResponsibilityType")
                     {
                         typeName = "Responsibility Type";
-                        
+
                         var responbility = Company.GetById<ResponsibilityType>(objectID);
                         dispName = responbility?.Name;
                         desc = responbility?.Description;
+                    }
+                    else if (objectType == "Predicate")
+                    {
+                        typeName = "Predicate";
+                        var predicate = Company.GetById<Predicate>(objectID);
+
+                        dispName = predicate == null ? "" : ($"{predicate.Name} / {predicate.Inverse}");
+                        uid = predicate?.UID.ToString();
                     }
                 }
 
@@ -665,7 +672,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     {
                         ShowTooltip = show,
                         AssetID = (det != null ? det.AssetID : -1),
-                        UID = (det != null ? det.UID.ToString() : null),
+                        UID = string.IsNullOrEmpty(uid) ? null : uid,
                         DisplayName = dispName,
                         TypeName = typeName,
                         Url = ((det != null && det.Url != null) ? $"/{det.Url}" : ""),

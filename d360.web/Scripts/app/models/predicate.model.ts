@@ -5,4 +5,5 @@
     Type: string;
     IsUsed: boolean;
     IsSystem: boolean;
+    UID: string;
 }

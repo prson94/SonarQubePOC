@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
 using System.ComponentModel.DataAnnotations;
+using System;
 
 namespace d360.core.entities
 {
@@ -22,5 +23,7 @@ namespace d360.core.entities
         [DataMember]
         public bool IsSystem { get; set; }
 
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid UID { get; set; }
     }
 }

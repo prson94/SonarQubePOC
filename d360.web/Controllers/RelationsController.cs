@@ -126,12 +126,13 @@ namespace d360.web.Controllers
                 {
                     data.Add(new
                     {
-                        ID = p.ID,
-                        Name = p.Name,
-                        Inverse = p.Inverse,
-                        IsSystem = p.IsSystem,
+                        p.ID,
+                        p.Name,
+                        p.Inverse,
+                        p.IsSystem,
                         IsUsed = usage.Any(i => i == p.ID),
-                        Type = p.Type.GetDisplayName()
+                        Type = p.Type.GetDisplayName(),
+                        p.UID
                     });
             });
 
