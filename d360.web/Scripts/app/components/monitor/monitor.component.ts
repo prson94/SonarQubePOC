@@ -13,10 +13,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
     template: ` 
 <div class="row">
     <div class="col s12" [class.m6]="!expandRow">
-        
-        
-        <d3s-monitor-assignments *ngIf="isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
-        
+     
         <d3s-monitor-workflow-version 
             (onFilterChanged)="onFilterChanged($event)"
             [selectAll]="selectAll"
@@ -28,7 +25,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
             (onMonitorListLoadCompleted)="loadComplete($event)">
         </d3s-monitor-workflow-version>
 
-        <d3s-monitor-assignments *ngIf="!isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
+       
     </div>
     <div class="col s12 m6">
         <!--<div *ngIf="selectedWorkflowType == null" class="tile tile-detail">
