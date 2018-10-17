@@ -6,6 +6,7 @@ import { Subscription } from "rxjs";
 import { WorkflowMonitorItem } from "../../models/workflowmonitor.model";
 import { SortOrder } from "../../models/enums.model";
 import {  GridFilterExpression } from "../../models/grid-definition.model";
+import { StateService } from "../../services/state.service";
 
 
 @Component({
@@ -18,9 +19,9 @@ import {  GridFilterExpression } from "../../models/grid-definition.model";
                 </header>                    
                 <div class="row" >                    
                 <div class="col s12">                                                
-                    <d3s-workflowmonitor-top-level-filter
+                    <d3s-workflowmonitor-list-filter  [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
                        (filterChange)= "OnFilterChange($event)"   (exportToExcel)="export()"     (selectionChange)="OnWorkflowTypesChange($event)" [selectAll]="true" >
-                    </d3s-workflowmonitor-top-level-filter>
+                    </d3s-workflowmonitor-list-filter>
                 </div>
                     <div class="col s12">                
                         <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" styleClass="overridePaginator" 
@@ -55,6 +56,7 @@ import {  GridFilterExpression } from "../../models/grid-definition.model";
 
 export class WorkflowMonitorListComponent extends BaseComponent  implements OnInit, OnDestroy,OnChanges {
 
+    
     private items: WorkflowMonitorItem[] = [];;
     private subItems : Subscription
     private totalRecords: number;
@@ -69,12 +71,15 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     workflowTypes: any[];
 
     constructor(private wfMonitorService: WorkflowMonitorService,
+        private stateService: StateService,
         private changeDetectorRef: ChangeDetectorRef) {
         super();
+        debugger;
     }
 
     ngOnInit(): void {
-      
+        debugger;
+        console.log(this.stateService.workflowItemFilters);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -89,7 +94,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         this.wfMonitorService.exportToExcel(this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filter);
     }
     private getData() {
-
+        console.log(this.stateService.workflowItemFilters);
         if (this.filter == null || this.filter.length < 1) {
             this.items = [];
             this.totalRecords = 0;

@@ -84,8 +84,8 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-
-        var bHasInternalFilters = this.internalFilters.length > 0;
+        debugger;
+       // var bHasInternalFilters = this.internalFilters.length > 0;
 
         if (changes["fields"] && this.fields != null && this.fields.length > 0) {
             this.availableFilters = [];
@@ -95,7 +95,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
                 });
             }
 
-            if (this.filters.length > 0 && !bHasInternalFilters) {
+            if (this.filters.length > 0) {//&& !bHasInternalFilters) {
                 this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Field);
 
                 for (let filter of this.filters) {
@@ -106,9 +106,9 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
                     });
                 }
             }
-            else if (!bHasInternalFilters) {
-                this.resetFilters();
-            }
+            //else if (!bHasInternalFilters) {
+            //    this.resetFilters();
+            //}
         }
     }
 

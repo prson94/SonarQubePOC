@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from "../shared/base.component";
 import { WorkflowService } from "../../services/workflow.service";
 import { GridFilterColumn, GridFilterExpression, GridAttributeFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 
 
 @Component({
-    selector: 'd3s-workflowmonitor-top-level-filter',
+    selector: 'd3s-workflowmonitor-list-filter',
     template: ` 
                     <div class="row">
                         <div class="col s2 FieldName" style="padding-left: 0px">Workflow Types</div>
@@ -20,14 +20,15 @@ import * as _ from 'lodash';
                         </div>
                     </div>   
                     <div class="row">
-                        <d3s-workflowmonitor-list-column-filter (exportToExcel)="exportToExcel.emit()" [fields]="filtercolumns" (filtersChange)="columFilterChanged($event)" ></d3s-workflowmonitor-list-column-filter>
+                        <d3s-workflowmonitor-list-column-filter (exportToExcel)="exportToExcel.emit()" [fields]="filtercolumns" [(filters)]="columFilters1" (filtersChange)="columFilterChanged($event)" ></d3s-workflowmonitor-list-column-filter>
                     </div>
                 `,
     providers: [WorkflowService, WorkflowMonitorService]
 })
 
 
-export class WorkflowMonitorListFilterComponent extends BaseComponent  implements OnInit {
+export class WorkflowMonitorListFilterComponent extends BaseComponent  implements OnInit,OnChanges {
+    
     @Input() selectAll: boolean = false;
     @Input() selection: any[];
     @Output() selectionChange = new EventEmitter();
@@ -37,6 +38,10 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     filtercolumns: GridFilterColumn[] = [];
     columfilter: GridFilterExpression[] = [];
     itemfilter: GridFilterExpression;
+    @Input()  columnFilters: GridFilterExpression[] = [];
+    @Output() columnFiltersChange = new EventEmitter();
+    @Input() workflowTypeFilters: GridFilterExpression;
+    @Output() workflowTypeFiltersChange = new EventEmitter();
 
     constructor(protected workflowService: WorkflowService, protected wfMonitorService:WorkflowMonitorService) {
         super();
@@ -46,6 +51,9 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
         this.load();
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        debugger;
+    }
     private load() {
         this.isLoading = true;
         this.workflowService.getTypes()
@@ -71,7 +79,9 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     }
 
     onFilterChange() {
-        //debugger;
+        debugger;
+       // this.columFilters1 = _.clone(this.columfilter);
+        this.columnFiltersChange.emit(this.columnFilters);
         let clone = _.clone(this.columfilter);
         if (this.itemfilter)
             clone.push(this.itemfilter)
@@ -83,6 +93,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     }
 
     change(e: any) {
+        debugger
         let data = new GridFilterExpression();
         data.field = "WorkflowId";
         data.condition = "IN";
@@ -93,11 +104,15 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
 
         
         data.value = typeList;
-        if(typeList !="")
+        if (typeList != "") {
             this.itemfilter = data;
-        else 
+            this.workflowTypeFilters = data;
+        }
+        else {
             this.itemfilter = null;
-
+            this.workflowTypeFilters = null;
+        }
+        this.workflowTypeFiltersChange.emit(this.workflowTypeFilters);
         this.onFilterChange();
             
         }
