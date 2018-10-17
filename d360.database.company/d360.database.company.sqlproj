@@ -119,6 +119,7 @@
     <None Include="Releases\2018.10.12\CacheDetails-Update.sql" />
     <None Include="Releases\2018.10.12\CacheDetails-Rollback.sql" />
     <None Include="Releases\2018.10.12\Drops.sql" />
+    <None Include="Releases\2018.10.12\PredicateUIDs.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Releases\2018.10.12\Metrics.sql" />
