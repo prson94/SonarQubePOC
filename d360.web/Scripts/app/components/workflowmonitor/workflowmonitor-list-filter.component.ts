@@ -5,6 +5,7 @@ import { GridFilterColumn, GridFilterExpression, GridAttributeFilterExpression, 
 import { WorkflowMonitorService } from '../../services/workflowmonitor.service';
 import { FilterFieldType } from '../../models/filter-field.model';
 import * as _ from 'lodash';
+import { StringHelpers } from '../../static/string-helpers';
 
 
 @Component({
@@ -20,7 +21,7 @@ import * as _ from 'lodash';
                         </div>
                     </div>   
                     <div class="row">
-                        <d3s-workflowmonitor-list-column-filter (exportToExcel)="exportToExcel.emit()" [fields]="filtercolumns" [(filters)]="columFilters1" (filtersChange)="columFilterChanged($event)" ></d3s-workflowmonitor-list-column-filter>
+                        <d3s-workflowmonitor-list-column-filter (exportToExcel)="exportToExcel.emit()" [fields]="filtercolumns" [(filters)]="columnFilters" (filtersChange)="columFilterChanged($event)" ></d3s-workflowmonitor-list-column-filter>
                     </div>
                 `,
     providers: [WorkflowService, WorkflowMonitorService]
@@ -66,10 +67,15 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
                 });
 
                 this.selection = [];
-                if (this.selectAll)
+                if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
+                    this.workflowTypeFilters.value.split(",").forEach(i => this.selection.push(i));
+                    this.change(this.selection);
+                } else if (this.selectAll) {
                     this.items.forEach(i => this.selection.push(i.value));
+                    this.change(this.selection);
+                }
 
-                this.change(this.selection);
+                
                 this.isLoading = false;
             }).then(() => this.wfMonitorService.getWorkFlowMonitorFilterColumnDefinition())
             .then(x => {
@@ -89,6 +95,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     }
     columFilterChanged(e) {
         this.columfilter = e;
+        this.columnFilters = e;
         this.onFilterChange();
     }
 

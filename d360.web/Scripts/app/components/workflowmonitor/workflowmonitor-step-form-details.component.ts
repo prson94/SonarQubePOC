@@ -36,8 +36,8 @@ declare var CurrentResourceID;
                         <div class="col s11">
                                     Awaiting forms from: {{pendingFormList}}
                         </div>   
-			            <div class="col s1" style="align:right">
-                             <a  *ngIf="step.IsAssignedLoginUser" style="cursor:pointer;" (click)="doSelect()"><i class="fa fa-edit"></i></a>
+			            <div class="col s1" style="align:right;">
+                             <a  *ngIf="step.IsAssignedLoginUser" style="cursor:pointer;color:#000000;" (click)="doSelect()"><i class="fa fa-edit"></i></a>
                         </div>  
              </div>
             </ng-container>

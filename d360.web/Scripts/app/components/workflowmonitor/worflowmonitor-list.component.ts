@@ -7,6 +7,8 @@ import { WorkflowMonitorItem } from "../../models/workflowmonitor.model";
 import { SortOrder } from "../../models/enums.model";
 import {  GridFilterExpression } from "../../models/grid-definition.model";
 import { StateService } from "../../services/state.service";
+import { StringHelpers } from "../../static/string-helpers";
+import * as _ from "lodash";
 
 
 @Component({
@@ -64,7 +66,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     private currentPageNumber: number = 0;
     private sortField: string = undefined;
     private sortOrder: SortOrder = SortOrder.Descending;
-    private filter: GridFilterExpression[] = [];
+    //private filter: GridFilterExpression[] = [];
      selection: any;
     @Output() selectionChange = new EventEmitter();
 
@@ -91,19 +93,56 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     export() {
-        this.wfMonitorService.exportToExcel(this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filter);
+        let filter: GridFilterExpression[] = this.getFilter();
+        if (filter == null || filter.length < 1) {
+            return;
+        }
+        this.wfMonitorService.exportToExcel(this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, filter);
+    }
+
+    private getFilter(): GridFilterExpression[] {
+        let filter: GridFilterExpression[] = [];
+        if ((!this.stateService.workflowItemFilters) ||
+            ((!this.stateService.workflowItemFilters.columFilters || this.stateService.workflowItemFilters.columFilters.length < 1) &&
+                (!this.stateService.workflowItemFilters.workflowTypeFilters ||
+                    StringHelpers.isNullOrEmpty(this.stateService.workflowItemFilters.workflowTypeFilters.value)))) {
+            return filter;
+        } 
+
+        if (this.stateService.workflowItemFilters.columFilters && this.stateService.workflowItemFilters.columFilters.length > 0)
+            filter = _.clone(this.stateService.workflowItemFilters.columFilters);
+
+        if (this.stateService.workflowItemFilters.workflowTypeFilters &&
+            !StringHelpers.isNullOrEmpty(this.stateService.workflowItemFilters.workflowTypeFilters.value))
+            filter.push(this.stateService.workflowItemFilters.workflowTypeFilters);
+
+        return filter;
+
     }
     private getData() {
         console.log(this.stateService.workflowItemFilters);
-        if (this.filter == null || this.filter.length < 1) {
+
+        //if ((!this.stateService.workflowItemFilters) ||
+        //    ((!this.stateService.workflowItemFilters.columFilters || this.stateService.workflowItemFilters.columFilters.length < 1) &&
+        //        (!this.stateService.workflowItemFilters.workflowTypeFilters ||
+        //            StringHelpers.isNullOrEmpty(this.stateService.workflowItemFilters.workflowTypeFilters.value)))) {
+        //    this.items = [];
+        //    this.totalRecords = 0;
+        //    this.selectionChange.emit(null);
+        //    return;
+        //} 
+
+        let filter: GridFilterExpression[] = this.getFilter();
+        if (filter == null || filter.length < 1) {
             this.items = [];
             this.totalRecords = 0;
             this.selectionChange.emit(null);
             return;
         }
 
+
         this.isLoading = true;
-        this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filter)
+        this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder,filter)
             .subscribe(result => {
 
                 this.items = result.Items;
@@ -129,7 +168,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     OnFilterChange($event) {
-        this.filter = $event;
+       // this.filter = $event;
         this.currentPageNumber = 0;
         this.getData();
     }

@@ -18,9 +18,11 @@ export class ArtifactTypeFilters {
 }
 
 export class WorkflowItemFilters {
+    id: number;
     currentPageNumber: number = 0;
     sortField: string = "";
-    sortOrder: SortOrder = SortOrder.None;
+    sortOrder: SortOrder = SortOrder.Descending;
+    rowsPerPage: number =10;
     columFilters: GridFilterExpression[] = [];
     workflowTypeFilters: GridFilterExpression;
 }
