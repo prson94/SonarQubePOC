@@ -32,7 +32,7 @@ namespace d360.web.Controllers
 
             dbArgs.Add("id", id);
 
-            var querySql = @"select	A.*, coalesce(FA.[Name], RF.FusionAttribute) as FusionAttribute 
+            var querySql = @"select	A.*, coalesce(FA.[TextPath], RF.FusionAttribute) as FusionAttribute 
 {1}
 from	RuleResult A 
 left join RuleResultFusionAttribute RF on RF.RuleResultID = A.ID
