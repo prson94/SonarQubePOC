@@ -362,8 +362,8 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete, 
             MapToApiVersion("2.0"), 
-            Route("dataSource/{dataSource}")
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            Route("dataSource/{dataSource}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json") //, "application/xml"
         ]
         public async Task<HttpResponseMessage> DeleteByDataSource(string dataSource)
         {
