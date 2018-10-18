@@ -68,28 +68,32 @@ namespace d360.web
 
             config
                 .EnableSwagger(c => {
-                 // If you want the output Swagger docs to be indented properly, enable the "PrettyPrint" option.
-                 c.PrettyPrint();
 
-                    // If your API has multiple versions, use "MultipleApiVersions" instead of "SingleApiVersion".
-                    // In this case, you must provide a lambda that tells Swashbuckle which actions should be
-                    // included in the docs for a given API version. Like "SingleApiVersion", each call to "Version"
-                    // returns an "Info" builder so you can provide additional metadata per API version.
-                    c.MultipleApiVersions(versionSupportResolver, versionInfoBuilder);
+                    c.OperationFilter<Consumes>();
+                    c.OperationFilter<Produces>();
 
-                    //c.MultipleApiVersions(
-                    // (apiDesc, version) =>
-                    // {
-                    //     var path = apiDesc.RelativePath.Split('/');
-                    //     var pathVersion = path[1];
+                    // If you want the output Swagger docs to be indented properly, enable the "PrettyPrint" option.
+                    c.PrettyPrint();
 
-                    //     return CultureInfo.InvariantCulture.CompareInfo.IndexOf(pathVersion, version, CompareOptions.IgnoreCase) >= 0;
-                    // },
-                    // vc =>
-                    // {
-                    //     vc.Version("2.0", "Data3Sixty Govern API 2.0");
-                    //     vc.Version("1.0", "Data3Sixty Govern API 1.0");
-                    // });
+                // If your API has multiple versions, use "MultipleApiVersions" instead of "SingleApiVersion".
+                // In this case, you must provide a lambda that tells Swashbuckle which actions should be
+                // included in the docs for a given API version. Like "SingleApiVersion", each call to "Version"
+                // returns an "Info" builder so you can provide additional metadata per API version.
+                c.MultipleApiVersions(versionSupportResolver, versionInfoBuilder);
+
+                //c.MultipleApiVersions(
+                // (apiDesc, version) =>
+                // {
+                //     var path = apiDesc.RelativePath.Split('/');
+                //     var pathVersion = path[1];
+
+                //     return CultureInfo.InvariantCulture.CompareInfo.IndexOf(pathVersion, version, CompareOptions.IgnoreCase) >= 0;
+                // },
+                // vc =>
+                // {
+                //     vc.Version("2.0", "Data3Sixty Govern API 2.0");
+                //     vc.Version("1.0", "Data3Sixty Govern API 1.0");
+                // });
 
                  // You can use "BasicAuth", "ApiKey" or "OAuth2" options to describe security schemes for the API.
                  // See https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md for more details.

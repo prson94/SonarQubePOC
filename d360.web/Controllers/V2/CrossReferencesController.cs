@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.extensions;
 using d360.model;
+using d360.web.Filters;
 using Dapper;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
@@ -38,7 +39,11 @@ namespace d360.web.Controllers.V2
         /// Returns all asset cross references
         /// </summary>
         /// <returns>An array of cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route(""), SwaggerResponse(HttpStatusCode.OK, "A full list of asset cross reference values.", typeof(List<AssetCrossReference>))]
+        [
+            HttpGet, MapToApiVersion("2.0"), Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "A full list of asset cross reference values.", typeof(List<AssetCrossReference>))
+        ]
         public async Task<HttpResponseMessage> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -51,7 +56,13 @@ namespace d360.web.Controllers.V2
         /// Returns asset cross reference values for the specified uid
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("{uid}"), SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the public ID (uid) of the asset.", typeof(List<AssetCrossReference>))]
+        [
+            HttpGet, 
+            MapToApiVersion("2.0"), 
+            Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the public ID (uid) of the asset.", typeof(List<AssetCrossReference>))
+        ]
         public async Task<HttpResponseMessage> GetByUid(string uid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -64,7 +75,13 @@ namespace d360.web.Controllers.V2
         /// Returns asset cross reference values for the specified type and external id
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("{type}/{externalId}"), SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type and identifier of the asset.", typeof(List<AssetCrossReference>))]
+        [
+            HttpGet, 
+            MapToApiVersion("2.0"), 
+            Route("{type}/{externalId}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type and identifier of the asset.", typeof(List<AssetCrossReference>))
+        ]
         public async Task<HttpResponseMessage> GetByTypeID(string type, string externalId)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -77,7 +94,13 @@ namespace d360.web.Controllers.V2
         /// Returns asset cross reference values for the specified type
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("type/{type}"), SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type.", typeof(List<AssetCrossReference>))]
+        [
+            HttpGet, 
+            MapToApiVersion("2.0"), 
+            Route("type/{type}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type.", typeof(List<AssetCrossReference>))
+       ]
         public async Task<HttpResponseMessage> GetByType(string type)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -91,7 +114,13 @@ namespace d360.web.Controllers.V2
         /// Returns asset cross reference values for the specified data source
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("datasource/{dataSource}"), SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the data source.", typeof(List<AssetCrossReference>))]
+        [
+            HttpGet, 
+            MapToApiVersion("2.0"), 
+            Route("datasource/{dataSource}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the data source.", typeof(List<AssetCrossReference>))
+        ]
         public async Task<HttpResponseMessage> GetByDataSource(string dataSource)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -104,7 +133,12 @@ namespace d360.web.Controllers.V2
         /// Creates a new AssetCrossReference record.  If an asset cross reference exists already an error is returned
         /// </summary>
         /// <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
-        [HttpPost, MapToApiVersion("2.0"), Route("")]
+        [
+            HttpPost, 
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            Route("")
+        ]
         public async Task<AssetCrossReference> Post(AssetCrossReference model)
         {
             if(!Company.CurrentResourceIsAdmin)
@@ -134,7 +168,12 @@ namespace d360.web.Controllers.V2
         /// Creates new AssetCrossReference records.  If an asset cross reference exists already an error is returned
         /// </summary>
         /// <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
-        [HttpPost, MapToApiVersion("2.0"), Route("bulk")]
+        [
+            HttpPost, 
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            Route("bulk")
+        ]
         public async Task<List<AssetCrossReference>> PostBulk(List<AssetCrossReference> models)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -217,7 +256,12 @@ namespace d360.web.Controllers.V2
         /// Updates the specified AssetCrossReference record.
         /// </summary>
         /// <returns>Http Status code OK if item was updated, Http Status code of Not Found if item could not be updated</returns>
-        [HttpPut, MapToApiVersion("2.0"), Route("{uid}/{dataSource}/{type}/{externalId}")]
+        [
+            HttpPut, 
+            MapToApiVersion("2.0"), 
+            Route("{uid}/{dataSource}/{type}/{externalId}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+        ]
         public async Task<HttpResponseMessage> Put(Guid uid, string dataSource, string type, string externalId, AssetCrossReference model)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -239,7 +283,12 @@ namespace d360.web.Controllers.V2
         /// Deletes a AssetCrossReference by the specified UID value
         /// </summary>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [HttpDelete, MapToApiVersion("2.0"), Route("{uid}")]
+        [
+            HttpDelete, 
+            MapToApiVersion("2.0"), 
+            Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+        ]
         public async Task<HttpResponseMessage> DeleteByUid(Guid uid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -258,7 +307,12 @@ namespace d360.web.Controllers.V2
         /// Deletes a AssetCrossReference with the specified datasource and type
         /// </summary>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [HttpDelete, MapToApiVersion("2.0"), Route("{dataSource}/{type}")]
+        [
+            HttpDelete, 
+            MapToApiVersion("2.0"), 
+            Route("{dataSource}/{type}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+        ]
         public async Task<HttpResponseMessage> DeleteByDatasource(string dataSource, string type)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -279,7 +333,12 @@ namespace d360.web.Controllers.V2
         /// Deletes a AssetCrossReference records with the specified type
         /// </summary>
         /// <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [HttpDelete, MapToApiVersion("2.0"), Route("type/{type}")]
+        [
+            HttpDelete, 
+            MapToApiVersion("2.0"), 
+            Route("type/{type}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+        ]
         public async Task<HttpResponseMessage> DeleteByType(string type)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -300,7 +359,12 @@ namespace d360.web.Controllers.V2
         /// Deletes a AssetCrossReference records with the specified datasource
         /// </summary>
         /// <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [HttpDelete, MapToApiVersion("2.0"), Route("dataSource/{dataSource}")]
+        [
+            HttpDelete, 
+            MapToApiVersion("2.0"), 
+            Route("dataSource/{dataSource}")
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+        ]
         public async Task<HttpResponseMessage> DeleteByDataSource(string dataSource)
         {
             if (!Company.CurrentResourceIsAdmin)

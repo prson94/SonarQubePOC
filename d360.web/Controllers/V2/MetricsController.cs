@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using d360.core;
+using d360.web.Filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -53,6 +54,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(MetricAsset)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your metric was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
@@ -85,6 +87,7 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.Created, "A message indicating the status of the ADD request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the UPDATE request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not autheorized to make this change.", typeof(ErrorResponse)),
@@ -230,6 +233,7 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
@@ -257,8 +261,9 @@ namespace d360.web.Controllers.V2
         /// <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past or future effective date.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
-            HttpGet, 
+            HttpGet,
             Route("{assetTypeUid:Guid}/definition"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset type based on the provided uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metrics and conditions.", typeof(MetricAssetTypeHierarchyModels)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
@@ -299,6 +304,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{assetUid:Guid}/pointbreakdown"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
@@ -340,6 +346,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("structure/{assetTypeUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult GetMetricStructureByAssetType(Guid assetTypeUid)
@@ -428,6 +435,7 @@ for		json path").ToList();
         [
             HttpGet,
             Route("fields/{assetTypeUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult GetMetricFieldsByAssetType(Guid assetTypeUid)
@@ -480,6 +488,7 @@ for		json path").ToList();
         [
             HttpPost,
             Route("results"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<BulkMetricTemporaryTableModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),

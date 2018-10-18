@@ -2,6 +2,7 @@
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
+using d360.web.Filters;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
@@ -64,7 +65,13 @@ namespace d360.web.Controllers.V2
         /// GET a list of relationship types.
         /// </summary>
         /// <returns></returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("types"), SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>))]
+        [
+            HttpGet, 
+            MapToApiVersion("2.0"), 
+            Route("types"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>))
+       ]
         public async Task<HttpResponseMessage> GetRelationshipTypesAsync()
         {
             var prefix = "Relationships.GetRelationshipTypesAsync => ";
@@ -118,7 +125,13 @@ where	coalesce(S.uid, I.SubjectUid) is not null
         /// </summary>
         /// <param name="uid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
-        [HttpPost, MapToApiVersion("2.0"), Route("{uid}"), SwaggerResponse(HttpStatusCode.OK, "A list of bulk relationship results, including any error messages.", typeof(List<DatabaseBulkRelationshipResult>))]
+        [
+            HttpPost, 
+            MapToApiVersion("2.0"), 
+            Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "A list of bulk relationship results, including any error messages.", typeof(List<DatabaseBulkRelationshipResult>))
+        ]
         public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid uid)
         {
             if (!Company.CurrentResourceIsAdmin)

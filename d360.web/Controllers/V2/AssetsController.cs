@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.model;
+using d360.web.Filters;
 using d360.web.Models;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
@@ -74,6 +75,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet, 
             Route("classes"), 
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>))
         ]
         public HttpResponseMessage GetAssetTypeClassesAsync()
@@ -101,7 +103,8 @@ namespace d360.web.Controllers.V2
         /// <returns></returns>
         [
             HttpGet, 
-            Route("types"), 
+            Route("types"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>))
         ]
         public async Task<HttpResponseMessage> GetAssetTypesAsync()
@@ -144,6 +147,7 @@ order by	P.[Path]
         [
             HttpPost, 
             Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
@@ -193,6 +197,7 @@ order by	P.[Path]
         [
             HttpPut,
             Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
@@ -244,6 +249,7 @@ order by	P.[Path]
         [
             HttpPost,
             Route("batch/{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
@@ -324,6 +330,7 @@ order by	P.[Path]
         [
             HttpPut,
             Route("batch/{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
@@ -403,6 +410,7 @@ order by	P.[Path]
         [
             HttpGet,
             Route("executions/{uid}/status"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of assets.", typeof(ApiExecutionStatusModel))
         ]
         public async Task<IHttpActionResult> GetExecutionStatus(Guid uid)
