@@ -1115,7 +1115,7 @@ from    Fusion C
                         #region import File Record Column Validation
                         if (targetAttributeType.Name.Trim().ToLower() != xls.GetCellValueAsString(1, 1).Trim().ToLower())
                         {
-                            var errMsg = string.Format("{0} is not uploaded. Column {1} could not be uploaded because it is {2}.", file.FileName, targetAttributeType.Name, xls.GetCellValueAsString(1, 1));
+                            var errMsg = string.Format("{0} could not be uploaded because a required column is missing or incorrect.", file.FileName);
                             throw new InvalidFieldException(errMsg);
                         }
 
@@ -1123,7 +1123,7 @@ from    Fusion C
                         {
                             if (targetAttributeTypeFields[i].Name.Trim().ToLower() != xls.GetCellValueAsString(1, i + currentColumnIndex + 1).Trim().ToLower())
                             {
-                                var errMsg = string.Format("{0} is not uploaded. Column {1} could not be uploaded because it is {2}.", file.FileName, targetAttributeTypeFields[i].Name, xls.GetCellValueAsString(1, i + currentColumnIndex + 1));
+                                var errMsg = string.Format("{0} could not be uploaded because a required column is missing or incorrect.", file.FileName);
                                 throw new InvalidFieldException(errMsg);
 
                             }
