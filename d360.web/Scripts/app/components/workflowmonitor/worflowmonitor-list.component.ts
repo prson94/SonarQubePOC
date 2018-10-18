@@ -22,7 +22,7 @@ import * as _ from "lodash";
                 <div class="row" >                    
                 <div class="col s12">                                                
                     <d3s-workflowmonitor-list-filter  [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
-                       (filterChange)= "OnFilterChange($event)"   (exportToExcel)="export()"     (selectionChange)="OnWorkflowTypesChange($event)" [selectAll]="true" >
+                       (filterChange)= "OnFilterChange()"   (exportToExcel)="export()"     (selectionChange)="OnWorkflowTypesChange($event)" [selectAll]="true" >
                     </d3s-workflowmonitor-list-filter>
                 </div>
                     <div class="col s12">                
@@ -187,7 +187,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         this.getData();
     }
 
-    OnFilterChange($event) {
+    OnFilterChange() {
        // this.filter = $event;
         this.currentPageNumber = 0;
         this.getData();

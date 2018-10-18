@@ -37,8 +37,8 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     items: any[];
     @Output() exportToExcel = new EventEmitter();
     filtercolumns: GridFilterColumn[] = [];
-    columfilter: GridFilterExpression[] = [];
-    itemfilter: GridFilterExpression;
+    //columfilter: GridFilterExpression[] = [];
+    //itemfilter: GridFilterExpression;
     @Input()  columnFilters: GridFilterExpression[] = [];
     @Output() columnFiltersChange = new EventEmitter();
     @Input() workflowTypeFilters: GridFilterExpression;
@@ -84,19 +84,21 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
             })
     }
 
-    onFilterChange() {
+    onFilterChange1() {
         debugger;
        // this.columFilters1 = _.clone(this.columfilter);
         this.columnFiltersChange.emit(this.columnFilters);
-        let clone = _.clone(this.columfilter);
-        if (this.itemfilter)
-            clone.push(this.itemfilter)
-        this.filterChange.emit(clone);
+        //let clone = _.clone(this.columfilter);
+        //if (this.itemfilter)
+        //    clone.push(this.itemfilter)
+        this.filterChange.emit();
     }
     columFilterChanged(e) {
-        this.columfilter = e;
+        //this.columfilter = e;
         this.columnFilters = e;
-        this.onFilterChange();
+       // this.onFilterChange();
+        this.columnFiltersChange.emit(this.columnFilters);
+        this.filterChange.emit();
     }
 
     change(e: any) {
@@ -112,15 +114,16 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
         
         data.value = typeList;
         if (typeList != "") {
-            this.itemfilter = data;
+            //this.itemfilter = data;
             this.workflowTypeFilters = data;
         }
         else {
-            this.itemfilter = null;
+            //this.itemfilter = null;
             this.workflowTypeFilters = null;
         }
         this.workflowTypeFiltersChange.emit(this.workflowTypeFilters);
-        this.onFilterChange();
+        this.filterChange.emit();
+       // this.onFilterChange();
             
         }
  
