@@ -500,6 +500,7 @@ export class WorkflowItemStep {
     IsIssueType: boolean;
     Object: string;
     ObjectID: number;
+    TypeID: number;
 }
 
 export class BulkWorkflowFormModel {
@@ -542,6 +543,8 @@ export class WorkflowStepDetail {
     StepID: number;
     TypeID: number;
     IsAssignedLoginUser: boolean;
+    ItemID: number;
+    ItemStepID: number;
 }
 
 

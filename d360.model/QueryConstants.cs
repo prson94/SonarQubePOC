@@ -1771,15 +1771,12 @@ select
 				end as IsIssueType,
 				I.[Object],
 				I.ObjectID,
-                E.TypeID,
-                V.Version,
-                wt.Id as WorkflowTypeId
+                E.TypeID
             from 
             workflow.ItemStep IST
             inner join workflow.Item I on I.ID = IST.ItemID
             inner join workflow.VersionStep S on S.ID = IST.StepID
 			inner join workflow.[Version] V on V.ID = S.VersionID
-	        inner join  [workflow].[type] wt on  (wt.id = v.typeid)
 			inner join workflow.EventRegistration E on E.TypeID = V.TypeID
             left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
             left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy

@@ -82,6 +82,9 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     }
 
     doSelect() {
-       this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${this.step.TypeID}/${this.step.Version}/${this.step.StepID};resourceID=${CurrentResourceID}`);
+        console.log(this.step);
+       // this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${this.step.TypeID}/${this.step.Version}/${this.step.StepID};resourceID=${CurrentResourceID}`);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.step.TypeID}/${this.step.ItemStepID}/${this.step.ItemID}`);
+
   }
 }

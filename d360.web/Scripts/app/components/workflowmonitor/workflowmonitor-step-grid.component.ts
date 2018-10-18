@@ -5,6 +5,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { WorkflowItemStep, WorkflowActivityType, StepType } from '../../models/workflow.model';
 import { WorkflowHelpers } from '../../static/workflow-helpers';
 import { Router } from '@angular/router';
+import { StateService } from '../../services/state.service';
 
 declare var CurrentResourceID;
 
@@ -12,7 +13,7 @@ declare var CurrentResourceID;
     selector: 'd3s-workflow-monitor-step-grid',
     template: ` 
    <!-- <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">  -->                                            
-    <p-dataTable #dt [value]="itemSteps" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowClick)="selectionChange.emit($event.data)">                                                                        
+    <p-dataTable #dt [value]="itemSteps" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowClick)="stateService.workflowItemFilters.stepId=$event.StepID=$event.data.StepID;selectionChange.emit($event.data)">                                                                        
         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
         <p-column field="Name" header="Step Name" [sortable]="allowSort" [filter]="!showSimpleFilter">
             <ng-template pTemplate type="body" let-item="rowData">
@@ -60,7 +61,7 @@ export class WorkflowMonitorStepGridComponent extends BaseComponent implements O
     showAssigneeColumn = false;
     allowSort = false;
 
-    constructor(private ref: ChangeDetectorRef,private router:Router) {
+    constructor(private ref: ChangeDetectorRef,private router:Router, private stateService:StateService) {
         super();
     }
 
@@ -73,13 +74,16 @@ export class WorkflowMonitorStepGridComponent extends BaseComponent implements O
     load() {
         if (this.itemSteps != null) {
             this.showAssigneeColumn = (this.itemSteps.find(i => i.ActivityType == WorkflowActivityType.Form) != null)
-            this.selection = this.itemSteps[0];
+            let index = this.itemSteps.findIndex(x => x.StepID == this.stateService.workflowItemFilters.stepId && x.ItemID == this.stateService.workflowItemFilters.itemId);
+            index = (index == -1) ? 0 : index;
+            this.selection = this.itemSteps[index];
             this.selectionChange.emit(this.selection);
         }
         this.ref.markForCheck();
     }
 
-    doSelect(item) {
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${item.WorkflowTypeId}/${item.Version}/${item.StepID};resourceID=${CurrentResourceID}`);
+    doSelect(item:WorkflowItemStep) {
+        console.log(item);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${item.TypeID}/${item.ID}/${item.ItemID}`);
     }
 }

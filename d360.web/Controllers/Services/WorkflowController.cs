@@ -2437,6 +2437,7 @@ order by wi.StartedOn desc";
                 v.TypeID,
                 si.StepID,
                 si.ItemID,
+                si.ID as ItemStepID,
 	            vs.StepType,
 	            vs.ActivityType,
 	            vs.Settings as SettingsXml,
