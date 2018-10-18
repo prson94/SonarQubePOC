@@ -6,7 +6,7 @@ CREATE TABLE [dbo].[AssetDisplayValue](
 	[DisplayValue] [nvarchar](max) NOT NULL,
 	[DisplayValueHash] [nvarchar](50) NULL,	
 	[DisplayValuePrefix] [nvarchar](250) NOT NULL,
-	[UpdatedOn] [datetime] NOT NULL DEFAULT(getutcdate())	
+	[UpdatedOn] [datetime] constraint DF_AssetDisplayValue_UpdatedOn DEFAULT(getutcdate())NOT NULL
  CONSTRAINT [PK_AssetDisplayValue] PRIMARY KEY NONCLUSTERED 
 (
 	[AssetID] ASC

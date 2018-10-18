@@ -172,20 +172,20 @@ end
 GO;
 
 
-CREATE TABLE [dbo].[AssetDisplayFieldTypes](
-	[AssetID] [bigint] NOT NULL,
-	[FieldTypeID] [int] NOT NULL,
-	[UpdatedOn] [datetime] NOT NULL,
- CONSTRAINT [PK_AssetDisplayFieldTypes] PRIMARY KEY NONCLUSTERED 
-(
-	[AssetID] ASC,
-	[FieldTypeID] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF)
-)
-GO;
+--CREATE TABLE [dbo].[AssetDisplayFieldTypes](
+--	[AssetID] [bigint] NOT NULL,
+--	[FieldTypeID] [int] NOT NULL,
+--	[UpdatedOn] [datetime] NOT NULL,
+-- CONSTRAINT [PK_AssetDisplayFieldTypes] PRIMARY KEY NONCLUSTERED 
+--(
+--	[AssetID] ASC,
+--	[FieldTypeID] ASC
+--)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF)
+--)
+--GO;
 
-ALTER TABLE [dbo].[AssetDisplayFieldTypes] ADD  CONSTRAINT [DF_AssetDisplayFieldTypes_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
-GO;
+--ALTER TABLE [dbo].[AssetDisplayFieldTypes] ADD  CONSTRAINT [DF_AssetDisplayFieldTypes_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+--GO;
 
 CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_date] ON [dbo].[Field] ([FieldTypeID]) INCLUDE ([UpdatedOn])
 GO;
@@ -455,3 +455,357 @@ BEGIN
 END
 GO;
 
+delete Asset where ID in (
+select	max(ID) as ID
+		--,count(1) as [Count],
+		--Object,
+		--ObjectID
+from	Asset 
+group by Object,
+		ObjectID
+		having count(1) > 1
+)
+GO;
+
+ALTER TABLE [dbo].[Asset] ADD CONSTRAINT [UC_Asset_Object_ObjectID] UNIQUE NONCLUSTERED  ([Object], [ObjectID])
+GO;
+
+
+--ALTER VIEW [dbo].[AttributeTypeRelationDetail]
+--GO;
+
+
+ALTER VIEW [dbo].[FieldTypeWithRelation]
+AS
+	SELECT	T.ID,
+			T.Name,
+			T.FriendlyName,
+			T.Category,
+			T.Description,
+			T.DisplayDescription,
+			T.FormDescription,
+			T.ValidationDescription,
+			T.Type,
+			T.LookupObjectType,
+			T.LookupObjectID ,
+			T.LookupDisplayFormat,
+			T.Length,
+			T.MinimumLength,
+			T.MaximumLength,
+			T.Pattern,
+			T.[Object],
+			T.ObjectID,
+			D.Name as ObjectName,
+			T.IsDisplayable,
+			T.IsEditable,
+			T.IsListable,
+			T.IsRequired,
+			T.SortOrder,
+			T.DefaultValue
+	FROM	FieldType T
+			inner join (
+				select Name, Object, ObjectID from AssetType
+				union all
+				select ITypeName.Name as Name, 'IntersectType' as Object, ID as ObjectID from IntersectType IT
+				cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName
+			) D on D.[Object] = T.[Object] and D.ObjectID = T.ObjectID
+GO;
+
+alter view [dbo].[IntersectDetail]
+as
+
+	select	I.IntersectID as ID,
+			I.IntersectTypeID,
+			I.State,
+			I.Subject,
+			I.SubjectID,
+			S.Name as SubjectName,
+			S.Name as SubjectShortName,
+			dbo.GenerateNgObjectUrl(S.[Type], S.TypeID, S.ObjectID) as SubjectUrl,
+			S.Type as SubjectType,
+			S.TypeID as SubjectTypeID,
+			S.TypeName as SubjectTypeName,
+			S.BackColor as SubjectIconBackColor,
+			S.ForeColor as SubjectIconForeColor,
+			S.Icon as SubjectIconText,
+
+			I.Object,
+			I.ObjectID,
+			O.Name as ObjectName,
+			O.Name as ObjectShortName,
+			dbo.GenerateNgObjectUrl(O.[Type], O.TypeID, O.ObjectID) as ObjectUrl,
+			O.Type as ObjectType,
+			O.TypeID as ObjectTypeID,
+			O.TypeName as ObjectTypeName,
+			O.BackColor as ObjectIconBackColor,
+			O.ForeColor as ObjectIconForeColor,
+			O.Icon as ObjectIconText,
+
+			I.PredicateID,
+			I.PredicateType,
+			case I.PredicateType
+				when 1 then 'DataLineage'
+				when 2 then 'ReferenceLineage'
+				when 3 then 'InterTypeHierarchy'
+				when 4 then 'IntraTypeHierarchy'
+				when 5 then 'UserOwnership'
+				when 6 then 'Grammar'
+				when 7 then 'Simple'
+				when 8 then 'FusionMapping'
+				when 9 then 'SeeAlso'
+				when 10 then 'Usage'
+				when 11 then 'ObjectOwnerhip'
+			end as PredicateTypeName,
+			I.PredicateName,
+			I.PredicateInverse
+	from	PredicateIntersect I with(nolock)
+			inner join (
+				select DisplayValue as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName from AssetDetail
+				union all
+				select NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName from [Intersect] I
+				inner join IntersectType T on T.ID = I.IntersectTypeID
+				cross apply dbo.GetIntersectNames(I.ID) NI	
+				cross apply dbo.GetIntersectTypeNames(T.ID) NIT
+			) S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+			inner join (
+				select DisplayValue as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName from AssetDetail
+				union all
+				select NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName from [Intersect] I
+				inner join IntersectType T on T.ID = I.IntersectTypeID
+				cross apply dbo.GetIntersectNames(I.ID) NI	
+				cross apply dbo.GetIntersectTypeNames(T.ID) NIT
+			) O on O.Object = I.Subject and O.ObjectID = I.SubjectID
+GO;
+
+
+ALTER VIEW [dbo].[MapRuleItemDetail]
+AS
+	select 	'MapRule' as Type,
+			0 as ID,
+			'MapRule|0' TextID,
+			NULL as ParentTextID,
+			NULL as Transformation,
+			NULL as SourceFusion,
+			NULL as SourceFusionAttributeID,		
+			NULL as SourceFusionAttributeTextPath,
+			NULL as SourceObjectName,
+			NULL as SourceObjectID,
+			NULL as SourceObject,
+			NULL as TargetFusion,
+			NULL as TargetFusionAttributeID,		
+			NULL as TargetFusionAttributeTextPath,
+			NULL as TargetObjectName,
+			NULL as TargetObjectID,
+			NULL as TargetObject
+	union
+	select 	'MapRule' as Type,
+			mr.ID,
+			'MapRule|' + cast(mr.ID as varchar) TextID,
+			NULL as ParentTextID,
+			mr.Transformation,
+			NULL as SourceFusion,
+			NULL as SourceFusionAttributeID,		
+			NULL as SourceFusionAttributeTextPath,
+			NULL as SourceObjectName,
+			NULL as SourceObjectID,
+			NULL as SourceObject,
+			NULL as TargetFusion,
+			NULL as TargetFusionAttributeID,		
+			NULL as TargetFusionAttributeTextPath,
+			NULL as TargetObjectName,
+			NULL as TargetObjectID,
+			NULL as TargetObject
+	from	MapRule mr
+	union
+	select 	'MapRuleItem' as Type,
+			mri.ID,
+			'MapRuleItem|' + cast(mri.ID as varchar) TextID,
+			'MapRule|' + cast(coalesce(mr.ID, 0) as varchar) as ParentTextID,
+			NULL as Transformation,
+			fS.Name as SourceFusion,
+			mri.SourceFusionAttributeID as SourceFusionAttributeID,		
+			faS.TextPath as SourceFusionAttributeTextPath,
+			odS.DisplayValue as SourceObjectName,
+			mri.SourceOwnerID as SourceObjectID,
+			mri.SourceOwner as SourceObject,
+			fT.Name as TargetFusion,
+			mri.TargetFusionAttributeID as TargetFusionAttributeID,		
+			faT.TextPath as TargetFusionAttributeTextPath,
+			odT.DisplayValue as TargetObjectName,
+			mri.TargetOwnerID as TargetObjectID,
+			mri.TargetOwner as TargetObject
+	from	MapRuleItem mri
+			left join MapRuleItemMapRule mrim on mrim.MapRuleItemID = mri.ID
+			left join MapRule mr on mr.ID = mrim.MapRuleID
+
+			inner join FusionAttribute faS on mri.SourceFusionAttributeID = faS.ID
+			inner join Fusion fS on fS.ID = faS.FusionID
+			left join AssetDetail odS on mri.[SourceOwner] = odS.[Object] and mri.SourceOwnerID = odS.ObjectID
+
+			inner join FusionAttribute faT on mri.TargetFusionAttributeID = faT.ID	
+			inner join Fusion fT on fT.ID = faT.FusionID
+			left join AssetDetail odT on mri.[TargetOwner] = odT.[Object] and mri.TargetOwnerID = odT.ObjectID
+GO;
+
+--alter procedure [utility].[AddAuditEntry]
+--GO;
+
+ALTER PROCEDURE [dbo].[GetCommentDetailByID]
+	@id int
+AS
+BEGIN
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	P (ID, ParentID)
+	AS
+	(
+		SELECT		C.ID,
+					C.ParentID
+		FROM		Comment C
+		WHERE		ID = @id
+	)
+
+	SELECT		C.*,
+				C.CreatingResourceID,
+				O.DisplayValue as ObjectName,				
+				AUrl.Url as ObjectUrl,
+				case
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectType
+					ELSE 'Resource'
+				end as ObjectType,
+				O.DisplayValue as ResourceName,
+				case 
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectID
+					ELSE C.CreatingResourceID
+				end as ObjectID,
+				(
+				select	CRD.Object,
+						CRD.ObjectID,
+						CRD.TextPath,
+						CRD.ObjectTypeName,
+						CRD.Url,
+						CRD.ForeColor as IconForeColor,
+						CRD.BackColor as IconBackColor,
+						CRD.NgUrl
+				from	CommentRelation CR
+				inner join (
+					select Object, ObjectID, ForeColor, BackColor, TypeName as ObjectTypeName, AUrl.Url as Url, AUrl.Url as NgUrl, DisplayValue as TextPath from AssetDetail A
+					cross apply [dbo].[GetAssetUrl](A.[Object], A.TypeID, A.ObjectID) AUrl
+					union all
+					select T.Object, T.ObjectID, OS.IconForeColor as ForeColor, OS.IconBackColor as BackColor, null as ObjectTypeName, TUrl.Url as Url, TUrl.Url as NgUrl, Name as TextPath from AssetType T
+					cross apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl
+					left join ObjectStyle OS on OS.ObjectType = T.Object and OS.ObjectID = T.ObjectID
+				) CRD on CR.CommentID = C.ID 
+					and CR.ObjectType = CRD.[Object] 
+					and CR.ObjectID = CRD.ObjectID
+				where Object != 'Resource'
+					and TextPath != 'FirstNameLastName'
+				for xml path('tag'), root('tags'), type
+				) as TagsXml,
+				(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML,
+			CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			ELSE
+				cast(0 as bit)
+			END as CreatorIsOwner
+	FROM		Comment C
+				left join AssetDetail O on O.[Object] = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID
+				outer apply [dbo].[GetAssetUrl](O.[Object], O.TypeID, O.ObjectID) AUrl
+				INNER JOIN P ON C.ID = P.ID
+	ORDER BY	C.ParentID, C.DateCreated DESC
+END
+GO;
+
+ALTER PROCEDURE [dbo].[GetCommentDetailByID]
+	@id int
+AS
+BEGIN
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	P (ID, ParentID)
+	AS
+	(
+		SELECT		C.ID,
+					C.ParentID
+		FROM		Comment C
+		WHERE		ID = @id
+	)
+
+	SELECT		C.*,
+				C.CreatingResourceID,
+				O.DisplayValue as ObjectName,				
+				AUrl.Url as ObjectUrl,
+				case
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectType
+					ELSE 'Resource'
+				end as ObjectType,
+				O.DisplayValue as ResourceName,
+				case 
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectID
+					ELSE C.CreatingResourceID
+				end as ObjectID,
+				(
+				select	CRD.Object,
+						CRD.ObjectID,
+						CRD.TextPath,
+						CRD.ObjectTypeName,
+						CRD.Url,
+						CRD.ForeColor as IconForeColor,
+						CRD.BackColor as IconBackColor,
+						CRD.NgUrl
+				from	CommentRelation CR
+				inner join (
+					select Object, ObjectID, ForeColor, BackColor, TypeName as ObjectTypeName, AUrl.Url as Url, AUrl.Url as NgUrl, DisplayValue as TextPath from AssetDetail A
+					cross apply [dbo].[GetAssetUrl](A.[Object], A.TypeID, A.ObjectID) AUrl
+					union all
+					select T.Object, T.ObjectID, OS.IconForeColor as ForeColor, OS.IconBackColor as BackColor, null as ObjectTypeName, TUrl.Url as Url, TUrl.Url as NgUrl, Name as TextPath from AssetType T
+					cross apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl
+					left join ObjectStyle OS on OS.ObjectType = T.Object and OS.ObjectID = T.ObjectID
+				) CRD on CR.CommentID = C.ID 
+					and CR.ObjectType = CRD.[Object] 
+					and CR.ObjectID = CRD.ObjectID
+				where Object != 'Resource'
+					and TextPath != 'FirstNameLastName'
+				for xml path('tag'), root('tags'), type
+				) as TagsXml,
+				(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML,
+			CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			ELSE
+				cast(0 as bit)
+			END as CreatorIsOwner
+	FROM		Comment C
+				left join AssetDetail O on O.[Object] = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID
+				outer apply [dbo].[GetAssetUrl](O.[Object], O.TypeID, O.ObjectID) AUrl
+				INNER JOIN P ON C.ID = P.ID
+	ORDER BY	C.ParentID, C.DateCreated DESC
+END
+GO;

@@ -224,12 +224,13 @@ select	h.[Uid],
 		h.Name,
 		h.Description,
 	    h.IsGroup,
-		h.Weight,
+		coalesce(M.AdjustedWeight, h.Weight) as Weight,
 		coalesce(M.[Value], 0) as Value
 from	h
 		outer apply (
 			select	I.EffectiveDate,
-					I.[Value]
+					I.[Value],
+                    I.AdjustedWeight
 			from	metrics.ScoreItem I
 					inner join (
 						select	max(EffectiveDate) as EffectiveDate

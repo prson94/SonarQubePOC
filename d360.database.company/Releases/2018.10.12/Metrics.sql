@@ -574,3 +574,5 @@ BEGIN
 END
 GO;
 
+alter table [metrics].[ScoreItem] add AdjustedWeight decimal(5,3) null
+GO;

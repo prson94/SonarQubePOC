@@ -23,7 +23,7 @@ const Highcharts = require('highcharts/highstock.src');
 	                                <tr>
 		                                <th  style="width:60%;text-align:left">Analytic</th>
 		                                <th style="width:20%;text-align:right">Value</th>
-		                                <th style="width:20%;text-align:right">Weight</th>
+		                                <th style="width:20%;text-align:right">Adjusted Weight</th>
 	                                </tr>
                                 </ng-template>
                                 <ng-template pTemplate="body" let-rowNode let-item="rowData">

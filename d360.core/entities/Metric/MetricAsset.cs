@@ -31,7 +31,7 @@ namespace d360.core.entities.Metric
         [DataMember]
         public string Description { get; set; }
 
-        [DataMember, ForeignKey("ParentUid")]
+        [IgnoreDataMember, ForeignKey("ParentUid")]
         public virtual MetricAsset Parent { get; set; }
 
         [DataMember, ForeignKey("Uid")]

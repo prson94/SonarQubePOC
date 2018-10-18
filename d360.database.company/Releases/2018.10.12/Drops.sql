@@ -35,3 +35,7 @@ DROP TABLE [dbo].[AssetTypeQuery]
 GO;
 
 --ALTER procedure [utility].[ClearDatabase]
+
+
+--run scan with RedGate to capture the rest.
+--Also ensure that temporal storage on Asset is removed across all DBs.
