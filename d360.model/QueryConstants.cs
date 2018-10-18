@@ -1503,7 +1503,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     ,t.UpdatedOn
 					,coalesce(ru.FirstName + ' ' + ru.LastName, '') as UpdatedBy
                     ,e.ChangeType
-                    ,coalesce(d.Name, ITN.Name, it_t.Name, st.Name) as TypeName,
+                    ,coalesce(d.Name, ITN.Name, it_t.Name, st.Name,f.Name) as TypeName,
 					case when t.PublishedVersionID is not null then
 						'Version ' + cast(v.Version as varchar) + ' Published'
 					else
@@ -1537,6 +1537,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 				left join IntersectType IT on e.Object = 'IntersectType' and e.objectid = IT.ID
 				outer apply dbo.GetIntersectTypeNames(IT.ID) ITN
                 left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
+                left join Fusion f on f.id = e.objectid and e.object = 'Fusion'
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
 				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy
