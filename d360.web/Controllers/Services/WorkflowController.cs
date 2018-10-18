@@ -599,8 +599,14 @@ order by wi.StartedOn desc";
 
                 if (isCompleted)
                 {
-                    SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", Company.CurrentResourceID.ToString() } });
-                    await Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null? obj.TypeID:-1), ObjectType = type });
+                    SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", Company.CurrentResourceID.ToString() } });                    
+                    int transitionsCount = await Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null ? obj.TypeID : -1), ObjectType = type });
+
+                    if (transitionsCount == 0)
+                    {
+                        //log that a form was submited that had 0 transitions
+                        SendEvent("Form completed with 0 transitions");
+                    }
                 }
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);

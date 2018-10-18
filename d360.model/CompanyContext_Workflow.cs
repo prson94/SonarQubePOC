@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.ApplicationInsights;
 
 namespace d360.model
 {
@@ -210,12 +211,10 @@ namespace d360.model
                     subject = $"{environment}{totalNew} new workflow items require your attention";
 
                     var emailAddress = user.Email;
-
-                    //emailAddress = "kmcnamee@infogix.com";
-
+                                        
                     var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family: Trebuchet MS, Arial, Helvetica, sans-serif;\">{sb.ToString()}</body></html>";
                     //send email
-                    await extensions.mail.SimpleMessage.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);
+                    await extensions.mail.SimpleMessage.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);                    
                 }
             }
         }
@@ -1258,7 +1257,7 @@ namespace d360.model
             QueueSource.CreateTopicMessages(events);
         }
 
-        public async Task MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo)
+        public async Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo)
         {
             // mark step as completed
             itemStep.CompletedOn = DateTime.UtcNow;
@@ -1272,6 +1271,8 @@ namespace d360.model
 
             if (transitions.Count > 0)
                 await StartTransitions(transitions, itemID, objectInfo);
+
+            return transitions.Count;
         }
 
         private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
@@ -1403,8 +1404,17 @@ namespace d360.model
 
                     emailedUsers.Add(user.Email);
 
-                    await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true, fromEmail, fromName);
-                }
+                    try
+                    {
+                        await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true, fromEmail, fromName);
+                    }
+                    catch (Exception e)
+                    {
+                        //error sending email
+                        TelemetryClient client = new TelemetryClient();
+                        client.TrackException(e, new Dictionary<string, string> {{ "CompanyID", CurrentCompanyID.ToString() }});
+                    }
+            }
 
                 SaveItemStepEmailedUsers(item, emailedUsers);
             }
@@ -1510,7 +1520,16 @@ namespace d360.model
                 Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{res.Email}].");
                 emailedUsers.Add(res.Email);
 
-                await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                try
+                {
+                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                }
+                catch (Exception e)
+                {
+                    //error sending email
+                    TelemetryClient client = new TelemetryClient();
+                    client.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+                }
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility)
             {
@@ -1522,7 +1541,16 @@ namespace d360.model
 
                     emailedUsers.Add(user.Email);
 
-                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                    try
+                    {
+                        await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                    }
+                    catch (Exception e)
+                    {
+                        //error sending email
+                        TelemetryClient client = new TelemetryClient();
+                        client.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+                    }
                 }
             }
             else if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
@@ -1540,7 +1568,16 @@ namespace d360.model
                 {
                     emailedUsers.Add(email);
 
-                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, email, "", settings.BodyTemplate, true, fromEmail, fromName);
+                    try
+                    {
+                        await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, email, "", settings.BodyTemplate, true, fromEmail, fromName);
+                    }
+                    catch (Exception e)
+                    {
+                        //error sending email
+                        TelemetryClient client = new TelemetryClient();
+                        client.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+                    }
                 }
             }
 
