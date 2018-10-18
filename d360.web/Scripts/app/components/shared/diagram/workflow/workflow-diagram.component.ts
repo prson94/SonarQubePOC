@@ -4,14 +4,12 @@
     OnInit,
     ElementRef,
     OnDestroy,
-    ViewChild,    
+    ViewChild,
     HostListener,
     Output,
     EventEmitter,
     OnChanges,
-    SimpleChanges,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef
+    SimpleChanges
 } from '@angular/core';
 import { PermissionsService } from '../../../../services/permissions.service';
 import { DiagramBaseComponent } from '../diagram-base.component';
@@ -48,8 +46,7 @@ declare var window: any;
 @Component({
     selector: 'd3s-workflow-diagram',
     templateUrl: './workflow-diagram.component.html',
-    providers: [PermissionsService, WorkflowService, ObjectDetailService, UriBasedService],
-    changeDetection:ChangeDetectionStrategy.OnPush
+    providers: [PermissionsService, WorkflowService, ObjectDetailService, UriBasedService]
 })
 export class WorkflowDiagramComponent extends DiagramBaseComponent implements OnInit, OnChanges {
     @Input() id: number = 0;
@@ -78,7 +75,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     WorkflowChangeType = WorkflowChangeType;
     WorkflowActivityType = WorkflowActivityType;
     FormResponseType = FormResponseType;
-    
+
     fieldTypes: FieldType[] = [];
 
     //diagram properties
@@ -112,11 +109,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     constructor(
         private myElement: ElementRef,
-        protected permissionsService: PermissionsService,        
+        protected permissionsService: PermissionsService,
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
         private uriBasedService: UriBasedService,
-        private ref:ChangeDetectorRef,
         private objectDetailService: ObjectDetailService) {
         super();
     }
@@ -130,7 +126,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.isWindowVisible = true;
         }
 
-        this.isLoading = true;        
+        this.isLoading = true;
     }
 
     public ngOnChanges(changes: SimpleChanges) {
@@ -366,7 +362,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             if (n.activityType == WorkflowActivityType.FieldChange) {
                 if (n.settings != null && n.settings.FieldUpdate != null && n.settings.FieldUpdate.Field != null) {
 
-                    
+
                     let fields = n.settings.FieldUpdate.Field;
 
                     if (fields.length != null && fields.length > 0) {
@@ -416,7 +412,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach(l => {
             links.push(this.convertToWorkflowModel(<LinkModel>l));
         });
-        
+
         let m = new WorkflowDiagramModel();
 
         this.model.Type.PublishedVersionID = publish ? -1 : null;
@@ -424,7 +420,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         m.Event = this.model.Event;
         m.Nodes = nodes;
         m.Links = links;
-        
+
         this.isLoading = true;
 
         this.workflowService.saveWorkflowDiagramModel(m)
@@ -439,9 +435,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             .then(() => this.initializePalette())
             .then(() => this.initializeFormFields())
             .then(() => this.getObjectName())
-            .then(() => this.isWindowVisible = (this.monitorView || !this.isReadOnly))
-            .then(() => this.ref.markForCheck());
-            
+            .then(() => this.isWindowVisible = (this.monitorView || !this.isReadOnly));
     }
 
     //#endregion
@@ -452,7 +446,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         //console.log('canLink', fromNode, fromPort, toNode, toPort);
 
         //can't link to self
-        if (fromNode.data.key == toNode.data.key) 
+        if (fromNode.data.key == toNode.data.key)
             return false;
         //forms can always link, even backwards creating a cycle
         if (fromNode.data.activityType == WorkflowActivityType.Form && fromNode.data.key != toNode.data.key)
@@ -473,7 +467,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             links.forEach(l => {
                 let node = this.diagram.model.findNodeDataForKey((<any>l).to);
                 //a form step is part of this cycle, so it's valid
-                if (node.activityType == WorkflowActivityType.Form) { 
+                if (node.activityType == WorkflowActivityType.Form) {
                     nodes = [];
                     return;
                 }
@@ -564,7 +558,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         return this.workflowService.getActivityTypes()
             .then(r => {
                 let excluded = r.findIndex(a => a.ID == WorkflowActivityType.None);
-                
+
                 if (excluded >= 0)
                     r.splice(excluded, 1);
 
@@ -616,23 +610,23 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             }
             else
                 if (m.ConditionObject != null) {
-                n.condition = [];
+                    n.condition = [];
 
-                if (m.ConditionObject.Condition != null && m.ConditionObject.Condition.length != null) {
-                    n.condition = m.ConditionObject.Condition;
-                } else if (m.ConditionObject.Condition != null) {
-                    n.condition.push(m.ConditionObject.Condition);
+                    if (m.ConditionObject.Condition != null && m.ConditionObject.Condition.length != null) {
+                        n.condition = m.ConditionObject.Condition;
+                    } else if (m.ConditionObject.Condition != null) {
+                        n.condition.push(m.ConditionObject.Condition);
+                    }
+
+                    n.condition.forEach(c => {
+                        let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
+                        if (i >= 0)
+                            c['@FieldName'] = this.fieldTypes[i].FriendlyName;
+                    });
+
+                } else {
+                    n.condition = [];
                 }
-
-                n.condition.forEach(c => {
-                    let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
-                    if (i >= 0)
-                        c['@FieldName'] = this.fieldTypes[i].FriendlyName;
-                });
-
-            } else {
-                n.condition = [];
-            }
 
             n.settings = (m.SettingsObject == null) ? ((m.Settings != null && m.Settings.toString() === m.Settings && m.Settings.startsWith('{')) ? JSON.parse(m.Settings).settings : {}) : m.SettingsObject;
             n.diagramObjectType = DiagramObjectType.Link;
@@ -644,7 +638,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             n.frompid = m.FromPortID;
             n.topid = m.ToPortID;
             n.name = m.Name;
-            
+
             if (n.transitionType == TransitionType.Condition) {
                 n.formInputs = this.getAvailableFormInputs(n);
             }
@@ -669,13 +663,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             n.category = 'task';
             n.fields = m.FieldsObject;
             n.runCount = m.RunCount || 0;
-            
+
             //special case for Form to deal with XML returning an object when field count = 1 instead of an array
             if (n.activityType == WorkflowActivityType.Form) {
 
                 if (m.Fields != null && m.Fields.toString() === m.Fields && m.FieldsObject == null && m.Fields.startsWith('{')) {
                     n.fields = JSON.parse(m.Fields).fields;
-                    
+
                 }
 
                 if (n.fields != null && n.fields.form != null && n.fields.form.field != null && n.fields.form.field.length == null) {
@@ -691,7 +685,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             if (m.ActivityTypeInfo != null)
                 activityType = m.ActivityTypeInfo;
             else
-                activityType = this.activityTypes.find(a => a.ID == n.activityType); 
+                activityType = this.activityTypes.find(a => a.ID == n.activityType);
 
             if (activityType != null) {
                 n.fore = activityType.ForeColor;
@@ -707,7 +701,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings = m.SettingsObject;
 
             if (n.activityType == WorkflowActivityType.FieldChange) {
-                
+
                 if (n.settings.FieldUpdate == null) n.settings.FieldUpdate = {};
                 if (n.settings.FieldUpdate.Field == null) n.settings.FieldUpdate.Field = [];
                 //handle obj vs array due to XML parsing
@@ -807,7 +801,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     delete m.settings['ResponsibilityTypeName'];
                 }
             }
-            
+
             //remove primeng _$visited property
             if (m.fields != null && m.fields.form != null && m.fields.form.field != null && m.fields.form.field.length != null) {
                 m.fields.form.field.forEach(f => {
@@ -957,7 +951,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (n.settings.RelationshipUpdate.Relationship['@FormStepId'] == null || n.settings.RelationshipUpdate.Relationship['@FormFieldId'] == null)
                         return false;
                 }
-                break; 
+                break;
             case WorkflowActivityType.StateChange:
                 if (n.settings.State == null || n.settings.State == '')
                     return false;
@@ -1032,7 +1026,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             if (to == null && from == null)
                 disconnectedNodeCount++;
 
-            
+
 
         });
 
@@ -1259,7 +1253,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             if (sel != null && sel.length != 0) {
                 this.selectedData = sel[0].data;
-                
+
                 if (this.selectedData.diagramObjectType == DiagramObjectType.Node) {
                     this.showNodeTabs = true;
                     this.showLinkTabs = false;
@@ -1616,7 +1610,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     stroke: "#fff",
                 },
                     new go.Binding("text", "name").makeTwoWay()
-                )     
+                )
             ),
             this.makePort((isStart) ? 'B' : 'T', (isStart) ? go.Spot.Bottom : go.Spot.Top, isStart, !isStart),
             this.makePort((isStart) ? 'R' : 'L', (isStart) ? go.Spot.Right : go.Spot.Left, isStart, !isStart)
@@ -1731,7 +1725,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         return iconPanel;
     }
 
-    private makeCountPanel(fontSize) {            
+    private makeCountPanel(fontSize) {
         fontSize -= 1;
         let countPanel = this.g(go.Panel,
             "Auto",
