@@ -18,7 +18,8 @@ export class ArtifactTypeFilters {
 }
 
 export class WorkflowItemFilters {
-    id: number;
+    itemId: number;
+    stepId: number;
     currentPageNumber: number = 0;
     sortField: string = "";
     sortOrder: SortOrder = SortOrder.Descending;

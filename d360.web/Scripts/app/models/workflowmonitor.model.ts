@@ -1,6 +1,6 @@
 ﻿
 export class WorkflowMonitorItem {
-    ID: number;
+    Id: number;
     WorkflowName: string;
     Type: string;
     TypeName: number;

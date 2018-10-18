@@ -28,7 +28,7 @@ import * as _ from "lodash";
                     <div class="col s12">                
                         <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" styleClass="overridePaginator" 
                         #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" 
-                        [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)"
+                        [selection]="selection" (selectionChange)="gridSelectionChange($event)"
                         [rows]="rowsPerPage" paginator="true" pageLinks="3"  (onLazyLoad)="loadWorkflowMonitorItems($event)" [rowsPerPageOptions]="defaultPagingOptions">
                         <p-footer *ngIf="totalRecords">
                         <d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
@@ -100,6 +100,17 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         this.wfMonitorService.exportToExcel(this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, filter);
     }
 
+    private gridSelectionChange($event) {
+        debugger;
+        if ($event)
+            this.stateService.workflowItemFilters.itemId= $event.Id;
+        else
+            this.stateService.workflowItemFilters.itemId = 0;
+       // this.stateService.workflowItemFilters.stepId=0;
+        this.selection = $event;
+        this.selectionChange.emit($event)
+        console.log("this.stateService.workflowItemFilters.Id", this.stateService.workflowItemFilters.itemId);
+    }
     private getFilter(): GridFilterExpression[] {
         let filter: GridFilterExpression[] = [];
         if ((!this.stateService.workflowItemFilters) ||
@@ -119,6 +130,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         return filter;
 
     }
+
     private getData() {
         console.log(this.stateService.workflowItemFilters);
 
@@ -147,9 +159,17 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
 
                 this.items = result.Items;
                 this.totalRecords = +result.Total;
-
+                debugger;
+                console.log("this.stateService.workflowItemFilters.id", this.stateService.workflowItemFilters.itemId);
                 if (this.items != null && this.items.length > 0) {
-                    //select first row by default
+                    let item: any;
+                    if (this.stateService.workflowItemFilters.itemId != 0) {
+                        item = this.items.find(x => x.Id == this.stateService.workflowItemFilters.itemId)
+                    }
+                   // select first row by default
+                    if (item)
+                        this.selection = item;
+                    else
                     this.selection = this.items[0];
                     this.selectionChange.emit(this.selection);
                 }

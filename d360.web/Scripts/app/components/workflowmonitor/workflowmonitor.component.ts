@@ -53,6 +53,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
     }    
 
     listChange($event) {
+        debugger;
         if ($event) {
             this.itemId = $event.Id
         } else {
@@ -62,6 +63,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
     }
 
     stepChange($event) {
+        debugger;
         console.log('stepChange', $event);
         if ($event) {
             this.itemStepId = $event.ID;
