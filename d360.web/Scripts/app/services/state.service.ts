@@ -17,6 +17,17 @@ export class ArtifactTypeFilters {
     showSimpleFilter: boolean = true;
 }
 
+export class WorkflowItemFilters {
+    itemId: number;
+    stepId: number;
+    currentPageNumber: number = 0;
+    sortField: string = "";
+    sortOrder: SortOrder = SortOrder.Descending;
+    rowsPerPage: number =10;
+    columFilters: GridFilterExpression[] = [];
+    workflowTypeFilters: GridFilterExpression;
+}
+
 export class FusionFilters {
     id: number;
     type: string;
@@ -32,9 +43,11 @@ export class StateService {
     constructor() {
         this.artifactTypeFilters = new ArtifactTypeFilters();       
         this.fusionFilters = new FusionFilters(); 
+        this.workflowItemFilters = new WorkflowItemFilters();
     }
     public artifactTypeFilters: ArtifactTypeFilters;
     public fusionFilters: FusionFilters;
+    public workflowItemFilters: WorkflowItemFilters;
     private siteMenuRequiresReloadSource = new Subject<boolean>();
 
     siteMenuRequiresReload$ = this.siteMenuRequiresReloadSource.asObservable();
@@ -55,6 +68,9 @@ export class StateService {
         }
     }
 
+    public resetWorkflowItemFilter() {
+        this.workflowItemFilters = new WorkflowItemFilters();
+    }
     reloadLeftNavMenu() {
         this.siteMenuRequiresReloadSource.next(true);
     }

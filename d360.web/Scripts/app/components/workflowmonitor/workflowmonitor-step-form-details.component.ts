@@ -36,8 +36,8 @@ declare var CurrentResourceID;
                         <div class="col s11">
                                     Awaiting forms from: {{pendingFormList}}
                         </div>   
-			            <div class="col s1" style="align:right">
-                             <a  *ngIf="step.IsAssignedLoginUser" style="cursor:pointer;" (click)="doSelect()"><i class="fa fa-edit"></i></a>
+			            <div class="col s1" style="align:right;">
+                             <a  *ngIf="step.IsAssignedLoginUser" style="cursor:pointer;color:#000000;" (click)="doSelect()"><i class="fa fa-edit"></i></a>
                         </div>  
              </div>
             </ng-container>
@@ -82,6 +82,9 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     }
 
     doSelect() {
-       this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${this.step.TypeID}/${this.step.Version}/${this.step.StepID};resourceID=${CurrentResourceID}`);
+        console.log(this.step);
+       // this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${this.step.TypeID}/${this.step.Version}/${this.step.StepID};resourceID=${CurrentResourceID}`);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.step.TypeID}/${this.step.ItemStepID}/${this.step.ItemID}`);
+
   }
 }

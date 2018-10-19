@@ -73,6 +73,9 @@ namespace d360.core.entities.Workflow
         public int StepID { get; set; }
 
         [DataMember]
+        public int ItemStepID { get; set; }
+
+        [DataMember]
         public StepType StepType { get; set; }
 
         [DataMember]

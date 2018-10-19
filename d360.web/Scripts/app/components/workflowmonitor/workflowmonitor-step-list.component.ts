@@ -78,7 +78,7 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
                     this.ref.markForCheck();
                     //console.log('loaded', this.itemSteps);
                 });
-        } 
+        }
     }
 
     private select(e: any) {
