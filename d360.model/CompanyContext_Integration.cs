@@ -986,8 +986,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                 foreach (var k in model.Fields.Keys.Where(k => k != "ParentUid"))
                 {
-                    if (!string.IsNullOrEmpty(model.Fields[k]))
-                    {
+                    //if (!string.IsNullOrEmpty(model.Fields[k]))
+                    //{
                         var fieldRow = assetFieldTable.NewRow();
 
                         fieldRow["ItemNumber"] = i;
@@ -995,7 +995,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                         fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
 
                         assetFieldTable.Rows.Add(fieldRow);
-                    }
+                    //}
                 }
             }
 
@@ -1044,8 +1044,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                 foreach (var k in model.Fields.Keys.Where(k => k != "Uid"))
                 {
-                    if (!string.IsNullOrEmpty(model.Fields[k]))
-                    {
+                    //if (!string.IsNullOrEmpty(model.Fields[k]))
+                    //{
                         var fieldRow = assetFieldTable.NewRow();
 
                         fieldRow["ItemNumber"] = i;
@@ -1053,7 +1053,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                         fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
 
                         assetFieldTable.Rows.Add(fieldRow);
-                    }
+                    //}
                 }
             }
 
