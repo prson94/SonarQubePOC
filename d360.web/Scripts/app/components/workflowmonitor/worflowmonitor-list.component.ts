@@ -63,14 +63,10 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     private subItems : Subscription
     private totalRecords: number;
     private rowsPerPage: number = 10;
-   // private currentPageNumber: number = 0;
     private sortField: string = undefined;
     private sortOrder: SortOrder = SortOrder.Descending;
-    //private filter: GridFilterExpression[] = [];
      selection: any;
     @Output() selectionChange = new EventEmitter();
-
-    //workflowTypes: any[];
 
     constructor(private wfMonitorService: WorkflowMonitorService,
         private stateService: StateService,
@@ -79,12 +75,10 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     ngOnInit(): void {
-        //this.getData();
-    }
+     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        //this.getData();
-    }
+      }
 
     ngOnDestroy(): void {
         this.subItems.unsubscribe();
@@ -99,12 +93,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     private gridSelectionChange($event) {
-            //if ($event)
-            //this.stateService.workflowItemFilters.itemId= $event.Id;
-            //else
-            //this.stateService.workflowItemFilters.itemId = 0;
         this.stateService.workflowItemFilters.itemId = $event ? $event.Id : 0;
-  
         this.selection = $event;
         this.selectionChange.emit($event)
     }
@@ -128,9 +117,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
 
     }
 
-    private getData() {
-
-        debugger;
+    private loadData() {
         let filter: GridFilterExpression[] = this.getFilter();
         if (filter == null || filter.length < 1) {
             this.items = [];
@@ -138,7 +125,6 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
             this.selectionChange.emit(null);
             return;
         }
-
 
         this.isLoading = true;
         this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder,filter)
@@ -150,11 +136,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
                     if (this.stateService.workflowItemFilters.itemId != 0) {
                         item = this.items.find(x => x.Id == this.stateService.workflowItemFilters.itemId)
                     }
-                   // select first row by default
-                    //if (item)
-                    //    this.selection = item;
-                    //else
-                    //this.selection = this.items[0];
+
                     this.selection = item ? item : this.items[0];
                     this.selectionChange.emit(this.selection);
                 }
@@ -166,14 +148,11 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
             });
     }
 
-    //OnWorkflowTypesChange($event) {
-    //      //this.workflowTypes = $event;
-    //      this.getData();
-    //}
+
 
     OnFilterChange() {
         this.stateService.workflowItemFilters.currentPageNumber = 0;
-        this.getData();
+        this.loadData();
     }
     private loadWorkflowMonitorItems(event: LazyLoadEvent) {
         debugger;
@@ -181,9 +160,8 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         this.sortOrder = event.sortField == undefined ? SortOrder.Descending: event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
-        //this.currentPageNumber = event.first / event.rows;
         this.stateService.workflowItemFilters.currentPageNumber = event.first == 0 ? this.stateService.workflowItemFilters.currentPageNumber : event.first / event.rows;
-        this.getData();
+        this.loadData();
     }
 }
 

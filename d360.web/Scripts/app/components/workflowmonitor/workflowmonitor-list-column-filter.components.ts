@@ -63,16 +63,10 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     @Input() fields: GridFilterColumn[];
     @Input() filters: GridFilterExpression[] = [];
     @Output() filtersChange = new EventEmitter();
-
-
     connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
-
     filterFieldType = FilterFieldType;
-
     private internalFilters: FilterExpression[] = [];
-
     private availableFilters: FilterField[] = [];
-
     private selectedFilter: any;
 
     constructor(private ref: ChangeDetectorRef) { }
@@ -93,7 +87,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
                 });
             }
 
-            if (this.filters.length > 0) {//&& !bHasInternalFilters) {
+            if (this.filters.length > 0) {
                 this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Field);
 
                 for (let filter of this.filters) {
@@ -104,14 +98,10 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
                     });
                 }
             }
-            //else if (!bHasInternalFilters) {
-            //    this.resetFilters();
-            //}
         }
     }
 
     private onSubmit() {
-
         this.filters = [];
         for (let internalFilter of this.internalFilters) {
             if (internalFilter.Type == FilterFieldType.Field && internalFilter.Data.value) {
@@ -119,9 +109,8 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
             }
         }
         this.filtersChange.emit(this.filters);
-
-
     }
+
     private onDateSelected($event, filter) {
         let d = new Date(Date.parse($event));
         if (d.toString() != "Invalid Date")
@@ -129,7 +118,6 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
 
     private onDateBlur(filter) {
-
         let d = new Date(Date.parse(filter.Data.value));
 
         if (d.toString() != "Invalid Date")
@@ -142,12 +130,9 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
         this.internalFilters.push(new FilterExpression());
         this.filters.splice(0, this.filters.length);
         this.filtersChange.emit(this.filters);
-
-
     }
 
     private changeFilterField(target, filter) {
-
         if (target.Type == FilterFieldType.Field) {
             filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
@@ -166,7 +151,6 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
             else
                 filter.Data.fieldtype = GridFilterFieldType.Normal;
         }
-
     }
 
     private addFilter() {

@@ -32,13 +32,11 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     
     @Input() selectAll: boolean = false;
     @Input() selection: any[];
-    @Output() selectionChange = new EventEmitter();
+    //@Output() selectionChange = new EventEmitter();
     @Output() filterChange = new EventEmitter();
     items: any[];
     @Output() exportToExcel = new EventEmitter();
     filtercolumns: GridFilterColumn[] = [];
-    //columfilter: GridFilterExpression[] = [];
-    //itemfilter: GridFilterExpression;
     @Input()  columnFilters: GridFilterExpression[] = [];
     @Output() columnFiltersChange = new EventEmitter();
     @Input() workflowTypeFilters: GridFilterExpression;
@@ -53,7 +51,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        debugger;
+
     }
     private load() {
         this.isLoading = true;
@@ -86,15 +84,13 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
 
 
     columFilterChanged(e) {
-        //this.columfilter = e;
         this.columnFilters = e;
-       // this.onFilterChange();
         this.columnFiltersChange.emit(this.columnFilters);
         this.filterChange.emit();
     }
 
     change(e: any) {
-        debugger
+     
         let data = new GridFilterExpression();
         data.field = "WorkflowId";
         data.condition = "IN";
@@ -102,21 +98,10 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
 
         let typeList = "";
         e.forEach(s => typeList += s.toString() + ',');
-
-        
         data.value = typeList;
-        if (typeList != "") {
-            //this.itemfilter = data;
-            this.workflowTypeFilters = data;
-        }
-        else {
-            //this.itemfilter = null;
-            this.workflowTypeFilters = null;
-        }
+        this.workflowTypeFilters = typeList != "" ? data : null;
         this.workflowTypeFiltersChange.emit(this.workflowTypeFilters);
         this.filterChange.emit();
-       // this.onFilterChange();
-            
-        }
+  }
  
 };
