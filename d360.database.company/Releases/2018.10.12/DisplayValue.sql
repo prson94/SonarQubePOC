@@ -88,6 +88,12 @@ BEGIN
 	if @AssetID is null or @AssetID <= 0
 	begin
 		select @AssetID = id from asset where [object] = @Object and [objectid] = @ObjectID		
+	END
+    
+	-- if there is no such asset bail
+	if @AssetID is null or @AssetID <= 0
+	begin
+		return;
 	end
 
 	Select @displayValue = DisplayValue from GetAssetDisplayValueById(@AssetID);
