@@ -646,6 +646,10 @@
     <Content Include="Content\styles\typeahead.min.css">
       <DependentUpon>typeahead.css</DependentUpon>
     </Content>
+    <EmbeddedResource Include="Content\Swagger\index.html" />
+    <EmbeddedResource Include="Content\Swagger\swagger.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
     <Content Include="images\grid.gif" />
