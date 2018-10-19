@@ -69,7 +69,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
                 this.selection = [];
                 if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
                     this.workflowTypeFilters.value.split(",").forEach(i => this.selection.push(i));
-                    this.change(this.selection);
+                    //this.change(this.selection);
                 } else if (this.selectAll) {
                     this.items.forEach(i => this.selection.push(i.value));
                     this.change(this.selection);
@@ -84,15 +84,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
             })
     }
 
-    onFilterChange1() {
-        debugger;
-       // this.columFilters1 = _.clone(this.columfilter);
-        this.columnFiltersChange.emit(this.columnFilters);
-        //let clone = _.clone(this.columfilter);
-        //if (this.itemfilter)
-        //    clone.push(this.itemfilter)
-        this.filterChange.emit();
-    }
+
     columFilterChanged(e) {
         //this.columfilter = e;
         this.columnFilters = e;

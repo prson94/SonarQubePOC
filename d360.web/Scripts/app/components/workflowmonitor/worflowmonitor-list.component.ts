@@ -22,7 +22,7 @@ import * as _ from "lodash";
                 <div class="row" >                    
                 <div class="col s12">                                                
                     <d3s-workflowmonitor-list-filter  [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
-                       (filterChange)= "OnFilterChange()"   (exportToExcel)="export()"     (selectionChange)="OnWorkflowTypesChange($event)" [selectAll]="true" >
+                       (filterChange)= "OnFilterChange()"   (exportToExcel)="export()"     [selectAll]="true" >
                     </d3s-workflowmonitor-list-filter>
                 </div>
                     <div class="col s12">                
@@ -63,29 +63,27 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     private subItems : Subscription
     private totalRecords: number;
     private rowsPerPage: number = 10;
-    private currentPageNumber: number = 0;
+   // private currentPageNumber: number = 0;
     private sortField: string = undefined;
     private sortOrder: SortOrder = SortOrder.Descending;
     //private filter: GridFilterExpression[] = [];
      selection: any;
     @Output() selectionChange = new EventEmitter();
 
-    workflowTypes: any[];
+    //workflowTypes: any[];
 
     constructor(private wfMonitorService: WorkflowMonitorService,
         private stateService: StateService,
         private changeDetectorRef: ChangeDetectorRef) {
         super();
-        debugger;
     }
 
     ngOnInit(): void {
-        debugger;
-        console.log(this.stateService.workflowItemFilters);
+        //this.getData();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        this.getData();
+        //this.getData();
     }
 
     ngOnDestroy(): void {
@@ -97,19 +95,18 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         if (filter == null || filter.length < 1) {
             return;
         }
-        this.wfMonitorService.exportToExcel(this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, filter);
+        this.wfMonitorService.exportToExcel(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder, filter);
     }
 
     private gridSelectionChange($event) {
-        debugger;
-        if ($event)
-            this.stateService.workflowItemFilters.itemId= $event.Id;
-        else
-            this.stateService.workflowItemFilters.itemId = 0;
-       // this.stateService.workflowItemFilters.stepId=0;
+            //if ($event)
+            //this.stateService.workflowItemFilters.itemId= $event.Id;
+            //else
+            //this.stateService.workflowItemFilters.itemId = 0;
+        this.stateService.workflowItemFilters.itemId = $event ? $event.Id : 0;
+  
         this.selection = $event;
         this.selectionChange.emit($event)
-        console.log("this.stateService.workflowItemFilters.Id", this.stateService.workflowItemFilters.itemId);
     }
     private getFilter(): GridFilterExpression[] {
         let filter: GridFilterExpression[] = [];
@@ -132,18 +129,8 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     private getData() {
-        console.log(this.stateService.workflowItemFilters);
 
-        //if ((!this.stateService.workflowItemFilters) ||
-        //    ((!this.stateService.workflowItemFilters.columFilters || this.stateService.workflowItemFilters.columFilters.length < 1) &&
-        //        (!this.stateService.workflowItemFilters.workflowTypeFilters ||
-        //            StringHelpers.isNullOrEmpty(this.stateService.workflowItemFilters.workflowTypeFilters.value)))) {
-        //    this.items = [];
-        //    this.totalRecords = 0;
-        //    this.selectionChange.emit(null);
-        //    return;
-        //} 
-
+        debugger;
         let filter: GridFilterExpression[] = this.getFilter();
         if (filter == null || filter.length < 1) {
             this.items = [];
@@ -154,23 +141,21 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
 
 
         this.isLoading = true;
-        this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder,filter)
+        this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder,filter)
             .subscribe(result => {
-
                 this.items = result.Items;
                 this.totalRecords = +result.Total;
-                debugger;
-                console.log("this.stateService.workflowItemFilters.id", this.stateService.workflowItemFilters.itemId);
                 if (this.items != null && this.items.length > 0) {
                     let item: any;
                     if (this.stateService.workflowItemFilters.itemId != 0) {
                         item = this.items.find(x => x.Id == this.stateService.workflowItemFilters.itemId)
                     }
                    // select first row by default
-                    if (item)
-                        this.selection = item;
-                    else
-                    this.selection = this.items[0];
+                    //if (item)
+                    //    this.selection = item;
+                    //else
+                    //this.selection = this.items[0];
+                    this.selection = item ? item : this.items[0];
                     this.selectionChange.emit(this.selection);
                 }
                 else {
@@ -178,26 +163,26 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
                 }
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
-                console.log(this.totalRecords);
             });
     }
 
-    OnWorkflowTypesChange($event) {
-          this.workflowTypes = $event;
-        this.getData();
-    }
+    //OnWorkflowTypesChange($event) {
+    //      //this.workflowTypes = $event;
+    //      this.getData();
+    //}
 
     OnFilterChange() {
-       // this.filter = $event;
-        this.currentPageNumber = 0;
+        this.stateService.workflowItemFilters.currentPageNumber = 0;
         this.getData();
     }
     private loadWorkflowMonitorItems(event: LazyLoadEvent) {
+        debugger;
         this.rowsPerPage = event.rows;
         this.sortOrder = event.sortField == undefined ? SortOrder.Descending: event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
-        this.currentPageNumber = event.first / event.rows;
+        //this.currentPageNumber = event.first / event.rows;
+        this.stateService.workflowItemFilters.currentPageNumber = event.first == 0 ? this.stateService.workflowItemFilters.currentPageNumber : event.first / event.rows;
         this.getData();
     }
 }
