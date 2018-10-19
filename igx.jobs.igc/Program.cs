@@ -309,6 +309,7 @@ where		T.CompletedOn is null
 
             try
             {
+                LogoutUri = $"{setting.SourceUri}logout/";
                 url = $"{setting.SourceUri}search/";
 
                 // The raw sql connection to use for the specific company.
