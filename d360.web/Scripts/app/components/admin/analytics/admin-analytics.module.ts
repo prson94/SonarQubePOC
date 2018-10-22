@@ -8,6 +8,7 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import { CoreModule } from '../../shared/core.module';
+import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
@@ -67,6 +68,7 @@ import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-
 
         //d3s        
         CoreModule,
+        PipesModule,
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,        
         SharedObjectDetailsModule,
