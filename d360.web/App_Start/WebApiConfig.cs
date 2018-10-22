@@ -167,7 +167,7 @@ When modifying content on assets, please be aware that you will need to use the 
             config.Formatters.JsonFormatter.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
             config.Formatters.JsonFormatter.MediaTypeMappings.Add(new RequestHeaderMapping("Accept", "text/html", StringComparison.InvariantCultureIgnoreCase, true, "application/json"));
             config.MessageHandlers.Add(new HeadHandler());
-
+            config.MessageHandlers.Add(new ErrorMessageHandler());
             config.EnsureInitialized();
         }
     }

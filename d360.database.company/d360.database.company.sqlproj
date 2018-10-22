@@ -101,7 +101,7 @@
     <Folder Include="Releases\2018.08.31" />
     <Folder Include="Releases\2018.09.14" />
     <Folder Include="Releases\2018.09.28" />
-    <Folder Include="Releases\2018.10.12" />
+    <Folder Include="Releases\2018.10.26" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -113,15 +113,15 @@
     <None Include="Releases\2018.08.31\1.sql" />
     <None Include="Releases\2018.09.14\1.sql" />
     <None Include="Releases\2018.09.28\1.sql" />
-    <None Include="Releases\2018.10.12\Data.sql" />
-    <None Include="Releases\2018.10.12\Misc.sql" />
-    <None Include="Releases\2018.10.12\DisplayValue.sql" />
-    <None Include="Releases\2018.10.12\CacheDetails-Update.sql" />
-    <None Include="Releases\2018.10.12\CacheDetails-Rollback.sql" />
-    <None Include="Releases\2018.10.12\Drops.sql" />
-    <None Include="Releases\2018.10.12\PredicateUIDs.sql" />
+    <None Include="Releases\2018.10.26\Data.sql" />
+    <None Include="Releases\2018.10.26\Misc.sql" />
+    <None Include="Releases\2018.10.26\DisplayValue.sql" />
+    <None Include="Releases\2018.10.26\CacheDetails-Update.sql" />
+    <None Include="Releases\2018.10.26\CacheDetails-Rollback.sql" />
+    <None Include="Releases\2018.10.26\Drops.sql" />
+    <None Include="Releases\2018.10.26\PredicateUIDs.sql" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="Releases\2018.10.12\Metrics.sql" />
+    <Build Include="Releases\2018.10.26\Metrics.sql" />
   </ItemGroup>
 </Project>

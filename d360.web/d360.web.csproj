@@ -420,6 +420,7 @@
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
+    <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
     <Compile Include="Models\ApiResponses.cs" />
     <Compile Include="Models\Attributes\NoCacheAttribute.cs" />

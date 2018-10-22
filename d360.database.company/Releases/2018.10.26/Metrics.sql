@@ -340,19 +340,22 @@ ALTER PROCEDURE [dbo].[GetScoreHistoryByObject]
 	@assetUid uniqueidentifier --= '5DFA86D6-9DFE-4BB6-B417-F75E3BC9E095'
 AS
 begin
+	declare @date date = getutcdate()
+
 	select	EffectiveDate as [Date],
 			cast(Value * 100 as int) as Score
 	from	metrics.Score
 	where	AssetUid = @assetUid
+			and EffectiveDate <= @date
 	union
-	select	cast(getutcdate() as date) as [Date],
+	select	cast(@date as date) as [Date],
 			cast(Value * 100 as int) as Score
 	from	metrics.Score S
 			inner join (
 				select	max(EffectiveDate) as EffectiveDate
 				from	metrics.Score
 				where	AssetUid = @assetUid
-						and EffectiveDate <= getutcdate()
+						and EffectiveDate <= @date
 			) M on M.EffectiveDate = S.EffectiveDate and S.AssetUid = @assetUid
 end
 GO;
