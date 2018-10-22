@@ -2708,6 +2708,13 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
+            <summary>
+            Get assets for the given asset type UID
+            </summary>
+            <param name="assetTypeUid">The UID of the asset type</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,d360.core.entities.AssetInserts)">
             <summary>
             Adds a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
