@@ -12,12 +12,14 @@ using Dapper;
 using System.Data.SqlClient;
 using System.Data;
 using System.Data.Entity;
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
     [
         ApiVersion("2.0"),
-        RoutePrefix("api/v{version:apiVersion}/dataquality"), Authorize
+        RoutePrefix("api/v{version:apiVersion}/dataquality"), 
+        Authorize        
     ]
 
     public class DataQualityController : BaseApiController
@@ -43,7 +45,16 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="ruleUid">The uid of the rule</param>
         /// <returns>The rule result object with the specified uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("ruleresults/{ruleUid}")]
+        [
+            HttpGet, 
+            MapToApiVersion("2.0"), 
+            Route("ruleresults/{ruleUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that no such rule or implementation was found."),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),            
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+        ]
         public IQueryable<core.entities.RuleResult> GetRuleResults(Guid ruleUid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -69,7 +80,16 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="ruleResultId">The id of the rule result</param>
         /// <returns>The rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("ruleresult/{ruleResultId:int}")]
+        [
+            HttpGet, 
+            MapToApiVersion("2.0"), 
+            Route("ruleresult/{ruleResultId:int}"),
+            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that no such rule result was found."),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+        ]
         public core.entities.RuleResult GetRuleResult(int ruleResultId)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -88,7 +108,16 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="ruleResultId">The id of the rule result</param>
         /// <returns>The asset information tied to the rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("ruleresult/{ruleResultId:int}/fusionattributes")]
+        [
+            HttpGet, 
+            MapToApiVersion("2.0"), 
+            Route("ruleresult/{ruleResultId:int}/fusionattributes"),
+            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that no such rule result was found."),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+        ]
         public IEnumerable<core.entities.Asset> GetRuleResultFusionAttributes(int ruleResultId)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -111,7 +140,16 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="ruleResultId">The id of the rule result</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [HttpDelete, MapToApiVersion("2.0"), Route("{ruleResultId:int}")]
+        [
+            HttpDelete, 
+            MapToApiVersion("2.0"), 
+            Route("{ruleResultId:int}"),
+            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
+            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result could be deleted."),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+        ]
         public async Task<HttpResponseMessage> DeleteByRuleResultID(int ruleResultId)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -133,7 +171,16 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="assetUid">The uid of the asset</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [HttpDelete, MapToApiVersion("2.0"), Route("fusionattribute/{assetUid}")]
+        [
+            HttpDelete, 
+            MapToApiVersion("2.0"), 
+            Route("fusionattribute/{assetUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
+            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result for the specified asset uid could be deleted."),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+        ]
         public async Task<HttpResponseMessage> DeleteFusionAttributeByAssetUID(Guid assetUid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -153,7 +200,16 @@ namespace d360.web.Controllers.V2
         /// <param name="ruleResultId">The id of the rule result</param>
         /// <param name="assetUid">The uid of the asset</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [HttpDelete, MapToApiVersion("2.0"), Route("fusionattribute/{ruleResultId:int}/{assetUid}")]
+        [
+            HttpDelete, 
+            MapToApiVersion("2.0"), 
+            Route("fusionattribute/{ruleResultId:int}/{assetUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
+            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result for the specified rule result id /asset uid could be deleted."),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+        ]
         public async Task<HttpResponseMessage> DeleteFusionAttributeByRuleResultAndAssetUID(int ruleResultId, Guid assetUid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -180,7 +236,16 @@ namespace d360.web.Controllers.V2
         /// <param name="ruleUid">The uid of the rule</param>
         /// <param name="ruleResults">The rule results and the mappings of fusionattributes that tie to the results</param>
         /// <returns></returns>
-        [HttpPost, MapToApiVersion("2.0"), Route("{ruleUid}")]
+        [
+            HttpPost,            
+            MapToApiVersion("2.0"), 
+            Route("{ruleUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded and the items were created and returned"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
+            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule uid could be found."),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+        ]
         public async Task<DataQualityResultModel> Post(Guid ruleUid, DataQualityResultModel ruleResults)
         {
             if (!Company.CurrentResourceIsAdmin)
