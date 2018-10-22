@@ -38,32 +38,32 @@ namespace d360.web.Controllers.V2
         private static string DefaultImplementationName = "default";
 
         /// <summary>
-        /// Returns the rule results for the specified rule uid
+        /// Returns the all the rule results for the specified rule uid that are under the default implementation
         /// If the user is not an admin http status code 403 forbidden is returned
         /// </summary>
         /// <returns>The rule result object with the specified uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
         [HttpGet, MapToApiVersion("2.0"), Route("ruleresults/{ruleId}")]
-        public IQueryable<core.entities.RuleResult> GetRuleResults(Guid ruleUid)
+        public IQueryable<core.entities.RuleResult> GetRuleResults(Guid ruleId)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            var rule = Company.Assets.FirstOrDefault(x => x.uid == ruleUid);
+            var rule = Company.Assets.FirstOrDefault(x => x.uid == ruleId);
 
             if (rule == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule with id {ruleUid}"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule with id {ruleId}"));
 
             //get the default implemenation
             var impl = Company.RuleImplementations.FirstOrDefault(x => x.RuleID == rule.ObjectID && x.Name == DefaultImplementationName);
 
             if (impl == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No default rule implementation for rule {ruleUid}"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No default rule implementation for rule {ruleId}"));
 
             return Company.RuleResults.Where(x => x.RuleImplementationID == impl.ID);
         }
 
         /// <summary>
-        /// Returns the rule result with the specified id
+        /// Returns the rule result with the specified rule result id
         /// If the user is not an admin http status code 403 forbidden is returned
         /// </summary>
         /// <returns>The rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
@@ -81,7 +81,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns the asset information of fusion tied to a rule result with the specified id
+        /// Returns the asset information of fusion tied to a rule result with the specified rule result id
         /// If the user is not an admin http status code 403 forbidden is returned
         /// </summary>
         /// <returns>The asset information tied to the rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
@@ -161,7 +161,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Creates a new Data Quality Rule result record for the specified Rule with the specified uid.  
+        /// Creates a new Data Quality Rule result record for the specified Rule with the specified rule uid.  
         ///  Looks for a rule implementation called 'default'.  If not found it creates this 
         ///   rule implemention.
         ///  Current user must be an admin or http status code 403 is returned 
