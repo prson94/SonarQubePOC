@@ -8,8 +8,9 @@ import { ScoreDisplayPipe } from './score-display.pipe';
 import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
 import { TreeSearchPipe } from './tree-search.pipe';
 import { ArrayToSelectItemPipe } from './array-to-selectitem.pipe';
-import { SafeHtmlPipe } from './safe-html.pipe';
 import { ResponsibilityTypeRelationAllocationOptionFilterPipe } from './responsibilitytypeallocation-filter.pipe';
+import { SafeHtmlPipe } from './safe-html.pipe';
+import { UtcDatePipe } from './utc-date.pipe';
 
 @NgModule({
     imports: [CommonModule],
@@ -22,7 +23,8 @@ import { ResponsibilityTypeRelationAllocationOptionFilterPipe } from './responsi
         ResponsibilityTypeRelationAllocationOptionFilterPipe,
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
-        SafeHtmlPipe
+        SafeHtmlPipe,
+        UtcDatePipe
     ],
     exports: [
         ArrayToSelectItemPipe,
@@ -33,7 +35,8 @@ import { ResponsibilityTypeRelationAllocationOptionFilterPipe } from './responsi
         ResponsibilityTypeRelationAllocationOptionFilterPipe,
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
-        SafeHtmlPipe
+        SafeHtmlPipe,
+        UtcDatePipe
     ]
 })
 export class PipesModule { }

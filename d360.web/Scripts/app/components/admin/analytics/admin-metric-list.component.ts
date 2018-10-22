@@ -6,6 +6,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { MessagesService } from '../../../services/messages.service';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
+import { FormHelpers } from '../../../static/form-helpers';
 
 @Component({
     selector: 'd3s-admin-metric-list',
@@ -36,7 +37,7 @@ import { AssetTypeMetricModel } from '../../../models/asset.model';
                                         {{item.Name}}
                                     </td>
                                     <td>{{item.Weight}}</td>
-                                    <td>{{item.EffectiveDate | date:'shortDate'}}</td>
+                                    <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
                                     <td>
                                         <div class="RowTools" *ngIf="item.IsGroup">                                
                                             <a style="cursor:pointer;" (click)="selectNode(rowNode.node); add()"><i class="fa fa-plus"></i></a>                                      
