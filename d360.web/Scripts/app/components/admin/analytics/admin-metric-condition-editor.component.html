@@ -21,7 +21,7 @@
                     <option value="eq">=</option>
                 </select>
             </div>
-            <div *ngIf="condition.FieldType.Type == 'Decimal' || condition.FieldType.Type == 'Number'">
+            <div *ngIf="condition.FieldType.Type == 'Decimal' || condition.FieldType.Type == 'Number' || condition.FieldType.Type == 'Date' || condition.FieldType.Type == 'DateTime'">
                 <select [(ngModel)]="condition.Operator" style="width: 95%">
                     <option value="eq">=</option>
                     <option value="neq">!=</option>
@@ -62,7 +62,7 @@
                     <option *ngFor="let l of getLookupValues(condition.FieldTypeID)" [value]="l.Value">{{l.Text}}</option>
                 </select>
             </div>
-            <div *ngIf="condition.FieldType.Type == 'Number' || fieldType == 'Decimal'">
+            <div *ngIf="condition.FieldType.Type == 'Number' || fieldType == 'Decimal' || condition.FieldType.Type == 'Date' || condition.FieldType.Type == 'DateTime'">
                 <input type="number" style="width: 95%" [(ngModel)]="condition.Values" />
             </div>
             <div *ngIf="condition.FieldType.Type == 'Boolean'">

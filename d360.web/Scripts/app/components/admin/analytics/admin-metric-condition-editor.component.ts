@@ -37,6 +37,11 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     load() {
+        if (this.condition) {
+            if (this.condition.FieldTypeID) {
+                this.selectFieldType();
+            }
+        }
         this.isLoading = false;
     }
 
@@ -77,13 +82,18 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     changeFieldType(e: any) {
         this.condition.FieldTypeID = +e;
+        this.selectFieldType();
+    }
 
-        let field = this.metricConditionEditorFieldTypes.find(f => f.ID == +e);
-        if (field != null) {
-            this.condition.FieldTypeName = field.Name;
-            this.condition.FieldType = field;
-            if (!this.condition.Values) {
-                this.condition.Values = "";
+    selectFieldType() {
+        if (this.condition.FieldTypeID) {
+            let field = this.metricConditionEditorFieldTypes.find(f => f.ID == this.condition.FieldTypeID);
+            if (field != null) {
+                this.condition.FieldTypeName = field.Name;
+                this.condition.FieldType = field;
+                if (!this.condition.Values) {
+                    this.condition.Values = "";
+                }
             }
         }
     }

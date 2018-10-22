@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
+import { MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel, MetricFieldTypeValueViewModel } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { MessagesService } from '../../../services/messages.service';
 
@@ -117,6 +117,20 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
             let field = this.metricConditionListFieldTypes.find(f => f.ID == c.FieldTypeID);
             if (field != null) {
                 c.FieldTypeName = field.Name;
+
+                if (field.Values) {
+                    if (field.Values.length > 0) {
+                        let valueModel: MetricFieldTypeValueViewModel = field.Values.find(o => o.Value == c.Values);
+                        valueModel = field.Values.find(o => o.Value == c.Values);
+                        if (valueModel) {
+                            c.ValuesText = valueModel.Text;
+                        }
+                    }
+                }
+
+                if (!c.ValuesText) {
+                    c.ValuesText = c.Values;
+                }
             }
         });
         this.isLoading = false;

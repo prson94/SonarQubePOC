@@ -36,21 +36,29 @@ namespace d360.web.Handlers
                 {
                     try
                     {
-                        HttpError httpError = responseContent as HttpError;
-                        if (httpError != null)
+                        if (responseContent is ErrorResponse)
                         {
-                            errorMessage = httpError.Message;
-                            statusCode = HttpStatusCode.InternalServerError;
-                            responseContent = null;
+                            return response;
                         }
-
-                        var responseMetadata = new ErrorResponse
+                        else
                         {
-                            message = errorMessage,
-                            title = "Bad request submitted"
-                        };
-                        var result = request.CreateResponse(response.StatusCode, responseMetadata);
-                        return result;
+                            var httpError = responseContent as HttpError;
+
+                            if (httpError != null)
+                            {
+                                errorMessage = httpError.Message;
+                                statusCode = HttpStatusCode.InternalServerError;
+                                responseContent = null;
+                            }
+
+                            var responseMetadata = new ErrorResponse
+                            {
+                                message = errorMessage,
+                                title = "Bad request submitted"
+                            };
+                            var result = request.CreateResponse(response.StatusCode, responseMetadata);
+                            return result;
+                        }
                     }
                     catch { } //continue on to return the normal response.
                 }

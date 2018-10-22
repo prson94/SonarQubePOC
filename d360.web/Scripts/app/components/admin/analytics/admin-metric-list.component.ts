@@ -21,7 +21,7 @@ import { FormHelpers } from '../../../static/form-helpers';
                     <div *ngSwitchCase="FormMode.Default">
                         <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)">
                             <ng-template pTemplate="header">
-                                <tr>
+                                <tr> 
                                     <th>Name</th>
                                     <th>Weight</th>
                                     <th>Effective Date</th>
@@ -107,6 +107,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['assetType'] && this.assetType) {
+            this.formMode = FormMode.Default;
             this.load();
         }
     }
