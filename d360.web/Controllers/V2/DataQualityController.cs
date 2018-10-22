@@ -41,23 +41,24 @@ namespace d360.web.Controllers.V2
         /// Returns the all the rule results for the specified rule uid that are under the default implementation
         /// If the user is not an admin http status code 403 forbidden is returned
         /// </summary>
+        /// <param name="ruleUid">The uid of the rule</param>
         /// <returns>The rule result object with the specified uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
-        [HttpGet, MapToApiVersion("2.0"), Route("ruleresults/{ruleId}")]
-        public IQueryable<core.entities.RuleResult> GetRuleResults(Guid ruleId)
+        [HttpGet, MapToApiVersion("2.0"), Route("ruleresults/{ruleUid}")]
+        public IQueryable<core.entities.RuleResult> GetRuleResults(Guid ruleUid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            var rule = Company.Assets.FirstOrDefault(x => x.uid == ruleId);
+            var rule = Company.Assets.FirstOrDefault(x => x.uid == ruleUid);
 
             if (rule == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule with id {ruleId}"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule with id {ruleUid}"));
 
             //get the default implemenation
             var impl = Company.RuleImplementations.FirstOrDefault(x => x.RuleID == rule.ObjectID && x.Name == DefaultImplementationName);
 
             if (impl == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No default rule implementation for rule {ruleId}"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No default rule implementation for rule {ruleUid}"));
 
             return Company.RuleResults.Where(x => x.RuleImplementationID == impl.ID);
         }
@@ -66,6 +67,7 @@ namespace d360.web.Controllers.V2
         /// Returns the rule result with the specified rule result id
         /// If the user is not an admin http status code 403 forbidden is returned
         /// </summary>
+        /// <param name="ruleResultId">The id of the rule result</param>
         /// <returns>The rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
         [HttpGet, MapToApiVersion("2.0"), Route("ruleresult/{ruleResultId:int}")]
         public core.entities.RuleResult GetRuleResult(int ruleResultId)
@@ -75,7 +77,7 @@ namespace d360.web.Controllers.V2
             var result =  Company.RuleResults.FirstOrDefault(x => x.ID == ruleResultId);
 
             if(result == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule with id {ruleResultId}"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule result with id {ruleResultId}"));
 
             return result;
         }
@@ -84,6 +86,7 @@ namespace d360.web.Controllers.V2
         /// Returns the asset information of fusion tied to a rule result with the specified rule result id
         /// If the user is not an admin http status code 403 forbidden is returned
         /// </summary>
+        /// <param name="ruleResultId">The id of the rule result</param>
         /// <returns>The asset information tied to the rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
         [HttpGet, MapToApiVersion("2.0"), Route("ruleresult/{ruleResultId:int}/fusionattributes")]
         public IEnumerable<core.entities.Asset> GetRuleResultFusionAttributes(int ruleResultId)
@@ -93,7 +96,7 @@ namespace d360.web.Controllers.V2
             var result = Company.RuleResults.FirstOrDefault(x => x.ID == ruleResultId);
 
             if (result == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule with id {ruleResultId}"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule result with id {ruleResultId}"));
 
             var fus = Company.RuleResultFusionAttributes.Where(x => x.RuleResultID == ruleResultId).Select(x => x.FusionAttributeID).ToList();
 
@@ -106,6 +109,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes a rule result with the specified Rule Result ID.  It also deletes any ruleresultfusion records for the same rule result.
         /// </summary>
+        /// <param name="ruleResultId">The id of the rule result</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [HttpDelete, MapToApiVersion("2.0"), Route("{ruleResultId:int}")]
         public async Task<HttpResponseMessage> DeleteByRuleResultID(int ruleResultId)
@@ -127,15 +131,16 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes all rule result fusion attributes for the specified asset uid.
         /// </summary>
+        /// <param name="assetUid">The uid of the asset</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [HttpDelete, MapToApiVersion("2.0"), Route("fusionattribute/{assetId}")]
-        public async Task<HttpResponseMessage> DeleteFusionAttributeByAssetUID(Guid assetId)
+        [HttpDelete, MapToApiVersion("2.0"), Route("fusionattribute/{assetUid}")]
+        public async Task<HttpResponseMessage> DeleteFusionAttributeByAssetUID(Guid assetUid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             //deletes the rule result fusion attribute records
-            var res = await Company.Database.Connection.ExecuteAsync("delete from ruleresultfusionattribute where fusionattributeid in (select a.objectid from asset a where a.[uid] = @uid)", new { uid = assetId });
+            var res = await Company.Database.Connection.ExecuteAsync("delete from ruleresultfusionattribute where fusionattributeid in (select a.objectid from asset a where a.[uid] = @uid)", new { uid = assetUid });
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
@@ -145,15 +150,17 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes specified rule results fusion attributes for the specified asset uid.
         /// </summary>
+        /// <param name="ruleResultId">The id of the rule result</param>
+        /// <param name="assetUid">The uid of the asset</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [HttpDelete, MapToApiVersion("2.0"), Route("fusionattribute/{ruleResultId:int}/{assetId}")]
-        public async Task<HttpResponseMessage> DeleteFusionAttributeByRuleResultAndAssetUID(int ruleResultId, Guid assetId)
+        [HttpDelete, MapToApiVersion("2.0"), Route("fusionattribute/{ruleResultId:int}/{assetUid}")]
+        public async Task<HttpResponseMessage> DeleteFusionAttributeByRuleResultAndAssetUID(int ruleResultId, Guid assetUid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             //deletes the rule result fusion attribute records
-            var res = await Company.Database.Connection.ExecuteAsync("delete from ruleresultfusionattribute where  ruleresultid = @ruleResultId and fusionattributeid in (select a.objectid from asset a where a.[uid] = @uid)", new { uid = assetId, ruleResultId });
+            var res = await Company.Database.Connection.ExecuteAsync("delete from ruleresultfusionattribute where  ruleresultid = @ruleResultId and fusionattributeid in (select a.objectid from asset a where a.[uid] = @uid)", new { uid = assetUid, ruleResultId });
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
@@ -165,21 +172,23 @@ namespace d360.web.Controllers.V2
         ///  Looks for a rule implementation called 'default'.  If not found it creates this 
         ///   rule implemention.
         ///  Current user must be an admin or http status code 403 is returned 
-        ///  If the specified RuleID is not found http status code 401 is returned    
+        ///  If the specified RuleUid is not found http status code 401 is returned    
         ///  If any of the specified AssetUIDs are not valid a http status code 400 bad request with the uids of the invalid assets is returned
         ///  No rule results are written if there is any sort of error.  You must fix any errors and resubmit your request.  The timeout parameter is optional.  If specified
         ///  a value in seconds is used to override the default timeout of 600 seconds.
         /// </summary>
+        /// <param name="ruleUid">The uid of the rule</param>
+        /// <param name="ruleResults">The rule results and the mappings of fusionattributes that tie to the results</param>
         /// <returns></returns>
-        [HttpPost, MapToApiVersion("2.0"), Route("{ruleId}")]
-        public async Task<DataQualityResultModel> Post(Guid ruleId, DataQualityResultModel models)
+        [HttpPost, MapToApiVersion("2.0"), Route("{ruleUid}")]
+        public async Task<DataQualityResultModel> Post(Guid ruleUid, DataQualityResultModel ruleResults)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             try
             {
-                var rule = Company.Assets.FirstOrDefault(x => x.uid == ruleId && x.Object == "Rule");
+                var rule = Company.Assets.FirstOrDefault(x => x.uid == ruleUid && x.Object == "Rule");
                 // run validation of rule id
                 if (rule == null) throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Rule with the specified uid was not found."));
 
@@ -201,17 +210,17 @@ namespace d360.web.Controllers.V2
                 }
 
                 // user has created a request with no rule results just return back request nothing to do
-                if (models.Results == null || models.Results.Count == 0)
-                    return models;
+                if (ruleResults.Results == null || ruleResults.Results.Count == 0)
+                    return ruleResults;
 
                 var resultList = new List<DataQualityResult>();
-                for (var i = 0; i < models.Results.Count; i++)
+                for (var i = 0; i < ruleResults.Results.Count; i++)
                 {
                     // add results to array of rule results to insert
-                    resultList.Add(models.Results[i].Result);
+                    resultList.Add(ruleResults.Results[i].Result);
                 }
 
-                int timeout = models.Timeout.HasValue ? models.Timeout.Value : 600;
+                int timeout = ruleResults.Timeout.HasValue ? ruleResults.Timeout.Value : 600;
 
                 var mustOpen = Company.Database.Connection.State != ConnectionState.Open;
                 Company.Database.Connection.Open();
@@ -228,13 +237,13 @@ namespace d360.web.Controllers.V2
                                             row => (int)row.RowIndex,
                                             row => (int)row.RuleResultID);
 
-                    if (ruleResultIds.Count != models.Results.Count)
+                    if (ruleResultIds.Count != ruleResults.Results.Count)
                         throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Rule Result insert count doesnt match the expected number of items."));
 
-                    PopulateRuleResultIDs(models.Results, ruleResultIds);
+                    PopulateRuleResultIDs(ruleResults.Results, ruleResultIds);
 
                     // build a structure of the asset ids and the rule result ids that we need to store mappings for
-                    List<DataQualityRuleAssetMapping> AssetIDRuleMapping = GenerateAssetIDRuleMapping(models.Results);
+                    List<DataQualityRuleAssetMapping> AssetIDRuleMapping = GenerateAssetIDRuleMapping(ruleResults.Results);
 
                     // store ruleresultfusionattribute mappings
                     if (AssetIDRuleMapping.Count > 0)
@@ -252,7 +261,7 @@ namespace d360.web.Controllers.V2
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, e.Message));
             }
-            return models;
+            return ruleResults;
         }
 
 

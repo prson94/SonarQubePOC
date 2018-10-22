@@ -2554,6 +2554,7 @@
             Returns the all the rule results for the specified rule uid that are under the default implementation
             If the user is not an admin http status code 403 forbidden is returned
             </summary>
+            <param name="ruleUid">The uid of the rule</param>
             <returns>The rule result object with the specified uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResult(System.Int32)">
@@ -2561,6 +2562,7 @@
             Returns the rule result with the specified rule result id
             If the user is not an admin http status code 403 forbidden is returned
             </summary>
+            <param name="ruleResultId">The id of the rule result</param>
             <returns>The rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResultFusionAttributes(System.Int32)">
@@ -2568,24 +2570,29 @@
             Returns the asset information of fusion tied to a rule result with the specified rule result id
             If the user is not an admin http status code 403 forbidden is returned
             </summary>
+            <param name="ruleResultId">The id of the rule result</param>
             <returns>The asset information tied to the rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.DeleteByRuleResultID(System.Int32)">
             <summary>
             Deletes a rule result with the specified Rule Result ID.  It also deletes any ruleresultfusion records for the same rule result.
             </summary>
+            <param name="ruleResultId">The id of the rule result</param>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.DeleteFusionAttributeByAssetUID(System.Guid)">
             <summary>
             Deletes all rule result fusion attributes for the specified asset uid.
             </summary>
+            <param name="assetUid">The uid of the asset</param>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.DeleteFusionAttributeByRuleResultAndAssetUID(System.Int32,System.Guid)">
             <summary>
             Deletes specified rule results fusion attributes for the specified asset uid.
             </summary>
+            <param name="ruleResultId">The id of the rule result</param>
+            <param name="assetUid">The uid of the asset</param>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.Post(System.Guid,d360.web.Controllers.V2.DataQualityController.DataQualityResultModel)">
@@ -2594,11 +2601,13 @@
              Looks for a rule implementation called 'default'.  If not found it creates this 
               rule implemention.
              Current user must be an admin or http status code 403 is returned 
-             If the specified RuleID is not found http status code 401 is returned    
+             If the specified RuleUid is not found http status code 401 is returned    
              If any of the specified AssetUIDs are not valid a http status code 400 bad request with the uids of the invalid assets is returned
              No rule results are written if there is any sort of error.  You must fix any errors and resubmit your request.  The timeout parameter is optional.  If specified
              a value in seconds is used to override the default timeout of 600 seconds.
             </summary>
+            <param name="ruleUid">The uid of the rule</param>
+            <param name="ruleResults">The rule results and the mappings of fusionattributes that tie to the results</param>
             <returns></returns>
         </member>
         <member name="T:d360.web.Controllers.V2.MetricsController">
