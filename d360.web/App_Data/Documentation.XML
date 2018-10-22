@@ -2647,23 +2647,12 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsByTypeAsync(System.Guid)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
             <summary>
-            
+            Get assets for the given asset type UID
             </summary>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetAsync(System.Guid)">
-            <summary>
-            
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.GetRelatedAssetsAsync(System.Guid)">
-            <summary>
-            
-            </summary>
-            <returns></returns>
+            <param name="assetTypeUid">The UID of the asset type</param>
+            <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,d360.core.entities.AssetInserts)">
             <summary>

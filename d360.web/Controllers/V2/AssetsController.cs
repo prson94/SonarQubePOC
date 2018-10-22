@@ -157,7 +157,7 @@ namespace d360.web.Controllers.V2
             });
         }
 
-        private void getQueryParamsSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
+        private void getQueryParamsSql(AssetsApiViewModel model, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (queryParams != null)
             {
@@ -231,6 +231,9 @@ namespace d360.web.Controllers.V2
 
                 if (pageSize > 0 && pageNum > 0)
                 {
+                    model.pageSize = pageSize;
+                    model.pageNum = pageNum;
+
                     offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
                     pagingSql.Add(offsetSql);
                 }
@@ -308,94 +311,33 @@ order by	P.[Path]
             }
         }
 
-        /// <summary>
-        /// Get information for the given asset UID
-        /// </summary>
-        /// <param name="uid">The UID of the asset</param>
-        /// <returns>An HTTP status code and message.</returns>
-        [
-            HttpGet,
-            Route("{uid}"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<dynamic>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> GetAssetAsync(Guid uid)
-        {
-            var prefix = "Assets.GetAssetAsync => ";
-            var errorMessage = "";
-
-            try
-            {
-                var queryParams = Request.GetQueryNameValuePairs();
-                var results = await GetAssets(uid, queryParams, false);
-                var asset = results.FirstOrDefault();
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, (object)asset)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
-            }
-
-        }
-
-        /// <summary>
-        /// Get a list of assets which have the specified asset as a subject.
-        /// </summary>
-        /// <param name="uid">The UID of the asset</param>
-        /// <returns>An HTTP status code and message.</returns>
-        [
-            HttpGet,
-            Route("{uid}/related"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<dynamic>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> GetRelatedAssetsAsync(Guid uid)
-        {
-            var prefix = "Assets.GetRelatedAssetsAsync => ";
-            var errorMessage = "";
-
-            try
-            {
-                var queryParams = Request.GetQueryNameValuePairs();
-                var asset = await GetRelatedAssets(uid, queryParams);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, (object)asset)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
-            }
-
-
-        }
-
-        private async Task<IEnumerable<dynamic>> GetAssets(Guid uid, IEnumerable<KeyValuePair<string,string>> queryParams, bool byType)
+        private async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var assetTypeID = 0;
+            var includeRelationships = false;
 
-            if (byType)
-                assetTypeID = Company.AssetTypes.FirstOrDefault(t => t.uid == uid)?.ID ?? 0;
-            else
-                assetTypeID = Company.Assets.FirstOrDefault(a => a.uid == uid)?.AssetTypeID ?? 0;
+            assetTypeID = Company.AssetTypes.FirstOrDefault(t => t.uid == uid)?.ID ?? 0;
+            var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
 
             if (assetTypeID == 0)
                 throw new Exception("not found");
 
-            var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
+                includeRelationships = true;
+
+            var countSql = @"
+                select
+                    count(*)
+                from Asset A
+                {0}
+                {1}";
 
             var sql = @"
                 select
-                    A.ID as AssetID,
-                    A.[UID] as [AssetUID],
-                    A.AssetTypeID,
-                    T.[UID] as AssetTypeUID,
+                    A.ID as AssetId,
+                    A.[UID] as [AssetUid],
+                    A.AssetTypeId,
+                    T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn
                     {0}
@@ -407,27 +349,65 @@ order by	P.[Path]
 
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
-            var dbArgs = new DynamicParameters();
-
-            dbArgs.Add("@uid", uid.ToString());
-
-            if (byType)
-                fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID and T.UID = @uid");
-            else
-                fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
-
-
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
-           
-
             List<string> whereStatements = new List<string>();
             List<string> pagingSql = new List<string>();
 
-            if (!byType)
-                whereStatements.Add("A.UID = @uid");
+            var dbArgs = new DynamicParameters();
+            var model = new AssetsApiViewModel();
 
-            getQueryParamsSql(fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
-           
+            dbArgs.Add("@uid", uid.ToString());
+            fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID and T.UID = @uid");
+
+            if (includeRelationships)
+            {
+                var subjectAlias = "B";
+                var objectAlias = "A";
+                var relatedAssetUID = "";
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
+                {
+                    subjectAlias = "A";
+                    objectAlias = "B";
+                    relatedAssetUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_objectuid").Value;
+                }
+                else
+                {
+                    relatedAssetUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_subjectuid").Value;
+                }
+
+                var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
+                var intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+
+                fieldColumns.Add("R.Relationships");
+                fieldJoins.Add($@"
+			        cross apply (
+				        select (
+					        select 
+						        B.[UID] as AssetUid, 
+						        BD.DisplayValue,
+						        TB.[Name] as TypeName,
+                                P.[UID] as PredicateUid
+					        from Asset B
+					        inner join AssetType TB on TB.ID = B.AssetTypeID
+					        cross apply dbo.GetAssetDisplayValueById(B.ID) BD
+					        inner join [Intersect] I on {intersectJoin}
+					        inner join IntersectType IT on IT.ID = I.IntersectTypeID
+					        inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+					        where {subjectAlias}.[UID] = @relatedAssetUid
+					        for json path 
+				        ) as Relationships
+			        ) R ");
+                dbArgs.Add("@predicateUid", predicateUID);
+                dbArgs.Add("@relatedAssetUid", relatedAssetUID);
+
+            }
+
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+            if (includeRelationships)
+                whereStatements.Add("R.Relationships is not null");
+
+            getQueryParamsSql(model, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
             var whereSql = "";
             if (whereStatements.Any())
@@ -437,98 +417,60 @@ order by	P.[Path]
             if (fieldColumns.Any())
                 fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 
-            sql = string.Format(sql, fieldsSql, string.Join("\n", fieldJoins), whereSql, string.Join("\n",pagingSql));
+            countSql = string.Format(countSql, string.Join("\n", fieldJoins), whereSql);
+            sql = string.Format(sql, fieldsSql, string.Join("\n", fieldJoins), whereSql, string.Join("\n", pagingSql));
 
-            var result = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
+            var count = countResults.First();
 
-            return result;
-        }
+            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
 
-        protected async Task<IEnumerable<dynamic>> GetRelatedAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
-        {
-
-            
-            var intersectTypeSql = @"
-                select 
-                    IT.*
-                from IntersectType IT
-                inner join [Predicate] P on P.ID = IT.PredicateID
-                inner join Asset A on A.[UID] = @uid
-                inner join AssetType T on T.ID = A.AssetTypeID
-                inner join AssetType O on O.Object = IT.Object and O.ObjectID = IT.objectID
-                where IT.[Subject] = T.[Object] and IT.SubjectID = T.ObjectID {0}";
-
-
-            var predicateFilter = "";
-            var dbArgs = new DynamicParameters();
-            dbArgs.Add("@uid", uid);
-
-            if (queryParams != null && queryParams.Any(q => q.Key.ToLower() == "_predicateuid"))
+            if (includeRelationships)
             {
-                predicateFilter = "and P.[UID] = @puid";
-                dbArgs.Add("@puid", queryParams.First(q => q.Key.ToLower() == "_predicateuid").Value);
+                foreach (var result in results)
+                {
+                    result.Relationships = JsonConvert.DeserializeObject(result.Relationships);
+                }
             }
 
-            var intersectTypes = await Company.QueryAsync<IntersectType>(string.Format(intersectTypeSql, predicateFilter), dbArgs);
-            var results = new List<dynamic>();
+            model.items = results;
+            model.total = count;
 
-            
-            intersectTypes
-                .ToList()
-                .ForEach(i =>
+            return model;
+        }
+
+
+        /// <summary>
+        /// Get assets for the given asset type UID
+        /// </summary>
+        /// <param name="assetTypeUid">The UID of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("{assetTypeUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
+        {
+            var prefix = "Assets.GetAssetsAsync => ";
+            var errorMessage = "";
+
+            try
             {
-                var sql = @"
-                select 
-                    A.ID as AssetID,
-                    A.[UID] as [AssetUID],
-                    A.AssetTypeID,
-                    T.[UID] as AssetTypeUID,
-                    A.UpdatedOn,
-                    A.CreatedOn
-                    {0}
-                from Asset A
-                inner join AssetType T on T.ID = A.AssetTypeID
-                inner join Asset B on B.[UID] = @uid
-                inner join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.[Subject] = B.[Object] and I.SubjectID = B.ObjectID and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID
-                {1}
-                {2}
-                {3}
-            ";
+                var queryParams = Request.GetQueryNameValuePairs();
+                var results = await GetAssets(assetTypeUid, queryParams);
 
-                List<string> fieldColumns = new List<string>();
-                List<string> fieldJoins = new List<string>();
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                dbArgs = new DynamicParameters();
-                dbArgs.Add("@uid", uid);
-                dbArgs.Add("@intersectTypeId", i.ID, System.Data.DbType.Int32);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
 
-                var fieldTypes = Company.FieldTypes.Where(f => f.Object == i.Object && f.ObjectID == i.ObjectID).ToList();
-
-                getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
-
-
-                List<string> whereStatements = new List<string>();
-                List<string> pagingSql = new List<string>();
-
-
-                getQueryParamsSql(fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
-
-                var whereSql = "";
-                if (whereStatements.Any())
-                    whereSql = $"where {string.Join(" and ", whereStatements)}";
-
-                var fieldsSql = "";
-                if (fieldColumns.Any())
-                    fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
-
-                sql = string.Format(sql, fieldsSql, string.Join("\n", fieldJoins), whereSql, string.Join("\n",pagingSql));
-
-                var result = Company.Query<dynamic>(sql, dbArgs);
-
-                results.AddRange(result.ToList());
-            });
-
-            return results;
         }
 
 

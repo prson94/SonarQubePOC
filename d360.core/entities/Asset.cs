@@ -60,4 +60,16 @@ namespace d360.core.entities
         [DataMember, ForeignKey("AssetID")]
         public virtual ICollection<FieldApiModel> Fields { get; set; }
     }
+
+    public class AssetsApiViewModel
+    {
+        [DataMember]
+        public int pageSize { get; set; } = 25000;
+        [DataMember]
+        public int pageNum { get; set; } = 1;
+        [DataMember]
+        public int total { get; set; } = 0;
+        [DataMember]
+        public IEnumerable<dynamic> items { get; set; }
+    }
 }
