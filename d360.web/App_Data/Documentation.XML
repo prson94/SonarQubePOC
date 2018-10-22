@@ -2551,21 +2551,21 @@
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResults(System.Guid)">
             <summary>
-            Returns the rule results for the specified rule uid
+            Returns the all the rule results for the specified rule uid that are under the default implementation
             If the user is not an admin http status code 403 forbidden is returned
             </summary>
             <returns>The rule result object with the specified uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResult(System.Int32)">
             <summary>
-            Returns the rule result with the specified id
+            Returns the rule result with the specified rule result id
             If the user is not an admin http status code 403 forbidden is returned
             </summary>
             <returns>The rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResultFusionAttributes(System.Int32)">
             <summary>
-            Returns the asset information of fusion tied to a rule result with the specified id
+            Returns the asset information of fusion tied to a rule result with the specified rule result id
             If the user is not an admin http status code 403 forbidden is returned
             </summary>
             <returns>The asset information tied to the rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
@@ -2590,7 +2590,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.Post(System.Guid,d360.web.Controllers.V2.DataQualityController.DataQualityResultModel)">
             <summary>
-            Creates a new Data Quality Rule result record for the specified Rule with the specified uid.  
+            Creates a new Data Quality Rule result record for the specified Rule with the specified rule uid.  
              Looks for a rule implementation called 'default'.  If not found it creates this 
               rule implemention.
              Current user must be an admin or http status code 403 is returned 
