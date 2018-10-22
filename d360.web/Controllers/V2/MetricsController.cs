@@ -216,13 +216,31 @@ namespace d360.web.Controllers.V2
                 }
             }
 
-            Company.SaveChanges();
+            var operatorErrorMessage = "";
+            var operators = new List<string>() { "eq", "neq", "lt", "lte", "gt", "gte" };
+            model.Conditions.ForEach(c => {
+                if (!operators.Contains(c.Operator))
+                {
+                    operatorErrorMessage += $"Invalid operator used: {c.Operator}; ";
+                }
+            });
 
-            return successMessageResponse(
-                    isNew ? HttpStatusCode.Created : HttpStatusCode.OK,
-                    $"Metric {(isNew ? "added" : "updated")}.",
-                    $"The specified metric was successfully {(isNew ? "added" : "updated")}."
-            );
+            if (string.IsNullOrEmpty(operatorErrorMessage))
+            {
+
+                Company.SaveChanges();
+
+                return successMessageResponse(
+                        isNew ? HttpStatusCode.Created : HttpStatusCode.OK,
+                        $"Metric {(isNew ? "added" : "updated")}.",
+                        $"The specified metric was successfully {(isNew ? "added" : "updated")}."
+                );
+            }
+            else
+            {
+                operatorErrorMessage += $"Only the operators ({string.Join(", ", operators)}) may be used.";
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", operatorErrorMessage);
+            }
         }
 
         /// <summary>
