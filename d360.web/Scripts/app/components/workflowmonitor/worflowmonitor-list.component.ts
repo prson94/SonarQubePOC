@@ -160,7 +160,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         this.sortOrder = event.sortField == undefined ? SortOrder.Descending: event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
-        this.stateService.workflowItemFilters.currentPageNumber = event.first == 0 ? this.stateService.workflowItemFilters.currentPageNumber : event.first / event.rows;
+        this.stateService.workflowItemFilters.currentPageNumber =  event.first / event.rows;
         this.loadData();
     }
 }
