@@ -34,7 +34,7 @@ declare var CurrentResourceID;
                 {{helper.activityTypeName(item.ActivityType)}}
             </ng-template>                                                        
         </p-column>  
-        <p-column *ngIf="showAssigneeColumn" field="Assignee" header="Assignee" [sortable]="allowSort" [filter]="!showSimpleFilter"></p-column>    
+        <p-column [hidden]="!showAssigneeColumn" field="Assignee" header="Assignee" [sortable]="allowSort" [filter]="!showSimpleFilter"></p-column>    
         <p-column field="StartedOn" header="Date Started" [sortable]="allowSort" [filter]="!showSimpleFilter">
             <ng-template let-col let-item="rowData" pTemplate type="body">
                 {{item.StartedOn | date:'shortDate'}}
