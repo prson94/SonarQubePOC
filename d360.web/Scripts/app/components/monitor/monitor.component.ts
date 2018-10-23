@@ -56,7 +56,6 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 </div>
               `,
     providers: [ObjectDetailService],
-    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -80,7 +79,6 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         protected router: Router,
         protected route: ActivatedRoute,
         private objectDetailService: ObjectDetailService,
-        private ref:ChangeDetectorRef,
         rightSidebarService: RightSidebarService) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -125,16 +123,13 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
     onMonitorListChanged($event) {
         this.selectedWorkflowType = $event ? $event : {};
-        this.ref.markForCheck();
     }
 
     onFilterChanged($event) {
         this.selectedWorkflowTypes = $event ? $event : [];
-        this.ref.markForCheck();
     }
 
     onMonitorFilterTypesChanged($event) {
         this.filteredTypes = $event ? $event : [];
-        this.ref.markForCheck();
      }
 }
