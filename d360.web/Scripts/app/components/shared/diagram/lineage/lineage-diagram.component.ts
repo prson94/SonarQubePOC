@@ -580,6 +580,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                                 n.category = 'hidden';
                                 n.key = this.nKey.toString();
 
+                                if (this.diagramModelAsGraph().linkDataArray.findIndex(l => (<any>l).from == c.key && (<any>l).to.startsWith('-')) > -1)
+                                    return;
+
                                 this.diagram.model.addNodeData(n);
                                 let node = this.diagram.findNodeForKey(this.nKey.toString());
                                 node.selectable = false;
@@ -601,6 +604,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                                 let n = new LineageNode();
                                 n.category = 'hidden';
                                 n.key = this.nKey.toString();
+
+                                if (this.diagramModelAsGraph().linkDataArray.findIndex(l => (<any>l).to == c.key && (<any>l).from.startsWith('-')) > -1)
+                                    return;
 
                                 this.diagram.model.addNodeData(n);
                                 let node = this.diagram.findNodeForKey(this.nKey.toString());
