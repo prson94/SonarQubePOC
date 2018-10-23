@@ -112,7 +112,12 @@ namespace d360.web.Controllers.V2
                 {
                     joinPrefix = "left";
                     if (!string.IsNullOrEmpty(fieldDataType))
-                        fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                    {
+                        if (fieldDataType == "bit")
+                            fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                        else
+                            fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                    }
                     else
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                 }
@@ -121,7 +126,12 @@ namespace d360.web.Controllers.V2
                     if (!string.IsNullOrEmpty(f.DefaultValue))
                     {
                         if (!string.IsNullOrEmpty(fieldDataType))
-                            fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                        {
+                            if (fieldDataType == "bit")
+                                fieldColumns.Add($"coalesce(cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                            else
+                                fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                        }
                         else
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
 
@@ -130,7 +140,12 @@ namespace d360.web.Controllers.V2
                     else
                     {
                         if (!string.IsNullOrEmpty(fieldDataType))
-                            fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                        {
+                            if (fieldDataType == "bit")
+                                fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                            else
+                                fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                        }
                         else
                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
 
@@ -230,8 +245,11 @@ namespace d360.web.Controllers.V2
 
                 pagingSql.Add(orderBySql);
 
-                if (pageSize > 0 && pageNum > 0)
+                if (pageSize > 0 || pageNum > 0)
                 {
+                    if (pageSize < 1) pageSize = 1;
+                    if (pageNum < 1) pageNum = 1;
+
                     model.pageSize = pageSize;
                     model.pageNum = pageNum;
 
@@ -365,25 +383,24 @@ order by	P.[Path]
             {
                 var subjectAlias = "B";
                 var objectAlias = "A";
-                var relatedAssetUID = "";
+                string relatedAssetUIDString = "";
+                Guid relatedAssetUID;
+
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
                 {
                     subjectAlias = "A";
                     objectAlias = "B";
-                    relatedAssetUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_objectuid").Value;
+                    relatedAssetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_objectuid").Value;
                 }
                 else
                 {
-                    relatedAssetUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_subjectuid").Value;
+                    relatedAssetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_subjectuid").Value;
                 }
 
                 var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
                 var intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
-
-                fieldColumns.Add("R.Relationships");
-                fieldJoins.Add($@"
-			        cross apply (
+                var joinSql = @" cross apply (
 				        select (
 					        select 
 						        B.[UID] as AssetUid, 
@@ -393,16 +410,31 @@ order by	P.[Path]
 					        from Asset B
 					        inner join AssetType TB on TB.ID = B.AssetTypeID
 					        cross apply dbo.GetAssetDisplayValueById(B.ID) BD
-					        inner join [Intersect] I on {intersectJoin}
+					        inner join [Intersect] I on {0}
 					        inner join IntersectType IT on IT.ID = I.IntersectTypeID
 					        inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-					        where {subjectAlias}.[UID] = @relatedAssetUid
+					        {1}
 					        for json path 
 				        ) as Relationships
-			        ) R ");
-                dbArgs.Add("@predicateUid", predicateUID);
-                dbArgs.Add("@relatedAssetUid", relatedAssetUID);
+			        ) R 
+";
 
+
+                fieldColumns.Add("R.Relationships");
+
+                dbArgs.Add("@predicateUid", predicateUID);
+
+                if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
+                {
+                    dbArgs.Add("@relatedAssetUid", relatedAssetUID);
+                    joinSql = string.Format(joinSql, intersectJoin, "where B.[UID] = @relatedAssetUid");
+                }
+                else
+                {
+                    joinSql = string.Format(joinSql, intersectJoin, "");
+                }
+
+                fieldJoins.Add(joinSql);
             }
 
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
