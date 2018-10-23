@@ -763,7 +763,12 @@ namespace d360.model
                 var expectedTransitionCount = WorkflowVersionStepTransitions.Where(x => x.ToVersionStepID == itemStep.StepID).Count();
 
                 //get count of the completed transitions to this step
-                var completedTransitionsCount = WorkflowItemStepTransitions.Where(x => x.ToItemStepID == itemStepID).Count();
+                //var completedTransitionsCount = WorkflowItemStepTransitions.Where(x => x.ToItemStepID == itemStepID).Count();
+                var completedTransitionsCount = Database.Connection.QueryFirstOrDefault<int>(@"select count(1) from
+	                    workflow.itemsteptransition ist
+	                    inner join workflow.itemstep iss on (ist.toitemstepid = iss.id)
+                    where 
+	                    iss.stepid = @stepId and iss.itemid = @itemId", new { stepId = itemStep.StepID, itemId = itemStep.ItemID });
 
                 if (expectedTransitionCount != completedTransitionsCount)
                 {
