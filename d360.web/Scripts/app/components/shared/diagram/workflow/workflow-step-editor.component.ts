@@ -140,6 +140,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.quill = this.ed.quill;
         else
             this.quill = null;
+                
+        if (this.step.settings.WaitForAllTransitions == null)
+            this.step.settings.WaitForAllTransitions = false;
+        else
+            this.step.settings.WaitForAllTransitions = this.step.settings.WaitForAllTransitions.toString().toLowerCase() === 'true' ? true : false;
     }
 
     ngAfterViewChecked() {

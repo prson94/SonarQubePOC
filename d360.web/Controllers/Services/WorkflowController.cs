@@ -579,9 +579,9 @@ order by wi.StartedOn desc";
 
                 //remove any assignment records in the workflow item assignment table so this item doesnt appear assigned to this user anymore
 
-                var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId && x.ResourceObject == "Resource" && x.ResourceObjectID == Company.CurrentResourceID).FirstOrDefault();
+                var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId && x.ResourceObject == "Resource" && x.ResourceObjectID == Company.CurrentResourceID && x.StepID == itemStepsModel.StepID).FirstOrDefault();
 
-                if(assignment!= null)
+                if (assignment!= null)
                 {
                     Company.WorkflowItemAssignments.Remove(assignment);
                 }
