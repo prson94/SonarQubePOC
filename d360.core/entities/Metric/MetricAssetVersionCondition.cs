@@ -16,7 +16,7 @@ namespace d360.core.entities.Metric
         [DataMember, Key, Column(Order = 2)]
         public DateTime EffectiveDate { get; set; }
 
-        [Key, Column(Order = 3)]
+        [DataMember, Key, Column(Order = 3)]
         public int FieldTypeID { get; set; }
 
         [DataMember, StringLength(10)]
@@ -24,6 +24,14 @@ namespace d360.core.entities.Metric
 
         [IgnoreDataMember]
         public string ValueJson { get; set; }
+
+        // Future use (mpappas) for when we start adding potentially multiple values that the JSON property above could store.
+        [NotMapped, DataMember]
+        public string Value {
+            get {
+                return ValueJson;
+            }
+        }
 
         [DataMember, ForeignKey("Uid, EffectiveDate")]
         public virtual MetricAssetVersion Version { get; set; } 

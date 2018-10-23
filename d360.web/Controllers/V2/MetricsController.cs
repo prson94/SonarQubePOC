@@ -169,6 +169,8 @@ namespace d360.web.Controllers.V2
                 Company.Add(metricAsset);
             }
 
+            var existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where MetricAssetUid = @Uid", new { model.Uid }).Single();
+
             var cleanDate = model.EffectiveDate.Date;
             var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == cleanDate, v => v.Conditions).SingleOrDefault();
 
@@ -176,6 +178,16 @@ namespace d360.web.Controllers.V2
             newConditionHash = newConditionHash.GetD3sHashString();
             if (metricAssetVersion == null)
             {
+                var maxEffectiveDate = Company.Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where [Uid] = @Uid", new { model.Uid }).SingleOrDefault();
+
+                if (maxEffectiveDate.HasValue)
+                {
+                    if (maxEffectiveDate.Value > cleanDate)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
+                    }
+                }
+
                 metricAssetVersion = new MetricAssetVersion
                 {
                     Uid = metricAsset.Uid,
@@ -199,21 +211,27 @@ namespace d360.web.Controllers.V2
             }
             else
             {
-                if (metricAssetVersion.Weight != model.Weight)
+                // Only validate if there any existing results for this metric. If not, do not worry about it.
+                if (existingResultCount > 0)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the weight of this metric without also altering its effective date.");
-                }
-                if (metricAssetVersion.ConditionAndOr != model.ConditionAndOr)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the condition type of this metric without also altering its effective date.");
+                    if (metricAssetVersion.Weight != model.Weight)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the weight of this metric without also altering its effective date.");
+                    }
+
+                    if (metricAssetVersion.ConditionAndOr != model.ConditionAndOr)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the condition type of this metric without also altering its effective date.");
+                    }
+
+                    string existingConditionHash = string.Join("|", metricAssetVersion.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.ValueJson)));
+                    existingConditionHash = existingConditionHash.GetD3sHashString();
+                    if (newConditionHash != existingConditionHash)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the conditions of this metric without also altering its effective date.");
+                    }
                 }
 
-                string existingConditionHash = string.Join("|", metricAssetVersion.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.ValueJson)));
-                existingConditionHash = existingConditionHash.GetD3sHashString();
-                if (newConditionHash != existingConditionHash)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the conditions of this metric without also altering its effective date.");
-                }
             }
 
             var operatorErrorMessage = "";

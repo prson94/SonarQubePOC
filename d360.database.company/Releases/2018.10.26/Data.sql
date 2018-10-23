@@ -1,6 +1,6 @@
 ﻿if not exists (select 1 from [predicate] where name = 'Asset Owned For' and [Type] = 7 and IsSystem = 1)
 begin
-	insert into [predicate] values('Asset Owned For','Asset Owned By',7,1,0)
+	insert into [predicate] (Name, Inverse,[Type],IsSystem,Code, [Uid]) values('Asset Owned For','Asset Owned By',7,1,0, '2A7FA12D-63AA-4595-83D0-CFA98AAC2AA4')
 end
 GO;
 
