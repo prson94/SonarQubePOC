@@ -2481,6 +2481,7 @@ order by wi.StartedOn desc";
 				e.ChangeType,
 				e.[Object] as ObjectType,
 				e.ObjectID as ObjectTypeID,
+				ta.[Name] as ObjectTypeName,
 				case when vs.StepType = 1 then
 					dbo.GetWorkflowConditionLabels(e.Condition) 
 				else
@@ -2489,6 +2490,7 @@ order by wi.StartedOn desc";
 				e.Settings as EventSettingsXml,
 				i.[Object],
 				i.ObjectID,
+				d.DisplayValue as ObjectName,
 				case when e.Object = 'IssueType' then
 					cast(1 as bit)
 				else
@@ -2502,10 +2504,13 @@ order by wi.StartedOn desc";
 				end as IsPublishedVersion
 			from workflow.itemstep si
 			inner join workflow.item i on i.id = si.itemid
+			left join Asset a on a.[Object] = i.Object and a.ObjectID = i.ObjectID
+			cross apply dbo.GetAssetDisplayValueById(a.id) d
 			inner join workflow.versionstep vs on vs.id = si.stepid
 			inner join workflow.version v on v.ID = vs.VersionID
 			inner join workflow.[type] t on t.id = v.typeid
 			inner join workflow.eventregistration e on e.TypeID = v.TypeID
+			left join AssetType ta on ta.[Object] = e.[Object] and ta.ObjectID = e.ObjectID
 			where si.ID = @itemStepId";
 
             var detail = Company.Query<WorkflowStepDetail>(sql, new { itemStepId }).FirstOrDefault();

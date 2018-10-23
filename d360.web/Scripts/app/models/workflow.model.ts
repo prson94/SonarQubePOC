@@ -528,8 +528,10 @@ export class WorkflowStepDetail {
     Name: string;
     ObjectType: string;
     ObjectTypeID: number;
+    ObjectTypeName: string;
     Object: string;
     ObjectID: number;
+    ObjectName: string;
     ChangeType: WorkflowChangeType;
     ConditionXml: string;
     Condition: any;

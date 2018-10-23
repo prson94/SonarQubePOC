@@ -107,6 +107,13 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public int ObjectTypeID { get; set; }
+
+        [DataMember]
+        public string ObjectName { get; set; }
+
+        [DataMember]
+        public string ObjectTypeName { get; set; }
+
         [DataMember]
         public string ConditionXml { get; set; }
 
