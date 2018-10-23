@@ -2411,26 +2411,44 @@ order by wi.StartedOn desc";
 
             foreach(var r in results)
             {
-                if (r.ActivityType == (int)WorkflowActivityType.Form && r.Complete == false && (r.MessageRecipientType == "Responsibility" || r.MessageRecipientType == "None"))
+                if (r.ActivityType == (int)WorkflowActivityType.Form && r.Complete == false)
                 {
-                    var users = Company.GetWorkflowUsersBasedOnResponsibility((int)r.TypeID, (int)r.StepID, (int)r.ItemID).ToList();
-                    var fields = XmlToDynamic(r.Fields);
-
-                    if (fields.form != null)
+                    if ((r.MessageRecipientType == "Responsibility" || r.MessageRecipientType == "None"))
                     {
-                        if (fields.form.GetType().Name != "JArray")
-                            fields.form = new JArray(fields.form);
+                        var users = Company.GetWorkflowUsersBasedOnResponsibility((int)r.TypeID, (int)r.StepID, (int)r.ItemID).ToList();
+                        var fields = XmlToDynamic(r.Fields);
 
-                        for(int i = 0; i < fields.form.Count; i++)
+                        if (fields.form != null)
                         {
-                            var ix = users.FindIndex(u => u.ResourceID.ToString() == fields.form[i]["@ResourceID"].Value);
-                            if (ix > -1)
-                                users.RemoveAt(ix);
+                            if (fields.form.GetType().Name != "JArray")
+                                fields.form = new JArray(fields.form);
+
+                            for (int i = 0; i < fields.form.Count; i++)
+                            {
+                                var ix = users.FindIndex(u => u.ResourceID.ToString() == fields.form[i]["@ResourceID"].Value);
+                                if (ix > -1)
+                                    users.RemoveAt(ix);
+                            }
                         }
+
+                        r.Assignee = string.Join(", ", users.Select(u => u.FullName));
+                        r.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
+                    }
+                    else if (r.MessageRecipientType == "SpecificUser")
+                    {
+                        var userList = ((string)r.Assignee).Split(';');
+                        var formattedUserList = new List<string>();
+                        foreach(var u in userList)
+                        {
+                            var user = Company.GlobalReportingResources.FirstOrDefault(c => c.Email == u);
+                            if (user != null)
+                                formattedUserList.Add(user.FullName);
+                            else
+                                formattedUserList.Add(u);
+                        }
+                        r.Assignee = string.Join(", ", formattedUserList);
                     }
 
-                    r.Assignee = string.Join(", ", users.Select(u => u.FullName));
-                    r.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
                 }
             }
 
@@ -2499,7 +2517,7 @@ order by wi.StartedOn desc";
             detail.Fields = XmlToDynamic(detail.FieldsXml);
             detail.ItemSettings = XmlToDynamic(detail.ItemSettingsXml);
             detail.ItemFields = XmlToDynamic(detail.ItemFieldsXml);
-            detail.Condition =  XmlToDynamic(detail.ConditionXml);
+            detail.Condition = XmlToDynamic(detail.ConditionXml);
             detail.EventSettings = XmlToDynamic(detail.EventSettingsXml);
 
             if (detail.ItemSettings == null)
@@ -2602,7 +2620,7 @@ order by wi.StartedOn desc";
                                 detail.Settings.ResponsibilityTypeID = new JArray(detail.Settings.ResponsibilityTypeID);
                             }
 
-                            for(int i = 0; i < detail.Settings.ResponsibilityTypeID.Count; i++)
+                            for (int i = 0; i < detail.Settings.ResponsibilityTypeID.Count; i++)
                             {
                                 var resId = detail.Settings.ResponsibilityTypeID[i].Value;
                                 if (int.TryParse(resId, out int resIdInt))
@@ -2729,6 +2747,55 @@ order by wi.StartedOn desc";
                         }
                     }
 
+
+                    switch (detail.ActivityType)
+                    {
+                        case WorkflowActivityType.EmailNotification:
+                        case WorkflowActivityType.Form:
+                            detail.ItemSettings.hasEmails = false;
+                            if (detail.ItemSettings.emails != null)
+                            {
+                                var emails = detail.ItemSettings.emails;
+
+                                if (emails.email != null)
+                                {
+                                    detail.ItemSettings.hasEmails = true;
+                                    if (emails.email.GetType().Name != "JArray")
+                                    {
+                                        emails.email = new JArray(emails.email);
+                                    }
+                                }
+                                else
+                                {
+                                    detail.ItemSettings.emails.email = new JArray();
+                                }
+
+                                detail.ItemSettings.hasEmails = (emails.email.Count > 0);
+
+                                for (int i = 0; i < emails.email.Count; i++)
+                                {
+                                    var e = emails.email[i];
+                                    string address = e["@address"].Value;
+                                    var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
+                                    if (res != null)
+                                    {
+                                        e.name = res.FullName;
+                                        e.id = res.ResourceID;
+                                    }
+                                    else
+                                    {
+                                        e.name = (string)null;
+                                        e.id = 0;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                detail.ItemSettings.emails = new { email = new JArray() };
+                            }
+                            break;
+                    }
+
                     var resourceIds = new List<int>();
 
                     if (detail.ActivityType == WorkflowActivityType.Form)
@@ -2748,9 +2815,20 @@ order by wi.StartedOn desc";
                             {
                                 users = Company.GetWorkflowUsersBasedOnResponsibility(detail.TypeID, detail.StepID, detail.ItemID).ToList();
                             }
+                            else if (detail.Settings.MessageRecipientType == "SpecificUser")
+                            {
+                                users = new List<GlobalReportingResource>();
+                                foreach(var email in detail.ItemSettings.emails.email)
+                                {
+                                    int id = email.id;
+                                    var user = Company.GlobalReportingResources.FirstOrDefault(g => g.ResourceID == id);
+                                    if (user != null)
+                                        users.Add(user);
+                                }
+                            }
 
                             detail.AssignedUsers = users;
-                            detail.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ?false : true;
+                            detail.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? false : true;
                         }
                     }
 
@@ -2791,63 +2869,12 @@ order by wi.StartedOn desc";
                                 form.resourceName = res.FullName;
                         }
                     }
-
-                }
-
-                switch (detail.ActivityType)
-                {
-                    case WorkflowActivityType.EmailNotification:
-                    case WorkflowActivityType.Form:
-                        detail.ItemSettings.hasEmails = false;
-                        if (detail.ItemSettings.emails != null)
-                        {
-                            var emails = detail.ItemSettings.emails;
-
-                            if (emails.email != null)
-                            {
-                                detail.ItemSettings.hasEmails = true;
-                                if (emails.email.GetType().Name != "JArray")
-                                {
-                                    emails.email = new JArray(emails.email);
-                                }
-                            }
-                            else
-                            {
-                                detail.ItemSettings.emails.email = new JArray();
-                            }
-
-                            detail.ItemSettings.hasEmails = (emails.email.Count > 0);
-
-                            for (int i = 0; i < emails.email.Count; i++)
-                            {
-                                var e = emails.email[i];
-                                string address = e["@address"].Value;
-                                var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
-                                if (res != null)
-                                {
-                                    e.name = res.FullName;
-                                    e.id = res.ResourceID;
-                                }
-                                else
-                                {
-                                    e.name = (string)null;
-                                    e.id = 0;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            detail.ItemSettings.emails = new { email = new JArray() };
-                        }
-                        break;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
             }
-
-           
 
             return Request.CreateResponse(HttpStatusCode.OK, detail);
         }
