@@ -386,22 +386,10 @@ order by	P.[Path]
                 string relatedAssetUIDString = "";
                 Guid relatedAssetUID;
 
-
-                if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
-                {
-                    subjectAlias = "A";
-                    objectAlias = "B";
-                    relatedAssetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_objectuid").Value;
-                }
-                else
-                {
-                    relatedAssetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_subjectuid").Value;
-                }
-
                 var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
-                var intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
-                var joinSql = @" cross apply (
-				        select (
+                var intersectJoin = ""; 
+                var relatedAssetSql = "";
+                var innerSql = @"
 					        select 
 						        B.[UID] as AssetUid, 
 						        BD.DisplayValue,
@@ -413,26 +401,60 @@ order by	P.[Path]
 					        inner join [Intersect] I on {0}
 					        inner join IntersectType IT on IT.ID = I.IntersectTypeID
 					        inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-					        {1}
-					        for json path 
-				        ) as Relationships
-			        ) R 
-";
+					        {1}";
+
+                var joinSql = @"
+                    cross apply (
+                        select (
+                            {0}
+                            for json path
+                        ) as Relationships
+                    ) R";
 
 
-                fieldColumns.Add("R.Relationships");
-
-                dbArgs.Add("@predicateUid", predicateUID);
-
-                if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
                 {
-                    dbArgs.Add("@relatedAssetUid", relatedAssetUID);
-                    joinSql = string.Format(joinSql, intersectJoin, "where B.[UID] = @relatedAssetUid");
+                    relatedAssetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_objectuid").Value;
+                    if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
+                    {
+                        dbArgs.Add("@relatedAssetUid", relatedAssetUID);
+                        relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
+                    }
+                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
+                    innerSql = string.Format(innerSql, intersectJoin, relatedAssetSql);
+                    joinSql = string.Format(joinSql, innerSql);
+                    
+                }
+                else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
+                {
+                    relatedAssetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_subjectuid").Value;
+                    if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
+                    {
+                        dbArgs.Add("@relatedAssetUid", relatedAssetUID);
+                        relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
+                    }
+                    intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+                    innerSql = string.Format(innerSql, intersectJoin, relatedAssetSql);
+                    joinSql = string.Format(joinSql, innerSql);
                 }
                 else
                 {
-                    joinSql = string.Format(joinSql, intersectJoin, "");
+                    //subject and object not specified
+                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
+                    var reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+                    var reverseInnerSql = innerSql;
+                    var unionSql = @"select * from (
+                        {0}
+                        union all
+                        {1}) RI";
+
+                    unionSql = string.Format(unionSql, string.Format(innerSql, intersectJoin, ""), string.Format(reverseInnerSql, reverseIntersectJoin, ""));
+                    joinSql = string.Format(joinSql, unionSql);
                 }
+
+
+                fieldColumns.Add("R.Relationships");
+                dbArgs.Add("@predicateUid", predicateUID);
 
                 fieldJoins.Add(joinSql);
             }
