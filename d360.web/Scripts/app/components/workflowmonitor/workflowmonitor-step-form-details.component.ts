@@ -70,8 +70,14 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
         this.pendingFormList = '';
         if (this.step != null) {
             if (this.step.ItemSettings.hasPendingForms) {
-                if (this.step.AssignedUsers != null)
-                    this.pendingFormList = this.step.AssignedUsers.map(a => a.FirstName + ' ' + a.LastName).join(', ');
+                if (this.step.AssignedUsers != null) {
+                    let completedForms: any[] = this.step.ItemFields.form.map(f => f['@ResourceID']);
+
+                    this.pendingFormList = this.step.AssignedUsers
+                        .filter(a => completedForms.indexOf(a.ResourceID.toString()) == -1)
+                        .map(a => a.FirstName + ' ' + a.LastName)
+                        .join(', ');
+                }
             }
         }
         this.ref.markForCheck();

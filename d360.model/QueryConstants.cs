@@ -1756,7 +1756,7 @@ select
 	            RC.FirstName + ' ' + RC.LastName as CompletedBy,
                 convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') as MessageRecipientType,
                 case when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
-					RI.FirstName + ' ' + RI.LastName
+					IAR.Name
                 when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
 					coalesce(convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
 				when S.ActivityType = 3 and IST.CompletedOn is not null then
@@ -1779,10 +1779,16 @@ select
             inner join workflow.VersionStep S on S.ID = IST.StepID
 			inner join workflow.[Version] V on V.ID = S.VersionID
 			inner join workflow.EventRegistration E on E.TypeID = V.TypeID
-			left join workflow.ItemAssignment IA on IA.ItemID = IST.ItemID and (IA.StepID = ISt.StepID or IA.StepID is null)
+			left join (
+				select 
+					IA.ItemID, 
+					IA.StepID, 
+					RI.FirstName + ' ' + RI.LastName as [Name] 
+				from workflow.ItemAssignment IA
+				inner join reporting.Global_Resource RI on RI.ResourceID = IA.ResourceObjectID
+			) IAR on IAR.ItemID = IST.ItemID and (IAR.StepID = ISt.StepID or IAR.StepID is null) and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator'
             left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
             left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
-            left join reporting.Global_resource RI on RI.ResourceID = IA.ResourceObjectID
 			outer apply (
 				select 
 					string_agg(G.FirstName + ' ' + G.LastName, ',') as Responses
