@@ -31,7 +31,7 @@ declare var CurrentResourceID;
                     </div>
                 </div>
             </ng-container>
-            <ng-container *ngIf="step.ItemSettings.hasPendingForms == true && step.ItemSettings.hasEmails == true">
+            <ng-container *ngIf="step.ItemSettings.hasPendingForms == true">
                <div class="row panel-section warning">
                         <div class="col s11">
                                     Awaiting forms from: {{pendingFormList}}

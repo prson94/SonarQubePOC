@@ -2823,10 +2823,9 @@ order by wi.StartedOn desc";
                             else if (detail.Settings.MessageRecipientType == "SpecificUser")
                             {
                                 users = new List<GlobalReportingResource>();
-                                foreach(var email in detail.ItemSettings.emails.email)
+                                foreach(var email in ((string)detail.Settings.MessageToUser).Split(';'))
                                 {
-                                    int id = email.id;
-                                    var user = Company.GlobalReportingResources.FirstOrDefault(g => g.ResourceID == id);
+                                    var user = Company.GlobalReportingResources.FirstOrDefault(g => g.Email.ToLower() == email);
                                     if (user != null)
                                         users.Add(user);
                                 }
