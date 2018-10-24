@@ -1738,7 +1738,7 @@ select
                                      WT.ID in ({0}) and WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3";
 
         public static string WorkflowItemSteps = @"
-            select 
+  select 
 	            IST.ID,
 	            IST.ItemID,
 	            IST.StepID,
@@ -1756,7 +1756,7 @@ select
 	            RC.FirstName + ' ' + RC.LastName as CompletedBy,
                 convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') as MessageRecipientType,
                 case when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
-					RS.FirstName + ' ' + RS.LastName
+					RI.FirstName + ' ' + RI.LastName
                 when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
 					coalesce(convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
 				when S.ActivityType = 3 and IST.CompletedOn is not null then
@@ -1779,8 +1779,10 @@ select
             inner join workflow.VersionStep S on S.ID = IST.StepID
 			inner join workflow.[Version] V on V.ID = S.VersionID
 			inner join workflow.EventRegistration E on E.TypeID = V.TypeID
+			left join workflow.ItemAssignment IA on IA.ItemID = IST.ItemID and (IA.StepID = ISt.StepID or IA.StepID is null)
             left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
             left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
+            left join reporting.Global_resource RI on RI.ResourceID = IA.ResourceObjectID
 			outer apply (
 				select 
 					string_agg(G.FirstName + ' ' + G.LastName, ',') as Responses

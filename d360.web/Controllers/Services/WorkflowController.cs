@@ -2812,9 +2812,13 @@ order by wi.StartedOn desc";
                         {
                             if (detail.Settings.MessageRecipientType == "Initiator")
                             {
-                                var initiator = Company.GlobalReportingResources.FirstOrDefault(u => u.ResourceID == detail.StartedBy);
-                                if (initiator != null)
-                                    users.Add(initiator);
+                                var assignment = Company.WorkflowItemAssignments.FirstOrDefault(i => i.ItemID == detail.ItemID && (i.StepID == detail.StepID || i.StepID == null));
+                                if (assignment != null)
+                                {
+                                    var initiator = Company.GlobalReportingResources.FirstOrDefault(u => u.ResourceID == assignment.ResourceObjectID);
+                                    if (initiator != null)
+                                        users.Add(initiator);
+                                }
                             }
                             else if (detail.Settings.MessageRecipientType == "None" || detail.Settings.MessageRecipientType == "Responsibility")
                             {
