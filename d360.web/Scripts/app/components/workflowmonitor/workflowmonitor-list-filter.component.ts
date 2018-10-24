@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from "../shared/base.component";
 import { WorkflowService } from "../../services/workflow.service";
 import { GridFilterColumn, GridFilterExpression, GridAttributeFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
@@ -6,6 +6,7 @@ import { WorkflowMonitorService } from '../../services/workflowmonitor.service';
 import { FilterFieldType } from '../../models/filter-field.model';
 import * as _ from 'lodash';
 import { StringHelpers } from '../../static/string-helpers';
+
 
 
 @Component({
@@ -24,7 +25,8 @@ import { StringHelpers } from '../../static/string-helpers';
                         <d3s-workflowmonitor-list-column-filter (exportToExcel)="exportToExcel.emit()" [fields]="filtercolumns" [(filters)]="columnFilters" (filtersChange)="columFilterChanged($event)" ></d3s-workflowmonitor-list-column-filter>
                     </div>
                 `,
-    providers: [WorkflowService, WorkflowMonitorService]
+    providers: [WorkflowService, WorkflowMonitorService],
+    changeDetection:ChangeDetectionStrategy.OnPush
 })
 
 
@@ -42,7 +44,9 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     @Input() workflowTypeFilters: GridFilterExpression;
     @Output() workflowTypeFiltersChange = new EventEmitter();
 
-    constructor(protected workflowService: WorkflowService, protected wfMonitorService:WorkflowMonitorService) {
+    constructor(protected workflowService: WorkflowService,
+        protected ref:ChangeDetectorRef,
+        protected wfMonitorService: WorkflowMonitorService) {
         super();
     }
 
@@ -79,6 +83,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
             .then(x => {
                 this.filtercolumns = x;
                 this.isLoading = false;
+                this.ref.markForCheck();
             })
     }
 
