@@ -119,9 +119,16 @@ namespace d360.web.Controllers.V2
             MetricAsset metricAsset = null;
             var isNew = true;
 
+            var existingResultCount = 0;
+            var childMetricCount = 0;
+
             if (model.Uid != Guid.Empty)
             {
                 isNew = false;
+
+                existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where MetricAssetUid = @Uid", new { model.Uid }).Single();
+
+                childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid", new { model.Uid }).Single();
 
                 metricAsset = Company.Filter<MetricAsset>(i => i.Uid == model.Uid).SingleOrDefault();
                 if (metricAsset == null)
@@ -131,6 +138,20 @@ namespace d360.web.Controllers.V2
 
                 metricAsset.Description = model.Description;
                 metricAsset.Name = model.Name;
+
+                // If results, then you cannot change. 
+                if (existingResultCount > 0 && model.IsGroup)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"You may not convert this metric to a grouping as there are results already associated with it.");
+                }
+                // If has child metrics, you cannot change.
+                if (childMetricCount > 0 && !model.IsGroup)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"You may not convert this grouping to a metric as there are child metrics already associated with it.");
+                }
+                
+                // If made it past above, then we can save the grouping change.
+                metricAsset.IsGroup = model.IsGroup;
             }
             else
             {
@@ -169,8 +190,6 @@ namespace d360.web.Controllers.V2
                 Company.Add(metricAsset);
             }
 
-            var existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where MetricAssetUid = @Uid", new { model.Uid }).Single();
-
             var cleanDate = model.EffectiveDate.Date;
             var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == cleanDate, v => v.Conditions).SingleOrDefault();
 
@@ -186,6 +205,12 @@ namespace d360.web.Controllers.V2
                     {
                         return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
                     }
+                }
+
+                //Set the default to a = And.
+                if (string.IsNullOrEmpty(model.ConditionAndOr))
+                {
+                    model.ConditionAndOr = "a";
                 }
 
                 metricAssetVersion = new MetricAssetVersion
@@ -224,6 +249,12 @@ namespace d360.web.Controllers.V2
                         return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the condition type of this metric without also altering its effective date.");
                     }
 
+                    //Set the default to a = And.
+                    if (string.IsNullOrEmpty(model.ConditionAndOr))
+                    {
+                        model.ConditionAndOr = "a";
+                    }
+
                     string existingConditionHash = string.Join("|", metricAssetVersion.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.ValueJson)));
                     existingConditionHash = existingConditionHash.GetD3sHashString();
                     if (newConditionHash != existingConditionHash)
@@ -232,6 +263,49 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                #region Deal with processing the conditions.
+                if (model.Conditions.Count > 0)
+                {
+                    if (metricAssetVersion.Conditions == null)
+                        metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
+
+                    // Handle UPDATEs and ADDs.
+                    model.Conditions.ForEach(c =>
+                    {
+                        var ec = metricAssetVersion.Conditions.SingleOrDefault(i => i.FieldTypeID == c.FieldTypeID);
+                        if (ec != null)
+                        {
+                            // Update the values.
+                            ec.Operator = c.Operator;
+                            ec.ValueJson = c.Values;
+                        }
+                        else
+                        {
+                            // Add to collection.
+                            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID, Operator = c.Operator, ValueJson = c.Values });
+                        }
+                    });
+
+                    // Handle DELETEs.
+                    var fieldTypeIdsToDelete = new List<int>();
+                    foreach (var c in metricAssetVersion.Conditions)
+                    {
+                        if (!model.Conditions.Any(i => i.FieldTypeID == c.FieldTypeID))
+                        {
+                            fieldTypeIdsToDelete.Add(c.FieldTypeID);
+                        }
+                    }
+                    foreach (var id in fieldTypeIdsToDelete)
+                    {
+                        var dc = metricAssetVersion.Conditions.Single(i => i.FieldTypeID == id);
+                        metricAssetVersion.Conditions.Remove(dc);
+                    }
+                }
+                else
+                {
+                    metricAssetVersion.Conditions = null;
+                }
+                #endregion Deal with processing the conditions.
             }
 
             var operatorErrorMessage = "";
