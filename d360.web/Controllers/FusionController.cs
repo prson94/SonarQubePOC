@@ -320,7 +320,7 @@ namespace d360.web.Controllers
                             { "FusionID", id.ToString() },
                             { "FusionAttributeTypeID", attributeTypeID.ToString() }
                 });
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ex.StatusDescription); //jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ex.StatusDescription);
             }
             catch (BaseException ex)
             {
@@ -328,7 +328,7 @@ namespace d360.web.Controllers
                             { "FusionID", id.ToString() },
                             { "FusionAttributeTypeID", attributeTypeID.ToString() } 
                 });
-                return new HttpStatusCodeResult(ex.StatusCode, ex.StatusDescription); //jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+                return new HttpStatusCodeResult(ex.StatusCode, ex.StatusDescription);
             }
             catch (Exception ex)
             {
@@ -336,7 +336,7 @@ namespace d360.web.Controllers
                             { "FusionID", id.ToString() },
                             { "FusionAttributeTypeID", attributeTypeID.ToString() } 
                 });
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ex.Message);//jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
 
@@ -478,7 +478,7 @@ where   A.FusionID = @f
                 document.SetCellValue(row, col, prop.FieldFriendlyName);
                 col++;
             }
-            //document.FreezePanes(1, col);
+            
             #endregion
 
             document.AutoFitColumn(1, totalColumns);

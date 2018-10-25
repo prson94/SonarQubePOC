@@ -14,7 +14,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Name = "asset")]
-    public class AssetInsert// : DynamicObject//Dictionary<string, string>
+    public class AssetInsert
     {
         [DataMember]
         public Guid? ParentUid { get; set; }

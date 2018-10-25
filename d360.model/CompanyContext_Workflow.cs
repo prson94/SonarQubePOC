@@ -762,8 +762,7 @@ namespace d360.model
                 //get count of the number of transitions to this step
                 var expectedTransitionCount = WorkflowVersionStepTransitions.Where(x => x.ToVersionStepID == itemStep.StepID).Count();
 
-                //get count of the completed transitions to this step
-                //var completedTransitionsCount = WorkflowItemStepTransitions.Where(x => x.ToItemStepID == itemStepID).Count();
+                //get count of the completed transitions to this step                
                 var completedTransitionsCount = Database.Connection.QueryFirstOrDefault<int>(@"select count(1) from
 	                    workflow.itemsteptransition ist
 	                    inner join workflow.itemstep iss on (ist.toitemstepid = iss.id)
@@ -889,8 +888,7 @@ namespace d360.model
                 if (verStep == null)
                     throw new Exception($"ERROR - FORM STEP TO USE AS THE SOURCE OF THE RELATIONSHIP IS INVALID AND CANNOT BE LOADED");
 
-                //load the intersect from the form fields
-                //XDocument.Parse(verStep.Fields)
+                //load the intersect from the form fields                
                 var formFields = WorkflowFormFormModel.ParseXml(XElement.Parse(verStep.Fields).Element("form"));
 
                 var field = formFields.Fields.Where(x => x.ID == item.FormField).FirstOrDefault();

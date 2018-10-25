@@ -67,9 +67,8 @@ namespace d360.web.Controllers
             value.ResourceID = Company.CurrentResourceID;            
             
             value.IP = GetClientIp(Request);
-            value.UserAgent = HttpContext.Current.Request.UserAgent;
-            //value.Host = HttpContext.Current.Request.UrlReferrer.Host;
-            value.Host = Company.CurrentCompanyDomain; //value.Host.Substring(0, value.Host.IndexOf(".data3sixty")).ToLower();
+            value.UserAgent = HttpContext.Current.Request.UserAgent;            
+            value.Host = Company.CurrentCompanyDomain;
             value.Path = HttpContext.Current.Request.UrlReferrer.AbsolutePath;
             value.BrowserLanguages = string.Join(",",HttpContext.Current.Request.UserLanguages);
             value.RowKey = Guid.NewGuid().ToString();
@@ -89,26 +88,11 @@ namespace d360.web.Controllers
                     DateTime.UtcNow
                 );
 
-                
-                //var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
-
-                //var tableClient = storageAccount.CreateCloudTableClient();
-
-                //var table = tableClient.GetTableReference($"WebLogs{Company.CurrentCompanyID}");
-                //table.CreateIfNotExists();
-
-                //var insertOperation = TableOperation.Insert(value);
-
-                // its logging we dont give a crap if it fails we arent able to log so lets not wait for it to complete...
-                //*await */table.ExecuteAsync(insertOperation);
             }
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
             }
-
-            //var retrieveOperation = TableOperation.Retrieve<customerentity>("Harp", "Walter");
-            //var result = await table.ExecuteAsync(retrieveOperation);
         }
 
         private string GetClientIp(HttpRequestMessage request = null)

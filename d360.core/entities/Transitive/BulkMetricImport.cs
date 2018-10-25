@@ -81,9 +81,6 @@ namespace d360.core.entities
 
         [DataMember]
         public bool Value { get; set; }
-
-        //[DataMember]
-        //public List<MetricAssetHierarchyModel> Metrics { get; set; }
     }
 
     #endregion

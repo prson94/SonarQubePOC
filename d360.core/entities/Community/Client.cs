@@ -17,7 +17,5 @@ namespace d360.core.entities
         [DataMember]
         public Guid PublicID { get; set; }
 
-        //[IgnoreDataMember, ForeignKey("ClientID")]
-        //public virtual ICollection<Company> Companies { get; set; }
     }
 }

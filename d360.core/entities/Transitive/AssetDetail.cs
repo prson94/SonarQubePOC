@@ -8,8 +8,7 @@ namespace d360.core.entities
 {
     [Serializable, DataContract(Namespace = NAMESPACE)]
     public class AssetDetail: BaseLongObject
-    {
-        //public long ID { get; set; }
+    {        
         [DataMember]
         public string DisplayValue { get; set; }
         [DataMember]

@@ -6,9 +6,7 @@ using System.Reflection;
 namespace d360.core.enums
 {
     public enum Cardinality
-    {
-        //[Name("Zero (not required)")]
-        //Zero = 0,
+    {        
         [Name("One (required)")]
         One = 1,
         [Name("Many")]

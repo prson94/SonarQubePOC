@@ -80,8 +80,6 @@ namespace d360.web.Controllers
 
             #region Sql
 
-            //A.ID as AssetID, 
-        
             var sql = $@"
 select	distinct 
         A.ObjectID as ID,
