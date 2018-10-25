@@ -38,11 +38,10 @@ namespace d360.media.formatters
         public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
             var task = Task.Factory.StartNew(() =>
-            {
-                //var xml = JsonConvert.DeserializeXNode("{\"root\":" + JsonConvert.SerializeObject(value) + "}").ToString();
+            {                
                 using (var writer = XmlTextWriter.Create(writeStream, new XmlWriterSettings() { Indent = true }))
                 {
-                    var dicts = (ArtifactModelRequestList)value;//(IQueryable<Dictionary<string, object>>)value;
+                    var dicts = (ArtifactModelRequestList)value;
 
                     writer.WriteStartDocument();
                     writer.WriteStartElement("Artifacts");
@@ -57,7 +56,7 @@ namespace d360.media.formatters
                         }
                         writer.WriteEndElement();
                     }
-                    //writer.WriteRaw(xml.Replace("<root>", string.Empty).Replace("</root>", string.Empty));
+                    
                     writer.WriteEndElement();
                     writer.WriteEndDocument();
                 }

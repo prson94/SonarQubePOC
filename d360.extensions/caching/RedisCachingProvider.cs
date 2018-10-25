@@ -126,14 +126,13 @@ namespace d360.extensions.caching
             }
             IDatabase cache = Connection.GetDatabase();
 
-            //_Cache.StringSet(name, item.Serialize(), expiry);
             cache.StringSet(name, JsonConvert.SerializeObject(item), expiry);
         }
 
         public void SetList<T, TIdentifier>(string name, SortedDictionary<TIdentifier, T> list, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
         {
             IDatabase cache = Connection.GetDatabase();
-            cache.SetAdd(name, JsonConvert.SerializeObject(list));//entries);
+            cache.SetAdd(name, JsonConvert.SerializeObject(list));
         }
 
         public void SetItemInListByID<T, TIdentifier>(string name, TIdentifier id, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)

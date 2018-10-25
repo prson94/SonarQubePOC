@@ -229,16 +229,16 @@ where A.FusionTypeID = @id", columns, joins);
         public IEnumerable<FusionAttributeTypeWithQuery> GetFusionAttributeTypes(int typeID, int id)
         {
             return Company.Query<FusionAttributeTypeWithQuery>(@"
-select	A.ID,
-        A.Name,
-        A.ScanEnabled,
-        Q.Query
-from    Fusion C
-        inner join FusionAttributeType A on A.FusionTypeID = C.FusionTypeID and C.ID = @id
-        left join FusionAttributeTypeCustomQuery Q on Q.FusionAttributeTypeID = A.ID and Q.FusionID = C.ID", 
-            new { id }
-        );
-            //return Company.Filter<FusionAttributeType>(i => i.FusionTypeID == id).AsQueryable();
+                    select	A.ID,
+                            A.Name,
+                            A.ScanEnabled,
+                            Q.Query
+                    from    Fusion C
+                            inner join FusionAttributeType A on A.FusionTypeID = C.FusionTypeID and C.ID = @id
+                            left join FusionAttributeTypeCustomQuery Q on Q.FusionAttributeTypeID = A.ID and Q.FusionID = C.ID", 
+                                new { id }
+                            );
+            
         }
 
         /// <summary>
@@ -350,8 +350,7 @@ from    Fusion C
         public IQueryable<FusionSchedule> GetConfigurationsByType(int fusionTypeID, int fusionID)
         {
             if (Company.CurrentResourceIsAdmin)
-            {
-                //return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration schedules.");
+            {                
                 return Company.Filter<FusionSchedule>(i => i.FusionID == fusionID);
             }
             else
@@ -819,8 +818,7 @@ from    Fusion C
                     return Request.CreateErrorResponse(HttpStatusCode.Conflict, errorMessage);
                 }
             }
-
-            //model.IsComplete = log.DateCompleted.HasValue;
+                        
             if (model.IsComplete)
             {
                 Trace.TraceInformation("{0}{1}", prefix, "Schedule marked as complete");

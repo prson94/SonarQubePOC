@@ -54,11 +54,7 @@ namespace d360.web
                 if (host.Contains(".data3sixty"))
                 {
                     host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
-                }
-                //else
-                //{
-                //    host = "demo.dev";
-                //}
+                }                
 
                 var dict = await loadCache();
 

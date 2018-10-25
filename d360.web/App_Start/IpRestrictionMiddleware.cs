@@ -55,7 +55,7 @@ namespace d360.web
             var key = "CompanyIpRanges";
             Dictionary<string, List<IpRange>> dict = null;
             var cache = new MemoryCachingProvider();
-            //var cache = new RedisCachingProvider();
+            
             if (cache != null)
             {
                 dict = cache.GetItem<Dictionary<string, List<IpRange>>>(key);
@@ -88,10 +88,7 @@ from	Company C
                 {
                     host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
                 }
-                //else
-                //{
-                //    host = "demo.dev";
-                //}
+                
                 Trace.TraceInformation("Host is : {0}", host);
 
                 var dict = await loadCache();
@@ -105,7 +102,7 @@ from	Company C
                         {
                             Trace.TraceInformation("Range Count is: {0}", ranges.Count);
 
-                            var currentIp = context.Environment["server.RemoteIpAddress"].ToString(); //.Request.RemoteIpAddress;
+                            var currentIp = context.Environment["server.RemoteIpAddress"].ToString(); 
                             bool isCurrentIpAllowed = false;
 
                             foreach (var range in ranges)

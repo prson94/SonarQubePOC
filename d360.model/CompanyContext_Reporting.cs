@@ -11,12 +11,6 @@ namespace d360.model
 {
     partial class CompanyContext: BaseContext
     {
-        #region DbSets
-
-        //public DbSet<WorkflowEventRegistration> StatisticDetails { get; set; }
-
-        #endregion
-
         #region Engine Methods
 
         public IEnumerable<dynamic> GetReportQueryResults(int reportTileID, SystemObjects type, int id)
@@ -59,8 +53,7 @@ exec sp_executesql @commandText", new { id = reportTileID, t = new Dapper.DbStri
             parser.SqlText.Text = statement;
             parser.Parse();
             isValid = (parser.SqlStatements[0] is TSelectSqlStatement);
-            //TSelectSqlStatement selectStatement
-            //TSqlStatementType.sstMssqlSelect
+            
 
             return isValid;
         }
@@ -75,9 +68,7 @@ exec sp_executesql @commandText", new { id = reportTileID, t = new Dapper.DbStri
             parser.SqlText.Text = statement;
             parser.Parse();
             isValid = (parser.SqlStatements[0] is TSelectSqlStatement);
-            //TSelectSqlStatement selectStatement
-            //TSqlStatementType.sstMssqlSelect
-
+            
             if (!isValid) throw new Exception("Non-select statement specified to function that gets columns from select statements.");
 
             TSelectSqlStatement select = (TSelectSqlStatement)parser.SqlStatements[0];

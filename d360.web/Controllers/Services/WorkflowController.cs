@@ -1362,8 +1362,7 @@ order by wi.StartedOn desc";
                 @version.UpdatedOn = DateTime.UtcNow;
                 @version.Version = 1;
 
-                Company.Add(@version);
-                //versionID = @version.ID;
+                Company.Add(@version);                
 
                 Company.SaveChanges();
 
@@ -1903,9 +1902,7 @@ order by wi.StartedOn desc";
                                     Company.Add(link);
                                 }
                                 else
-                                {
-                                    //var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
-
+                                {                                    
                                     var existing = existingLinks.Find(t => t.FromVersionStepID == link.FromVersionStepID && t.ToVersionStepID == link.ToVersionStepID);
                                     if (existing != null) existingLinks.Remove(existing);
 

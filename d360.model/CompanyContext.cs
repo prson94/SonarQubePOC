@@ -1775,11 +1775,8 @@ where	R.SourceObject = 'FusionAttribute'
         #region Social
 
         public IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations)
-        {
-            //comment.DateCreated = DateTime.UtcNow;
-            //comment.CreatingResourceID = CurrentResourceID;
-            var now = DateTime.UtcNow;
-            //SaveOrUpdate<Comment>(comment);
+        {            
+            var now = DateTime.UtcNow;            
             if (relations == null)
                 relations = new List<CommentRelation>();
 

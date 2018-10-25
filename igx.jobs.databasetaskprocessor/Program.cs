@@ -56,10 +56,7 @@ namespace igx.jobs.databasetaskprocessor
                 }
             }
 
-            //Add the HTML and Text bodies
-            //message.Html = body;
-            //message.Text = "Hello World plain text!"; 
-
+            //Add the HTML and Text bodies            
             var api = new MandrillApi(constants.MANDRILL_API_KEY);
             var resp = api.Messages.SendTemplateAsync(message, templateID).Result;
 

@@ -22,8 +22,7 @@ namespace d360.web.Models.Attributes
             {
                 //If customError is Off, then AI HTTPModule will report the exception
                 if (filterContext.HttpContext.IsCustomErrorEnabled)
-                {
-                    //var Telemetry = new TelemetryClient();
+                {                    
                     Telemetry.TrackException(filterContext.Exception);
                 }
             }
@@ -31,8 +30,7 @@ namespace d360.web.Models.Attributes
             {
                 Data = new { type = "error", title = "Error Occurred!", message = filterContext.Exception.GetFullExceptionData() },
                 Formatting = Newtonsoft.Json.Formatting.None
-            };
-            //base.OnException(filterContext);
+            };            
         }
     }
 }

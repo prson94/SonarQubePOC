@@ -73,8 +73,7 @@ namespace d360.model
         {
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
-
-            //declare @effectiveDate date = '10/2/2018', @assetTypeUid uniqueidentifier = '8371C4C6-E17E-4620-BA8B-AE0301966E0E';
+                        
             var sql = @"
 drop table if exists #tbl
 create table #tbl ([Uid] uniqueidentifier, Name nvarchar(250), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date)
