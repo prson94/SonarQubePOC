@@ -68,7 +68,8 @@ namespace d360.web.Handlers
         }
         private bool IsResponseValid(HttpResponseMessage response)
         {
-            if ((response != null) && (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created))
+            int statusCode = (int)response.StatusCode;
+            if ((response != null) && (statusCode >= 200 && statusCode < 300))
                 return true;
             return false;
         }
