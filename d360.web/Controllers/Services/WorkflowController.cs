@@ -1329,8 +1329,6 @@ order by wi.StartedOn desc";
         {
             try
             {
-
-                // int versionID = 0;
                 var otype = Company.WorkflowTypes.Find(id);
                 if (otype == null || otype.State != core.enums.State.Active)
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
@@ -1351,9 +1349,6 @@ order by wi.StartedOn desc";
 
                 Company.Add(@type);
                 Company.SaveChanges();
-
-
-                //
 
                 var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == otype.ID).OrderByDescending(v => v.Version).First();
                 var omodel = GetWorkflowDiagram(id, currentVersion?.Version);

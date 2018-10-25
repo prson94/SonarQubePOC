@@ -486,8 +486,7 @@ from    Fusion C
 
             stream.Position = 0;
 
-            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -577,8 +576,7 @@ from    Fusion C
 
             stream.Position = 0;
 
-            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -642,8 +640,7 @@ from    Fusion C
 
             stream.Position = 0;
 
-            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -729,8 +726,7 @@ from    Fusion C
 
             stream.Position = 0;
 
-            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -907,12 +903,6 @@ from    Fusion C
 
             var prefix = "Fusion.PostBulkAttributesAsync => ";
             var errorMessage = "";
-
-            //if (!Request.Content.IsMimeMultipartContent())
-            //{
-            //    Trace.TraceWarning("{0}{1}", prefix, "Payload must be multipart content.");
-            //    throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
-            //}
 
             string json = "{}";
 

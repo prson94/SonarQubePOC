@@ -904,7 +904,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
                     #endregion
 
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());// + relations.Count);
+                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
                     filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });                    
@@ -1195,8 +1195,7 @@ where   h.ID <> @t order by h.[Level] desc;
             var artifactParentRelations = Company.IntersectTypeDetails.Where(x => x.PredicateType == PredicateType.InterTypeHierarchy && x.Object == "ArtifactType" && x.Subject == "ArtifactType").ToList();
            
             foreach (var artifactType in artifactTypes)
-            {
-                //
+            {              
                 var parents = artifactParentRelations.Where(x => x.ObjectID == artifactType.ID).FirstOrDefault();
 
                 if(parents != null)
@@ -1220,8 +1219,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 prefix = qs.Single(i => i.Key == "prefix").Value;
             }
 
-            var items = Company.Filter<Artifact>(i => i.ArtifactTypeID == id).AsQueryable();
-            //if (!string.IsNullOrEmpty(prefix)) items = items.Where(i => i.Name.StartsWith(prefix));
+            var items = Company.Filter<Artifact>(i => i.ArtifactTypeID == id).AsQueryable();            
             var lItems = items.Take(take).ToList();
 
             var IDs = lItems.Select(i => i.ID).ToList();
@@ -1246,7 +1244,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 list.Add(listItem);
             }
            
-            return list;//.AsQueryable();
+            return list;
         }
 
         [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
@@ -1462,8 +1460,6 @@ order by 'Name'";
                 HttpStatusCode.OK,
                 Company.Query<dynamic>(sql, dbArgs)
             );
-
-            //return Company.Filter<FusionRule>(x => x.FusionID == fusionID);
         }
 
         [Route("fusion/rules/{ruleID:int}/steps")]
@@ -1577,9 +1573,8 @@ order by 'Name'";
         }
         
         [Route("fusion/technicalmapping")]
-        public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings() //async System.Threading.Tasks.Task<IEnumerable<MapRuleItemDetail>>
-        {
-            //return await Company.MapRuleItemDetails.;
+        public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings() 
+        {            
             return Company.Table<MapRuleItemDetail>();
         }
 
@@ -1600,16 +1595,10 @@ order by 'Name'";
         #region Owner
 
         [Route("fusion/{typeID:int}/configurations/{fusionID:int}/ownership/options")]
-        public List<FusionOwnerOption> GetFusionOwnerOptions(int typeID, int fusionID) //intersectTypeID
+        public List<FusionOwnerOption> GetFusionOwnerOptions(int typeID, int fusionID)
         {
-            return Company.GetFusionOwnerOptions();// (intersectTypeID);
+            return Company.GetFusionOwnerOptions();
         }
-
-        //[Route("fusion/{typeID:int}/configurations/{fusionID:int}/ownership")]
-        //public IQueryable<FusionAttributeOwnerDetail> GetFusionAttributeOwnerDetails(int typeID, int fusionID)
-        //{
-        //    return Company.Filter<FusionAttributeOwnerDetail>(i => i.FusionID == fusionID);
-        //}
 
         #endregion
 
@@ -1903,14 +1892,7 @@ order by 'Name'";
 
             return list;
         }
-
-        //private bool AnyFilteredLookupGridValues(FieldTypeFilteredLookupDefinition def)
-        //{
-        //    string sql = string.Empty;
-        //    sql = "select  case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end " + sql;
-        //    return Company.Query<bool>(sql).First();
-        //}
-
+        
         [Route("FilteredLookupField/{type}/{id:int}/{definitionID:int}/values")]
         public HttpResponseMessage GetFilteredLookupGridField(string type, int id, int definitionID)
         {
@@ -2076,7 +2058,7 @@ from    [Lookup] I
 
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
-                Values = results,//values,
+                Values = results,
                 Columns = columns,
                 Fields = gridFields
             });
@@ -4864,9 +4846,7 @@ order by    Name
 
         [Route("rules/{id:int}")]
         public HttpResponseMessage GetRules(int id)
-        {
-            //return Company.Filter<Rule>(i => i.RuleTypeID == id, i => i.Dimension);
-
+        {            
             try
             {
                 var dbArgs = new Dapper.DynamicParameters();
@@ -4895,8 +4875,6 @@ from	[Rule] A
 where   A.RuleTypeID = @id and A.[Visible] = 1
         and O.ID not in (" + GetNoReadSqlStatement("@r") + ")" +
         "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins);
-
-                //querySql += " OPTION (RECOMPILE)";
 
                 var query = Company.Query<dynamic>(querySql, dbArgs);
 
@@ -4938,9 +4916,7 @@ where   A.RuleTypeID = @id and A.[Visible] = 1
 
         [Route("rules/{id:int}/implementations")]
         public HttpResponseMessage GetRuleImplementations(int id)
-        {
-            //return Company.Filter<Rule>(i => i.RuleTypeID == id, i => i.Dimension);
-
+        {            
             try
             {
                 var query = Company.Query<dynamic>(@"
@@ -5102,9 +5078,7 @@ where    A.RuleID = @id", new { id });
                     var rule = Company.GetById<Rule>(id, i => i.RuleType);
                     if (rule != null)
                     {
-                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = rule.ID.ToString() });
-                        //list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Name_Name, Name = "Name", Value = rule.Name });
-                        //list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Description_Name, Name = "Description", Value = rule.Description });
+                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = rule.ID.ToString() });                        
                         list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.RuleType_Name, Name = "RuleTypeID", Value = rule.RuleType.Name });
                         loadDisplayFields(list, type, id);
                     }
@@ -6324,7 +6298,7 @@ where    A.RuleID = @id", new { id });
                         }
 
                         var sql = "";
-                        //var targetObject = 
+                        
                         switch (report.ObjectType)
                         {
                             case "Artifact":
@@ -7199,8 +7173,7 @@ from	(
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
-            result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -7273,8 +7246,7 @@ from	(
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
-            result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -7955,74 +7927,6 @@ where	Type = 'ReferenceItemType'
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
-        //        [Route("metrics/groups")]
-        //        public IQueryable<MetricGroup> GetMetricGroups()
-        //        {
-        //            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
-
-        //            return Company.MetricGroups.Where(m => m.State == State.Active);
-        //        }
-
-        //        [Route("metrics/items")]
-        //        public IQueryable<MetricItem> GetMetricItems()
-        //        {
-        //            return Company.Table<MetricItem>();
-        //        }
-
-        //        [Route("metrics/group/{id:int}")]
-        //        public MetricGroup GetMetricGroup(int id)
-        //        {
-        //            return Company.GetById<MetricGroup>(id);
-        //        }
-
-        //        [Route("metrics/item/{id:int}")]
-        //        public MetricItem GetMetricItem(int id)
-        //        {
-        //            return Company.MetricItems.FirstOrDefault(i => i.ID == id);
-        //        }
-
-        //        [Route("metrics/map/{id:int}")]
-        //        public MetricMap GetMetricMap(int id)
-        //        {
-        //            return Company.MetricMaps.FirstOrDefault(i => i.ID == id);
-        //        }
-
-        //        [Route("metrics/maps/{groupId:int}")]
-        //        public List<dynamic> GetMetricMaps(int groupId)
-        //        {
-        //            return Company.Query<dynamic>(@"select 
-        //                                    m.* ,
-        //                                    i.[Name] as itemName,
-        //									a.[Name] as assetTypeName
-        //                                    from metrics.map m
-        //                                    inner join assettype a on a.ID = m.AssetTypeID
-        //                                    inner join metrics.item i on i.id = m.itemid
-        //                                    where m.[State] = 1 and m.groupid = @groupId", new { groupId }).ToList();
-        //        }
-
-        //        [Route("metrics/map/{mapId:int}/conditions")]
-        //        public List<dynamic> GetMetricConditions(int mapId)
-        //        {
-        //            return Company.Query<dynamic>(@"select 
-        //	                                    c.*,
-        //	                                    t.FriendlyName as fieldName
-        //                                    from metrics.condition c
-        //                                    inner join fieldtype t on t.id = c.fieldtypeid
-        //                                    inner join metrics.map m on m.id = c.mapid
-        //                                    where c.mapid = @mapId", new { mapId }).ToList();
-        //        }
-
-        //        [Route("metrics/condition/fields/{assetTypeId:int}")]
-        //        public List<FieldType> GetMetricConditionFields(int assetTypeId)
-        //        {
-        //            return Company.Query<FieldType>(@"
-        //select  * 
-        //from    FieldType
-        //where   AssetTypeID = @assetTypeId 
-        //        and [type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')", 
-        //        new { assetTypeId }).ToList();
-        //        }
-
         #endregion
 
         #region Cascading dropdown values
@@ -8060,9 +7964,6 @@ where	Type = 'ReferenceItemType'
 
             if(parentReferenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
-
-
-            //var sql = "select Text, Value from fieldlookupvalue where fieldTypeID = @id";
             var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
                         inner join[intersectdetail] id on(id.subjecttype = 'ReferenceItemType' and id.objecttype = 'ReferenceItemType' and id.predicatetype = @predicate and id.objectid = flv.value and id.objecttypeid = flv.lookupobjectid and id.subjecttypeid = @parentReferenceListTypeId)
                         inner join[referenceitem] ri on(ri.referenceitemtypeid = id.subjecttypeid and ri.id = id.subjectid and ri.id in @parentReferenceItemId)

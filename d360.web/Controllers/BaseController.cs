@@ -1970,46 +1970,6 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             Operator = (RelationshipIncludeType == "Any") ? "OR" : "AND",
                             TargetObject = RelationshipObjectType
                         });
-
-                        //                    dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
-
-                        //                    if (RelationshipObjectType.ToUpper() == "MAP")
-                        //                    {
-                        //                        var subSql = $@"select a.ID from [Intersect] i
-                        //                                inner join intersecttype it on (i.intersecttypeid = it.id)
-                        //                                inner join[intersect] i_2 on(i_2.subject = 'Map' and i_2.subjectid = i.subjectid and i.subject = 'Map')
-                        //                                inner join artifact a on(a.id = i_2.objectid and a.artifacttypeid = @id)
-                        //                            where i.intersecttypeid = {int.Parse(RelationshipIntersectTypeID)} and i.objectid in ({idList})";
-
-                        //                        filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $"{idColumn} in ({subSql})";
-                        //                    }
-                        //                    else
-                        //                    {
-                        //                        if (RelationshipIncludeType == "Any")
-                        //                        {
-                        //                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $@"{idColumn} in (
-                        //select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-                        //union 
-                        //select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-                        //)";
-                        //                        }
-                        //                        else
-                        //                        {
-                        //                            IDs.ForEach(ID =>
-                        //                            {
-                        //                                int idInt = 0;
-                        //                                if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
-                        //                                {
-                        //                                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ");
-                        //                                    filters += $@"{idColumn} in (
-                        //select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-                        //union 
-                        //select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-                        //)";
-                        //                                }
-                        //                            });
-                        //                        }
-                        //                    }
                     }
                 }
             }
@@ -2064,18 +2024,6 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 AttributeTypeID = attributeTypeID,
                                 RawValue = AttributeSearchValue
                             });
-
-     //                       dbParams.Add("attrTypeAdvFlt", "%" + AttributeSearchValue + "%"); // use bind variable to avoid sql injection
-
-     //                       filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + @"{idColumn} in (
-     //               select ObjectID
-     //               from AttributeDetail
-     //               where ObjectType = 'Artifact' and AttributeTypeID = " + attributeTypeID + @" and FormattedValue like @attrTypeAdvFlt
-     //               union
-     //               select  R.SourceObjectID
-     //               from    cache.Relationships R
-     //                       inner join AttributeDetail A on A.ObjectType = 'Intersect' and A.ObjectID = R.IntersectID and R.SourceType = 'ArtifactType' and R.SourceTypeID = @id and A.FormattedValue like @attrTypeAdvFlt
-					//)";
                         }
                     }
                 }

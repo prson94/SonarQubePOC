@@ -54,9 +54,7 @@ namespace d360.core.entities
         public int AssetTypeID { get; set; }
 
         public string SourceID { get; set; }
-
-        //public string KeyHash { get; set; }
-
+                
         [DataMember, ForeignKey("AssetID")]
         public virtual ICollection<FieldApiModel> Fields { get; set; }
     }

@@ -14,9 +14,5 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual DatabaseServer DatabaseServer { get; set; }
-
-
-        //[IgnoreDataMember, ForeignKey("EnvironmentID")]
-        //public virtual ICollection<CompanyDomainSetting> CompanyDomainSettings { get; set; }
     }
 }

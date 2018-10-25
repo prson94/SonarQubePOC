@@ -286,11 +286,7 @@ namespace d360.web.Controllers
                 case "LOOKUPTYPE":
                     return Lookup_EditFields(oid);
                 case "MAP":
-                    return Map_EditFields(oid);
-                //case "METRICITEM":
-                //    return MetricItem_EditFields(oid);
-                //case "METRICMAP":
-                //    return MetricMap_EditFields(oid);
+                    return Map_EditFields(oid);                
                 case "NAMESPACE":
                     return CustomAPINamespace_EditFields(oid);
                 case "ORGANIZATION":
@@ -361,11 +357,7 @@ namespace d360.web.Controllers
                 case "LOOKUPTYPE":
                     return Lookup_AddFields(objectID.GetValueOrDefault());
                 case "MAP":
-                    return Map_AddFields();
-                //case "METRICITEM":
-                //    return MetricItem_AddFields();
-                //case "METRICMAP":
-                //    return MetricMap_AddFields(parentID.GetValueOrDefault());
+                    return Map_AddFields();                
                 case "NAMESPACE":
                     return CustomAPINamespace_AddFields(parentID.GetValueOrDefault());
                 case "ORGANIZATION":
@@ -458,9 +450,7 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return EditLookup(form);
                 case "MAP":
-                    return EditMap(form);
-                //case "METRICITEM":
-                //    return PutMetricItem(form);
+                    return EditMap(form);                
                 case "NAMESPACE":
                     return EditNamespace(form);
                 case "ORGANIZATION":
@@ -653,9 +643,7 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return AddLookup(form);
                 case "MAP":
-                    return AddMap(form);
-                //case "METRICITEM":
-                //    return PostMetricItem(form);
+                    return AddMap(form);                
                 case "NAMESPACE":
                     return AddNamespace(form);
                 case "ORGANIZATION":
@@ -761,8 +749,7 @@ namespace d360.web.Controllers
             ).SingleOrDefault();
 
             list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
-            //list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
-
+            
             if (intersectType != null)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
@@ -1043,11 +1030,6 @@ namespace d360.web.Controllers
                                 we.changetype = 8 and wi.completedOn is null";
 
                 var count = Company.Query<int>(sql, new { id = id }).FirstOrDefault();
-
-               /* if (count > 0)
-                {
-                    throw new ConflictException("Certification Not Allowed", "There is already a certification request in process for this item.");
-                }*/
 
                 Company.RequestObjectCertification(SystemObjects.Artifact, artifact.ID, SystemObjects.ArtifactType, artifact.ArtifactTypeID);
 
@@ -3283,7 +3265,7 @@ namespace d360.web.Controllers
                 (i.Subject == sType && i.SubjectID == id) || 
                 (i.Object == sType && i.ObjectID == id)
                 ).ToList().Select(i => new {
-                    ID = i.ID,//(i.Subject == sType && i.SubjectID == id) ? i.ObjectID : i.SubjectID,
+                    ID = i.ID,
                     Name = (i.Subject == sType && i.SubjectID == id) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
                 }).Distinct().ToList();
             relatedTypeList.ForEach(r =>
@@ -3324,37 +3306,6 @@ namespace d360.web.Controllers
                 .Select(i => new { i.ID, i.Name })
                 .Distinct()
                 .ToDictionary(i => i.Name, i => i.ID);
-
-            //if (type == SystemObjects.ReferenceItemType)
-            //{
-            //    if (id == 0)
-            //    {
-            //        list.Add("Name", 0);
-            //        if (!list.ContainsKey("Description"))
-            //            list.Add("Description", 0);
-            //    }
-            //    else
-            //    {
-            //        list.Add("Code", 0);
-            //    }
-            //}
-            //else if (type == SystemObjects.ResourceType)
-            //{
-            //    list.Add("FirstName", 0);
-            //    list.Add("LastName", 0);
-            //    list.Add("Email", 0);
-            //    list.Add("DateLastLoggedIn", 0);
-            //}
-            //else if (type == SystemObjects.FusionQueryAttributeType)
-            //{
-            //    list.Add("DisplayValue", 0);
-            //}
-            //else
-            //{
-            //    list.Add("DisplayValue", 0);
-            //    //list.Add("TextPath", 0);
-            //}
-
 
             return new JsonNetResult
             {
@@ -3894,8 +3845,7 @@ namespace d360.web.Controllers
                             }
 
                             var def = new FieldTypeFilteredLookupDefinition
-                            {
-                                //FieldTypeID = model.FieldType.ID,
+                            {                                
                                 Object = model.FilteredLookupItem.Object,
                                 ObjectID = model.FilteredLookupItem.ObjectID,
                                 HideHeader = model.FilteredLookupItem.HideHeader,
@@ -3932,8 +3882,7 @@ namespace d360.web.Controllers
                             model.FieldType.IsListable = false;
                             model.FieldType.IsRequired = false;
                             model.FieldType.FieldTypeFilteredLookupDefinitions = new List<FieldTypeFilteredLookupDefinition>() { def };
-                            //Company.Add<FieldTypeRelationLookupDefinition>(def);
-
+                            
                             Company.Add<FieldType>(model.FieldType);
                         }
                         break;
@@ -3949,8 +3898,7 @@ namespace d360.web.Controllers
                             }
 
                             var def = new FieldTypeFusionLookupDefinition
-                            {
-                                //FieldTypeID = model.FieldType.ID,
+                            {                                
                                 ReferenceType = fi.ReferenceType,
                                 SourceFusionAttributeTypeID = fi.SourceFusionAttributeType,
                                 TargetFusionAttributeTypeID = fi.TargetFusionAttributeType,
@@ -4748,7 +4696,7 @@ namespace d360.web.Controllers
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
                         break;
                     #endregion
-                    case "RefListRelationship": // "ReferenceItemListFromRelationship":
+                    case "RefListRelationship":
                         #region
                         ft.LookupObjectType = model.FieldType.LookupObjectType;
                         ft.LookupObjectID = model.FieldType.LookupObjectID;
@@ -4815,8 +4763,7 @@ namespace d360.web.Controllers
 
             var intervalTypes = new List<SelectListItem>();
             intervalTypes.Add(new SelectListItem { Text = "Minute(s)", Value = "3" });
-            intervalTypes.Add(new SelectListItem { Text = "Hour(s)", Value = "2" });
-            //intervalTypes.Add(new SelectListItem { Text = "Day(s)", Value = "1" });
+            intervalTypes.Add(new SelectListItem { Text = "Hour(s)", Value = "2" });            
             list.Add(new EditableField { Row = 4, Column = 1, FieldName = "IntervalType", Required= true, Name = fusion.GetName(i => i.IntervalType), FieldDescription = fusion.GetDescription(i => i.IntervalType), FieldType = DataType.Lookup.ToString(), Items = intervalTypes });
             list.Add(new EditableField { Row = 4, Column = 2, Required=true, FieldName = "Interval", Name = fusion.GetName(i => i.Interval), FieldDescription = fusion.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString() });
 
@@ -4953,7 +4900,7 @@ namespace d360.web.Controllers
         }
 
         [HttpDelete, Route("DeleteFusion")]
-        public JsonResult DeleteFusion(FormCollection form)//(int typeID, int id)
+        public JsonResult DeleteFusion(FormCollection form)
         {
             try
             {
@@ -4985,7 +4932,7 @@ namespace d360.web.Controllers
         }
         
         [HttpPut, ValidateInput(false), Route("EditFusion")]
-        public JsonResult EditFusion(FormCollection form)//(int typeID, int id, FusionAttributeType model)
+        public JsonResult EditFusion(FormCollection form)
         {
             try
             {
@@ -5228,8 +5175,6 @@ namespace d360.web.Controllers
         {
             try
             {
-                //if (!form.HasKeys()) throw new NoFormDataException("fusion rule");
-
                 var model = Company.GetById<FusionRule>(r.ID);
                 if (model == null) throw new NotFoundException("promotion rule");
 
@@ -5643,55 +5588,6 @@ namespace d360.web.Controllers
             }
         }
 
-        //[ValidateHttpAntiForgeryToken, HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRuleItem")]
-        //public JsonResult AddFusionRuleItem(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        var ruleID = parseIntField(form, "RuleID");
-        //        var rule = Company.GetById<FusionRule>(ruleID);
-        //        if (rule != null)
-        //        {
-        //            rule.UpdatedBy = Company.CurrentResourceID;
-        //            rule.UpdatedOn = DateTime.UtcNow;
-        //        }
-
-        //        var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
-        //        if (fusionAttributeIDs.Count == 0)
-        //        {
-        //            Company.Set<FusionRuleItem>().Add(
-        //                new FusionRuleItem { RuleID = ruleID, ObjectID = null }
-        //                );
-        //        }
-        //        else
-        //        {
-        //            fusionAttributeIDs.ForEach(fa =>
-        //            {
-        //                int? fusionAttributeID = null;
-        //                if (!string.IsNullOrEmpty(fa))
-        //                {
-        //                    fusionAttributeID = int.Parse(fa);
-        //                }
-        //                Company.Set<FusionRuleItem>().Add(
-        //                    new FusionRuleItem { RuleID = ruleID, ObjectID = fusionAttributeID }
-        //                    );
-        //            });
-        //        }
-        //        Company.SaveChanges();
-
-        //        return jsonSuccess("Target item(s) successfully created.", "0", "add", HttpStatusCode.Created);
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
         [HttpDelete, Route("DeleteFusionRuleFilter")]
         public JsonResult DeleteFusionRuleFilter(FormCollection form)
         {
@@ -6056,7 +5952,7 @@ namespace d360.web.Controllers
                     parentObjectType = promoteToInfo[2];
                 }
 
-                var parentSearchType = parseTextField(form, "PrOptionsParentSearchDropdown"); //ParentObjectSearch
+                var parentSearchType = parseTextField(form, "PrOptionsParentSearchDropdown"); 
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = objectID });
 
@@ -6091,7 +5987,7 @@ namespace d360.web.Controllers
             {
                 #region FIND
 
-                var findSearchType = parseTextField(form, "FindSearchType"); //ObjectSearch
+                var findSearchType = parseTextField(form, "FindSearchType"); 
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = findSearchType });
 
@@ -6583,7 +6479,7 @@ namespace d360.web.Controllers
                     {
                         RuleStepID = id,
                         Name = $"{target}ID",
-                        Value = settings[$"{target}ID"]//settings[$"{area}{target}OwnerRule"]
+                        Value = settings[$"{target}ID"]
                     });
 
             }
@@ -7018,8 +6914,7 @@ namespace d360.web.Controllers
                     targetFieldNames.Remove(existingItem.TargetFieldName);
                 }
             }
-
-            //var promotionType = ruleStep.PromotionObjectType;
+                        
             var promotionType = ruleStep.GetSettingValueByName("Object");
             var promotionObjectType = ruleStep.GetSettingValueByName("PromotionParentObjectType");
             int promotionObjectID = 0;
@@ -7044,19 +6939,8 @@ namespace d360.web.Controllers
                     targetFields.AddRange(targetDynamicFields);
                     break;
                 case "ArtifactType":
-                case "TaxonomyType":
-                    //if (!targetFieldNames.Contains("Name"))
-                    //    targetFields.Add(new SelectListItem { Text = "Name", Value = "Name|0" });
-                    //if (!targetFieldNames.Contains("Description"))
-                    //    targetFields.Add(new SelectListItem { Text = "Description", Value = "Description|0" });
-
+                case "TaxonomyType":                    
                     targetFields.AddRange(targetDynamicFields);
-
-                    //if (promotionType == "ArtifactType")
-                    //{
-                    //    if (!targetFieldNames.Contains("Subject Area"))
-                    //        targetFields.Add(new SelectListItem { Text = "Subject Area", Value = "TaxonomyTypeID|0" });
-                    //}
                     break;
                 case "IntersectType":
                     targetFields.AddRange(targetDynamicFields);
@@ -7861,7 +7745,7 @@ namespace d360.web.Controllers
 
         #region FusionQueryAttributeType
 
-        protected JsonResult EditFusionQueryAttribute(FormCollection form)//(int typeID, int id, FusionAttributeType model)
+        protected JsonResult EditFusionQueryAttribute(FormCollection form)
         {
             try
             {
@@ -7969,7 +7853,7 @@ namespace d360.web.Controllers
             }
         }
 
-        protected JsonResult DeleteFusionQueryAttribute(FormCollection form)//(int typeID, int id)
+        protected JsonResult DeleteFusionQueryAttribute(FormCollection form)
         {
             try
             {
@@ -8209,11 +8093,7 @@ namespace d360.web.Controllers
                     var sObject = @object.Value.ToString();
                     usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
                 }
-                //else
-                //{
-                //    usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
-                //}
-
+                
                 if (predicateID > 0)
                 {
                     usedPredicateIDs.Remove(predicateID);
@@ -9407,7 +9287,7 @@ namespace d360.web.Controllers
         /// <param name="id">The Intersect Type's ID</param>
         /// <returns>A list of name/value pairs.</returns>
         [Route("Lineage_MapSubjects"), NonNullableParameters]
-        public JsonNetResult Lineage_MapSubjects(int id)//, SystemObjects o, int oid)
+        public JsonNetResult Lineage_MapSubjects(int id)
         {
             var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
             if (intersectType == null)
@@ -9430,7 +9310,7 @@ order by Name", new { type = new Dapper.DbString { IsAnsi = true, Value = inters
         /// <param name="id">The Intersect Type's ID</param>
         /// <returns>A list of name/value pairs.</returns>
         [Route("Lineage_MapObjects"), NonNullableParameters]
-        public JsonNetResult Lineage_MapObjects(int id)//, SystemObjects o, int oid)
+        public JsonNetResult Lineage_MapObjects(int id)
         {
             var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
             if (intersectType == null)
@@ -9581,276 +9461,7 @@ for json path");
             };
         }
 
-        //[ HttpPost, AjaxValidateAntiForgeryToken, Route("MapRules_Save")]
-        //public JsonNetResult MapRules_Save(MapRulesModel model)
-        //{
-        //    if (model.Rules == null)
-        //        return jsonNetException("No rules specified", HttpStatusCode.BadRequest);
-
-        //    var message = "";
-
-        //    bool canCreate = true;// Company.HasPermission(obj, model.FocalID, Permission.ModifyAsset);
-        //    bool canUpdate = true;//Company.HasPermission(obj, model.FocalID, Permission.ModifyAsset);
-        //    bool canDelete = true;//Company.HasPermission(obj, model.FocalID, Permission.DeleteAsset);
-
-        //    model.Rules.ForEach(viewRule =>
-        //    {
-        //        var map = Company.Filter<Map>(i =>
-        //            i.MapItems.Any(mi => mi.SourceIntersectID == viewRule.SourceIntersectID && mi.TargetIntersectID == viewRule.TargetIntersectID),
-        //            i => i.MapItems
-        //            ).FirstOrDefault();
-
-        //        if (map == null)
-        //        {
-        //            message += "No valid map found for the provided source and target.";
-        //        }
-        //        else
-        //        {
-        //            if (viewRule.ID == 0 && !canCreate)
-        //            {
-        //                message += $"[{DateTime.Now}] You do not have permission to create mapping rules on this item.\n";
-        //            }
-        //            else if (viewRule.ID != 0 && !canUpdate)
-        //            {
-        //                message += $"[{DateTime.Now}] You do not have permission to update mapping rules on this item.\n";
-        //            }
-        //            else
-        //            {
-        //                MapRule mapRule = null;
-
-        //                if (viewRule.ID > 0)
-        //                {
-        //                    mapRule = Company.GetById<MapRule>(viewRule.ID, i => i.MapRuleItems);
-        //                }
-        //                else
-        //                {
-        //                    mapRule = new MapRule
-        //                    {
-        //                        MapRuleItems = new List<MapRuleItem>()
-        //                    };
-        //                }
-
-        //                if (mapRule != null)
-        //                {
-        //                    mapRule.Transformation = viewRule.Transformation;
-
-        //                    #region Process Sources
-
-        //                    viewRule.Sources.ForEach(s =>
-        //                    {
-        //                        if (s.FusionAttributeID > 0)
-        //                        {
-        //                            #region Process Targets
-
-        //                            viewRule.Targets.ForEach(t =>
-        //                            {
-        //                                if (t.FusionAttributeID > 0)
-        //                                {
-        //                                    var existingMapRuleItem = mapRule.MapRuleItems.SingleOrDefault(i => i.SourceFusionAttributeID == s.FusionAttributeID && i.TargetFusionAttributeID == t.FusionAttributeID);
-        //                                    if (existingMapRuleItem == null)
-        //                                    {
-        //                                        mapRule.MapRuleItems.Add(new MapRuleItem { SourceFusionAttributeID = s.FusionAttributeID, TargetFusionAttributeID = t.FusionAttributeID });
-        //                                    }
-        //                                }
-        //                            });
-
-        //                            #endregion
-
-        //                        }
-        //                    });
-
-        //                    #endregion
-
-        //                    #region Now check for any sources that have been deleted.
-
-        //                    var mapItemsToDelete = new List<int>();
-        //                    foreach (var existingMapRuleItem in mapRule.MapRuleItems)
-        //                    {
-        //                        if (
-        //                            !viewRule.Sources.Any(i => i.ID == existingMapRuleItem.ID) &&
-        //                            !viewRule.Targets.Any(i => i.ID == existingMapRuleItem.ID) &&
-        //                            existingMapRuleItem.ID > 0
-        //                        )
-        //                        {
-        //                            mapItemsToDelete.Add(existingMapRuleItem.ID);
-        //                        }
-        //                    }
-
-        //                    #endregion
-
-        //                    try
-        //                    {
-        //                        Company.SaveOrUpdate<MapRule>(mapRule);
-
-        //                        if (canDelete)
-        //                        {
-        //                            mapItemsToDelete.ForEach(id =>
-        //                            {
-        //                                var existingMapRuleItem = mapRule.MapRuleItems.Single(i => i.ID == id);
-        //                                Company.Delete<MapRuleItem>(existingMapRuleItem);
-        //                            });
-        //                        }
-        //                    }
-        //                    catch (Exception ex)
-        //                    {
-        //                        message += $"[{DateTime.Now}] An error occurred while saving rule changes: {ex.Message}\n{ex.StackTrace}\n\n";
-        //                    }
-
-        //                }
-        //                else
-        //                {
-        //                    message += $" The map rule with ID {viewRule.ID} could not be found.";
-        //                }
-        //            }
-        //        }
-        //    });
-
-        //    return new JsonNetResult
-        //    {
-        //        Data = new { message, error = !string.IsNullOrEmpty(message) },
-        //        Formatting = Newtonsoft.Json.Formatting.None
-        //    };
-        //}
-
         #endregion
-
-        ///// <summary>
-        ///// Creates relationships for the various objects the user is adding to the diagram.
-        ///// </summary>
-        ///// <param name="model">An array of items to add relationships for.</param>
-        ///// <returns>A list of name/value pairs.</returns>
-        //[HttpPost, AjaxValidateAntiForgeryToken, Route("Lineage_AddItemsToDiagram")]
-        //public JsonNetResult Lineage_AddItemsToDiagram(AddItemsToDiagramModel model)
-        //{
-        //    model.Items.ForEach(i =>
-        //    {
-        //        try
-        //        {
-        //            var intersect = Company.AddIntersect(i.IntersectTypeID, i.Subject, i.SubjectID, i.Object, i.ObjectID);
-        //            if (intersect != null)
-        //            {
-        //                i.Intersect = intersect;
-        //                i.IntersectID = intersect.ID;
-        //            }
-        //            else
-        //            {
-        //                i.ErrorMessage = "Relationship not successfully created";
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            i.ErrorMessage = ex.GetFullExceptionData();
-        //        }
-        //    });
-
-        //    return new JsonNetResult { Data = model.Items, Formatting = Newtonsoft.Json.Formatting.None };
-        //}
-
-        ///// <summary>
-        ///// Creates relationships for the various objects the user is adding to the diagram.
-        ///// </summary>
-        ///// <param name="models">An array of items to add relationships for.</param>
-        ///// <returns>A list of name/value pairs.</returns>
-        //[HttpPost, AjaxValidateAntiForgeryToken, Route("Lineage_Update")]
-        //public JsonNetResult Lineage_Update(SourcePostModel models)
-        //{
-        //    var message = "";
-        //    var success = false;
-
-        //    models.Adds.ForEach(model =>
-        //    {
-        //        #region 
-        //        if (model.SourceIntersectID <= 0)
-        //        {
-        //            message += $"The source you provided is invalid.";
-        //        }
-        //        else
-        //        {
-        //            if (model.TargetIntersectID <= 0)
-        //            {
-        //                message += $"The target you provided is invalid.";
-        //            }
-        //            else
-        //            {
-        //                var newMap = new Map(); // { Transformation = model.Transformation };
-        //                newMap.MapItems = new List<MapItem>();
-        //                newMap.MapItems.Add(new MapItem { SourceIntersectID = model.SourceIntersectID, TargetIntersectID = model.TargetIntersectID });
-        //                Company.Add<Map>(newMap);
-        //            }
-        //        }
-
-        //        #endregion
-        //    });
-
-        //    models.Deletes.ForEach(model =>
-        //    {
-        //        #region 
-        //        if (model.MapID <= 0)
-        //        {
-        //            message = $"The ID ({model.MapID}) is invalid.";
-        //        }
-        //        else
-        //        {
-        //            var o = Company.GetById<Map>(model.MapID);
-        //            if (o == null)
-        //            {
-        //                message += $"The ID ({model.MapID}) could not be found.";
-        //            }
-        //            else
-        //            {
-        //                //if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Delete, ClaimObject.Relationship))
-        //                //{
-        //                //    message = FormInfo.Permisions_Error_Delete;
-        //                //}
-        //                //else
-        //                //{
-        //                Company.Delete<Map>(o);
-        //                //}
-        //            }
-        //        }
-        //        #endregion
-        //    });
-
-        //    models.Edits.ForEach(model =>
-        //    {
-        //        #region 
-        //        if (model.MapID <= 0)
-        //        {
-        //            message += $"The map ID ({model.MapID}) is invalid.";
-        //        }
-        //        else
-        //        {
-        //            var o = Company.GetById<Map>(model.MapID);
-        //            if (o == null)
-        //            {
-        //                message += $"The map with ID ({model.MapID}) cound not be found.";
-        //            }
-        //            else
-        //            {
-        //                //o.Transformation = model.Transformation;
-        //                Company.Update(o);
-        //            }
-        //        }
-        //        #endregion
-        //    });
-
-        //    success = string.IsNullOrEmpty(message);
-
-        //    if (string.IsNullOrEmpty(message))
-        //    {
-        //        message = "Successfully updated lineage.";
-        //    }
-
-        //    return new JsonNetResult
-        //    {
-        //        Data = new
-        //        {
-        //            message = message,
-        //            success = success
-        //        },
-        //        Formatting = Newtonsoft.Json.Formatting.None
-        //    };
-        //}
 
         [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateLineage")]
         public JsonNetResult UpdateLineage(LineageEditorModel model)
@@ -9867,32 +9478,6 @@ for json path");
 
                 try
                 {
-                    //leftMaps.ToList().ForEach(l =>
-                    //{
-                    //    //remove map items from map
-                    //    l.Maps.ToList().ForEach(m =>
-                    //    {
-                    //        m.MapItems.Remove(l);
-                    //    });
-
-                    //    //remove map sequences and contexts
-                    //    Company.MapSequences.RemoveRange(l.MapSequences);
-                    //    //remove the map item
-                    //    Company.MapItems.Remove(l);
-
-                    //});
-
-                    //rightMaps.ToList().ForEach(r =>
-                    //{
-                    //    r.Maps.ToList().ForEach(m =>
-                    //    {
-                    //        m.MapItems.Remove(r);
-                    //    });
-                    //    Company.MapSequences.RemoveRange(r.MapSequences);
-                    //    Company.MapItems.Remove(r);
-
-                    //});
-
                     mapItem.Maps.ToList().ForEach(m =>
                     {
                         m.MapItems.Remove(mapItem);
@@ -9987,31 +9572,6 @@ for json path");
                     {
                         Company.MapRuleItemMapItems.Remove(mapRuleItemMapItem);
                     }
-
-                    //leftMaps.ToList().ForEach(l =>
-                    //{
-                    //    //remove map items from map
-                    //    l.MapRules.ToList().ForEach(m =>
-                    //        {
-                    //            m.MapRuleItems.Remove(l);
-                    //        });
-
-                    //    //remove the map item
-                    //    Company.MapRuleItems.Remove(l);
-
-                    //});
-
-                    //rightMaps.ToList().ForEach(r =>
-                    //{
-                    //    r.MapRules.ToList().ForEach(m =>
-                    //    {
-                    //        m.MapRuleItems.Remove(r);
-                    //    });
-
-                    //    //remove the map item
-                    //    Company.MapRuleItems.Remove(r);
-
-                    //});
 
                     mapRuleItem.MapRules.ToList().ForEach(m =>
                     {
@@ -10177,8 +9737,7 @@ for json path");
                     if (m.IsDeleting)
                     {
                         if (mapSequence == null)
-                        {
-                            //return jsonException($"Map Sequence ID {m.ID} not found", HttpStatusCode.Forbidden);
+                        {                            
                             return;
                         }
 
@@ -10431,9 +9990,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                         xls = new SLDocument(stream);
 
-                        var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);// getFieldNamesByType(load.Object, load.ObjectID);
-
-                        //fieldTypeNames = fieldTypeNames.Select(i => i.Trim()).ToList();
+                        var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);
 
                         var stats = xls.GetWorksheetStatistics();
                         int columnCount = 0;
@@ -10999,9 +10556,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("Map");
 
                 var map = new Map
-                {
-                    //Name = parseTextField(form,"Name"),
-                   // Transformation= parseTextField(form, "Transform"),
+                {                    
                     MapTypeID = parseIntField(form, "MapType"),
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
@@ -11090,641 +10645,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         }
 
         #endregion
-
-        #region Metrics
-
-        //#region Field Generation
-
-        //[Route("MetricItem_AddFields")]
-        //public JsonResult MetricItem_AddFields()
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-        //    var list = new List<EditableField>();
-
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-        //    list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "SourceID", Name = "Source ID", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Source ID", false, "", 1, 500) });
-
-        //    list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = DateTime.Now.ToString() });
-        //    list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
-
-        //    list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        //[Route("MetricItem_EditFields")]
-        //public JsonResult MetricItem_EditFields(int id)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-        //    var item = Company.MetricItems.FirstOrDefault(i => i.ID == id);
-
-        //    if (item == null)
-        //        return jsonException($"Could not find metric item with id {id}", HttpStatusCode.NotFound);
-
-        //    var list = new List<EditableField>();
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = item.ID.ToString() });
-
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = item.Name });
-        //    list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "SourceID", Name = "Source ID", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Source ID", false, "", 1, 500), Value = item.SourceID });
-
-        //    list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveStartDate.ToString() });
-        //    list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = item.EffectiveEndDate == null ? null : item.EffectiveEndDate.ToString() });
-
-        //    list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = item.Description });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        //[Route("MetricMap_AddFields")]
-        //public JsonResult MetricMap_AddFields(int groupId)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-        //    var list = new List<EditableField>();
-
-        //    var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
-        //    var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
-        //            (
-        //            select 
-	       //             [Object] + '|' + cast(ObjectID as varchar) as [Value],
-	       //             {0} + T.[Name] as [Text] 
-        //            from 
-	       //             AssetType T 
-        //            ) x order by x.Text
-        //            ", QueryConstants.HighLevelTypeCaseStatement)).ToList();
-
-
-        //    list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = groupId.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Percentage.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null) });
-
-        //    list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = DateTime.Now.ToString() });
-        //    list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = DateTime.MaxValue.ToString() });
-
-        //    list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items });
-        //    list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes });
-
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        //[Route("MetricMap_EditFields")]
-        //public JsonResult MetricMap_EditFields(int id)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-        //    var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
-        //    if (map == null)
-        //        return jsonException($"Could not find map for id {id}", HttpStatusCode.NotFound);
-
-
-        //    var list = new List<EditableField>();
-
-        //    var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
-        //    var objectTypes = Company.Query<SelectListItem>(string.Format(@"select * from
-        //            (
-        //            select 
-	       //             [Object] + '|' + cast(ObjectID as varchar) as [Value],
-	       //             {0} + T.[Name] as [Text] 
-        //            from 
-	       //             AssetType T 
-        //            ) x order by x.Text", QueryConstants.HighLevelTypeCaseStatement)).ToList();
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = map.ID.ToString() });
-        //    list.Add(new EditableField { FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = map.GroupID.ToString() });
-
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Weight", Name = "Weight", FieldType = DataType.Percentage.ToString(), Validations = checkAndAddValidation("Decimal", "Weight", true, "", null, null), Value = map.Weight.ToString() });
-
-        //    list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "EffectiveStartDate", Name = "Effective Start Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveStartDate.ToString() });
-        //    list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "EffectiveEndDate", Name = "Effective End Date", FieldType = DataType.Date.ToString(), Value = map.EffectiveEndDate.ToString() });
-
-        //    list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "MetricItem", Name = "Item", FieldType = DataType.Lookup.ToString(), Items = items, Value = map.ItemID.ToString() });
-        //    list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "ArtifactType", Name = "Object Type", FieldType = DataType.Lookup.ToString(), Items = objectTypes, Value = map.Object + '|' + map.ObjectID.ToString() });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-
-        //}
-
-        //#endregion
-
-        //[HttpDelete, ValidateInput(false), Route("MetricMap")]
-        //public JsonResult DeleteMetricMap(int id)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    if (id < 1)
-        //        return jsonException($"The id {id} is not valid", HttpStatusCode.BadRequest);
-
-        //    var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
-
-        //    if (map == null)
-        //        return jsonException($"The mapping with id {id} could not be found", HttpStatusCode.NotFound);
-
-        //    map.State = State.Deleted;
-
-        //    var conditions = Company.MetricConditions.Where(c => c.MapID == id);
-
-        //    try
-        //    {
-        //        Company.MetricConditions.RemoveRange(conditions);
-        //        Company.SaveChanges();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //    return jsonSuccess("Mapping deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
-        //}
-
-        //[HttpGet, ValidateInput(false), Route("MetricMap/{id:int}")]
-        //public JsonNetResult GetMetricMap(int id)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonNetException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    var map = Company.MetricMaps.FirstOrDefault(m => m.ID == id);
-
-        //    var items = Company.MetricItems.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(i => i.Text).ToList();
-
-        //    var objectTypes = Company.Query<SelectListItem>(string.Format(@"select 
-	       //             [Object] + '|' + cast(ObjectID as varchar) as [Value],
-	       //             {0} + T.[Name] as [Text] 
-        //            from 
-	       //             AssetType T", QueryConstants.HighLevelTypeCaseStatement)).OrderBy(i => i.Text).ToList();
-        //    var conditions = Company.Query<dynamic>(@"select 
-	       //                             c.*,
-	       //                             t.FriendlyName as fieldName
-        //                            from metrics.condition c
-        //                            inner join fieldtype t on t.id = c.fieldtypeid
-        //                            inner join metrics.map m on m.id = c.mapid
-        //                            where c.mapid = @id", new { id }).ToList();
-
-        //    items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
-        //    objectTypes.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
-
-        //    return new JsonNetResult
-        //    {
-        //        Data = new
-        //        {
-        //            Map = map,
-        //            Conditions = conditions,
-        //            Items = items,
-        //            ObjectTypes = objectTypes
-        //        }
-        //    };
-        //}
-
-        //[HttpGet, ValidateInput(false), Route("MetricCondition/{mapId:int}/{fieldTypeId:int}")]
-        //public JsonNetResult GetMetricCondition(int mapId, int fieldTypeId)
-        //{
-        //    MetricCondition condition;
-        //    var fields = new List<FieldType>();
-
-        //    fields = Company.Query<FieldType>(@"select  f.* from fieldtype f
-        //                        inner join assettype t on t.id = f.assettypeid
-        //                        inner join metrics.map m on t.[object] = m.[object] and t.objectid = m.objectid
-        //                        where m.id = @mapId and f.[type] in ('Decimal', 'Boolean', 'Number', 'Text', 'DateTime', 'Date', 'Lookup')
-        //                        ", new { mapId }).ToList();
-
-        //    if (fieldTypeId > 0)
-        //        condition = Company.MetricConditions.FirstOrDefault(m => m.FieldTypeID == fieldTypeId && m.MapID == mapId);
-        //    else
-        //        condition = new MetricCondition();
-
-        //    return new JsonNetResult
-        //    {
-        //        Data = new
-        //        {
-        //            Condition = condition,
-        //            Fields = fields
-        //        }
-        //    };
-        //}
-
-        //[HttpPost, AjaxValidateAntiForgeryToken, Route("MetricCondition"), ValidateInput(false)]
-        //public JsonResult PostMetricCondition(MetricCondition model)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    if (model == null || model.MapID < 1 || model.FieldTypeID < 1)
-        //        return jsonException("Model is not valid", HttpStatusCode.BadRequest);
-
-        //    if (string.IsNullOrEmpty(model.Value) || string.IsNullOrEmpty(model.Operator) || string.IsNullOrEmpty(model.AndOr))
-        //        return jsonException("Condition is missing value or operator", HttpStatusCode.BadRequest);
-
-        //    try
-        //    {
-        //        Company.Add(model);
-        //        Company.SaveChanges();
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //    return jsonSuccess("Metric condition added successfully", model.MapID.ToString(), "add", HttpStatusCode.OK);
-        //}
-
-        //[HttpPut, Route("MetricCondition"), ValidateInput(false)]
-        //public JsonResult PutMetricCondition(MetricCondition model)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    if (model == null || model.MapID < 1 || model.FieldTypeID < 1)
-        //        return jsonException("Model is not valid", HttpStatusCode.BadRequest);
-
-        //    var condition = Company.MetricConditions.FirstOrDefault(m => m.MapID == model.MapID && m.FieldTypeID == model.FieldTypeID);
-
-        //    if (condition == null)
-        //        return jsonException($"Condition with mapid {model.MapID} could not be found", HttpStatusCode.NotFound);
-
-
-        //    condition.Operator = model.Operator;
-        //    condition.Value = model.Value;
-        //    condition.AndOr = model.AndOr;
-
-        //    try
-        //    {
-        //        Company.Update(condition);
-        //        Company.SaveChanges();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //    return jsonSuccess("Condition updated successfully", model.MapID.ToString(), "edit", HttpStatusCode.OK);
-        //}
-
-        //[HttpDelete, ValidateInput(false), Route("MetricCondition")]
-        //public JsonResult DeleteMetricCondition(int mapId, int fieldTypeId)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    if (mapId < 1 || fieldTypeId < 1)
-        //        return jsonException($"The condition id is not valid", HttpStatusCode.BadRequest);
-
-        //    var condition = Company.MetricConditions.FirstOrDefault(c => c.MapID == mapId && c.FieldTypeID == fieldTypeId);
-
-        //    if (condition == null)
-        //        return jsonException($"The condition with could not be found", HttpStatusCode.NotFound);
-
-        //    try
-        //    {
-        //        Company.Delete(condition);
-        //        Company.SaveChanges();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //    return jsonSuccess("Condition deleted successfully", mapId.ToString(), "delete", HttpStatusCode.OK);
-        //}
-
-        //[HttpPost, AjaxValidateAntiForgeryToken, Route("MetricMap"), ValidateInput(false)]
-        //public JsonResult PostMetricMap(MetricMapFormModel model)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    if (model == null || model.Map.ID > 0)
-        //        return jsonException("Model is not valid", HttpStatusCode.BadRequest);
-
-        //    if (model.Map.Object == null || model.Map.ObjectID < 1)
-        //        return jsonException("Model is missing object type", HttpStatusCode.BadRequest);
-
-        //    if (model.Map.ItemID < 1)
-        //        return jsonException("Model is missing metric item", HttpStatusCode.BadRequest);
-
-        //    try
-        //    {
-        //        model.Map.State = State.Active;
-        //        Company.Add(model.Map);
-        //        Company.SaveChanges();
-
-
-        //        model.Conditions.ForEach(c =>
-        //        {
-        //            c.MapID = model.Map.ID;
-        //            Company.MetricConditions.Add(c);
-        //        });
-        //        Company.SaveChanges();
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //    return jsonSuccess("Metric group added successfully", model.Map.ID.ToString(), "add", HttpStatusCode.OK);
-
-        //}
-
-        //[HttpPut, Route("MetricMap"), ValidateInput(false)]
-        //public JsonResult PutMetricMap(MetricMapFormModel model)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    if (model == null || model.Map.ID < 1)
-        //        return jsonException("Model is not valid", HttpStatusCode.BadRequest);
-
-        //    var map = Company.MetricMaps.FirstOrDefault(m => m.ID == model.Map.ID);
-        //    var conditions = Company.MetricConditions.Where(c => c.MapID == model.Map.ID).ToList();
-
-        //    if (map == null)
-        //        return jsonException($"Mapping with id {model.Map.ID} could not be found", HttpStatusCode.NotFound);
-
-
-        //    map.ItemID = model.Map.ItemID;
-        //    map.Object = model.Map.Object;
-        //    map.ObjectID = model.Map.ObjectID;
-        //    map.Weight = model.Map.Weight;
-        //    map.EffectiveEndDate = model.Map.EffectiveEndDate;
-        //    map.EffectiveStartDate = model.Map.EffectiveStartDate;
-
-        //    model.Conditions.ForEach(c =>
-        //    {
-        //        var existing = Company.MetricConditions.FirstOrDefault(i => i.MapID == c.MapID && i.FieldTypeID == c.FieldTypeID);
-        //        conditions.Remove(conditions.FirstOrDefault(i => i.MapID == c.MapID && i.FieldTypeID == c.FieldTypeID));
-
-        //        if (existing != null)
-        //        {
-        //            existing.Operator = c.Operator;
-        //            existing.Value = c.Value;
-        //            existing.AndOr = c.AndOr;
-        //        }
-        //        else
-        //        {
-        //            Company.MetricConditions.Add(c);
-        //        }
-        //    });
-
-        //    Company.MetricConditions.RemoveRange(conditions);
-
-        //    try
-        //    {
-        //        Company.Update(map);
-        //        Company.SaveChanges();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //    return jsonSuccess("Mapping updated successfully", model.Map.ID.ToString(), "edit", HttpStatusCode.OK);
-        //}
-
-        //[HttpGet, ValidateInput(false), Route("MetricGroup/{id:int}")]
-        //public JsonNetResult GetMetricGroup(int id)
-        //{
-        //    var group = Company.GetById<MetricGroup>(id);
-        //    List<MetricGroup> children = new List<MetricGroup>();
-        //    if (group != null)
-        //        children = Company.MetricGroups.Where(g => g.ParentID == group.ID).ToList();
-
-        //    return new JsonNetResult
-        //    {
-        //        Data = new
-        //        {
-        //            Group = group,
-        //            Children = children
-        //        },
-        //        Formatting = Newtonsoft.Json.Formatting.None
-        //    };
-
-        //}
-
-        //[HttpPost, AjaxValidateAntiForgeryToken, Route("MetricGroup"), ValidateInput(false)]
-        //public JsonResult PostMetricGroup(MetricGroupFormModel model)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    if (model == null || model.Group == null)
-        //        return jsonException("Model is not valid", HttpStatusCode.BadRequest);
-
-        //    if (string.IsNullOrEmpty(model.Group.Name))
-        //        return jsonException("Group name is not valid", HttpStatusCode.BadRequest);
-
-
-        //    try
-        //    {
-        //        model.Group.State = State.Active;
-        //        Company.Add(model.Group);
-        //        Company.SaveChanges();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //    return jsonSuccess("Metric group added successfully", model.Group.ID.ToString(), "add", HttpStatusCode.OK);
-
-        //}
-
-        //[HttpPut, Route("MetricGroup"), ValidateInput(false)]
-        //public JsonResult PutMetricGroup(MetricGroupFormModel model)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    if (model == null || model.Group == null || model.Group.ID < 1)
-        //        return jsonException("Model is not valid", HttpStatusCode.BadRequest);
-
-        //    var group = Company.GetById<MetricGroup>(model.Group.ID);
-
-        //    if (group == null)
-        //        return jsonException($"Group with id {model.Group.ID} could not be found", HttpStatusCode.NotFound);
-
-
-        //    group.ParentID = model.Group.ParentID;
-        //    group.Name = model.Group.Name;
-        //    group.Description = model.Group.Description;
-        //    group.EffectiveStartDate = model.Group.EffectiveStartDate;
-        //    group.EffectiveEndDate = model.Group.EffectiveEndDate;
-        //    group.SourceID = model.Group.SourceID;
-
-        //    try
-        //    {
-        //        Company.Update(group);
-
-        //        if (model.Children != null && model.Children.Count > 0)
-        //        {
-        //            model.Children.ForEach(c =>
-        //            {
-        //                var child = Company.GetById<MetricGroup>(c.ID);
-        //                if (child != null)
-        //                {
-        //                    child.Weight = c.Weight;
-        //                    Company.Update(child);
-        //                }
-        //            });
-        //        }
-
-        //        Company.SaveChanges();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //    return jsonSuccess("Group updated successfully", model.Group.ID.ToString(), "edit", HttpStatusCode.OK);
-
-        //}
-
-        //[HttpDelete, ValidateInput(false), Route("MetricGroup")]
-        //public JsonResult DeleteMetricGroup(int id)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    if (id < 1)
-        //        return jsonException($"The id {id} is not valid", HttpStatusCode.BadRequest);
-
-        //    var group = Company.GetById<MetricGroup>(id);
-
-        //    if (group == null)
-        //        return jsonException($"The group with id {id} could not be found", HttpStatusCode.NotFound);
-
-        //    try
-        //    {
-        //        var maps = Company.MetricMaps.Where(m => m.GroupID == group.ID).ToList();
-
-        //        maps.ForEach(m =>
-        //        {
-        //            m.State = State.Deleted;
-        //            var conditions = Company.MetricConditions.Where(c => c.MapID == m.ID).ToList();
-        //            Company.MetricConditions.RemoveRange(conditions);
-        //        });
-
-        //        group.State = State.Deleted;
-        //        Company.SaveChanges();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //    return jsonSuccess("Group deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
-        //}
-
-        //[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("MetricItem")]
-        //public JsonResult PostMetricItem(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        if (!Company.CurrentResourceIsAdmin)
-        //            return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-        //        MetricItem m = new MetricItem
-        //        {
-        //            Name = parseTextField(form, "Name"),
-        //            Description = parseTextField(form, "Description"),
-        //            EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate")),
-        //            EffectiveEndDate = null,
-        //            SourceID = parseTextField(form, "SourceID")
-        //        };
-
-        //        if (DateTime.TryParse(parseTextField(form, "EffectiveEndDate"), out var end))
-        //            m.EffectiveEndDate = end;
-
-        //        Company.Add(m);
-
-        //        return jsonSuccess($"{m.Name} metric item successfully created.", m.ID.ToString(), "add", HttpStatusCode.Created);
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        //[HttpPut, ValidateInput(false), Route("MetricItem")]
-        //public JsonResult PutMetricItem(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        if (!Company.CurrentResourceIsAdmin)
-        //            return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-        //        var id = parseIntField(form, "ID");
-
-        //        var m = Company.MetricItems.FirstOrDefault(i => i.ID == id);
-
-        //        if (m == null)
-        //            return jsonException($"Metric Item with ID {id} not found", HttpStatusCode.NotFound);
-
-        //        m.Name = parseTextField(form, "Name");
-        //        m.Description = parseTextField(form, "Description");
-        //        m.EffectiveStartDate = DateTime.Parse(parseTextField(form, "EffectiveStartDate"));
-        //        m.EffectiveEndDate = null;
-        //        m.SourceID = parseTextField(form, "SourceID");
-
-        //        if (DateTime.TryParse(parseTextField(form, "EffectiveEndDate"), out var end))
-        //            m.EffectiveEndDate = end;
-
-
-        //        Company.Update(m);
-
-        //        return jsonSuccess($"{m.Name} metric item successfully updated.", m.ID.ToString(), "edit", HttpStatusCode.Created);
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        //[HttpDelete, ValidateInput(false), Route("MetricItem")]
-        //public JsonResult DeleteMetricItem(int id)
-        //{
-        //    if (!Company.CurrentResourceIsAdmin)
-        //        return jsonException("You do not have permission to perform this action", HttpStatusCode.Forbidden);
-
-        //    var m = Company.MetricItems.FirstOrDefault(i => i.ID == id);
-
-        //    if (m == null)
-        //        return jsonException($"Could not find metric item with id {id}", HttpStatusCode.NotFound);
-
-        //    try
-        //    {
-        //        Company.Delete(m);
-        //        return jsonSuccess($"Metric item successfully deleted.", id.ToString(), "delete", HttpStatusCode.OK);
-
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-
-        //}
-        #endregion
-
+                
         #region Organization
 
         #region Field Generation
@@ -11909,8 +10830,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 Company.OrganizationInvitations.RemoveRange(invitations);
                 Company.OrganizationResources.RemoveRange(resources);
                 Company.OrganizationRegistrations.RemoveRange(registrations);
-
-                //Company.Organizations.Remove(model);
+                                
                 model.State = State.Deleted;
 
                 Company.SaveChanges();
@@ -13295,8 +12215,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
                     UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow//,
-                    //DisplayValue = 
+                    UpdatedOn = DateTime.UtcNow                    
                 };
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
@@ -13837,8 +12756,7 @@ order by D.DisplayValue";
                     return jsonException("No selected items", HttpStatusCode.BadRequest);
 
                 var items = rawItems.Split(',').ToList();
-
-                //if((targetCardinality == Cardinality.One && items.Count > 1) || (targetCardinality == Cardinality.Zero && items.Count > 1))
+                                
                 if ((targetCardinality == Cardinality.One && items.Count > 1))
                     return jsonException("Invalid relationship cardinality for multiple items.", HttpStatusCode.BadRequest);
 
@@ -14408,10 +13326,7 @@ order by TP.TextPath";
 
         private static readonly string pbiUsername = ConfigurationManager.AppSettings["pbiUsername"];
         private static readonly string pbiPassword = ConfigurationManager.AppSettings["pbiPassword"];
-      //  private static readonly string pbiAuthorityUrl = "https://login.windows.net/common/oauth2/authorize/";
-      //  private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
-      //  private static readonly string pbiUrl = "https://api.powerbi.com";
-
+      
         [HttpDelete, Route("DeleteReport")]
         public async Task<JsonResult> DeleteReport(FormCollection form)
         {
@@ -15363,16 +14278,6 @@ order by TP.TextPath";
 
                 Company.Update(existing);
 
-
-                //Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == model.ID);
-
-                //foreach (var r in model.ResponsibilityTypeRelations)
-                //{
-                //    Company.Set<ResponsibilityTypeRelation>().Add(r);
-                //}
-
-                //Company.SaveChanges();
-
                 return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -15870,7 +14775,7 @@ order by DN.DisplayValue");
 
             if (id < 1)
             {
-                model = new ResponsibilityTypeRelationRule();// { ApplyToType = false, IsVisible = true };
+                model = new ResponsibilityTypeRelationRule();
             }
             else
             {
@@ -15880,12 +14785,7 @@ order by DN.DisplayValue");
 
             return new JsonNetResult
             {
-                Data = model,//new
-                //{
-                //    model,
-                //    allocations,
-                //    selectedAllocations
-                //},
+                Data = model,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -16041,7 +14941,7 @@ order by DN.DisplayValue");
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FirstName", Name = "First Name", FieldType = DataType.Text.ToString(), Value = a.FirstName, Validations = checkAndAddValidation("Text", "First Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Value = a.LastName, Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Email", Name = "Email/Username", FieldType = DataType.Text.ToString(), Value = a.Email, Validations = checkAndAddValidation("Text", "Email", true, "", 1, 500) });//@"^([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})$", null, null, "be an email address") });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Email", Name = "Email/Username", FieldType = DataType.Text.ToString(), Value = a.Email, Validations = checkAndAddValidation("Text", "Email", true, "", 1, 500) });
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString(), Value = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID).IsAdministrator.ToString() });
             list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "Status", Name = "Active?", FieldType = DataType.Boolean.ToString(), Value = (a.Status == "Active").ToString() });
 
@@ -16400,9 +15300,7 @@ order by DN.DisplayValue");
                 var currentpassword = parseTextField(form, "CurrentPassword");
                 var password1 = parseTextField(form, "NewPassword");
                 var password2 = parseTextField(form, "ConfirmNewPassword");
-
-                //AuthenticationSource.
-
+                                
                 if (!password1.Equals(password2))
                 {
                     throw new ConflictException("Password values do not match", "Password values do not match.  Please try again.");
@@ -16440,9 +15338,7 @@ order by DN.DisplayValue");
 
                 var password1 = parseTextField(form, "NewPassword");
                 var password2 = parseTextField(form, "ConfirmNewPassword");
-
-                //AuthenticationSource.
-
+                                
                 if (!password1.Equals(password2))
                 {
                     throw new ConflictException("Password values do not match", "Password values do not match.  Please try again.");
@@ -17238,14 +16134,10 @@ order by DN.DisplayValue");
                     if (items.Any())
                     {
                         Company.RuleResultQualifiers.RemoveRange(items);
-
-                       // Company.SaveChanges();
                     }
                 }
 
                 Company.RuleResultQualifierTypes.RemoveRange(qualifiers);
-
-              //  Company.SaveChanges();
 
                 //delete rule results for this implementation
                 var res = Company.RuleResults.Where(x => x.RuleImplementationID == id);
@@ -17256,12 +16148,10 @@ order by DN.DisplayValue");
                         var ruleResultFusionAttributes = Company.RuleResultFusionAttributes.Where(x => x.RuleResultID == ruleResult.ID);
                         if (ruleResultFusionAttributes.Any())
                         {
-                            Company.RuleResultFusionAttributes.RemoveRange(ruleResultFusionAttributes);
-                           // Company.SaveChanges();
+                            Company.RuleResultFusionAttributes.RemoveRange(ruleResultFusionAttributes);                           
                         }
                     }
-                    Company.RuleResults.RemoveRange(res);
-                    //Company.SaveChanges();
+                    Company.RuleResults.RemoveRange(res);                    
                 }
                 Company.SaveChanges();
                 Company.Delete(model);
@@ -17953,9 +16843,7 @@ order by DN.DisplayValue");
             if (existing == null)
                 return jsonException($"The shortcut with id {shortcut.ID} could not be found.", HttpStatusCode.BadRequest);
             if (string.IsNullOrEmpty(shortcut.Name))
-                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
-            //if (string.IsNullOrEmpty(shortcut.Url))
-            //    return jsonException("This shortcut requires a url", HttpStatusCode.BadRequest);
+                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);            
             if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconUrl) && string.IsNullOrEmpty(shortcut.IconPayload))
                 return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
 
@@ -18135,9 +17023,6 @@ order by DN.DisplayValue");
             items.Add(new SelectListItem { Text = "Rule Type :: Quality Check", Value = "RuleType|2" });
             items.Add(new SelectListItem { Text = "Rule Type :: Metric", Value = "RuleType|3" });
             items.Add(new SelectListItem { Text = "Rule Type :: Profile", Value = "RuleType|4" });
-
-
-            //items.AddRange(Community.Table<ResourceType>().OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Resource Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.ResourceType.ToString(), i.ID) }));
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Object", Name = "Assign Survey To", FieldType = DataType.Lookup.ToString(), Items = items });

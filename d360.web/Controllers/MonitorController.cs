@@ -228,10 +228,7 @@ where   A.RuleImplementationID = @id";
                       break;
                 case "Relationship":
                     objType = "IntersectType";
-                     break;
-                //case "Shopping Cart":
-                //      objType = "ShoppingCartType";
-                //      break;
+                     break;                
                 case "Reference List":
                     objType = "ReferenceItemType";
                      break;

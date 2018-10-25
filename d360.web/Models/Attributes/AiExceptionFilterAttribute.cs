@@ -22,23 +22,5 @@ namespace d360.web.Models.Attributes
             base.Log(context);
         }
     }
-    //public class AiExceptionFilterAttribute : ExceptionFilterAttribute
-    //{
-    //    public TelemetryClient Telemetry { get; set; }
-
-    //    public AiExceptionFilterAttribute()
-    //    {
-    //        Telemetry = new TelemetryClient();
-    //    }
-
-    //    public override void OnException(HttpActionExecutedContext actionExecutedContext)
-    //    {
-    //        if (actionExecutedContext != null && actionExecutedContext.Exception != null)
-    //        {
-    //            //var Telemetry = new TelemetryClient();
-    //            Telemetry.TrackException(actionExecutedContext.Exception);
-    //        }
-    //        base.OnException(actionExecutedContext);
-    //    }
-    //}
+    
 }

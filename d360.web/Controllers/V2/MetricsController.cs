@@ -502,30 +502,6 @@ for		json path").ToList();
 
                 models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
 
-                //Func<List<MetricAssetViewModel>, MetricAssetViewModel, List<MetricAssetViewModel>> buildTree = delegate(List<MetricAssetViewModel> list, MetricAssetViewModel parent) {
-                //    var returnList = new List<MetricAssetViewModel>();
-
-                //    if (parent == null)
-                //    {
-                //        foreach(var i in list.Where(o => !o.ParentUid.HasValue))
-                //        {
-                //            i.Children.AddRange(buildTree(list, i));
-                //            returnList.Add(i);
-                //        }
-                //    }
-
-                //    list.ForEach(c =>
-                //    {
-                //        if (c.Children == null)
-                //            c.Children = new List<MetricAssetViewModel>();
-
-                //        if (!c.ParentUid.HasValue)
-                //            returnList.Add(c);
-                //    });
-
-                //    return returnList;
-                //};
-
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
             }
             catch (Exception ex)

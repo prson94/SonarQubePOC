@@ -70,37 +70,7 @@ namespace d360.model
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            //modelBuilder.Entity<d360.core.entities.Plugins.EventType>()
-            //    .HasMany(x => x.FieldTypes)
-            //    .WithMany(x => x.EventTypes)
-            //    .Map(x =>
-            //    {
-            //        x.ToTable("EventTypeFieldType", "plugin");
-            //        x.MapLeftKey("EventTypeID");
-            //        x.MapRightKey("FieldTypeID");
-            //    });
-
-            //modelBuilder.Entity<d360.core.entities.Plugins.FusionAttributeType>()
-            //    .HasMany(x => x.FieldTypes)
-            //    .WithMany(x => x.FusionAttributeTypes)
-            //    .Map(x =>
-            //    {
-            //        x.ToTable("FusionAttributeTypeFieldType", "plugin");
-            //        x.MapLeftKey("FusionAttributeTypeID");
-            //        x.MapRightKey("FieldTypeID");
-            //    });
-
-            //modelBuilder.Entity<d360.core.entities.Plugins.FusionType>()
-            //    .HasMany(x => x.FieldTypes)
-            //    .WithMany(x => x.FusionTypes)
-            //    .Map(x =>
-            //    {
-            //        x.ToTable("FusionTypeFieldType", "plugin");
-            //        x.MapLeftKey("FusionTypeID");
-            //        x.MapRightKey("FieldTypeID");
-            //    });
-
+                        
             modelBuilder.Entity<d360.core.entities.Company>()
                 .HasMany(x => x.Packages)
                 .WithMany(x => x.Companies)

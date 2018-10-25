@@ -253,21 +253,7 @@ where	metrics.AssetMeetsConditions(h.[Uid], h.EffectiveDate, @assetUid) = 1";
 
             foreach (var i in results)
             {
-            //    if (i.ParentUid.HasValue)
-            //    {
-            //        var p = model.SingleOrDefault(o => o.Uid == i.ParentUid.Value);
-            //        if (p != null)
-            //        {
-            //            if (p.Metrics == null)
-            //                p.Metrics = new List<MetricAssetHierarchyModel>();
-
-            //            p.Metrics.Add(i);
-            //        }
-            //    }
-            //    else
-            //    {
                     model.Add(i);
-            //    }
             }
 
             return model;
