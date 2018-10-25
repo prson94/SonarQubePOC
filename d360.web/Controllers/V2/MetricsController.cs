@@ -137,7 +137,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 metricAsset.Description = model.Description;
-                metricAsset.Name = model.Name;
+                metricAsset.Name = model.Name.Trim();
 
                 // If results, then you cannot change. 
                 if (existingResultCount > 0 && model.IsGroup)
@@ -161,7 +161,7 @@ namespace d360.web.Controllers.V2
                     AssetTypeUid = model.AssetTypeUid,
                     Description = model.Description,
                     IsGroup = model.IsGroup,
-                    Name = model.Name,
+                    Name = model.Name.Trim(),
                     State = State.Active
                 };
 
@@ -185,6 +185,20 @@ namespace d360.web.Controllers.V2
                         }
                     }
                     metricAsset.ParentUid = model.ParentUid;
+                }
+                int metricExistsCount = 0;
+                metricExistsCount = (model.ParentUid.HasValue) ? 
+                    Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid = @p", new { n = model.Name.Trim().ToLower(), p = model.ParentUid.Value }).Single() :
+                    Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid is null", new { n = model.Name.Trim().ToLower() }).Single();
+
+                if (metricExistsCount > 0)
+                {
+                    return errorMessageResponse(
+                        HttpStatusCode.BadRequest, 
+                        "Error adding metric",
+                        (model.ParentUid.HasValue) ? 
+                        "You may not add a metric with the same name under the same grouping." :
+                        "You may not add a metric with the same name at the root of the hierarchy.");
                 }
 
                 Company.Add(metricAsset);
