@@ -2455,6 +2455,54 @@ order by wi.StartedOn desc";
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
+        private IList<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(dynamic settings,int itemId)
+        {
+            IList<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
+            if (settings != null && settings.FieldUpdate != null && settings.FieldUpdate.Field != null)
+            {
+                
+                dynamic fields = new JArray(settings.FieldUpdate.Field);
+                for (int i = 0; i < fields.Count; i++)
+                {
+                    var fieldChange = new WorkflowStepFieldChange();
+                    var field = fields[i];
+                    int fieldTypeId = field["@FieldId"] != null ? field["@FieldId"] : 0;
+                    if (fieldTypeId == 0) continue;
+                    fieldChange.FormValue = field["@UseFormValue"] != null ? field["@UseFormValue"] : false;
+                    fieldChange.CurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : "";
+                    fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
+                    fieldChange.AppendValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
+                    FieldType fiedType = Company.GetById<FieldType>(fieldTypeId);
+                    fieldChange.FieldName = fiedType.FriendlyName;
+                    string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
+                    int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
+                    if (fieldChange.FormValue && formFieldId != null && stepId != 0)
+                    {
+                        
+                        var stepSql = @"select fields from workflow.itemstep where  stepid=@stepid and itemid=@itemid";
+                        dynamic stepFields = Company.Query<string>(stepSql, new { stepid= stepId, itemid=itemId }).FirstOrDefault();
+                        stepFields = XmlToDynamic(stepFields,false);
+                       
+
+                        if (stepFields.fields != null && stepFields.fields.form != null && stepFields.fields.form.field != null)
+                        {
+                            JArray sfields = new JArray(stepFields.fields.form.field);
+                            JObject jo = sfields.Children<JObject>()
+                                .FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
+                            fieldChange.Value = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
+                        }
+                    }
+                    else{
+                        fieldChange.Value = field["@Value"] != null ? field["@Value"] : "";
+                    }
+                    fieldChanges.Add(fieldChange);
+                }
+  
+            }
+
+            return fieldChanges;
+        }
+
         [Route("step/detail/{itemStepId:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowVersionStepDetail(int itemStepId)
         {
@@ -2533,6 +2581,7 @@ order by wi.StartedOn desc";
 
             try
             {
+                detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail.Settings,detail.ItemID);
                 string issueObject = null;
                 int issueObjectId = 0;
                 if (detail.Condition != null && detail.Condition.Condition != null)

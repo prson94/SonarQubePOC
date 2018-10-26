@@ -54,6 +54,10 @@
                     </div>
                 </ng-container>
 
+                <ng-container *ngSwitchCase="WorkflowActivityType.FieldChange">
+                    <d3s-workflow-monitor-step-field-change-details [fieldChanges]="step.FieldChanges"></d3s-workflow-monitor-step-field-change-details>
+                </ng-container>
+
                 <ng-container *ngSwitchCase="WorkflowActivityType.Form">
                     <ng-container *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true">
                         <d3s-workflow-monitor-step-email-details [step]="step"></d3s-workflow-monitor-step-email-details>

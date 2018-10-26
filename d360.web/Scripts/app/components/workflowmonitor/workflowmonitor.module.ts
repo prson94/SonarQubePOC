@@ -21,7 +21,7 @@ import { WorkflowMonitorStepDetailsComponent } from './workflowmonitor-step-deta
 import { WorkflowMonitorStepFormDetailsComponent } from './workflowmonitor-step-form-details.component';
 import { WorkflowMonitorStepEmailDetailsComponent } from './workflowmonitor-step-email-details.component';
 import { WorkflowMonitorActionDetailsComponent } from './workflowmonitor-action-details.component';
-
+import { WorkflowMonitorStepFieldChangeDetailsComponent } from './workflowmonitor-step-field-change-details.component';
 
 
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
@@ -86,6 +86,7 @@ import {
         WorkflowMonitorStepFormDetailsComponent,
         WorkflowMonitorStepEmailDetailsComponent,
         WorkflowMonitorActionDetailsComponent,
+        WorkflowMonitorStepFieldChangeDetailsComponent,
     ],
     exports: [
         WorkflowMonitorComponent,        
