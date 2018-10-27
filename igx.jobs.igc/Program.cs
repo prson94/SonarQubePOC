@@ -2,9 +2,11 @@
 using d360.core.entities;
 using d360.core.enums.Workflow;
 using d360.core.queue;
+using d360.extensions;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
+using d360.extensions.storage;
 using d360.model;
 using d360.utils.company;
 using Dapper;
@@ -49,6 +51,7 @@ namespace igx.jobs
         const string timerSettings = "0 */5 * * * *";
 #endif
 
+        [Disable]
         public static void RunScheduleViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         {
             string functionName = "IGC_Integration_Schedule";
@@ -82,8 +85,8 @@ namespace igx.jobs
                         if (settings.Count > 0)
                         {
 #if DEBUG
-                            //var IDs = new List<int>() { 16 }; //, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
-                            mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();// && IDs.Contains(i.ID)).ToList(); // testing only.
+                            var IDs = new List<int>() { 1 }; //, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+                            mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
 #else
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
 #endif
@@ -207,6 +210,21 @@ where		T.CompletedOn is null
     {
         const string functionName = "IGC_Integration";
 
+
+        private IStorageProvider _storage = null;
+        public IStorageProvider Storage
+        {
+            get
+            {
+                if (_storage == null)
+                {
+                    _storage = new AzureStorageProvider();
+                }
+
+                return _storage;
+            }
+        }
+
         private HttpClient _client = null;
         public HttpClient Client
         {
@@ -214,8 +232,8 @@ where		T.CompletedOn is null
             {
                 if (_client == null)
                 {
-                    var handler = new HttpClientHandler { SslProtocols = System.Security.Authentication.SslProtocols.Tls, UseCookies = false };
-                    _client = new HttpClient(handler,false);
+                    var handler = new HttpClientHandler { UseCookies = false }; //SslProtocols = System.Security.Authentication.SslProtocols.Tls, 
+                    _client = new HttpClient(handler, false);
                     _client.Timeout = new TimeSpan(1, 0, 0);
                     _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
                 }
@@ -441,6 +459,9 @@ from		(
 
                 #endregion
 
+                Storage.CreateFolder($"igc-{company.CurrentCompanyID}");
+                var rootFolderName = $"{executionAssetType.ExecutionID}.{executionAssetType.SynchedAssetTypeID}"; // storage folder.
+
                 #region Fields Request
 
                 postModel.pageSize = fieldPageSize;
@@ -453,80 +474,7 @@ from		(
                     if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
                 }
 
-                var fShouldContinue = true;
-                while (fShouldContinue)
-                {
-                    try
-                    {
-                        log.WriteLine($"Company: {model.CompanyID}, Fields Begin Value: {postModel.begin}");
-
-                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
-
-                        if (models != null)
-                        {
-                            // Write the IGC total if we have not already done so.
-                            if (executionAssetType.CurrentSourceAssetCount <= 0)
-                            {
-                                executionAssetType.CurrentSourceAssetCount = (models.paging != null) ? models.paging.numTotal : 0;
-                                executionAssetType.CurrentTargetAssetCount = 0;
-                                company.Update(executionAssetType);
-                            }
-
-                            if (models.items.Count > 0)
-                            {
-                                var list = new List<IntegrationExecutionAsset>();
-                                //parse(models.items, false, list);
-                                foreach (var obj in models.items.Children())
-                                {
-                                    var executionAsset = new IntegrationExecutionAsset
-                                    {
-                                        ExecutionID = executionAssetType.ExecutionID,
-                                        SynchedAssetTypeID = executionAssetType.SynchedAssetTypeID,
-                                        SourceID = obj["_id"].Value<string>(),
-                                        RawObject = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())//obj.ToString(Formatting.None)
-                                    };
-                                    list.Add(executionAsset);
-                                }
-
-                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, list);
-                            }
-
-                            // Should we do this again, since we have not completed the paged dataset.
-                            fShouldContinue = (models.paging.numTotal > models.paging.end + 1);
-                            postModel.begin = models.paging.end + 1;
-                        }
-                    }
-                    catch (Exception postEx)
-                    {
-                        hasRootError = true;
-                        string errorMessage;
-
-                        if (postEx.Message.Contains("Unexpected character encountered while parsing value: <. Path"))
-                            errorMessage = $"Encountered IGC HTML generic error page";
-                        else
-                            errorMessage = $"{postEx.GetFullExceptionData()}";
-
-                        errorBegins.Add(postModel.begin);
-                        if (!errors.Contains(errorMessage))
-                        {
-                            errors.Add(errorMessage);
-                        }
-
-                        // Move onto next page.
-                        postModel.begin = postModel.begin + postModel.pageSize;
-                        if (postModel.begin >= executionAssetType.CurrentSourceAssetCount)
-                        {
-                            fShouldContinue = false;
-                        }
-                    }
-                }
-                if (errors.Count > 0)
-                {
-                    executionAssetType.ErrorMessage += "Field Requests: " + string.Join("; ", errors);
-                    executionAssetType.ErrorMessage += ". Begin values: " + string.Join("; ", errorBegins);
-                    errors.Clear();
-                    errorBegins.Clear();
-                }
+                processAssetPages(postModel, company.CurrentCompanyID, url, $"{rootFolderName}/fields");
 
                 #endregion
 
@@ -542,67 +490,7 @@ from		(
                     if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
                 }
 
-                var rShouldContinue = true;
-                while (rShouldContinue)
-                {
-                    try
-                    {
-                        log.WriteLine($"Company: {model.CompanyID}, Relations Begin Value: {postModel.begin}");
-
-                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
-
-                        if (models != null)
-                        {
-                            if (models.items.Count > 0)
-                            {
-                                var list = new List<IntegrationExecutionAsset>();
-                                foreach (var obj in models.items.Children())
-                                {
-                                    var executionAsset = new IntegrationExecutionAsset
-                                    {
-                                        ExecutionID = executionAssetType.ExecutionID,
-                                        SynchedAssetTypeID = executionAssetType.SynchedAssetTypeID,
-                                        SourceID = obj["_id"].Value<string>(),
-                                        RawObject = obj.ToString(Formatting.None)
-                                    };
-                                    list.Add(executionAsset);
-                                }
-                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, list, "RawRelationships");
-                            }
-
-                            // Should we do this again, since we have not completed the paged dataset.
-                            rShouldContinue = (models.paging.numTotal > models.paging.end + 1);
-                            postModel.begin = models.paging.end + 1;
-                        }
-                    }
-                    catch (Exception postEx)
-                    {
-                        string errorMessage;
-
-                        if (postEx.Message.Contains("Unexpected character encountered while parsing value: <. Path"))
-                            errorMessage = $"Encountered IGC HTML generic error page";
-                        else
-                            errorMessage = $"{postEx.GetFullExceptionData()}";
-
-                        errorBegins.Add(postModel.begin);
-                        if (!errors.Contains(errorMessage))
-                        {
-                            errors.Add(errorMessage);
-                        }
-                        postModel.begin = postModel.begin + postModel.pageSize;
-                        if (postModel.begin >= executionAssetType.CurrentSourceAssetCount)
-                        {
-                            rShouldContinue = false;
-                        }
-                    }
-                }
-                if (errors.Count > 0)
-                {
-                    executionAssetType.ErrorMessage += "Relation Requests: " + string.Join("; ", errors);
-                    executionAssetType.ErrorMessage += ". Begin values: " + string.Join("; ", errorBegins);
-                    errors.Clear();
-                    errorBegins.Clear();
-                }
+                processAssetPages(postModel, company.CurrentCompanyID, url, $"{rootFolderName}/relations");
 
                 #endregion
 
@@ -612,77 +500,18 @@ from		(
                 postModel.begin = currentCount;
                 postModel.properties.Clear();
                 postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField));
-                //postModel.properties.AddRange(roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceNameField)).Select(i => i.SourceNameField));
                 if (synchedAssetType.AllowChangeDetection)
                 {
                     if (!postModel.properties.Contains("created_on")) postModel.properties.Add("created_on");
                     if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
                 }
 
-                var oShouldContinue = true;
-
-                while (oShouldContinue)
-                {
-                    try
-                    {
-                        log.WriteLine($"Company: {model.CompanyID}, Ownership Begin Value: {postModel.begin}");
-
-                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
-
-                        if (models != null)
-                        {
-                            if (models.items.Count > 0)
-                            {
-                                var list = new List<IntegrationExecutionAsset>();
-                                foreach (var obj in models.items.Children())
-                                {
-                                    var executionAsset = new IntegrationExecutionAsset
-                                    {
-                                        ExecutionID = executionAssetType.ExecutionID,
-                                        SynchedAssetTypeID = executionAssetType.SynchedAssetTypeID,
-                                        SourceID = obj["_id"].Value<string>(),
-                                        RawObject = obj.ToString(Formatting.None)
-                                    };
-                                    list.Add(executionAsset);
-                                }
-                                cnn.BulkExecutionAssetLoad(setting.TargetResourceID, list, "RawResponsibilitites");
-                            }
-
-                            // Should we do this again, since we have not completed the paged dataset.
-                            oShouldContinue = (models.paging.numTotal > models.paging.end + 1);
-                            postModel.begin = models.paging.end + 1;
-                        }
-                    }
-                    catch (Exception postEx)
-                    {
-                        string errorMessage;
-
-                        if (postEx.Message.Contains("Unexpected character encountered while parsing value: <. Path"))
-                            errorMessage = $"Encountered IGC HTML generic error page";
-                        else
-                            errorMessage = $"{postEx.GetFullExceptionData()}";
-
-                        errorBegins.Add(postModel.begin);
-                        if (!errors.Contains(errorMessage))
-                        {
-                            errors.Add(errorMessage);
-                        }
-                        postModel.begin = postModel.begin + postModel.pageSize;
-                        if (postModel.begin >= executionAssetType.CurrentSourceAssetCount)
-                        {
-                            oShouldContinue = false;
-                        }
-                    }
-                }
-                if (errors.Count > 0)
-                {
-                    executionAssetType.ErrorMessage += "Ownership Requests: " + string.Join("; ", errors);
-                    executionAssetType.ErrorMessage += ". Begin values: " + string.Join("; ", errorBegins);
-                    errors.Clear();
-                    errorBegins.Clear();
-                }
+                processAssetPages(postModel, company.CurrentCompanyID, url, $"{rootFolderName}/owners");
 
                 #endregion
+
+                // Save to database staging tables.
+                saveToEnvronmentDatabase(cnn, company.CurrentCompanyID, executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, company.CurrentResourceID);
 
                 DateTime start = DateTime.UtcNow;
                 DateTime end;
@@ -876,6 +705,242 @@ from		(
         }
 
         #region Generic
+
+        void saveToEnvronmentDatabase(SqlConnection cnn, int companyID, long executionID, int synchedAssetTypeID, int resourceID)
+        {
+            var rootFolder = $"igc-{companyID}";
+            var assetFolderName = $"{executionID}.{synchedAssetTypeID}"; // storage folder.
+            var path = "";
+            List<StorageFileInfo> pages = null;
+
+            var list = new List<IntegrationExecutionAsset>();
+
+            path = $"{rootFolder}/{assetFolderName}/fields";
+            pages = Storage.ListFiles(path);
+
+            pages.ForEach(p => {
+                IgcDynamicArrayModels page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
+                if (page.items.Count > 0)
+                {
+                    foreach (var obj in page.items.Children())
+                    {
+                        var sourceID = obj["_id"].Value<string>();
+                    
+                        var executionAsset = new IntegrationExecutionAsset
+                        {
+                            ExecutionID = executionID,
+                            SynchedAssetTypeID = synchedAssetTypeID,
+                            SourceID = sourceID,
+                            RawObject = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter()),
+                            FieldsRecieved = true
+                        };
+                        list.Add(executionAsset);
+                    }
+                }
+            });
+
+            path = $"{rootFolder}/{assetFolderName}/owners";
+            pages = Storage.ListFiles(path);
+
+            pages.ForEach(p => {
+                IgcDynamicArrayModels page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
+                if (page.items.Count > 0)
+                {
+                    foreach (var obj in page.items.Children())
+                    {
+                        var sourceID = obj["_id"].Value<string>();
+
+                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
+
+                        if (executionAsset != null)
+                        {
+                            executionAsset.RawResponsibilitites = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
+                            executionAsset.ResponsibilitiesRecieved = true;
+                        }
+                        else
+                        {
+
+                            executionAsset = new IntegrationExecutionAsset
+                            {
+                                ExecutionID = executionID,
+                                SynchedAssetTypeID = synchedAssetTypeID,
+                                SourceID = sourceID,
+                                RawResponsibilitites = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter()),
+                                ResponsibilitiesRecieved = true
+                            };
+                            list.Add(executionAsset);
+                        }
+                    }
+                }
+            });
+
+            path = $"{rootFolder}/{assetFolderName}/relations";
+            pages = Storage.ListFiles(path);
+
+            pages.ForEach(p => {
+                IgcDynamicArrayModels page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
+                if (page.items.Count > 0)
+                {
+                    foreach (var obj in page.items.Children())
+                    {
+                        var sourceID = obj["_id"].Value<string>();
+
+                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
+
+                        if (executionAsset != null)
+                        {
+                            executionAsset.RawRelationships = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
+                            executionAsset.RelationsRecieved = true;
+                        }
+                        else
+                        {
+
+                            executionAsset = new IntegrationExecutionAsset
+                            {
+                                ExecutionID = executionID,
+                                SynchedAssetTypeID = synchedAssetTypeID,
+                                SourceID = sourceID,
+                                RawRelationships = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter()),
+                                RelationsRecieved = true
+                            };
+                            list.Add(executionAsset);
+                        }
+                    }
+                }
+            });
+
+            #region Save to database via Bulk Insert
+
+            var assetTable = new System.Data.DataTable();
+
+            assetTable.Columns.Add("Uid", typeof(Guid));
+
+            assetTable.Columns.Add("ExecutionID", typeof(long));
+            assetTable.Columns.Add("SynchedAssetTypeID", typeof(int));
+            assetTable.Columns.Add("SourceID", typeof(string));
+
+            assetTable.Columns.Add("RawObject", typeof(string));
+            assetTable.Columns.Add("RawRelationships", typeof(string));
+            assetTable.Columns.Add("RawResponsibilitites", typeof(string));
+
+            assetTable.Columns.Add("FieldsRecieved", typeof(bool));
+            assetTable.Columns.Add("RelationsRecieved", typeof(bool));
+            assetTable.Columns.Add("ResponsibilitiesRecieved", typeof(bool));
+
+            assetTable.Columns.Add("ErrorMessages", typeof(string));
+
+            var loadedAssetIDs = new List<string>();
+            list.ForEach(a =>
+            {
+                if (!loadedAssetIDs.Contains(a.SourceID))
+                {
+                    loadedAssetIDs.Add(a.SourceID);
+
+                    var row = assetTable.NewRow();
+
+                    row["Uid"] = a.Uid;
+
+                    row["ExecutionID"] = a.ExecutionID;
+                    row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
+                    row["SourceID"] = a.SourceID;
+
+                    row["RawObject"] = a.RawObject;
+                    row["RawRelationships"] = a.RawRelationships;
+                    row["RawResponsibilitites"] = a.RawResponsibilitites;
+
+                    row["FieldsRecieved"] = a.FieldsRecieved;
+                    row["RelationsRecieved"] = a.RelationsRecieved;
+                    row["ResponsibilitiesRecieved"] = a.ResponsibilitiesRecieved;
+
+                    row["ErrorMessages"] = a.ErrorMessages;
+
+                    assetTable.Rows.Add(row);
+                }
+            });
+
+            if (cnn.State != System.Data.ConnectionState.Open)
+                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+
+            using (var trans = cnn.BeginTransaction())
+            {
+                try
+                {
+                    var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
+
+                    assetBulkCopy.BatchSize = assetTable.Rows.Count;
+                    assetBulkCopy.DestinationTableName = "[integration].[ExecutionAsset]";
+                    assetBulkCopy.BulkCopyTimeout = 3600;
+
+                    assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
+
+                    assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
+                    assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
+                    
+                    assetBulkCopy.ColumnMappings.Add("RawObject", "RawObject");
+                    assetBulkCopy.ColumnMappings.Add("RawRelationships", "RawRelationships");
+                    assetBulkCopy.ColumnMappings.Add("RawResponsibilitites", "RawResponsibilitites");
+
+                    assetBulkCopy.ColumnMappings.Add("FieldsRecieved", "FieldsRecieved");
+                    assetBulkCopy.ColumnMappings.Add("RelationsRecieved", "RelationsRecieved");
+                    assetBulkCopy.ColumnMappings.Add("ResponsibilitiesRecieved", "ResponsibilitiesRecieved");
+
+                    assetBulkCopy.ColumnMappings.Add("ErrorMessages", "ErrorMessages");
+
+                    assetBulkCopy.WriteToServer(assetTable);
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
+
+            #endregion
+        }
+
+        void processAssetPages(IgcPostSearchRequestModel postModel, int companyID, string url, string folderName)
+        {
+            var igcCount = 0;
+            var fShouldContinue = true;
+            while (fShouldContinue)
+            {
+                try
+                {
+                    var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
+                    if (models != null)
+                    {
+                        if (igcCount == 0)
+                        {
+                            igcCount = models.paging.numTotal;
+                        }
+                        // serialize JSON directly to a file
+                        Storage.CreateFile($"igc-{companyID}", $@"{folderName}/{postModel.begin}.json", JsonConvert.SerializeObject(models));
+                        //Storage.CreateFile($"igc-{companyID}", $@"{postModel.begin}.json", JsonConvert.SerializeObject(models));
+                        fShouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                        postModel.begin = models.paging.end + 1;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    using (StreamWriter file = File.CreateText($@"{folderName}\{postModel.begin}_error.json"))
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.Serialize(file, ex);
+                    }
+
+                    // Move onto next page.
+                    postModel.begin = postModel.begin + postModel.pageSize;
+                    if (postModel.begin >= igcCount)
+                    {
+                        fShouldContinue = false;
+                    }
+                }
+            }
+        }
 
         long ConvertDateToUnixTimeMilliseconds(DateTime? date = null)
         {
