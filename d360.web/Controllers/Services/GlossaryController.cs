@@ -92,8 +92,6 @@ namespace d360.web.Controllers.Services
                                         columnSql.Add($"{selectPrefix}.FormattedValue as [{df.FieldTypeName}]");
                                         columnSql.Add($"{selectPrefix}.LookupUrl as [{df.FieldTypeName}Uri]");
                                         
-
-                                        //joinSql.Add($"inner join FieldType {selectTypePrefix} on {selectTypePrefix}.ID = {df.FieldTypeID}");
                                         joinSql.Add($"left join Field {selectPrefix} on {selectPrefix}.FieldTypeID = {df.FieldTypeID} and {selectPrefix}.ObjectType = 'Lookup' and {selectPrefix}.ObjectID = L.ID");
 
                                         //Build where
@@ -294,8 +292,6 @@ from    FieldWithRelation F
                                         columnSql.Add($"{selectPrefix}.FormattedValue as [{df.FieldTypeName}]");
                                         columnSql.Add($"{selectPrefix}.LookupUrl as [{df.FieldTypeName}Uri]");
 
-
-                                        //joinSql.Add($"inner join FieldType {selectTypePrefix} on {selectTypePrefix}.ID = {df.FieldTypeID}");
                                         joinSql.Add($"left join Field {selectPrefix} on {selectPrefix}.FieldTypeID = {df.FieldTypeID} and {selectPrefix}.ObjectType = 'Lookup' and {selectPrefix}.ObjectID = L.ID");
 
                                         //Build where
@@ -370,9 +366,7 @@ from    FieldWithRelation F
                             }
                         }
                         break;
-                    case "FusionLookup":
-                        //columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
-                        //joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = 'Artifact' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID);
+                    case "FusionLookup":                        
                         break;
                     default:
                         columns += $"T{f.ID}.FormattedValue as [{name}], ";
@@ -491,8 +485,7 @@ where   O.ID not in ({GetNoReadSqlStatement()})
                     if (key == "Name") sql += $"A.Name like '{model[key].Replace("'", "''")}%'";
                     if (key == "Description") sql += $"A.Description like '%{model[key].Replace("'", "''")}%'";
                     if (key == "Parent") sql += $"A.Parent like '{model[key].Replace("'", "''")}%'";
-                    if (key == "Status") sql += $"A.Status like '{model[key].Replace("'", "''")}%'";
-                    //if ()
+                    if (key == "Status") sql += $"A.Status like '{model[key].Replace("'", "''")}%'";                    
                 }
             }
 

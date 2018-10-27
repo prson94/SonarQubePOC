@@ -332,8 +332,7 @@ namespace d360.core.entities
     }
 
     public class BulkLoadMatchingFieldModel
-    {
-        //public int FieldTypeID { get; set; }
+    {        
         public string Value { get; set; }
         public int ObjectID { get; set; }
     }

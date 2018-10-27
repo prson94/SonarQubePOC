@@ -37,8 +37,7 @@ namespace d360.core.entities
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
-
-        //[ForeignKey("ResourceID")]
+                
         public virtual ICollection<ResourceGroup> ResourceGroups { get; set; }
 
         public EventObjectInfo GetEventObjectInfo()

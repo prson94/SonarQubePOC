@@ -126,28 +126,18 @@ namespace d360.extensions.caching
             }
             IDatabase cache = Connection.GetDatabase();
 
-            //_Cache.StringSet(name, item.Serialize(), expiry);
             cache.StringSet(name, JsonConvert.SerializeObject(item), expiry);
         }
 
         public void SetList<T, TIdentifier>(string name, SortedDictionary<TIdentifier, T> list, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
         {
-            //RedisValue[] entries = new RedisValue[list.Keys.Count];
-            //var i = 0;
-            //foreach(var k in list.Keys)
-            //{
-            //    entries[i] = list[k].Serialize();
-            //    i++;
-            //}
             IDatabase cache = Connection.GetDatabase();
-            cache.SetAdd(name, JsonConvert.SerializeObject(list));//entries);
+            cache.SetAdd(name, JsonConvert.SerializeObject(list));
         }
 
         public void SetItemInListByID<T, TIdentifier>(string name, TIdentifier id, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
         {
             var dictionary = getOrCreateDictionary<T, TIdentifier>(name);
-
-//           _Cache.get
 
             if (dictionary.ContainsKey(id))
                 dictionary[id] = item;

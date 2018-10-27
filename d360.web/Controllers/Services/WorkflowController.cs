@@ -1329,8 +1329,6 @@ order by wi.StartedOn desc";
         {
             try
             {
-
-                // int versionID = 0;
                 var otype = Company.WorkflowTypes.Find(id);
                 if (otype == null || otype.State != core.enums.State.Active)
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
@@ -1352,9 +1350,6 @@ order by wi.StartedOn desc";
                 Company.Add(@type);
                 Company.SaveChanges();
 
-
-                //
-
                 var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == otype.ID).OrderByDescending(v => v.Version).First();
                 var omodel = GetWorkflowDiagram(id, currentVersion?.Version);
 
@@ -1367,8 +1362,7 @@ order by wi.StartedOn desc";
                 @version.UpdatedOn = DateTime.UtcNow;
                 @version.Version = 1;
 
-                Company.Add(@version);
-                //versionID = @version.ID;
+                Company.Add(@version);                
 
                 Company.SaveChanges();
 
@@ -1908,9 +1902,7 @@ order by wi.StartedOn desc";
                                     Company.Add(link);
                                 }
                                 else
-                                {
-                                    //var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
-
+                                {                                    
                                     var existing = existingLinks.Find(t => t.FromVersionStepID == link.FromVersionStepID && t.ToVersionStepID == link.ToVersionStepID);
                                     if (existing != null) existingLinks.Remove(existing);
 

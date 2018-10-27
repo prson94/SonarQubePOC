@@ -59,10 +59,9 @@ namespace d360.web.Controllers.Services
                 throw new HttpResponseException(HttpStatusCode.NotFound);
 
             var uri = Storage.GetFileSecureUrl("agent-packages", string.Format("{0}.zip", package.ID));
-            //var stream = Storage.GetFile("agent-packages", string.Format("{0}.zip", package.ID));
-
-            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK, new { Uri = uri });//new StreamContent(stream));
-            //result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK, new { Uri = uri });
+            
             return result;
         }
     }

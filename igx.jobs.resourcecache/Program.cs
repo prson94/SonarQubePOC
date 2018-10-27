@@ -37,8 +37,7 @@ namespace igx.jobs.resourcecache
         public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
-            {
-                //CoreFunction.AITrackJobStart(functionName);
+            {                
 #if DEBUG
                 var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 4).ToList();
 #else
@@ -204,8 +203,7 @@ when	not matched by target then
                             }
                             catch (Exception ex)
                             {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                                //log.Error($"Error while removing old resources for Company {c.CompanyID}. Error was: {ex.GetFullExceptionData()}");
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);                                
                             }
 
                             try
@@ -215,8 +213,7 @@ when	not matched by target then
                             }
                             catch (Exception ex)
                             {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                                //log.Error($"Error while removing responsibilities for non-existent resources for Company {c.CompanyID}. Error was: {ex.GetFullExceptionData()}");
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);                                
                             }
 
                             #endregion

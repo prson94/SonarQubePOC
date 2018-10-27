@@ -139,7 +139,6 @@ namespace d360.core
         public SystemObjects ID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        //public bool AllowOwnership { get; set; }
         public bool EnableAudit { get; set; }
         public bool IsType { get; set; }
     }
@@ -161,11 +160,9 @@ namespace d360.core
             var list = new List<SystemObjectInfo>();
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
-            {
-                //var aAttrOwnership = ((AllowOwnershipAttribute)tm.GetCustomAttribute(typeof(AllowOwnershipAttribute)));
+            {                
                 list.Add(new SystemObjectInfo
-                {
-                    //AllowOwnership = (aAttrOwnership != null) ? aAttrOwnership.Allowed : true,
+                {             
                     EnableAudit = ((EnableAuditAttribute)tm.GetCustomAttribute(typeof(EnableAuditAttribute))).Enabled,
                     IsType = ((IsTypeAttribute)tm.GetCustomAttribute(typeof(IsTypeAttribute))).IsType,
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,

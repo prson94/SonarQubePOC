@@ -56,10 +56,7 @@ namespace igx.jobs.databasetaskprocessor
                 }
             }
 
-            //Add the HTML and Text bodies
-            //message.Html = body;
-            //message.Text = "Hello World plain text!"; 
-
+            //Add the HTML and Text bodies            
             var api = new MandrillApi(constants.MANDRILL_API_KEY);
             var resp = api.Messages.SendTemplateAsync(message, templateID).Result;
 
@@ -139,19 +136,11 @@ namespace igx.jobs.databasetaskprocessor
                                 var itemParentId = detail != null ? (detail.ParentID ?? 0) : 0;
 
                             //if the item 
-                            //var assetSql = "select id from asset where [object] = @obj and [objectID] = @i";
-
+                            
                                 long assetId = givenAssetId;
 
                                 if (detail != null)
                                 {
-                                    //if (o == "Artifact")
-                                    //{
-                                    //    var assetIDResult = companyConnection.Query<long?>(assetSql, new { @obj = new Dapper.DbString { IsAnsi = true, Value = o, IsFixedLength = true, Length = 20 }, i = oid }).FirstOrDefault();
-                                    //    if (assetIDResult.HasValue)
-                                    //        assetId = assetIDResult.Value;
-                                    //}
-
                                     if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
                                     else fields.Add("Name", detail.Name);
 

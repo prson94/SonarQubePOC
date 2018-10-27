@@ -29,10 +29,7 @@ namespace d360.core.entities
 
         [DataMember]
         public string SourceID { get; set; }
-
-        [DataMember]
-        public Guid UID { get; set; }
-
+        
         [IgnoreDataMember, ReadOnly(true), Column(TypeName = "varchar"), StringLength(50)]
         public string KeyHash { get; set; }
 
@@ -54,9 +51,7 @@ namespace d360.core.entities
         public int AssetTypeID { get; set; }
 
         public string SourceID { get; set; }
-
-        //public string KeyHash { get; set; }
-
+                
         [DataMember, ForeignKey("AssetID")]
         public virtual ICollection<FieldApiModel> Fields { get; set; }
     }

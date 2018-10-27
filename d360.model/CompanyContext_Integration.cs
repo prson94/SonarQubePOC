@@ -190,8 +190,7 @@ namespace d360.model
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
-                    //throw;
+                    trans.Rollback();                    
                 }
             }
 
@@ -714,8 +713,7 @@ when not matched by target then
                     {
                         var dbr = retResults.SingleOrDefault(i => i.ItemNumber == air.ItemNumber);
                         if (dbr != null)
-                        {
-                            //air.ObjectID = dbr.ObjectID;
+                        {                            
                             air.IsNew = dbr.IsNew;
                             air.Success = dbr.Success;
                             air.uid = dbr.uid;
@@ -986,16 +984,13 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                 foreach (var k in model.Fields.Keys.Where(k => k != "ParentUid"))
                 {
-                    //if (!string.IsNullOrEmpty(model.Fields[k]))
-                    //{
                         var fieldRow = assetFieldTable.NewRow();
 
                         fieldRow["ItemNumber"] = i;
                         fieldRow["FieldName"] = k.Trim();
                         fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
 
-                        assetFieldTable.Rows.Add(fieldRow);
-                    //}
+                        assetFieldTable.Rows.Add(fieldRow);                 
                 }
             }
 

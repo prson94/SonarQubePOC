@@ -62,8 +62,7 @@ namespace d360.core.entities
 
         public string FormatDisplayName()
         {
-            return string.Format("{0} {1}", FirstName, LastName);
-            //return string.Format("{0} {1} ({2})", FirstName, LastName, Username);
+            return string.Format("{0} {1}", FirstName, LastName);            
         }
 
         public FieldsObjectModel GetFieldsObjectInfo()

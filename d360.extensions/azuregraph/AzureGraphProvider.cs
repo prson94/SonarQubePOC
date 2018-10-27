@@ -77,12 +77,7 @@ namespace d360.extensions.azuregraph
     {       
         // Get an authenticated Microsoft Graph Service client.
         public static async Task<InvitedUserResult> CreateGuestAccount(string email, string firstName, string lastName, string title, string url, string tenantId, string clientId, string clientSecret)
-        {            
-            //var tenantId = "b0f971a2-a021-43c6-b4e9-8bf500ebf35b"; // azure ad tenant / directory id
-
-            // from portal
-            //var clientId = "a9f106b3-52fc-43ca-b33b-9e53a58b40dd"; // application id from portal
-            //var clientSecret = "5w+fAVAdSv1bZtHMVBwAQy1AJtbUr/2v1X3rbCRpY0U=";  // encoded key from azure portal app key
+        {               
             string token = await GetAuthCode(tenantId, clientId, clientSecret);
 
             var inviteResponse = await InviteUser(token, email, url, false);
@@ -95,12 +90,7 @@ namespace d360.extensions.azuregraph
                
 
         private static async Task<string> GetAuthCode(string tenantId, string clientId, string clientSecret)
-        {
-            //var tenantId = "b0f971a2-a021-43c6-b4e9-8bf500ebf35b"; // azure ad tenant / directory id
-            
-            // from portal
-            //var clientId = "a9f106b3-52fc-43ca-b33b-9e53a58b40dd"; // application id from portal
-            //var clientSecret = "5w+fAVAdSv1bZtHMVBwAQy1AJtbUr/2v1X3rbCRpY0U=";  // encoded key from azure portal app key
+        {            
             HttpClient client = new HttpClient();
             StringContent queryString = new StringContent($"grant_type=client_credentials&client_id={clientId}&client_secret={HttpUtility.UrlEncode(clientSecret)}&resource=https://graph.microsoft.com",Encoding.UTF8, "application/x-www-form-urlencoded");
             
@@ -119,8 +109,7 @@ namespace d360.extensions.azuregraph
         {
             using (HttpClient client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                //  StringContent queryString = new StringContent("{\"invitedUserEmailAddress\":\"" + email + "\",\"inviteRedirectUrl\":\"" + url + "\", \"sendInvitationMessage\":true}", Encoding.UTF8, "application/json");
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);                
                 var invite = new InvitedUser
                 {
                     givenName = firstName,
@@ -141,8 +130,7 @@ namespace d360.extensions.azuregraph
         {            
             using (HttpClient client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                //  StringContent queryString = new StringContent("{\"invitedUserEmailAddress\":\"" + email + "\",\"inviteRedirectUrl\":\"" + url + "\", \"sendInvitationMessage\":true}", Encoding.UTF8, "application/json");
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);                
                 var invite = new UserInvitation
                 {
                     invitedUserEmailAddress = email,

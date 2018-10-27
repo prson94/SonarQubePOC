@@ -506,10 +506,6 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                                 case "Name":
                                     list = list.Where(f => f.Name == fValue);
                                     break;
-                                    //case "System":
-                                    //    list = list.Where(f => f.System.Contains(fValue));
-                                    //    break;
-
                             }
                             break;
                         case "NOT_EQUAL":
@@ -542,8 +538,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
             #endregion
 
-            var items = list//.Skip(pagenum * pagesize)
-                            //.Take(pagesize)
+            var items = list                            
                 .Select(i => new
                 {
                     i.ID,

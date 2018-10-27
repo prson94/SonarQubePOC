@@ -31,8 +31,7 @@ namespace d360.web.Controllers
 {
     [RoutePrefix(""), ValidateContracts(Ignore = true)]
     public class AuthenticationController : BaseController
-    {
-        //const string APP_ID = "https://d3s.com/ui"; //saml testing id
+    {        
         const string APP_ID = "https://data3sixty.com/ui";
 
         #region DI
@@ -188,14 +187,12 @@ namespace d360.web.Controllers
             ServiceProvider.ReceiveSAMLResponseByHTTPPost(Request, out samlResponseXml, out relayState);
 
             Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => samlResponseXml: {samlResponseXml.InnerXml}", SeverityLevel = SeverityLevel.Information });
-            //Trace.TraceInformation("AssertionConsumerService => samlResponseXml: {0}", samlResponseXml.InnerXml);
-
+            
             // Deserialize the XML.
             samlResponse = new SAMLResponse(samlResponseXml);
 
             Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => IsSuccessful: {(samlResponse.IsSuccess() ? "Yes" : "No")}", SeverityLevel = SeverityLevel.Information });
-            //Trace.TraceInformation("AssertionConsumerService => IsSuccessful: {0}", samlResponse.IsSuccess() ? "Yes" : "No");
-
+            
             // Check whether the SAML response indicates success or an error and process accordingly.
             if (samlResponse.IsSuccess())
             {

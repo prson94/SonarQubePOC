@@ -32,8 +32,7 @@ namespace d360.web.Controllers
             {
                 var attributes = Company.GetAttributeAndIntersectHierarchyByObject(type, id).ToList();
                 var categories = attributes.Where(i => !string.IsNullOrEmpty(i.AttributeTypeCategory)).Select(i => i.AttributeTypeCategory).Distinct().OrderBy(i => i).ToList();
-                //categories.Insert(0, "Enterprise-wide Attributes");
-
+                
                 var rootNode = new AttributeHierarchyItem { ID = "EC", IsCategory = true, ObjectTypeName = "", ShowNameInTree = true, Name = "Enterprise-wide", ObjectType = type.ToString(), ObjectID = id, IsTechnical = false, ParentObjectType = type.ToString(), ParentObjectID = id };
                 rootNode.Items.AddRange(nestHierarchyNode(attributes, null, null));
                 list.Add(rootNode);
@@ -216,7 +215,7 @@ namespace d360.web.Controllers
                                             isFolderNode,
                                             objectType,
                                             "D",
-                                            attr.ObjectID,//factObjectID,
+                                            attr.ObjectID,
                                             attr.Name,
                                             attr.AttributeTypeID
                                             );

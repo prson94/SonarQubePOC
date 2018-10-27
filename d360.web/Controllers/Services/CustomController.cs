@@ -1475,7 +1475,7 @@ namespace d360.web.Controllers.Services
                 sql += $" OFFSET({pageNumber * pageSize}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY";
 
                 // Get the actual results from DB.
-                var assets = Company.Query<dynamic>(sql, dbArgs); //new { id = config.First().AssetType.ID }
+                var assets = Company.Query<dynamic>(sql, dbArgs);
                 var lastModifiedDate = Company.Query<DateTime?>(lastmodifiedDateSql, dbArgs).SingleOrDefault();
 
                 #region Calculate the page links
@@ -1674,9 +1674,7 @@ namespace d360.web.Controllers.Services
                     responseMessage = Request.CreateResponse(HttpStatusCode.OK, json , "application/json");
                 }
                 else
-                {
-                    //XNamespace ns = "http://www.api.londonmarketgroup.co.uk/schema/2017/07/version";
-
+                {                    
                     var serviceID = config.ServiceID;
                     var namespaces = Company.ApiNamespaces.Where(i => i.ServiceID == serviceID).ToDictionary(k => k.Node, v => v.Namespace);
 

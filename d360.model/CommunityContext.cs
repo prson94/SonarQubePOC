@@ -57,7 +57,7 @@ namespace d360.model
         public DbSet<d360.core.entities.Plugins.PackageContent> PackageContents { get; set; }
 
         public DbSet<d360.core.entities.Plugins.EventType> EventTypes { get; set; }
-        //public DbSet<d360.core.entities.Plugins.FieldType> FieldTypes { get; set; }
+        
         public DbSet<d360.core.entities.Plugins.FusionAttributeType> FusionAttributeTypes { get; set; }
         public DbSet<d360.core.entities.Plugins.FusionAttributeTypeField> FusionAttributeTypeFields { get; set; }
         public DbSet<d360.core.entities.Plugins.FusionIntersectType> FusionIntersectTypes { get; set; }
@@ -70,37 +70,7 @@ namespace d360.model
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            //modelBuilder.Entity<d360.core.entities.Plugins.EventType>()
-            //    .HasMany(x => x.FieldTypes)
-            //    .WithMany(x => x.EventTypes)
-            //    .Map(x =>
-            //    {
-            //        x.ToTable("EventTypeFieldType", "plugin");
-            //        x.MapLeftKey("EventTypeID");
-            //        x.MapRightKey("FieldTypeID");
-            //    });
-
-            //modelBuilder.Entity<d360.core.entities.Plugins.FusionAttributeType>()
-            //    .HasMany(x => x.FieldTypes)
-            //    .WithMany(x => x.FusionAttributeTypes)
-            //    .Map(x =>
-            //    {
-            //        x.ToTable("FusionAttributeTypeFieldType", "plugin");
-            //        x.MapLeftKey("FusionAttributeTypeID");
-            //        x.MapRightKey("FieldTypeID");
-            //    });
-
-            //modelBuilder.Entity<d360.core.entities.Plugins.FusionType>()
-            //    .HasMany(x => x.FieldTypes)
-            //    .WithMany(x => x.FusionTypes)
-            //    .Map(x =>
-            //    {
-            //        x.ToTable("FusionTypeFieldType", "plugin");
-            //        x.MapLeftKey("FusionTypeID");
-            //        x.MapRightKey("FieldTypeID");
-            //    });
-
+                        
             modelBuilder.Entity<d360.core.entities.Company>()
                 .HasMany(x => x.Packages)
                 .WithMany(x => x.Companies)
@@ -175,9 +145,7 @@ namespace d360.model
             }
             catch (Exception ex)
             {
-                throw ex;
-                //ex = resolveToRealException(ex);
-                //throw new d360.core.exceptions.ConflictException(ex.Message, ex.Message);
+                throw ex;                
             }
         }
 
@@ -355,11 +323,11 @@ namespace d360.model
             {
                 if (oldPassword != newPassword)
                 {
-                    var r = GetById<Resource>(resourceID); //Repo.GetById(resourceID);
+                    var r = GetById<Resource>(resourceID);
                     if (r != null)
                     {
                         r.Password = HashPassword(newPassword);
-                        Update<Resource>(r); //Repo.SaveOrUpdate(resource);
+                        Update<Resource>(r);
                         success = true;
                     }
                     r = null;

@@ -14,9 +14,6 @@ namespace d360.extensions
         int CompanyID { get; set; }
         int ResourceID { get; set; }
         bool IsAdministrator { get; set; }
-        //string RawCompanyID { get; set; }
-        //CompanyIdentifierType CompanyIDType { get; }
-        //string RawUserID { get; set; }
-        //UserIdentifierType UserIDType { get; }
+        
     }
 }

@@ -3133,20 +3133,28 @@ as
 			I.PredicateName,
 			I.PredicateInverse
 	from	PredicateIntersect I with(nolock)
-			inner join (
-				select DisplayValue as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName from AssetDetail
+	inner join (
+				select coalesce(FA.TextPath,DisplayValue) as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName from AssetDetail A
+				left join FusionAttribute FA on FA.ID = A.ObjectID and A.Object = 'FusionAttribute'
 				union all
 				select NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName from [Intersect] I
 				inner join IntersectType T on T.ID = I.IntersectTypeID
 				cross apply dbo.GetIntersectNames(I.ID) NI	
 				cross apply dbo.GetIntersectTypeNames(T.ID) NIT
+				union all
+				select TA.Name, TA.Object, TA.ObjectID, null as ForeColor, null as BackColor, null as Icon, 'ReferenceItemType' as Type, 0 as TypeID, TA.Name as TypeName from AssetType TA
+				where TA.Object = 'ReferenceItemType'
 			) S on S.Object = I.Subject and S.ObjectID = I.SubjectID
 			inner join (
-				select DisplayValue as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName from AssetDetail
+				select coalesce(FA.TextPath,DisplayValue) as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName from AssetDetail A
+				left join FusionAttribute FA on FA.ID = A.ObjectID and A.Object = 'FusionAttribute'
 				union all
 				select NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName from [Intersect] I
 				inner join IntersectType T on T.ID = I.IntersectTypeID
 				cross apply dbo.GetIntersectNames(I.ID) NI	
 				cross apply dbo.GetIntersectTypeNames(T.ID) NIT
-			) O on O.Object = I.Subject and O.ObjectID = I.SubjectID
+				union all
+				select TA.Name, TA.Object, TA.ObjectID, null as ForeColor, null as BackColor, null as Icon, 'ReferenceItemType' as Type, 0 as TypeID, TA.Name as TypeName from AssetType TA
+				where TA.Object = 'ReferenceItemType'
+			) O on O.Object = I.Object and O.ObjectID = I.ObjectID
 GO

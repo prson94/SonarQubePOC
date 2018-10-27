@@ -65,15 +65,7 @@ namespace d360.web
             builder.RegisterAssemblyTypes(typeof(HomeController).Assembly).InNamespaceOf<HomeController>().AsSelf();
 
             #endregion
-
-            #region Hub DI
-
-            //builder.RegisterHubs(Assembly.GetExecutingAssembly());
-            //builder.RegisterHubs(typeof(HomeController).Assembly);
-            //builder.RegisterType<SocialHub>().ExternallyOwned();
-
-            #endregion
-
+            
             return builder.Build();
         }
     }

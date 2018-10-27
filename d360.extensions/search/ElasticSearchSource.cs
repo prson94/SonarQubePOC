@@ -99,8 +99,7 @@ namespace d360.extensions.search
 
         JObject createDocument(IndexObjectModel item)
         {
-            var doc = new JObject();
-            //doc.Add("Type", item.Type);
+            var doc = new JObject();            
             doc.Add("Url", item.RelativeUrl);
             if (item.Fields != null)
             {

@@ -67,7 +67,7 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("default/contracts")]
         public IEnumerable<ContractDetail> GetDefaultContracts()
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
+            if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
 
             var contractTypes = ContractType.OrganizationTermsOfUse.GetEnumList();

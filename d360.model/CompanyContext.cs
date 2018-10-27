@@ -1775,11 +1775,8 @@ where	R.SourceObject = 'FusionAttribute'
         #region Social
 
         public IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations)
-        {
-            //comment.DateCreated = DateTime.UtcNow;
-            //comment.CreatingResourceID = CurrentResourceID;
-            var now = DateTime.UtcNow;
-            //SaveOrUpdate<Comment>(comment);
+        {            
+            var now = DateTime.UtcNow;            
             if (relations == null)
                 relations = new List<CommentRelation>();
 
@@ -2324,10 +2321,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                     var id = o.ID.ToString();
 
                     switch (entry.State)
-                    { 
-                        //case EntityState.Added:
-                        //    if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);                            
-                        //    break;
+                    {                         
                         case EntityState.Deleted:
                             var any = false;
                             any = Any<Intersect>(i => (i.Subject == "Artifact" && i.SubjectID == o.ID) || (i.Object == "Artifact" && i.ObjectID == o.ID));
@@ -2335,10 +2329,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
                             any = ObjectHasChildren(SystemObjects.Artifact, o.ID);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);                            
-                            break;
-                        //case EntityState.Modified:
-                        //    if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);                            
-                        //    break;
+                            break;                        
                     }
 
                     Caching.RemoveItem(key(ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY, o.ArtifactTypeID));
@@ -2853,11 +2844,7 @@ select @err";
 
                     switch (entry.State)
                     {
-                        //case EntityState.Added:
-                        //    if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) 
-                        //        throw new ArgumentException(Messages.Error_NameTaken);
-                            
-                        //    break;
+                        
                         case EntityState.Deleted:
                             var any = Any<Field>(f => f.FieldType.LookupObjectType == "Taxonomy" && f.FieldType.LookupObjectID == taxonomyTypeID && f.Value == id);
                             if (any) 
@@ -2870,15 +2857,9 @@ select @err";
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_ChildModelsExist);
                             
                             break;
-                        //case EntityState.Modified:
-                        //    if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID && i.ID != o.ID)) 
-                        //        throw new ArgumentException(Messages.Error_NameTaken);
-                            
-                        //    break;
+                        
                     }
 
-                    //Caching.RemoveItem(key(TAXONOMY_BY_TYPE_PREFIX_KEY, o.TaxonomyTypeID));
-                    //Caching.RemoveItem(key(TAXONOMYDETAIL_BY_TYPE_PREFIX_KEY, o.TaxonomyTypeID));
                 }
                 #endregion
 
@@ -2906,25 +2887,6 @@ select @err";
                 }
                 #endregion
 
-                #region Business logic : TooltipTemplate
-                //if (entry.Entity is TooltipTemplate)
-                //{
-                //    var o = entry.Entity as TooltipTemplate;
-                //    var id = o.ID.ToString();
-
-                //    switch (entry.State)
-                //    {
-                //        case EntityState.Added:
-                //            if (Any<TooltipTemplate>(i => i.Name == o.Name && i.Action == o.Action))
-                //                throw new ArgumentException(Messages.Error_NameTaken);
-                //            break;
-                //        case EntityState.Modified:
-                //            if (Any<TooltipTemplate>(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
-                //                throw new ArgumentException(Messages.Error_NameTaken);
-                //            break;
-                //    }
-                //}
-                #endregion
             }
 
             #region Get objects that need event tracking.

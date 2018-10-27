@@ -134,7 +134,6 @@ namespace d360.web.Controllers
         }
     }
 
-    //[ModifiedSinceHeaderAttribute]
     public class BaseApiController : System.Web.Http.ApiController
     {
         internal CompanyContext Company;
@@ -207,10 +206,7 @@ namespace d360.web.Controllers
         }
 
         internal System.Web.Http.IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
-        {
-            //return ResponseMessage(
-            //    Request.CreateErrorResponse(status, title, new ApplicationException(message))
-            //    );
+        {            
             return ResponseMessage(
                 Request.CreateResponse(
                     status,
@@ -430,8 +426,7 @@ namespace d360.web.Controllers
 
         #endregion
     }
-
-    //[ModifiedSinceHeaderAttribute]
+        
     public class BaseController: Controller
     {
         internal CompanyContext Company;
@@ -1330,10 +1325,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             #endregion
 
             querySql = applyPagingSuffix(querySql, pagenum, pagesize);              // Paging
-
-            //countSql += " OPTION (RECOMPILE)";
-            //querySql += " OPTION (RECOMPILE)";
-
+                        
             int total = Company.Query<int>(countSql, dbArgs).First();
             var query = Company.Query<dynamic>(querySql, dbArgs);
 
@@ -1448,11 +1440,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                     var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
 
                     if (relationFieldInfo != null)
-                    {
-                        //var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
-                        //var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
-                        //var typeIDColumnName = relationFieldInfo.Object + "ID";
-
+                    {                        
                         if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
                         columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
 
@@ -1553,8 +1541,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             columnName = "Name";
                         }
                     }
-                    sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");
-                    //sb.Append($"(IIF(Field{field.ID}_T.SubjectType = '{fieldTypeRelationType}' and Field{field.ID}_T.SubjectTypeID = {typeID} , Field{field.ID}_T.SubjectName, Field{field.ID}_T.SubjectName) like @simpleFilter + '%')");
+                    sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");                    
                 }
                 else if (field.Type == DataType.FieldFromRelationship.ToString())
                 {
@@ -1608,11 +1595,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             foreach (var f in fields)
             {
-                var name = $"Field{f.ID}"; //f.Name.Replace("'", "''").Replace("--", "");
+                var name = $"Field{f.ID}";
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
-
-
-                //var thisColumn = $", coalesce({name}_T.FormattedValue, {name}_TT.DefaultFormattedValue) as [{(useFriendlyName ? friendlyName : name)}]";
                 var thisColumn = $@", case 
     when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
     when {name}_T.Value is not null then {name}_T.FormattedValue 
@@ -1711,23 +1695,6 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     querySyntax += ")";
 
                     break;
-                //greater / less than cause issues with dates when casting...               
-                /*case "GREATER_THAN":
-                    dbParams.Add(bind, $"{value}");                    
-                    querySyntax =  $"CAST({field} as numeric) > CAST(@{bind} as numeric)";
-                    break;
-                case "GREATER_THAN_OR_EQUAL":
-                    dbParams.Add(bind, $"{value}");
-                    querySyntax =  $"CAST({field} as numeric) >= CAST(@{bind} as numeric)";  
-                    break;                  
-                case "LESS_THAN":
-                    dbParams.Add(bind, $"{value}");
-                    querySyntax =  $"CAST({field} as numeric) < CAST(@{bind} as numeric)";  
-                    break;                  
-                case "LESS_THAN_OR_EQUAL":
-                    dbParams.Add(bind, $"{value}");
-                    querySyntax =  $"CAST({field} as numeric) <= CAST(@{bind} as numeric)"; 
-                    break;                   */
                 case "NULL":
                     querySyntax = $"{field} is null";
                     break;
@@ -1970,46 +1937,6 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             Operator = (RelationshipIncludeType == "Any") ? "OR" : "AND",
                             TargetObject = RelationshipObjectType
                         });
-
-                        //                    dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
-
-                        //                    if (RelationshipObjectType.ToUpper() == "MAP")
-                        //                    {
-                        //                        var subSql = $@"select a.ID from [Intersect] i
-                        //                                inner join intersecttype it on (i.intersecttypeid = it.id)
-                        //                                inner join[intersect] i_2 on(i_2.subject = 'Map' and i_2.subjectid = i.subjectid and i.subject = 'Map')
-                        //                                inner join artifact a on(a.id = i_2.objectid and a.artifacttypeid = @id)
-                        //                            where i.intersecttypeid = {int.Parse(RelationshipIntersectTypeID)} and i.objectid in ({idList})";
-
-                        //                        filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $"{idColumn} in ({subSql})";
-                        //                    }
-                        //                    else
-                        //                    {
-                        //                        if (RelationshipIncludeType == "Any")
-                        //                        {
-                        //                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $@"{idColumn} in (
-                        //select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-                        //union 
-                        //select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-                        //)";
-                        //                        }
-                        //                        else
-                        //                        {
-                        //                            IDs.ForEach(ID =>
-                        //                            {
-                        //                                int idInt = 0;
-                        //                                if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
-                        //                                {
-                        //                                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ");
-                        //                                    filters += $@"{idColumn} in (
-                        //select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-                        //union 
-                        //select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-                        //)";
-                        //                                }
-                        //                            });
-                        //                        }
-                        //                    }
                     }
                 }
             }
@@ -2064,18 +1991,6 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 AttributeTypeID = attributeTypeID,
                                 RawValue = AttributeSearchValue
                             });
-
-     //                       dbParams.Add("attrTypeAdvFlt", "%" + AttributeSearchValue + "%"); // use bind variable to avoid sql injection
-
-     //                       filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + @"{idColumn} in (
-     //               select ObjectID
-     //               from AttributeDetail
-     //               where ObjectType = 'Artifact' and AttributeTypeID = " + attributeTypeID + @" and FormattedValue like @attrTypeAdvFlt
-     //               union
-     //               select  R.SourceObjectID
-     //               from    cache.Relationships R
-     //                       inner join AttributeDetail A on A.ObjectType = 'Intersect' and A.ObjectID = R.IntersectID and R.SourceType = 'ArtifactType' and R.SourceTypeID = @id and A.FormattedValue like @attrTypeAdvFlt
-					//)";
                         }
                     }
                 }

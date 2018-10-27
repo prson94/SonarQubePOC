@@ -92,8 +92,7 @@ namespace igx.jobs.eaglemessagestreamprocessor
                     rel.ConstantValue = rel.Expression;
                     break;
                 case RelationshipExpressionType.DirectMapping:
-                    //some direct mappings are referneces to prior mappings tags.  We must check if the expression is the tag on a prior column
-                    //if (Regex.IsMatch(rel.Expression, ":tag(.*?):"))
+                    //some direct mappings are referneces to prior mappings tags.  We must check if the expression is the tag on a prior column                    
                     if (!isExressionValueAPriorTag(rel))
                         rel.BloombergMnemonics.Add(rel.Expression.Trim(':')); //single mnemonic value
                     break;

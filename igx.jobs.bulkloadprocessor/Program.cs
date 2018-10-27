@@ -521,8 +521,7 @@ namespace igx.jobs.bulkloadprocessor
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, loadInfo.CompanyID);
-                //log.Error($"Company [{loadInfo.CompanyID}], Load ID [{loadInfo.LoadID}]: [{ex.GetFullExceptionData()}]");
+                CoreFunction.AITrackException(functionName, ex, loadInfo.CompanyID);                
             }
         }
 
@@ -530,8 +529,7 @@ namespace igx.jobs.bulkloadprocessor
         {
             var load = company.Query<Load>("select * from [Load] where ID = @loadId", new { loadId }).SingleOrDefault();
             if (load == null)
-            {
-                //log.Error($"Bulk load relate cannot find the load job to run [{loadId}].");
+            {                
                 throw new Exception($"Bulk load membership cannot find the load job to run [{loadId}].");
             }
             load = null;
@@ -706,8 +704,7 @@ where	ID = @id", new { id = loadId }, transaction: trans);
         {
             var load = company.Query<Load>("select * from [Load] where ID = @loadId", new { loadId }).SingleOrDefault();
             if (load == null)
-            {
-                //log.Error($"Bulk load relate cannot find the load job to run [{loadId}].");
+            {                
                 throw new Exception($"Bulk load users cannot find the load job to run [{loadId}].");
             }
             load = null;
@@ -722,8 +719,7 @@ where	ID = @id", new { id = loadId }, transaction: trans);
             {
                 throw new Exception($"Bulk load data does not contain the correct number of columns in LoadColumn table.  Load ID [{loadId}]");
             }
-            //columns = null; //may need these shortly.
-
+            
             var usersToLoad = company.Query<dynamic>(@"
 select	I.LoadID,
 		I.RowIndex,

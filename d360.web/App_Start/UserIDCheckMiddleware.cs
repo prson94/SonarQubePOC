@@ -101,10 +101,7 @@ namespace d360.web
 
             [JsonProperty(PropertyName = "upn", NullValueHandling = NullValueHandling.Ignore, Order = 14)]
             public string Upn { get; set; }
-
-          //  [JsonProperty(PropertyName = "lmg_mpo", NullValueHandling = NullValueHandling.Ignore, Order = 15)]
-        //    public LmgImo Lmg_mpo { get; set; }
-
+            
             [JsonProperty(PropertyName = "lmg_cert_dn", NullValueHandling = NullValueHandling.Ignore, Order = 16)]
             public string Lmg_cert_dn { get; set; }
 

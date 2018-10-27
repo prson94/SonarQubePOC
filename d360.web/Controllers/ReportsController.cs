@@ -61,10 +61,7 @@ namespace d360.web.Controllers
             
             companySettings.TryGetValue("PowerBIClientId", out clientId);
             companySettings.TryGetValue("PowerBIGroupId", out groupId);
-
-          //  clientId = "2ec97ecb-f620-40ba-a109-afcd2e89be0f";
-        //    groupId = "a2705381-baaa-4ca7-b739-befd4ddd1a33";
-            
+                        
             // Create a user password cradentials.
             var credential = new UserPasswordCredential(pbiUsername, pbiPassword);
 
@@ -319,8 +316,7 @@ namespace d360.web.Controllers
                     {
                         foreach (dynamic a in c.areas)
                         {
-                            var tileList = tiles.Where(i => i.ContentAreaNumber == (int)a.id).ToList();
-                            //var tileArray = JArray.FromObject(tileList.Select(i => new { i.ID, i.Name, i.ReportTileTypeID }));
+                            var tileList = tiles.Where(i => i.ContentAreaNumber == (int)a.id).ToList();                            
                             var tileArray = new JArray();
                             foreach (var t in tileList)
                             {
@@ -398,8 +394,7 @@ namespace d360.web.Controllers
             }
             catch (SqlException ex)
             {
-                return new JsonNetResult { Data = new { error = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };
-                //throw;
+                return new JsonNetResult { Data = new { error = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };                
             }
         }
 

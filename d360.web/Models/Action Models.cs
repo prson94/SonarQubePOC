@@ -78,7 +78,6 @@ namespace d360.web.Models
             Items = new List<ToolbarItem>();
         }
 
-        //public string Url { get; set; }
         public string Context { get; set; }
         public string Icon { get; set; }
         public string Title { get; set; }

@@ -229,16 +229,16 @@ where A.FusionTypeID = @id", columns, joins);
         public IEnumerable<FusionAttributeTypeWithQuery> GetFusionAttributeTypes(int typeID, int id)
         {
             return Company.Query<FusionAttributeTypeWithQuery>(@"
-select	A.ID,
-        A.Name,
-        A.ScanEnabled,
-        Q.Query
-from    Fusion C
-        inner join FusionAttributeType A on A.FusionTypeID = C.FusionTypeID and C.ID = @id
-        left join FusionAttributeTypeCustomQuery Q on Q.FusionAttributeTypeID = A.ID and Q.FusionID = C.ID", 
-            new { id }
-        );
-            //return Company.Filter<FusionAttributeType>(i => i.FusionTypeID == id).AsQueryable();
+                    select	A.ID,
+                            A.Name,
+                            A.ScanEnabled,
+                            Q.Query
+                    from    Fusion C
+                            inner join FusionAttributeType A on A.FusionTypeID = C.FusionTypeID and C.ID = @id
+                            left join FusionAttributeTypeCustomQuery Q on Q.FusionAttributeTypeID = A.ID and Q.FusionID = C.ID", 
+                                new { id }
+                            );
+            
         }
 
         /// <summary>
@@ -350,8 +350,7 @@ from    Fusion C
         public IQueryable<FusionSchedule> GetConfigurationsByType(int fusionTypeID, int fusionID)
         {
             if (Company.CurrentResourceIsAdmin)
-            {
-                //return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration schedules.");
+            {                
                 return Company.Filter<FusionSchedule>(i => i.FusionID == fusionID);
             }
             else
@@ -486,8 +485,7 @@ from    Fusion C
 
             stream.Position = 0;
 
-            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -577,8 +575,7 @@ from    Fusion C
 
             stream.Position = 0;
 
-            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -642,8 +639,7 @@ from    Fusion C
 
             stream.Position = 0;
 
-            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -729,8 +725,7 @@ from    Fusion C
 
             stream.Position = 0;
 
-            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -823,8 +818,7 @@ from    Fusion C
                     return Request.CreateErrorResponse(HttpStatusCode.Conflict, errorMessage);
                 }
             }
-
-            //model.IsComplete = log.DateCompleted.HasValue;
+                        
             if (model.IsComplete)
             {
                 Trace.TraceInformation("{0}{1}", prefix, "Schedule marked as complete");
@@ -907,12 +901,6 @@ from    Fusion C
 
             var prefix = "Fusion.PostBulkAttributesAsync => ";
             var errorMessage = "";
-
-            //if (!Request.Content.IsMimeMultipartContent())
-            //{
-            //    Trace.TraceWarning("{0}{1}", prefix, "Payload must be multipart content.");
-            //    throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
-            //}
 
             string json = "{}";
 

@@ -802,11 +802,7 @@ namespace d360.web.Models
                 valid.Valid = false;
                 valid.Message += $"{prefix} Name.";
             }
-            //if (Value <= 0)
-            //{
-            //    valid.Valid = false;
-            //    valid.Message += $"{prefix} Value.";
-            //}
+            
 
             return valid;
         }

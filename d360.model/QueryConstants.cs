@@ -470,55 +470,6 @@ from	AssetDetail A
 					) P
 where   A.Type = 'TaxonomyType' and A.TypeID = @ID AND A.[State] = 1";
 
-//        public static string InformationCatalogDiagramData = @"
-//select	A.ObjectID as ID, P.SubjectID as ParentID, A.TypeID as TaxonomyTypeID, A.DisplayValue,
-//        A.ID as AssetID,  
-//        {columns} 
-//        case 
-//            when DC.ItemsCount > 0 then cast(1 as bit) 
-//            else cast(0 as bit) 
-//        end as HasChildren,
-//        L.Level 
-//from	AssetDetail A
-//        cross apply dbo.GetAssetLevelById(A.ID) L
-//        {joins} 
-//        CROSS APPLY (
-//            		select	count(1) as [ItemsCount]
-//            		from	[Intersect]
-//            		where	([Subject] = A.Object and SubjectID = A.ObjectID) OR ([Object] = A.Object and ObjectID = A.ObjectID)
-//            		) DC 
-//		outer apply (
-//					select	I.SubjectID
-//					from	[Intersect] I
-//                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-//							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-//					) P
-//where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 and not exists (select 1 from AssetWithoutReadPermission RP where RP.ResourceID = {Company.CurrentResourceID} and RP.AssetID = A.ID)
-
-
-//select	0 as ID, 
-//		null as ParentID,
-//		Name,
-//        dbo.GenerateObjectUrl('TaxonomyType', ID, ID) as Url,
-//        cast(0 as bit) as RelationshipsExist
-//from	TaxonomyType
-//where	ID = @ID
-//union
-//select	ID, 
-//		ParentID, 
-//		Name,
-//        Url,
-//        cast(R.RelationshipsExist as bit) as RelationshipsExist
-//from	h
-//        cross apply (
-//                    select  case 
-//                                when count(1) > 0 then 1
-//                                else 0
-//                            end as RelationshipsExist
-//                    from    [Intersect] N 
-//                    where   ([Subject] = 'Taxonomy' and [SubjectID] = h.ID) OR ([Object] = 'Taxonomy' and [ObjectID] = h.ID)
-//                    ) R";
-
 
         public static string LookupAllocations = @"
 	SELECT	FT.Name as FieldTypeName,
@@ -851,20 +802,7 @@ select	ID,
 from    fusion.RuleLog
 order by    DateStarted desc";
 
-
-//        public static string ResponsibilityList = @"
-//select distinct  
-//        r.responsibilityid as [ID],
-//		r.responsibilitytype as [Type],
-//		r.responsibleobjectname as [Name],
-//		r.responsibleobjecturl as [Url],
-//		d.PrimaryOwnerResourceName as [Owner],
-//		d.PrimaryOwnerResourceUrl as [OwnerUrl],
-//		d.ContextItems as [Context]
-//from    cache.Responsibilities r
-//		inner join ResponsibilityDetail d on d.ResponsibilityID = r.ResponsibilityID
-//where   r.objectid = @ObjectID and r.[object] = @ObjectType";
-
+        
         public static string SourceRuleList = @"
 select	R.SubjectName + ' ' + coalesce(R.PredicateName, 'stores') + ' ' + R.ObjectName as SubjectName,
 		R.SubjectID,

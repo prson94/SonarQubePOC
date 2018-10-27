@@ -29,9 +29,6 @@ namespace d360.core.entities
         [DataMember]
         public virtual ICollection<Map> Maps { get; set; }
 
-        //[DataMember]
-        //public virtual ICollection<MapRuleItem> MapRuleItems { get; set; }
-
         [IgnoreDataMember]
         public virtual Intersect SourceIntersect { get; set; }
 

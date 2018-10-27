@@ -14,8 +14,6 @@ namespace d360.extensions.storage
 {
     public class AzureStorageProvider : IStorageProvider
     {
-        //string RESOURCE_IMAGE_CONTAINER = "d3s-resource-image";
-
         private StorageCredentials getCredentials()
         {
             var acctName = constants.AZURE_STORAGE_NAME;
@@ -132,15 +130,9 @@ namespace d360.extensions.storage
                 SharedAccessExpiryTime = DateTime.UtcNow.AddMinutes(1), 
                 Permissions = SharedAccessBlobPermissions.Read
             };
-
-            //var permissions = new BlobContainerPermissions();
-            //permissions.SharedAccessPolicies.Add("1minute", policy);
-            //permissions.PublicAccess = BlobContainerPublicAccessType.Off;
-            //c.SetPermissions(permissions);
-
+                        
             var signature = blockBlob.GetSharedAccessSignature(policy);
-
-            //var creds = getCredentials();
+                        
             var uri = blockBlob.Uri.AbsoluteUri + signature;
             return uri;
         }
