@@ -18,7 +18,7 @@ export class LineageNode {
         return isNaN(+this.key) ? false : +this.key >= 0;
     }
 
-
+    hiddenNodeKey: any;
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
     template: any = null;

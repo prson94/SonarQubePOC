@@ -214,6 +214,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelNone;
 
         this.diagram.allowDrop = true;
+        this.diagram.addModelChangedListener(e => this.mouseDrop(e, null));
 
         console.log('initializeDiagram', this.diagram);
 
@@ -442,6 +443,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
             //remove hidden nodes and links
             this.diagram.model.nodeDataArray.forEach(n => {
+                (<any>n).hiddenNodeKey = null;
                 if ((<any>n).category == 'hidden') {
                     let linksTo = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).to == (<any>n).key);
                     let linksFrom = this.diagramModelAsGraph().linkDataArray.filter(l => (<any>l).from == (<any>n).key);
@@ -586,6 +588,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                                 this.diagram.model.addNodeData(n);
                                 let node = this.diagram.findNodeForKey(this.nKey.toString());
                                 node.selectable = false;
+                                c.hiddenNodeKey = this.nKey.toString();
 
                                 let l = new LineageLink();
                                 l.to = this.nKey.toString();
@@ -611,6 +614,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                                 this.diagram.model.addNodeData(n);
                                 let node = this.diagram.findNodeForKey(this.nKey.toString());
                                 node.selectable = false;
+                                c.hiddenNodeKey = this.nKey.toString();
 
                                 let l = new LineageLink();
                                 l.from = this.nKey.toString();
@@ -1147,6 +1151,23 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.refreshControls(null);
     }
 
+    private mouseDrop(e: any, obj: any) {
+        //console.log(e, obj); 
+        if (e.isTransactionFinished && e.oldValue == "Move") {
+            this.diagram.model.nodeDataArray.forEach(n => {
+                let node: any = n;
+                if (node.hiddenNodeKey != null) {
+                    let hidden: any = this.diagram.findNodeForKey(node.hiddenNodeKey);
+                    let pt: go.Point = this.diagram.findNodeForKey(node.key).position;
+                    if (hidden != null) {
+                        let offset = node.key.startsWith('P') ? 195 : -75;
+                        hidden.position = new go.Point(pt.x + offset, pt.y + 21.5);
+                    }
+                }
+            });
+        }
+    }
+
     private deleteSelection() {
         //console.log('delete', this.diagram.selection);
 
@@ -1309,51 +1330,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.loadMenuItems();
                 break;
         }
-
-        //if (e.key == 'fa fa-info-circle') {
-
-        //    //this.isWindowVisible = !this.isWindowVisible;
-        //    let infoView = this.sidebarViews.find(s => s.name == 'Info');
-        //    this.showSidebar = (this.showSidebar && this.currentSidebarView == infoView) ? false : true;
-        //    this.currentSidebarView = infoView;
-        //    console.log('reached', infoView, this.currentSidebarView, this.showSidebar)
-        //} else if (e.icon == 'fa fa-filter') {
-        //    let filterView = this.sidebarViews.find(s => s.name == 'Filter');
-        //    this.showSidebar = (this.showSidebar && this.currentSidebarView == filterView) ? false : true;
-        //    this.currentSidebarView = filterView;
-        //} else if (e.icon == 'fa fa-pencil') {
-        //    this.toggleReadOnly(false);
-        //    this.toggleTabs(this.selectedData);
-        //    this.setSourceValues(this.selectedData);
-        //    this.isWindowVisible = true;
-        //} else if (e.icon == 'fa fa-floppy-o') {
-        //    if (!this.isLoading) {
-        //        if (!this.valid()) {
-        //            this.messagesService.showError('', this.errors.join('\n'));
-        //            return;
-        //        } else {
-        //            this.save();
-        //            this.toggleReadOnly(true);
-        //            this.toggleTabs(this.selectedData);
-        //        }
-        //    }
-
-        //} else if (e.icon == 'fa fa-remove') {
-        //    this.toggleReadOnly(true);
-        //    this.populateDiagram();
-        //    this.loadMenuItems();
-        //} else if (e.icon == 'fa fa-search-plus') {
-        //    this.zoomDiagram(this.diagram.scale + .1);
-        //} else if (e.icon == 'fa fa-search-minus') {
-        //    this.zoomDiagram(this.diagram.scale - .1);
-        //} else if (e.icon == null && e.label == 'Show Relationship Labels' || e.label == 'Hide Relationship Labels') {
-        //    this.showPredicateNames = !this.showPredicateNames;
-        //    e.label = this.showPredicateNames ? 'Hide Relationship Labels' : 'Show Relationship Labels';
-        //    this.diagramModelAsGraph().linkDataArray.forEach(l => {
-        //        this.diagram.model.setDataProperty(l, "text", null);
-        //    });
-
-        //}
     }
 
     private changeTab(tab: string) {
