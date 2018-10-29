@@ -75,9 +75,10 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
 
     onErrorFileUpload(event: any) {
         
-        if (event.xhr &&  event.xhr.status == 500) {
+        if (event.xhr &&  event.xhr.status == 400) {
             let msg: string = "";
-            msg += event.xhr.responseText;
+            let errMsg = JSON.parse(event.xhr.responseText);
+            msg = errMsg.message != null ? errMsg.message : event.xhr.responseText;
             this.messagesService.showError('Error', msg);
         }
       
