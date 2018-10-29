@@ -2455,6 +2455,70 @@ order by wi.StartedOn desc";
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
+        private WorkflowStepReleationshipChange GetWorkFlowStepRelationshipChanges(dynamic settings, int itemId,string objectName)
+        {
+            WorkflowStepReleationshipChange relChange =null;
+            if (settings != null && settings.RelationshipUpdate != null && settings.RelationshipUpdate.Relationship != null)
+            {
+
+                dynamic relations = new JArray(settings.RelationshipUpdate.Relationship);
+                if(relations[0] != null)
+                {
+                     relChange = new WorkflowStepReleationshipChange();
+                    var relation = relations[0];
+                    relChange.AppendValue = relation["@AppendValue"] != null ? relation["@AppendValue"] :false;
+                    relChange.ClearValue = relation["@ClearValue"] != null ? relation["@ClearValue"] : false;
+
+                    int stepId = relation["@FormStepId"] != null ? relation["@FormStepId"] : 0;
+                    if (stepId != 0)
+                    {
+
+                        var stepSql = @"select Fields from workflow.VersionStep where  Id=@stepid";
+                        dynamic stepFields = Company.Query<string>(stepSql, new { stepid = stepId }).FirstOrDefault();
+                        stepFields = XmlToDynamic(stepFields, false);
+                        if (stepFields.fields != null && stepFields.fields.form != null && stepFields.fields.form.field != null)
+                        {
+                            dynamic sfields = new JArray(stepFields.fields.form.field);
+                            var sfield = sfields[0];
+                            int IntersectTypeId = sfield["@intersectTypeId"] != null ? sfield["@intersectTypeId"]:0;
+                            var interceptSql = @"SELECT	
+						                         ITypeName.Name AS Name
+					                        FROM	IntersectType IT    
+				                                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName	
+			                             where IT.ID=@intersectTypeId";
+                            relChange.TypeName = Company.Query<string>(interceptSql, new { intersectTypeId = IntersectTypeId }).FirstOrDefault();
+                        }
+
+                        var itemStepSql = @"select fields from workflow.itemstep where  stepid=@stepid and itemid=@itemid";
+                        dynamic itemStepFields = Company.Query<string>(itemStepSql, new { stepid = stepId, itemid = itemId }).FirstOrDefault();
+                        itemStepFields = XmlToDynamic(itemStepFields, false);
+
+
+                        if (itemStepFields.fields != null && itemStepFields.fields.form != null && itemStepFields.fields.form.field != null)
+                        {
+                            dynamic sfields = new JArray(itemStepFields.fields.form.field);
+                            var sfield = sfields[0];
+                            string changedType = sfield["@value"] != null ? sfield["@value"] : null;
+                            if (changedType != null)
+                            {
+                                var types = changedType.Split('|');
+                                if (types.Length == 2) {
+                                    var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
+                                    string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
+                                    relChange.Relationship = $"{objectName} / {displayValue}";
+                                }
+                            }
+
+                        }
+                    }
+                    
+                }
+
+            }
+
+            return relChange;
+        }
+
         private IList<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(dynamic settings,int itemId)
         {
             IList<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
@@ -2471,7 +2535,7 @@ order by wi.StartedOn desc";
                     fieldChange.FormValue = field["@UseFormValue"] != null ? field["@UseFormValue"] : false;
                     fieldChange.CurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : "";
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
-                    fieldChange.AppendValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
+                    fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
                     FieldType fiedType = Company.GetById<FieldType>(fieldTypeId);
                     fieldChange.FieldName = fiedType.FriendlyName;
                     string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
@@ -2582,6 +2646,7 @@ order by wi.StartedOn desc";
             try
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail.Settings,detail.ItemID);
+                detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
                 string issueObject = null;
                 int issueObjectId = 0;
                 if (detail.Condition != null && detail.Condition.Condition != null)

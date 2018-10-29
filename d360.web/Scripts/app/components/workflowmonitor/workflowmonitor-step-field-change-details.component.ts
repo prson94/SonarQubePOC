@@ -30,11 +30,8 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
     @Input() fieldChanges: any;
 
     ngOnInit(): void {
-        debugger;
-        console.log(this.fieldChanges);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        console.log(changes['fieldChanges'])
     }
 }

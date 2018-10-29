@@ -548,6 +548,7 @@ export class WorkflowStepDetail {
     ItemID: number;
     ItemStepID: number;
     FieldChanges: WorkflowStepFieldChangeDetail[];
+    RelationshipChange: WorkflowStepRelationshipChangeDetail;
 }
 
 
@@ -575,4 +576,12 @@ export class WorkflowStepFieldChangeDetail {
     FormValue: string;
     AppendValue: string;
     ClearValue: string;
+}
+
+
+export class WorkflowStepRelationshipChangeDetail {
+    TypeName: string;
+    Relationship: string;
+    AppendValue: boolean;
+    ClearValue: boolean;
 }
