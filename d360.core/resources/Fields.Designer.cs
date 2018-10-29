@@ -952,24 +952,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The date this resource last logged in..
-        /// </summary>
-        public static string DateLastLoggedIn_Description {
-            get {
-                return ResourceManager.GetString("DateLastLoggedIn_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Last logged in on.
-        /// </summary>
-        public static string DateLastLoggedIn_Name {
-            get {
-                return ResourceManager.GetString("DateLastLoggedIn_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The date this item was last updated..
         /// </summary>
         public static string DateUpdated_Description {
@@ -1749,6 +1731,24 @@ namespace d360.core.resources {
         public static string ItemCount_Name {
             get {
                 return ResourceManager.GetString("ItemCount_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The date this resource last logged in..
+        /// </summary>
+        public static string LastLoggedInOn_Description {
+            get {
+                return ResourceManager.GetString("LastLoggedInOn_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last logged in on.
+        /// </summary>
+        public static string LastLoggedInOn_Name {
+            get {
+                return ResourceManager.GetString("LastLoggedInOn_Name", resourceCulture);
             }
         }
         

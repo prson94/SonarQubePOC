@@ -1,29 +1,27 @@
 ﻿using d360.core;
-using d360.core.entities;
+using d360.core.enums;
 using d360.extensions.caching;
 using Dapper;
+using IdentityModel;
+using IdentityModel.Client;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.IdentityModel.Tokens;
+using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using IdentityModel;
-using IdentityModel.Client;
-using System.Configuration;
-using System.Web;
-using System.Net.Http;
-using System.Net;
+using System.Threading.Tasks;
 
 namespace d360.web
 {
@@ -34,7 +32,8 @@ namespace d360.web
             public int ResourceID { get; set; }
             public int CompanyID { get; set; }
             public bool IsAdministrator { get; set; }
-
+            public DateTime? LastLoggedInOn { get; set; }
+            public CompanyResourceState State { get; set; }
 
             public string Username { get; set; }
             public string Password { get; set; }
@@ -42,6 +41,7 @@ namespace d360.web
             public string APIPrivateKey { get; set; }
    
         }
+
         public class user
         {
             public user()
@@ -56,7 +56,6 @@ namespace d360.web
             public string APIPrivateKey { get; set; }
             public List<usercompany> Companies { get; set; }
         }
-
 
         public class JwtToken
         {
@@ -177,8 +176,6 @@ from	Resource R
         {
             IOwinContext context = new OwinContext(environment);
 
-            
-
             usercompany u = null;
 
             var companyID = context.Get<int>("CompanyID");
@@ -212,7 +209,7 @@ from	Resource R
                             u = LoadUserFromDatabase(companyID, null, null, null, claim.Identity.Name);
                             if (u != null)
                             {
-                                if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                                if (!cachedUsers.Any(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
                                 {
                                     cachedUsers.Add(u);
                                 }
@@ -234,7 +231,7 @@ from	Resource R
                             u = LoadUserFromDatabase(companyID, apiKey: authValues[0], apiSecret: authValues[1]);
                             if (u != null)
                             {
-                                if (!cachedUsers.Any<usercompany>(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+                                if (!cachedUsers.Any(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
                                 {
                                     cachedUsers.Add(u);
                                 }
@@ -264,9 +261,19 @@ from	Resource R
 
                 if (u != null)
                 {
-                    context.Set("IsAdministrator", u.IsAdministrator);
-                    context.Set("ResourceID", u.ResourceID);
-                    context.Request.User = new System.Security.Principal.GenericPrincipal(new System.Security.Principal.GenericIdentity(u.ResourceID.ToString(), "ID"), null);
+                    if (u.State == CompanyResourceState.Active)
+                    {
+                        context.Set("IsAdministrator", u.IsAdministrator);
+                        context.Set("ResourceID", u.ResourceID);
+                        context.Request.User = new System.Security.Principal.GenericPrincipal(new System.Security.Principal.GenericIdentity(u.ResourceID.ToString(), "ID"), null);
+                    }
+                    else
+                    {
+                        u = null;
+                        System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
+                        context.Response.StatusCode = 401;
+                        return;
+                    }
                 }
                 else
                 {

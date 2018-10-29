@@ -1703,7 +1703,7 @@ namespace d360.model
 						            R.LastName, 
 						            R.Email, 
 						            R.Email, 
-						            R.DateLastLoggedIn, 
+						            R.LastLoggedInOn, 
 						            1 as ResourceTypeID, 
 						            R.Status 
 				            from	reporting.Global_Resource R
@@ -1719,7 +1719,7 @@ namespace d360.model
 						            R.LastName, 
 						            R.Email, 
 						            R.Email, 
-						            R.DateLastLoggedIn, 
+						            R.LastLoggedInOn, 
 						            1 as ResourceTypeID, 
 						            R.Status 
 				            from	reporting.Global_Resource R where isadministrator = 1 and status = 'Active'");

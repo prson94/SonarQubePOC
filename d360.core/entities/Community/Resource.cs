@@ -19,9 +19,6 @@ namespace d360.core.entities
         public string APIPublicKey { get; set; }
 
         [DataMember]
-        public DateTime? DateLastLoggedIn { get; set; }
-
-        [DataMember]
         [Required(ErrorMessageResourceType = typeof(d360.core.resources.Fields), ErrorMessageResourceName = "Email_ErrorRequired")]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Email_Name", Description = "Email_Description")]
         public string Email { get; set; }
@@ -44,10 +41,6 @@ namespace d360.core.entities
         [Required(ErrorMessageResourceType = typeof(d360.core.resources.Fields), ErrorMessageResourceName = "ResourceType_ErrorRequired")]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ResourceType_Name", Description = "ResourceType_Description")]
         public int ResourceTypeID { get; set; }
-
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Status_Name", Description = "Status_Description")]
-        public string Status { get; set; }
 
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Username_Name", Description = "Username_Description")]

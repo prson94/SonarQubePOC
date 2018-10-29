@@ -321,10 +321,10 @@
   <data name="DateCreated_Name" xml:space="preserve">
     <value>Created on</value>
   </data>
-  <data name="DateLastLoggedIn_Description" xml:space="preserve">
+  <data name="LastLoggedInOn_Description" xml:space="preserve">
     <value>The date this resource last logged in.</value>
   </data>
-  <data name="DateLastLoggedIn_Name" xml:space="preserve">
+  <data name="LastLoggedInOn_Name" xml:space="preserve">
     <value>Last logged in on</value>
   </data>
   <data name="DateUpdated_Description" xml:space="preserve">
