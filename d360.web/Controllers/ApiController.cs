@@ -4028,7 +4028,7 @@ SELECT  R.ResponsibilityTypeName,
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
 from    ResponsibilityDetail R
-        inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.Status = 'Active' 
+        inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
 where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
