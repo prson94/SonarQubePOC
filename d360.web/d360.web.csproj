@@ -996,6 +996,7 @@
     <Content Include="Views\Shared\Terms.cshtml" />
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-Nightly - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
+    <Content Include="Views\Authentication\NoAccess.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

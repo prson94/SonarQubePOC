@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.extensions;
 using Dapper;
 using System;
@@ -382,14 +383,18 @@ namespace d360.model
             // Check that resource has access to this company.
             if (r != null)
             {
-                if (Filter<CompanyResource>(i => i.CompanyID == CurrentCompanyID && i.ResourceID == r.ID).Any())
+                var companyResource = Filter<CompanyResource>(i => i.CompanyID == CurrentCompanyID && i.ResourceID == r.ID).SingleOrDefault();
+                if (companyResource != null)
                 {
-                    try
+                    if (companyResource.State == CompanyResourceState.Active)
                     {
-                        r.DateLastLoggedIn = DateTime.UtcNow;
-                        Update<Resource>(r);
+                        companyResource.LastLoggedInOn = DateTime.UtcNow;
+                        Update(companyResource);
                     }
-                    catch { }
+                    else // User is NOT active, so do not allow login.
+                    {
+                        r = null;
+                    }
                 }
                 else
                 {

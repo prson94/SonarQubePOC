@@ -90,13 +90,13 @@ namespace d360.core.entities
         public string LastName { get; set; }
 
         [DataMember]
-        public DateTime? DateLastLoggedIn { get; set; }
+        public DateTime? LastLoggedInOn { get; set; }
 
         [DataMember]
         public string Email { get; set; }
 
         [DataMember]
-        public string Status { get; set; }
+        public CompanyResourceState State { get; set; }
 
         [DataMember]
         public bool IsAdministrator { get; set; }
