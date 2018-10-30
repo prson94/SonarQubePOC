@@ -35,7 +35,7 @@ import { Title } from '@angular/platform-browser';
             <div class="col s6">
                 <div *ngIf="companySettings.CurrentCompanyLogoPath">
                     Current Logo: <br />
-                    <img [src]="companySettings.CurrentCompanyLogoPath" />
+                    <img [src]="companySettings.CurrentCompanyLogoPath" class="company-logo-canvas" />
                 </div>
                 &nbsp;
             </div>
