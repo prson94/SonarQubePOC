@@ -459,6 +459,7 @@
       <DependentUpon>eclipse.css</DependentUpon>
     </Content>
     <Content Include="Content\font-awesome.min.css" />
+    <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.color.png" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
