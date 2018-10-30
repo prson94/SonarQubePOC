@@ -1300,7 +1300,7 @@ th.ui-state-default, .ui-treetable th.ui-state-default {
 }
 
 .ui-datatable-even {
-    background: #e8f8ff; /* use light blue until draft certification icon can be updated to dark grey */
+    background: #f7f7f7;
 }
 
 .ui-datatable .ui-datatable-thead > tr > th, .ui-datatable .ui-datatable-tfoot > tr > td, .ui-datatable .ui-datatable-data > tr > td {
