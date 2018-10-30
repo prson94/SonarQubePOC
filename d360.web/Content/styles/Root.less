@@ -42,6 +42,9 @@ fieldset legend {
     color: Red;
 }
 
+
+
+
 /*#region Login */
 
 .loginBody{
@@ -125,6 +128,10 @@ fieldset legend {
             color: @d3s-blue-2;
         }
     }
+}
+
+tr.ui-state-highlight .RowTools {
+    color: #fff;
 }
 
 .RowMultiTools,
@@ -398,8 +405,15 @@ fieldset legend {
     width:100px;    
 }
 
-.search-input-exact-container{
-    width:120px;
+.search-input-exact-container {
+    width: 120px;
+    line-height: 31px;
+
+    input {
+        position: relative;
+        top: -9px;
+        margin-right: 3px;
+    }
 }
 
 .search-input-types-container{
@@ -411,7 +425,7 @@ fieldset legend {
     border:none;
     padding:10px;    
     border-radius:4px 0 0 4px;
-    border:1px solid #CCCCCC;    ;
+    border:1px solid #CCCCCC;
     border-right:none;
     width:100%;
     height:45px;    
@@ -421,23 +435,24 @@ fieldset legend {
     outline: none;
 }
 
-.search-input-btn{
-    width:100%;
-    padding:10px;
-    border:1px solid #CCCCCC;  
-    background-color:@d3s-gray-6;
+.search-input-btn {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #CCCCCC;
+    background: @igx-blue-color;
     border-radius: 0 4px 4px 0;
-    color:white;
-    height:45px;
-    overflow:hidden;    
-    &:focus{
-        background-color:@d3s-gray-6;
-    }    
+    color: white;
+    height: 45px;
+    overflow: hidden;
+
+    &:focus {
+        background-color: @d3s-gray-6;
+    }
 }
 
 .search-btn, .simple-search-btn, .adv-search-btn{
     width:100%;
-    padding:10px;
+    padding:7px;
     border:none;
     border-top: 1px solid #CCCCCC;
     border-bottom: 1px solid #CCCCCC;        

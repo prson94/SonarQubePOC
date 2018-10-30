@@ -1,7 +1,36 @@
 ﻿@import "_Variables";
 
-body{
-    background-color:@secondary-nav;
+
+/* vietnamese */
+@font-face {
+    font-family: 'Nunito Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular2.woff2) format('woff2');
+    unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+    font-family: 'Nunito Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular2.woff2) format('woff2');
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+    font-family: 'Nunito Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+body {
+    background: linear-gradient(#e0e0e0, #f0f0f0);
+    min-height: 100vh;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 14px;
 }
 
 select, input{
@@ -10,25 +39,35 @@ select, input{
 
 /* top menu*/
 
-nav.top{
-    line-height:40px;
-    height:40px;
-    background-color:#fff;
-    a{
-        color:@primary-nav;
-    }
-    ul a{
-        color:black;
-    }   
-    
-    a.photo img{
-        vertical-align:middle;
-        border-radius:20px;
-    } 
+nav.top {
+    line-height: 40px;
+    color: #fff;
+    height: 40px;
+    background: @igx-nav-color;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
 
-    a.help{
-        color:@d3s-red-1;
-    }  
+    a {
+        color: @primary-nav;
+    }
+
+    ul a {
+        color: #fff;
+    }
+
+    .header-profile-panel a, .header-search-panel a {
+        color: #000;
+    }
+
+    a.photo img {
+        vertical-align: middle;
+        border-radius: 20px;
+    }
+
+    a.help {
+        color: #fff;
+    }
+
+  
 }
 
 nav.top, .left-side-nav {
@@ -49,10 +88,11 @@ nav.top, .left-side-nav {
     z-index: 10000;
     height: 100%;
     position: fixed;
-    background-color: @primary-nav;
+    background-color: @igx-left-side-nav;
     width: 50px;
     margin-top: 40px;
     overflow-y: visible;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
 
     li {
         padding: 0;
@@ -76,7 +116,7 @@ nav.top, .left-side-nav {
         position: relative;
 
         &:hover {
-            background-color: @nav-active;
+            background: @igx-gray-color;
         }
 
         i {
@@ -100,39 +140,48 @@ nav.top, .left-side-nav {
 
 .menu-active > .megamenu-panel {
     display: block !important;
-    width:auto;
+    width: auto;
+    background: @igx-gray-color;
 }        
 
 .menu-group{
     padding:2.5px 5px;
 }
 
-.menu-item
-{
-    color:white;
-    cursor:pointer;
-    width:100%;
+.menu-item {
+    color: white;
+    cursor: pointer;
+    width: 100%;
     padding: 4px 15px !important;
-    font-size: 80%; 
+    font-size: 100%;
+
     &:hover {
         background-color: #ddd;
         color: black !important;
     }
+
+    i.fa {
+        font-size: 8px;
+    }
 }
 
 .megamenu-panel {
-    background-color: @nav-active;    
+    background: @igx-gray-color;
     box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.15);
-    color:white;
+    color: white;
+
     .megamenu-title {
-        font-size: .8rem;
-        font-weight: bold;
-        text-transform: uppercase;        
-        .megamenu-tools{
+        font-weight: bold;        
+        text-transform: none;
+        margin-bottom: 10px;
+        font-size: 100%;
+        opacity: 0.67;
+
+        .megamenu-tools {
             font-size: 1rem;
-            padding:5px 10px;
+            padding: 5px 10px;
             font-weight: normal;
-            float:right;
+            float: right;
         }
     }
 }
@@ -157,7 +206,7 @@ nav.top, .left-side-nav {
   } }
 
 .menu-level-indicator-0, .menu-level-indicator-1, .menu-level-indicator-2, .menu-level-indicator-3, .menu-level-indicator-4, .menu-level-indicator-5, .menu-level-indicator-n{
-    color: @d3s-primary-orange;            
+    color: @igx-menu-else;            
     font-size: .6em;    
     margin-right: 7px;
     vertical-align: middle;    
@@ -165,21 +214,8 @@ nav.top, .left-side-nav {
 }
 
 .menu-level-indicator-1 {
-    color: @d3s-primary-blue;
+    color: @igx-menu-level1;
 }
-
-.menu-level-indicator-2 {
-    color: @d3s-primary-yellow;
-}
-
-.menu-level-indicator-3 {
-    color: @d3s-gray-2;
-}
-
-.menu-level-indicator-4 {
-    color: @d3s-primary-orange;            
-}
-
 
 d3s-navbar-item {
     >div {
@@ -196,7 +232,7 @@ d3s-navbar-item {
             font-size: small;
             cursor: pointer;
         }
-        :hover {
+        &:hover {
             background-color: #ddd;
             color: black !important;
         }
@@ -282,10 +318,11 @@ d3s-navbar-item {
 }
 
 .status-value,
-.governance-value {
-    font-weight:bold;
+.governance-value {        
+    font-weight: bold;
     font-size: 2em;
-    color: @d3s-primary-gray;
+    color: @igx-gov-color;
+
     .title {
         /*font-family: @headings-font-family !important;*/
         font-size: 75%;
@@ -371,13 +408,21 @@ div.powerbi iframe{
 
 /* raise issue*/
 
-.issue-button{
-    background:@d3s-primary-yellow;
-    border-radius:5px;
-    border: 1px solid #AAAAAA;
-    line-height:25px;
+.issue-button {
+    background: @igx-blue-color;
+    border: none;
+    border-radius: 3px;
+    line-height: 25px;
     padding: 0 20px;
-    font-weight: bold;    
+    font-weight: bold;
+
+    &:hover {
+        background: @igx-blue-hover;
+    }
+
+    &:active {
+        background: @igx-issue-active;
+    }
 }
 
 /* end raise issue*/
@@ -568,7 +613,7 @@ div.child-container{
     margin-bottom:10px;
 }
 .right-side-active {
-    background-color:@d3s-red-1;
+    background-color: @igx-right-active;
 }
 
  /* end right sidebar styles*/
@@ -581,7 +626,7 @@ div.child-container{
     display:inline-block;   
     color:@rgba-primary-0;    
     .active, .sep{
-        color:@primary-nav;    
+        color:#fff;    
     }
     .active, .inactive{
         display:inline-block;
@@ -599,12 +644,14 @@ a.breadcrumb {
  }
 .breadcrumb {
     font-weight: bold;
-    text-transform: uppercase;
     display: inline-block;
     max-width: 250px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    position: relative;
+    top: 1px;
+    text-transform: none;
 }
  .breadcrumb-link {    
     cursor:pointer;
@@ -640,7 +687,12 @@ a.breadcrumb {
 .header-search-panel, .header-profile-panel {
     background-color: #E7E7E7; //10 opacity of hover color for li items in header xFF (x) .1 = F FF - F = F0
     border-radius: 0 0 3px 3px;
+
+    a {
+        color: #000;
+    }
 }
+
 
 .header-profile-panel {    
     white-space: nowrap;
@@ -657,12 +709,12 @@ a.breadcrumb {
 
 .follow {
     font-size: 1.2em;
-    color: #666;
+    color: #fff;
     padding: 0 15px;
 }
 
 .follow.active {
-    color: #0376c4;
+    color: @igx-button-active-color !important;
 }
 
 /* permission tile header styles*/
@@ -678,8 +730,8 @@ th.permission-header {
 /* permission tile header styles*/
 
 label {
-  font-size: 0.8rem;
-  color: @d3s-primary-gray; 
+    font-size: 14px;
+    color: @d3s-primary-gray;
 }
 
 /* multiselect grid control footer*/
@@ -698,12 +750,12 @@ label {
 
 .favorite {
     font-size: 1.2em;
-    color: #666;
+    color: #fff;
     padding: 0 15px;
 }
 
 .favorite.active {
-    color: @d3s-primary-yellow;
+    color: @igx-button-active-color !important;
 }
 
 /*end favorite styles */
@@ -820,30 +872,39 @@ chart {
 }
 
 li.shortcut {
-    display: inline-block;    
+    display: inline-block;
     cursor: pointer;
     width: 150px;
     vertical-align: top;
-    border: 1px solid @d3s-gray-8;
-    border-radius: 5px;
     margin: 5px;
-    min-height: 120px;
-    max-height: 120px;
+    box-sizing: border-box;
+    border: none;
+    box-shadow: rgba(0, 0, 0, 0.5) 0 1px 2px;
+    color: #FFF;
+    background: @igx-blue-color;
+    padding-top: 10px;
+    min-height: 140px;
+    max-height: 140px;
+    border-radius: 5px;
+
+    &:hover {
+        background: @igx-blue-hover !important;
+        box-shadow: rgba(0, 0, 0, 0.5) 0 2px 4px;
+        transition: all 150ms ease-out;
+    }
 }
 
-li.shortcut:hover {
-    background-color: #DCDBDB !important;
-}
+
 
 li.shortcut div.shortcut-name {
-    font-size: 1em;
+    font-size: 16px;
     font-weight: 600;
     text-align: center;
     padding-top: 5px;
-    white-space:nowrap;
-    text-overflow:ellipsis;
-    overflow:hidden;
-    width:140px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 140px;
     padding: 10px 10px 0 10px;
     margin: auto;
 }
@@ -932,15 +993,8 @@ div.home-image-title-text {
     overflow-y: auto;
 }
 
-/*.ui-tooltip {
-    min-width: 8em;
-}
-
-.ui-tooltip .ui-tooltip-text {
-    background-color: #999 !important;
-    color: #333 !important;*/
-/*background-color: rgb(76, 76, 76);
-}
-        */
-
 /* end tooltip*/
+
+.homeTileArea {
+    padding-top: 0 !important;
+}
