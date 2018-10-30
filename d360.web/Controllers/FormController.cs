@@ -8895,7 +8895,7 @@ namespace d360.web.Controllers
 
             querySql = @"
 			select  r.LastName + ', ' + r.FirstName as Text, 'Resource|' + cast(r.ResourceID as varchar) + '|' + r.LastName + ', ' + r.FirstName  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
-			where r.status ='Active'  
+			where r.[State] = 1 
 			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID) "
             + hideUsersSql;
             dbArgs.Add("id", id);
@@ -13905,7 +13905,8 @@ order by TP.TextPath";
 							where   not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)";
+							where   r.[State] = 1 
+                                    and not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)";
                 querySql += hideUsersSql;
             }
             else
@@ -13926,7 +13927,7 @@ order by TP.TextPath";
                                 and SecurityAssetId <> @groupId) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID
+							where r.[State] = 1 and  not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID
                             and ResourceID <> @resourceId)";
                 querySql += hideUsersSql;
                 dbArgs.Add("responsibilityTypeID", resTypeId);
@@ -14601,7 +14602,7 @@ for json path, WITHOUT_ARRAY_WRAPPER
 				select	cast(ResourceID as varchar) as [value],
 						LastName + ', ' + FirstName as label 
 				from	reporting.Global_Resource 
-				where	Status = 'Active' " + hideUsersSql +
+				where	[State] = 1 " + hideUsersSql +
 				@"order by LastName + ', ' + FirstName
 				for json auto
 				) as [values]
