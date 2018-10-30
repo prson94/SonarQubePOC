@@ -171,8 +171,53 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public WorkflowStepIssueDetail IssueDetails { get; set; }
+        [DataMember]
+        public List<WorkflowStepFieldChange> FieldChanges { get; set; }
+
+        public WorkflowStepReleationshipChange RelationshipChange { get; set; }
     }
 
+    public class WorkflowStepFieldChange
+    {
+
+
+        [DataMember]
+        public string FieldName { get; set; }
+        [DataMember]
+        public string Asset { get; set; }
+
+        [DataMember]
+        public string Type { get; set; }
+
+        [DataMember]
+        public string Value { get; set; }
+        [DataMember]
+        public string CurrentDate { get; set; }
+        [DataMember]
+        public bool FormValue { get; set; }
+
+        [DataMember]
+        public string AppendValue { get; set; }
+
+
+        [DataMember]
+        public string ClearValue { get; set; }
+    }
+
+    public class WorkflowStepReleationshipChange
+    {
+        [DataMember]
+        public string TypeName { get; set; }
+
+        [DataMember]
+        public string Relationship { get; set; }
+
+        [DataMember]
+        public bool AppendValue { get; set; }
+
+        [DataMember]
+        public bool ClearValue { get; set; }
+    }
     public class WorkflowStepIssueDetail
     {
         public int ID { get; set; }
