@@ -14,24 +14,34 @@ import { MessagesService } from '../../../services/messages.service';
                 Override Queries For Attribute Types
                 <d3s-tile-actions hasClose="true" (closeClick)="onClose.emit()" [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="false" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
             </header>
-            <p-dataTable #dt scrollable="true" scrollWidth="100%" [value]="customqueries" [rows]="20" [paginator]="true" [(selection)]="selected">
-                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="FusionAttributeType" header="Type"></p-column>
-                <p-column [style]="{width:'40px'}">
-                    <ng-template let-override="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <a style="cursor:pointer;" (click)="selected=override;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                        </div>
-                    </ng-template>
-                </p-column>                            
-                <p-column  [style]="{width:'40px'}">
-                    <ng-template let-override="rowData" pTemplate type="body">
-                        <div class="RowTools">                                
-                            <a style="cursor:pointer;" (click)="selected=override;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                        </div>
-                    </ng-template>
-                </p-column>                          
-            </p-dataTable>            
+
+            <p-table #dt [value]="customqueries" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="20" [(selection)]="selected" [scrollable]="true">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Type</th>
+                        <th style="width: 40px"></th>
+                        <th style="width: 40px"></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>{{item.FusionAttributeType}}</td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>            
         </div>
         <d3s-fusion-attribute-type-custom-query-editor *ngIf="showEditor" 
             [fusionId]="fusionId"

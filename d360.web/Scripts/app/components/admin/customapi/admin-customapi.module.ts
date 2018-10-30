@@ -34,6 +34,8 @@ import {
     MultiSelectModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
@@ -47,6 +49,7 @@ import {
         DataTableModule,
         MultiSelectModule,
         ButtonModule,
+        TableModule, 
 
         //d3s                
         CoreModule,

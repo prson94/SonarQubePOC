@@ -32,6 +32,8 @@ import {
     DataTableModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
@@ -48,6 +50,7 @@ import {
         MultiSelectModule,
         SharedModule,
         DataTableModule,
+        TableModule,
 
         //editor
         CodemirrorModule,

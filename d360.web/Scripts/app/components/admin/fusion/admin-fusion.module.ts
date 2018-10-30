@@ -45,6 +45,8 @@ import {
     TreeTableModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { CodemirrorModule } from 'ng2-codemirror';
 
 @NgModule({
@@ -66,6 +68,7 @@ import { CodemirrorModule } from 'ng2-codemirror';
         SharedModule,
         DataTableModule,
         TreeTableModule,
+        TableModule,
 
         //color picker
         ColorPickerModule,

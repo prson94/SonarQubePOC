@@ -5,25 +5,42 @@
                 Fusion
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add();" *ngIf="formMode == FormMode.Default"></d3s-tile-actions>
             </header>
-            <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable #dt [globalFilter]="gb" [value]="fusionTypes" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
-                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '75%' }"></p-column>
-                <p-column [style]="{width:'40px'}">
-                    <ng-template let-col let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                        </div>
-                    </ng-template>
-                </p-column>
-                <p-column [style]="{width:'40px'}">
-                    <ng-template let-col let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <a (click)="selectedRow = item; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                        </div>
-                    </ng-template>
-                </p-column>
-            </p-dataTable>
+            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <p-table #dt [value]="fusionTypes" selectionMode="single" [globalFilterFields]="['Name']" [paginator]="true" [rows]="20" [(selection)]="selectedRow" [metaKeySelection]="true">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th [pSortableColumn]="'Name'" style="width:75%">
+                            Name
+                            <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                        </th>
+                        <th style="width: 40px"></th>
+                        <th style="width: 40px"></th>
+                    </tr>
+                    <tr [hidden]="showSimpleFilter">
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>{{item.Name}}</td>
+                        <td>
+                            <div class="RowTools">
+                                <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a (click)="selectedRow = item; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
         </div>
     </div>
 

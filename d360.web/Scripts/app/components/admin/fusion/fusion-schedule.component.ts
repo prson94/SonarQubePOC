@@ -12,7 +12,46 @@ import { MessagesService } from '../../../services/messages.service';
         <div *ngIf="!isLoading && !showEditor && !showDelete">            
             <header>Agent Execution Schedule<d3s-tile-actions hasClose="true" (closeClick)="onClose.emit()" [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="false" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
             </header>                        
-            <p-dataTable #dt scrollable="true" scrollWidth="100%" [value]="schedules" [rows]="20" [paginator]="true" [(selection)]="selected">
+            <p-table #dt [value]="schedules" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="20" [(selection)]="selected">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Day</th>
+                        <th>Time (UTC)</th>
+                        <th>Full Refresh?</th>
+                        <th style="width: 40px"></th>
+                        <th style="width: 40px"></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>{{item.DayText}}</td>
+                        <td>{{item.Time}}</td>
+                        <td>
+                            <span>
+                                <i *ngIf="item.ForceRefresh" class="fa fa-check enabled" title="True"></i>
+                                <i *ngIf="!item.ForceRefresh" class="fa fa-times disabled" title="False"></i>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>            
+
+
+<!--
+<p-dataTable #dt scrollable="true" scrollWidth="100%" [value]="schedules" [rows]="20" [paginator]="true" [(selection)]="selected">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="DayText" header="Day"></p-column>
                 <p-column field="Time" header="Time (UTC)"></p-column>
@@ -38,7 +77,7 @@ import { MessagesService } from '../../../services/messages.service';
                         </div>
                     </ng-template>
                 </p-column>                          
-            </p-dataTable>            
+            </p-dataTable>  -->          
         </div>
         <d3s-fusion-schedule-editor *ngIf="showEditor" 
             [selection]="selected" 
