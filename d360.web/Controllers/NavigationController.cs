@@ -440,7 +440,7 @@ namespace d360.web.Controllers
 							where not exists (select 1 from SiteNavPermission where object='Group' and siteNavId =@id and objectId=g.id) 
 							union all
 							select  r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) "
+							where r.[State] = 1 and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) "
                             + hideUsersSql +
                         ") as Sub";
                    
