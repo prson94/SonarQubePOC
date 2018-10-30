@@ -1213,6 +1213,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-column-filter.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-sorticon.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />
@@ -1409,6 +1411,7 @@
     <TypeScriptCompile Include="Scripts\app\models\qualifier.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shopping-cart.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shortcuts.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\turbotable.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\tooltip-info.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflowmonitor.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\array-to-selectitem.pipe.ts" />

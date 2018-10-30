@@ -1,8 +1,7 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { Title } from '@angular/platform-browser';
+import { TableColumn } from '../../../models/turbotable.model';
 import { WorkflowListItem, ChangeTypeInfo } from '../../../models/workflow.model';
-import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
 
@@ -17,32 +16,46 @@ import { Router } from '@angular/router';
         Workflow Types
         <d3s-tile-actions hasAdd="true" (addClick)="onAddClick.emit()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
     </header>
-    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-    <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowDblclick)="onEditClick.emit({ID:$event.data.ID,isClone:false})">                                                        
-    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>        
-    <p-column field="TypeName" header="Type Name" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>  
-    <p-column field="Type" header="Type" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column> 
-    <p-column field="ChangeTypeName" header="Change Type" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>  
-    <p-column field="UpdatedOn" header="Updated On" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
-        <ng-template let-item="rowData" pTemplate type="body">
-            <span>{{item.UpdatedOn | date:'shortDate'}}</span>
+
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <p-table #dt [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selection" 
+        [globalFilterFields]="filterFields">
+        <ng-template pTemplate="header">
+            <tr>
+                <th *ngFor="let col of columns" [pSortableColumn]="col.sortable ? col.field : null">
+                    {{col.header}}
+                    <d3s-sortIcon *ngIf="col.sortable" [field]="col.field"></d3s-sortIcon>
+                </th>
+                <th style="width: 215px"></th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th *ngFor="let col of columns">
+                    <d3s-column-filter *ngIf="col.filterable" [field]="col.field" [datatype]="col.datatype"></d3s-column-filter>
+                </th>
+                <th></th>
+            </tr>
         </ng-template>
-    </p-column> 
-    <p-column field="UpdatedBy" header="Updated By" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
-  <p-column field="Published" header="Status" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column> 
-  <p-column [style]="{width:'215px'}">
-        <ng-template let-item="rowData" pTemplate type="body">
-            <div class="RowTools">
-                <a style="cursor:pointer;" (click)="onEditClick.emit({ID:item.ID,isClone:false})"><i class="fa fa-pencil"></i></a> 
-                <a style="cursor:pointer;" (click)="cloneWorkflow(item.ID)"><i class="fa fa-copy"></i></a> 
-                <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.ID)"><i class="fa fa-trash-o"></i></a>    
-                <a style="cursor:pointer;" (click)="onViewClick.emit(item.ID)"><i class="fa fa-eye"></i></a>    
-                <a style="cursor:pointer;" (click)="navigate(item.ID)"><i class="fa fa-television"></i></a>                                      
-            </div>
+        <ng-template pTemplate="body" let-item >
+            <tr (dblclick)="onEditClick.emit({ ID: item.ID, isClone: false })" [pSelectableRow]="item">
+                <td *ngFor="let col of columns" [ngSwitch]="col.datatype">
+                    <span *ngSwitchCase="'text'">{{item[col.field]}}</span>
+                    <span *ngSwitchCase="'date'">{{item[col.field] | date:'shortDate'}}</span>
+                </td>
+                <td>
+                    <div class="RowTools">
+                        <a style="cursor:pointer;" (click)="onEditClick.emit({ID:item.ID,isClone:false})"><i class="fa fa-pencil"></i></a> 
+                        <a style="cursor:pointer;" (click)="cloneWorkflow(item.ID)"><i class="fa fa-copy"></i></a> 
+                        <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.ID)"><i class="fa fa-trash-o"></i></a>    
+                        <a style="cursor:pointer;" (click)="onViewClick.emit(item.ID)"><i class="fa fa-eye"></i></a>    
+                        <a style="cursor:pointer;" (click)="navigate(item.ID)"><i class="fa fa-television"></i></a>                                      
+                    </div>
+                </td>
+            </tr>
         </ng-template>
-    </p-column>                                                      
-    </p-dataTable>      
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords" ></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
 </div>
 `
 })
@@ -57,6 +70,20 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     private selection: WorkflowListItem;
 
     private changeTypes: ChangeTypeInfo[] = [];
+
+    private columns: TableColumn[] = [
+        new TableColumn({ field: 'Name', header: 'Name', sortable: true, filterable: true }),
+        new TableColumn({ field: 'TypeName', header: 'Type Name', sortable: true, filterable: true }),
+        new TableColumn({ field: 'Type', header: 'Type', sortable: true, filterable: true }),
+        new TableColumn({ field: 'ChangeTypeName', header: 'Change Type', sortable: true, filterable: true }),
+        new TableColumn({ field: 'UpdatedOn', header: 'Updated On', sortable: true, filterable: true, datatype: 'date' }),
+        new TableColumn({ field: 'UpdatedBy', header: 'Updated By', sortable: true, filterable: true }),
+        new TableColumn({ field: 'Published', header: 'Status', sortable: true, filterable: true }),
+    ];
+
+    get filterFields(): string[] {
+        return this.columns.filter(c => c.filterable).map(c => c.field);
+    }
 
     constructor(private workflowService: WorkflowService, protected router: Router) {
         super();

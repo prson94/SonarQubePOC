@@ -1261,3 +1261,123 @@ p-treeTable td a {
     border-left: none !important;
     margin: 0 !important;
 }
+
+/* Turbo Table */
+
+
+.ui-table .ui-table-thead > tr > th,
+.ui-table .ui-table-tfoot > tr > td {
+    font-weight: bold;
+    text-transform: capitalize;
+    border-radius: 0;
+    background-color: #999;
+}
+
+.ui-table thead th {
+    text-align: left;
+    color: #fff;
+}
+
+.ui-table tr.ui-state-hover {
+    border: none;
+}
+
+.ui-table tr.ui-state-highlight {
+    border: none;
+}
+
+.ui-table thead {
+    border: none;
+}
+
+.ui-table th.ui-state-default {
+    border: none;
+}
+
+.ui-table th.ui-state-hover {
+    background: #d3d5d8;
+    border-color: #d9d9d9;
+    font-weight: bold;
+}
+
+.ui-table th.ui-state-active {
+    /*    background-color: transparent;
+    color: black;*/
+}
+
+.ui-table-odd {
+    background-color: #FFF;
+}
+
+.ui-table-even {
+    background-color: #DEF1FD /*#F8F3F0*/;
+}
+
+.ui-table-rowordering.ui-state-active {
+    background: #14a4ff none repeat scroll 0 0;
+}
+
+.ui-table tbody > tr.ui-widget-content {
+    border-color: #d9d9d9;
+}
+
+.ui-table .ui-table-thead > tr > th,
+.ui-table .ui-table-tfoot > tr > td,
+.ui-table .ui-table-data > tr > td {
+    border: none;
+    border-radius: 0;
+    padding: 0 10px;
+    height: 25px;
+    word-wrap: break-word;
+}
+
+.ui-table .ui-table-thead > tr > th {
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+/*.ui-table tbody td {
+    border:none;
+    border-radius: 0;
+    padding: 0 10px;
+    height:25px;    
+}*/
+.ui-table .ui-paginator {
+    border-top: 1px solid #999 !important;
+}
+
+.ui-table .ui-widget-header {
+    border-color: white;
+}
+
+.ui-paginator-bottom {
+    background: #ffffff;
+    border-color: #ffffff;
+}
+
+.ui-table-footer {
+    background: white;
+}
+
+tbody.ui-table-tbody > tr {
+    border: none;
+}
+
+tbody.ui-table-tbody > tr:nth-child(odd) {
+    background-color: #def1fd;
+}
+
+tbody.ui-table-tbody > tr.ui-state-highlight {
+    background-color: #76bbe8;
+    color: #fff;
+}
+
+.ui-table-summary {
+    background-color: #fff;
+}
+
+.ui-table .ui-column-filter {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: .25em;
+}
