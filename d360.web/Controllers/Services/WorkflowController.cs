@@ -2426,7 +2426,7 @@ order by wi.StartedOn desc";
                         r.Assignee = string.Join(", ", users.Select(u => u.FullName));
                         r.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
                     }
-                    else if (r.MessageRecipientType == "SpecificUser")
+                    else if (r.MessageRecipientType == "SpecificUser" || r.MessageRecipientType == "Initiator")
                     {
                         var userList = ((string)r.Assignee).Split(';');
                         var formattedUserList = new List<string>();
@@ -2440,7 +2440,7 @@ order by wi.StartedOn desc";
                                 formattedUserList.Add(u);
 
                             if (user.ResourceID == Company.CurrentResourceID)
-                                 r.IsAssignedLoginUser =  Boolean.TrueString;
+                                r.IsAssignedLoginUser =  Boolean.TrueString;
                         }
                         r.Assignee = string.Join(", ", formattedUserList);
                     }
