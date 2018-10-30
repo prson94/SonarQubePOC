@@ -114,5 +114,6 @@
     <None Include="Releases\2018.09.14\1.sql" />
     <None Include="Releases\2018.09.28\1.sql" />
     <None Include="Releases\2018.10.26\1.sql" />
+    <None Include="Releases\2018.10.26\Community.sql" />
   </ItemGroup>
 </Project>
