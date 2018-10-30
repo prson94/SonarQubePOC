@@ -115,7 +115,7 @@ namespace igx.jobs.reportlayer
 
 #if DEBUG
                 companies = d360.utils.company.CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
-                companies = companies.Where(x => x.CompanyID == 4).ToList();
+                companies = companies.Where(x => x.CompanyID == 5).ToList();
 #endif
 
                 companies.ForEach(c =>
@@ -778,7 +778,7 @@ select
     ResourceID,
     Email, 
     LastName + ', ' + FirstName as Resourcename
-from reporting.Global_Resource
+from reporting.Global_Resource where [State] = 1
 Union
     select 
     '/Group/' + cast(ID as varchar(250)) as ResourceURI,
@@ -818,7 +818,10 @@ FROM [dbo].[Group]";
                                     r.Email, 
                                     r.ResourceID,
                                     '/Resource/' + cast(r.ResourceID as varchar(250)) as ResourceURI,
-                                     r.DateLastLoggedIn,r.[Status],r.IsAdministrator
+                                     r.LastLoggedInOn,
+                                    case when r.[State] = 1 then 'Active' else 'Inactive' end as [Status], 
+                                    r.[State], 
+                                    r.IsAdministrator
                                     {ffields}
                                     from reporting.Global_Resource as r
                                     {fjoins}";
@@ -857,7 +860,7 @@ SELECT S.AssetID
       ,S.ApplyToType
       ,S.OverrideID as OverrideItemID
       ,[PermissionsBitMask]
-  FROM ResponsibilityDetail S inner join reporting.Global_Resource R on R.ResourceID = S.ResourceID";
+  FROM ResponsibilityDetail S inner join reporting.Global_Resource R on R.ResourceID = S.ResourceID and R.[State] = 1";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

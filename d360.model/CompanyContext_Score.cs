@@ -119,7 +119,7 @@ select	[Uid],
 		(
 			select	F.Name as FieldName,
 					C.Operator,
-					C.ValueJson
+					C.ValueJson as [Value]
 			from	[metrics].[AssetVersionCondition] C
 					inner join FieldType F on F.ID = C.FieldTypeID
 			where	[Uid] = h.[Uid]
@@ -141,13 +141,13 @@ order by [Level] asc";
                 if (!string.IsNullOrEmpty(i.ConditionsJson))
                 {
                     i.Conditions = JsonConvert.DeserializeObject<List<MetricConditionHierarchyModel>>(i.ConditionsJson);
-                    i.Conditions.ForEach(c =>
-                    {
-                        if (!string.IsNullOrEmpty(c.ValueJson))
-                        {
-                            c.Values = JsonConvert.DeserializeObject<List<string>>(c.ValueJson);
-                        }
-                    });
+                    //i.Conditions.ForEach(c =>
+                    //{
+                    //    //if (!string.IsNullOrEmpty(c.ValueJson))
+                    //    //{
+                    //        //c.Values = JsonConvert.DeserializeObject<List<string>>(c.ValueJson);
+                    //    //}
+                    //});
                 }
 
                 if (i.ParentUid.HasValue)

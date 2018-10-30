@@ -277,6 +277,10 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                // Set the properties.
+                metricAssetVersion.ConditionAndOr = model.ConditionAndOr;
+                metricAssetVersion.Weight = model.Weight;
+
                 #region Deal with processing the conditions.
                 if (model.Conditions.Count > 0)
                 {

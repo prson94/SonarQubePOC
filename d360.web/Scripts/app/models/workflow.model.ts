@@ -547,6 +547,8 @@ export class WorkflowStepDetail {
     IsAssignedLoginUser: boolean;
     ItemID: number;
     ItemStepID: number;
+    FieldChanges: WorkflowStepFieldChangeDetail[];
+    RelationshipChange: WorkflowStepRelationshipChangeDetail;
 }
 
 
@@ -562,4 +564,24 @@ export class WorkflowStepIssueDetail {
     ObjectID: number;
     ObjectType: string;
     ObjectTypeID: number;
+}
+
+export class WorkflowStepFieldChangeDetail {
+    FieldValue: string;
+    FieldName: string;
+    Asset: string;
+    Type: string;
+    Value: string;
+    CurrentDate: string;
+    FormValue: string;
+    AppendValue: string;
+    ClearValue: string;
+}
+
+
+export class WorkflowStepRelationshipChangeDetail {
+    TypeName: string;
+    Relationship: string;
+    AppendValue: boolean;
+    ClearValue: boolean;
 }

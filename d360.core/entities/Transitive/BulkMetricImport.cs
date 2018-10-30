@@ -127,10 +127,14 @@ namespace d360.core.entities
         [DataMember]
         public string Operator { get; set; }
 
-        public string ValueJson { get; set; }
+        //public string ValueJson { get; set; }
 
+        // Future use (mpappas) for when we start adding potentially multiple values that the JSON property above could store.
         [DataMember]
-        public List<string> Values { get; set; }
+        public string Value { get; set; }
+
+        //[DataMember]
+        //public List<string> Values { get; set; }
     }
 
     #endregion

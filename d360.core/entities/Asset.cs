@@ -29,10 +29,7 @@ namespace d360.core.entities
 
         [DataMember]
         public string SourceID { get; set; }
-
-        [DataMember]
-        public Guid UID { get; set; }
-
+        
         [IgnoreDataMember, ReadOnly(true), Column(TypeName = "varchar"), StringLength(50)]
         public string KeyHash { get; set; }
 

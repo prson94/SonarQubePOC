@@ -4,30 +4,10 @@
     Layout = "Anonymous.cshtml";
 }
 @section TopCss {
-    <style type="text/css">
-        #loginForm {
-            width: 90%;
-            max-width: 800px;
-        }
-
-            #loginForm #loginButton:disabled {
-                background-color: #ebebeb;
-                cursor: not-allowed;
-            }
-
-        .FieldNameRequired {
-            font-weight: 600;
-        }
-
-        .title {
-            font-size: 150%;
-        }
-    </style>
 }
-<body class="loginBody">
-
+<body>
     <div id="loginForm">
-        <p>An Error has occured.  Please contact your administrator for additional details.</p>
+        <div class="error">An Error has occured.  Please contact your administrator for additional details.</div>
     </div>
 </body>
 

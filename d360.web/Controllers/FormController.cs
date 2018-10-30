@@ -3233,7 +3233,7 @@ namespace d360.web.Controllers
                 list.Add("FirstName", 0);
                 list.Add("LastName", 0);
                 list.Add("Email", 0);
-                list.Add("DateLastLoggedIn", 0);
+                list.Add("LastLoggedInOn", 0);
                 list.Add("DisplayValue", 0);
             }
             else if (type == SystemObjects.FusionAttributeType)
@@ -13819,7 +13819,7 @@ order by TP.TextPath";
         List<SelectListItem> getResponsibilityResources(string selectedID = "")
         {
             var list = GetCompanyResources()
-                .Where(i => i.ResourceID > 0 && !i.Status.ToLower().Equals("inactive"))
+                .Where(i => i.ResourceID > 0 && i.State == CompanyResourceState.Active)
                 .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName })
                 .ToList()
                 .Select(i => new SelectListItem
@@ -14900,13 +14900,15 @@ order by DN.DisplayValue");
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
+            var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+
             list.Add(new EditableField { FieldName = "ResourceTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FirstName", Name = "First Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "First Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Email", Name = "Email/Username", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Email", true, "", 1, 500) });//@"^([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})$", null, null, "be an email address") });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "Password", Name = "Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Password", true, passwordRegex, null, null, passwordRegexMessage) });
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "Status", Name = "Active?", FieldType = DataType.Boolean.ToString(), Value = "true" });
+            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "State", Name = "Active?", FieldType = DataType.Lookup.ToString(), Items = stateList, Value = ((int)CompanyResourceState.Active).ToString() });
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, id).ToList(), 5);
 
@@ -14938,12 +14940,15 @@ order by DN.DisplayValue");
             var list = new List<EditableField>();
             var a = Community.GetById<Resource>(id, i => i.CompanyResources);
 
+            var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+            var cr = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID);
+
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FirstName", Name = "First Name", FieldType = DataType.Text.ToString(), Value = a.FirstName, Validations = checkAndAddValidation("Text", "First Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Value = a.LastName, Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Email", Name = "Email/Username", FieldType = DataType.Text.ToString(), Value = a.Email, Validations = checkAndAddValidation("Text", "Email", true, "", 1, 500) });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString(), Value = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID).IsAdministrator.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "Status", Name = "Active?", FieldType = DataType.Boolean.ToString(), Value = (a.Status == "Active").ToString() });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString(), Value = cr.IsAdministrator.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "State", Name = "Active?", FieldType = DataType.Lookup.ToString(), Items = stateList, Value = ((int)cr.State).ToString() });
 
             list =(
                 loadDynamicFields(
@@ -15024,11 +15029,7 @@ order by DN.DisplayValue");
 
                 if (!form.HasKeys()) throw new NoFormDataException("resource");
 
-                int typeID = parseIntField(form, "ResourceTypeID");
-                var type = Community.GetById<ResourceType>(typeID);
-
-                if (type == null) throw new NotFoundException("resource type");
-
+                int typeID = 1;
                 var email = form["Email"].Trim();
 
                 var a = Community.Filter<Resource>(i => i.Email == email).FirstOrDefault();
@@ -15045,11 +15046,10 @@ order by DN.DisplayValue");
                         LastName = parseNameField(form, "LastName"),
                         Email = parseTextField(form, "Email"),
                         Username = parseTextField(form, "Email"),
-                        Status = parseBooleanField(form, "Status") ? "Active" : "Inactive",
                         Password = "temp"
                     };
 
-                    Community.Add<Resource>(a);
+                    Community.Add(a);
 
                     id = a.ID;
                     Community.ChangePassword(a.ID, "", form["Password"]);
@@ -15060,16 +15060,25 @@ order by DN.DisplayValue");
                 }
 
                 var isAdmin = parseBooleanField(form, "IsAdministrator");
+                var state = parseEnumField<CompanyResourceState>(form, "State");
                 var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == id).FirstOrDefault();
 
                 if (companyResource == null)
                 {
-                    Community.Add<CompanyResource>(new CompanyResource
+                    companyResource = new CompanyResource
                     {
                         CompanyID = Company.CurrentCompanyID,
                         IsAdministrator = isAdmin,
-                        ResourceID = id
-                    });
+                        ResourceID = id,
+                        State = state
+                    };
+                    Community.Add(companyResource);
+                }
+                else
+                {
+                    companyResource.IsAdministrator = isAdmin;
+                    companyResource.State = state;
+                    Community.Update(companyResource);
                 }
 
                 if (!GetCompanyResources().Any(i => i.ResourceID == a.ID))
@@ -15081,17 +15090,17 @@ order by DN.DisplayValue");
                         Email = a.Email,
                         LastName = a.LastName,
                         FirstName = a.FirstName,
-                        Status = a.Status
+                        State = state
                     };
 
-                    Company.Add<GlobalReportingResource>(gr);
+                    Company.Add(gr);
                 }
                 
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, a.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, typeID).ToList(), form, Server);
                 Company.AddOrUpdateFields(fields);
 
-                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess("User successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15154,7 +15163,7 @@ order by DN.DisplayValue");
                 var model = Community.Filter<CompanyResource>(i => i.ResourceID == id && i.CompanyID == Company.CurrentCompanyID).SingleOrDefault();
                 if (model == null) throw new NotFoundException("resource");
 
-                Community.Delete<CompanyResource>(model);
+                Community.Delete(model);
                 Company.Delete<GlobalReportingResource>(x => x.ResourceID == id);
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -15213,15 +15222,15 @@ order by DN.DisplayValue");
                 model.LastName = parseNameField(form, "LastName");
                 model.Email = newEmail;
                 model.Username = newEmail;
-                model.Status = parseBooleanField(form, "Status") ? "Active" : "Inactive";
 
-                Community.Update<Resource>(model);    //Must be first before saving fields.
+                Community.Update(model);    //Must be first before saving fields.
 
                 var cr = Community.Filter<CompanyResource>(i => i.ResourceID == id && i.CompanyID == Company.CurrentCompanyID).SingleOrDefault();
                 if (cr != null)
                 {
+                    cr.State = parseEnumField<CompanyResourceState>(form, "State");
                     cr.IsAdministrator = parseBooleanField(form, "IsAdministrator");
-                    Community.Update<CompanyResource>(cr);
+                    Community.Update(cr);
                 }
 
                 GlobalReportingResource gr = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
@@ -15230,9 +15239,9 @@ order by DN.DisplayValue");
                 gr.LastName = model.LastName;
                 gr.Email = model.Email;
                 gr.IsAdministrator = cr.IsAdministrator;
-                gr.Status = model.Status;
+                gr.State = cr.State;
 
-                Company.Update<GlobalReportingResource>(gr);
+                Company.Update(gr);
 
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);

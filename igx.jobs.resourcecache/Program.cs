@@ -39,7 +39,7 @@ namespace igx.jobs.resourcecache
             try
             {                
 #if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 4).ToList();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 5).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -58,14 +58,14 @@ namespace igx.jobs.resourcecache
                             #region Get updated resources
 
                             var resources = cnn.Query<GlobalReportingResource>(@"
-select ID as ResourceID, FirstName, 
-LastName, 
-DateLastLoggedIn, 
-Email, 
-Status, 
-IsAdministrator 
-from Resource R 
-inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new { c = c.CompanyID }).ToList();
+select R.ID as ResourceID, 
+R.FirstName, 
+R.LastName, 
+C.LastLoggedInOn, 
+R.Email, 
+C.[State], 
+C.IsAdministrator 
+from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new { c = c.CompanyID }).ToList();
 
                             #endregion
 
@@ -81,9 +81,9 @@ inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new {
 			                                ResourceID int not null primary key ,
                                             FirstName nvarchar(250) not null,
                                             LastName nvarchar(250) not null,
-                                            DateLastLoggedIn datetime null,
+                                            LastLoggedInOn datetime null,
                                             Email nvarchar(500) not null,
-                                            Status nvarchar(25) not null,
+                                            [State] int not null,
                                             IsAdministrator bit not null
 		                                );
                                 ", transaction: transaction);
@@ -108,7 +108,7 @@ inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new {
                                     table.Columns.Add(columnName, typeof(string));                                    
                                     bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                                    columnName = "DateLastLoggedIn";
+                                    columnName = "LastLoggedInOn";
                                     table.Columns.Add(columnName, typeof(DateTime));
                                     bulkCopy.ColumnMappings.Add(columnName, columnName);
 
@@ -116,8 +116,8 @@ inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new {
                                     table.Columns.Add(columnName, typeof(string));
                                     bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                                    columnName = "Status";
-                                    table.Columns.Add(columnName, typeof(string));
+                                    columnName = "State";
+                                    table.Columns.Add(columnName, typeof(int));
                                     bulkCopy.ColumnMappings.Add(columnName, columnName);
 
                                     columnName = "IsAdministrator";
@@ -131,13 +131,13 @@ inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new {
                                         row["ResourceID"] = item.ResourceID;
                                         row["FirstName"] = item.FirstName;
                                         row["LastName"] = item.LastName;
-                                        if (item.DateLastLoggedIn.HasValue)
-                                            row["DateLastLoggedIn"] = item.DateLastLoggedIn.Value;
+                                        if (item.LastLoggedInOn.HasValue)
+                                            row["LastLoggedInOn"] = item.LastLoggedInOn.Value;
                                         else
-                                            row["DateLastLoggedIn"] = DBNull.Value;
+                                            row["LastLoggedInOn"] = DBNull.Value;
 
                                         row["Email"] = item.Email;
-                                        row["Status"] = item.Status;
+                                        row["State"] = (int)item.State;
                                         row["IsAdministrator"] = item.IsAdministrator;
 
                                         table.Rows.Add(row);
@@ -152,9 +152,9 @@ using	(
 		select	ResourceID,
 				FirstName,
 				LastName,
-                DateLastLoggedIn,
+                LastLoggedInOn,
                 Email,
-                Status,
+                [State],
                 IsAdministrator
         from	#users
 		) as S
@@ -163,14 +163,14 @@ when	matched then
 		update	
 		set		T.FirstName = S.FirstName,
 				T.LastName = S.LastName,
-                T.DateLastLoggedIn = S.DateLastLoggedIn,
+                T.LastLoggedInOn = S.LastLoggedInOn,
                 T.Email = S.Email,
-                T.Status = S.Status,
+                T.[State] = S.[State],
                 T.IsAdministrator = S.IsAdministrator,
                 T.CreatedOn = case when T.CreatedOn is null then getutcdate() else T.CreatedOn end
 when	not matched by target then
-		insert (ResourceID, FirstName, LastName, DateLastLoggedIn, Email, Status, IsAdministrator, CreatedOn)
-		values (S.ResourceID, S.FirstName, S.LastName, S.DateLastLoggedIn, S.Email, S.Status, S.IsAdministrator, getutcdate());",
+		insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, CreatedOn)
+		values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, getutcdate());",
                                 transaction: transaction
                                 );
 

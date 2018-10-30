@@ -1101,20 +1101,34 @@ where A.FusionTypeID = @id", columns, joins);
                         #region Get the target fusion attribute type rows
 
                         #region import File Record Column Validation
-                        if (targetAttributeType.Name.Trim().ToLower() != xls.GetCellValueAsString(1, 1).Trim().ToLower())
+                        var colIndex = 1;
+                        foreach (var nodeID in parentAttributeTypeIDs)
+                        {
+                            var t = fusion.FusionType.FusionAttributeTypes.Single(i => i.ID == nodeID);
+
+                            if (t.Name.Trim().ToLower() != xls.GetCellValueAsString(1, colIndex).Trim().ToLower())
+                            {
+                                var errMsg = string.Format("{0} could not be uploaded because a required column is missing or incorrect.", file.FileName);
+                                throw new InvalidFieldException(errMsg);
+                            }
+                            colIndex++;
+                        }
+
+                        if (targetAttributeType.Name.Trim().ToLower() != xls.GetCellValueAsString(1, colIndex).Trim().ToLower())
                         {
                             var errMsg = string.Format("{0} could not be uploaded because a required column is missing or incorrect.", file.FileName);
                             throw new InvalidFieldException(errMsg);
                         }
-
+                        colIndex++;
                         for (int i = 0; i < targetAttributeTypeFields.Count; i++)
                         {
-                            if (targetAttributeTypeFields[i].Name.Trim().ToLower() != xls.GetCellValueAsString(1, i + currentColumnIndex + 1).Trim().ToLower())
+                            if (targetAttributeTypeFields[i].Name.Trim().ToLower() != xls.GetCellValueAsString(1, colIndex).Trim().ToLower())
                             {
                                 var errMsg = string.Format("{0} could not be uploaded because a required column is missing or incorrect.", file.FileName);
                                 throw new InvalidFieldException(errMsg);
 
                             }
+                            colIndex++;
                         }
                         #endregion  
                         currentRowIndex = 2;    // Reset the current row index.
@@ -1195,7 +1209,7 @@ where A.FusionTypeID = @id", columns, joins);
                             { "FusionID", id.ToString() },
                             { "FusionAttributeTypeID", attributeTypeID.ToString() }
                 });
-                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.StatusDescription);
+                return Request.CreateErrorResponse(ex.StatusCode, ex.StatusDescription);
             }
             catch (BaseException ex)
             {

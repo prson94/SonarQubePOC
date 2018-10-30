@@ -294,20 +294,36 @@ namespace d360.web.Controllers
 
                             resource = new Resource
                             {
-                                DateLastLoggedIn = DateTime.UtcNow,
                                 Email = userName,
                                 FirstName = firstName,
                                 LastName = lastName,
                                 Password = Community.createRandomPassword(),
                                 ResourceTypeID = 1,
-                                Status = "Active",
                                 Username = userName
                             };
                             Community.Add(resource);
-                            Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+
+                            var companyResource = new CompanyResource {
+                                CompanyID = Community.CurrentCompanyID,
+                                IsAdministrator = false,
+                                ResourceID = resource.ID,
+                                LastLoggedInOn = DateTime.UtcNow,
+                                State = CompanyResourceState.Active
+                            };
+                            Community.Add(companyResource);
+
                             if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
                             {
-                                Company.Add(new GlobalReportingResource { DateLastLoggedIn = resource.DateLastLoggedIn, Email = resource.Email, FirstName = resource.FirstName, IsAdministrator = false, LastName = resource.LastName, ResourceID = resource.ID, Status = resource.Status, CreatedOn = DateTime.UtcNow });
+                                Company.Add(new GlobalReportingResource {
+                                    LastLoggedInOn = companyResource.LastLoggedInOn,
+                                    Email = resource.Email,
+                                    FirstName = resource.FirstName,
+                                    LastName = resource.LastName,
+                                    IsAdministrator = false,
+                                    ResourceID = resource.ID,
+                                    State = companyResource.State,
+                                    CreatedOn = DateTime.UtcNow
+                                });
                             }
 
                             Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });                            
@@ -320,15 +336,48 @@ namespace d360.web.Controllers
                         {
                             if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
                             {
-                                Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                companyResource = new CompanyResource {
+                                    CompanyID = Community.CurrentCompanyID,
+                                    IsAdministrator = false,
+                                    ResourceID = resource.ID,
+                                    LastLoggedInOn = DateTime.UtcNow,
+                                    State = CompanyResourceState.Active
+                                };
+                                Community.Add(companyResource);
                                 if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
                                 {
-                                    Company.Add(new GlobalReportingResource { DateLastLoggedIn = resource.DateLastLoggedIn, Email = resource.Email, FirstName = resource.FirstName, IsAdministrator = false, LastName = resource.LastName, ResourceID = resource.ID, Status = resource.Status, CreatedOn = DateTime.UtcNow });
-                                }                                
+                                    Company.Add(new GlobalReportingResource
+                                    {
+                                        LastLoggedInOn = companyResource.LastLoggedInOn,
+                                        Email = resource.Email,
+                                        FirstName = resource.FirstName,
+                                        LastName = resource.LastName,
+                                        IsAdministrator = false,
+                                        ResourceID = resource.ID,
+                                        State = companyResource.State,
+                                        CreatedOn = DateTime.UtcNow
+                                    });
+                                }
                             }
                             else
                             {
-                               resource = null;
+                                resource = null;
+                            }
+                        }
+                        else
+                        {
+                            if (companyResource.State == CompanyResourceState.Active)
+                            {
+                                companyResource.LastLoggedInOn = DateTime.UtcNow;
+                                Community.Update(companyResource);
+                            }
+                            else
+                            {
+                                // The company resource account is not active, so ensure that user is NOT able to log in.
+                                resource = null;
+                                //return Content("You do not have a valid account for this Govern environment.");
+                                Response.Redirect("/noaccess");
+                                //Response.Redirect("Error");
                             }
                         }
 
@@ -336,10 +385,30 @@ namespace d360.web.Controllers
                         // assigned to company and auto-add not enabled, setting resource to null will prevent login.
                         if (resource != null)
                         {
-                            resource.DateLastLoggedIn = DateTime.UtcNow;
-                            if(!string.IsNullOrEmpty(firstName)) resource.FirstName = firstName;
-                            if(!string.IsNullOrEmpty(lastName)) resource.LastName = lastName;
-                            Community.Update<Resource>(resource);
+                            bool userCorePropertiesChanged = false;
+                        
+                            if (!string.IsNullOrEmpty(firstName))
+                            {
+                                if (resource.FirstName != firstName)
+                                {
+                                    userCorePropertiesChanged = true;
+                                    resource.FirstName = firstName;
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(lastName))
+                            {
+                                if (resource.LastName != lastName)
+                                {
+                                    userCorePropertiesChanged = true;
+                                    resource.LastName = lastName;
+                                }
+                            }
+
+                            if (userCorePropertiesChanged)
+                            {
+                                Community.Update(resource);
+                            }
                         }
                     }
                 }
@@ -863,18 +932,17 @@ namespace d360.web.Controllers
                                         LastName = model.LastName,
                                         Password = Community.HashPassword(Guid.NewGuid().ToString()),
                                         ResourceTypeID = 1,
-                                        Status = "Active",
                                         Username = model.Email
                                     };
                                     Community.Add(resource);
 
-                                    Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                    Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, State = CompanyResourceState.Active, ResourceID = resource.ID });
                                 }
                                 else
                                 {
                                     if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
                                     {
-                                        Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                        Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, State = CompanyResourceState.Active, ResourceID = resource.ID });
                                     }
                                 }
 
@@ -1014,18 +1082,17 @@ namespace d360.web.Controllers
                                             LastName = model.LastName,
                                             Password = Community.HashPassword(model.Password),
                                             ResourceTypeID = 1,
-                                            Status = "Active",
                                             Username = model.Email
                                         };
                                         Community.Add(resource);
 
-                                        Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                        Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, State = CompanyResourceState.Active, ResourceID = resource.ID });
                                     }
                                     else
                                     {
                                         if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
                                         {
-                                            Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                            Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, State = CompanyResourceState.Active, ResourceID = resource.ID });
                                         }
                                     }
 
@@ -1095,18 +1162,17 @@ namespace d360.web.Controllers
                                         LastName = model.LastName,
                                         Password = Community.HashPassword(Guid.NewGuid().ToString()),
                                         ResourceTypeID = 1,
-                                        Status = "Active",
                                         Username = model.Email
                                     };
                                     Community.Add(resource);
 
-                                    Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                    Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, State = CompanyResourceState.Active, ResourceID = resource.ID });
                                 }
                                 else
                                 {
                                     if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
                                     {
-                                        Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                        Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, State = CompanyResourceState.Active, ResourceID = resource.ID });
                                     }
                                 }
 
@@ -1455,6 +1521,13 @@ namespace d360.web.Controllers
 
             FormsAuthentication.RedirectToLoginPage();
             return new EmptyResult();
+        }
+
+        [AllowAnonymous, Route("noaccess")]
+        public ActionResult NoAccess()
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            return View("NoAccess");
         }
 
         [AllowAnonymous, Route("Error")]

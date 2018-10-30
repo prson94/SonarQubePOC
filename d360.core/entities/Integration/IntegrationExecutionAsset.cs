@@ -11,17 +11,31 @@ namespace d360.core.entities
     public class IntegrationExecutionAsset : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]
+        public Guid Uid { get; set; } = Guid.NewGuid();
+
+        [DataMember]
         public long ExecutionID { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember]
         public int SynchedAssetTypeID { get; set; }
 
-        [DataMember]
-        [Column(TypeName = "varchar"), StringLength(100)]
+        [DataMember, Column(TypeName = "varchar"), StringLength(100)]
         public string SourceID { get; set; }
 
-        [DataMember]
         public string RawObject { get; set; }
+
+        public string RawRelationships { get; set; }
+
+        public string RawResponsibilitites { get; set; }
+
+        [DataMember]
+        public bool FieldsRecieved { get; set; } = false;
+
+        [DataMember]
+        public bool RelationsRecieved { get; set; } = false;
+
+        [DataMember]
+        public bool ResponsibilitiesRecieved { get; set; } = false;
 
         [DataMember]
         public string ErrorMessages { get; set; }

@@ -356,16 +356,16 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                 {
 
                     // Need to do extra processing here as the tooltip cannot populate from the company database.
-                    var resource = Community.Resources.SingleOrDefault(i => i.ID == id);
+                    var resource = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
                     if (resource != null)
                     {
                         var fields = Company.Filter<FieldWithRelation>(i => i.ObjectType == "Resource" && i.ObjectID == id).ToDictionary(k => k.Name, var => var.FormattedValue);
-                        fields.Add("Name", resource.FormatDisplayName());
+                        fields.Add("Name", resource.FullName);
                         fields.Add("FirstName", resource.FirstName);
                         fields.Add("LastName", resource.LastName);
-                        fields.Add("DateLastLoggedIn", resource.DateLastLoggedIn.HasValue ? resource.DateLastLoggedIn.Value.ToString("MM/dd/yyyy HH:mm:ss") : "Never");
+                        fields.Add("LastLoggedInOn", resource.LastLoggedInOn.HasValue ? resource.LastLoggedInOn.Value.ToString("MM/dd/yyyy HH:mm:ss") : "Never");
                         fields.Add("Email", resource.Email);
-                        fields.Add("Status", resource.Status);
+                        fields.Add("Status", resource.State.ToString());
                         html = html.ReplaceTokenWithValues(fields);
                     }
                 }

@@ -980,17 +980,20 @@ where   h.ID <> @t order by h.[Level] desc;
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName" });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email" });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.DateLastLoggedIn_Name, datafield = "DateLastLoggedIn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F" });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F" });
                     columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, filteritems = new List<string>() { "Active", "Disabled" } });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "State", filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, filteritems = new List<string>() {
+                        CompanyResourceState.Active.ToString(),
+                        CompanyResourceState.Inactive.ToString()
+                    } });
 
                     fields.Add(new GridField { name = "IsAdministrator", type = "bool" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Email", type = "string" });
                     fields.Add(new GridField { name = "FirstName", type = "string" });
                     fields.Add(new GridField { name = "LastName", type = "string" });
-                    fields.Add(new GridField { name = "DateLastLoggedIn", type = "date" });
-                    fields.Add(new GridField { name = "Status", type = "string" });
+                    fields.Add(new GridField { name = "LastLoggedInOn", type = "date" });
+                    fields.Add(new GridField { name = "State", type = "string" });
                     break;
                 #endregion
                 case SystemObjects.TaxonomyType:
@@ -4007,7 +4010,7 @@ SELECT  R.ResponsibilityTypeName,
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
 from    ResponsibilityDetail R
-        inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.Status = 'Active' 
+        inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
 where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
@@ -4718,8 +4721,8 @@ order by    title
 select  A.FirstName,
 		A.LastName,
         A.Email,
-		A.DateLastLoggedIn,
-        A.Status,
+		A.LastLoggedInOn,
+        case A.State when 1 then 'Active' else 'Inactive' end as [State],
         A.IsAdministrator,
         {columns}
 		A.ID,
@@ -4729,8 +4732,8 @@ from    (
         select	FirstName,
 		        LastName,
                 Email,
-		        DateLastLoggedIn,
-                Status,
+		        LastLoggedInOn,
+                State,
                 IsAdministrator,
                 ResourceID as ID
         from	reporting.Global_Resource
@@ -5190,7 +5193,7 @@ where    A.RuleID = @id", new { id });
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.UID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
                             },
                             });
 
@@ -5860,7 +5863,7 @@ where    A.RuleID = @id", new { id });
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.UID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
                             }
                             });
                         }
@@ -5919,7 +5922,7 @@ where    A.RuleID = @id", new { id });
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.UID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
                             }
                             });
                         }
@@ -6351,7 +6354,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.Resource:
                     #region Fields
-                    var resource = Community.GetById<Resource>(id);
+                    var resource = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
                     if (resource != null)
                     {
                         model.columns = 1;
@@ -6361,7 +6364,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Name", Value = resource.FormatDisplayName() },
+                                new ReadOnlyField { Name = "Name", Value = resource.FullName },
                             },
                         });
 
@@ -6374,7 +6377,7 @@ where    A.RuleID = @id", new { id });
                             },
                         });
 
-                        var lastSeen = getUserLastSeenText(resource.DateLastLoggedIn);
+                        var lastSeen = getUserLastSeenText(resource.LastLoggedInOn);
 
                         if (!string.IsNullOrEmpty(lastSeen))
                         {

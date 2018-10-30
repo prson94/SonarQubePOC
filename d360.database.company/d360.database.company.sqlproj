@@ -102,6 +102,7 @@
     <Folder Include="Releases\2018.09.14" />
     <Folder Include="Releases\2018.09.28" />
     <Folder Include="Releases\2018.10.26" />
+    <Folder Include="Releases\2018.12.01" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -120,6 +121,7 @@
     <None Include="Releases\2018.10.26\CacheDetails-Rollback.sql" />
     <None Include="Releases\2018.10.26\Drops.sql" />
     <None Include="Releases\2018.10.26\PredicateUIDs.sql" />
+    <None Include="Releases\2018.12.01\1.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Releases\2018.10.26\Metrics.sql" />
