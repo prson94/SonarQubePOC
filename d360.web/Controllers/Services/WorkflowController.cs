@@ -2430,13 +2430,17 @@ order by wi.StartedOn desc";
                     {
                         var userList = ((string)r.Assignee).Split(';');
                         var formattedUserList = new List<string>();
-                        foreach(var u in userList)
+                        r.IsAssignedLoginUser = Boolean.FalseString; //default
+                        foreach (var u in userList)
                         {
                             var user = Company.GlobalReportingResources.FirstOrDefault(c => c.Email == u);
                             if (user != null)
                                 formattedUserList.Add(user.FullName);
                             else
                                 formattedUserList.Add(u);
+
+                            if (user.ResourceID == Company.CurrentResourceID)
+                                 r.IsAssignedLoginUser =  Boolean.TrueString;
                         }
                         r.Assignee = string.Join(", ", formattedUserList);
                     }
