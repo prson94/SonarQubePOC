@@ -29,6 +29,7 @@ using Microsoft.Web.Http;
 using Newtonsoft.Json.Linq;
 using d360.core.queue;
 using Dapper;
+using d360.core.enums;
 
 namespace d360.web.Controllers.Services
 {
@@ -2643,6 +2644,9 @@ order by wi.StartedOn desc";
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail.Settings,detail.ItemID);
                 detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
+                if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
+                    detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
+
                 string issueObject = null;
                 int issueObjectId = 0;
                 if (detail.Condition != null && detail.Condition.Condition != null)
