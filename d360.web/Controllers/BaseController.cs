@@ -695,9 +695,7 @@ namespace d360.web.Controllers
 
                                     if (f.AllowAllValue)
                                         fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
-
-                                    var items = new List<SelectListItem>();
-
+                                                                        
                                     if (f.AllowMultipleValues)
                                     {
                                         fld.Items.AddRange(

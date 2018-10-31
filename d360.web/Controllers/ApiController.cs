@@ -408,7 +408,7 @@ namespace d360.web.Controllers
                     Name = k.TargetTypeName,
                     Value = k.TargetObjectName,
                     FieldDescription = "",
-                    FieldName = string.Format("", k.TargetObject, k.TargetObjectID)
+                    FieldName = ""
                 };
                 if (k.Count > 0)
                 {

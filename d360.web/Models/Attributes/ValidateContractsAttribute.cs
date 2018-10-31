@@ -23,9 +23,9 @@ namespace d360.web.Models.Attributes
                     filterContext.HttpContext.Response.Redirect("/terms");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
     }
