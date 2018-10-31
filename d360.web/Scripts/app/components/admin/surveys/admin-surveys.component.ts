@@ -18,7 +18,44 @@ import { SurveyType } from '../../../models/survey.model';
                             </header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
-                                <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                <p-table #dt [value]="surveys" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','ValidForDays']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th [pSortableColumn]="'Name'" style="width: 25%">
+                                                Name
+                                                <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                            </th>
+                                            <th [pSortableColumn]="'ValidForDays'" style="width: 10%">
+                                                Valid Days
+                                                <d3s-sortIcon [field]="'ValidForDays'"></d3s-sortIcon>
+                                            </th>
+                                            <th style="width: 60px"></th>
+                                        </tr>
+                                        <tr [hidden]="showSimpleFilter">
+                                            <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th><d3s-column-filter [field]="'ValidForDays'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th></th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-item>
+                                        <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
+                                            <td>{{item.Name}}</td>
+                                            <td>{{item.ValidForDays}}</td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                    </ng-template>
+                                </p-table>
+<!--
+<input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="surveys" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                                     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>                                                                                        
@@ -31,7 +68,7 @@ import { SurveyType } from '../../../models/survey.model';
                                             </div>
                                         </ng-template>
                                     </p-column>                                                                                    
-                                </p-dataTable>  
+                                </p-dataTable> -->  
                             </span>
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'SurveyType'" [title]="'Survey'" [selection]="selected" (saveClick)="saveSurvey($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                        
                             <d3s-delete-form *ngIf="showDelete"

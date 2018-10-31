@@ -21,25 +21,42 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                             </header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>     
                             <span *ngIf="!isLoading && !showEditor && !showDelete">
-                                <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;">                                                                                        
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
-                                    <p-column [style]="{width:'40px'}">
-                                        <ng-template let-rule="rowData"  pTemplate type="body">
-                                            <div class="RowTools">
-                                                <a style="cursor:pointer;" (click)="selected=rule;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                            </div>
-                                        </ng-template>
-                                    </p-column>                            
-                                    <p-column  [style]="{width:'40px'}">
-                                        <ng-template let-rule="rowData" pTemplate type="body">
-                                            <div class="RowTools">                                
-                                                <a style="cursor:pointer;" (click)="selected=rule;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                            </div>
-                                        </ng-template>
-                                    </p-column> 
-                                </p-dataTable>
+                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                <p-table #dt [value]="ruleTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th [pSortableColumn]="'Name'">
+                                                Name
+                                                <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                            </th>
+                                            <th style="width: 40px"></th>
+                                            <th style="width: 40px"></th>
+                                        </tr>
+                                        <tr [hidden]="showSimpleFilter">
+                                            <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th></th>
+                                            <th></th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-item>
+                                        <tr (dblclick)="selected=item;showEditor=true;" [pSelectableRow]="item">
+                                            <td>{{item.Name}}</td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                    </ng-template>
+                                </p-table>
                             </span>
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'RuleType'" [title]="'Rule Type'" [selection]="selected" (saveClick)="saveRuleType($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                             <d3s-delete-form *ngIf="showDelete"

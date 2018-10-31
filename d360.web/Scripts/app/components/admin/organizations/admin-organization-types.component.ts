@@ -14,26 +14,48 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                    <p-dataTable #dt [globalFilter]="gb" [value]="organizationTypes" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowSelect)="type=$event.data;typeChange.emit(type)" (onRowDblclick)="type=$event.data;showEditor=true;typeChange.emit(type);" (selectionChange)="type=$event;typeChange.emit(type)" [selection]="type">
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="OrganizationCount" header="Organization Count" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'max-width':'150px'}"></p-column>
-                        <p-column [style]="{width:'40px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="type=item;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                </div>
-                            </ng-template>
-                        </p-column>
-                        <p-column  [style]="{width:'40px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools" *ngIf="item.OrganizationCount == 0">                                
-                                    <a style="cursor:pointer;" (click)="type=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                </div>
-                            </ng-template>
-                        </p-column>
-                    </p-dataTable>
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="organizationTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','OrganizationCount']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'OrganizationCount'" style="width: max-150px">
+                                    Organization Count
+                                    <d3s-sortIcon [field]="'OrganizationCount'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'OrganizationCount'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="type=item;showEditor=true;typeChange.emit(type);" [pSelectableRow]="item">
+                                <td>{{item.Name}}</td>
+                                <td>{{item.OrganizationCount}}</td>
+                                <td>
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="type=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="RowTools" *ngIf="item.OrganizationCount == 0">
+                                        <a style="cursor:pointer;" (click)="type=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </span>                
                 <d3s-asset-type-editor *ngIf="showEditor" [showParentPredicates]="false" [assetTypeClass]="'O'" [id]="type?.AssetTypeID" [title]="(type?'Edit':'Add') + ' Organization Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>                
                 <d3s-delete-form *ngIf="showDelete"

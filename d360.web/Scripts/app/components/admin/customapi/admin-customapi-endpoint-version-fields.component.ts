@@ -86,48 +86,7 @@ import { Router, ActivatedRoute } from '@angular/router';
                                     <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
                                         <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                                     </ng-template>
-                                </p-table>                                
-
-
-<!--
-<input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="fields" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected">                                                                        
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                                    
-                                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                                    <p-column field="Type" header="DataType" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                    
-                                    <p-column field="AllowFilter" header="Filter?" [sortable]="true" [filter]="!showSimpleFilter">
-                                        <ng-template let-row="rowData" pTemplate type="body">                                            
-                                                <i *ngIf="row.AllowFilter" class="fa fa-check enabled" title="True"></i>
-                                                <i *ngIf="!row.AllowFilter" class="fa fa-times disabled" title="False"></i>                                            
-                                        </ng-template>
-                                    </p-column>                                    
-                                    <p-column field="AllowSelect" header="Select?" [sortable]="true" [filter]="!showSimpleFilter">
-                                        <ng-template let-row="rowData" pTemplate type="body">                                            
-                                                <i *ngIf="row.AllowSelect" class="fa fa-check enabled" title="True"></i>
-                                                <i *ngIf="!row.AllowSelect" class="fa fa-times disabled" title="False"></i>                                            
-                                        </ng-template>
-                                    </p-column>            
-                                    <p-column field="AllowSort" header="Sort?" [sortable]="true" [filter]="!showSimpleFilter">
-                                        <ng-template let-row="rowData" pTemplate type="body">                                            
-                                                <i *ngIf="row.AllowSort" class="fa fa-check enabled" title="True"></i>
-                                                <i *ngIf="!row.AllowSort" class="fa fa-times disabled" title="False"></i>                                            
-                                        </ng-template>
-                                    </p-column> 
-                                    <p-column  [style]="{width:'35px'}">
-                                            <ng-template let-item="rowData" pTemplate type="body">
-                                                <div class="RowTools">
-                                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                    
-                                                </div>
-                                            </ng-template>
-                                    </p-column> 
-                                     <p-column  [style]="{width:'35px'}">
-                                            <ng-template let-item="rowData" pTemplate type="body">
-                                                <div class="RowTools">
-                                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                                </div>
-                                            </ng-template>
-                                    </p-column> 
-                                </p-dataTable>    -->                              
+                                </p-table>                                                           
                             </span>             
                             <d3s-admin-api-endpoint-version-fields-editor *ngIf="showEditor"
                                 [model]="selected" 

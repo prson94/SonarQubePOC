@@ -26,16 +26,28 @@ import { ResourcesService } from '../../../services/resources.service';
                     &nbsp;<d3s-tile-actions hasAdd="true" (addClick)="addPermission()"></d3s-tile-actions>
                 </header>
                 <div>
-                    <p-dataTable [value]="siteNav.Permissions" selectionMode="single" [immutable]="false">
-                        <p-column field="Name" header="Permissions"></p-column>
-                        <p-column [style]="{'width': '35px'}">
-                            <ng-template let-item="rowData" let-i="index" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
-                                </div>
-                            </ng-template>
-                        </p-column>
-                    </p-dataTable>
+                    <p-table #dt [value]="siteNav.Permissions" selectionMode="single" [metaKeySelection]="true">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Permissions</th>
+                                <th style="width: 35px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr [pSelectableRow]="item">
+                                <td>{{item.Name}}</td>
+                                <td>
+                                    <div class="RowTools">
+                                        <a (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
                 </div>
             </div>
         </div>

@@ -14,6 +14,8 @@ import {
     SharedModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 
@@ -43,6 +45,7 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
         DropdownModule,
         InputTextModule,
         SharedModule,
+        TableModule,
 
         //d3s                
         CoreModule,

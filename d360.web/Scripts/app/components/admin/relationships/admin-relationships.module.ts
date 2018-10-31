@@ -30,6 +30,8 @@ import {
     GrowlModule
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
@@ -40,7 +42,8 @@ import {
 
         //prime        
         SharedModule,
-        DataTableModule,        
+        DataTableModule,  
+        TableModule,
 
         //d3s        
         AdminRelationshipEditorModule,

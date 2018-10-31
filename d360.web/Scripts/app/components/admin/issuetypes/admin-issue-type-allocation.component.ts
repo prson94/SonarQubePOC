@@ -16,19 +16,41 @@ import { FormMode } from '../../../models/form.model';
                     <div *ngIf="!isLoading">
                         <div [ngSwitch]="formMode">
                             <div *ngSwitchCase="FormMode.Default" class="col s12">
-                                <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable #dt [globalFilter]="gb" [value]="allocations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selection" [rowsPerPageOptions]="defaultPagingOptions">                                                                        
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                    <p-column field="ObjectType" header="Object Type" sortable="true" [filter]="!showSimpleFilter"></p-column>                                                            
-                                    <p-column field="TypeName" header="Object Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>                                         
-                                    <p-column [style]="{width:'40px'}">
-                                        <ng-template let-item="rowData" pTemplate type="body">
-                                            <div class="RowTools">                                
-                                                <a style="cursor:pointer;" (click)="selection = item; formMode = FormMode.Deleting"><i class="fa fa-trash-o"></i></a>                                    
-                                            </div>
-                                        </ng-template>
-                                    </p-column>                            
-                                </p-dataTable>                          
+                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                <p-table #dt [value]="allocations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ObjectType','TypeName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selection">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th [pSortableColumn]="'ObjectType'">
+                                                Object Type
+                                                <d3s-sortIcon [field]="'ObjectType'"></d3s-sortIcon>
+                                            </th>
+                                            <th [pSortableColumn]="'TypeName'">
+                                                Object Name
+                                                <d3s-sortIcon [field]="'TypeName'"></d3s-sortIcon>
+                                            </th>
+                                            <th style="width: 40px"></th>
+                                        </tr>
+                                        <tr [hidden]="showSimpleFilter">
+                                            <th><d3s-column-filter [field]="'ObjectType'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th><d3s-column-filter [field]="'TypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th></th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-item>
+                                        <tr [pSelectableRow]="item">
+                                            <td>{{item.ObjectType}}</td>
+                                            <td>{{item.TypeName}}</td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selection = item; formMode = FormMode.Deleting"><i class="fa fa-trash-o"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                    </ng-template>
+                                </p-table>                 
                             </div>
                             <div *ngSwitchCase="FormMode.Adding" class="col s12">
                                 <d3s-dynamic-editor 

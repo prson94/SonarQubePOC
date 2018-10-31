@@ -27,6 +27,8 @@ import {
     DataTableModule,    
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
@@ -40,7 +42,8 @@ import {
         DropdownModule,
         InputTextModule,
         SharedModule,
-        DataTableModule,        
+        DataTableModule,  
+        TableModule,
 
         //d3s        
         CoreModule,

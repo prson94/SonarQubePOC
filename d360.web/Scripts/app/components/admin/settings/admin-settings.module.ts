@@ -31,6 +31,8 @@ import {
     ColorPickerModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
@@ -46,6 +48,7 @@ import {
         SharedModule,
         DataTableModule,
         ColorPickerModule,
+        TableModule,
 
         //d3s        
         CoreModule,        

@@ -40,6 +40,7 @@ import {
     EditorModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -56,6 +57,7 @@ import {
         SharedModule,
         DataTableModule,
         EditorModule,
+        TableModule,
 
         //d3s       
         AdminModule,

@@ -34,6 +34,8 @@ import {
     DataTableModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 
 
 @NgModule({
@@ -51,6 +53,7 @@ import {
         InputTextModule,
         SharedModule,
         DataTableModule,
+        TableModule,
 
         // color picker
         ColorPickerModule,

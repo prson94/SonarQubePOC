@@ -14,7 +14,48 @@ import * as _ from 'lodash';
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input  [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="roles" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Description']" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'Description'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;this.showEditor = true;" [pSelectableRow]="item">
+                                <td>{{item.Name}}</td>
+                                <td>
+                                    <div [innerHtml]="item?.Description"></div>
+                                </td>
+                                <td>
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="RowTools" *ngIf="!role.IsUsed">
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
+
+
+<!--
+<input  [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                     <p-dataTable #dt [globalFilter]="gb" [value]="roles" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;this.showEditor = true;" [(selection)]="selected" >                                                                        
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                                                                                    
@@ -37,7 +78,7 @@ import * as _ from 'lodash';
                                 </div>
                             </ng-template>
                         </p-column>                            
-                    </p-dataTable> 
+                    </p-dataTable> -->
                 </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'RelationshipRole'" [title]="'Relationship Role'" [selection]="selected" (saveClick)="saveRole($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                 <d3s-delete-form *ngIf="showDelete"

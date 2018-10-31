@@ -17,43 +17,62 @@ import { Organization, OrganizationType } from '../../../models/organization.mod
         </header>
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading && !showEditor && !showDelete && !showHistory">
-            <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="organization" (selectionChange)="organization=$event;organizationChange.emit($event);" (onRowSelect)="organization=$event.data;organizationChange.emit(organization);" (onRowDblclick)="organization=$event.data;showEditor=true;organizationChange.emit(organization);">
-                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>
-                <p-column field="AdministratorEmail" header="Administrator Email"></p-column>
-                <p-column field="DateAccepted" header="Accepted On">
-                    <ng-template pTemplate type="body" let-item="rowData">
-                        {{ item.DateAccepted | date: 'short' }}
-                    </ng-template>
-                </p-column>
-                <p-column field="AcceptedBy" header="Accepted By">
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <a (click)="openResource(item)">{{item.AcceptedByName}}</a>
-                    </ng-template>
-                </p-column>
-                <p-column [style]="{width:'40px'}">
-                    <ng-template let-item="rowData"  pTemplate type="body">
-                        <div class="RowTools">
-                            <a style="cursor:pointer;" (click)="organization=item;showEditor=true"><i class="fa fa-pencil"></i></a>
-                        </div>
-                    </ng-template>
-                </p-column>
-                <p-column  [style]="{width:'40px'}">
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <a style="cursor:pointer;" (click)="organization=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
-                        </div>
-                    </ng-template>
-                </p-column>
-                <p-column [style]="{width:'40px'}">
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <a style="cursor:pointer;" (click)="organization=item;showHistory=true"><i class="fa fa-history"></i></a>                                        
-                        </div>
-                    </ng-template>
-                </p-column>
-            </p-dataTable>
+            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <p-table #dt [value]="organizations" selectionMode="single" [metaKeySelection]="true" [selection]="organization" (selectionChange)="organization=$event;organizationChange.emit($event);" [globalFilterFields]="['Name','AdministratorEmail','DateAccepted','AcceptedBy']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" (onRowSelect)="organization=$event.data;organizationChange.emit(organization);">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th [pSortableColumn]="'Name'">
+                            Name
+                            <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                        </th>
+                        <th>Administrator Email</th>
+                        <th>Accepted On</th>
+                        <th>Accepted By</th>
+                        <th style="width: 40px"></th>
+                        <th style="width: 40px"></th>
+                        <th style="width: 40px"></th>
+                    </tr>
+                    <tr [hidden]="showSimpleFilter">
+                        <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr (dblclick)="organization=item;showEditor=true;organizationChange.emit(organization);" [pSelectableRow]="item">
+                        <td>{{item.Name}}</td>
+                        <td>{{item.AdministratorEmail}}</td>
+                        <td>
+                            {{ item.DateAccepted | date: 'short' }}
+                        </td>
+                        <td>
+                            <a (click)="openResource(item)">{{item.AcceptedByName}}</a>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="organization=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="organization=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="organization=item;showHistory=true"><i class="fa fa-history"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
         </div>
         <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organizationType?.ID" [objectType]="'Organization'" [title]="'Organization'" [selection]="organization" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
         <d3s-delete-form *ngIf="showDelete"
