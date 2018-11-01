@@ -104,8 +104,19 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? CreatedOn { get; set; }
 
-        [DataMember, System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        [DataMember, NotMapped]
         public string FullName { get { return FirstName + " " + LastName; } }
+
+
+        #region Deprecated
+
+        [NotMapped, DataMember]
+        public DateTime? DateLastLoggedIn { get; set; }
+
+        [NotMapped, DataMember]
+        public string Status { get; set; }
+
+        #endregion
     }
 
     public partial class IntersectTypeOption

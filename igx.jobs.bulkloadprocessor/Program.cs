@@ -879,7 +879,8 @@ merge into  [CompanyResource] T
 using       (
             select  distinct
 					EnvironmentID as CompanyID,
-					ResourceID
+					ResourceID,
+                    case UserStatus when 'Active' then 1 else 2 end as [State]
             from    #Users
 			where	Success = 1
             ) S
@@ -887,8 +888,8 @@ on          (
                 T.CompanyID = S.CompanyID and T.ResourceID = S.ResourceID
             )
 when not matched by target then
-    insert  (CompanyID, ResourceID, IsAdministrator)
-    values  (S.CompanyID, S.ResourceID, 0)
+    insert  (CompanyID, ResourceID, IsAdministrator, [State])
+    values  (S.CompanyID, S.ResourceID, 0, S.[State])
 output inserted.ResourceID, $action into #UserMembershipsResult;", transaction: trans);
 
                     community.Execute(@"
@@ -987,7 +988,11 @@ CREATE NONCLUSTERED INDEX IX_TempUsers_ResourceID ON #Users ( ResourceID ASC );
                     company.Execute(@"
 merge into  reporting.Global_Resource T
 using       (
-            select  *
+            select  ResourceID, 
+                    LastName, 
+                    FirstName, 
+                    Email, 
+                    case UserStatus when 'Active' then 1 else 2 end as [State]
             from    #Users
 			where	Success = 1
             ) S
@@ -998,10 +1003,10 @@ when matched then
 	update
 	set	T.FirstName = S.FirstName,
 		T.LastName = S.LastName,
-		T.Status = S.UserStatus
+		T.Status = S.[State]
 when not matched by target then
-    insert  (ResourceID, LastName, FirstName, Email, [Status], IsAdministrator)
-    values  (S.ResourceID, S.LastName, S.FirstName, S.Email, S.UserStatus, 0);", transaction: trans);
+    insert  (ResourceID, LastName, FirstName, Email, [State], IsAdministrator)
+    values  (S.ResourceID, S.LastName, S.FirstName, S.Email, S.[State], 0);", transaction: trans);
 
                     company.Execute(@"exec [bulkload].[UpdateDynamicLookupFieldColumns] @loadId", new { loadId }, transaction: trans);
 

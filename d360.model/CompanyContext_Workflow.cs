@@ -1703,12 +1703,14 @@ namespace d360.model
 						            R.LastName, 
 						            R.Email, 
 						            R.Email, 
-						            R.LastLoggedInOn, 
+                                    R.LastLoggedInOn,
+                                    R.LastLoggedInOn as DateLastLoggedIn, 
 						            1 as ResourceTypeID, 
-						            R.Status 
+                                    R.[State],
+						            case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
 				            from	reporting.Global_Resource R
 							inner join [resourcegroup] rg on (R.ResourceID = rg.ResourceID)
-                            where rg.groupid= @groupId and status = 'Active'", new { groupId = defaultWorkflowUserGroup });
+                            where rg.groupid= @groupId and R.[State] = 1", new { groupId = defaultWorkflowUserGroup });
                 }
                 else
                 {
@@ -1719,10 +1721,12 @@ namespace d360.model
 						            R.LastName, 
 						            R.Email, 
 						            R.Email, 
-						            R.LastLoggedInOn, 
+                                    R.LastLoggedInOn,
+						            R.LastLoggedInOn as DateLastLoggedIn, 
 						            1 as ResourceTypeID, 
-						            R.Status 
-				            from	reporting.Global_Resource R where isadministrator = 1 and status = 'Active'");
+						            R.[State],
+						            case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
+				            from	reporting.Global_Resource R where isadministrator = 1 and R.[State] = 1'");
                 }
             }
 
