@@ -1261,3 +1261,60 @@ p-treeTable td a {
     border-left: none !important;
     margin: 0 !important;
 }
+
+
+/*
+    Stewarts overrides
+*/
+
+
+.ui-widget, .ql-container {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 14px;
+}
+
+.ui-button, button.ui-button.ui-state-default, .ui-button.ui-state-default {
+    text-transform: none;
+}
+    /* Buttons */
+
+    .ui-button, button.ui-button.ui-state-default, .ui-button.ui-state-default {
+        background: #30a9e5;
+    }
+
+        .ui-button:hover, button.ui-button.ui-state-default:hover, .ui-button.ui-state-default:hover {
+            background: #40b9f5;
+        }
+
+        .ui-button:active, button.ui-button.ui-state-default:active, .ui-button.ui-state-default:active {
+            background: #50c9ff;
+        }
+
+.ui-button-text-only .ui-button-text {
+    padding: .5em 1.25em;
+}
+
+/* Tables */
+th.ui-state-default, .ui-treetable th.ui-state-default {
+    background: #252c41;
+}
+
+.ui-datatable-even {
+    background: #f7f7f7;
+}
+
+.ui-datatable .ui-datatable-thead > tr > th, .ui-datatable .ui-datatable-tfoot > tr > td, .ui-datatable .ui-datatable-data > tr > td {
+    padding: 6px 10px;
+    height: auto;
+}
+
+.ui-multiselect-item .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {
+    background: #30a9e5;
+}
+
+/* paging controls on search tables*/
+
+.ui-widget-header {
+    border: 1px solid #fff;
+    background-color: #fff;
+}

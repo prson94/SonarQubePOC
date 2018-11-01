@@ -1,4 +1,4 @@
-﻿<div *ngIf="showTitle && backgroundImage != '';else otherHeaders" style="width:100%; min-height:200px;padding:10px;background-position:center;" [style.background-image]="'url('+ backgroundImage + ')'">
+﻿<div *ngIf="showTitle && backgroundImage != '';else otherHeaders" style="width:100%; min-height:200px;padding:10px;background-position:center;" [style.background-image]="'url('+ backgroundImage + ')'" class="home-page-canvas">
     <div [style.color]="titleColor" [style.font-size]="titleSize" style="letter-spacing: 3px">{{title}}</div>
 </div>
 <ng-template #otherHeaders>

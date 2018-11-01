@@ -175,6 +175,8 @@ namespace d360.core.entities.Workflow
         public List<WorkflowStepFieldChange> FieldChanges { get; set; }
 
         public WorkflowStepReleationshipChange RelationshipChange { get; set; }
+
+        public State StateChange { get; set; }
     }
 
     public class WorkflowStepFieldChange

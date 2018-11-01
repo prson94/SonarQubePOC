@@ -158,7 +158,6 @@ from	Resource R
                         u = cnn.Query<usercompany>(baseSql + @" and lower(ltrim(rtrim(R.Username))) = @username", new { com = companyID, username }).FirstOrDefault();
                     }
 
-                    cnn.Close();
                 }
             }
             catch (Exception ex)

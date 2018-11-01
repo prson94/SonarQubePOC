@@ -229,7 +229,7 @@ namespace d360.web.Controllers.V2
                 }
 
             }
-            catch(Exception e)
+            catch
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "One or items already exist"));
             }

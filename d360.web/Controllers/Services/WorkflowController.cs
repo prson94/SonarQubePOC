@@ -29,6 +29,7 @@ using Microsoft.Web.Http;
 using Newtonsoft.Json.Linq;
 using d360.core.queue;
 using Dapper;
+using d360.core.enums;
 
 namespace d360.web.Controllers.Services
 {
@@ -2426,17 +2427,21 @@ order by wi.StartedOn desc";
                         r.Assignee = string.Join(", ", users.Select(u => u.FullName));
                         r.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
                     }
-                    else if (r.MessageRecipientType == "SpecificUser")
+                    else if (r.MessageRecipientType == "SpecificUser" || r.MessageRecipientType == "Initiator")
                     {
-                        var userList = ((string)r.Assignee).Split(';');
+                        var userList = ((string)r.Assignee ?? "").Split(';');
                         var formattedUserList = new List<string>();
-                        foreach(var u in userList)
+                        r.IsAssignedLoginUser = Boolean.FalseString; //default
+                        foreach (var u in userList)
                         {
                             var user = Company.GlobalReportingResources.FirstOrDefault(c => c.Email == u);
                             if (user != null)
                                 formattedUserList.Add(user.FullName);
                             else
                                 formattedUserList.Add(u);
+
+                            if (user != null && user.ResourceID == Company.CurrentResourceID)
+                                r.IsAssignedLoginUser =  Boolean.TrueString;
                         }
                         r.Assignee = string.Join(", ", formattedUserList);
                     }
@@ -2639,6 +2644,9 @@ order by wi.StartedOn desc";
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail.Settings,detail.ItemID);
                 detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
+                if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
+                    detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
+
                 string issueObject = null;
                 int issueObjectId = 0;
                 if (detail.Condition != null && detail.Condition.Condition != null)

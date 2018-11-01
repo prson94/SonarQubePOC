@@ -35,7 +35,7 @@ namespace d360.web.Controllers
         {
             List<TopNavigationItem> nodes = null;
 
-            nodes = Company.Query<TopNavigationItem>(string.Format(@"GetSiteNavigation @ResourceID", (Company.CurrentResourceIsAdmin ? "1" : "0")), new { ResourceID = Company.CurrentResourceID }).ToList();
+            nodes = Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList();
 
             var features = Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
 
