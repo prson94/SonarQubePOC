@@ -20,6 +20,8 @@ import {
     MultiSelectModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { CoreModule } from '../../core.module';
 import { TilesModule } from '../../tiles/tiles.module';
 import { D3SOverlayWindowModule } from '../../overlay-window.component';
@@ -69,7 +71,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         DataListModule,
         AutoCompleteModule,
         MultiSelectModule,
-
+        TableModule,
     ],
     declarations: [
         WorkflowDiagramComponent,

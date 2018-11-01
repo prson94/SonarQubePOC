@@ -52,46 +52,55 @@ import { Observable } from "rxjs/Observable";
                             [owner]="stateService.artifactTypeFilters.owners"
                     ></d3s-artifact-custom-export>
                     <div class="col s12" [hidden]="showCustomExport">                
-                       <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" [sortOrder]="stateService.artifactTypeFilters.sortOrder" 
-                            [sortField]="stateService.artifactTypeFilters.sortField" #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{width:column.columnWidth ? column.columnWidth + 'px' : ''}">                                                                
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)" style="display:block; word-wrap:break-word"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>                                         
-                                </ng-template>
-                            </p-column>   
-                          <p-column [style]="{width:'30px'}" *ngIf="showCertificationStatus">
-                                    <ng-template let-item="rowData" pTemplate type="body">
+                        <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" 
+                            [sortField]="stateService.artifactTypeFilters.sortField" [sortOrder]="stateService.artifactTypeFilters.sortOrder" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" 
+                            [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" [lazy]="true" (onLazyLoad)="loadArtifactsLazy($event)" [totalRecords]="totalRecords">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th *ngFor="let col of columns" [pSortableColumn]="col.sortable ? col.datafield : null" [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
+                                        {{col.text}}
+                                        <d3s-sortIcon *ngIf="col.sortable" [field]="col.datafield"></d3s-sortIcon>
+                                    </th>
+                                    <th style="width: 30px"></th>
+                                    <th style="width: 30px"></th>
+                                    <th style="width: 35px"></th>
+                                    <th style="width: 30px"></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item">
+                                    <td *ngFor="let col of columns">
+                                        <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)" style="display:block; word-wrap:break-word"><d3s-dynamic-field-value [column]="col" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>                                         
+                                    </td>
+                                    <td>
                                         <div class="RowTools" *ngIf="item[certificationStatusIndex] != null && item[certificationStatusIndex] != ''">
-                                           <i [pTooltip]="'Status: ' + item[certificationStatusIndex]" 
-                                                [style.color]="getCertificationStatusColor(item[certificationStatusIndex])" 
+                                            <i [pTooltip]="'Status: ' + item[certificationStatusIndex]"
+                                                [style.color]="getCertificationStatusColor(item[certificationStatusIndex])"
                                                 class="fa fa-certificate"
-                                                style="margin: 0 10px 0 5px"></i>                                   
+                                                style="margin: 0 10px 0 5px"></i>
                                         </div>
-                                    </ng-template>
-                            </p-column> 
-                            <p-column [style]="{width:'30px'}" *ngIf="showEditButton">
-                                    <ng-template let-item="rowData" pTemplate type="body">
+                                    </td>
+                                    <td>
                                         <div class="RowTools" *ngIf="item.P_CanEdit">
-                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
                                         </div>
-                                    </ng-template>
-                            </p-column>                            
-                            <p-column  [style]="{width:'35px'}" *ngIf="showDeleteButton">
-                                    <ng-template let-item="rowData" pTemplate type="body">
+                                    </td>
+                                    <td>
                                         <div class="RowTools" *ngIf="item.P_CanDelete">
-                                            <a style="cursor:pointer;" (click)="selected=item;doShowDelete();"><i class="fa fa-trash-o"></i></a>                                    
+                                            <a style="cursor:pointer;" (click)="selected=item;doShowDelete();"><i class="fa fa-trash-o"></i></a>
                                         </div>
-                                    </ng-template>
-                            </p-column>                            
-                            <p-column [style]="{width:'30px'}">
-                                    <ng-template let-item="rowData" pTemplate type="body">
+                                    </td>
+                                    <td>
                                         <div class="RowTools">
                                             <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ObjectID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
                                         </div>
-                                    </ng-template>
-                            </p-column>
-                        </p-dataTable>                           
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
                     </div>
                 </div>                                  
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
@@ -148,6 +157,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     theDeleteCallback: Function;
 
     public simpleSearch = new Subject<any>();
+
+    get globalFilterFields(): string[] {
+        return this.columns.map(c => c.datafield);
+    }
 
     constructor(private headerActionsService: HeaderActionsService,
         private messagesService: MessagesService,

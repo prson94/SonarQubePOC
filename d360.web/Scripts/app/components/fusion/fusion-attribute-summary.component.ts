@@ -20,45 +20,54 @@ import { StateService } from '../../services/state.service';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading && !showEditor">
                         <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
-                        <p-dataTable #dt resizableColumns="true" columnResizeMode="fit" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="stateService.fusionFilters.rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions" [style]="{'padding-bottom':'80px'}">                                                        
-                           <p-column [style]="{width:'30px',cursor:'default'}">
-                                    <ng-template let-item="rowData" pTemplate type="body">
+                        <p-table #dt [value]="results?.results" selectionMode="single" [resizableColumns]="true" [lazy]="true" [totalRecords]="results?.total" [metaKeySelection]="true" 
+                            [globalFilterFields]="[]" [pageLinks]="3" [paginator]="true" [rows]="stateService.fusionFilters.rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
+                            [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)"
+                            [style]="{'padding-bottom':'80px'}">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th style="width: 30px; cursor: default"></th>
+                                    <th style="width: 30px; cursor: default"></th>
+                                    <th *ngFor="let col of columns" 
+                                        pResizableColumn 
+                                        [style.width]="col.filterable == 'bool' ? '250px' : '200px'" 
+                                        [style.cursor]="col.filtertype == 'bool' ? null : 'default'"
+                                        [pSortableColumn]="col.sortable ? col.datafield : null">
+                                        {{col.text}}
+                                        <d3s-sortIcon *ngIf="col.sortable" [field]="col.datafield"></d3s-sortIcon>
+                                    </th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td>
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selectItem(item)" title="details"><i class="fa fa-info" aria-hidden="true"></i></a> 
+                                            <a style="cursor:pointer;" (click)="selectItem(item)" title="details"><i class="fa fa-info" aria-hidden="true"></i></a>
                                         </div>
-                                    </ng-template>
-                            </p-column>                                                        
-                           <p-column [style]="{width:'30px',cursor:'default'}">
-                                    <ng-template let-item="rowData" pTemplate type="body">
+                                    </td>
+                                    <td>
                                         <div class="RowTools" *ngIf="item.IsEditable">
                                             <a style="cursor:pointer;" (click)="fusionAttribute=item;showEditor=true;fusionAttributeChange.emit(fusionAttribute);"><i class="fa fa-pencil"></i></a>
                                         </div>
-                                    </ng-template>
-                            </p-column>
-                            
-                            <ng-container *ngFor="let column of columns;let first = first">  
-                                <ng-container *ngIf="column.filtertype == 'bool'; then ifContent else elseContent"></ng-container>
-                                <ng-template #ifContent >
-                                    <p-column [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }">
-                                        <ng-template let-col="column" let-item="rowData" pTemplate type="body">
-                                            <span><i *ngIf="item[column.datafield]=='true'" class="fa fa-check enabled" title="True"></i></span>
-                                            <span><i *ngIf="item[column.datafield]=='false'" class="fa fa-times disabled" title="False"></i></span>
+                                    </td>
+                                    <td *ngFor="let col of columns">
+                                        <ng-container *ngIf="col.filtertype == 'bool'; else elseContent">
+                                            <span><i *ngIf="item[col.datafield]=='true'" class="fa fa-check enabled" title="True"></i></span>
+                                            <span><i *ngIf="item[col.datafield]=='false'" class="fa fa-times disabled" title="False"></i></span>
+                                        </ng-container>
+                                        <ng-template #elseContent>
+                                              <a *ngIf="item[col.datafield]" (click)="selectItem(item)">
+                                                <d3s-dynamic-field-value [column]="col" [fields]="fields" [item]="item">
+                                                </d3s-dynamic-field-value> 
+                                            </a> 
                                         </ng-template>
-                                    </p-column>
-                                </ng-template>
-                                <ng-template #elseContent>
-                                    <p-column  [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px','cursor':'default'}">
-                                        <ng-template let-item="rowData" pTemplate type="body">
-                                              <a *ngIf="item[column.datafield]" (click)="selectItem(item)"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value> </a> 
-                                        </ng-template>
-                                    </p-column>
-                                </ng-template>
-                            </ng-container>
-                            <p-footer>
-	                            <d3s-grid-paging-info *ngIf="dt && dt.totalRecords" [totalRecords]="dt?.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>                                
-                            </p-footer>
-                        </p-dataTable>                   
-                        
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
                     </span>
                     <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="newActionName" [objectID]="fusionAttributeTypeId" objectType="FusionAttribute" [title]="'Item'" [selection]="fusionAttribute" [rowID]="'ID'" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 </div>

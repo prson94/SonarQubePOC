@@ -19,6 +19,8 @@ import {
     MenubarModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
 import { LineageBusinessEditorComponent } from './lineage/lineage-business-editor.component';
@@ -75,6 +77,7 @@ import { SharedObjectDetailsModule } from '../objectdetails/shared-object-detail
         ListboxModule,
         DropdownModule,
         MenubarModule,
+        TableModule,
 
     ],
     declarations: [

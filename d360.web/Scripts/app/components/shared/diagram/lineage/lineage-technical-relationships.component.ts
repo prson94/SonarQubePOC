@@ -8,7 +8,27 @@ import { BaseComponent } from '../../base.component';
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
-            <p-dataTable #dt [value]="items" [rowsPerPageOptions]="defaultPagingOptions" >
+            <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ObjectName']" [rowsPerPageOptions]="defaultPagingOptions" >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Name</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>
+                            <div class="cell-value-name">{{item.ObjectName}}</div>
+                            <div class="cell-value-type">{{item.ObjectTypeName}}</div>
+                        </td>
+                    </tr>
+                </ng-template>
+	            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords" ></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
+     
+<!--
+<p-dataTable #dt [value]="items" [rowsPerPageOptions]="defaultPagingOptions" >
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="ObjectName" header="Name">
                     <ng-template let-item="rowData" pTemplate type="body">
@@ -16,7 +36,7 @@ import { BaseComponent } from '../../base.component';
                         <div class="cell-value-type">{{item.ObjectTypeName}}</div>
                     </ng-template>
                 </p-column>
-            </p-dataTable>
+            </p-dataTable> -->
         </div>
     `,
     providers: [DiagramService]

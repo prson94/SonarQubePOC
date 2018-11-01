@@ -8,11 +8,29 @@ import { BaseComponent } from '../../base.component';
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
-            <p-dataTable #dt [value]="items" [rowsPerPageOptions]="defaultPagingOptions" >
+            <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [rowsPerPageOptions]="defaultPagingOptions">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Role</th>
+                        <th>Resource/Group</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>{{item.ResponsibilityTypeName}}</td>
+                        <td>{{item.SecurityAssetName}}</td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
+<!--
+<p-dataTable #dt [value]="items" [rowsPerPageOptions]="defaultPagingOptions" >
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="ResponsibilityTypeName" header="Role"></p-column>
                 <p-column field="SecurityAssetName" header="Resource/Group"></p-column>
-            </p-dataTable>
+            </p-dataTable> -->
         </div>
     `,
     providers: [DiagramService]

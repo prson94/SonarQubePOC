@@ -12,16 +12,32 @@ import { StringConstants } from '../../static/string-constants';
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>      
                 <span *ngIf="!isLoading">
-                    <header>Users Assigned As {{responsibilityTypeName}}</header>          
-                    <p-dataTable #dt [globalFilter]="gb" sortField="OwnedItemCount" sortOrder="-1" [value]="users" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="FirstName" header="Name" [sortable]="true" >
-                            <ng-template let-col let-item="rowData" pTemplate type="body">                                                            
-                                <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID" (click)="selectResource(item)">{{item.FirstName}} {{item.LastName}}</d3s-preview-tooltip>
+                    <header>Users Assigned As {{responsibilityTypeName}}</header>                            
+                        <p-table #dt [value]="users" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [metaKeySelection]="true" sortField="OwnedItemCount" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'FirstName'">
+                                        Name
+                                        <d3s-sortIcon [field]="'FirstName'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'OwnedItemCount'">
+                                        Owned Items
+                                        <d3s-sortIcon [field]="'OwnedItemCount'"></d3s-sortIcon>
+                                    </th>
+                                </tr>
                             </ng-template>
-                        </p-column>           
-                        <p-column field="OwnedItemCount" header="Owned Items" sortable="true"></p-column>                                                                
-                    </p-dataTable>                  
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td>
+                                        <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID" (click)="selectResource(item)">{{item.FirstName}} {{item.LastName}}</d3s-preview-tooltip>
+                                    </td>
+                                    <td>{{item.OwnedItemCount}}</td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>             
                 </span>
                 `,
     providers: [ResponsibilityTypeService],

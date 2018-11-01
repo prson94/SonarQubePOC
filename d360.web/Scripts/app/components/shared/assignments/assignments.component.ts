@@ -18,17 +18,41 @@ import { WorkflowType } from '../../../models/workflow.model';
                     <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <p-dataTable  #dt *ngIf="!isLoading && counts.length > 0" sortField="Name" [sortOrder]="1" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect(selected)"  paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" >                    
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="Name" header="Name" [sortable]="true">
-                            <ng-template let-item="rowData" pTemplate type="body">
+                    <p-table #dt [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Version','Step','Total']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Version'" style="text-align: 'center'">
+                                    Version
+                                    <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Step'" style="text-align: 'left'">
+                                    Step
+                                    <d3s-sortIcon [field]="'Step'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Total'" style="text-align: 'center'">
+                                    Count
+                                    <d3s-sortIcon [field]="'Total'"></d3s-sortIcon>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;doSelect(selected)" [pSelectableRow]="item">
+                                <td>
                                     <a (click)="doSelect(item)">{{item.Name}}</a>
-                            </ng-template>
-                        </p-column>  
-                        <p-column field="Version" header="Version" [sortable]="true" [style]="{'text-align':'center'}"></p-column>    
-                        <p-column field="Step" header="Step" [sortable]="true" [style]="{'text-align':'left'}"></p-column>    
-                        <p-column field="Total" header="Count" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                                                                
-                    </p-dataTable>                      
+                                </td>
+                                <td>{{item.Version}}</td>
+                                <td>{{item.Step}}</td>
+                                <td>{{item.Total}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>                                    
                     <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">You currently have no assignments</div>
                 </div>
                 `
