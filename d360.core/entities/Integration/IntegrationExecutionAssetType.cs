@@ -20,9 +20,6 @@ namespace d360.core.entities
         public int CurrentSourceAssetCount { get; set; }
 
         [DataMember]
-        public int CurrentTargetAssetCount { get; set; }
-
-        [DataMember]
         public bool IsFullRefresh { get; set; }
 
         [DataMember]

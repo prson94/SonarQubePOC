@@ -69,6 +69,17 @@ namespace igx.jobs
     {
         #region AppInsights
 
+        static string _AppInsightsInstrumentationKey = null;
+        public static string AppInsightsInstrumentationKey(string key)
+        {
+            if (string.IsNullOrEmpty(_AppInsightsInstrumentationKey))
+            {
+                _AppInsightsInstrumentationKey = key;
+            }
+            return _AppInsightsInstrumentationKey;
+        }
+
+
         static TelemetryClient _AITelemetryClient;
         public static TelemetryClient AITelemetryClient
         {
@@ -76,7 +87,7 @@ namespace igx.jobs
             {
                 if (_AITelemetryClient == null)
                 {
-                    TelemetryConfiguration.Active.InstrumentationKey = "2dd165d7-28b2-4258-8b55-32d9c83a3f43";
+                    TelemetryConfiguration.Active.InstrumentationKey = AppInsightsInstrumentationKey("2dd165d7-28b2-4258-8b55-32d9c83a3f43");
 
                     _AITelemetryClient = new TelemetryClient();
                 }
