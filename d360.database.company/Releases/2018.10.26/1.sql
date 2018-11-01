@@ -7023,3 +7023,173 @@ GO;
 --index additions
 CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_date] ON [dbo].[Field] ([FieldTypeID]) INCLUDE ([UpdatedOn])
 GO;
+
+
+
+--GOV-5885
+ALTER Function [dbo].[GetEmailStepRecipients]
+(
+	@workflowItemStepID int	
+)
+RETURNS varchar(max)
+BEGIN
+	declare @tbl table (ResourceID int, FirstName nvarchar(250), LastName nvarchar(250), Email nvarchar(500), Username nvarchar(500), DateLastLoggedIn datetime null, ResourceTypeID int, Status nvarchar(25))
+	
+	insert into @tbl
+		select 
+			R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.LastLoggedInOn as DateLastLoggedIn, 1 as ResourceTypeID, case R.State when 1 then 'Active' else 'Inactive' end as [Status]
+		from workflow.itemstep s 
+			outer apply s.settings.nodes('settings/emails/email') as m(c) 
+			inner join reporting.Global_Resource R  on trim(m.c.value('@address', 'varchar(max)')) = R.email
+		where id = @workflowItemStepID
+
+	return (select string_agg(FirstName + ' ' + LastName,', ') as Resources from @tbl)
+end
+GO;
+
+ALTER procedure [utility].[GetOwnersForWorkflowV2]
+	@workflowID int,
+	@workflowStepID int = 0,
+	@workflowItemID int = 0
+as
+begin
+	declare @objectId int,			
+			@objectType varchar(50),
+			@responsibilityTypeID int;
+
+	declare @tbl table (ResourceID int, FirstName nvarchar(250), LastName nvarchar(250), Email nvarchar(500), Username nvarchar(500), DateLastLoggedIn datetime null, ResourceTypeID int, Status nvarchar(25))
+	
+	--get the responsibility for this step from the settings of the step
+	select @responsibilityTypeID = settings.value('(/settings/ResponsibilityTypeID)[1]', 'int') from [workflow].[VersionStep] where id = @workflowStepID
+	
+	-- check object
+	begin
+			select @objectType = object, @objectId = objectid from [workflow].[item] where id = @workflowItemID;
+
+			insert into @tbl
+			select	R.ResourceID, 
+					R.FirstName, 
+					R.LastName, 
+					R.Email, 
+					R.Email, 
+					R.LastLoggedInOn as DateLastLoggedIn, 
+					1 as ResourceTypeID, 
+					case R.State when 1 then 'Active' else 'Inactive' end as [Status]
+			from	ResponsibilityDetails RD
+					inner join reporting.Global_Resource R on RD.Object = @objectType
+							and RD.ObjectID = @objectId
+							and RD.ResponsibilityTypeID = @responsibilityTypeID
+							and RD.ResourceID = R.ResourceID
+							and R.Email not like '%?subject=%' and R.State = 1
+		end
+	
+	-- if noone found email admins
+	if not exists (select 1 from @tbl)
+		begin
+			insert into @tbl
+				select 
+					R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.LastLoggedInOn as DateLastLoggedIn, 1 as ResourceTypeID, case R.State when 1 then 'Active' else 'Inactive' end as [Status]
+				from 
+					reporting.Global_Resource R where isadministrator = 1 and State = 1
+		end
+	
+
+	select * from @tbl
+end
+GO;
+
+ALTER procedure [utility].[GetOwnersForWorkflow]
+	@workflowID int,
+	@workflowStepID int = 0,
+	@workflowItemID int = 0
+as
+begin
+	declare @objectId int,			
+			@objectType varchar(50),
+			@assetId bigint,
+			@assetTypeId bigint,
+			@responsibilityTypeID int,
+			@issueId int;
+	declare @xmlSettings xml;
+	declare @responsibleSide varchar(50);
+
+	declare @tbl table (ResourceID int, FirstName nvarchar(250), LastName nvarchar(250), Email nvarchar(500), Username nvarchar(500), DateLastLoggedIn datetime null, ResourceTypeID int, Status nvarchar(25))
+	declare @responsibilityIDTbl table (RowID int not null identity(1,1) primary key, ResponsibilityTypeID int not null);
+	--get the responsibility for this step from the settings of the step
+
+	select @xmlSettings = settings from [workflow].[VersionStep] where id = @workflowStepID
+
+	insert into @responsibilityIDTbl select T.C.value('.','int') as responsibility from @xmlSettings.nodes('(/settings/ResponsibilityTypeID)') as T(C) ;
+
+	select @responsibleSide = upper(T.C.value('.','varchar(50)')) from @xmlSettings.nodes('(/settings/ResponsibilitySide)') as T(C);
+
+	declare @i int
+	select @i = min(RowID) from @responsibilityIDTbl
+	declare @max int
+	select @max = max(RowID) from @responsibilityIDTbl
+
+	while @i <= @max and not exists (select 1 from @tbl) begin
+		select @responsibilityTypeID = ResponsibilityTypeID from @responsibilityIDTbl where RowID = @i
+		set @i = @i + 1
+
+		-- check object	
+		begin
+			select 
+				@objectType = i.object, 
+				@objectId = i.objectid,
+				@assetId = a.id,
+				@assetTypeId = a.assetTypeId 
+			from [workflow].[item] i
+			left join Asset a on a.object = i.object and A.objectid = i.objectid 
+			where i.id = @workflowItemID;
+
+			if @objectType = 'Issue'
+			begin				
+				select 
+					@issueId = i.id, 
+					@objectType = i.[object], 
+					@objectId = i.[objectid],
+					@assetId = a.id,
+					@assetTypeId = a.assetTypeID
+				from Issue i
+				left join Asset a on a.Object = i.Object and a.ObjectID = i.ObjectID
+				where i.id = @objectId
+			end
+
+			--if the object is an intersect we need to look at the settings to see what side of the intersect to look at
+			-- then we need to load the object from the corresponding side.
+
+			if @objectType = 'Intersect'
+			begin				
+				if @responsibleSide = 'SUBJECT'
+				begin
+					select @objectType = [subject], @objectId = [subjectId] from [intersect] where id = @objectId;
+				end
+				else if @responsibleSide = 'OBJECT'
+				begin
+					select @objectType = [object], @objectId = [objectId] from [intersect] where id = @objectId;
+				end
+			end
+
+			insert into @tbl
+				select	R.ResourceID, 
+						R.FirstName, 
+						R.LastName, 
+						R.Email, 
+						R.Email, 
+						R.LastLoggedInOn as DateLastLoggedIn, 
+						1 as ResourceTypeID, 
+						case R.State when 1 then 'Active' else 'Inactive' end as [Status]
+				from	ResponsibilityDetail RD
+						inner join reporting.Global_Resource R on 
+								((RD.Object = @objectType and RD.ObjectID = @objectId) 
+									or (@assetTypeId != 0 and RD.AssetID = 0 and RD.AssetTypeID = @assetTypeId))
+								and RD.ResponsibilityTypeID = @responsibilityTypeID
+								and RD.ResourceID = R.ResourceID
+								and R.Email not like '%?subject=%' and R.State = 1
+		end		
+	end;
+
+	select * from @tbl;
+end
+GO;
