@@ -32,8 +32,21 @@ go
 delete from asset where [object] = 'Resource' and objectid not in (select resourceid from reporting.global_resource)
 go
 
-
+------------------------------------------------------------------
 
 
 ------------------------------------------------------------------
+-- GOV-5891
+-- Workflow Assignment duplication issue when workflow has multiple forms assigned to multiple users
+------------------------------------------------------------------
+
+-- clear out any duplicated workflow assignments
+;WITH cte AS (SELECT *,ROW_NUMBER() OVER(PARTITION BY itemid, resourceobject,resourceobjectid ORDER BY id DESC) AS RN 
+              FROM workflow.itemassignment where stepid is null
+              )
+delete cte
+WHERE RN > 1
 	
+GO
+
+------------------------------------------------------------------
