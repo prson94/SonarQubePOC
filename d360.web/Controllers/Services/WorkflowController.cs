@@ -600,6 +600,9 @@ order by wi.StartedOn desc";
 
                 if (isCompleted)
                 {
+                    //clear other assignments
+                    Company.CompleteItemStepAssignments(itemId, itemStepsModel.StepID);
+
                     SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", Company.CurrentResourceID.ToString() } });                    
                     int transitionsCount = await Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null ? obj.TypeID : -1), ObjectType = type });
 
@@ -608,6 +611,9 @@ order by wi.StartedOn desc";
                         //log that a form was submited that had 0 transitions
                         SendEvent("Form completed with 0 transitions");
                     }
+
+
+                    Company.SaveChanges();
                 }
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);

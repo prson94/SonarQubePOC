@@ -1178,6 +1178,17 @@ namespace d360.model
             SaveChanges();
         }
 
+        public void CompleteItemStepAssignments(long itemID, int stepID)
+        {
+            var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemID == itemID && x.StepID == stepID);
+                        
+            foreach (var assignment in itemAssignments)
+            {
+                WorkflowItemAssignments.Remove(assignment);
+            }
+
+            SaveChanges();
+        }
 
         private void ChangeItemStatus(WorkflowVersionStep step, EventObjectInfo objectInfo)
         {
