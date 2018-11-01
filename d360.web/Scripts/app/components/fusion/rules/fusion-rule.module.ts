@@ -23,7 +23,7 @@ import {
     TreeTableModule,
 } from 'primeng/primeng';
 
-
+import { TableModule } from 'primeng/table';
 import { FusionRuleStepMappingListComponent } from './fusion-rule-step-mapping-list.component';
 import { FusionRuleStepMappingEditorComponent } from './fusion-rule-step-mapping-editor.component';
 import { FusionRuleListComponent } from './fusion-rule-list.component';
@@ -42,6 +42,8 @@ import { FusionRuleStepLineageComponent } from './fusion-rule-step-lineage.compo
 import { FusionRuleStepPromoteComponent } from './fusion-rule-step-promote.component';
 import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.component';
 import { FusionRuleStepUpdateComponent } from './fusion-rule-step-update.component';
+import { D3SSortIconModule } from '../../shared/turbotable-sorticon.component';
+import { D3SColumnFilterModule } from '../../shared/turbotable-column-filter.component';
 
 import { FusionRuleRoutingModule } from './fusion-rule.routes';
 
@@ -82,6 +84,7 @@ import { FusionRuleRoutingModule } from './fusion-rule.routes';
         SharedModule,
         TreeModule,
         TreeTableModule,
+        TableModule,
 
         //d3s
         CoreModule,
@@ -89,6 +92,8 @@ import { FusionRuleRoutingModule } from './fusion-rule.routes';
         SharedDeleteFormModule,
         TilesModule,
         PipesModule,
+        D3SSortIconModule,
+        D3SColumnFilterModule,
 
     ],
     providers: [
