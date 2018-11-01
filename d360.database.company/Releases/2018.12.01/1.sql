@@ -9,6 +9,8 @@ GO;
 
 -- fix busted trigger
 
+-- fix busted trigger
+
 ALTER TRIGGER [reporting].[ReportingGlobalResource_AfterDelete]
 	ON [reporting].[Global_Resource]
 	FOR DELETE
@@ -24,9 +26,13 @@ AS
 go
 
 -- delete partially deleted users
-delete from asset where [object] = 'Resource' and objectid not in (select resourceid from reporting.global_resource)
-
+delete from field where [objecttype] = 'Resource' and objectid not in (select resourceid from reporting.global_resource)
 go
+
+delete from asset where [object] = 'Resource' and objectid not in (select resourceid from reporting.global_resource)
+go
+
+
 
 
 ------------------------------------------------------------------
