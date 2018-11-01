@@ -62,7 +62,7 @@ namespace igx.jobs.reportlayer
                 if (!usedNames.Contains(name))
                 {
                     columns += (f.Type == "Lookup") ? $"[{name}].Value as [{alias}ID], [{name}].FormattedValue as [{alias}], " : $"[{name}].FormattedValue as [{alias}], ";
-                    joins += $" left join FieldDetail [{name}] on [{name}].Object = '{type}' and [{name}].ObjectID = {idColumn} and [{name}].FieldTypeID = {f.ID}";
+                    joins += $" left join FieldDetail [{name}] on [{name}].AssetID = {idColumn} and [{name}].FieldTypeID = {f.ID}";
                     usedNames.Add(name);
                 }
             }
