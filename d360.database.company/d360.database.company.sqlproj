@@ -114,17 +114,11 @@
     <None Include="Releases\2018.08.31\1.sql" />
     <None Include="Releases\2018.09.14\1.sql" />
     <None Include="Releases\2018.09.28\1.sql" />
-    <None Include="Releases\2018.10.26\Data.sql" />
-    <None Include="Releases\2018.10.26\Misc.sql" />
-    <None Include="Releases\2018.10.26\DisplayValue.sql" />
-    <None Include="Releases\2018.10.26\CacheDetails-Update.sql" />
-    <None Include="Releases\2018.10.26\CacheDetails-Rollback.sql" />
-    <None Include="Releases\2018.10.26\Drops.sql" />
-    <None Include="Releases\2018.10.26\PredicateUIDs.sql" />
     <None Include="Releases\2018.12.01\1.sql" />
     <None Include="Releases\2018.12.01\2.IGC.sql" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="Releases\2018.10.26\Metrics.sql" />
+    <Build Include="Releases\2018.10.26\1.sql" />
+    <Build Include="Releases\2018.10.26\Community.sql" />
   </ItemGroup>
 </Project>

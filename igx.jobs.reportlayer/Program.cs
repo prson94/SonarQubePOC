@@ -818,8 +818,9 @@ FROM [dbo].[Group]";
                                     r.Email, 
                                     r.ResourceID,
                                     '/Resource/' + cast(r.ResourceID as varchar(250)) as ResourceURI,
-                                     r.LastLoggedInOn,
+                                    r.LastLoggedInOn as DateLastLoggedIn, 
                                     case when r.[State] = 1 then 'Active' else 'Inactive' end as [Status], 
+                                    r.LastLoggedInOn, 
                                     r.[State], 
                                     r.IsAdministrator
                                     {ffields}
@@ -1238,11 +1239,12 @@ from	(
 				F.SourceField,
 				ST.Object as TargetType,
 				T.Name as TargetAssetTypeName,
-				cast(F.PredicateType as nvarchar) as TargetField,
+				cast(FT.IntersectTypeID as nvarchar) as TargetField,
 				null as DefaultValue
 		from	[integration].[SynchedAssetType] ST
 				inner join AssetType T on T.ID = ST.AssetTypeID
 				inner join [integration].[SynchedAssetTypeRelationItem] F on F.SynchedAssetTypeID = ST.ID
+				inner join [integration].[SynchedAssetTypeRelationItemTarget] FT on FT.[SynchedAssetTypeRelationItemID] = F.ID
 		union
 		select	ST.IntegrationSettingID,
 				ST.Active,
@@ -1251,11 +1253,12 @@ from	(
 				F.SourceIdField + ' : ' + F.SourceNameField as SourceField,
 				ST.Object as TargetType,
 				T.Name as TargetAssetTypeName,
-				F.RoleName as TargetField,
+				RT.Name as TargetField,
 				null as DefaultValue
 		from	[integration].[SynchedAssetType] ST
 				inner join AssetType T on T.ID = ST.AssetTypeID
 				inner join [integration].[SynchedAssetTypeRoleItem] F on F.SynchedAssetTypeID = ST.ID
+				inner join ResponsibilityType RT on RT.ID = F.ResponsibilityTypeID
 		) O 
 		inner join [integration].Setting SE on SE.ID = O.IntegrationSettingID";
 
