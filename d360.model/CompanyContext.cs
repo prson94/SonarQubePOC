@@ -35,9 +35,7 @@ namespace d360.model
 
         internal string FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY = "AttributesByFusion_{0}_{1}";
         internal string REPORTING_SCHEMA_KEY = "ReportingSchema_{0}";
-        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";
-        internal string TAXONOMY_BY_TYPE_PREFIX_KEY = "TaxonomyByType_{0}_{1}";
-        internal string TAXONOMYDETAIL_BY_TYPE_PREFIX_KEY = "TaxonomyDetailByType_{0}_{1}";
+        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";                
         internal string ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY = "ArtifactDictionaryByType_{0}_{1}";
 
         internal string key(string token)
@@ -2318,7 +2316,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 if (entry.Entity is Artifact)
                 {
                     var o = entry.Entity as Artifact;
-                    var id = o.ID.ToString();
+                    
 
                     switch (entry.State)
                     {                         
@@ -2340,8 +2338,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 if (entry.Entity is ArtifactType)
                 {
                     var o = entry.Entity as ArtifactType;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2369,8 +2366,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 if (entry.Entity is AttributeType)
                 {
                     var o = entry.Entity as AttributeType;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2421,8 +2417,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 if (entry.Entity is FieldType)
                 {
                     var o = entry.Entity as FieldType;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2441,8 +2436,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 if (entry.Entity is FusionAttributeType)
                 {
                     var o = entry.Entity as FusionAttributeType;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2461,8 +2455,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 if (entry.Entity is Fusion)
                 {
                     var o = entry.Entity as Fusion;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2483,8 +2476,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 if (entry.Entity is FusionType)
                 {
                     var o = entry.Entity as FusionType;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2505,8 +2497,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 if (entry.Entity is Group)
                 {
                     var o = entry.Entity as Group;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2627,7 +2618,6 @@ select @err";
                 if (entry.Entity is LookupType)
                 {
                     var o = entry.Entity as LookupType;
-                    var id = o.ID.ToString();
 
                     switch (entry.State)
                     {
@@ -2646,8 +2636,7 @@ select @err";
                 #region Business logic : PolicyType
                 if (entry.Entity is PolicyType)
                 {
-                    var o = entry.Entity as PolicyType;
-                    var id = o.ID.ToString();
+                    var o = entry.Entity as PolicyType;                    
                     if (string.IsNullOrEmpty(o.Name.Trim()))   throw new ArgumentException(Messages.Error_Name_Required);
 
 
@@ -2670,8 +2659,7 @@ select @err";
                 if (entry.Entity is QuestionType)
                 {
                     var o = entry.Entity as QuestionType;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2728,8 +2716,7 @@ select @err";
                 if (entry.Entity is Report)
                 {
                     var o = entry.Entity as Report;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2750,8 +2737,7 @@ select @err";
                 if (entry.Entity is ReportTile)
                 {
                     var o = entry.Entity as ReportTile;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2768,8 +2754,7 @@ select @err";
                 if (entry.Entity is ResponsibilityType)
                 {
                     var o = entry.Entity as ResponsibilityType;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2817,8 +2802,7 @@ select @err";
                 if (entry.Entity is SurveyType)
                 {
                     var o = entry.Entity as SurveyType;
-                    var id = o.ID.ToString();
-
+                    
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2866,8 +2850,7 @@ select @err";
                 #region Business logic : TaxonomyType
                 if (entry.Entity is TaxonomyType)
                 {
-                    var o = entry.Entity as TaxonomyType;
-                    var id = o.ID.ToString();
+                    var o = entry.Entity as TaxonomyType;                    
 
                     switch (entry.State)
                     {

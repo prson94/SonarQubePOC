@@ -774,7 +774,6 @@ namespace d360.web.Controllers
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code" });
 
-                    var currentRefTypeID = id;
                     var parentRefType = Company.GetParentType<ReferenceItemType>(id);
                     var loopCount = 0;
                     //add the parent columns
@@ -1050,29 +1049,6 @@ where   h.ID <> @t order by h.[Level] desc;
 
         #region Navigation
 
-        void loadFusionAttributeTypeExportsForFusion(PageActionItem p, List<FusionAttributeType> types, int? parentID, string baseUri, PluralizationService pluralize)
-        {
-            var funcList = new List<PageActionItem>();
-
-            foreach (var a in types.Where(i => i.ParentID == parentID).OrderBy(i => i.Name))
-            {
-                var c = new PageActionItem { Icon = Resources.Actions.TemplateDownload_Icon, Uri = string.Format("{0}{1}", baseUri, a.ID), Title = pluralize.Pluralize(a.Name) };
-                loadFusionAttributeTypeExportsForFusion(c, types, a.ID, baseUri, pluralize);
-                p.Items.Add(c);
-            }
-        }
-
-        void loadFusionAttributeTypeUploadsForFusion(PageActionItem p, List<FusionAttributeType> types, int? parentID, string baseUri, PluralizationService pluralize)
-        {
-            var funcList = new List<PageActionItem>();
-
-            foreach (var a in types.Where(i => i.ParentID == parentID).OrderBy(i => i.Name))
-            {
-                var c = new PageActionItem { Title = pluralize.Pluralize(a.Name), Uri = string.Format("{0}{1}", baseUri, a.ID) };
-                loadFusionAttributeTypeUploadsForFusion(c, types, a.ID, baseUri, pluralize);
-                p.Items.Add(c);
-            }
-        }
 
         [Route("authenticationModel")]
         public HttpResponseMessage GetAuthenticationModel()
@@ -3951,8 +3927,7 @@ where   R.ReferenceItemTypeID = {id}
         }
 
         private bool AnyOwnershipLookupGridValues(string type, int id, FieldTypeLookup lookup)
-        {
-            var def = lookup.ParseOwnershipLookupDefinition();
+        {            
             type = type.CleanForSql();
 
             var sql = @"
@@ -7157,8 +7132,7 @@ from	(
             var detail = Company.GetObjectDetail(type.ToString(), id);
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
+            document.SaveAs(stream);            
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
@@ -7231,7 +7205,7 @@ from	(
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            var len = stream.Length;
+            
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
@@ -7376,7 +7350,7 @@ SELECT (
 		)
 		FOR XML PATH('Report')";
 
-            var sType = type.ToString();
+            
             var models = Company.Query<string>(sql, new { SurveyTypeID = typeID, Object = new DbString {Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, ObjectID = id });
             var xmlString = string.Join("", models);
             var xml = XElement.Parse(xmlString);

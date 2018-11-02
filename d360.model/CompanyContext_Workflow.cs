@@ -83,13 +83,7 @@ namespace d360.model
 
                 return false;
             }
-
-            //if the type is artifacttype check if a specific taxonomy type id was specified in the registration settings.
-            if (!string.IsNullOrEmpty(registration.Settings))
-            {
-                var settingsModel = WorkflowRegistrationSettingsModel.parseXml(XElement.Parse(registration.Settings));
-            }
-
+            
             Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
 
             return true;

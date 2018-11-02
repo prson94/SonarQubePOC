@@ -148,7 +148,6 @@ order by	ColumnIndex", new { id });
 
                 var stats = xls.GetWorksheetStatistics();
 
-                var numberOfRows = stats.NumberOfRows;
                 var rowIndex = stats.StartRowIndex + 1;
                 var numberOfColumns = load.LoadColumns.Count;
 
@@ -339,8 +338,6 @@ order by	ColumnIndex", new { id });
                 if (col == null)
                     throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName}]");
 
-                var index = col.ColumnIndex;
-
                 columns.Remove(col);
 
                 return col.ColumnIndex;
@@ -352,8 +349,6 @@ order by	ColumnIndex", new { id });
                 if (col == null)
                     throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName} Asset ID]");
 
-                var index = col.ColumnIndex;
-
                 columns.Remove(col);
 
                 return col.ColumnIndex;
@@ -364,9 +359,7 @@ order by	ColumnIndex", new { id });
 
                 if (col == null)
                     throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName} Asset ID]");
-
-                var index = col.ColumnIndex;
-
+                                
                 columns.Remove(col);
 
                 return col.ColumnIndex;
