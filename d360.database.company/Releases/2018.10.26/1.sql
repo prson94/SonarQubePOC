@@ -741,6 +741,48 @@ exec GenerateAllAssetTypeDisplayValues
 GO;
 
 
+--GOV-5867
+create view dbo.AssetKeyHash
+as
+select		A.AssetTypeID,
+			A.Uid,
+			A.ID,
+			utility.GetHash(coalesce(convert(varchar(36),P.Uid)+'|','') + STRING_AGG(F.[Value], '|')) as KeyHash
+from		Asset A
+			cross apply (
+				select		top 100 percent
+							Code as [Value]
+				from		ReferenceItem
+				where		A.Object = 'ReferenceItem' and ID = A.ObjectID
+				union
+				select		top 100 percent
+							Name as [Value]
+				from		FusionAttribute
+				where		A.Object = 'FusionAttribute' and ID = A.ObjectID
+				union
+				select		top 100 percent
+							F.[Value]
+				from		FieldType FT
+							inner join Field F on	FT.AssetTypeID = A.AssetTypeID
+													and F.AssetID = A.ID
+													and F.FieldTypeID = FT.ID 
+													and FT.IsPartOfKey = 1
+				order by	FT.ColumnOrder asc
+			) F
+			outer apply (
+				select	top 1
+						P.[Uid]
+				from	[Intersect] I
+						inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
+						inner join IntersectType IT on IT.ID = I.IntersectTypeID
+						inner join [Predicate] PR on PR.ID = IT.PredicateID and PR.Type in (3,4)
+			) P
+group by	A.AssetTypeID,
+			A.Uid,
+			A.ID,
+			P.Uid
+GO
+
 
 -- other proc/object updates
 
@@ -1063,10 +1105,11 @@ begin
 			from	#AssetTable T
 					inner join	(
 								select	O.ItemNumber,
-										utility.GetHash(STRING_AGG(O.Value, '|')) as KeyHash
+										utility.GetHash(coalesce(convert(varchar(36), O.ParentUid)+'|','') + STRING_AGG(O.Value, '|')) as KeyHash
 								from	(
 										select	top 100 percent
 												A.ItemNumber,
+												A.ParentUid,
 												coalesce(F.LookupValue, F.FieldValue) as [Value]
 										from	#AssetTable A
 												inner join FieldType FT on FT.AssetTypeID = @at 
@@ -1076,7 +1119,8 @@ begin
 																				and A.Success is null -- We have not failed yet.
 										order by FT.ColumnOrder						
 										) O
-								group by O.ItemNumber
+								group by O.ItemNumber,
+										O.ParentUid
 								) S on S.ItemNumber = T.ItemNumber;
 		--end
 
@@ -1091,9 +1135,7 @@ begin
 								select	T.ItemNumber,
 										'Key values match another asset under a different set of key fields.' as Error
 								from	#AssetTable T
-										inner join Asset S on S.AssetTypeID = @at 
-										cross apply dbo.GetAssetKeyHashById(S.ID) K
-								where	K.KeyHash = T.KeyHash
+										inner join AssetKeyHash K on K.AssetTypeID = @at and K.KeyHash = T.KeyHash
 								) S on S.ItemNumber = T.ItemNumber;
 		end
 		else
@@ -1106,11 +1148,22 @@ begin
 								select	T.ItemNumber,
 										'Key values match another asset under a different public uid.' as Error
 								from	#AssetTable T
-										inner join Asset S on S.AssetTypeID = @at 
-										cross apply dbo.GetAssetKeyHashById(S.ID) K
-								where	K.KeyHash = T.KeyHash and T.[Uid] <> S.[Uid]
+										inner join AssetKeyHash K on K.AssetTypeID = @at and K.KeyHash = T.KeyHash and T.[Uid] <> K.[Uid]
 								) S on S.ItemNumber = T.ItemNumber;
 		end
+
+
+		-- 10. Check if there are duplicate nodes in the JSON. We want to make sure we only allow the first through, and fail the dupes.
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset with matching key hash is already referenced previously. Nodes must be unique within a load.'
+		from	#AssetTable T
+				inner join	(
+							select	min(ItemNumber) as ItemNumber,
+									KeyHash
+							from	#AssetTable
+							group by KeyHash
+							) S on S.KeyHash = T.KeyHash and S.ItemNumber < T.ItemNumber;
 
 	END	-------------------------------
 
@@ -7355,45 +7408,3 @@ begin
 end
 GO;
 
-
---GOV-5867
-create view dbo.AssetKeyHash
-as
-select		A.AssetTypeID,
-			A.Uid,
-			A.ID,
-			utility.GetHash(coalesce(convert(varchar(36),P.Uid)+'|','') + STRING_AGG(F.[Value], '|')) as KeyHash
-from		Asset A
-			cross apply (
-				select		top 100 percent
-							Code as [Value]
-				from		ReferenceItem
-				where		A.Object = 'ReferenceItem' and ID = A.ObjectID
-				union
-				select		top 100 percent
-							Name as [Value]
-				from		FusionAttribute
-				where		A.Object = 'FusionAttribute' and ID = A.ObjectID
-				union
-				select		top 100 percent
-							F.[Value]
-				from		FieldType FT
-							inner join Field F on	FT.AssetTypeID = A.AssetTypeID
-													and F.AssetID = A.ID
-													and F.FieldTypeID = FT.ID 
-													and FT.IsPartOfKey = 1
-				order by	FT.ColumnOrder asc
-			) F
-			outer apply (
-				select	top 1
-						P.[Uid]
-				from	[Intersect] I
-						inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
-						inner join IntersectType IT on IT.ID = I.IntersectTypeID
-						inner join [Predicate] PR on PR.ID = IT.PredicateID and PR.Type in (3,4)
-			) P
-group by	A.AssetTypeID,
-			A.Uid,
-			A.ID,
-			P.Uid
-GO
