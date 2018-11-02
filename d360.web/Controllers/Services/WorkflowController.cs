@@ -2417,7 +2417,7 @@ order by wi.StartedOn desc";
                         var users = Company.GetWorkflowUsersBasedOnResponsibility((int)r.TypeID, (int)r.StepID, (int)r.ItemID).ToList();
                         var fields = XmlToDynamic(r.Fields);
 
-                        if (fields.form != null)
+                        if (fields != null && fields.form != null)
                         {
                             if (fields.form.GetType().Name != "JArray")
                                 fields.form = new JArray(fields.form);
