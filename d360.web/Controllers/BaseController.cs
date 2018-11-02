@@ -200,7 +200,7 @@ namespace d360.web.Controllers
         internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {
             var telemetry = new TelemetryClient();
-            properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            if (!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
             telemetry.TrackException(ex, properties, metrics);
             telemetry = null;
         }
@@ -229,7 +229,7 @@ namespace d360.web.Controllers
         {
             if (properties == null) properties = new Dictionary<string, string>();
             var telemetry = new TelemetryClient();
-            properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            if(!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
             telemetry.TrackEvent(eventName, properties, metrics);
             telemetry = null;
         }
@@ -1147,7 +1147,7 @@ namespace d360.web.Controllers
         {
             if (properties == null) properties = new Dictionary<string, string>();
             var telemetry = new TelemetryClient();
-            properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            if (!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
             telemetry.TrackException(ex, properties, metrics);
             telemetry = null;
         }
@@ -1156,7 +1156,7 @@ namespace d360.web.Controllers
         {
             if (properties == null) properties = new Dictionary<string, string>();
             var telemetry = new TelemetryClient();
-            properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            if(!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
             telemetry.TrackEvent(eventName, properties, metrics);
             telemetry = null;
         }

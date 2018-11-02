@@ -115,16 +115,8 @@ namespace igx.jobs
             properties["Function"] = jobName;
             if (companyId.HasValue) properties["CompanyId"] = companyId.Value.ToString();
             properties["Environment"] = ConfigurationManager.AppSettings["Environment"];
-
-            if (metrics != null)
-            {
-                foreach (var k in metrics)
-                {
-                    properties.Add(k.Key, k.Value.ToString());
-                }
-            }
-
-            AITelemetryClient.TrackEvent(eventName, properties);
+                        
+            AITelemetryClient.TrackEvent(eventName, properties,metrics);
         }
 
         public static void AITrackException(string jobName, Exception e, int? companyId = null, IDictionary<string, string> properties = null)
