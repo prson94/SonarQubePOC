@@ -608,26 +608,18 @@ namespace d360.web.Controllers
             var groups = new List<GridColumnGroup>();
             var topLevelFilterFields = new List<GridFilterColumn>();
             decimal dynamicFieldWidth = 0;
-            int remainingWidth = 0;
-            int staticFieldCount = 0;
+            int remainingWidth = 0;            
             ObjectDetail detail = null;
             bool isReadOnly = false;
-
-
-            Dictionary<string, string> settings = null;
 
             switch (type)
             {
                 case SystemObjects.ArtifactType:
                     #region
 
-                    settings = Community.GetCompanySettings();
 
-                    var artifactType = Company.GetById<ArtifactType>(id);
                     var parentType = Company.GetParentType<ArtifactType>(id);
                     var hasParentType = parentType != null;
-
-                    staticFieldCount = hasParentType ? 4 : 3;
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
@@ -730,7 +722,7 @@ namespace d360.web.Controllers
                         );
                     }
                     
-                    staticFieldCount = columns.Count;
+                    
                     remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -750,7 +742,7 @@ namespace d360.web.Controllers
                 #endregion
                 case SystemObjects.LookupType:
                     #region
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 90;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -762,10 +754,7 @@ namespace d360.web.Controllers
                 #endregion
                 case SystemObjects.PolicyType:
                     #region
-
-                    var policyType = Company.GetById<PolicyType>(id);
-
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -779,7 +768,7 @@ namespace d360.web.Controllers
                 #endregion                                
                 case SystemObjects.ReferenceItemType:
                     #region
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 85;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -807,7 +796,7 @@ namespace d360.web.Controllers
                 #endregion
                 case SystemObjects.Rule:
                     #region
-                    staticFieldCount = 4;
+                    
                     remainingWidth = 55;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -830,9 +819,6 @@ namespace d360.web.Controllers
                 case SystemObjects.RuleType:
                     #region
 
-                    var ruleType = Company.GetById<RuleType>(id);
-
-                    staticFieldCount = 1;
                     remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -848,7 +834,7 @@ namespace d360.web.Controllers
                 #endregion  
                 case SystemObjects.FusionAttributeType:
                     #region
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 75;
 
                     detail = Company.GetObjectDetail(type.ToString(), id);
@@ -930,7 +916,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 #endregion
                 case SystemObjects.FusionQueryAttributeType:
                     #region
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 90;
 
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
@@ -954,7 +940,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 #endregion
                 case SystemObjects.FusionType:
                     #region
-                    staticFieldCount = 2;
+                    
                     remainingWidth = 61;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -972,7 +958,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 #endregion
                 case SystemObjects.ResourceType:
                     #region
-                    staticFieldCount = 6;
+                    
                     remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
