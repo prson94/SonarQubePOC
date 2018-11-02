@@ -42,6 +42,7 @@ create table integration.ExecutionAssetField (
 ALTER TABLE [integration].[ExecutionAssetField] ADD  CONSTRAINT [PK_IntegrationExecutionAssetField] PRIMARY KEY CLUSTERED ( [Uid] ASC, Section ASC, FieldName ASC );
 CREATE NONCLUSTERED INDEX [IX_IntegrationExecutionAsset_FieldName] ON [integration].[ExecutionAssetField] ( [FieldName] ASC );
 CREATE NONCLUSTERED INDEX IX_IntegrationExecutionAsset_Section_Include ON [integration].[ExecutionAssetField] ([Section]) INCLUDE ([FieldValue]);
+CREATE NONCLUSTERED INDEX IX_IntegrationExecutionAssetField_Section_FieldName_Include ON [integration].[ExecutionAssetField] ([Section],[FieldName]) INCLUDE ([FieldValue]);
 GO;
 
 -- Addition of ExecutionAssetTypeMetricRelationshipLog table

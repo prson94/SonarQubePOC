@@ -34,7 +34,7 @@ namespace igx.jobs
         {
             var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
-            config.Queues.BatchSize = 5;
+            config.Queues.BatchSize = 4;
             config.Queues.VisibilityTimeout = TimeSpan.FromDays(4);
             var host = new JobHost(config);
             host.RunAndBlock();
@@ -51,7 +51,7 @@ namespace igx.jobs
         const string timerSettings = "0 */5 * * * *";
 #endif
 
-        [Disable]
+        //[Disable]
         public static void RunScheduleViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         {
             string functionName = "IGC_Integration_Schedule";
@@ -200,7 +200,7 @@ where		T.CompletedOn is null
 
         public static void RunViaQueue([QueueTrigger("%IntegrationQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
         {
-            CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("APPINSIGHTS_INSTRUMENTATIONKEY"));
+            CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 
             var engine = new IgcIntegrationEngine();
@@ -522,6 +522,13 @@ from		(
                 DateTime end;
 
                 // Load JSON field data into execution Asset Field table
+                cnn.Execute(
+                    @"delete F from integration.ExecutionAssetField F inner join integration.ExecutionAsset A on A.ExecutionID = @ExecutionID and A.SynchedAssetTypeID = @SynchedAssetTypeID and A.[Uid] = F.[Uid]", 
+                    new { executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID }, 
+                    commandTimeout: 3600
+                );
+
+                // Load JSON field data into execution Asset Field table
                 cnn.Execute(@"
 insert into integration.ExecutionAssetField
 	select	EA.Uid,
@@ -773,15 +780,19 @@ insert into integration.ExecutionAssetField
                     foreach (var obj in page.items.Children())
                     {
                         var sourceID = obj["_id"].Value<string>();
-                    
-                        var executionAsset = new IntegrationExecutionAsset
+
+                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
+                        if (executionAsset == null)
                         {
-                            ExecutionID = executionID,
-                            SynchedAssetTypeID = synchedAssetTypeID,
-                            SourceID = sourceID,
-                            RawObject = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
-                        };
-                        list.Add(executionAsset);
+                            executionAsset = new IntegrationExecutionAsset
+                            {
+                                ExecutionID = executionID,
+                                SynchedAssetTypeID = synchedAssetTypeID,
+                                SourceID = sourceID,
+                                RawObject = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
+                            };
+                            list.Add(executionAsset);
+                        }
                     }
                 }
             });
@@ -905,7 +916,7 @@ insert into integration.ExecutionAssetField
                         cnn.Execute("delete integration.ExecutionAsset where SynchedAssetTypeID = @at", new { at = synchedAssetTypeID }, transaction: trans, commandTimeout: 3600);
                     }
 
-                    using (var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.TableLock, trans))
+                    using (var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans))
                     {
                         assetBulkCopy.BatchSize = 5000; //assetTable.Rows.Count;
                         assetBulkCopy.DestinationTableName = "[integration].[ExecutionAsset]";
@@ -940,6 +951,20 @@ insert into integration.ExecutionAssetField
 
         int processAssetPages(IgcPostSearchRequestModel postModel, int companyID, string url, string folderName)
         {
+            #region First remove any files that may be been there before.
+            try
+            {
+                var itemsToRemove = Storage.ListFiles($"igc-{companyID}/{folderName}");
+                itemsToRemove.ForEach(f => {
+                    Storage.DeleteFile($"igc-{companyID}/{folderName}", f.Name);
+                });
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex);
+            }
+            #endregion
+
             var igcCount = 0;
             var fShouldContinue = true;
             while (fShouldContinue)
@@ -962,11 +987,7 @@ insert into integration.ExecutionAssetField
                 }
                 catch (Exception ex)
                 {
-                    using (StreamWriter file = File.CreateText($@"{folderName}\{postModel.begin}_error.json"))
-                    {
-                        JsonSerializer serializer = new JsonSerializer();
-                        serializer.Serialize(file, ex);
-                    }
+                    Storage.CreateFile($"igc-{companyID}", $@"{folderName}/{postModel.begin}_error.json", JsonConvert.SerializeObject(ex));
 
                     // Move onto next page.
                     postModel.begin = postModel.begin + postModel.pageSize;

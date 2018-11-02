@@ -1,4 +1,13 @@
-﻿update	T
+﻿/*
+alter table [dbo].[CompanyResource] add [LastLoggedInOn] datetime null
+alter table [dbo].[CompanyResource] add [State] int constraint DF_CompanyResource_State default(1) not null
+GO
+
+ALTER TABLE [dbo].[Resource] ADD CONSTRAINT [DF_Resource_Status] DEFAULT ('Active') FOR [Status]
+GO
+*/
+
+update	T
 set		T.LastLoggedInOn = S.DateLastLoggedIn
 from	CompanyResource T
 		inner join	(

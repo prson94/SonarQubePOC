@@ -1,4 +1,28 @@
-﻿--table creation
+﻿alter table [reporting].[Global_Resource] add [State] int constraint DF_ReportingGlobalResource_State default(1) not null
+alter table [reporting].[Global_Resource] add [LastLoggedInOn] datetime null
+GO
+alter table [reporting].[Global_Resource] drop column Status
+alter table [reporting].[Global_Resource] drop column [DateLastLoggedIn]
+GO
+
+ALTER view [dbo].[OrganizationResourceDetail]
+as
+select	O.OrganizationID,
+		coalesce(ORG.Name, 'Global') as OrganizationName,
+		O.ResourceID,
+		R.FirstName,
+		R.LastName,
+		R.LastLoggedInOn as DateLastLoggedIn,
+		R.Email,
+		case R.[State] when 1 then 'Active' else 'Inactive' end as [Status],
+		O.Accepted,
+		O.DateAccepted
+from	OrganizationResource O
+		left join Organization ORG on ORG.ID = O.OrganizationID
+		inner join reporting.Global_Resource R on R.ResourceID = O.ResourceID
+GO
+
+--table creation
 CREATE TABLE [api].[Execution]
 (
 [ExecutionID] [uniqueidentifier] NOT NULL,
@@ -720,7 +744,7 @@ GO;
 
 -- other proc/object updates
 
-alter procedure [asset].[BulkUpsert]
+ALTER procedure [asset].[BulkUpsert]
 --declare 
 	@isInsert bit,
 	@uid uniqueidentifier,
@@ -749,7 +773,6 @@ begin
 		ParentObjectID int null,
 
 		[Message] nvarchar(2500) null,
-
 		Success bit null,
 		IsNew bit null
 	);
@@ -760,10 +783,11 @@ begin
 		FieldValue nvarchar(max) null,
 		FieldTypeID int null,
 		LookupValue nvarchar(250) null
-
 	);
-
+	
 	insert into #AssetTable (ItemNumber, [Uid]) values (1, null);--'AC8AE7C0-8CD0-482D-AC44-DB05502150B3');
+	insert into #AssetTable (ItemNumber, ParentUid) values (1, null);--'AC8AE7C0-8CD0-482D-AC44-DB05502150B3');
+	
 	insert into #AssetFieldTable (ItemNumber, FieldName, FieldValue) values (1, 'Name', 'Pappas loads with asset.BulkUpsert');
 	insert into #AssetFieldTable (ItemNumber, FieldName, FieldValue) values (1, 'PersonalDataFlag', 'true');
 	insert into #AssetFieldTable (ItemNumber, FieldName, FieldValue) values (1, 'GDPRCompliant', 'false');
@@ -771,8 +795,20 @@ begin
 	insert into #AssetFieldTable (ItemNumber, FieldName, FieldValue) values (1, 'SpecialData', 'true');
 	insert into #AssetFieldTable (ItemNumber, FieldName, FieldValue) values (1, 'Status', 'In progress');
 	insert into #AssetFieldTable (ItemNumber, FieldName, FieldValue) values (1, 'SubjectArea', 'Investments');
-*/
+	select * from AssetType where Object = 'ArtifactType'
+	s
+	select	top 100 percent
+			A.ItemNumber,
+			coalesce(F.LookupValue, F.FieldValue) as [Value]
+	from	#AssetTable A
+			inner join FieldType FT on FT.AssetTypeID = @at 
+			inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+											and F.FieldTypeID = FT.ID 
+											and FT.IsPartOfKey = 1
+											and A.Success is null -- We have not failed yet.
+	order by FT.ColumnOrder	
 
+*/
 	declare @ot varchar(50),
 			@otid int,
 			@at int,
@@ -914,9 +950,8 @@ begin
 		from	#AssetFieldTable T
 				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup'
 				inner join ReferenceItem RI ON F.LookupObjectType = 'ReferenceItem' and F.LookupObjectID = RI.ReferenceItemTypeID 
-
 					and T.FieldValue = utility.GetFormattedFieldLookupValue(F.Type, coalesce(F.LookupEditFormat, F.LookupDisplayFormat), F.LookupObjectType, F.LookupObjectID, RI.ID);
-
+		
 		update	T
 		set		T.LookupValue = RI.ID
 		from	#AssetFieldTable T
@@ -1019,7 +1054,7 @@ begin
 		-- https://stackoverflow.com/questions/194652/sql-server-regular-expressions-in-t-sql
 
 		-- 9. If KeyHash matches an asset with a different UID than the one provided (IF provided), throw an error.
-
+	
 		--- A. First, figure out what the hash should be, if this is an insert
 		--if @isInsert = 1
 		--begin
@@ -1110,7 +1145,7 @@ begin
 				begin
 					insert Artifact(ArtifactTypeID, CreatedOn, UpdatedBy, UpdatedOn, Visible)
 					values (@otid, getutcdate(), @r, getutcdate(), 1);
-
+				
 					set	@objectId = SCOPE_IDENTITY()
 
 					update	T
@@ -1149,7 +1184,7 @@ begin
 				begin
 					insert Taxonomy(TaxonomyTypeID, UpdatedBy, UpdatedOn, Visible)
 					values (@otid, @r, getutcdate(), 1);
-
+				
 					set	@objectId = SCOPE_IDENTITY()
 
 					update	T
@@ -1178,10 +1213,9 @@ begin
 		end
 	END;
 
-	IF @class = 3 --FUSION ATTRIBUTE
+	IF @class = 4 --FUSION ATTRIBUTE
 	BEGIN
 		if @isInsert = 1
-
 		begin
 			while @current <= @max
 			begin
@@ -1199,10 +1233,10 @@ begin
 
 				if @fusionId is not null and @fusionName is not null
 				begin
-					insert FusionAttribute(FusionAttributeTypeID, Name, FusionID)
-					values (@otid, @fusionName, @fusionId);
+					set	@objectId = NEXT VALUE FOR [dbo].[FusionAttribute_Seq]
 
-					set	@objectId = SCOPE_IDENTITY()
+					insert FusionAttribute(ID, FusionAttributeTypeID, Name, FusionID)
+					values (@objectId, @otid, @fusionName, @fusionId);
 
 					update	T
 					set		T.Object ='FusionAttribute',
@@ -1235,7 +1269,7 @@ begin
 				begin
 					insert [Policy](PolicyTypeID, UpdatedBy, UpdatedOn, Visible)
 					values (@otid, @r, getutcdate(), 1);
-
+				
 					set	@objectId = SCOPE_IDENTITY()
 
 					update	T
@@ -1275,7 +1309,7 @@ begin
 
 					insert [Rule](RuleTypeID, UpdatedBy, UpdatedOn, Visible)
 					values (@otid, @r, getutcdate(), 1);
-
+				
 					set	@objectId = SCOPE_IDENTITY()
 
 					update	T
@@ -1325,12 +1359,12 @@ begin
 							and A.ObjectID is null
 							and A.ItemNumber = @current
 				--order by	A.ItemNumber;
-
+				
 				if @code is not null
 				begin
 					insert ReferenceItem(ReferenceItemTypeID, Code, UpdatedBy, UpdatedOn, Visible)
 					values (@otid, @code, @r, getutcdate(), 1);
-
+				
 					set	@objectId = SCOPE_IDENTITY()
 
 					update	T
@@ -1411,9 +1445,6 @@ begin
 			values  (@parentIntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @r, @r);
 	END;
 
-
-
-
 	-- Merge field data ---------------------------
 	merge into  Field T
     using       (
@@ -1435,10 +1466,11 @@ begin
                 )
     when		matched then
 	update		set
-					T.Value = S.Value
+					T.Value = S.Value,
+					T.FormattedValue = S.Value
     when		not matched by target then
-	insert		(FieldTypeID, ObjectType, ObjectID, AssetID, Value)
-    values		(S.FieldTypeID, S.Object, S.ObjectID, S.AssetID, S.Value);
+	insert		(FieldTypeID, ObjectType, ObjectID, AssetID, Value, FormattedValue)
+    values		(S.FieldTypeID, S.Object, S.ObjectID, S.AssetID, S.Value, S.Value);
 	-----------------------------------------------
 
 	update	#AssetTable
@@ -7241,3 +7273,127 @@ BEGIN
 
 END
 GO;
+
+ALTER procedure [utility].[GetAssignedResponsibilityNameForWorkflow]
+	@workflowID int,
+	@workflowStepID int = 0,
+	@workflowItemID int = 0
+as
+begin
+	declare @objectId int,			
+			@objectType varchar(50),
+			@assetId bigint,
+			@assetTypeId bigint,
+			@responsibilityTypeID int,
+			@issueId int;
+	declare @xmlSettings xml;
+	declare @responsibleSide varchar(50);
+
+	declare @tbl table (ResponsibilityName nvarchar(25))
+	declare @responsibilityIDTbl table (RowID int not null identity(1,1) primary key, ResponsibilityTypeID int not null);
+	--get the responsibility for this step from the settings of the step
+
+	select @xmlSettings = settings from [workflow].[VersionStep] where id = @workflowStepID
+	
+	insert into @responsibilityIDTbl select T.C.value('.','int') as responsibility from @xmlSettings.nodes('(/settings/ResponsibilityTypeID)') as T(C) ;
+
+	select @responsibleSide = upper(T.C.value('.','varchar(50)')) from @xmlSettings.nodes('(/settings/ResponsibilitySide)') as T(C);
+		
+	declare @i int
+	select @i = min(RowID) from @responsibilityIDTbl
+	declare @max int
+	select @max = max(RowID) from @responsibilityIDTbl
+
+	while @i <= @max and not exists (select 1 from @tbl) begin
+		select @responsibilityTypeID = ResponsibilityTypeID from @responsibilityIDTbl where RowID = @i
+		set @i = @i + 1
+
+		-- check object	
+		begin
+			select 
+				@objectType = i.object, 
+				@objectId = i.objectid,
+				@assetId = a.id,
+				@assetTypeId = a.assetTypeId 
+			from [workflow].[item] i
+			left join Asset a on a.object = i.object and A.objectid = i.objectid 
+			where i.id = @workflowItemID;
+			
+			if @objectType = 'Issue'
+			begin				
+				select @issueId = id, @objectType = [object], @objectId = [objectid] from Issue where id = @objectId
+			end
+
+			--if the object is an intersect we need to look at the settings to see what side of the intersect to look at
+			-- then we need to load the object from the corresponding side.
+			
+			if @objectType = 'Intersect'
+			begin				
+				if @responsibleSide = 'SUBJECT'
+				begin
+					select @objectType = [subject], @objectId = [subjectId] from [intersect] where id = @objectId;
+				end
+				else if @responsibleSide = 'OBJECT'
+				begin
+					select @objectType = [object], @objectId = [objectId] from [intersect] where id = @objectId;
+				end
+			end
+
+			insert into @tbl
+				select	distinct RD.ResponsibilityTypeName
+				from	ResponsibilityDetail RD
+						inner join reporting.Global_Resource R on 
+								((RD.Object = @objectType and RD.ObjectID = @objectId) 
+									or (@assetTypeId != 0 and RD.AssetID = 0 and RD.AssetTypeID = @assetTypeId))
+								and RD.ResponsibilityTypeID = @responsibilityTypeID
+								and RD.ResourceID = R.ResourceID
+								and R.Email not like '%?subject=%' and R.[State] = 1
+		end		
+	end;
+
+	select * from @tbl;
+end
+GO;
+
+
+--GOV-5867
+create view dbo.AssetKeyHash
+as
+select		A.AssetTypeID,
+			A.Uid,
+			A.ID,
+			utility.GetHash(coalesce(convert(varchar(36),P.Uid)+'|','') + STRING_AGG(F.[Value], '|')) as KeyHash
+from		Asset A
+			cross apply (
+				select		top 100 percent
+							Code as [Value]
+				from		ReferenceItem
+				where		A.Object = 'ReferenceItem' and ID = A.ObjectID
+				union
+				select		top 100 percent
+							Name as [Value]
+				from		FusionAttribute
+				where		A.Object = 'FusionAttribute' and ID = A.ObjectID
+				union
+				select		top 100 percent
+							F.[Value]
+				from		FieldType FT
+							inner join Field F on	FT.AssetTypeID = A.AssetTypeID
+													and F.AssetID = A.ID
+													and F.FieldTypeID = FT.ID 
+													and FT.IsPartOfKey = 1
+				order by	FT.ColumnOrder asc
+			) F
+			outer apply (
+				select	top 1
+						P.[Uid]
+				from	[Intersect] I
+						inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
+						inner join IntersectType IT on IT.ID = I.IntersectTypeID
+						inner join [Predicate] PR on PR.ID = IT.PredicateID and PR.Type in (3,4)
+			) P
+group by	A.AssetTypeID,
+			A.Uid,
+			A.ID,
+			P.Uid
+GO
