@@ -18,8 +18,6 @@ import { HomeComponent} from './home.component';
 import { ActivityTile } from './activity-tile.component';
 import { ActivityDetailsTile } from './activity-details-tile.component';
 import { BoardTile} from './board-tile.component';
-import { D3SSortIconModule } from '../shared/turbotable-sorticon.component';
-import { D3SColumnFilterModule } from '../shared/turbotable-column-filter.component';
 import { HomeRoutingModule } from './home.routes';
 
 import {
@@ -59,8 +57,6 @@ import { TableModule } from 'primeng/table';
         SharedGridPagingInfoModule, 
         ShortcutModule,
         DashboardModule,
-        D3SSortIconModule,
-        D3SColumnFilterModule,
 
     ],
     declarations: [

@@ -11,14 +11,46 @@ import { Router } from '@angular/router';
 <div>
     <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
     <div *ngIf="!isLoading">
-        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-        <p-dataTable #dt [globalFilter]="gb" [value]="workflowItems" selectionMode="single" [rows]="15" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="true" [pageLinks]="3" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)">
-            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>            
-            <p-column field="Name" header="Workflow Name" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
-            <p-column field="ObjectTypeName" header="Type Name" sortable="true" [filter]="!showSimpleFilter"  filterMatchMode="contains"></p-column>  
-            <p-column header="Status" field="Status" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>  
-            <p-column field="Version" header="Version" sortable="true" [filter]="!showSimpleFilter"  filterMatchMode="contains"></p-column>  
-         </p-dataTable>
+        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+        <p-table #dt [value]="workflowItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','ObjectTypeName','Status','Version']" [pageLinks]="3" [paginator]="true" [rows]="15" [rowsPerPageOptions]="defaultPagingOptions" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th [pSortableColumn]="'Name'">
+                        Workflow Name
+                        <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'ObjectTypeName'">
+                        Type Name
+                        <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'Status'">
+                        Status
+                        <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'Version'">
+                        Version
+                        <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
+                    </th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'ObjectTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'Version'" [datatype]="'text'"></d3s-column-filter></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr [pSelectableRow]="item">
+                    <td>{{item.Name}}</td>
+                    <td>{{item.ObjectTypeName}}</td>
+                    <td>{{item.Status}}</td>
+                    <td>{{item.Version}}</td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
     </div>     
 </div>
               `,

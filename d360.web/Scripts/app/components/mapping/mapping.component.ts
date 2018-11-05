@@ -19,29 +19,66 @@ import { PermissionsService } from '../../services/permissions.service';
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                     </header>  
                     <span *ngIf="!showDelete && !showEditor">
-                        <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                   
-                        <p-dataTable #dt sortField="Name" sortOrder="1" [globalFilter]="gb" [value]="mappings" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected">
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Transformation" header="Transformation" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="MapClassName" header="Classification" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="MapType" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="MapTypeDescription" header="Type Description" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column [style]="{width:'28px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
-                                    </div>
-                                </ng-template>
-                            </p-column>                            
-                            <p-column  [style]="{width:'28px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
-                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                    </div>
-                                </ng-template>
-                            </p-column>    
-                        </p-dataTable>      
+                       <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                        <p-table #dt [value]="mappings" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Transformation','MapClassName','MapType','MapTypeDescription']" sortField="Name" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'Name'">
+                                        Name
+                                        <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Transformation'">
+                                        Transformation
+                                        <d3s-sortIcon [field]="'Transformation'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'MapClassName'">
+                                        Classification
+                                        <d3s-sortIcon [field]="'MapClassName'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'MapType'">
+                                        Type
+                                        <d3s-sortIcon [field]="'MapType'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'MapTypeDescription'">
+                                        Type Description
+                                        <d3s-sortIcon [field]="'MapTypeDescription'"></d3s-sortIcon>
+                                    </th>
+                                    <th style="width: 28px"></th>
+                                    <th style="width: 28px"></th>
+                                </tr>
+                                <tr [hidden]="showSimpleFilter">
+                                    <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Transformation'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'MapClassName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'MapType'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'MapTypeDescription'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td>{{item.Name}}</td>
+                                    <td>{{item.Transformation}}</td>
+                                    <td>{{item.MapClassName}}</td>
+                                    <td>{{item.MapType}}</td>
+                                    <td>{{item.MapTypeDescription}}</td>
+                                    <td>
+                                        <div class="RowTools">
+                                                <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                            </div>
+                                   </td>
+                                    <td>
+                                             <div class="RowTools">
+                                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                            </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
                     </span>
                     <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Map'" [title]="'Map'" [selection]="selected" (saveClick)="saveMap($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
                     <d3s-delete-form *ngIf="showDelete"

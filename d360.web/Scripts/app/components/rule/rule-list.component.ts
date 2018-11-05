@@ -29,39 +29,55 @@ import * as _ from 'lodash';
                                     <header>{{modelGroup}} Rules                                
                                         <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
                                     </header>
-                                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                                     
-                                    <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowClick)="selected=$event.data;showRule(selected);" >                                        
-                                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                        <p-column field="ID" header="ID" sortable="true" [style]="{width:'5%'}" [filter]="!showSimpleFilter">
-                                            <ng-template    let-col let-item="rowData" pTemplate type="body">
-	                                            <a (click)="selected=item;showRule(selected);">{{item[col.field]}}</a>                                 
+                                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                        <p-table #dt [value]="rules" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ID','Dimension']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                                            <ng-template pTemplate="header">
+                                                <tr>
+                                                    <th [pSortableColumn]="'ID'" style="width: 5%">
+                                                        ID
+                                                        <d3s-sortIcon [field]="'ID'"></d3s-sortIcon>
+                                                    </th>
+                                                    <th style="width: 20%">Dimension</th>
+                                                    <th></th>
+                                                    <th style="width: 40px"></th>
+                                                    <th style="width: 40px"></th>
+                                                </tr>
+                                                <tr [hidden]="showSimpleFilter">
+                                                    <th><d3s-column-filter [field]="'ID'" [datatype]="'text'"></d3s-column-filter></th>
+                                                    <th><d3s-column-filter [field]="'Dimension'" [datatype]="'text'"></d3s-column-filter></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                </tr>
                                             </ng-template>
-                                        </p-column>
-                                        <p-column field="Dimension" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
-                                            <ng-template    let-col let-item="rowData" pTemplate type="body">
-	                                            <a (click)="selected=item;showRule(selected);">{{item[col.field]}}</a>                                 
+                                            <ng-template pTemplate="body" let-col let-item="item" > 
+                                                <tr [pSelectableRow]="item">
+                                                    <td>
+                                                            <a (click)="selected=item;showRule(selected);">{{item[col.field]}}</a>
+                                                    </td>
+                                                    <td>
+                                                            <a (click)="selected=item;showRule(selected);">{{item[col.field]}}</a>
+                                                    </td>
+                                                    <td>
+                                                            <a><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>
+                                                    </td>
+                                                    <td>
+                                                            <div class="RowTools">
+                                                                <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                                            </div>
+                                                    </td>
+                                                    <td>
+                                                            <div class="RowTools">
+                                                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                                            </div>
+                                                    </td>
+                                                </tr>
                                             </ng-template>
-                                        </p-column>                                        
-                                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">                                                                
-                                            <ng-template let-item="rowData" pTemplate type="body">
-                                                <a><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>                                 
+                                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                                             </ng-template>
-                                        </p-column>
-                                        <p-column [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions()">
-                                            <ng-template let-item="rowData" pTemplate type="body">
-                                                <div class="RowTools">
-                                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
-                                                </div>
-                                            </ng-template>
-                                        </p-column>                            
-                                        <p-column  [style]="{width:'40px'}" *ngIf="hasDeleteAssetPermissions()">
-                                                <ng-template let-item="rowData" pTemplate type="body">
-                                                    <div class="RowTools">                                
-                                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                                    </div>
-                                                </ng-template>
-                                        </p-column> 
-                                    </p-dataTable>      
+                                        </p-table>
+
                                 </div>
                             </div>
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="ruleType?.ID" [objectType]="'Rule'" [title]="'Rule'" [selection]="selected" (saveClick)="saveRule($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>

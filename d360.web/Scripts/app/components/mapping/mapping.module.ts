@@ -21,6 +21,8 @@ import {
     SharedModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
@@ -42,6 +44,7 @@ import {
         //prime
         DataTableModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         MappingComponent,

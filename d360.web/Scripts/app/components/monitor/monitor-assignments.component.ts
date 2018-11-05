@@ -15,28 +15,57 @@ import { Router } from '@angular/router';
             My Assignments
             <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
-        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-        <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="15" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="true" [pageLinks]="3" [(selection)]="selection">
-            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer> 
-            <p-column header="Workflow Name" field="WorkflowName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
-                <ng-template let-item="rowData" type="body" pTemplate>
-                    <a *ngIf="item.Deleted == false" style="cursor:pointer;" (click)="openItem(item)" title="Complete Form">{{item.WorkflowName}}</a> 
-                    <span *ngIf="item.Deleted == true">{{item.WorkflowName}}</span>
-                </ng-template>
-            </p-column>  
-            <p-column header="Item" field="ObjectName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
-            <p-column header="Step" field="StepName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
-            <p-column header="Started On" field="StartedOn" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
-                <ng-template let-item="rowData" type="body" pTemplate>
-                    {{item.StartedOn | date: 'short'}}
-                </ng-template>
-            </p-column>
-            <p-column header="">
-                <ng-template let-item="rowData" type="body" pTemplate>
-                    <a *ngIf="item.Deleted == false" style="cursor:pointer;" (click)="openItem(item)" title="Complete Form"><i class="fa fa-check-square-o"></i></a>                                                        
-                </ng-template>
-            </p-column>
-        </p-dataTable>
+        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+        <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['WorkflowName','ObjectName','StepName','StartedOn']" [pageLinks]="3" [paginator]="true" [rows]="15" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selection">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th [pSortableColumn]="'WorkflowName'">
+                        Workflow Name
+                        <d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'ObjectName'">
+                        Item
+                        <d3s-sortIcon [field]="'ObjectName'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'StepName'">
+                        Step
+                        <d3s-sortIcon [field]="'StepName'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'StartedOn'">
+                        Started On
+                        <d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
+                    </th>
+                    <th></th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th><d3s-column-filter [field]="'WorkflowName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'StepName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr [pSelectableRow]="item">
+                    <td>
+                            <a *ngIf="item.Deleted == false" style="cursor:pointer;" (click)="openItem(item)" title="Complete Form">{{item.WorkflowName}}</a>
+                            <span *ngIf="item.Deleted == true">{{item.WorkflowName}}</span>
+                    </td>
+                    <td>{{item.ObjectName}}</td>
+                    <td>{{item.StepName}}</td>
+                    <td>
+                            {{item.StartedOn | date: 'short'}}
+                    </td>
+                    <td>
+                            <a *ngIf="item.Deleted == false" style="cursor:pointer;" (click)="openItem(item)" title="Complete Form"><i class="fa fa-check-square-o"></i></a>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+
     </div>
 </div>
               `,

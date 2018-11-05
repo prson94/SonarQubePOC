@@ -30,6 +30,7 @@ import {
     SharedModule,
     TooltipModule,
 } from 'primeng/primeng';
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -47,6 +48,7 @@ import {
         InputTextModule,                       
         SharedModule,
         TooltipModule,
+        TableModule,
         
         //d3s        
         CoreModule,      

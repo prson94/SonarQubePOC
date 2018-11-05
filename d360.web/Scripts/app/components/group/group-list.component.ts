@@ -47,7 +47,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                             </tr>
                                         </ng-template>
                                         <ng-template pTemplate="body" let-item>
-                                            <tr (dblclick)="selected=$event.data;showGroup(selected);" [pSelectableRow]="item">
+                                            <tr (dblclick)="selected=item;showGroup(selected);" [pSelectableRow]="item">
                                                 <td>
                                                         <a (click)="showGroup(item)">{{item.Name}}</a>
                                                 </td>

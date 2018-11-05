@@ -92,8 +92,6 @@ import { FusionRuleRoutingModule } from './fusion-rule.routes';
         SharedDeleteFormModule,
         TilesModule,
         PipesModule,
-        D3SSortIconModule,
-        D3SColumnFilterModule,
 
     ],
     providers: [
