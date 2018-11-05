@@ -13,46 +13,109 @@ import * as _ from 'lodash';
                     <header>Execution History<span *ngIf="fusion"> - {{fusion.Name}}</span><d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasRefresh]="true" (refreshClick)="load();" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                        <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="executions" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="FusionType" header="Type" sortable="true" [style]="{width:'175px'}" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Fusion" header="Configuration" sortable="true" [style]="{width:'175px'}" [filter]="!showSimpleFilter">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <a (click)="showFusion(item)">{{item.Fusion}}</a>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="DateStarted" header="Started" sortable="custom" (sortFunction)="nullDateSort($event)" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
-                                <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <span>{{data.DateStarted | date: 'short'}}</span>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="DateCompleted" header="Completed" sortable="custom" (sortFunction)="nullDateSort($event)" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
-                                <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <span>{{data.DateCompleted | date: 'short'}}</span>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="ErrorCount" header="Errors" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter">
-                                <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <a *ngIf="data.ErrorCount" (click)="selected=data;showExecutionErrors=true;">{{data.ErrorCount}} <i class="fa fa-times disabled"></i></a>
-                                    <span *ngIf="!data.ErrorCount">{{data.ErrorCount}}</span>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="ResultCount" header="Results" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter">
-                                <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <a *ngIf="data.ResultCount" (click)="selected=data;showExecutionResults=true;">{{data.ResultCount}} <i class="fa fa-check enabled"></i></a>
-                                    <span *ngIf="!data.ResultCount">{{data.ResultCount}}</span>
-                                </ng-template>
-                            </p-column>                            
-                            <p-column field="Adds" header="Adds" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Deletes" header="Deletes" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Updates" header="Updates" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter"></p-column>                            
-                            <p-column field="RawLogFileName" header="Data File" [sortable]="false" [filter]="!showSimpleFilter" [style]="{width:'250px'}">
-                                <ng-template let-data="rowData" pTemplate type="body">
-                                    <a (click)="downloadFusionData(data);">{{data.RawLogFileName}}</a>
-                                </ng-template>
-                            </p-column>
-                        </p-dataTable>      
+                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                        <p-table #dt [value]="executions" [scrollable]="true" scrollWidth="100%" selectionMode="single" [metaKeySelection]="true" 
+                            [globalFilterFields]="['FusionType','Fusion','DateStarted','DateCompleted','ErrorCount','ResultCount','Adds','Deletes','Updates','RawLogFileName']" 
+                            [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selected">
+                            <ng-template pTemplate="colgroup">
+                                <colgroup>
+                                    <col style="width:175px">
+                                    <col style="width:175px">
+                                    <col style="width:150px">
+                                    <col style="width:150px">
+                                    <col style="width:100px">
+                                    <col style="width:100px">
+                                    <col style="width:100px">
+                                    <col style="width:100px">
+                                    <col style="width:100px">
+                                    <col style="width:250px">
+                                </colgroup>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'FusionType'" style="width: 175px">
+                                        Type
+                                        <d3s-sortIcon [field]="'FusionType'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Fusion'" style="width: 175px">
+                                        Configuration
+                                        <d3s-sortIcon [field]="'Fusion'"></d3s-sortIcon>
+                                    </th>
+                                    <th style="width: 150px" [pSortableColumn]="'DateStarted'">
+                                        Started
+                                        <d3s-sortIcon [field]="'DateStarted'"></d3s-sortIcon>
+                                    </th>
+                                    <th style="width: 150px" [pSortableColumn]="'DateCompleted'">
+                                        Completed
+                                        <d3s-sortIcon [field]="'DateCompleted'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'ErrorCount'" style="width: 100px">
+                                        Errors
+                                        <d3s-sortIcon [field]="'ErrorCount'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'ResultCount'" style="width: 100px">
+                                        Results
+                                        <d3s-sortIcon [field]="'ResultCount'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Adds'" style="width: 100px">
+                                        Adds
+                                        <d3s-sortIcon [field]="'Adds'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Deletes'" style="width: 100px">
+                                        Deletes
+                                        <d3s-sortIcon [field]="'Deletes'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Updates'" style="width: 100px">
+                                        Updates
+                                        <d3s-sortIcon [field]="'Updates'"></d3s-sortIcon>
+                                    </th>
+                                    <th style="width: 250px">Data File</th>
+                                </tr>
+                                <tr [hidden]="showSimpleFilter">
+                                    <th><d3s-column-filter [field]="'FusionType'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Fusion'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'DateStarted'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'DateCompleted'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'ErrorCount'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'ResultCount'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Adds'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Deletes'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Updates'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'RawLogFileName'" [datatype]="'text'"></d3s-column-filter></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr (dblclick)="selected=item" [pSelectableRow]="item">
+                                    <td>{{item.FusionType}}</td>
+                                    <td>
+                                        <a (click)="showFusion(item)">{{item.Fusion}}</a>
+                                    </td>
+                                    <td>
+                                        <span>{{item.DateStarted | date: 'short'}}</span>
+                                    </td>
+                                    <td>
+                                        <span>{{item.DateCompleted | date: 'short'}}</span>
+                                    </td>
+                                    <td>
+                                        <a *ngIf="item.ErrorCount" (click)="selected=item;showExecutionErrors=true;">{{item.ErrorCount}} <i class="fa fa-times disabled"></i></a>
+                                        <span *ngIf="!item.ErrorCount">{{item.ErrorCount}}</span>
+                                    </td>
+                                    <td>
+                                        <a *ngIf="item.ResultCount" (click)="selected=item;showExecutionResults=true;">{{item.ResultCount}} <i class="fa fa-check enabled"></i></a>
+                                        <span *ngIf="!item.ResultCount">{{item.ResultCount}}</span>
+                                    </td>
+                                    <td>{{item.Adds}}</td>
+                                    <td>{{item.Deletes}}</td>
+                                    <td>{{item.Updates}}</td>
+                                    <td>
+                                        <a (click)="downloadFusionData(item);">{{item.RawLogFileName}}</a>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>  
                     </span>                    
                 </div>                
                 <div class="tile tile-detail" *ngIf="showExecutionErrors && selected">                    

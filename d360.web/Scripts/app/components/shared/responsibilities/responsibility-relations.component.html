@@ -22,11 +22,11 @@
         <p-table #dt [value]="rows" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['AssetTypeName','ResponsibilityTypeName']" [paginator]="true" [rows]="10" [(selection)]="selectedRow">
             <ng-template pTemplate="header">
                 <tr>
-                    <th [pSortableColumn]="'AssetTypeName'">
+                    <th *ngIf="queryType === 'R'" [pSortableColumn]="'AssetTypeName'">
                         Type
                         <d3s-sortIcon [field]="'AssetTypeName'"></d3s-sortIcon>
                     </th>
-                    <th [pSortableColumn]="'ResponsibilityTypeName'">
+                    <th *ngIf="queryType === 'A'" [pSortableColumn]="'ResponsibilityTypeName'">
                         Type
                         <d3s-sortIcon [field]="'ResponsibilityTypeName'"></d3s-sortIcon>
                     </th>
@@ -34,16 +34,16 @@
                     <th style="width: 50px"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
-                    <th><d3s-column-filter [field]="'AssetTypeName'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [field]="'ResponsibilityTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th *ngIf="queryType === 'R'"><d3s-column-filter [field]="'AssetTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th *ngIf="queryType === 'A'" ><d3s-column-filter [field]="'ResponsibilityTypeName'" [datatype]="'text'"></d3s-column-filter></th>
                     <th></th>
                     <th></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
                 <tr (dblclick)="isEditing=showEditButton;" [pSelectableRow]="item">
-                    <td>{{item.AssetTypeName}}</td>
-                    <td>{{item.ResponsibilityTypeName}}</td>
+                    <td *ngIf="queryType === 'R'">{{item.AssetTypeName}}</td>
+                    <td *ngIf="queryType === 'A'">{{item.ResponsibilityTypeName}}</td>
                     <td>
                         <div class="RowTools">
                             <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
@@ -60,27 +60,5 @@
                 <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
             </ng-template>
         </p-table>
-
-
-        <!--<input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-        <p-dataTable #dt [globalFilter]="gb" [value]="rows" selectionMode="single" [(selection)]="selectedRow" (onRowDblclick)="isEditing=showEditButton;" scrollable="false" [rows]="10" [paginator]="true">
-            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-            <p-column *ngIf="queryType === 'R'" field="AssetTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column>
-            <p-column *ngIf="queryType === 'A'" field="ResponsibilityTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column> 
-            <p-column [style]="{ 'width': '50px' }" *ngIf="showEditButton">
-                <ng-template let-col let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">
-                        <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                    </div>
-                </ng-template>
-            </p-column>
-            <p-column [style]="{ 'width': '50px' }" *ngIf="showDeleteButton">
-                <ng-template let-col let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">
-                        <a (click)="delete(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                    </div>
-                </ng-template>
-            </p-column>
-        </p-dataTable>-->
     </div>
 </div>

@@ -10,8 +10,7 @@ import { Router } from '@angular/router';
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    
-    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
     <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ObjectName','ResponsibilityTypeName','SecurityAssetName']" [paginator]="true" [rows]="10">
         <ng-template pTemplate="header">
             <tr>
@@ -28,7 +27,7 @@ import { Router } from '@angular/router';
                     <d3s-sortIcon [field]="'SecurityAssetName'"></d3s-sortIcon>
                 </th>
             </tr>
-            <tr [hidden]="showSimpleFilter">
+            <tr [hidden]="simpleFilter">
                 <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
                 <th><d3s-column-filter [field]="'ResponsibilityTypeName'" [datatype]="'text'"></d3s-column-filter></th>
                 <th><d3s-column-filter [field]="'SecurityAssetName'" [datatype]="'text'"></d3s-column-filter></th>
@@ -49,23 +48,6 @@ import { Router } from '@angular/router';
             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
         </ng-template>
     </p-table>
-
-<!--
-<input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" [hidden]="!simpleFilter">  
-    <p-dataTable #dt [globalFilter]="gb" [value]="items" [rows]="10" [paginator]="true" selectionMode="single">
-        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-        <p-column header="Name" field="ObjectName" [filter]="!simpleFilter" sortable="true">
-            <ng-template let-row="rowData" pTemplate type="body">                
-                <d3s-preview-tooltip [objectType]="row.Object" [objectId]="row.ObjectID">{{row.ObjectName}}</d3s-preview-tooltip>
-            </ng-template>
-        </p-column>
-        <p-column field="ResponsibilityTypeName" header="Role" [filter]="!simpleFilter" sortable="true"></p-column>
-        <p-column header="Via" field="SecurityAssetName" [filter]="!simpleFilter" sortable="true">
-            <ng-template let-row="rowData" pTemplate type="body">
-                <div *ngIf="row.SecurityAsset != 'R'">{{row.SecurityAssetName}}</div>
-            </ng-template>
-        </p-column>
-    </p-dataTable> -->
 </div>
 `,
 })

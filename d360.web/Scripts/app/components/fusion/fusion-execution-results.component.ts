@@ -66,20 +66,7 @@ import { SortOrder } from '../../models/enums.model';
                         <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
                             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
-                    </p-table>
-
-<!--
-
-<input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                                                                            
-                    <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" #dt scrollable="true" scrollWidth="100%" [value]="results" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onLazyLoad)="loadResultsLazy($event)" lazy="true" [totalRecords]="resultCount">                            
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="FusionAttributeType" header="Type" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column field="FusionAttribute" header="Attribute" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column field="Action" header="Action" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column field="FieldName" header="Field" [sortable]="true" [style]="{width:'125px'}"></p-column>                        
-                            <p-column field="OldValue" header="Old Value" [sortable]="true" [style]="{width:'175px'}"></p-column>                        
-                            <p-column field="NewValue" header="New Value" [sortable]="true" [style]="{width:'175px'}"></p-column>
-                    </p-dataTable>   -->                 
+                    </p-table>              
           `,
     providers: [FusionService],
 })
@@ -100,6 +87,7 @@ export class FusionExecutionResultsComponent extends BaseComponent {
 
     constructor(private fusionService: FusionService) {
         super();
+        this.isLoading = true;
     }
     
     private export() {
@@ -112,8 +100,8 @@ export class FusionExecutionResultsComponent extends BaseComponent {
             .then(res => {
                 this.results = res.results;
                 this.resultCount = res.total;
-                this.selected = this.results.length > 0 ? this.results[0] : null;
                 this.isLoading = false;
+                this.selected = this.results.length > 0 ? this.results[0] : null;
             });
     }
 

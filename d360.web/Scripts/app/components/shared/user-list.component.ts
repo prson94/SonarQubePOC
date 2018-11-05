@@ -75,43 +75,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
-
-<!--
-<input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                    <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="FirstName" header="First Name" sortable="true"  [filter]="!showSimpleFilter">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <a (click)="openResource(item)">{{item.FirstName}}</a>
-                            </ng-template>
-                        </p-column>
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
-                            </ng-template>
-                        </p-column>
-                        <p-column [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions()">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools" *ngIf="item.ResourceID > 0">
-                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
-                                </div>
-                            </ng-template>
-                        </p-column>                            
-                        <p-column  [style]="{width:'40px'}" *ngIf="hasDeleteAssetPermissions()">
-                               <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools" *ngIf="item.ResourceID > 0">                                
-                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                </div>
-                               </ng-template>
-                        </p-column>                            
-                            <p-column  [style]="{width:'40px'}" *ngIf="hasModifyAssetPermissions() && allowPasswordReset ">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" *ngIf="item.ID>0">                                
-                                        <a title="Reset Password" style="cursor:pointer;" (click)="selected=item;showResetPwd=true;"><i class="fa fa-asterisk fa-fw"></i></a>                                    
-                                    </div>
-                                </ng-template>
-                            </p-column>     
-                    </p-dataTable> -->
                 </span>
                 <span *ngIf="showResetPwd">
                     <header>Reset Users Password</header>

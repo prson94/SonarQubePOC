@@ -47,7 +47,7 @@
             </div>
             <div *ngIf="selection.IsCustom" class="row">
                 <div class="col s12 m6">
-                    <p-table #dt [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Title']" [paginator]="true" [rows]="10">
+                    <p-table #dt1 [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Title']" [paginator]="true" [rows]="10">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th>Available Folder Items</th>
@@ -64,26 +64,13 @@
                                 </td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        <ng-template *ngIf="dt1.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt1.first" [rows]="dt1.rows" [totalRecords]="dt1.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
-
-                    <!--
-                    <p-dataTable #dt [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single" [immutable]="false">
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="Title" header="Available Folder Items"></p-column>
-                        <p-column>
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools" style="height: initial;">
-                                    <a (click)="addFolderItem(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
-                                </div>
-                            </ng-template>
-                        </p-column>
-                    </p-dataTable> -->
                 </div>
                 <div class="col s12 m6">
-                    <p-table #dt [value]="folderItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [paginator]="true" [rows]="10">
+                    <p-table #dt2 [value]="folderItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [paginator]="true" [rows]="10">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th>Existing Folder Items</th>
@@ -102,23 +89,10 @@
                                 </td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        <ng-template *ngIf="dt2.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt2.first" [rows]="dt2.rows" [totalRecords]="dt2.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
-
-                    <!--<p-dataTable [value]="folderItems" [rows]="10" [paginator]="true" selectionMode="single" [immutable]="false">
-                        <p-column field="Name" header="Existing Folder Items"></p-column>
-                        <p-column>
-                            <ng-template let-item="rowData" let-i="rowIndex" pTemplate type="body">
-                                <div class="RowTools" style="height: initial;">
-                                    <a (click)="moveFolderUp(item,i)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
-                                    <a (click)="moveFolderDown(item,i)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
-                                    <a (click)="deleteFolderItem(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                                </div>
-                            </ng-template>
-                        </p-column>
-                    </p-dataTable>-->
                 </div>
             </div>
             <div class="row" style="padding-bottom:15px;">
@@ -164,7 +138,7 @@
             </div>
             <div class="row">
                 <div class="col s12 m6">
-                    <p-table #dt [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
+                    <p-table #dt3 [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th>Available Folder Items</th>
@@ -181,26 +155,13 @@
                                 </td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        <ng-template *ngIf="dt3.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt3.first" [rows]="dt3.rows" [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
-
-
-                    <!--<p-dataTable #dt1 [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
-                        <p-footer *ngIf="dt1.totalRecords"><d3s-grid-paging-info [totalRecords]="dt1.totalRecords" [first]="dt1.first" [rows]="dt1.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="Title" header="Available Folder Items"></p-column>
-                        <p-column>
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools" style="height: initial;">
-                                    <a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
-                                </div>
-                            </ng-template>
-                        </p-column>
-                    </p-dataTable>-->
                 </div>
                 <div class="col s12 m6">
-                    <p-table #dt [value]="newFolderItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
+                    <p-table #dt4 [value]="newFolderItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th>Existing Folder Items</th>
@@ -218,21 +179,10 @@
                                 </td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        <ng-template *ngIf="dt4.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt4.first" [rows]="dt4.rows" [totalRecords]="dt4.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
-
-                    <!--<p-dataTable [value]="newFolderItems" [rows]="10" [paginator]="true" selectionMode="single">
-                        <p-column field="Name" header="Existing Folder Items"></p-column>
-                        <p-column>
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools" style="height: initial;">
-                                    <a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                                </div>
-                            </ng-template>
-                        </p-column>
-                    </p-dataTable>-->
                 </div>
             </div>
             <div class="row"  style="padding-bottom:15px;">
