@@ -702,8 +702,7 @@ where   A.FusionQueryAttributeTypeID = @t
 
             var col = 1;
             var row = 1;
-            var totalColumns = sqlFieldModels.Count;
-
+            
             #region Header
             foreach (var prop in sqlFieldModels)
             {

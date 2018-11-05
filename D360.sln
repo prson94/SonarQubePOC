@@ -65,6 +65,7 @@ Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "d360.database.company", "d3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{250BEFFF-E46A-41D1-8421-587E325EAA34}"
 	ProjectSection(SolutionItems) = preProject
+		codeanalysis.ruleset = codeanalysis.ruleset
 		Local.testsettings = Local.testsettings
 	EndProjectSection
 EndProject
@@ -242,7 +243,7 @@ Global
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700} = {757CF48D-6728-4702-AC12-754629196548}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
+		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 	EndGlobalSection
 EndGlobal

@@ -56,13 +56,11 @@ namespace d360.web.Controllers
         {
             var b = "#000000";
             var f = "#ffffff";
-            var t = "";
 
             if (style != null)
             {
                 b = style.IconBackColor;
-                f = style.IconForeColor;
-                t = style.IconText;
+                f = style.IconForeColor;                
             }
 
             list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "IconBackColor", Name = "Background Color", FieldDescription = "The icon's background color", FieldType = DataType.Color.ToString(), Value = b });
@@ -787,8 +785,7 @@ namespace d360.web.Controllers
             var a = Company.GetById<Artifact>(id);
             
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            var type = Company.GetById<ArtifactType>(a.ArtifactTypeID);
+                        
             var parentType = Company.GetParentType<ArtifactType>(a.ArtifactTypeID);
 
             if (parentType != null)
@@ -1017,20 +1014,7 @@ namespace d360.web.Controllers
                 var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
 
                 if (artifact == null) throw new NotFoundException("artifact");
-
-                //check for any outstanding certification workflows for this item
-                var sql = @"select
-                                count(1)
-                            from
-                                workflow.eventregistration we
-                                inner join workflow.type wt on we.typeid = wt.id
-                                inner join workflow.version wv on wt.id = wv.typeid
-                                inner join workflow.item wi on wi.versionid = wv.id and(wi.[object] = 'Artifact' and wi.objectid = @id)
-                            where
-                                we.changetype = 8 and wi.completedOn is null";
-
-                var count = Company.Query<int>(sql, new { id = id }).FirstOrDefault();
-
+                
                 Company.RequestObjectCertification(SystemObjects.Artifact, artifact.ID, SystemObjects.ArtifactType, artifact.ArtifactTypeID);
 
                 return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
@@ -1786,8 +1770,7 @@ namespace d360.web.Controllers
         [Route("Attribute_AddFields"), NonNullableParameters]
         public JsonResult Attribute_AddFields(int at, string ot, int oid, int p)
         {
-            var list = new List<EditableField>();
-            var type = Company.GetById<AttributeType>(at);
+            var list = new List<EditableField>();            
 
             list.Add(new EditableField { FieldName = "AttributeTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
             list.Add(new EditableField { FieldName = "ObjectType", FieldType = DataType.Hidden.ToString(), Value = ot });
@@ -2304,8 +2287,7 @@ namespace d360.web.Controllers
         [Route("AttributeTypeRelation_AddFields"), NonNullableParameters]
         public JsonResult AttributeTypeRelation_AddFields(int at)
         {
-            var list = new List<EditableField>();
-            var type = Company.GetById<AttributeType>(at);
+            var list = new List<EditableField>();            
 
             var relation = new AttributeTypeRelation();
             
@@ -2681,7 +2663,6 @@ namespace d360.web.Controllers
                         var iconMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.CompanyIcon);
 
                         var iconMime = iconMatch.Groups["mime"].Value;
-                        var iconEncoding = iconMatch.Groups["encoding"].Value;
                         var iconData = iconMatch.Groups["data"].Value;
                         var iconExtension = MimeTypeExtensionsMap.GetExtension(iconMime);
                         var iconByteArray = Convert.FromBase64String(iconData);
@@ -2723,8 +2704,7 @@ namespace d360.web.Controllers
                     {
                         var logoMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.CompanyLogo);
 
-                        var logoMime = logoMatch.Groups["mime"].Value;
-                        var logoEncoding = logoMatch.Groups["encoding"].Value;
+                        var logoMime = logoMatch.Groups["mime"].Value;                        
                         var logoData = logoMatch.Groups["data"].Value;
                         var logoExtension = MimeTypeExtensionsMap.GetExtension(logoMime);
                         var logoByteArray = Convert.FromBase64String(logoData);
@@ -2878,7 +2858,6 @@ namespace d360.web.Controllers
                         var imageMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.HomePageBackgroundImage);
 
                         var imageMime = imageMatch.Groups["mime"].Value;
-                        var imageEncoding = imageMatch.Groups["encoding"].Value;
                         var imageData = imageMatch.Groups["data"].Value;
                         var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
                         var imageByteArray = Convert.FromBase64String(imageData);
@@ -4006,9 +3985,9 @@ namespace d360.web.Controllers
                             Company.FieldTypeLookups.Add(lookupRow);
                             Company.SaveChanges();
                         }
-                        catch (Exception ex)
+                        catch 
                         {
-                            throw ex;
+                            throw;
                         }
 
                         break;
@@ -4049,9 +4028,9 @@ namespace d360.web.Controllers
                             Company.FieldTypeLookups.Add(ownershipLookupRow);
                             Company.SaveChanges();
                         }
-                        catch (Exception ex)
+                        catch 
                         {
-                            throw ex;
+                            throw;
                         }
 
                         break;
@@ -4118,10 +4097,7 @@ namespace d360.web.Controllers
             var a = Company.GetById<FieldType>(id);
             if (a == null) return null;
             var used = Company.Any<Field>(i => i.FieldTypeID == id);
-            var qry = Company.Table<FieldTypeLookupValue>().OrderBy(i => i.LookupObjectType).ThenBy(i => i.Name).AsQueryable();
-
-            var fusDef = a.FieldTypeFusionLookupDefinitions.FirstOrDefault();
-
+            
             if (!a.IsRequired) a.MinimumLength = 0;
 
             var model = new FieldTypeEditorModel
@@ -4177,8 +4153,7 @@ namespace d360.web.Controllers
                     throw new ConflictException("Error Occurred!", FieldInfo.FieldReferenceItemListFromRelationship_NeededRelationship);
                 }
                 // Static fields
-                var oldType = ft.Type;
-
+                
                 ft.Name = model.FieldType.Name;
                 ft.SortOrder = model.FieldType.SortOrder;
                 ft.Category = model.FieldType.Category;
@@ -4618,9 +4593,9 @@ namespace d360.web.Controllers
 
                             Company.FieldTypeLookups.Add(lookupRow);
                             Company.SaveChanges();
-                        } catch (Exception ex)
+                        } catch 
                         {
-                            throw ex;
+                            throw;
                         }
 
                         break;
@@ -4660,9 +4635,9 @@ namespace d360.web.Controllers
                             Company.FieldTypeLookups.Add(ownershipLookupRow);
                             Company.SaveChanges();
                         }
-                        catch (Exception ex)
+                        catch 
                         {
-                            throw ex;
+                            throw;
                         }
 
                         break;
@@ -4746,8 +4721,7 @@ namespace d360.web.Controllers
         public JsonResult Fusion_AddFields(int ft)
         {
             var list = new List<EditableField>();
-            var type = Company.GetById<FusionType>(ft);
-
+            
             if (!Company.HasAssetTypePermission(SystemObjects.FusionType, ft, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
@@ -5392,9 +5366,9 @@ namespace d360.web.Controllers
 
                 return sql;
             }
-            catch (Exception ex)
+            catch 
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -6915,8 +6889,7 @@ namespace d360.web.Controllers
                 }
             }
                         
-            var promotionType = ruleStep.GetSettingValueByName("Object");
-            var promotionObjectType = ruleStep.GetSettingValueByName("PromotionParentObjectType");
+            var promotionType = ruleStep.GetSettingValueByName("Object");            
             int promotionObjectID = 0;
             int.TryParse(ruleStep.GetSettingValueByName("ObjectID"), out promotionObjectID);
 
@@ -7593,8 +7566,6 @@ namespace d360.web.Controllers
 
                 if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-                
-                var sType = SystemObjects.FusionAttribute.ToString();
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.FusionAttribute, model.ID, Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, model.FusionAttributeTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<FusionAttribute>(model, fields);
@@ -8420,8 +8391,7 @@ namespace d360.web.Controllers
 
                 if (obj == null) throw new NoFormDataException("GetObject");
 
-                var relations = new List<CommentRelation>();
-                var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
+                var relations = new List<CommentRelation>();                
                 var comment = new Comment();
 
                 relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
@@ -8895,7 +8865,7 @@ namespace d360.web.Controllers
 
             querySql = @"
 			select  r.LastName + ', ' + r.FirstName as Text, 'Resource|' + cast(r.ResourceID as varchar) + '|' + r.LastName + ', ' + r.FirstName  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
-			where r.status ='Active'  
+			where r.[State] = 1 
 			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID) "
             + hideUsersSql;
             dbArgs.Add("id", id);
@@ -8940,7 +8910,7 @@ namespace d360.web.Controllers
                 if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                var rg = Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
+                Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
 
                 return jsonSuccess("User successfully removed from group.", resourceID.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -8963,7 +8933,7 @@ namespace d360.web.Controllers
                 if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                var rg = Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
+                Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
 
                 return jsonSuccess("User successfully removed from group.", resourceID.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -9958,8 +9928,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var match = MimeTypeExtensionsMap.RegEx.Match(model.File);
 
-                var mime = match.Groups["mime"].Value;
-                var encoding = match.Groups["encoding"].Value;
+                var mime = match.Groups["mime"].Value;                
                 var data = match.Groups["data"].Value;
                 var extension = MimeTypeExtensionsMap.GetExtension(mime);
                 var byteArray = Convert.FromBase64String(data);
@@ -10154,8 +10123,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            var type = Company.GetById<LookupType>(id);
-
+            
             list.Add(new EditableField { FieldName = "LookupTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.LookupType, id).ToList(), 1);
 
@@ -11477,8 +11445,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         [Route("Policy_AddFields"), NonNullableParameters]
         public JsonResult Policy_AddFields(int typeID, int? parentID)
-        {
-            var model = new Policy();
+        {            
             if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, typeID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
@@ -11959,8 +11926,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         public JsonResult Predicate_DeleteFields(int id)
         {
             var list = new List<EditableField>();
-            var a = Company.GetById<Predicate>(id);
-
+            
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException("You do not have permissions to delete this.", HttpStatusCode.Forbidden);
 
@@ -12122,7 +12088,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            var type = Company.GetById<ReferenceItemType>(id);
             var row = 1;
 
             list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
@@ -12497,173 +12462,22 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
 
             var targetType = "";
-            var targetTypeID = 0;
             var targetCardinality = Cardinality.Many;
             if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
             {
-                targetType = relationshipType.Object;
-                targetTypeID = relationshipType.ObjectID;
+                targetType = relationshipType.Object;                
                 targetCardinality = relationshipType.ObjectCardinality;
             }
             else
             {
-                targetType = relationshipType.Subject;
-                targetTypeID = relationshipType.SubjectID;
+                targetType = relationshipType.Subject;                
                 targetCardinality = relationshipType.SubjectCardinality;
             }
 
             list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = it.ToString() });
             list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
             list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            #region
-
-            var sql = "";
-
-            switch (targetType)
-            {
-                case "FusionAttributeType":
-                    if ((relationshipType.Predicate != null) && (relationshipType.Predicate.Type == PredicateType.FusionMapping))
-                    {
-                        sql = $@"
-select	'FusionAttribute' as [Object], 
-        FA.ID as ObjectID, 
-        F.Name + '.' + FA.TextPath as Name
-from	FusionAttribute FA with(nolock)
-		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
-where	FA.ID not in (
-					select	1 
-					from	[IntersectDetail]
-					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
-					)
-order by F.Name, FA.TextPath";
-                    }
-                    else
-                    {
-                        sql = $@"
-declare @OwnerSourceType varchar(50)
-declare @owners table (ID int)
-IF @source = 'Intersect'
-BEGIN
-	set @OwnerSourceType = 'Artifact'
-
-	insert into @owners
-		select	SubjectID
-		from	[IntersectDetail] N
-				inner join Artifact A with(nolock) on N.[Subject] = 'Artifact' and A.ID = N.SubjectID and N.ID = @id
-				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
-	insert into @owners
-		select	ObjectID
-		from	[IntersectDetail] N
-				inner join Artifact A with(nolock) on N.[Object] = 'Artifact' and A.ID = N.ObjectID and N.ID = @id
-				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
-END
-ELSE
-BEGIN
-	set @OwnerSourceType = @source
-	insert into @owners values (@id)
-END
-
-declare @h table (ID int);
-
-if @OwnerSourceType = 'Artifact'
-	begin
-		with h as	(
-					select	A.ID,
-							A.ParentID
-					from	Artifact A with(nolock)
-							inner join @owners O on O.ID = A.ID
-					union all
-					select	P.ID,
-							P.ParentID
-					from	Artifact P with(nolock)
-							inner join h as C on C.ParentID = P.ID
-					)
-		insert into @h
-			select ID from h;
-	end
-else
-	begin
-		insert into @h values (@id)
-	end;
-
-select	'FusionAttribute' as [Object], 
-        FA.ID as ObjectID, 
-        F.Name + '.' + FA.TextPath as Name
-from	FusionAttribute FA with(nolock)
-		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
-        inner join FusionOwner FO on FO.FusionID = FA.FusionID
-        inner join @h H on H.ID = FO.ArtifactID
-where	FA.ID not in (
-					select	1 
-					from	[IntersectDetail]
-					where	IntersectTypeID = {it} and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
-					)
-order by F.Name, FA.TextPath";
-                    }
-                    break;
-                case "Group":
-                case "GroupType":
-                    sql = $@"
-select	'Group' as [Object], 
-        D.ID as ObjectID, 
-        D.Name
-from	[Group] D with(nolock)
-where	D.ID not in (
-					select	case 
-                                when SubjectType = 'Group' then SubjectID
-                                else ObjectID
-                            end
-					from	[IntersectDetail]
-					where	IntersectTypeID = {it} and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group' and ObjectTypeID = 1) ) OR
-							 ( (SubjectType = 'Group' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
-							)
-					)
-order by D.Name";
-                    break;
-                case "Resource":
-                case "ResourceType":
-                    sql = $@"
-select	'Resource' as [Object], 
-        D.ResourceID as ObjectID, 
-        D.LastName + ', ' + D.FirstName as Name
-from	reporting.Global_Resource D with(nolock)
-where   D.ResourceID not in (
-					select	case 
-                                when SubjectType = 'ResourceType' then SubjectID
-                                else ObjectID
-                            end
-					from	[IntersectDetail]
-					where	IntersectTypeID = {it} and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ResourceType' and ObjectTypeID = 1) ) OR
-							 ( (SubjectType = 'ResourceType' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
-							)
-					)
-order by D.LastName, D.FirstName";
-                    break;
-                default:
-                    sql = $@"
-select	D.[Object], 
-        D.ObjectID, 
-        D.DisplayValue as [Name]
-from	AssetDetail D with(nolock)
-		left join [IntersectDetail] I on	I.IntersectTypeID = {it} and (
-											 ( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
-											 ( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
-											)
-where	D.Type = @targetType and D.TypeID = @targetTypeID 
-        and D.TypeID <> D.ObjectID 
-        and D.TypeID <> 0
-        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-        and I.ID is null
-order by D.DisplayValue";
-                    break;
-            }
-
-            #endregion
-
-            
+                                   
             list.Add(new EditableField
             {
                     Row = 1,
@@ -13905,7 +13719,8 @@ order by TP.TextPath";
 							where   not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)";
+							where   r.[State] = 1 
+                                    and not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)";
                 querySql += hideUsersSql;
             }
             else
@@ -13926,7 +13741,7 @@ order by TP.TextPath";
                                 and SecurityAssetId <> @groupId) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.status ='Active' and  not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID
+							where r.[State] = 1 and  not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID
                             and ResourceID <> @resourceId)";
                 querySql += hideUsersSql;
                 dbArgs.Add("responsibilityTypeID", resTypeId);
@@ -14100,8 +13915,7 @@ order by TP.TextPath";
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            var o = new ResponsibilityType();
-
+            
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAllocationOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
@@ -14601,7 +14415,7 @@ for json path, WITHOUT_ARRAY_WRAPPER
 				select	cast(ResourceID as varchar) as [value],
 						LastName + ', ' + FirstName as label 
 				from	reporting.Global_Resource 
-				where	Status = 'Active' " + hideUsersSql +
+				where	[State] = 1 " + hideUsersSql +
 				@"order by LastName + ', ' + FirstName
 				for json auto
 				) as [values]
@@ -14692,7 +14506,6 @@ order by DN.DisplayValue");
         public JsonResult ResponsibilityTypeRelationRule_AddFields()
         {
             var list = new List<EditableField>();
-            var o = new ResponsibilityType();
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAllocationOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
@@ -14895,8 +14708,7 @@ order by DN.DisplayValue");
         public JsonResult Resource_AddFields(int id)
         {
             var list = new List<EditableField>();
-            var type = Community.GetById<ResourceType>(id);
-
+            
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
@@ -14993,7 +14805,6 @@ order by DN.DisplayValue");
         {
             var list = new List<EditableField>();
             var id = Company.CurrentResourceID;
-            var a = Community.GetById<Resource>(id);
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "CurrentPassword", Name = "Current Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Current Password", true, "", 7, 25) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "NewPassword", Name = "New Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "New Password", true, passwordRegex, null, null, passwordRegexMessage) });
@@ -16409,13 +16220,12 @@ order by DN.DisplayValue");
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            var a = new RuleType();
+            
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DisplayFormat", Name = FieldInfo.DisplayFormat_Name, FieldDescription = FieldInfo.DisplayFormat_Description, FieldType = DataType.Text.ToString(), Value="{Name}", Validations = checkAndAddValidation("DisplayFormat", FieldInfo.DisplayFormat_Name, true, "", 2, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() });
             loadIconFields(list, 3);
-
-            a = null;
+                        
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -16548,8 +16358,6 @@ order by DN.DisplayValue");
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<RuleType>(id);
                 if (model == null) throw new NotFoundException("rule type");
-
-                var style = Company.GetObjectStyle(SystemObjects.RuleType, id);
 
                 if (!Company.HasAssetTypePermission(SystemObjects.RuleType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
@@ -16806,8 +16614,7 @@ order by DN.DisplayValue");
                 {
                     var imageMatch = MimeTypeExtensionsMap.RegEx.Match(shortcut.IconPayload);
 
-                    var imageMime = imageMatch.Groups["mime"].Value;
-                    var imageEncoding = imageMatch.Groups["encoding"].Value;
+                    var imageMime = imageMatch.Groups["mime"].Value;                    
                     var imageData = imageMatch.Groups["data"].Value;
                     var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
                     var imageByteArray = Convert.FromBase64String(imageData);
@@ -16874,8 +16681,7 @@ order by DN.DisplayValue");
 
                     var imageMatch = MimeTypeExtensionsMap.RegEx.Match(shortcut.IconPayload);
 
-                    var imageMime = imageMatch.Groups["mime"].Value;
-                    var imageEncoding = imageMatch.Groups["encoding"].Value;
+                    var imageMime = imageMatch.Groups["mime"].Value;                    
                     var imageData = imageMatch.Groups["data"].Value;
                     var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
                     var imageByteArray = Convert.FromBase64String(imageData);
@@ -17192,8 +16998,7 @@ order by DN.DisplayValue");
         public JsonResult SynonymsOptions(int predicateId, string type, int typeId, string obj, int objId, string query = "")
         {
             query = query.Replace("_", "[_]").Replace("%", "[%]");
-
-            var list = new List<EditableField>();
+                        
             var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { predicateId,  type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objectId = objId, typeId, query }).ToList();
             var typeIsSubject = true;
             if (items.Count > 0)
@@ -17236,8 +17041,6 @@ order by DN.DisplayValue");
         [Route("Synonym_DeleteFields"), NonNullableParameters]
         public JsonResult Synonym_DeleteFields(int id)
         {
-            var detail = Company.GetById<Intersect>(id);
-
             var list = new List<EditableField>();
 
             list.Add(new EditableField { FieldName = "IntersectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
@@ -17485,7 +17288,6 @@ order by DN.DisplayValue");
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            var type = Company.GetById<TaxonomyType>(t);
 
             list.Add(new EditableField { FieldName = "TaxonomyTypeID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
             list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });

@@ -292,9 +292,7 @@ where   A.Type = 'ArtifactType'
             SLDocument document = null;
             if (template.IncludeParent && Company.TypeHasParent(SystemObjects.ArtifactType, type.ID)) fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
             if (template.IncludeUrl) fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
-
-            var styles = template.ArtifactTypeExportTemplateStyles;
-
+                        
             switch (template.ExportViewType)
             {
                 case core.enums.ExportView.None:

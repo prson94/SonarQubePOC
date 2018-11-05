@@ -459,6 +459,8 @@
       <DependentUpon>eclipse.css</DependentUpon>
     </Content>
     <Content Include="Content\font-awesome.min.css" />
+    <Content Include="Content\images\home.background.png" />
+    <Content Include="Content\images\logo.new.color.png" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
@@ -994,6 +996,22 @@
     <Content Include="Views\Authentication\Register.cshtml" />
     <Content Include="Views\Shared\GenericError.cshtml" />
     <Content Include="Views\Shared\Terms.cshtml" />
+    <Content Include="fonts\nunitosans\nunito-sans-regular.woff2" />
+    <Content Include="fonts\nunitosans\nunito-sans-regular2.woff2" />
+    <Content Include="fonts\nunitosans\NunitoSans-Black.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-BlackItalic.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-Bold.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-BoldItalic.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-ExtraBold.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-ExtraBoldItalic.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-ExtraLight.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-ExtraLightItalic.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-Italic.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-Light.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-LightItalic.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-Regular.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-SemiBold.ttf" />
+    <Content Include="fonts\nunitosans\NunitoSans-SemiBoldItalic.ttf" />
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-Nightly - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
     <Content Include="Views\Authentication\NoAccess.cshtml" />
@@ -1744,6 +1762,8 @@
     <DocumentationFile>App_Data\Documentation.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
     <PublishDatabases>false</PublishDatabases>
+    <CodeAnalysisRuleSet>..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />

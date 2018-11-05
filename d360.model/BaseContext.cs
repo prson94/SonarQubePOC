@@ -359,22 +359,9 @@ namespace d360.model
 
         #region Keys
 
-        //string CACHE_KEY_COMPANY_ID = "CompanyID_ID";
-        //string CACHE_KEY_COMPANY_PUBLICID = "CompanyID_PublicID";
-        //string CACHE_KEY_COMPANY_URI = "CompanyID_Uri";
-
-        //string CACHE_KEY_RESOURCE_APIKEY = "ResourceID_ApiKey";
-        //string CACHE_KEY_RESOURCE_EMAIL = "ResourceID_Email";
-        //string CACHE_KEY_RESOURCE_ID = "ResourceID_ID";
-        //string CACHE_KEY_RESOURCE_USERNAME = "ResourceID_Username";
-        //string CACHE_KEY_RESOURCE_ACCESSTOKEN = "ResourceID_AccessToken";
-
+        
         internal string CACHE_KEY_SSO_MODELS = "Company_SsoModels";
         internal string CACHE_KEY_CONNECTION_STRINGS = "Company_ConnectionStrings";
-        internal string CACHE_KEY_RESOURCE_ADMIN_APIKEY = "Resource_{0}_Admin_ApiKey";
-        internal string CACHE_KEY_RESOURCE_ADMIN_EMAIL = "Resource_{0}_Admin_Email";
-        internal string CACHE_KEY_RESOURCE_ADMIN_ID = "Resource_{0}_Admin_ID";
-        internal string CACHE_KEY_RESOURCE_ADMIN_USERNAME = "Resource_{0}_Admin_Username";
 
         #endregion
 

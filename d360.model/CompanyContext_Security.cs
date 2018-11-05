@@ -63,9 +63,7 @@ order by RT.Name", new { id }).AsQueryable();
         public List<PermissionInfo> GetTypePermissions(string type, int typeID)
         {
             var permissions = Permission.DeleteAsset.GetList();
-
-            var sType = type.ToString();
-
+            
             var responsibilityAssignments = Filter<ResponsibilityDetail>(i => 
                 i.Type == type && i.TypeID == typeID && 
                 i.AssetID == 0 && 
@@ -85,8 +83,6 @@ order by RT.Name", new { id }).AsQueryable();
         public List<PermissionInfo> GetPermissions(string type, int typeID, string @object, int objectID)
         {
             var permissions = Permission.DeleteAsset.GetList();
-
-            var sType = type.ToString();
 
             var responsibilityAssignments = Filter<ResponsibilityDetail>(i => 
             (

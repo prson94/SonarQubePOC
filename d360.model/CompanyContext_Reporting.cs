@@ -72,7 +72,7 @@ exec sp_executesql @commandText", new { id = reportTileID, t = new Dapper.DbStri
             if (!isValid) throw new Exception("Non-select statement specified to function that gets columns from select statements.");
 
             TSelectSqlStatement select = (TSelectSqlStatement)parser.SqlStatements[0];
-            var fields = select.Fields;
+            
             foreach (var field in select.Fields)
             {
                 columns.Add((field.DisplayName ?? "").Replace("[", "").Replace("]", "").Replace("'", ""));

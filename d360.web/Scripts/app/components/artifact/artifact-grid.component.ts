@@ -268,7 +268,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
         switch (status) {
             case 'draft':
-                return '#ebebeb';
+                return '#BBBBBB';
             case 'certified':
                 return '#3f9d40';
             case 'under review':

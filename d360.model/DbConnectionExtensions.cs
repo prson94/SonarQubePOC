@@ -471,7 +471,7 @@ transaction: trans, commandTimeout: 7200);
 
                 if (obj == "Resource")
                 {
-                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.Status = 'Active'";
+                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.[State] = 1";
                     if (IsHideData3SixtyUsers)
                     {
                         whenSuffix += " and (O.Email not like '%@data3sixty.com' and O.Email not like '%@infogix.com')";

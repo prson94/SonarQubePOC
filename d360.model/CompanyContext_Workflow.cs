@@ -83,13 +83,7 @@ namespace d360.model
 
                 return false;
             }
-
-            //if the type is artifacttype check if a specific taxonomy type id was specified in the registration settings.
-            if (!string.IsNullOrEmpty(registration.Settings))
-            {
-                var settingsModel = WorkflowRegistrationSettingsModel.parseXml(XElement.Parse(registration.Settings));
-            }
-
+            
             Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
 
             return true;
@@ -1178,6 +1172,17 @@ namespace d360.model
             SaveChanges();
         }
 
+        public void CompleteItemStepAssignments(long itemID, int stepID)
+        {
+            var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemID == itemID && x.StepID == stepID);
+                        
+            foreach (var assignment in itemAssignments)
+            {
+                WorkflowItemAssignments.Remove(assignment);
+            }
+
+            SaveChanges();
+        }
 
         private void ChangeItemStatus(WorkflowVersionStep step, EventObjectInfo objectInfo)
         {
@@ -1701,12 +1706,14 @@ namespace d360.model
 						            R.LastName, 
 						            R.Email, 
 						            R.Email, 
-						            R.LastLoggedInOn, 
+                                    R.LastLoggedInOn,
+                                    R.LastLoggedInOn as DateLastLoggedIn, 
 						            1 as ResourceTypeID, 
-						            R.Status 
+                                    R.[State],
+						            case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
 				            from	reporting.Global_Resource R
 							inner join [resourcegroup] rg on (R.ResourceID = rg.ResourceID)
-                            where rg.groupid= @groupId and status = 'Active'", new { groupId = defaultWorkflowUserGroup });
+                            where rg.groupid= @groupId and R.[State] = 1", new { groupId = defaultWorkflowUserGroup });
                 }
                 else
                 {
@@ -1717,10 +1724,12 @@ namespace d360.model
 						            R.LastName, 
 						            R.Email, 
 						            R.Email, 
-						            R.LastLoggedInOn, 
+                                    R.LastLoggedInOn,
+						            R.LastLoggedInOn as DateLastLoggedIn, 
 						            1 as ResourceTypeID, 
-						            R.Status 
-				            from	reporting.Global_Resource R where isadministrator = 1 and status = 'Active'");
+						            R.[State],
+						            case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
+				            from	reporting.Global_Resource R where isadministrator = 1 and R.[State] = 1'");
                 }
             }
 
