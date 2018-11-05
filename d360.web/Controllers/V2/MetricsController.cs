@@ -73,7 +73,7 @@ namespace d360.web.Controllers.V2
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, metricAsset));
             }
-            catch (Exception ex)
+            catch
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving metric", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }
@@ -156,8 +156,7 @@ namespace d360.web.Controllers.V2
             else
             {
                 metricAsset = new MetricAsset
-                {
-                    //Uid = Guid.NewGuid(),
+                {                    
                     AssetTypeUid = model.AssetTypeUid,
                     Description = model.Description,
                     IsGroup = model.IsGroup,
@@ -613,9 +612,7 @@ for		json path").ToList();
             {
                 var results = (Company.Database.Connection as SqlConnection).BulkMetricsImport(model);
 
-                //return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-                return ResponseMessage(Request.CreateResponse<List<BulkMetricTemporaryTableModel>>(HttpStatusCode.OK, results));
-                //return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { message = "Metric results queued for processing."})));
+                return ResponseMessage(Request.CreateResponse<List<BulkMetricTemporaryTableModel>>(HttpStatusCode.OK, results));                
             }
             catch (Exception ex)
             {

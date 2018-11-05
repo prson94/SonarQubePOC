@@ -5,35 +5,46 @@
             <header>
                 &nbsp; <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
             </header>
-            <p-dataTable [value]="fieldUpdate.Field" [immutable]="false" selectionMode="single">
-                <p-column header="Field" field="@FieldName"></p-column>
-                <p-column header="Value" field="@Value">
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <div *ngIf="item != null">
-                            <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>
-                            <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear the field value]</span>
-                            <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true'">[use value from form input {{item['@Formlabel']}}]</span>
-                            <div *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
-                                <ng-container *ngIf="isHtml(item); else str" >
-                                    <div [innerHtml]="getValue(item)" style="max-height: 42px; overflow: hidden; text-overflow: ellipsis">
-                                    </div>
-                                </ng-container>
-                                <ng-template #str>
-                                    {{getValue(item)}}  
-                                </ng-template>
+
+
+
+
+            <p-table #dt [value]="fieldUpdate.Field" selectionMode="single" [metaKeySelection]="true">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                    <tr [pSelectableRow]="item">
+                        <td>{{item['@FieldName']}}</td>
+                        <td>
+                            <div *ngIf="item != null">
+                                <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>
+                                <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear the field value]</span>
+                                <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true'">[use value from form input {{item['@Formlabel']}}]</span>
+                                <div *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
+                                    <ng-container *ngIf="isHtml(item); else str">
+                                        <div [innerHtml]="getValue(item)" style="max-height: 42px; overflow: hidden; text-overflow: ellipsis">
+                                        </div>
+                                    </ng-container>
+                                    <ng-template #str>
+                                        {{getValue(item)}}
+                                    </ng-template>
+                                </div>
                             </div>
-                        </div>
-                    </ng-template>
-                </p-column>
-                <p-column>
-                    <ng-template let-item="rowData" let-i="rowIndex" pTemplate type="body">
-                        <div class="RowTools">
-                            <a (click)="delete(i)"><i class="fa fa-trash-o"></i></a>
-                            <a (click)="edit(i)"><i class="fa fa-pencil"></i></a>
-                        </div>
-                    </ng-template>
-                </p-column>
-            </p-dataTable>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a (click)="delete(i)"><i class="fa fa-trash-o"></i></a>
+                                <a (click)="edit(i)"><i class="fa fa-pencil"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
         </div>
     </div>
 

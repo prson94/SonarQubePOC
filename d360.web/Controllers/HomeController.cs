@@ -62,9 +62,6 @@ namespace d360.web.Controllers
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", Community.GetCompanySettings());
 
-            var model = new TermsModel();
-
-
             var validations = Company.Query<ContractValidation>(@"select * from dbo.GetContractValidations(@ResourceID)", new { ResourceID = Company.CurrentResourceID });
 
             validations = validations.Where(v => !v.Accepted && ((v.IsFirstUser && v.ContractType == ContractType.OrganizationTermsOfUse) || v.ContractType == ContractType.ResourceTermsOfUse || v.OrganizationID == null));

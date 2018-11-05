@@ -408,7 +408,7 @@ namespace d360.web.Controllers
                     Name = k.TargetTypeName,
                     Value = k.TargetObjectName,
                     FieldDescription = "",
-                    FieldName = string.Format("", k.TargetObject, k.TargetObjectID)
+                    FieldName = ""
                 };
                 if (k.Count > 0)
                 {
@@ -608,26 +608,18 @@ namespace d360.web.Controllers
             var groups = new List<GridColumnGroup>();
             var topLevelFilterFields = new List<GridFilterColumn>();
             decimal dynamicFieldWidth = 0;
-            int remainingWidth = 0;
-            int staticFieldCount = 0;
+            int remainingWidth = 0;            
             ObjectDetail detail = null;
             bool isReadOnly = false;
-
-
-            Dictionary<string, string> settings = null;
 
             switch (type)
             {
                 case SystemObjects.ArtifactType:
                     #region
 
-                    settings = Community.GetCompanySettings();
 
-                    var artifactType = Company.GetById<ArtifactType>(id);
                     var parentType = Company.GetParentType<ArtifactType>(id);
                     var hasParentType = parentType != null;
-
-                    staticFieldCount = hasParentType ? 4 : 3;
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
@@ -730,7 +722,7 @@ namespace d360.web.Controllers
                         );
                     }
                     
-                    staticFieldCount = columns.Count;
+                    
                     remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -750,7 +742,7 @@ namespace d360.web.Controllers
                 #endregion
                 case SystemObjects.LookupType:
                     #region
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 90;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -762,10 +754,7 @@ namespace d360.web.Controllers
                 #endregion
                 case SystemObjects.PolicyType:
                     #region
-
-                    var policyType = Company.GetById<PolicyType>(id);
-
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -779,13 +768,12 @@ namespace d360.web.Controllers
                 #endregion                                
                 case SystemObjects.ReferenceItemType:
                     #region
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 85;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code" });
 
-                    var currentRefTypeID = id;
                     var parentRefType = Company.GetParentType<ReferenceItemType>(id);
                     var loopCount = 0;
                     //add the parent columns
@@ -807,7 +795,7 @@ namespace d360.web.Controllers
                 #endregion
                 case SystemObjects.Rule:
                     #region
-                    staticFieldCount = 4;
+                    
                     remainingWidth = 55;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -830,9 +818,6 @@ namespace d360.web.Controllers
                 case SystemObjects.RuleType:
                     #region
 
-                    var ruleType = Company.GetById<RuleType>(id);
-
-                    staticFieldCount = 1;
                     remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -848,7 +833,7 @@ namespace d360.web.Controllers
                 #endregion  
                 case SystemObjects.FusionAttributeType:
                     #region
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 75;
 
                     detail = Company.GetObjectDetail(type.ToString(), id);
@@ -930,7 +915,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 #endregion
                 case SystemObjects.FusionQueryAttributeType:
                     #region
-                    staticFieldCount = 1;
+                    
                     remainingWidth = 90;
 
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
@@ -954,7 +939,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 #endregion
                 case SystemObjects.FusionType:
                     #region
-                    staticFieldCount = 2;
+                    
                     remainingWidth = 61;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -972,7 +957,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 #endregion
                 case SystemObjects.ResourceType:
                     #region
-                    staticFieldCount = 6;
+                    
                     remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -1064,29 +1049,6 @@ where   h.ID <> @t order by h.[Level] desc;
 
         #region Navigation
 
-        void loadFusionAttributeTypeExportsForFusion(PageActionItem p, List<FusionAttributeType> types, int? parentID, string baseUri, PluralizationService pluralize)
-        {
-            var funcList = new List<PageActionItem>();
-
-            foreach (var a in types.Where(i => i.ParentID == parentID).OrderBy(i => i.Name))
-            {
-                var c = new PageActionItem { Icon = Resources.Actions.TemplateDownload_Icon, Uri = string.Format("{0}{1}", baseUri, a.ID), Title = pluralize.Pluralize(a.Name) };
-                loadFusionAttributeTypeExportsForFusion(c, types, a.ID, baseUri, pluralize);
-                p.Items.Add(c);
-            }
-        }
-
-        void loadFusionAttributeTypeUploadsForFusion(PageActionItem p, List<FusionAttributeType> types, int? parentID, string baseUri, PluralizationService pluralize)
-        {
-            var funcList = new List<PageActionItem>();
-
-            foreach (var a in types.Where(i => i.ParentID == parentID).OrderBy(i => i.Name))
-            {
-                var c = new PageActionItem { Title = pluralize.Pluralize(a.Name), Uri = string.Format("{0}{1}", baseUri, a.ID) };
-                loadFusionAttributeTypeUploadsForFusion(c, types, a.ID, baseUri, pluralize);
-                p.Items.Add(c);
-            }
-        }
 
         [Route("authenticationModel")]
         public HttpResponseMessage GetAuthenticationModel()
@@ -3965,8 +3927,7 @@ where   R.ReferenceItemTypeID = {id}
         }
 
         private bool AnyOwnershipLookupGridValues(string type, int id, FieldTypeLookup lookup)
-        {
-            var def = lookup.ParseOwnershipLookupDefinition();
+        {            
             type = type.CleanForSql();
 
             var sql = @"
@@ -7171,8 +7132,7 @@ from	(
             var detail = Company.GetObjectDetail(type.ToString(), id);
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
+            document.SaveAs(stream);            
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
@@ -7245,7 +7205,7 @@ from	(
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            var len = stream.Length;
+            
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
@@ -7390,7 +7350,7 @@ SELECT (
 		)
 		FOR XML PATH('Report')";
 
-            var sType = type.ToString();
+            
             var models = Company.Query<string>(sql, new { SurveyTypeID = typeID, Object = new DbString {Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, ObjectID = id });
             var xmlString = string.Join("", models);
             var xml = XElement.Parse(xmlString);

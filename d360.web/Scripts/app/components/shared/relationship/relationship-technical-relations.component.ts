@@ -13,37 +13,59 @@ import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
     template: `                   
                 <div *ngIf="!showEditor && !addTechnicalRelationship">
                     <h4>Technical Relations for <em>{{objectName}}/{{relationship?.Name}}</em></h4>
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                    <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;openFusionItem();">                                                                                                  
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="Name" header="Name" sortable="true" [style]="{'width':'250px'}">
-                             <ng-template let-item="rowData" pTemplate type="body">                                
-                                <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="openFusionItem()">{{item.Name}}</d3s-preview-tooltip>
-                            </ng-template> 
-                        </p-column>                         
-                        <p-column field="TypeName" header="Type" sortable="true" [style]="{'width':'250px'}"></p-column>            
-                        <p-column [style]="{width:'40px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools" (click)="selected=item;openFusionItem()">                                
-                                    <i class="fa fa-info"></i>
-                                </div>
-                            </ng-template>
-                        </p-column>  
-                        <p-column  [style]="{width:'28px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" *ngIf="hasEdit">                                
-                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>                                                                           
+                    <input type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="relations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','TypeName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" [scrollable]="true" scrollWidth="100%">
+                    <ng-template pTemplate="colgroup" let-columns>
+                        <colgroup>
+                            <col style="width:250px">
+                            <col style="width:250px">
+                            <col style="width:40px">
+                            <col style="width:28px">
+                            <col style="width:28px">
+                        </colgroup>
+                    </ng-template>                        
+                    <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'" style="width: 250px">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'TypeName'" style="width: 250px">
+                                    Type
+                                    <d3s-sortIcon [field]="'TypeName'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 28px"></th>
+                                <th style="width: 28px"></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;openFusionItem();" [pSelectableRow]="item">
+                                <td>
+                                    <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="openFusionItem()">{{item.Name}}</d3s-preview-tooltip>
+                                </td>
+                                <td>{{item.TypeName}}</td>
+                                <td>
+                                    <div class="RowTools" (click)="selected=item;openFusionItem()">
+                                        <i class="fa fa-info"></i>
                                     </div>
-                                </ng-template>
-                        </p-column>                   
-                        <p-column  [style]="{width:'28px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" *ngIf="hasDelete">                                                    
-                                        <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
+                                </td>
+                                <td>
+                                    <div class="RowTools" *ngIf="hasEdit">
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>
                                     </div>
-                                </ng-template>
-                        </p-column>           
-                    </p-dataTable>
+                                </td>
+                                <td>
+                                    <div class="RowTools" *ngIf="hasDelete">
+                                        <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);" title="Remove"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                     <div style="margin:15px" *ngIf="selected && selected.Object == 'FusionAttribute'">
                         <d3s-fusion-attribute-item-details [fusionAttributeId]="selected.ObjectID" [name]="selected.Name"></d3s-fusion-attribute-item-details>
                     </div>

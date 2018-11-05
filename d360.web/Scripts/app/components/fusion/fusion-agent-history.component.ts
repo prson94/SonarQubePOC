@@ -12,33 +12,59 @@ import * as _ from 'lodash';
                 <div class="tile tile-detail">
                     <header>Agent History<span *ngIf="fusion"> - {{fusion.Name}}</span><d3s-tile-actions [hasRefresh]="true" (refreshClick)="load()" [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <span  *ngIf="!isLoading">
-                        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                        <p-dataTable #dt [globalFilter]="gb" [value]="executions" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="FusionType" header="Type" sortable="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Fusion" header="Configuration" sortable="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <a (click)="showFusion(item)">{{item.Fusion}}</a>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="DateStarted" header="Started" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
-                                <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <span>{{data.DateStarted | date: 'short'}}</span>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="DateCompleted" header="Completed" sortable="custom" (sortFunction)="nullDateSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
-                                <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <span>{{data.DateCompleted | date: 'short'}}</span>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="Success" header="Success" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <i *ngIf="item.Success" class="fa fa-check enabled" title="Success"></i>
-                                    <i *ngIf="!item.Success && item.DateCompleted" class="fa fa-times disabled" title="Failure"></i>
-                                </ng-template>
-                            </p-column>
-                        </p-dataTable>      
+                    <span *ngIf="!isLoading">
+                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                        <p-table #dt [value]="executions" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['FusionType','Fusion','DateStarted','DateCompleted','Success']" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selected">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'FusionType'" style="width: 20%">
+                                        Type
+                                        <d3s-sortIcon [field]="'FusionType'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Fusion'" style="width: 20%">
+                                        Configuration
+                                        <d3s-sortIcon [field]="'Fusion'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'DateStarted'" style="width: 20%">
+                                        Started
+                                        <d3s-sortIcon [field]="'DateStarted'"></d3s-sortIcon>
+                                    </th>
+                                    <th style="width: 20%">Completed</th>
+                                    <th [pSortableColumn]="'Success'" style="width: 20%">
+                                        Success
+                                        <d3s-sortIcon [field]="'Success'"></d3s-sortIcon>
+                                    </th>
+                                </tr>
+                                <tr [hidden]="showSimpleFilter">
+                                    <th><d3s-column-filter [field]="'FusionType'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Fusion'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'DateStarted'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'DateCompleted'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Success'" [datatype]="'text'"></d3s-column-filter></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr (dblclick)="selected=item" [pSelectableRow]="item">
+                                    <td>{{item.FusionType}}</td>
+                                    <td>
+                                        <a (click)="showFusion(item)">{{item.Fusion}}</a>
+                                    </td>
+                                    <td>
+                                        <span>{{item.DateStarted | date: 'short'}}</span>
+                                    </td>
+                                    <td>
+                                        <span>{{item.DateCompleted | date: 'short'}}</span>
+                                    </td>
+                                    <td>
+                                        <i *ngIf="item.Success" class="fa fa-check enabled" title="Success"></i>
+                                        <i *ngIf="!item.Success && item.DateCompleted" class="fa fa-times disabled" title="Failure"></i>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>  
                     </span>
                 </div>
                 `,

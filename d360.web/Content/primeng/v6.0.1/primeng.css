@@ -5276,6 +5276,7 @@ input[type=text]::-ms-clear {
 .ui-table-resizable .ui-table-tfoot > tr > td,
 .ui-table-resizable .ui-table-tbody > tr > td {
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .ui-table-resizable .ui-resizable-column {
@@ -6109,4 +6110,11 @@ input[type=text]::-ms-clear {
 
 .ui-sortable-column-icon {
     color: #fff;
+}
+
+/* fix bug where checkbox does not work in multiple mode 
+    https://github.com/primefaces/primeng/issues/5179
+*/
+.ui-table-tbody .ui-chkbox {
+    pointer-events: none;
 }

@@ -1,9 +1,9 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { TableColumn } from '../../../models/turbotable.model';
 import { WorkflowListItem, ChangeTypeInfo } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
+import { GridColumn } from '../../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-admin-workflow-list',
@@ -19,27 +19,27 @@ import { Router } from '@angular/router';
 
     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
     <p-table #dt [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selection" 
-        [globalFilterFields]="filterFields">
+        [globalFilterFields]="globalFilterFields">
         <ng-template pTemplate="header">
             <tr>
-                <th *ngFor="let col of columns" [pSortableColumn]="col.sortable ? col.field : null">
-                    {{col.header}}
-                    <d3s-sortIcon *ngIf="col.sortable" [field]="col.field"></d3s-sortIcon>
+                <th *ngFor="let col of columns" [pSortableColumn]="col.datafield">
+                    {{col.text}}
+                    <d3s-sortIcon [field]="col.datafield"></d3s-sortIcon>
                 </th>
                 <th style="width: 215px"></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
                 <th *ngFor="let col of columns">
-                    <d3s-column-filter *ngIf="col.filterable" [field]="col.field" [datatype]="col.datatype"></d3s-column-filter>
+                    <d3s-column-filter  [field]="col.datafield"></d3s-column-filter>
                 </th>
                 <th></th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item >
             <tr (dblclick)="onEditClick.emit({ ID: item.ID, isClone: false })" [pSelectableRow]="item">
-                <td *ngFor="let col of columns" [ngSwitch]="col.datatype">
-                    <span *ngSwitchCase="'text'">{{item[col.field]}}</span>
-                    <span *ngSwitchCase="'date'">{{item[col.field] | date:'shortDate'}}</span>
+                <td *ngFor="let col of columns" [ngSwitch]="col.type">
+                    <span *ngSwitchCase="'text'">{{item[col.datafield]}}</span>
+                    <span *ngSwitchCase="'date'">{{item[col.datafield] | date:'shortDate'}}</span>
                 </td>
                 <td>
                     <div class="RowTools">
@@ -71,18 +71,18 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
 
     private changeTypes: ChangeTypeInfo[] = [];
 
-    private columns: TableColumn[] = [
-        new TableColumn({ field: 'Name', header: 'Name', sortable: true, filterable: true }),
-        new TableColumn({ field: 'TypeName', header: 'Type Name', sortable: true, filterable: true }),
-        new TableColumn({ field: 'Type', header: 'Type', sortable: true, filterable: true }),
-        new TableColumn({ field: 'ChangeTypeName', header: 'Change Type', sortable: true, filterable: true }),
-        new TableColumn({ field: 'UpdatedOn', header: 'Updated On', sortable: true, filterable: true, datatype: 'date' }),
-        new TableColumn({ field: 'UpdatedBy', header: 'Updated By', sortable: true, filterable: true }),
-        new TableColumn({ field: 'Published', header: 'Status', sortable: true, filterable: true }),
+    private columns: any[] = [
+        { datafield: 'Name', text: 'Name', type: 'text' },
+        { datafield: 'TypeName', text: 'Type Name', type: 'text'},
+        { datafield: 'Type', text: 'Type', type: 'text'},
+        { datafield: 'ChangeTypeName', text: 'Change Type', type: 'text' },
+        { datafield: 'UpdatedOn', text: 'Updated On', type: 'date'},
+        { datafield: 'UpdatedBy', text: 'Updated By', type: 'text'},
+        { datafield: 'Published', text: 'Status', type: 'text'},
     ];
 
-    get filterFields(): string[] {
-        return this.columns.filter(c => c.filterable).map(c => c.field);
+    get globalFilterFields(): string[] {
+        return this.columns.filter(c => c.datafield);
     }
 
     constructor(private workflowService: WorkflowService, protected router: Router) {

@@ -1694,7 +1694,7 @@ select
 	            RC.FirstName + ' ' + RC.LastName as CompletedBy,
                 convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') as MessageRecipientType,
                 case when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
-					IAR.Name
+					IAR.Email
                 when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
 					coalesce(convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
 				when S.ActivityType = 3 and IST.CompletedOn is not null then
@@ -1721,7 +1721,8 @@ select
 				select 
 					IA.ItemID, 
 					IA.StepID, 
-					RI.FirstName + ' ' + RI.LastName as [Name] 
+					RI.FirstName + ' ' + RI.LastName as [Name],
+                    RI.Email
 				from workflow.ItemAssignment IA
 				inner join reporting.Global_Resource RI on RI.ResourceID = IA.ResourceObjectID
 			) IAR on IAR.ItemID = IST.ItemID and (IAR.StepID = ISt.StepID or IAR.StepID is null) and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator'

@@ -14,6 +14,8 @@ import {
     TooltipModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
 import { PipesModule } from '../../../pipes/pipes.module';
@@ -48,6 +50,7 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
         InputTextModule,
         SharedModule,
         TooltipModule,
+        TableModule,
     ],
     declarations: [
         ObjectRelationshipsComponent,

@@ -24,6 +24,8 @@ import {
     GrowlModule
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
 declare var require: any;
@@ -50,6 +52,7 @@ export function highchartsFactory() {
         SharedModule,
         DataTableModule,
         GrowlModule,
+        TableModule,
 
         //d3s
         D3SSharedModule,

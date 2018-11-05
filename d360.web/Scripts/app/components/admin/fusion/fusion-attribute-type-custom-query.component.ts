@@ -15,7 +15,14 @@ import { MessagesService } from '../../../services/messages.service';
                 <d3s-tile-actions hasClose="true" (closeClick)="onClose.emit()" [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="false" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
             </header>
 
-            <p-table #dt [value]="customqueries" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="20" [(selection)]="selected" [scrollable]="true">
+            <p-table #dt [value]="customqueries" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="20" [(selection)]="selected" [scrollable]="true" scrollWidth="100%">
+                <ng-template pTemplate="colgroup" let-columns>
+                    <colgroup>
+                        <col >
+                        <col style="width:40px">
+                        <col style="width:40px">
+                    </colgroup>
+                </ng-template>                
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Type</th>

@@ -9,16 +9,44 @@ import { WorkflowStepFieldChangeDetail } from "../../models/workflow.model";
         `
                 <div class="row" >                    
                     <div class="col s12">                
-                    <p-dataTable #dt [value]="fieldChanges" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3">                                                                        
-                    <p-footer *ngIf="dt.totalRecords">
-                        <d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
-                    </p-footer>
-                        <p-column field="FieldName" header="Name" sortable="true" ></p-column>  
-                        <p-column field="Value" header="Value" sortable="true" ></p-column>  
-                        <p-column field="FormValue" header="Form" sortable="true" ></p-column>  
-                        <p-column field="AppendValue" header="Appended" sortable="true" ></p-column> 
-                         <p-column field="ClearValue" header="Cleared" sortable="true" ></p-column>  
-                      </p-dataTable>                          
+                        <p-table #dt [value]="fieldChanges" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'FieldName'">
+                                        Name
+                                        <d3s-sortIcon [field]="'FieldName'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Value'">
+                                        Value
+                                        <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'FormValue'">
+                                        Form
+                                        <d3s-sortIcon [field]="'FormValue'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'AppendValue'">
+                                        Appended
+                                        <d3s-sortIcon [field]="'AppendValue'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'ClearValue'">
+                                        Cleared
+                                        <d3s-sortIcon [field]="'ClearValue'"></d3s-sortIcon>
+                                    </th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td>{{item.FieldName}}</td>
+                                    <td>{{item.Value}}</td>
+                                    <td>{{item.FormValue}}</td>
+                                    <td>{{item.AppendValue}}</td>
+                                    <td>{{item.ClearValue}}</td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>                         
                     </div>
                 </div>               
 `,

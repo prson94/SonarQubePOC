@@ -25,33 +25,52 @@ declare var CompanySettings: any;
         <div [ngSwitch]="formMode">
             <div *ngSwitchDefault>
                 <header>&nbsp;<d3s-tile-actions *ngIf="!readonly" (addClick)="add();" [hasAdd]="hasAdd"></d3s-tile-actions></header>
-                <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" [(selection)]="selectedItem">                
-                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                    <p-column header="Name" field="Name" sortable="true">
-                        <ng-template pTemplate type="body" let-item="rowData">                        
-                            <d3s-preview-tooltip *ngIf="item.Object" [objectType]="item.Object" [objectId]="item.ObjectID">
-                                <a (click)="navigate(item.Url)">{{item.Name}}</a>
-                            </d3s-preview-tooltip>                            
-                            <span *ngIf="!item.Object">{{item.Name}}</span>
-                        </ng-template>
-                    </p-column>
-                    <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>                    
-                    <p-column header="Parent" field="ParentName" sortable="true">
-                        <ng-template pTemplate type="body" let-item="rowData">   
-                            <d3s-preview-tooltip *ngIf="item.Object" [objectType]="item.Object" [objectId]="item.ParentID">
-                                <a (click)="navigate(item.ParentUrl)">{{item.ParentName}}</a>
-                            </d3s-preview-tooltip>             
-                        </ng-template>
-                    </p-column>
-                    <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '48px' }">
-                        <ng-template let-col let-item="rowData" pTemplate type="body">
-                            <div class="RowTools">
-                                <a (click)="selectedItem=item;delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                            </div>
-                        </ng-template> 
-                    </p-column>
-                </p-dataTable>
+                
+
+                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','ObjectTypeName','ParentName']" sortField="Name" [sortOrder]="1" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selectedItem">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'Name'">
+                                Name
+                                <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'ObjectTypeName'">
+                                Type
+                                <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'ParentName'">
+                                Parent
+                                <d3s-sortIcon [field]="'ParentName'"></d3s-sortIcon>
+                            </th>
+                            <th style="width:   48px "></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr [pSelectableRow]="item">
+                            <td>
+                                <d3s-preview-tooltip *ngIf="item.Object" [objectType]="item.Object" [objectId]="item.ObjectID">
+                                    <a (click)="navigate(item.Url)">{{item.Name}}</a>
+                                </d3s-preview-tooltip>
+                                <span *ngIf="!item.Object">{{item.Name}}</span>
+                            </td>
+                            <td>{{item.ObjectTypeName}}</td>
+                            <td>
+                                <d3s-preview-tooltip *ngIf="item.Object" [objectType]="item.Object" [objectId]="item.ParentID">
+                                    <a (click)="navigate(item.ParentUrl)">{{item.ParentName}}</a>
+                                </d3s-preview-tooltip>
+                            </td>
+                            <td>
+                                <div class="RowTools">
+                                    <a (click)="selectedItem=item;delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
             </div>
             <div *ngSwitchCase="FormMode.Adding">
                 <header>Add {{predicateName}}</header>

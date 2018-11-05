@@ -1,4 +1,5 @@
 ﻿import { SelectItem, FormMessage } from '../models/form.model';
+import { State } from './asset.model';
 
 
 export class WorkflowTypeRelationEditorModel {
@@ -549,6 +550,7 @@ export class WorkflowStepDetail {
     ItemStepID: number;
     FieldChanges: WorkflowStepFieldChangeDetail[];
     RelationshipChange: WorkflowStepRelationshipChangeDetail;
+    StateChange: State;
 }
 
 

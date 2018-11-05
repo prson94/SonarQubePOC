@@ -14,43 +14,71 @@ import { BaseComponent } from '../../shared/base.component';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">                    
                     <div class="col s12">
-                        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                    
-                        <p-dataTable #dt [globalFilter]="gb" [value]="relationships" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)" (onRowDblclick)="selected=$event.data;selectedChange.emit(selected);showEditor=true;" >                            
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="ID" header="ID" sortable="true" [filter]="!showSimpleFilter" [style]="{ 'width':'10%','text-align' : 'center' }"></p-column>                                
-                            <p-column field="SubjectName" header="Subject" sortable="true" [filter]="!showSimpleFilter">
-                                <ng-template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></span>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="PredicateName" header="Predicate" sortable="true" [filter]="!showSimpleFilter"></p-column>                                
-                            <p-column field="ObjectName" header="Object" sortable="true" [filter]="!showSimpleFilter">
-                                <ng-template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item?.ObjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Object)}})</span></span>
-                                </ng-template>
-                            </p-column>
-                            <p-column [style]="{width:'40px'}">
-                                <ng-template let-relationship="rowData" pTemplate type="body">
-                                    <div class="RowTools">
-                                        <a style="cursor:pointer;" title="Download all relationships in this type" (click)="downloadRel(relationship)"><i class="fa fa-download"></i></a>                                        
-                                    </div>
-                                </ng-template>
-                            </p-column>      
-                            <p-column [style]="{width:'40px'}">
-                                <ng-template let-relationship="rowData" pTemplate type="body">
-                                    <div *ngIf="!relationship.IsSystem" class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=relationship;selectedChange.emit(selected);showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                    </div>
-                                </ng-template>
-                            </p-column>                            
-                            <p-column  [style]="{width:'40px'}">
-                                <ng-template let-relationship="rowData" pTemplate type="body">
-                                    <div *ngIf="!relationship.IsSystem" class="RowTools">                                
-                                        <a style="cursor:pointer;" (click)="selected=relationship;selectedChange.emit(selected);showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                    </div>
-                               </ng-template>
-                           </p-column>    
-                        </p-dataTable>  
+                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                        <p-table #dt [value]="relationships" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ID','SubjectName','PredicateName','ObjectName']" [pageLinks]="3" [paginator]="true" [rows]="20">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'ID'" style="width: 10%;text-align: center">
+                                        ID
+                                        <d3s-sortIcon [field]="'ID'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'SubjectName'">
+                                        Subject
+                                        <d3s-sortIcon [field]="'SubjectName'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'PredicateName'">
+                                        Predicate
+                                        <d3s-sortIcon [field]="'PredicateName'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'ObjectName'">
+                                        Object
+                                        <d3s-sortIcon [field]="'ObjectName'"></d3s-sortIcon>
+                                    </th>
+                                    <th style="width: 40px"></th>
+                                    <th style="width: 40px"></th>
+                                    <th style="width: 40px"></th>
+                                </tr>
+                                <tr [hidden]="showSimpleFilter">
+                                    <th><d3s-column-filter [field]="'ID'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'SubjectName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'PredicateName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr (dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;" [pSelectableRow]="item">
+                                    <td>{{item.ID}}</td>
+                                    <td>
+                                        <span>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></span>
+                                    </td>
+                                    <td>{{item.PredicateName}}</td>
+                                    <td>
+                                        <span>{{item?.ObjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Object)}})</span></span>
+                                    </td>
+                                    <td>
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" title="Download all relationships in this type" (click)="downloadRel(item)"><i class="fa fa-download"></i></a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div *ngIf="!item.IsSystem" class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=item;selectedChange.emit(selected);showEditor=true"><i class="fa fa-pencil"></i></a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div *ngIf="!item.IsSystem" class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=item;selectedChange.emit(selected);showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
                     </div>
                 </div>
                 <d3s-delete-form *ngIf="showDelete"

@@ -28,7 +28,12 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     responsibilities: any[] = [];
     fields: any[] = [];
     helper = WorkflowHelpers;
-    
+    private states = [
+        { value: '0', label: 'Pending Add' },
+        { value: '1', label: 'Active' },
+        { value: '2', label: 'Pending Delete' },
+        { value: '3', label: 'Deleted' },
+    ];
 
     constructor(private workflowService: WorkflowService, private ref: ChangeDetectorRef, private responsibilityService: ResponsibilityTypeService) {
         super();

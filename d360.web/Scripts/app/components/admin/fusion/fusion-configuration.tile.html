@@ -3,74 +3,82 @@
     <div *ngSwitchDefault>
         <header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormModeConfig.Adding;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-        <div style="width: 100%; overflow-x: auto">
-            <p-table #dt [scrollable]="false" [value]="fusionConfigurations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="[]" [paginator]="true" [rows]="20">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th *ngFor="let col of columns" style="width: 200px" [pSortableColumn]="col.datafield">
-                            {{col.text}}
-                            <d3s-sortIcon [field]="col.datafield"></d3s-sortIcon>
-                        </th>
-                        <th style="width: 30px"></th>
-                        <th style="width: 30px"></th>
-                        <th style="width: 30px"></th>
-                        <th style="width: 30px"></th>
-                        <th style="width: 30px"></th>
-                    </tr>
-                    <tr [hidden]="showSimpleFilter">
-                        <th *ngFor="let col of columns">
-                            <d3s-column-filter [field]="col.datafield"></d3s-column-filter>
-                        </th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item>
-                    <tr (dblclick)="openFusion(item);" [pSelectableRow]="item">
-                        <td *ngFor="let col of columns">
-                            <ng-container *ngIf="col.datafield == 'Enabled'; else elseContent">
-                                <span><i *ngIf="item.Enabled" class="fa fa-check enabled" title="True"></i></span>
-                                <span><i *ngIf="!item.Enabled" class="fa fa-times disabled" title="False"></i></span>
-                            </ng-container>
-                            <ng-template #elseContent>
-                                {{item[col.datafield]}}
-                            </ng-template>
-                        </td>
-                        <td>
-                            <div class="RowTools">
-                                <a (click)="openFusion(item);" style="cursor:pointer;"><i class="fa fa-info"></i></a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="RowTools">
-                                <a (click)="selectedRow = item; formMode = FormModeConfig.Editing" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="RowTools">
-                                <a (click)="selectedRow = item; formMode = FormModeConfig.Scheduling" style="cursor:pointer;"><i class="fa fa-calendar"></i></a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="RowTools">
-                                <a (click)="selectedRow = item; formMode = FormModeConfig.QueryOverrides" style="cursor:pointer;"><i class="fa fa-object-ungroup"></i></a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="RowTools">
-                                <a (click)="selectedRow = item; formMode = FormModeConfig.Deleting" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-template>
-                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                </ng-template>
-            </p-table>
-        </div>
+        <p-table #dt [scrollable]="true" scrollWidth="100%" [value]="fusionConfigurations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [paginator]="true" [rows]="20">
+            <ng-template pTemplate="colgroup">
+                <colgroup>
+                    <col *ngFor="let col of columns" style="width:200px">
+                    <col style="width: 30px">
+                    <col style="width: 30px">
+                    <col style="width: 30px">
+                    <col style="width: 30px">
+                    <col style="width: 30px">
+                </colgroup>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th *ngFor="let col of columns" style="width: 200px" [pSortableColumn]="col.datafield">
+                        {{col.text}}
+                        <d3s-sortIcon [field]="col.datafield"></d3s-sortIcon>
+                    </th>
+                    <th style="width: 30px"></th>
+                    <th style="width: 30px"></th>
+                    <th style="width: 30px"></th>
+                    <th style="width: 30px"></th>
+                    <th style="width: 30px"></th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th *ngFor="let col of columns">
+                        <d3s-column-filter [field]="col.datafield"></d3s-column-filter>
+                    </th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr (dblclick)="openFusion(item);" [pSelectableRow]="item">
+                    <td *ngFor="let col of columns">
+                        <ng-container *ngIf="col.datafield == 'Enabled'; else elseContent">
+                            <span><i *ngIf="item.Enabled" class="fa fa-check enabled" title="True"></i></span>
+                            <span><i *ngIf="!item.Enabled" class="fa fa-times disabled" title="False"></i></span>
+                        </ng-container>
+                        <ng-template #elseContent>
+                            {{item[col.datafield]}}
+                        </ng-template>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="openFusion(item);" style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="selectedRow = item; formMode = FormModeConfig.Editing" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="selectedRow = item; formMode = FormModeConfig.Scheduling" style="cursor:pointer;"><i class="fa fa-calendar"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="selectedRow = item; formMode = FormModeConfig.QueryOverrides" style="cursor:pointer;"><i class="fa fa-object-ungroup"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="selectedRow = item; formMode = FormModeConfig.Deleting" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
     </div>
     <div *ngSwitchCase="FormModeConfig.Adding">
         <d3s-dynamic-editor [objectType]="'Fusion'"

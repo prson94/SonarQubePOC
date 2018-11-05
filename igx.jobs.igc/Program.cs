@@ -34,7 +34,7 @@ namespace igx.jobs
         {
             var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
-            config.Queues.BatchSize = 5;
+            config.Queues.BatchSize = 4;
             config.Queues.VisibilityTimeout = TimeSpan.FromDays(4);
             var host = new JobHost(config);
             host.RunAndBlock();
@@ -44,17 +44,18 @@ namespace igx.jobs
 
     public static class IgcIntegration
     {
-        
+
 #if DEBUG
-        const string timerSettings = "*/5 * * * * *";
+        const string timerSettings = "0 */2 * * * *";//"*/5 * * * * *";
 #else
         const string timerSettings = "0 */5 * * * *";
 #endif
 
-        [Disable]
+        //[Disable]
         public static void RunScheduleViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         {
             string functionName = "IGC_Integration_Schedule";
+            CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("APPINSIGHTS_INSTRUMENTATIONKEY"));
 
             try
             {
@@ -199,6 +200,7 @@ where		T.CompletedOn is null
 
         public static void RunViaQueue([QueueTrigger("%IntegrationQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
         {
+            CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 
             var engine = new IgcIntegrationEngine();
@@ -474,7 +476,10 @@ from		(
                     if (!postModel.properties.Contains("modified_on")) postModel.properties.Add("modified_on");
                 }
 
-                processAssetPages(postModel, company.CurrentCompanyID, url, $"{rootFolderName}/fields");
+                var igcReportedAssetCount = processAssetPages(postModel, company.CurrentCompanyID, url, $"{rootFolderName}/fields");
+
+                executionAssetType.CurrentSourceAssetCount = igcReportedAssetCount;
+                company.Update(executionAssetType);
 
                 #endregion
 
@@ -511,10 +516,60 @@ from		(
                 #endregion
 
                 // Save to database staging tables.
-                saveToEnvronmentDatabase(cnn, company.CurrentCompanyID, executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, company.CurrentResourceID);
+                saveToEnvironmentDatabase(cnn, company.CurrentCompanyID, executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID, company.CurrentResourceID, !checkForChangesOnly);
 
                 DateTime start = DateTime.UtcNow;
                 DateTime end;
+
+                // Load JSON field data into execution Asset Field table
+                cnn.Execute(
+                    @"delete F from integration.ExecutionAssetField F inner join integration.ExecutionAsset A on A.ExecutionID = @ExecutionID and A.SynchedAssetTypeID = @SynchedAssetTypeID and A.[Uid] = F.[Uid]", 
+                    new { executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID }, 
+                    commandTimeout: 3600
+                );
+
+                // Load JSON field data into execution Asset Field table
+                cnn.Execute(@"
+insert into integration.ExecutionAssetField
+	select	EA.Uid,
+			1 as Section,
+			RF.[key] as FieldName,
+			RF.[value] as FieldValue
+	from	integration.ExecutionAsset EA
+			cross apply OPENJSON(EA.RawObject) RF	
+	where	EA.ExecutionID = @ExecutionID and EA.SynchedAssetTypeID = @SynchedAssetTypeID
+", new { executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID }, commandTimeout: 3600);
+
+                // Load JSON relationship data into execution Asset Field table
+                cnn.Execute(@"
+insert into integration.ExecutionAssetField
+	select	EA.Uid,
+			2 as Section,
+			RF.[key] as FieldName,
+			RIF.items as FieldValue
+	from	integration.ExecutionAsset EA
+			cross apply OPENJSON(EA.RawRelationships) RF	
+			inner join [integration].[SynchedAssetTypeRelationItem] R on R.SynchedAssetTypeID = EA.SynchedAssetTypeID and R.[SourceField] = RF.[key] COLLATE DATABASE_DEFAULT and RF.[key] is not null
+			outer apply OPENJSON(RF.[value]) with (items nvarchar(max) '$.items' as json) RIF
+	where	EA.ExecutionID = @ExecutionID and EA.SynchedAssetTypeID = @SynchedAssetTypeID
+			and EA.RawRelationships is not null 
+			and RIF.items <> '[]'
+", new { executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID }, commandTimeout: 3600);
+
+                // Load JSON responsibility data into execution Asset Field table
+                cnn.Execute(@"
+insert into integration.ExecutionAssetField
+	select	EA.Uid,
+			3 as Section,
+			RF.[key] as FieldName,
+			RF.[value] as FieldValue
+	from	integration.ExecutionAsset EA
+			cross apply OPENJSON(EA.RawResponsibilitites) RF	
+			inner join [integration].[SynchedAssetTypeRoleItem] R on R.SynchedAssetTypeID = EA.SynchedAssetTypeID and R.SourceIdField = RF.[key] COLLATE DATABASE_DEFAULT
+	where	EA.ExecutionID = @ExecutionID and EA.SynchedAssetTypeID = @SynchedAssetTypeID
+			and EA.RawResponsibilitites is not null 
+", new { executionAssetType.ExecutionID, executionAssetType.SynchedAssetTypeID }, commandTimeout: 3600);
+
 
                 // Section 0 : Asset
                 if (!hasRootError && !checkForChangesOnly)
@@ -706,14 +761,14 @@ from		(
 
         #region Generic
 
-        void saveToEnvronmentDatabase(SqlConnection cnn, int companyID, long executionID, int synchedAssetTypeID, int resourceID)
+        void saveToEnvironmentDatabase(SqlConnection cnn, int companyID, long executionID, int synchedAssetTypeID, int resourceID, bool fullRefresh)
         {
             var rootFolder = $"igc-{companyID}";
             var assetFolderName = $"{executionID}.{synchedAssetTypeID}"; // storage folder.
             var path = "";
             List<StorageFileInfo> pages = null;
 
-            var list = new List<IntegrationExecutionAsset>();
+            var list = new HashSet<IntegrationExecutionAsset>();
 
             path = $"{rootFolder}/{assetFolderName}/fields";
             pages = Storage.ListFiles(path);
@@ -725,16 +780,19 @@ from		(
                     foreach (var obj in page.items.Children())
                     {
                         var sourceID = obj["_id"].Value<string>();
-                    
-                        var executionAsset = new IntegrationExecutionAsset
+
+                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
+                        if (executionAsset == null)
                         {
-                            ExecutionID = executionID,
-                            SynchedAssetTypeID = synchedAssetTypeID,
-                            SourceID = sourceID,
-                            RawObject = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter()),
-                            FieldsRecieved = true
-                        };
-                        list.Add(executionAsset);
+                            executionAsset = new IntegrationExecutionAsset
+                            {
+                                ExecutionID = executionID,
+                                SynchedAssetTypeID = synchedAssetTypeID,
+                                SourceID = sourceID,
+                                RawObject = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
+                            };
+                            list.Add(executionAsset);
+                        }
                     }
                 }
             });
@@ -755,18 +813,15 @@ from		(
                         if (executionAsset != null)
                         {
                             executionAsset.RawResponsibilitites = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
-                            executionAsset.ResponsibilitiesRecieved = true;
                         }
                         else
                         {
-
                             executionAsset = new IntegrationExecutionAsset
                             {
                                 ExecutionID = executionID,
                                 SynchedAssetTypeID = synchedAssetTypeID,
                                 SourceID = sourceID,
-                                RawResponsibilitites = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter()),
-                                ResponsibilitiesRecieved = true
+                                RawResponsibilitites = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
                             };
                             list.Add(executionAsset);
                         }
@@ -790,7 +845,6 @@ from		(
                         if (executionAsset != null)
                         {
                             executionAsset.RawRelationships = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
-                            executionAsset.RelationsRecieved = true;
                         }
                         else
                         {
@@ -800,8 +854,7 @@ from		(
                                 ExecutionID = executionID,
                                 SynchedAssetTypeID = synchedAssetTypeID,
                                 SourceID = sourceID,
-                                RawRelationships = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter()),
-                                RelationsRecieved = true
+                                RawRelationships = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
                             };
                             list.Add(executionAsset);
                         }
@@ -823,14 +876,10 @@ from		(
             assetTable.Columns.Add("RawRelationships", typeof(string));
             assetTable.Columns.Add("RawResponsibilitites", typeof(string));
 
-            assetTable.Columns.Add("FieldsRecieved", typeof(bool));
-            assetTable.Columns.Add("RelationsRecieved", typeof(bool));
-            assetTable.Columns.Add("ResponsibilitiesRecieved", typeof(bool));
-
             assetTable.Columns.Add("ErrorMessages", typeof(string));
 
             var loadedAssetIDs = new List<string>();
-            list.ForEach(a =>
+            foreach(var a in list)//list.ForEach(a =>
             {
                 if (!loadedAssetIDs.Contains(a.SourceID))
                 {
@@ -848,15 +897,11 @@ from		(
                     row["RawRelationships"] = a.RawRelationships;
                     row["RawResponsibilitites"] = a.RawResponsibilitites;
 
-                    row["FieldsRecieved"] = a.FieldsRecieved;
-                    row["RelationsRecieved"] = a.RelationsRecieved;
-                    row["ResponsibilitiesRecieved"] = a.ResponsibilitiesRecieved;
-
                     row["ErrorMessages"] = a.ErrorMessages;
 
                     assetTable.Rows.Add(row);
                 }
-            });
+            }//);
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -866,31 +911,33 @@ from		(
             {
                 try
                 {
-                    var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
+                    if (fullRefresh)
+                    {
+                        cnn.Execute("delete integration.ExecutionAsset where SynchedAssetTypeID = @at", new { at = synchedAssetTypeID }, transaction: trans, commandTimeout: 3600);
+                    }
 
-                    assetBulkCopy.BatchSize = assetTable.Rows.Count;
-                    assetBulkCopy.DestinationTableName = "[integration].[ExecutionAsset]";
-                    assetBulkCopy.BulkCopyTimeout = 3600;
+                    using (var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans))
+                    {
+                        assetBulkCopy.BatchSize = 5000; //assetTable.Rows.Count;
+                        assetBulkCopy.DestinationTableName = "[integration].[ExecutionAsset]";
+                        assetBulkCopy.BulkCopyTimeout = 3600;
 
-                    assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
 
-                    assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
-                    assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
-                    
-                    assetBulkCopy.ColumnMappings.Add("RawObject", "RawObject");
-                    assetBulkCopy.ColumnMappings.Add("RawRelationships", "RawRelationships");
-                    assetBulkCopy.ColumnMappings.Add("RawResponsibilitites", "RawResponsibilitites");
+                        assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
+                        assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
 
-                    assetBulkCopy.ColumnMappings.Add("FieldsRecieved", "FieldsRecieved");
-                    assetBulkCopy.ColumnMappings.Add("RelationsRecieved", "RelationsRecieved");
-                    assetBulkCopy.ColumnMappings.Add("ResponsibilitiesRecieved", "ResponsibilitiesRecieved");
+                        assetBulkCopy.ColumnMappings.Add("RawObject", "RawObject");
+                        assetBulkCopy.ColumnMappings.Add("RawRelationships", "RawRelationships");
+                        assetBulkCopy.ColumnMappings.Add("RawResponsibilitites", "RawResponsibilitites");
 
-                    assetBulkCopy.ColumnMappings.Add("ErrorMessages", "ErrorMessages");
+                        assetBulkCopy.ColumnMappings.Add("ErrorMessages", "ErrorMessages");
 
-                    assetBulkCopy.WriteToServer(assetTable);
+                        assetBulkCopy.WriteToServer(assetTable);
 
-                    trans.Commit();
+                        trans.Commit();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -902,8 +949,22 @@ from		(
             #endregion
         }
 
-        void processAssetPages(IgcPostSearchRequestModel postModel, int companyID, string url, string folderName)
+        int processAssetPages(IgcPostSearchRequestModel postModel, int companyID, string url, string folderName)
         {
+            #region First remove any files that may be been there before.
+            try
+            {
+                var itemsToRemove = Storage.ListFiles($"igc-{companyID}/{folderName}");
+                itemsToRemove.ForEach(f => {
+                    Storage.DeleteFile($"igc-{companyID}/{folderName}", f.Name);
+                });
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex);
+            }
+            #endregion
+
             var igcCount = 0;
             var fShouldContinue = true;
             while (fShouldContinue)
@@ -926,11 +987,7 @@ from		(
                 }
                 catch (Exception ex)
                 {
-                    using (StreamWriter file = File.CreateText($@"{folderName}\{postModel.begin}_error.json"))
-                    {
-                        JsonSerializer serializer = new JsonSerializer();
-                        serializer.Serialize(file, ex);
-                    }
+                    Storage.CreateFile($"igc-{companyID}", $@"{folderName}/{postModel.begin}_error.json", JsonConvert.SerializeObject(ex));
 
                     // Move onto next page.
                     postModel.begin = postModel.begin + postModel.pageSize;
@@ -940,6 +997,8 @@ from		(
                     }
                 }
             }
+
+            return igcCount;
         }
 
         long ConvertDateToUnixTimeMilliseconds(DateTime? date = null)

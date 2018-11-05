@@ -29,6 +29,7 @@ using Microsoft.Web.Http;
 using Newtonsoft.Json.Linq;
 using d360.core.queue;
 using Dapper;
+using d360.core.enums;
 
 namespace d360.web.Controllers.Services
 {
@@ -599,6 +600,9 @@ order by wi.StartedOn desc";
 
                 if (isCompleted)
                 {
+                    //clear other assignments
+                    Company.CompleteItemStepAssignments(itemId, itemStepsModel.StepID);
+
                     SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", Company.CurrentResourceID.ToString() } });                    
                     int transitionsCount = await Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null ? obj.TypeID : -1), ObjectType = type });
 
@@ -607,6 +611,9 @@ order by wi.StartedOn desc";
                         //log that a form was submited that had 0 transitions
                         SendEvent("Form completed with 0 transitions");
                     }
+
+
+                    Company.SaveChanges();
                 }
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
@@ -2378,10 +2385,10 @@ order by wi.StartedOn desc";
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Forbidden,new Exception("Access Denied"));
 
-            if(!Company.WorkflowEventRegistrations.Any(x=>x.ID == id))
+            if(!Company.WorkflowEventRegistrations.Any(x=>x.TypeID == id))
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Workflow not found"));
 
-            var workflow = Company.WorkflowEventRegistrations.First(x => x.ID == id);
+            var workflow = Company.WorkflowEventRegistrations.First(x => x.TypeID == id);
 
             workflow.LastExecuted = null;
 
@@ -2410,7 +2417,7 @@ order by wi.StartedOn desc";
                         var users = Company.GetWorkflowUsersBasedOnResponsibility((int)r.TypeID, (int)r.StepID, (int)r.ItemID).ToList();
                         var fields = XmlToDynamic(r.Fields);
 
-                        if (fields.form != null)
+                        if (fields != null && fields.form != null)
                         {
                             if (fields.form.GetType().Name != "JArray")
                                 fields.form = new JArray(fields.form);
@@ -2426,17 +2433,21 @@ order by wi.StartedOn desc";
                         r.Assignee = string.Join(", ", users.Select(u => u.FullName));
                         r.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
                     }
-                    else if (r.MessageRecipientType == "SpecificUser")
+                    else if (r.MessageRecipientType == "SpecificUser" || r.MessageRecipientType == "Initiator")
                     {
-                        var userList = ((string)r.Assignee).Split(';');
+                        var userList = ((string)r.Assignee ?? "").Split(';');
                         var formattedUserList = new List<string>();
-                        foreach(var u in userList)
+                        r.IsAssignedLoginUser = Boolean.FalseString; //default
+                        foreach (var u in userList)
                         {
                             var user = Company.GlobalReportingResources.FirstOrDefault(c => c.Email == u);
                             if (user != null)
                                 formattedUserList.Add(user.FullName);
                             else
                                 formattedUserList.Add(u);
+
+                            if (user != null && user.ResourceID == Company.CurrentResourceID)
+                                r.IsAssignedLoginUser =  Boolean.TrueString;
                         }
                         r.Assignee = string.Join(", ", formattedUserList);
                     }
@@ -2639,6 +2650,9 @@ order by wi.StartedOn desc";
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail.Settings,detail.ItemID);
                 detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
+                if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
+                    detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
+
                 string issueObject = null;
                 int issueObjectId = 0;
                 if (detail.Condition != null && detail.Condition.Condition != null)

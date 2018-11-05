@@ -29,15 +29,6 @@ namespace d360.core.entities
         public string RawResponsibilitites { get; set; }
 
         [DataMember]
-        public bool FieldsRecieved { get; set; } = false;
-
-        [DataMember]
-        public bool RelationsRecieved { get; set; } = false;
-
-        [DataMember]
-        public bool ResponsibilitiesRecieved { get; set; } = false;
-
-        [DataMember]
         public string ErrorMessages { get; set; }
 
         [IgnoreDataMember, ForeignKey("ExecutionID")]

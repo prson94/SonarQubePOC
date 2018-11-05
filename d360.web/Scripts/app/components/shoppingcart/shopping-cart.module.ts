@@ -12,6 +12,8 @@ import {
     DataTableModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
@@ -40,6 +42,7 @@ import { ShoppingCartRequestComponent } from './shopping-cart-request.component'
         SharedModule,
         ButtonModule,
         DataTableModule,
+        TableModule,
     ],
     declarations: [
         ShoppingCartComponent,

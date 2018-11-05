@@ -69,9 +69,7 @@ namespace d360.web.Controllers
         }
 
         private void verifySignature(XmlElement assertionXml)
-        {
-            var telemetry = new TelemetryClient();
-
+        {            
             try
             {
                 if (SAMLAssertionSignature.IsSigned(assertionXml))
@@ -108,8 +106,7 @@ namespace d360.web.Controllers
         {
             switch (Community.CurrentCompanySsoModel.AuthenticationType)
             {
-                case AuthenticationType.SSO:
-                    var telemetry = new TelemetryClient();
+                case AuthenticationType.SSO:                    
                     var authnRequestXml = createAuthnRequest();
 
                     string returnUrl = Request.QueryString["ReturnUrl"];
@@ -131,8 +128,6 @@ namespace d360.web.Controllers
                             var bytes = new byte[stream.Length];
                             stream.Read(bytes, 0, bytes.Length);
                             X509Certificate2 x509Certificate = new X509Certificate2(bytes, "D3S");
-
-                            telemetry = null;
 
                             ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, returnUrl, x509Certificate != null ? x509Certificate.PrivateKey : null, "http://www.w3.org/2000/09/xmldsig#rsa-sha1");
                         }

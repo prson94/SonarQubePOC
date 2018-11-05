@@ -11,6 +11,8 @@ import {
     SharedModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { CoreModule } from '../../shared/core.module';
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
@@ -41,6 +43,7 @@ import { ArtifactItemChildGridComponent } from './artifact-item-child-grid.compo
         //prime        
         DataTableModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         ChildrenComponent,
