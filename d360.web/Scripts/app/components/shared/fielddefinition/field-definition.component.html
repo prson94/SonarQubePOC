@@ -16,60 +16,120 @@
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>            
     <div *ngIf="!isEditing && !isDeleting">
         <div *ngIf="!isLoading && !hasKeyFields && (objectType == 'ArtifactType' || objectType == 'TaxonomyType' || objectType == 'PolicyType' || objectType == 'RuleType' || objectType == 'LookupType')" class="error">Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
-        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                             
-        <p-dataTable #dt [globalFilter]="gb" [value]="fieldDefinitions" [loading]="isLoading" loadingIcon="fa-spinner" selectionMode="single" [(selection)]="selectedRow" (onRowDblclick)="isEditing=showEditButton;" scrollable="true"  scrollHeight="200px">
-            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-            <p-column field="FriendlyName" header="Field" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="Type" header="Type" sortable="true" [style]="{ 'width': '15%' }" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '15%' }" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="IsListable" header="Listable?" sortable="true" [style]="{ 'width': '12%' }">
-                <ng-template let-item="rowData" pTemplate type="body">
-                    <span><i *ngIf="item.IsListable" class="fa fa-check enabled" title="True"></i></span>
-                    <span><i *ngIf="!item.IsListable" class="fa fa-times disabled" title="False"></i></span>
-                </ng-template>
-            </p-column>
-            <p-column field="IsRequired" header="Required?" sortable="true" [style]="{ 'width': '12%' }">
-                <ng-template let-item="rowData" pTemplate type="body">                    
-                    <span><i *ngIf="item.IsRequired" class="fa fa-check enabled" title="True"></i></span>
-                    <span><i *ngIf="!item.IsRequired" class="fa fa-times disabled" title="False"></i></span>
-                </ng-template>
-            </p-column>
-            <p-column field="IsPartOfKey" header="Key?" sortable="true" [style]="{ 'width': '12%' }">
-                <ng-template let-item="rowData" pTemplate type="body">
-                    <span><i *ngIf="item.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>
-                    <span><i *ngIf="!item.IsPartOfKey" class="fa fa-times disabled" title="False"></i></span>
-                </ng-template>
-            </p-column>
-            <p-column field="SortOrder" header="Sort" sortable="true" [style]="{ 'width': '12%' }" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="ColumnWidth" header="Width" sortable="true" [style]="{ 'width': '12%' }" [filter]="!showSimpleFilter"></p-column>
-            <p-column [style]="{ 'width': '30px' }">
-                <ng-template let-col let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">
-                        <a (click)="moveUp(item)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>    
-                    </div>
-                </ng-template>
-            </p-column>
-            <p-column [style]="{ 'width': '30px' }">
-                <ng-template let-col let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">
-                        <a (click)="moveDown(item)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
-                    </div>
-                </ng-template>
-            </p-column>
-            <p-column [style]="{ 'width': '30px' }" *ngIf="showEditButton">
-                <ng-template let-col let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">
-                        <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                        
-                    </div>
-                </ng-template>
-            </p-column>
-            <p-column [style]="{ 'width': '30px' }" *ngIf="showDeleteButton">
-                <ng-template let-col let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">                        
-                        <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                    </div>
-                </ng-template>
-            </p-column>
-        </p-dataTable>
+        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+        <p-table #dt [value]="fieldDefinitions" selectionMode="single" [loading]="isLoading" loadingIcon="fa fa-spinner" [metaKeySelection]="true" [globalFilterFields]="['FriendlyName','Type','Category','IsListable','IsRequired','IsPartOfKey','SortOrder','ColumnWidth']"
+                 [(selection)]="selectedRow" [scrollable]="true" scrollHeight="200px">
+            <ng-template pTemplate="colgroup" let-columns>
+                <colgroup>
+                    <col style="width: 20%">
+                    <col style="width: 15%">
+                    <col style="width: 15%">
+                    <col style="width: 12%">
+                    <col style="width: 12%">
+                    <col style="width: 12%">
+                    <col style="width: 12%">
+                    <col style="width: 12%">
+                    <col style="width: 30px">
+                    <col style="width: 30px">
+                    <col style="width: 30px" *ngIf="showEditButton">
+                    <col style="width: 30px" *ngIf="showDeleteButton">
+                </colgroup>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th [pSortableColumn]="'FriendlyName'" style="width: 20%">
+                        Field
+                        <d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'Type'" style="width: 15%">
+                        Type
+                        <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'Category'" style="width: 15%">
+                        Category
+                        <d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'IsListable'" style="width: 12%">
+                        Listable?
+                        <d3s-sortIcon [field]="'IsListable'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'IsRequired'" style="width: 12%">
+                        Required?
+                        <d3s-sortIcon [field]="'IsRequired'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'IsPartOfKey'" style="width: 12%">
+                        Key?
+                        <d3s-sortIcon [field]="'IsPartOfKey'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'SortOrder'" style="width: 12%">
+                        Sort
+                        <d3s-sortIcon [field]="'SortOrder'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'ColumnWidth'" style="width: 12%">
+                        Width
+                        <d3s-sortIcon [field]="'ColumnWidth'"></d3s-sortIcon>
+                    </th>
+                    <th style="width: 30px"></th>
+                    <th style="width: 30px"></th>
+                    <th style="width: 30px" *ngIf="showEditButton"></th>
+                    <th style="width: 30px" *ngIf="showDeleteButton"></th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th><d3s-column-filter [field]="'FriendlyName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'Type'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'Category'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th><d3s-column-filter [field]="'SortOrder'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'ColumnWidth'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
+                    <th></th>
+                    <th *ngIf="showEditButton"></th>
+                    <th *ngIf="showDeleteButton"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr (dblclick)="isEditing=showEditButton;" [pSelectableRow]="item">
+                    <td>{{item.FriendlyName}}</td>
+                    <td>{{item.Type}}</td>
+                    <td>{{item.Category}}</td>
+                    <td>
+                        <span><i *ngIf="item.IsListable" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item.IsListable" class="fa fa-times disabled" title="False"></i></span>
+                    </td>
+                    <td>
+                        <span><i *ngIf="item.IsRequired" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item.IsRequired" class="fa fa-times disabled" title="False"></i></span>
+                    </td>
+                    <td>
+                        <span><i *ngIf="item.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item.IsPartOfKey" class="fa fa-times disabled" title="False"></i></span>
+                    </td>
+                    <td>{{item.SortOrder}}</td>
+                    <td>{{item.ColumnWidth}}</td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="moveUp(item)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="moveDown(item)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools" *ngIf="showEditButton">
+                            <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools" *ngIf="showDeleteButton">
+                            <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
     </div>
 </div>

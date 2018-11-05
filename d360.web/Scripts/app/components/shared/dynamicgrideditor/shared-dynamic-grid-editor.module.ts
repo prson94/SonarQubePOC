@@ -18,6 +18,8 @@ import {
     AutoCompleteModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { CoreModule } from '../core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedDeleteFormModule } from '../delete.form';
@@ -58,6 +60,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
         SharedModule,
         TooltipModule,
         AutoCompleteModule,
+        TableModule,
 
         //color picker
         ColorPickerModule,

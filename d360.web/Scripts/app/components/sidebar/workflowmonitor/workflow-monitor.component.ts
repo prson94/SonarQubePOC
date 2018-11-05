@@ -17,7 +17,41 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                             <div class="col s12">
                                 <div class="tile tile-detail">
                                     <header>Workflows</header>
-                                    <p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [selection]="selected" (selectionChange)="selected=null;loadWorkflowItems($event)">
+                                    
+                                    <p-table #dt [value]="workflows" selectionMode="single" [metaKeySelection]="true" sortField="Name" [selection]="selected" (selectionChange)="selected=null;loadWorkflowItems($event)">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th [pSortableColumn]="'Name'">
+                                                    Name
+                                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                                </th>
+                                                <th [pSortableColumn]="'ChangeType'">
+                                                    Change Type
+                                                    <d3s-sortIcon [field]="'ChangeType'"></d3s-sortIcon>
+                                                </th>
+                                                <th [pSortableColumn]="'ConditionText'">
+                                                    Condition
+                                                    <d3s-sortIcon [field]="'ConditionText'"></d3s-sortIcon>
+                                                </th>
+                                                <th [pSortableColumn]="'Version'">
+                                                    Version
+                                                    <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
+                                                </th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-item>
+                                            <tr [pSelectableRow]="item">
+                                                <td>{{item.Name}}</td>
+                                                <td>
+                                                    <span>{{changeTypeText(item.ChangeType)}}</span>
+                                                </td>
+                                                <td>{{item.ConditionText}}</td>
+                                                <td>{{item.Version}}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+<!--
+<p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [selection]="selected" (selectionChange)="selected=null;loadWorkflowItems($event)">
                                         <p-column field="Name" header="Name" [sortable]="true"></p-column>
                                         <p-column field="ChangeType" header="Change Type" [sortable]="true">
                                             <ng-template let-col let-workflow="rowData" pTemplate type="body">
@@ -26,7 +60,7 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                                         </p-column>
                                         <p-column field="ConditionText" header="Condition" [sortable]="true"></p-column>
                                         <p-column field="Version" header="Version" [sortable]="true"></p-column>
-                                    </p-dataTable>                                       
+                                    </p-dataTable> -->                                       
                                 </div>
                             </div>
                         </div>

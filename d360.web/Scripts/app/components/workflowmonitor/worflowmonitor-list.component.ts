@@ -26,30 +26,70 @@ import * as _ from "lodash";
                     </d3s-workflowmonitor-list-filter>
                 </div>
                     <div class="col s12">                
-                        <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" styleClass="overridePaginator" 
-                        #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" 
-                        [selection]="selection" (selectionChange)="gridSelectionChange($event)"
-                        [rows]="rowsPerPage" paginator="true" pageLinks="3"  (onLazyLoad)="loadWorkflowMonitorItems($event)" [rowsPerPageOptions]="defaultPagingOptions">
-                        <p-footer *ngIf="totalRecords">
-                        <d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
-                        </p-footer>
-                        <p-column field="WorkflowName" header="Workflow Name" sortable="true" [filter]="!showSimpleFilter"></p-column>  
-                        <p-column field="Type" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column>  
-                        <p-column field="TypeName" header="Type Name" sortable="true" [filter]="!showSimpleFilter"></p-column>  
-                        <p-column field="Asset" header="Asset" sortable="true" [filter]="!showSimpleFilter"></p-column>  
-                        <p-column field="Initiator" header="Initiator" sortable="true" [filter]="!showSimpleFilter"></p-column>  
-                                
-                        <p-column field="StartedOn" header="Started" sortable="true" [filter]="!showSimpleFilter">
-                        <ng-template let-col let-data="rowData" pTemplate type="body">
-                        <span>{{data.StartedOn | date: 'shortDate'}}</span>
-                        </ng-template>
-                        </p-column>  
-                        <p-column field="CompletedOn" header="Completed" sortable="true" [filter]="!showSimpleFilter">
-                        <ng-template let-col let-data="rowData" pTemplate type="body">
-                        <span>{{data.CompletedOn | date: 'shortDate'}}</span>
-                        </ng-template>
-                        </p-column> 
-                      </p-dataTable>                          
+                        <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" styleClass="overridePaginator" [value]="items" selectionMode="single" [lazy]="true" [totalRecords]="totalRecords"  [scrollable]="true" scrollWidth="100%" [metaKeySelection]="true" 
+                            [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']" [pageLinks]="3" [paginator]="true" 
+                            [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (onLazyLoad)="loadWorkflowMonitorItems($event)" [selection]="selection" 
+                            (selectionChange)="gridSelectionChange($event)">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'WorkflowName'">
+                                        Workflow Name
+                                        <d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Type'">
+                                        Type
+                                        <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'TypeName'">
+                                        Type Name
+                                        <d3s-sortIcon [field]="'TypeName'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Asset'">
+                                        Asset
+                                        <d3s-sortIcon [field]="'Asset'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Initiator'">
+                                        Initiator
+                                        <d3s-sortIcon [field]="'Initiator'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'StartedOn'">
+                                        Started
+                                        <d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'CompletedOn'">
+                                        Completed
+                                        <d3s-sortIcon [field]="'CompletedOn'"></d3s-sortIcon>
+                                    </th>
+                                </tr>
+                                <tr [hidden]="showSimpleFilter">
+                                    <th><d3s-column-filter [field]="'WorkflowName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Type'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'TypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Asset'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Initiator'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'CompletedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td>{{item.WorkflowName}}</td>
+                                    <td>{{item.Type}}</td>
+                                    <td>{{item.TypeName}}</td>
+                                    <td>{{item.Asset}}</td>
+                                    <td>{{item.Initiator}}</td>
+                                    <td>
+                                        <span>{{item.StartedOn | date: 'shortDate'}}</span>
+                                    </td>
+                                    <td>
+                                        <span>{{item.CompletedOn | date: 'shortDate'}}</span>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>                        
                     </div>
                 </div>                                  
                 `,

@@ -11,6 +11,8 @@ import {
     SharedModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { CoreModule } from '../../shared/core.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
@@ -37,6 +39,7 @@ import { AuditComponent } from './audit.component';
         //prime        
         DataTableModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         AuditComponent,

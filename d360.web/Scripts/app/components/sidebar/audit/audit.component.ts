@@ -18,32 +18,109 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                     <div class="col s12">
                         <div class="tile tile-detail">   
                             <header>Audit History for {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>                                                                                           
-                            <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" #dt scrollable="true" scrollWidth="100%" lazy="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
-                                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                <p-column field="ResourceName" header="User" sortable="true" [style]="{'width':'150px'}" filter="true"></p-column>                                                                                    
-                                <p-column field="Date" header="Date" sortable="true" [style]="{'width':'200px'}" filter="true">
-                                    <ng-template let-col let-data="rowData" pTemplate type="body">
-                                        <span>{{data.Date | date: 'medium'}}</span>
-                                    </ng-template>
-                                </p-column>
-                                <p-column field="Action" header="Action" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>                                                            
-                                <p-column field="Field" header="Field" sortable="true" [style]="{'width':'200px'}" filter="true"></p-column>                                
-                                <p-column field="NewValue" header="New Value" sortable="true" [style]="{'width':'250px'}" filter="true">
-                                    <ng-template let-col let-data="rowData" pTemplate type="body">
-                                        <div *ngIf="data.NewValue" [innerHtml]="data.NewValue"></div>
-                                    </ng-template>                                                        
-                                </p-column>
-                                <p-column field="PreviousValue" header="Previous Value" sortable="true" [style]="{'width':'250px'}" filter="true">
-                                    <ng-template let-col let-data="rowData" pTemplate type="body">
-                                        <div *ngIf="data.PreviousValue" [innerHtml]="data.PreviousValue"></div>
-                                    </ng-template>                                                        
-                                </p-column>
-                                <p-column field="ActionObject" header="Object" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>
-                                <p-column field="ActionObjectTypeName" header="Type" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>
-                                <p-column field="ActionObjectName" header="Item" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>
-                                <p-column field="ActionDescription" header="Audit Description" sortable="true" [style]="{'width':'250px'}" filter="true"></p-column>                                                                                        
-                                <p-column field="Version" header="Revision" sortable="true"  [style]="{'width':'100px'}" filter="true"></p-column>
-                            </p-dataTable>                                                                      
+                            
+                            <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [scrollable]="true" scrollWidth="100%" [lazy]="true" (onLazyLoad)="loadAuditsLazy($event)" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ResourceName','Date','Action','Field','NewValue','PreviousValue','ActionObject','ActionObjectTypeName','ActionObjectName','ActionDescription','Version']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                                <ng-template pTemplate="colgroup" let-columns>
+                                    <colgroup>
+                                        <col style="width:150px">
+                                        <col style="width:200px">
+                                        <col style="width:100px">
+                                        <col style="width:200px">
+                                        <col style="width:250px">
+                                        <col style="width:250px">
+                                        <col style="width:100px">
+                                        <col style="width:100px">
+                                        <col style="width:100px">
+                                        <col style="width:250px">
+                                        <col style="width:100px">
+                                    </colgroup>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th [pSortableColumn]="'ResourceName'" style="width: 150px">
+                                            User
+                                            <d3s-sortIcon [field]="'ResourceName'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'Date'" style="width: 200px">
+                                            Date
+                                            <d3s-sortIcon [field]="'Date'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'Action'" style="width: 100px">
+                                            Action
+                                            <d3s-sortIcon [field]="'Action'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'Field'" style="width: 200px">
+                                            Field
+                                            <d3s-sortIcon [field]="'Field'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'NewValue'" style="width: 250px">
+                                            New Value
+                                            <d3s-sortIcon [field]="'NewValue'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'PreviousValue'" style="width: 250px">
+                                            Previous Value
+                                            <d3s-sortIcon [field]="'PreviousValue'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'ActionObject'" style="width: 100px">
+                                            Object
+                                            <d3s-sortIcon [field]="'ActionObject'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'ActionObjectTypeName'" style="width: 100px">
+                                            Type
+                                            <d3s-sortIcon [field]="'ActionObjectTypeName'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'ActionObjectName'" style="width: 100px">
+                                            Item
+                                            <d3s-sortIcon [field]="'ActionObjectName'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'ActionDescription'" style="width: 250px">
+                                            Audit Description
+                                            <d3s-sortIcon [field]="'ActionDescription'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'Version'" style="width: 100px">
+                                            Revision
+                                            <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
+                                        </th>
+                                    </tr>
+                                    <tr [hidden]="false">
+                                        <th><d3s-column-filter [field]="'ResourceName'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'Date'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'Action'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'Field'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'NewValue'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'PreviousValue'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'ActionObject'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'ActionObjectTypeName'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'ActionObjectName'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'ActionDescription'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'Version'"></d3s-column-filter></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td>{{item.ResourceName}}</td>
+                                        <td>
+                                            <span>{{item.Date | date: 'medium'}}</span>
+                                        </td>
+                                        <td>{{item.Action}}</td>
+                                        <td>{{item.Field}}</td>
+                                        <td>
+                                            <div *ngIf="item.NewValue" [innerHtml]="item.NewValue"></div>
+                                        </td>
+                                        <td>
+                                            <div *ngIf="item.PreviousValue" [innerHtml]="item.PreviousValue"></div>
+                                        </td>
+                                        <td>{{item.ActionObject}}</td>
+                                        <td>{{item.ActionObjectTypeName}}</td>
+                                        <td>{{item.ActionObjectName}}</td>
+                                        <td>{{item.ActionDescription}}</td>
+                                        <td>{{item.Version}}</td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                </ng-template>
+                            </p-table>                            
                         </div>
                     </div>
                 </div>

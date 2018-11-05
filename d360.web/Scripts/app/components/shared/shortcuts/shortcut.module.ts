@@ -23,6 +23,8 @@ import {
 
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
@@ -40,6 +42,7 @@ import {
         DataTableModule,
         ButtonModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         ShortcutItemComponent,

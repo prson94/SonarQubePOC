@@ -23,6 +23,8 @@ import {
     SharedModule
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 
 import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
@@ -97,7 +99,8 @@ import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.co
         EditorModule,
         TooltipModule,                
         SharedModule,                                    
-        
+        TableModule,
+
         //d3s
         CoreModule,
         PipesModule,                    

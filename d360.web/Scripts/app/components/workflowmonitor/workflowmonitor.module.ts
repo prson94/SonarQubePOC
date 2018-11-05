@@ -42,7 +42,7 @@ import {
     CalendarModule,
 } from 'primeng/primeng';
 
-
+import { TableModule } from 'primeng/table';
 
 
 
@@ -65,6 +65,7 @@ import {
         TooltipModule,
         ButtonModule,
         CalendarModule,
+        TableModule,
 
         WorkflowMonitorRoutingModule,
 

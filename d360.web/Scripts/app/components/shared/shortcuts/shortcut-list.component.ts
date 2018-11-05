@@ -15,7 +15,33 @@ import * as _ from 'lodash';
 </header>
 <div [ngSwitch]="formMode">
     <div *ngSwitchCase="FormMode.Default">
-        <p-dataTable #dt [value]="shortcuts" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3">
+<p-table #dt [value]="shortcuts" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10">
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Name</th>
+            <th></th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+        <tr [pSelectableRow]="item">
+            <td>{{item.Name}}</td>
+            <td>
+                <div class="RowTools">
+                    <a (click)="moveUp(item.ID)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
+                    <a (click)="moveDown(item.ID)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
+                    <a (click)="edit(item.ID)"><i class="fa fa-pencil"></i></a>
+                    <a (click)="delete(item.ID)"><i class="fa fa-trash-o"></i></a>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+    </ng-template>
+</p-table>
+
+
+<!--<p-dataTable #dt [value]="shortcuts" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
             <p-column field="Name" header="Name"></p-column>                
             <p-column field="ID">
@@ -28,7 +54,7 @@ import * as _ from 'lodash';
                     </div>
                 </ng-template>
             </p-column>
-        </p-dataTable>
+        </p-dataTable> -->
     </div>
     <div *ngSwitchCase="FormMode.Adding">
         <d3s-shortcut-item (onSave)="cancel()" (onCancel)="cancel()"></d3s-shortcut-item>

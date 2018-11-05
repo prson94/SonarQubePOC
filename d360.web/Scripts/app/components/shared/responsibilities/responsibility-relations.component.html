@@ -18,11 +18,55 @@
                      [prompt]="'Are you sure you want to delete the responsibility relation between [' + [selectedRow?.AssetTypeName] + '] and [' + [selectedRow?.ResponsibilityTypeName] + ']? This will remove all assigned responsibilities between these two types and cannot be undone.'"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
-        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                             
+        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+        <p-table #dt [value]="rows" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['AssetTypeName','ResponsibilityTypeName']" [paginator]="true" [rows]="10" [(selection)]="selectedRow">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th [pSortableColumn]="'AssetTypeName'">
+                        Type
+                        <d3s-sortIcon [field]="'AssetTypeName'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'ResponsibilityTypeName'">
+                        Type
+                        <d3s-sortIcon [field]="'ResponsibilityTypeName'"></d3s-sortIcon>
+                    </th>
+                    <th style="width: 50px"></th>
+                    <th style="width: 50px"></th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th><d3s-column-filter [field]="'AssetTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'ResponsibilityTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr (dblclick)="isEditing=showEditButton;" [pSelectableRow]="item">
+                    <td>{{item.AssetTypeName}}</td>
+                    <td>{{item.ResponsibilityTypeName}}</td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="delete(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+
+
+        <!--<input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
         <p-dataTable #dt [globalFilter]="gb" [value]="rows" selectionMode="single" [(selection)]="selectedRow" (onRowDblclick)="isEditing=showEditButton;" scrollable="false" [rows]="10" [paginator]="true">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-            <p-column *ngIf="queryType === 'R'" field="AssetTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column> <!-- *ngIf="IsResponsibilityTypeView" -->
-            <p-column *ngIf="queryType === 'A'" field="ResponsibilityTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column> <!-- *ngIf="IsAssetTypeView" -->
+            <p-column *ngIf="queryType === 'R'" field="AssetTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column>
+            <p-column *ngIf="queryType === 'A'" field="ResponsibilityTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column> 
             <p-column [style]="{ 'width': '50px' }" *ngIf="showEditButton">
                 <ng-template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
@@ -37,6 +81,6 @@
                     </div>
                 </ng-template>
             </p-column>
-        </p-dataTable>
+        </p-dataTable>-->
     </div>
 </div>

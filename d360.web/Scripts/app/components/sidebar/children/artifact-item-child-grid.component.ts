@@ -15,15 +15,28 @@ import { StringConstants } from '../../../static/string-constants';
     template: `            
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">        
-                        <input type="text" class="grid-simple-filter" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="filter" placeholder="Search..." autofocus autocomplete="off" />                                             
-                        <p-dataTable #dt lazy="true" [totalRecords]="artifacts?.total" [value]="artifacts?.results" selectionMode="single" [rows]="numberOfRows" paginator="true" pageLinks="3" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                            
-                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <a (click)="selectArtifact(item)"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>
-                                </ng-template>
-                            </p-column>                        
-                        </p-dataTable>                   
+                        
+                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (keyup)="checkSimpleSearchEnter($event,dt);" placeholder="Search..." class="grid-simple-filter">
+                        <p-table #dt [value]="artifacts?.results" [lazy]="true" [totalRecords]="artifacts?.total" (onLazyLoad)="loadArtifactsLazy($event)" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3" [paginator]="true" [rows]="numberOfRows" [rowsPerPageOptions]="defaultPagingOptions">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.datafield : null">
+                                        {{column.text}}
+                                        <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
+                                    </th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td *ngFor="let column of columns">
+                                        <a (click)="selectArtifact(item)"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>               
                     </span>
                 `,    
     providers: [ArtifactService, GridDefinitionService],
@@ -45,7 +58,12 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     private sortField: string;
     private sortOrder: SortOrder;
     private filter: string;
-    
+
+
+    get globalFilterFields(): string[] {
+        return this.columns.map(c => c.datafield);
+    }
+
     constructor(protected router: Router, protected gridDefinitionService: GridDefinitionService, protected artifactService: ArtifactService) {
         super();
     }

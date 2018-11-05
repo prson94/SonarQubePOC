@@ -16,6 +16,8 @@ import {
     CheckboxModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
 import { SharedDeleteFormModule } from '../delete.form';
@@ -53,6 +55,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         EditorModule,
         MultiSelectModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         ResponsibilityItemForm,
