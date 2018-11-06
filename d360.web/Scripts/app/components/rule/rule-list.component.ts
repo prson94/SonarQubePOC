@@ -30,35 +30,42 @@ import * as _ from 'lodash';
                                         <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
                                     </header>
                                         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                                        <p-table #dt [value]="rules" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ID','Dimension']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                                        <p-table #dt [value]="rules" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
                                             <ng-template pTemplate="header">
                                                 <tr>
                                                     <th [pSortableColumn]="'ID'" style="width: 5%">
                                                         ID
                                                         <d3s-sortIcon [field]="'ID'"></d3s-sortIcon>
                                                     </th>
-                                                    <th style="width: 20%">Dimension</th>
-                                                    <th></th>
-                                                    <th style="width: 40px"></th>
-                                                    <th style="width: 40px"></th>
+                                                    <th [pSortableColumn]="'Dimension'" style="width:20%">
+                                                        Dimension
+                                                        <d3s-sortIcon [field]="'Dimension'"></d3s-sortIcon>
+                                                    </th>
+                                                     <th *ngFor="let column of columns">
+                                                            {{column.text}}
+                                                      </th>
+                                                    <th style="width:'40px'"></th>
+                                                    <th style="width:'40px'"></th>
                                                 </tr>
                                                 <tr [hidden]="showSimpleFilter">
                                                     <th><d3s-column-filter [field]="'ID'" [datatype]="'text'"></d3s-column-filter></th>
                                                     <th><d3s-column-filter [field]="'Dimension'" [datatype]="'text'"></d3s-column-filter></th>
-                                                    <th></th>
+                                                    <th *ngFor="let column of columns">
+                                                          <d3s-column-filter [field]="column.datafield" [datatype]="'text'"></d3s-column-filter>
+                                                      </th>
                                                     <th></th>
                                                     <th></th>
                                                 </tr>
                                             </ng-template>
-                                            <ng-template pTemplate="body" let-col let-item="item" > 
+                                            <ng-template pTemplate="body" let-item>
                                                 <tr [pSelectableRow]="item">
                                                     <td>
-                                                            <a (click)="selected=item;showRule(selected);">{{item[col.field]}}</a>
+                                                            <a (click)="selected=item;showRule(selected);">{{item["ID"]}}</a>
                                                     </td>
                                                     <td>
-                                                            <a (click)="selected=item;showRule(selected);">{{item[col.field]}}</a>
+                                                            <a (click)="selected=item;showRule(selected);">{{item["Dimension"]}}</a>
                                                     </td>
-                                                    <td>
+                                                    <td *ngFor="let column of columns">
                                                             <a><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>
                                                     </td>
                                                     <td>
@@ -125,6 +132,14 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
         this.theDeleteCallback = this.deleteRule.bind(this);
     }
+
+    get globalFilterFields(): string[] {
+        let f = this.columns.map(c => c.datafield);
+        f.push('ID');
+        f.push('Dimension');
+        return f;
+    }
+
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
