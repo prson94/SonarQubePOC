@@ -7,7 +7,6 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {    
-    DataTableModule,
     EditorModule,
     InputSwitchModule,
     SharedModule,
@@ -67,7 +66,6 @@ import { SharedObjectDetailsModule } from '../objectdetails/shared-object-detail
         SharedObjectDetailsModule,
 
         //prime        
-        DataTableModule,  
         EditorModule,     
         InputSwitchModule, 
         SharedModule,

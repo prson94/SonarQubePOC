@@ -26,7 +26,6 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
 import {
     ButtonModule,
     CalendarModule,
-    DataTableModule,
     DropdownModule,
     EditorModule,
     CheckboxModule,
@@ -55,7 +54,6 @@ import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-
         //prime
         ButtonModule,
         CalendarModule,
-        DataTableModule,
         DropdownModule,
         EditorModule,
         CheckboxModule,

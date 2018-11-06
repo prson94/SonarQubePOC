@@ -21,7 +21,6 @@ import { GroupResponsibilityComponent } from './group-responsibility.component';
 
 import {
     GrowlModule,    
-    DataTableModule,    
     SharedModule,
 } from 'primeng/primeng';
 
@@ -38,16 +37,15 @@ import { TableModule } from 'primeng/table';
 
         //primeng
         GrowlModule,        
-        DataTableModule,
         SharedModule,
-        
+        TableModule,
+
         //d3s
         D3SSharedModule,        
         CoreModule,
         PipesModule,
         TilesModule,
         SharedGridPagingInfoModule,
-        TableModule,
     ],
     declarations: [
         GroupComponent,

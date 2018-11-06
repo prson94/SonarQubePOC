@@ -5,7 +5,6 @@ import { HttpModule, XHRBackend  }     from '@angular/http';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
-    DataTableModule,
     SharedModule,
 } from 'primeng/primeng';
 
@@ -29,7 +28,6 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
         SharedGridPagingInfoModule,
 
         //prime        
-        DataTableModule,
         SharedModule,
         TableModule,
     ],

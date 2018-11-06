@@ -34,7 +34,6 @@ import {
     GrowlModule,
     InputTextModule,
     SharedModule,
-    DataTableModule,
     DropdownModule,
 } from 'primeng/primeng';
 
@@ -55,7 +54,6 @@ import { TableModule } from 'primeng/table';
         GrowlModule,
         InputTextModule,
         SharedModule,
-        DataTableModule,
         EditorModule,
         DropdownModule,
         TableModule,

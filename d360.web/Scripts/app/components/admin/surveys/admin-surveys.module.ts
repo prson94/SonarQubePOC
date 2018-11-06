@@ -24,7 +24,6 @@ import {
     EditorModule,
     InputTextModule,
     SharedModule,
-    DataTableModule    
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
@@ -42,7 +41,6 @@ import { TableModule } from 'primeng/table';
         EditorModule,
         InputTextModule,
         SharedModule,
-        DataTableModule,
         TableModule,
 
         //d3s                

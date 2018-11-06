@@ -8,7 +8,6 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     DropdownModule,
     InputTextModule,
     SharedModule,
@@ -41,7 +40,6 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
 
         //prime
         ButtonModule,
-        DataTableModule,
         DropdownModule,
         InputTextModule,
         SharedModule,

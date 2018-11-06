@@ -7,7 +7,6 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     DropdownModule,
     InputTextModule,
     InputTextareaModule,
@@ -45,7 +44,6 @@ import { FieldDefinitionComponent } from './field-definition.component';
         //prime
         ButtonModule,
         CheckboxModule,
-        DataTableModule,
         DropdownModule,
         InputTextModule,
         InputTextareaModule,

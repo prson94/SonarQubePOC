@@ -7,7 +7,6 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     InputTextModule,
     SharedModule,
     TooltipModule,
@@ -40,7 +39,6 @@ import { PipesModule } from '../../../pipes/pipes.module';
         PipesModule,
         //prime
         ButtonModule,
-        DataTableModule,
         InputTextModule,
         SharedModule,
         TooltipModule,

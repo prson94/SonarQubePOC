@@ -8,7 +8,6 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     InputTextModule,
     SharedModule,
     TooltipModule,
@@ -46,7 +45,6 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
         SharedDeleteFormModule,
         //prime
         ButtonModule,
-        DataTableModule,        
         InputTextModule,
         SharedModule,
         TooltipModule,

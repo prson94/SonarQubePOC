@@ -15,7 +15,6 @@ import { PipesModule } from '../../../pipes/pipes.module';
 
 import {
     ButtonModule,
-    DataTableModule,
     EditorModule,
     InputTextModule,
     SharedModule,
@@ -78,7 +77,6 @@ import { FusionRuleRoutingModule } from './fusion-rule.routes';
 
         //primeng                
         InputTextModule,
-        DataTableModule,
         EditorModule,
         ButtonModule,
         SharedModule,

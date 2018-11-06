@@ -20,7 +20,6 @@ import { CommunityRoutingModule } from './community.routes';
 
 import {
     SharedModule,
-    DataTableModule,
     GrowlModule
 } from 'primeng/primeng';
 
@@ -50,7 +49,6 @@ export function highchartsFactory() {
 
         //prime
         SharedModule,
-        DataTableModule,
         GrowlModule,
         TableModule,
 

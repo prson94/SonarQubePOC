@@ -7,7 +7,6 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../../authentication-connection-backend';
 
 import {
-    DataTableModule,
     EditorModule,
     InputSwitchModule,
     SharedModule,
@@ -62,7 +61,6 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         ToggleButtonModule,
 
         //prime        
-        DataTableModule,
         EditorModule,
         SharedModule,
         ButtonModule,

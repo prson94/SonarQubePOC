@@ -36,7 +36,6 @@ import {
     DropdownModule,
     InputTextModule,
     SharedModule,
-    DataTableModule,
     EditorModule,
 } from 'primeng/primeng';
 
@@ -55,7 +54,6 @@ import { TableModule } from 'primeng/table';
         DropdownModule,
         InputTextModule,
         SharedModule,
-        DataTableModule,
         EditorModule,
         TableModule,
 

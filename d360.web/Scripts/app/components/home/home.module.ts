@@ -22,7 +22,6 @@ import { HomeRoutingModule } from './home.routes';
 
 import {
     GrowlModule,
-    DataTableModule,
     ButtonModule,
     TooltipModule,    
     SharedModule,
@@ -42,7 +41,6 @@ import { TableModule } from 'primeng/table';
         //primeng  
         InputTextModule,
         GrowlModule,       
-        DataTableModule,
         ButtonModule,
         TooltipModule,                     
         SharedModule,

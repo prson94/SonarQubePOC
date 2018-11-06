@@ -22,7 +22,6 @@ import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object
 
 import {
     GrowlModule,
-    DataTableModule,
     SharedModule,
     DropdownModule,
     MultiSelectModule,
@@ -42,7 +41,6 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
 
         //primeng
         GrowlModule,
-        DataTableModule,
         SharedModule,
         MultiSelectModule,
         DropdownModule,

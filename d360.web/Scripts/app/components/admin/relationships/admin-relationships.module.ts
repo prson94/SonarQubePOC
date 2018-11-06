@@ -26,7 +26,6 @@ import {
     ButtonModule,
     InputTextModule,
     SharedModule,
-    DataTableModule,
     GrowlModule
 } from 'primeng/primeng';
 
@@ -42,7 +41,6 @@ import { TableModule } from 'primeng/table';
 
         //prime        
         SharedModule,
-        DataTableModule,  
         TableModule,
 
         //d3s        

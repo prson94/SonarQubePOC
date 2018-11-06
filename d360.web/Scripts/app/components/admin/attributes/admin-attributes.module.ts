@@ -30,7 +30,6 @@ import {
     InputTextModule,
     MultiSelectModule,
     SharedModule,
-    DataTableModule,
     TreeTableModule,
 } from 'primeng/primeng';
 
@@ -51,7 +50,6 @@ import { TableModule } from 'primeng/table';
         InputTextModule,
         MultiSelectModule,
         SharedModule,
-        DataTableModule,
         TreeTableModule,
         TableModule,
 

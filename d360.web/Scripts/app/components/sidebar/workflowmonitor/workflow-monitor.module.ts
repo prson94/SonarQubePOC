@@ -7,7 +7,6 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
-    DataTableModule,
     SharedModule,
     ButtonModule,
 } from 'primeng/primeng';
@@ -42,7 +41,6 @@ import { MonitorModule } from '../../monitor/monitor.module';
         MonitorModule,
 
         //prime        
-        DataTableModule,
         SharedModule,
         ButtonModule,
         TableModule,

@@ -7,7 +7,6 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     DropdownModule,
     InputTextModule,
     EditorModule,
@@ -49,7 +48,6 @@ import { PipesModule } from '../../../pipes/pipes.module';
         //prime
         ButtonModule,
         CheckboxModule,
-        DataTableModule,
         DropdownModule,
         InputTextModule,
         EditorModule,

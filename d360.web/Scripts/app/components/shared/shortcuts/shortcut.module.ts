@@ -17,7 +17,6 @@ import { ShortcutDisplayComponent } from './shortcut-display.component';
 
 import {
     ColorPickerModule,
-    DataTableModule,
     ButtonModule,
     SharedModule
 
@@ -39,7 +38,6 @@ import { TableModule } from 'primeng/table';
 
         //prime
         ColorPickerModule,
-        DataTableModule,
         ButtonModule,
         SharedModule,
         TableModule,

@@ -46,7 +46,6 @@ export function highchartsFactory() {
 import {    
     InputTextModule,    
     CalendarModule,
-    DataTableModule,
     TreeTableModule,
     ButtonModule,
     DropdownModule,    
@@ -71,7 +70,6 @@ import { TableModule } from 'primeng/table';
         //primeng        
         InputTextModule, 
         CalendarModule, 
-        DataTableModule,
         TreeTableModule,
         ButtonModule,
         DropdownModule,        

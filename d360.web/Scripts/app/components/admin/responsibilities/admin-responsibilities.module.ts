@@ -35,7 +35,6 @@ import {
     MultiSelectModule,
     SharedModule,
     TooltipModule,
-    DataTableModule,
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
@@ -57,7 +56,6 @@ import { TableModule } from 'primeng/table';
         InputTextModule,
         MultiSelectModule,
         SharedModule,
-        DataTableModule,
         TooltipModule,
         TableModule,
 

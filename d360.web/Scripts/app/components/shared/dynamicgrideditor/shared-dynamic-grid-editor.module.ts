@@ -10,7 +10,6 @@ import {
     CalendarModule,
     ColorPickerModule,
     DropdownModule,
-    DataTableModule,
     EditorModule,
     MultiSelectModule,
     SharedModule,
@@ -52,7 +51,6 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
 
         //prime        
         CalendarModule,
-        DataTableModule,
         DropdownModule,
         EditorModule,
         MultiSelectModule,

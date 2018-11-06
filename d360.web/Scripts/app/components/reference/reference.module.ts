@@ -24,7 +24,6 @@ import { ReferenceItemTypeGridComponent } from './reference-item-type-list.compo
 
 import {
     ButtonModule,
-    DataTableModule,
     EditorModule,
     InputTextModule,
     SharedModule,
@@ -43,7 +42,6 @@ import { TableModule } from 'primeng/table';
 
         //primeng
         ButtonModule,
-        DataTableModule,
         EditorModule,
         InputTextModule,                       
         SharedModule,
