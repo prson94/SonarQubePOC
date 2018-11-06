@@ -752,8 +752,8 @@ namespace d360.web.Controllers
                             if (intersectType != null)
                             {
                                 bool isSubject = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID);
-                                var obj = isSubject ? intersectType.Object : intersectType.Subject;
-                                var objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+                                
+                                
                                 var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
                                 if (cardinality != Cardinality.Many)
@@ -975,8 +975,6 @@ namespace d360.web.Controllers
                             if (intersectType != null)
                             {
                                 bool isSubject = (intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID);
-                                var obj = isSubject ? intersectType.Object : intersectType.Subject;
-                                var objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
                                 var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
                                 if (cardinality != Cardinality.Many)
@@ -1218,8 +1216,7 @@ namespace d360.web.Controllers
             string sortDefaultField = "DisplayValue", string sortDefaultDirection = "asc",
             Dictionary<string, object> extraParams = null,
             bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false, string idColumn = "A.ID", string innerIdColumn = "A.ID")
-        {
-            var requestParams = Request.Params;
+        {            
             var dbArgs = new Dapper.DynamicParameters();
             var obj = objectType.Replace("Type", "");
 
