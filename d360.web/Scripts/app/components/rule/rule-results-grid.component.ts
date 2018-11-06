@@ -22,30 +22,74 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                             <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                         </div>
                         <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
-                        <p-dataTable #dt [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onLazyLoad)="loadRuleResultsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="RunDate" header="Run Date" [sortable]="true" [style]="{width:'150px'}">
-                                <ng-template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item.RunDate | date : 'short'}}</span>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="EffectiveDate" header="Effective Date" [sortable]="true" [style]="{width:'120px'}">
-                                <ng-template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="PassFraction" header="Pass Fraction" [sortable]="true" [style]="{width:'150px'}"></p-column>
-                            <p-column field="RowsPassed" header="Rows Passed" [sortable]="true" [style]="{width:'150px'}"></p-column>
-                            <p-column field="RowsFailed" header="Rows Failed" [sortable]="true" [style]="{width:'150px'}"></p-column>
-                            <p-column field="Passed" header="Passed" [sortable]="true" [style]="{width:'150px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
-                                    <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="FusionAttribute" header="Fusion" [sortable]="true" [style]="{width:'200px'}"></p-column>
-                            <p-column *ngFor="let q of results?.qualifiers" [field]="q.Field" [header]="q.Header" [sortable]="true" [style]="{width:'200px'}"></p-column>
-                        </p-dataTable>
+                        <p-table #dt [value]="results?.results" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [lazy]="true"  (onLazyLoad)="loadRuleResultsLazy($event)">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'RunDate'" style="width: 150px">
+                                        Run Date
+                                        <d3s-sortIcon [field]="'RunDate'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'EffectiveDate'" style="width: 120px">
+                                        Effective Date
+                                        <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'PassFraction'" style="width: 150px">
+                                        Pass Fraction
+                                        <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'RowsPassed'" style="width: 150px">
+                                        Rows Passed
+                                        <d3s-sortIcon [field]="'RowsPassed'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'RowsFailed'" style="width: 150px">
+                                        Rows Failed
+                                        <d3s-sortIcon [field]="'RowsFailed'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'Passed'" style="width: 150px">
+                                        Passed
+                                        <d3s-sortIcon [field]="'Passed'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'FusionAttribute'" style="width: 200px">
+                                        Fusion
+                                        <d3s-sortIcon [field]="'FusionAttribute'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="''" style="width: 200px"></th>
+                                </tr>
+                                <tr [hidden]="showSimpleFilter">
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td>
+                                            <span>{{item.RunDate | date : 'short'}}</span>
+                                    </td>
+                                    <td>
+                                            <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
+                                    </td>
+                                    <td>{{item.PassFraction}}</td>
+                                    <td>{{item.RowsPassed}}</td>
+                                    <td>{{item.RowsFailed}}</td>
+                                    <td>
+                                            <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
+                                            <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
+                                    </td>
+                                    <td>{{item.FusionAttribute}}</td>
+                                    <td></td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
+
                 </span>                
                 `,
     providers: [RulesService],

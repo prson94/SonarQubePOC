@@ -13,11 +13,10 @@ declare var CompanySettings;
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <header>Mappings for selected step<d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
-        <input [hidden]="!showSimpleFilter" #gbRuleMappings type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <div *ngIf="UnMappedKeyColumns && UnMappedKeyColumns.length >0" class="red-text left"  style="font-weight:bold">
                 <span>**Warning: All key fields not mapped < </span><span *ngFor="let c of UnMappedKeyColumns;let first=first;let last=last;">{{c}}<i *ngIf="!last">,</i><i *ngIf="last">></i></span>
         </div>
-        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt [value]="values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['SourceFieldName','TargetFieldName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
             <ng-template pTemplate="header">
                 <tr>
