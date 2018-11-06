@@ -84,6 +84,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
+    static SITE_URL_ADMIN_EXPORT_TEMPLATES = 'exporttemplates';
 
     static getDefaultRoute() {
         if (ResourceHomePage != null && ResourceHomePage != "" && ResourceHomePage != '/') {

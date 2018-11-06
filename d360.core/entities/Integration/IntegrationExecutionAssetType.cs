@@ -1,12 +1,24 @@
-﻿using d360.core.enums;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
+    public class RetryLogModel
+    {
+        public int RetryCount { get; set; }
+        public bool LastRetryInError { get; set; }
+        public RetryLogBeginsModel Begins { get; set; }
+    }
+
+    public class RetryLogBeginsModel
+    {
+        public int Fields { get; set; }
+        public int Relations { get; set; }
+        public int Responsibilities { get; set; }
+    }
+
     [DataContract(Namespace = NAMESPACE), Table("ExecutionAssetType", Schema = "integration")]
     public class IntegrationExecutionAssetType : BaseObject
     {
@@ -39,6 +51,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string EnumFieldValues { get; set; }
+
+        [DataMember]
+        public string RetryLog { get; set; } = "{RetryCount:0, LastRetryInError: false, Begins:{Fields:0,Relations:0,Responsibilities:0}}";
 
         [IgnoreDataMember, ForeignKey("ExecutionID")]
         public virtual IntegrationExecution Execution { get; set; }

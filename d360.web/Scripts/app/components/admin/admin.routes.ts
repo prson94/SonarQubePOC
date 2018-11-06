@@ -34,6 +34,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS, loadChildren: './organizations/admin-organizations.module#AdminOrganizationsModule?chunkName=adminOrganizationsChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS, loadChildren: './customizations/admin-customizations.module#AdminCustomizationsModule?chunkName=adminCustomizationsChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API, loadChildren: './customapi/admin-customapi.module#AdminCustomAPIModule?chunkName=adminCustomAPIChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES, loadChildren: './exporttemplates/admin-export-templates.module#AdminExportTemplatesModule?chunkName=adminExportTemplatesChunk' },
 
             //static load
             { path: 'classification/:objectType', component: AdminClassificationsComponent }

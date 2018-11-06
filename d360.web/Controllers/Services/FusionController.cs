@@ -44,9 +44,7 @@ namespace d360.web.Controllers.Services
         }
 
         #endregion
-
-        private static Regex _invalidXMLChars = new Regex(@"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled);
-
+                
         [Route("")]
         public IQueryable<FusionType> GetTypes()
         {
@@ -1380,9 +1378,7 @@ where   A.Deleted = 0";
         {
             if (!Company.CurrentResourceIsAdmin)
                 return null;
-
-            var company = Community.GetById<Company>(Community.CurrentCompanyID);
-
+                        
             var container = constants.AZURE_CLOUD_FUSION_CONTAINER;
 
             Storage.CreateFolder(container);

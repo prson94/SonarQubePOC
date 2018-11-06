@@ -2786,9 +2786,6 @@
         <member name="M:d360.web.Controllers.FormController.Artifact_EditFields(System.Int32)">
             <param name="id">ArtifactID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Artifact_RaiseIssue(System.Int32)">
-            <param name="id">ID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.ArtifactType_DeleteFields(System.Int32)">
             <param name="id">ArtifactID</param>
         </member>
