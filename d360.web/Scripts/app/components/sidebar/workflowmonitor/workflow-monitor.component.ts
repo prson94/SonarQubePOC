@@ -49,18 +49,7 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                                                 <td>{{item.Version}}</td>
                                             </tr>
                                         </ng-template>
-                                    </p-table>
-<!--
-<p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [selection]="selected" (selectionChange)="selected=null;loadWorkflowItems($event)">
-                                        <p-column field="Name" header="Name" [sortable]="true"></p-column>
-                                        <p-column field="ChangeType" header="Change Type" [sortable]="true">
-                                            <ng-template let-col let-workflow="rowData" pTemplate type="body">
-                                                <span>{{changeTypeText(workflow.ChangeType)}}</span>
-                                            </ng-template>
-                                        </p-column>
-                                        <p-column field="ConditionText" header="Condition" [sortable]="true"></p-column>
-                                        <p-column field="Version" header="Version" [sortable]="true"></p-column>
-                                    </p-dataTable> -->                                       
+                                    </p-table>                                     
                                 </div>
                             </div>
                         </div>

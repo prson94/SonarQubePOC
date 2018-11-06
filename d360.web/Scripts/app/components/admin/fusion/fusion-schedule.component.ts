@@ -47,37 +47,7 @@ import { MessagesService } from '../../../services/messages.service';
                 <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
                     <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
-            </p-table>            
-
-
-<!--
-<p-dataTable #dt scrollable="true" scrollWidth="100%" [value]="schedules" [rows]="20" [paginator]="true" [(selection)]="selected">
-                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="DayText" header="Day"></p-column>
-                <p-column field="Time" header="Time (UTC)"></p-column>
-                <p-column field="FullRefresh" header="Full Refresh?">
-                    <ng-template let-data="rowData" pTemplate type="body">
-                        <span>
-                            <i *ngIf="data.ForceRefresh" class="fa fa-check enabled" title="True"></i>
-                            <i *ngIf="!data.ForceRefresh" class="fa fa-times disabled" title="False"></i>
-                        </span>
-                    </ng-template>
-                </p-column> 
-                <p-column [style]="{width:'40px'}">
-                    <ng-template let-dimension="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <a style="cursor:pointer;" (click)="selected=dimension;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                        </div>
-                    </ng-template>
-                </p-column>                            
-                <p-column  [style]="{width:'40px'}">
-                    <ng-template let-dimension="rowData" pTemplate type="body">
-                        <div class="RowTools">                                
-                            <a style="cursor:pointer;" (click)="selected=dimension;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                        </div>
-                    </ng-template>
-                </p-column>                          
-            </p-dataTable>  -->          
+            </p-table>                    
         </div>
         <d3s-fusion-schedule-editor *ngIf="showEditor" 
             [selection]="selected" 

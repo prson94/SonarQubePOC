@@ -7,7 +7,7 @@ declare var CompanySettings: any;
 @Component({
     selector: 'd3s-lineage-wrapper',
     template: `
-        <ng-container *ngIf="!useLegacy; else legacy">
+        <ng-container *ngIf="false && !useLegacy; else legacy">
             <d3s-lineage-diagram [objectID]="objectID" [objectType]="objectType" [readonly]="true"></d3s-lineage-diagram>
         </ng-container>
         <ng-template #legacy>

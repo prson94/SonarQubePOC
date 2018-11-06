@@ -12,7 +12,58 @@ import { MapItem } from '../../../../models/lineage.model';
                 &nbsp;
                 <d3s-tile-actions hasExport="true" (exportClick)="export()"></d3s-tile-actions>     
             </header>
-            <input #gb type="text" pInputText placeholder="Search..." class="grid-simple-filter">         
+            
+            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['searchableSource','searchableSourceFusion','searchableTarget','searchableTargetFusion']" [rowsPerPageOptions]="defaultPagingOptions" [rows]="10">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th colspan="2" style="text-align: center">Source</th>
+                        <th colspan="2" style="text-align: center">Target</th>
+                    </tr>
+                    <tr>
+                        <th>Business</th>
+                        <th>Technical</th>
+                        <th>Business</th>
+                        <th>Technical</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>
+                            <span style="margin: 3px 0px 3px 0px">
+                                <b>{{item.SourceName}}</b><br />
+                                {{item.SourceType}}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="margin: 3px 0px 3px 0px">
+                                {{item.SourceFusion}}<br />
+                                {{item.SourceFusionAttributeType}}<br />
+                                {{item.SourceFusionAttribute}}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="margin: 3px 0px 3px 0px">
+                                <b>{{item.TargetName}}</b><br />
+                                {{item.TargetType}}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="margin: 3px 0px 3px 0px">
+                                {{item.TargetFusion}}<br />
+                                {{item.TargetFusionAttributeType}}<br />
+                                {{item.TargetFusionAttribute}}
+                            </span>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
+
+<!--
+<input #gb type="text" pInputText placeholder="Search..." class="grid-simple-filter">         
             <p-dataTable #dt [globalFilter]="gb" [value]="items" [rowsPerPageOptions]="defaultPagingOptions">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-headerColumnGroup>
@@ -61,7 +112,7 @@ import { MapItem } from '../../../../models/lineage.model';
                         </span>
                     </ng-template>
                 </p-column>
-            </p-dataTable>
+            </p-dataTable> -->
         </div>
     `,
     providers: [DiagramService]

@@ -25,12 +25,6 @@ import { BaseComponent } from '../../base.component';
                     <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-table>
-<!--
-<p-dataTable #dt [value]="items" [rowsPerPageOptions]="defaultPagingOptions" >
-                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="ResponsibilityTypeName" header="Role"></p-column>
-                <p-column field="SecurityAssetName" header="Resource/Group"></p-column>
-            </p-dataTable> -->
         </div>
     `,
     providers: [DiagramService]
