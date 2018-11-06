@@ -59,34 +59,7 @@ import { Title } from '@angular/platform-browser';
                                     <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
                                         <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                                     </ng-template>
-                                </p-table>
-
-<!--
-
-<input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="issueTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                    <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>
-                                    <p-column field="Description" header="Description" sortable="false"  [filter]="!showSimpleFilter">
-                                        <ng-template let-issueType="rowData"  pTemplate type="body">
-                                            <span [innerHtml]="issueType.Description"></span>
-                                        </ng-template>
-                                    </p-column>
-                                    <p-column [style]="{width:'40px'}">
-                                        <ng-template let-issueType="rowData"  pTemplate type="body">
-                                            <div class="RowTools" *ngIf="!issueType.IsSystem">
-                                                <a style="cursor:pointer;" (click)="selected=issueType;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                            </div>
-                                        </ng-template>
-                                    </p-column>                            
-                                    <p-column  [style]="{width:'40px'}">
-                                        <ng-template let-issueType="rowData" pTemplate type="body">
-                                            <div class="RowTools" *ngIf="!issueType.IsSystem">
-                                                <a style="cursor:pointer;" (click)="selected=issueType;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                            </div>
-                                        </ng-template>
-                                    </p-column>    
-                                </p-dataTable>   -->   
+                                </p-table>  
                             </span>
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'IssueType'" [title]="'Action Type'" [selection]="selected" (saveClick)="saveIssueType($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                             <d3s-delete-form *ngIf="showDelete"
