@@ -1,5 +1,9 @@
-﻿import { Component, NgZone, OnDestroy } from '@angular/core';
+﻿import { Component, OnDestroy } from '@angular/core';
 import { AdminBaseComponent } from '../admin-base.component'
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { MessagesService } from '../../../services/messages.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-export-templates-component',
@@ -24,6 +28,21 @@ import { AdminBaseComponent } from '../admin-base.component'
 })
 
 export class AdminExportTemplatesComponent extends AdminBaseComponent implements OnDestroy {
+    constructor(
+            rightSidebarService: RightSidebarService,
+            headerBreadcrumbService: HeaderBreadcrumbService,        
+            titleService: Title,
+            protected messagesService: MessagesService,
+        ) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);
+        this.areaName = "Artifacts";
+        this.setCommonItems();
+        //this.load();
+        
+        this.setCommonRightSideBar(false);        
+    }
+
+
     ngOnDestroy() {
         this.clearSidebar();
     }
