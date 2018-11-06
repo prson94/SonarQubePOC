@@ -20,7 +20,6 @@ import { WorkflowDiagramModule } from '../../shared/diagram/workflow/workflow-di
 
 import { WorkflowMonitorRoutingModule } from './workflow-monitor.routes';
 
-import { WorkflowMonitorComponent } from './workflow-monitor.component';
 import { MonitorWorkflowComponent } from './monitor-workflow.component';
 
 import { MonitorModule } from '../../monitor/monitor.module';
@@ -49,7 +48,6 @@ import { MonitorModule } from '../../monitor/monitor.module';
         TableModule,
     ],
     declarations: [
-        WorkflowMonitorComponent,
         MonitorWorkflowComponent,
     ],
     providers: [

@@ -5189,8 +5189,8 @@ input[type=text]::-ms-clear {
     word-wrap: break-word;
     border: none;
     border-radius: 0;
-    padding: 0 10px;
-    height: 25px;
+    padding: 6px 10px;
+    height: auto;
 }
 
 .ui-table .ui-sortable-column {

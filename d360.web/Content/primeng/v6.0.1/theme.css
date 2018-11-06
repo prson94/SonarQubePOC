@@ -1270,7 +1270,7 @@ p-treeTable td a {
     font-weight: bold;
     text-transform: capitalize;
     border-radius: 0;
-    background-color: #999;
+    background-color: #252c41;
 }
 
 .ui-table thead th {
@@ -1310,7 +1310,7 @@ p-treeTable td a {
 }
 
 .ui-table-even {
-    background-color: #DEF1FD /*#F8F3F0*/;
+    background: #f7f7f7; /*#F8F3F0*/
 }
 
 .ui-table-rowordering.ui-state-active {
@@ -1326,9 +1326,9 @@ p-treeTable td a {
 .ui-table .ui-table-data > tr > td {
     border: none;
     border-radius: 0;
-    padding: 0 10px;
-    height: 25px;
     word-wrap: break-word;
+    padding: 6px 10px;
+    height: auto;
 }
 
 .ui-table .ui-table-thead > tr > th {
@@ -1358,16 +1358,26 @@ p-treeTable td a {
     background: white;
 }
 
+.ui-table td > a  {
+    color:#646464;
+    cursor: pointer;
+}
+
+.ui-table .ui-state-highlight td > a {
+    color: #fff;
+}
+
 tbody.ui-table-tbody > tr {
     border: none;
 }
 
 tbody.ui-table-tbody > tr:nth-child(odd) {
-    background-color: #def1fd;
+        background: #f7f7f7;
+        
 }
 
 tbody.ui-table-tbody > tr.ui-state-highlight {
-    background-color: #76bbe8;
+    background-color: rgb(48, 169, 229);
     color: #fff;
 }
 
