@@ -41,17 +41,18 @@ import * as _ from 'lodash';
                                                         Dimension
                                                         <d3s-sortIcon [field]="'Dimension'"></d3s-sortIcon>
                                                     </th>
-                                                     <th *ngFor="let column of columns">
-                                                            {{column.text}}
-                                                      </th>
-                                                    <th style="width:'40px'"></th>
-                                                    <th style="width:'40px'"></th>
+                                                     <th *ngFor="let col of columns" [pSortableColumn]="col.sortable ? col.datafield : null" >
+                                                        {{col.text}}
+                                                        <d3s-sortIcon *ngIf="col.sortable" [field]="col.datafield"></d3s-sortIcon>
+                                                    </th>
+                                                    <th style="width: 40px;"  *ngIf="hasModifyAssetPermissions()"></th>
+                                                    <th style="width: 40px;" *ngIf="hasDeleteAssetPermissions()"></th>
                                                 </tr>
                                                 <tr [hidden]="showSimpleFilter">
                                                     <th><d3s-column-filter [field]="'ID'" [datatype]="'text'"></d3s-column-filter></th>
                                                     <th><d3s-column-filter [field]="'Dimension'" [datatype]="'text'"></d3s-column-filter></th>
-                                                    <th *ngFor="let column of columns">
-                                                          <d3s-column-filter [field]="column.datafield" [datatype]="'text'"></d3s-column-filter>
+                                                    <th *ngFor="let col of columns">
+                                                          <d3s-column-filter [field]="col.datafield" [datatype]="'text'"></d3s-column-filter>
                                                       </th>
                                                     <th></th>
                                                     <th></th>
@@ -68,12 +69,12 @@ import * as _ from 'lodash';
                                                     <td *ngFor="let column of columns">
                                                             <a><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>
                                                     </td>
-                                                    <td>
+                                                    <td *ngIf="hasModifyAssetPermissions()">
                                                             <div class="RowTools">
                                                                 <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
                                                             </div>
                                                     </td>
-                                                    <td>
+                                                    <td *ngIf="hasDeleteAssetPermissions()">
                                                             <div class="RowTools">
                                                                 <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
                                                             </div>
