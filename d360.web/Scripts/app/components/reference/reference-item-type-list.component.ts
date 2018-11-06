@@ -24,8 +24,8 @@ import { FormMode } from '../../models/form.model';
                                     Name
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
-                                <th style="width: 28px"></th>
-                                <th style="width: 28px"></th>
+                                <th style="width: 28px" *ngIf="hasModifyAssetPermissions()"></th>
+                                <th style="width: 28px" *ngIf="hasDeleteAssetPermissions()"></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
                                 <th></th>
@@ -36,12 +36,12 @@ import { FormMode } from '../../models/form.model';
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
                                 <td>{{item.Name}}</td>
-                                <td>
+                                <td *ngIf="hasModifyAssetPermissions()">
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
                                     </div>
                                 </td>
-                                <td>
+                                <td *ngIf="hasDeleteAssetPermissions()"> 
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
                                     </div>
