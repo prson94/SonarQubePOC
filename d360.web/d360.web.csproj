@@ -1760,6 +1760,8 @@
     <DocumentationFile>App_Data\Documentation.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
     <PublishDatabases>false</PublishDatabases>
+    <CodeAnalysisRuleSet>..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />

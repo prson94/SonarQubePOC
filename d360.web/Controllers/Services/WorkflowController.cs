@@ -2385,10 +2385,10 @@ order by wi.StartedOn desc";
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Forbidden,new Exception("Access Denied"));
 
-            if(!Company.WorkflowEventRegistrations.Any(x=>x.ID == id))
+            if(!Company.WorkflowEventRegistrations.Any(x=>x.TypeID == id))
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Workflow not found"));
 
-            var workflow = Company.WorkflowEventRegistrations.First(x => x.ID == id);
+            var workflow = Company.WorkflowEventRegistrations.First(x => x.TypeID == id);
 
             workflow.LastExecuted = null;
 
