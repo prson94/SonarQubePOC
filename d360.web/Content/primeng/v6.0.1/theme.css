@@ -1318,3 +1318,7 @@ th.ui-state-default, .ui-treetable th.ui-state-default {
     border: 1px solid #fff;
     background-color: #fff;
 }
+
+button.ui-button:disabled {
+    opacity: 0.5;
+}
