@@ -13,23 +13,39 @@ declare var CompanySettings;
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <header>Mappings for selected step<d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
-        <input [hidden]="!showSimpleFilter" #gbRuleMappings type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <div *ngIf="UnMappedKeyColumns && UnMappedKeyColumns.length >0" class="red-text left"  style="font-weight:bold">
                 <span>**Warning: All key fields not mapped < </span><span *ngFor="let c of UnMappedKeyColumns;let first=first;let last=last;">{{c}}<i *ngIf="!last">,</i><i *ngIf="last">></i></span>
         </div>
-        <p-dataTable #dtRuleMappings [globalFilter]="gbRuleMappings" [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-            <p-footer *ngIf="dtRuleMappings.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleMappings.totalRecords" [first]="dtRuleMappings.first" [rows]="dtRuleMappings.rows"></d3s-grid-paging-info></p-footer>
-            <p-column header="Source" field="SourceFieldName" [filter]="!showSimpleFilter"></p-column>
-            <p-column header="Target" field="TargetFieldName" [filter]="!showSimpleFilter"></p-column>
-            <p-column header="">
-                <ng-template pTemplate type="body" let-row="rowData">
-                    <div class="RowTools">
-                        <a (click)="edit(row);"><i class="fa fa-pencil"></i></a>
-                        <a (click)="delete(row);"><i class="fa fa-trash-o"></i></a>
-                    </div>
-                </ng-template>
-            </p-column>
-        </p-dataTable>
+        <p-table #dt [value]="values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['SourceFieldName','TargetFieldName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Source</th>
+                    <th>Target</th>
+                    <th></th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th><d3s-column-filter [field]="'SourceFieldName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [field]="'TargetFieldName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr [pSelectableRow]="item">
+                    <td>{{item.SourceFieldName}}</td>
+                    <td>{{item.TargetFieldName}}</td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="edit(item);"><i class="fa fa-pencil"></i></a>
+                            <a (click)="delete(item);"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
     </div>
 
 `,

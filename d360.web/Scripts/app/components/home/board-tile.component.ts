@@ -11,14 +11,36 @@ import { Count } from '../../models/counts.model';
                     <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <p-dataTable *ngIf="!isLoading && counts.length > 0"  sortField="Name" [sortOrder]="1" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect(selected)">                    
-                        <p-column field="Name" header="Name" [sortable]="true">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                    <a (click)="doSelect(item)">{{item.Name}}</a>
-                            </ng-template>
-                        </p-column>                                                                           
-                        <p-column field="Total" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>
-                    </p-dataTable>   
+                    <p-table #dt [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Total']" sortField="Name" [sortOrder]="1" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Total'" style="text-align:center">
+                                    Total
+                                    <d3s-sortIcon [field]="'Total'"></d3s-sortIcon>
+                                </th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;doSelect(selected)" [pSelectableRow]="item">
+                                <td>
+                                        <a (click)="doSelect(item)">{{item.Name}}</a>
+                                </td>
+                                <td>{{item.Total}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
+  
                     <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">No board activity for this timeframe</div>
                 </div>
                 `,

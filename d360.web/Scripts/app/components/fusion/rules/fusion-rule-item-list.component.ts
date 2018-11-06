@@ -10,17 +10,32 @@ import { FusionRule, FusionRuleItem } from '../../../models/fusion.model';
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <header>Items for selected rule<d3s-tile-actions [hasAdd]="hasAdd" (addClick)="add();"></d3s-tile-actions></header>
-        <p-dataTable #dt [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">
-            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-            <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
-            <p-column header="">
-                <ng-template pTemplate type="body" let-row="rowData">
-                    <div class="RowTools" *ngIf="hasAdd">
-                        <a (click)="delete(row);"><i class="fa fa-trash-o"></i></a>
-                    </div>
-                </ng-template>
-            </p-column>
-        </p-dataTable>
+        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+        <p-table #dt [value]="values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['FusionAttributeName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Limiting Attribute</th>
+                    <th></th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr [pSelectableRow]="item">
+                    <td>{{item.FusionAttributeName}}</td>
+                    <td>
+                        <div class="RowTools" *ngIf="hasAdd">
+                            <a (click)="delete(item);"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
     </div>
 
 `,

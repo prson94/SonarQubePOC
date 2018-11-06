@@ -10,18 +10,35 @@ import { FusionRule, FusionRuleFilter } from '../../../models/fusion.model';
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <header>Filters for selected rule<d3s-tile-actions [hasAdd]="true" (addClick)="add();"></d3s-tile-actions></header>
-        <p-dataTable #dt [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">
-            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-            <p-column header="Filter Name" field="Name"></p-column>
-            <p-column header="">
-                <ng-template pTemplate type="body" let-row="rowData">
+
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+     <p-table #dt [value]="values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Filter Name</th>
+                <th></th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th></th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr [pSelectableRow]="item">
+                <td>{{item.Name}}</td>
+                <td>
                     <div class="RowTools">
-                        <a (click)="edit(row);"><i class="fa fa-pencil"></i></a>
-                        <a (click)="delete(row);"><i class="fa fa-trash-o"></i></a>
+                        <a (click)="edit(item);"><i class="fa fa-pencil"></i></a>
+                        <a (click)="delete(item);"><i class="fa fa-trash-o"></i></a>
                     </div>
-                </ng-template>
-            </p-column>
-        </p-dataTable>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+    
     </div>
 
 `,

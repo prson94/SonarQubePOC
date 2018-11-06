@@ -25,6 +25,8 @@ import {
     SharedModule,
 } from 'primeng/primeng';
 
+import { TableModule } from 'primeng/table';
+
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
@@ -45,6 +47,7 @@ import {
         PipesModule,
         TilesModule,
         SharedGridPagingInfoModule,
+        TableModule,
     ],
     declarations: [
         GroupComponent,

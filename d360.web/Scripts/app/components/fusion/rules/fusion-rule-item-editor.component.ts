@@ -44,15 +44,35 @@ import { TreeNode } from 'primeng/primeng';
 
 <div class="row" *ngIf="isQueryEditor">
     <div class="col s4 offset-s4">
-        <p-dataTable #dtItems [value]="queryValues" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-            <p-footer *ngIf="dtItems.totalRecords"><d3s-grid-paging-info [totalRecords]="dtItems.totalRecords" [first]="dtItems.first" [rows]="dtItems.rows"></d3s-grid-paging-info></p-footer>
-            <p-column header="" field="selected" sortable="false" [style]="{width:'10%'}">
-                <ng-template let-item="rowData" pTemplate type="body">
-                    <input type="checkbox" [(ngModel)]="item.selected" [disabled]="selectAllItems" />
-                </ng-template>
-            </p-column>
-            <p-column header="Name" field="friendlyName" sortable="true" [style]="{width:'90%'}"></p-column>
-        </p-dataTable>
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+        <p-table #dt [value]="queryValues" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['selected','friendlyName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 10%"></th>
+                    <th [pSortableColumn]="'friendlyName'" style="width: 90%">
+                        Name
+                        <d3s-sortIcon [field]="'friendlyName'"></d3s-sortIcon>
+                    </th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr [pSelectableRow]="item">
+                    <td>
+                        <ng-template let-item="rowData" pTemplate type="body">
+                            <input type="checkbox" [(ngModel)]="item.selected" [disabled]="selectAllItems" />
+                        </ng-template>
+                    </td>
+                    <td>{{item.friendlyName}}</td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
         <div class="col s2">
             <input type="checkbox" [(ngModel)]="selectAllItems" /> Select All
         </div>

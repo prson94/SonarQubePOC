@@ -30,6 +30,7 @@ import {
     TooltipModule,
     ButtonModule,
 } from 'primeng/primeng';
+import { TableModule } from 'primeng/table';
 import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.component';
 
 @NgModule({
@@ -48,7 +49,7 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
         InputTextModule,
         TooltipModule,
         ButtonModule,
-
+        TableModule,
         MonitorRoutingModule,
 
         //d3s        

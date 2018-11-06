@@ -16,32 +16,54 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                        <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="DisplayValue" header="Name" sortable="true" [filter]="!showSimpleFilter">
-                                <ng-template let-col let-item="rowData" pTemplate type="body">
-                                    <a (click)="artifactLink(item.TypeID, item.ObjectID)">{{item.DisplayValue}}</a>
-                                </ng-template>
-                            </p-column>                                                                                                   
-                            <p-column field="CreatedOn" header="Created" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}">
-                                <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <span>{{data.CreatedOn | date: 'shortDate'}}</span>
-                                </ng-template>
-                            </p-column>
-                            <p-column field="UpdatedOn" header="Updated" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}">
-                                <ng-template let-col let-data="rowData" pTemplate type="body">
-                                    <span>{{data.UpdatedOn | date: 'shortDate'}}</span>
-                                </ng-template>
-                            </p-column>                            
-                            <p-column [style]="{width:'40px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                        
-                                        <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ObjectID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
-                                    </div>
-                                </ng-template>
-                            </p-column>
-                        </p-dataTable>      
+                       <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                        <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayValue','CreatedOn','UpdatedOn']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'DisplayValue'">
+                                        Name
+                                        <d3s-sortIcon [field]="'DisplayValue'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'CreatedOn'" style="width: 150px">
+                                        Created
+                                        <d3s-sortIcon [field]="'CreatedOn'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'UpdatedOn'" style="width: 150px">
+                                        Updated
+                                        <d3s-sortIcon [field]="'UpdatedOn'"></d3s-sortIcon>
+                                    </th>
+                                    <th style="width: 40px"></th>
+                                </tr>
+                                <tr [hidden]="showSimpleFilter">
+                                    <th><d3s-column-filter [field]="'DisplayValue'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'CreatedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'UpdatedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr  (dblclick)="selected=item;navigateToArtifact();" [pSelectableRow]="item">
+                                    <td>
+                                         <a (click)="artifactLink(item.TypeID, item.ObjectID)">{{item.DisplayValue}}</a>
+                                    </td>
+                                    <td>
+                                            <span>{{item.CreatedOn | date: 'shortDate'}}</span>
+                                    </td>
+                                    <td>
+                                            <span>{{item.UpdatedOn | date: 'shortDate'}}</span>
+                                    </td>
+                                    <td>
+                                            <div class="RowTools">
+                                                <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ObjectID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
+                                            </div>
+                                     </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
+     
                     </span>
                     <button pButton type="button" (click)="close.emit();" label="Close" style="width:150px;margin-top:10px"></button>                    
                 </div>
