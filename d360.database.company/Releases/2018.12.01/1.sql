@@ -274,3 +274,30 @@ GO
 
 
 ------------------------------------------------------------------
+
+------------------------------------------------------------------
+-- GOV-5760
+-- missing asset soft delete for fusion attribute and clean-up
+------------------------------------------------------------------
+
+ALTER TRIGGER [dbo].[FusionAttribute_AfterUpdate]
+   ON  [dbo].[FusionAttribute] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON
+	update	T
+	set		T.UpdatedBy = 0,
+			T.[State] = ~S.Deleted,
+			T.UpdatedOn = getutcdate()
+	from	Asset T
+			inner join inserted S on T.Object = 'FusionAttribute' and T.ObjectID = S.ID
+GO
+
+--clean-up existing records
+UPDATE A
+set A.[State] = 0
+from Asset A
+inner join FusionAttribute F on F.ID = A.ObjectID and A.[Object] = 'FusionAttribute' and F.Deleted = 1
+GO
+
+------------------------------------------------------------------
