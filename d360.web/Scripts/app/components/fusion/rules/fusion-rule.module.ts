@@ -29,8 +29,6 @@ import { FusionRuleListComponent } from './fusion-rule-list.component';
 import { FusionRuleEditorComponent } from './fusion-rule-editor.component';
 import { FusionRuleFilterListComponent } from './fusion-rule-filter-list.component';
 import { FusionRuleFilterEditorComponent } from './fusion-rule-filter-editor.component';
-import { FusionRuleItemListComponent } from './fusion-rule-item-list.component';
-import { FusionRuleItemEditorComponent } from './fusion-rule-item-editor.component';
 import { FusionRulesComponent } from './fusion-rules.component';
 import { FusionRuleStepListComponent } from './fusion-rule-step-list.component';
 import { FusionRuleStepHistoryComponent } from './fusion-rule-step-history.component';
@@ -55,8 +53,6 @@ import { FusionRuleRoutingModule } from './fusion-rule.routes';
         FusionRuleEditorComponent,
         FusionRuleFilterListComponent,
         FusionRuleFilterEditorComponent,
-        FusionRuleItemListComponent,
-        FusionRuleItemEditorComponent,
         FusionRuleStepListComponent,
         FusionRuleStepHistoryComponent,
         FusionRuleStepComponent,

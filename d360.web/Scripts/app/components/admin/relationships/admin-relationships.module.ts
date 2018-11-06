@@ -17,7 +17,6 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
 import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
 import { AdminRelationshipsComponent } from './admin-relationships.component';
-import { AdminRelationshipRolesComponent } from './admin-relationship-roles.component';
 
 
 import { AdminRelationshipsRoutingModule } from './admin-relationships.routes';
@@ -56,7 +55,6 @@ import { TableModule } from 'primeng/table';
     ],
     declarations: [
         AdminRelationshipsComponent,        
-        AdminRelationshipRolesComponent,        
     ],    
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

@@ -14,7 +14,6 @@ import { MonitorRoutingModule } from './monitor.routes';
 import { MonitorComponent } from './monitor.component';
 import { MonitorFilterComponent } from './monitor-filter.component';
 import { MonitorListComponent } from './monitor-list.component';
-import { MonitorAssignmentsComponent } from './monitor-assignments.component';
 
 
 import { WorkflowDiagramModule } from '../shared/diagram/workflow/workflow-diagram.module';
@@ -61,14 +60,12 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
         MonitorComponent,
         MonitorFilterComponent,     
         MonitorListComponent,    
-        MonitorAssignmentsComponent, 
         MonitorWorkflowVersionComponent,
     ],
     exports: [
         MonitorComponent,
         MonitorFilterComponent,
         MonitorListComponent,
-        MonitorAssignmentsComponent,
         ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
