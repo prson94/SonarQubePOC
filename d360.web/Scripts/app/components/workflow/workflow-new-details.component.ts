@@ -44,38 +44,61 @@ declare var CurrentResourceID;
                                 </div>
                             </div>
                            
-                            <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
-                            <p-dataTable #dt [globalFilter]="gb" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="[10, 25, 50, 100, 500]" paginator="true" pageLinks="3" [value]="items" [headerCheckboxToggleAllPages]="false" [(selection)]="selection">
-                                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                <p-column [style]="{'width':'35px'}" selectionMode="multiple"></p-column>                                
-                                <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter">
-                                    <ng-template let-col let-item="rowData" pTemplate type="body">
-                                        <a (click)="open(item)" *ngIf="!item.IssueObject"><d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" >{{item.ObjectName}}</d3s-preview-tooltip></a>
-                                        <a (click)="open(item)" *ngIf="item.IssueObject && item.IssueObjectID"><d3s-preview-tooltip [objectType]="item.IssueObject" [objectId]="item.IssueObjectID">{{item.IssueObjectName ? item.IssueObjectName : "unknown"}}</d3s-preview-tooltip></a>
-                                    </ng-template>
-                                </p-column>
-                                
-                                <p-column field="StartedOn" header="Started On" sortable="true" [filter]="!showSimpleFilter">
-                                    <ng-template let-col let-data="rowData" pTemplate type="body">
-                                        <span>{{data.StartedOn | date: 'shortDate'}}</span>
-                                    </ng-template>
-                                </p-column>
-                                <p-column field="StartedBy" header="Started By" sortable="true" [filter]="!showSimpleFilter"></p-column>    
-                               <p-column  [style]="{width:'35px'}" >
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">                                            
-                                            <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" icon="info"></d3s-preview-tooltip>
-                                        </div>
-                                    </ng-template>
-                                </p-column> 
-                                <p-column  [style]="{width:'35px'}">
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="open(item)" title="Complete Form"><i class="fa fa-pencil-square-o"></i></a>                                    
-                                        </div>
-                                    </ng-template>
-                                </p-column> 
-                                <ng-template pTemplate="paginatorLeft">
+
+                            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                            <p-table #dt [value]="items" selectionMode="multiple" [globalFilterFields]="['Name','StartedOn','StartedBy']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="[10, 25, 50, 100, 500]" [(selection)]="selection">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 35px"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                                        <th [pSortableColumn]="'Name'">
+                                            Name
+                                            <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'StartedOn'">
+                                            Started On
+                                            <d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'StartedBy'">
+                                            Started By
+                                            <d3s-sortIcon [field]="'StartedBy'"></d3s-sortIcon>
+                                        </th>
+                                        <th style="width: 35px"></th>
+                                        <th style="width: 35px"></th>
+                                    </tr>
+                                    <tr [hidden]="showSimpleFilter">
+                                        <th></th>
+                                        <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'StartedBy'" [datatype]="'text'"></d3s-column-filter></th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td><p-tableCheckbox [value]="item"></p-tableCheckbox></td>
+                                        <td>
+                                            <a (click)="open(item)" *ngIf="!item.IssueObject"><d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID">{{item.ObjectName}}</d3s-preview-tooltip></a>
+                                            <a (click)="open(item)" *ngIf="item.IssueObject && item.IssueObjectID"><d3s-preview-tooltip [objectType]="item.IssueObject" [objectId]="item.IssueObjectID">{{item.IssueObjectName ? item.IssueObjectName : "unknown"}}</d3s-preview-tooltip></a>
+                                        </td>
+                                        <td>
+                                            <span>{{item.StartedOn | date: 'shortDate'}}</span>
+                                        </td>
+                                        <td>{{item.StartedBy}}</td>
+                                        <td>
+                                            <div class="RowTools">
+                                                <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" icon="info"></d3s-preview-tooltip>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="RowTools">
+                                                <a style="cursor:pointer;" (click)="open(item)" title="Complete Form"><i class="fa fa-pencil-square-o"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                                     <d3s-grid-selection-info
                                         [includeSelectLinks]="false"
                                         [model]="items"
@@ -85,7 +108,7 @@ declare var CurrentResourceID;
                                     >
                                     </d3s-grid-selection-info>
                                 </ng-template>
-                            </p-dataTable>       
+                            </p-table>  
                             <div style="padding:10px">
                                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
                                 <button pButton type="button" (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 1 || !isMe"></button>

@@ -7,7 +7,6 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     DropdownModule,
     InputTextModule,
     EditorModule,
@@ -15,6 +14,8 @@ import {
     SharedModule,
     CheckboxModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
@@ -47,12 +48,12 @@ import { PipesModule } from '../../../pipes/pipes.module';
         //prime
         ButtonModule,
         CheckboxModule,
-        DataTableModule,
         DropdownModule,
         InputTextModule,
         EditorModule,
         MultiSelectModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         ResponsibilityItemForm,

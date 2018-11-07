@@ -7,7 +7,6 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../../authentication-connection-backend';
 
 import {
-    DataTableModule,
     EditorModule,
     InputSwitchModule,
     SharedModule,
@@ -19,6 +18,8 @@ import {
     ToggleButtonModule,
     MultiSelectModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../../core.module';
 import { TilesModule } from '../../tiles/tiles.module';
@@ -60,7 +61,6 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         ToggleButtonModule,
 
         //prime        
-        DataTableModule,
         EditorModule,
         SharedModule,
         ButtonModule,
@@ -69,7 +69,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         DataListModule,
         AutoCompleteModule,
         MultiSelectModule,
-
+        TableModule,
     ],
     declarations: [
         WorkflowDiagramComponent,

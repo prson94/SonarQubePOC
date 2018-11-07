@@ -16,21 +16,34 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading">
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" (keypress)="ref.markForCheck()">
-                    <p-dataTable #dt [globalFilter]="gb" [value]="items" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
-                        <p-column [style]="{'width':'38px'}" [selectionMode]="multiple ?'multiple' : 'single'"></p-column>
-                        <p-column field="Text" header="Name">
-                            <ng-template let-item="rowData" pTemplate type="body">                                
-                                <d3s-preview-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]">{{item.Text}}</d3s-preview-tooltip>
-                            </ng-template>
-                        </p-column>                    
-                        <p-footer>
-                            <d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="items" [selectionMode]="multiple ? 'multiple' : 'single'" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);" [globalFilterFields]="['Text']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 38px">
+                                    <p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox>
+                                </th>
+                                <th>Name</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr [pSelectableRow]="item">
+                                <td>
+                                        <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
+                                        <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
+                                </td>
+                                <td>
+                                    <d3s-preview-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]">{{item.Text}}</d3s-preview-tooltip>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                             <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">Selected Items:
                                 <p *ngIf="selectedItems && selectedItems.length > 0"><span *ngFor="let item of selectedItems;let last = last" >{{last?item.Text:item.Text +','}} </span></p>
                             </div>
-                        </p-footer>
-                     </p-dataTable>
+                        </ng-template>
+                    </p-table>
                 </span>
                 `,
     providers: [MULTISELECT_GRID_VALUE_ACCESSOR],

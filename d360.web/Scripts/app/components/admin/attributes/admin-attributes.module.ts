@@ -30,9 +30,10 @@ import {
     InputTextModule,
     MultiSelectModule,
     SharedModule,
-    DataTableModule,
     TreeTableModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -49,8 +50,8 @@ import {
         InputTextModule,
         MultiSelectModule,
         SharedModule,
-        DataTableModule,
         TreeTableModule,
+        TableModule,
 
         //d3s        
         CoreModule,

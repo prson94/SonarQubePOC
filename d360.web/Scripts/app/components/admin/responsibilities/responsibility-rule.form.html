@@ -140,10 +140,24 @@
                 </div>
                 <div class="col l4 m5 s12">
                     <button pButton type="button" [disabled]="disableTestWhen" label="Test Filters" (click)="testWhen()"></button>
-                    <p-dataTable #dt [value]="WhenTestRows" selectionMode="single" scrollable="false" scrollHeight="150px" loadingIcon="fa-spinner" [loading]="isWhenTestLoading" [rows]="5" [paginator]="true">
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="Name" header="Name" sortable="true"></p-column>
-                    </p-dataTable>
+                    <p-table #dt [value]="WhenTestRows" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="5">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr [pSelectableRow]="item">
+                                <td>{{item.Name}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </div>
             </div>
         </simple-accordion>
@@ -191,10 +205,24 @@
                 </div>
                 <div class="col l4 m5 s12">
                     <button pButton type="button" label="Test Filters" [disabled]="disableTestThen" (click)="testThen()"></button>
-                    <p-dataTable #dt [value]="ThenTestRows" selectionMode="single" scrollable="false" scrollHeight="150px" loadingIcon="fa-spinner" [loading]="isThenTestLoading" [rows]="5" [paginator]="true">
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="Name" header="Security Asset" sortable="true"></p-column>
-                    </p-dataTable>
+                    <p-table #dt [value]="ThenTestRows" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="5">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'">
+                                    Security Asset
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr [pSelectableRow]="item">
+                                <td>{{item.Name}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </div>
             </div>
         </simple-accordion>

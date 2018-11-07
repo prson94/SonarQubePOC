@@ -21,11 +21,12 @@ import {
     ColorPickerModule,
     DropdownModule,
     SpinnerModule,
-    DataTableModule,
     EditorModule,
     InputTextModule,    
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { AdminAllocationComponent } from './admin-allocation.component';
 import { AdminClassificationsComponent } from './admin-classifications.component';
@@ -62,11 +63,11 @@ import { SimpleAccordionModule } from "../shared/simple-accordion.part";
         InputTextModule,
         ColorPickerModule,
         SpinnerModule,
-        DataTableModule,
         DropdownModule,
         EditorModule,
         ButtonModule,
         SharedModule,
+        TableModule,
         
         //d3s        
         CoreModule,                                      

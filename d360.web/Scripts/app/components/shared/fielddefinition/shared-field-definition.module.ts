@@ -7,7 +7,6 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     DropdownModule,
     InputTextModule,
     InputTextareaModule,
@@ -16,6 +15,8 @@ import {
     SharedModule,
     CheckboxModule
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
@@ -43,13 +44,13 @@ import { FieldDefinitionComponent } from './field-definition.component';
         //prime
         ButtonModule,
         CheckboxModule,
-        DataTableModule,
         DropdownModule,
         InputTextModule,
         InputTextareaModule,
         EditorModule,
         MultiSelectModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         FieldTypeForm,

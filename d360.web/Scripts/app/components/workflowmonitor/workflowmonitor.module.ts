@@ -31,7 +31,6 @@ import { SimpleAccordionModule } from '../shared/simple-accordion.part';
 
 import {
     GrowlModule,
-    DataTableModule,
     SharedModule,
     DropdownModule,
     SelectButtonModule,
@@ -42,7 +41,7 @@ import {
     CalendarModule,
 } from 'primeng/primeng';
 
-
+import { TableModule } from 'primeng/table';
 
 
 
@@ -56,7 +55,6 @@ import {
 
         //primeng
         GrowlModule,
-        DataTableModule,
         SharedModule,
         MultiSelectModule,
         DropdownModule,
@@ -65,6 +63,7 @@ import {
         TooltipModule,
         ButtonModule,
         CalendarModule,
+        TableModule,
 
         WorkflowMonitorRoutingModule,
 

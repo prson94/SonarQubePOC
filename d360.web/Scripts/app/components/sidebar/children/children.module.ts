@@ -7,9 +7,10 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
-    DataTableModule,
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../../shared/core.module';
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
@@ -39,8 +40,8 @@ import { ArtifactItemChildGridComponent } from './artifact-item-child-grid.compo
         SharedDynamicGridEditorModule,
 
         //prime        
-        DataTableModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         ChildrenComponent,

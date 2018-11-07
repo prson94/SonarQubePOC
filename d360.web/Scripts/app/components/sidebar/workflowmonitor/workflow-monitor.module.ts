@@ -7,10 +7,11 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
-    DataTableModule,
     SharedModule,
     ButtonModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
@@ -18,7 +19,6 @@ import { WorkflowDiagramModule } from '../../shared/diagram/workflow/workflow-di
 
 import { WorkflowMonitorRoutingModule } from './workflow-monitor.routes';
 
-import { WorkflowMonitorComponent } from './workflow-monitor.component';
 import { MonitorWorkflowComponent } from './monitor-workflow.component';
 
 import { MonitorModule } from '../../monitor/monitor.module';
@@ -41,12 +41,11 @@ import { MonitorModule } from '../../monitor/monitor.module';
         MonitorModule,
 
         //prime        
-        DataTableModule,
         SharedModule,
         ButtonModule,
+        TableModule,
     ],
     declarations: [
-        WorkflowMonitorComponent,
         MonitorWorkflowComponent,
     ],
     providers: [

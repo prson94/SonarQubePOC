@@ -17,11 +17,12 @@ import { ShortcutDisplayComponent } from './shortcut-display.component';
 
 import {
     ColorPickerModule,
-    DataTableModule,
     ButtonModule,
     SharedModule
 
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -37,9 +38,9 @@ import {
 
         //prime
         ColorPickerModule,
-        DataTableModule,
         ButtonModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         ShortcutItemComponent,

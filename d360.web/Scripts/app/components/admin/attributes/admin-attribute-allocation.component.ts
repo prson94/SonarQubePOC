@@ -14,32 +14,48 @@ import * as _ from 'lodash';
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showEditor && !showDelete">
-                    <input  [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                    <p-dataTable #dt [globalFilter]="gb" [value]="allocations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" [rowsPerPageOptions]="defaultPagingOptions">                                                                        
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="ObjectType" header="Object Type" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                                                            
-                            <p-column field="ObjectName" header="Object Name" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="AllowMultipleEntries" header="Allow Multiple Entries" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter">
-                                <ng-template let-item="rowData" pTemplate type="body">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="allocations" selectionMode="single" [globalFilterFields]="['ObjectType','ObjectName','AllowMultipleEntries']" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'ObjectType'">Object Type <d3s-sortIcon [field]="'ObjectType'"></d3s-sortIcon></th>
+                                <th [pSortableColumn]="'ObjectName'">Object Name <d3s-sortIcon [field]="'ObjectName'"></d3s-sortIcon></th>
+                                <th [pSortableColumn]="'AllowMultipleEntries'">Allow Multiple Entries <d3s-sortIcon [field]="'AllowMultipleEntries'"></d3s-sortIcon></th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th><d3s-column-filter [field]="'ObjectType'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'AllowMultipleEntries'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;showEditor=true;" [pSelectableRow]="item">
+                                <td>{{item.ObjectType}}</td>
+                                <td>{{item.ObjectName}}</td>
+                                <td>
                                     <i *ngIf="item.AllowMultipleEntries" class="fa fa-check enabled" title="Allowed"></i>
                                     <i *ngIf="!item.AllowMultipleEntries" class="fa fa-times disabled" title="Not Allowed"></i>
-                                </ng-template>
-                            </p-column>                
-                            <p-column [style]="{width:'40px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
+                                </td>
+                                <td>
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=item;editItem();"><i class="fa fa-pencil"></i></a>                                        
                                     </div>
-                                </ng-template>
-                            </p-column>                            
-                            <p-column  [style]="{width:'40px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
+                                </td>
+                                <td>
                                     <div class="RowTools">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
-                                </ng-template>
-                            </p-column>                            
-                        </p-dataTable>                          
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>                      
                 </span>
                 <d3s-dynamic-editor *ngIf="showEditor" rowID="ObjectID" [editParams]="editParams" [parentID]="attributeID" [objectID]="selected?.ObjectID" objectType="AttributeAllocation" title="Attribute Allocation" [selection]="selected" (saveClick)="saveAllocation($event)" (closeClick)="this.showEditor = false;"></d3s-dynamic-editor>     
                 <d3s-delete-form *ngIf="showDelete"

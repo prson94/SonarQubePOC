@@ -17,7 +17,6 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
 import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
 import { AdminRelationshipsComponent } from './admin-relationships.component';
-import { AdminRelationshipRolesComponent } from './admin-relationship-roles.component';
 
 
 import { AdminRelationshipsRoutingModule } from './admin-relationships.routes';
@@ -26,9 +25,10 @@ import {
     ButtonModule,
     InputTextModule,
     SharedModule,
-    DataTableModule,
     GrowlModule
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -40,7 +40,7 @@ import {
 
         //prime        
         SharedModule,
-        DataTableModule,        
+        TableModule,
 
         //d3s        
         AdminRelationshipEditorModule,
@@ -55,7 +55,6 @@ import {
     ],
     declarations: [
         AdminRelationshipsComponent,        
-        AdminRelationshipRolesComponent,        
     ],    
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

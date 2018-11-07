@@ -22,36 +22,58 @@ import { RightSidebarService } from '../../../services/right-sidebar.service';
                             </header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
-                                <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="services" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                                    
-                                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
-                                            <ng-template let-col let-item="rowData" pTemplate type="body">
-	                                            <a (click)="showService(item);">{{item.Name}}</a>                                 
-                                            </ng-template>
-                                    </p-column>
-                                    <p-column field="UriPrefix" header="Uri Segment" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
-                                        <ng-template pTemplate type="body" let-item="rowData">
-                                            <div [innerHtml]="item.Description"></div>
-                                        </ng-template>
-                                    </p-column>
-                                    <p-column field="MaximumCacheAge" header="Cache Max-Age" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
-                                    <p-column [style]="{width:'40px'}">
-                                        <ng-template let-service="rowData" pTemplate type="body">
-                                            <div class="RowTools">
-                                                <a style="cursor:pointer;" (click)="selected=service;showEditor=true"><i class="fa fa-pencil"></i></a>                                                                                        
-                                            </div>
-                                        </ng-template>
-                                    </p-column> 
-                                <p-column  [style]="{width:'40px'}" >
-                                    <ng-template let-service="rowData" pTemplate type="body">
-                                <div class="RowTools">                              
-                                    <a  style="cursor:pointer;" (click)="selected=service;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                </div>
-                            </ng-template>
-                        </p-column>      
-                                </p-dataTable>                                  
+                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                <p-table #dt [value]="services" selectionMode="single" [globalFilterFields]="['Name','UriPrefix','Description','MaximumCacheAge']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th [pSortableColumn]="'Name'">
+                                                Name
+                                                <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                            </th>
+                                            <th [pSortableColumn]="'UriPrefix'">
+                                                Uri Segment
+                                                <d3s-sortIcon [field]="'UriPrefix'"></d3s-sortIcon>
+                                            </th>
+                                            <th>Description</th>
+                                            <th>Cache Max-Age</th>
+                                            <th style="width: 40px"></th>
+                                            <th style="width: 40px"></th>
+                                        </tr>
+                                        <tr [hidden]="showSimpleFilter">
+                                            <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th><d3s-column-filter [field]="'UriPrefix'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th><d3s-column-filter [field]="'Description'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th><d3s-column-filter [field]="'MaximumCacheAge'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th></th>
+                                            <th></th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-item>
+                                        <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
+                                            <td>
+                                                <a (click)="showService(item);">{{item.Name}}</a>
+                                            </td>
+                                            <td>{{item.UriPrefix}}</td>
+                                            <td>
+                                                <div [innerHtml]="item.Description"></div>
+                                            </td>
+                                            <td>{{item.MaximumCacheAge}}</td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                    </ng-template>
+                                </p-table>
                             </span>             
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Service'" [title]="'APIService'" [selection]="selected" (saveClick)="saveService($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
                            <d3s-delete-form *ngIf="showDelete"

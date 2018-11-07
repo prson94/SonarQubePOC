@@ -4,36 +4,84 @@
         &nbsp;
         <d3s-tile-actions *ngIf="!isLoading" [hasExport]="true" (exportClick)="export()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
     </header>
-    <input [hidden]="!showSimpleFilter || isLoading" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-    <p-dataTable *ngIf="!isLoading" #dt [globalFilter]="gb" [value]="history" selectionMode="single" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="true" [pageLinks]="3" scrollable="true" scrollWidth="560px">
-        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-        <p-column header="Comment" field="Comment" [style]="{'width' : '180px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
-            <ng-template pTemplate type="body" let-item="rowData">
-                {{item.Comment}}
-                <div *ngIf="item.ActivityType == WorkflowActivityType.Form">
-                    <a (click)="selection = item; formMode = FormMode.FormHistory" style="text-decoration:underline;">View Form History</a>
-                </div>
-            </ng-template>
-        </p-column>
-        <p-column header="Status" field="Status" [style]="{'width' : '80px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">></p-column>
-        <p-column header="Started On" field="StartedOn" [style]="{'width' : '100px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
-            <ng-template pTemplate="body" let-item="rowData">
-                <span>{{item.StartedOn | date:'short'}}</span>
-            </ng-template>
-        </p-column>
-        <p-column header="Completed On" field="CompletedOn" [style]="{'width' : '100px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
-            <ng-template pTemplate="body" let-item="rowData">
-                <span>{{item.CompletedOn | date:'short'}}</span>
-            </ng-template>
-        </p-column>
-        <p-column header="Started By" field="StartedBy" [style]="{'width' : '100px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
-        <p-column header="Object" field="Name" [style]="{'width' : '100px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
-            <ng-template pTemplate="body" let-item="rowData">
-                <a *ngIf="item.NgUrl != null" (click)="navigate(item.NgUrl)">{{item.Name}}</a>
-                <span *ngIf="item.NgUrl == null">{{item.Name}}</span>
-            </ng-template>
-        </p-column>
-    </p-dataTable>
+
+
+
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <p-table #dt [value]="history" [scrollable]="true" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Comment','Status','StartedOn','CompletedOn','StartedBy','Name']" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
+        <ng-template pTemplate="colgroup">
+            <colgroup>
+                <col style="width:180px">
+                <col style="width:80px">
+                <col style="width:100px">
+                <col style="width:100px">
+                <col style="width:100px">
+                <col style="width:100px">
+
+            </colgroup>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th [pSortableColumn]="'Comment'" style="width: 180px">
+                    Comment
+                    <d3s-sortIcon [field]="'Comment'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'Status'" style="width: 80px">
+                    Status
+                    <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'StartedOn'" style="width: 100px">
+                    Started On
+                    <d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'CompletedOn'" style="width: 100px">
+                    Completed On
+                    <d3s-sortIcon [field]="'CompletedOn'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'StartedBy'" style="width: 100px">
+                    Started By
+                    <d3s-sortIcon [field]="'StartedBy'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'Name'" style="width: 100px">
+                    Object
+                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                </th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th><d3s-column-filter [field]="'Comment'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'CompletedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'StartedBy'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr [pSelectableRow]="item">
+                <td>
+                    {{item.Comment}}
+                    <div *ngIf="item.ActivityType == WorkflowActivityType.Form">
+                        <a (click)="selection = item; formMode = FormMode.FormHistory" style="text-decoration:underline;">View Form History</a>
+                    </div>
+                </td>
+                <td>{{item.Status}}</td>
+                <td>
+                    <span>{{item.StartedOn | date:'short'}}</span>
+                </td>
+                <td>
+                    <span>{{item.CompletedOn | date:'short'}}</span>
+                </td>
+                <td>{{item.StartedBy}}</td>
+                <td>
+                    <a *ngIf="item.NgUrl != null" (click)="navigate(item.NgUrl)">{{item.Name}}</a>
+                    <span *ngIf="item.NgUrl == null">{{item.Name}}</span>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
 </div>
 <div *ngIf="formMode == FormMode.FormHistory">
     <div style="float: right">

@@ -13,6 +13,9 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { WorkflowDiagramModule } from '../../shared/diagram/workflow/workflow-diagram.module';
 import { D3SEditorHeaderModule } from '../../shared/editor-header.component';
+import { D3SSortIconModule } from '../../shared/turbotable-sorticon.component';
+import { D3SColumnFilterModule } from '../../shared/turbotable-column-filter.component';
+
 
 
 import { AdminWorkflowComponent } from './admin-workflow.component';
@@ -31,9 +34,11 @@ import {
     GrowlModule,
     InputTextModule,
     SharedModule,
-    DataTableModule,
     DropdownModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -49,9 +54,9 @@ import {
         GrowlModule,
         InputTextModule,
         SharedModule,
-        DataTableModule,
         EditorModule,
         DropdownModule,
+        TableModule,
 
         //d3s                
         CoreModule,
@@ -62,6 +67,8 @@ import {
         WorkflowDiagramModule,
         D3SEditorHeaderModule,
         DirectivesModule,
+        D3SSortIconModule,
+        D3SColumnFilterModule,
 
     ],
     declarations: [        

@@ -38,11 +38,11 @@ import {
     DropdownModule,
     InputMaskModule,
     MultiSelectModule,
-    DataTableModule,
     TreeTableModule,
     TooltipModule,
     SharedModule,
 } from 'primeng/primeng';
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     declarations: [
@@ -72,10 +72,11 @@ import {
         DropdownModule,
         InputMaskModule,
         MultiSelectModule,
-        DataTableModule,
         TreeTableModule,
         TooltipModule,
         SharedModule,
+        TableModule,
+
 
         //d3s
         D3SSharedModule,          

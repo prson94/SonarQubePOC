@@ -16,25 +16,42 @@ import { FormMode } from '../../models/form.model';
                         <d3s-tile-actions [hasAdd]="!showDelete && hasModifyAssetPermissions()" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
                     </header>                    
                     <span *ngIf="!showEditor && !showDelete">
-                        <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                        <p-dataTable [loading]="isLoading" loadingIcon="fa-spinner" sortField="Name" [sortOrder]="1" #dt [globalFilter]="gb" [value]="referenceTypes" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                                                
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="Name" header="Name" [sortable]="true"></p-column>                                
-                            <p-column [style]="{width:'28px'}" *ngIf="hasModifyAssetPermissions()">
-                                <ng-template let-item="rowData" pTemplate type="body">
+                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                        <p-table #dt [value]="referenceTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"   [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 28px" *ngIf="hasModifyAssetPermissions()"></th>
+                                <th style="width: 28px" *ngIf="hasDeleteAssetPermissions()"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr [pSelectableRow]="item">
+                                <td>{{item.Name}}</td>
+                                <td *ngIf="hasModifyAssetPermissions()">
                                     <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
                                     </div>
-                                </ng-template>
-                            </p-column>                            
-                            <p-column  [style]="{width:'28px'}" *ngIf="hasDeleteAssetPermissions()">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
-                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                </td>
+                                <td *ngIf="hasDeleteAssetPermissions()"> 
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
                                     </div>
-                                </ng-template>
-                            </p-column>       
-                        </p-dataTable>  
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                     </span>                 
                     <d3s-asset-type-editor *ngIf="showEditor"                             
                             [assetTypeClass]="'RT'"                             

@@ -24,12 +24,12 @@ import { ReferenceItemTypeGridComponent } from './reference-item-type-list.compo
 
 import {
     ButtonModule,
-    DataTableModule,
     EditorModule,
     InputTextModule,
     SharedModule,
     TooltipModule,
 } from 'primeng/primeng';
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -42,11 +42,11 @@ import {
 
         //primeng
         ButtonModule,
-        DataTableModule,
         EditorModule,
         InputTextModule,                       
         SharedModule,
         TooltipModule,
+        TableModule,
         
         //d3s        
         CoreModule,      

@@ -7,7 +7,6 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {    
-    DataTableModule,
     EditorModule,
     InputSwitchModule,
     SharedModule,
@@ -18,6 +17,8 @@ import {
     DropdownModule,
     MenubarModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
@@ -65,7 +66,6 @@ import { SharedObjectDetailsModule } from '../objectdetails/shared-object-detail
         SharedObjectDetailsModule,
 
         //prime        
-        DataTableModule,  
         EditorModule,     
         InputSwitchModule, 
         SharedModule,
@@ -75,6 +75,7 @@ import { SharedObjectDetailsModule } from '../objectdetails/shared-object-detail
         ListboxModule,
         DropdownModule,
         MenubarModule,
+        TableModule,
 
     ],
     declarations: [

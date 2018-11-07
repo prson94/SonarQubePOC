@@ -20,9 +20,10 @@ import { CommunityRoutingModule } from './community.routes';
 
 import {
     SharedModule,
-    DataTableModule,
     GrowlModule
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
@@ -48,8 +49,8 @@ export function highchartsFactory() {
 
         //prime
         SharedModule,
-        DataTableModule,
         GrowlModule,
+        TableModule,
 
         //d3s
         D3SSharedModule,

@@ -15,21 +15,37 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <header>Followers of {{objectName}}</header>
                             <span *ngIf="!isLoading">
-                                <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable #dt sortField="FollowerLastName" sortOrder="1" [globalFilter]="gb" [value]="items" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" selectionMode="single">
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                    <p-column field="FollowerLastName" header="Last Name" sortable="true">
-                                        <ng-template let-item="rowData" pTemplate type="body">
+
+                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['FollowerLastName','FollowerFirstName']" sortField="FollowerLastName" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th [pSortableColumn]="'FollowerLastName'">
+                                                Last Name
+                                                <d3s-sortIcon [field]="'FollowerLastName'"></d3s-sortIcon>
+                                            </th>
+                                            <th [pSortableColumn]="'FollowerFirstName'">
+                                                First Name
+                                                <d3s-sortIcon [field]="'FollowerFirstName'"></d3s-sortIcon>
+                                            </th>
+                                            <th style="width: 28px"></th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-item>
+                                        <tr [pSelectableRow]="item">
+                                            <td>
                                                 <a (click)="doSelect(item)">{{item.FollowerLastName}}</a>
-                                            </ng-template>
-                                    </p-column>
-                                    <p-column field="FollowerFirstName" header="First Name" sortable="true"></p-column>
-                                    <p-column [style]="{'width':'28px'}" >
-                                        <ng-template let-item="rowData" pTemplate type="body">
-                                            <d3s-preview-tooltip  objectType="Resource" [objectId]="item.ResourceID" icon="info"></d3s-preview-tooltip>
-                                        </ng-template>
-                                    </p-column>
-                                </p-dataTable>
+                                            </td>
+                                            <td>{{item.FollowerFirstName}}</td>
+                                            <td>
+                                                <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID" icon="info"></d3s-preview-tooltip>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                    </ng-template>
+                                </p-table>
                             </span>
                         </div>
                     </div>

@@ -14,7 +14,6 @@ import { MonitorRoutingModule } from './monitor.routes';
 import { MonitorComponent } from './monitor.component';
 import { MonitorFilterComponent } from './monitor-filter.component';
 import { MonitorListComponent } from './monitor-list.component';
-import { MonitorAssignmentsComponent } from './monitor-assignments.component';
 
 
 import { WorkflowDiagramModule } from '../shared/diagram/workflow/workflow-diagram.module';
@@ -22,7 +21,6 @@ import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object
 
 import {
     GrowlModule,
-    DataTableModule,
     SharedModule,
     DropdownModule,
     MultiSelectModule,
@@ -30,6 +28,7 @@ import {
     TooltipModule,
     ButtonModule,
 } from 'primeng/primeng';
+import { TableModule } from 'primeng/table';
 import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.component';
 
 @NgModule({
@@ -41,14 +40,13 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
 
         //primeng
         GrowlModule,
-        DataTableModule,
         SharedModule,
         MultiSelectModule,
         DropdownModule,
         InputTextModule,
         TooltipModule,
         ButtonModule,
-
+        TableModule,
         MonitorRoutingModule,
 
         //d3s        
@@ -62,14 +60,12 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
         MonitorComponent,
         MonitorFilterComponent,     
         MonitorListComponent,    
-        MonitorAssignmentsComponent, 
         MonitorWorkflowVersionComponent,
     ],
     exports: [
         MonitorComponent,
         MonitorFilterComponent,
         MonitorListComponent,
-        MonitorAssignmentsComponent,
         ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

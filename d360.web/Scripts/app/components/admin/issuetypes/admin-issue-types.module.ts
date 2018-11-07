@@ -8,11 +8,12 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     DropdownModule,
     InputTextModule,
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
@@ -39,10 +40,10 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
 
         //prime
         ButtonModule,
-        DataTableModule,
         DropdownModule,
         InputTextModule,
         SharedModule,
+        TableModule,
 
         //d3s                
         CoreModule,

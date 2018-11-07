@@ -10,49 +10,101 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
             <div class="row" *ngIf="!isLoading && issues.length > 0">
                 <header>Open Actions<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
-                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
-                    <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="issues" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="openIssue($event.data);" >
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'100px'}" [filter]="!showSimpleFilter">
-                            <ng-template let-col let-data="rowData" pTemplate type="body">
-                                <a (click)="openIssue(data)" *ngIf="data.WorkflowItemID > 0">{{data.ActivityName}}</a>
-                                <span *ngIf="!data.WorkflowItemID || data.WorkflowItemID <= 0">{{data.ActivityName}}</span>
-                            </ng-template>
-                        </p-column>
-                        <p-column field="Criticality" header="Criticality" sortable="true" [style]="{'width':'100px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="IssueTypeName" header="Type" sortable="true" [style]="{'width':'200px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Body" header="Description" [sortable]="false" [style]="{'width':'300px'}" [filter]="!showSimpleFilter">
-                            <ng-template let-col let-issue="rowData" pTemplate type="body">
-                                <span [innerHtml]="issue?.Body"></span>
-                            </ng-template>
-                        </p-column> 
-                        <p-column field="Name" header="Item Name" [sortable]="false" [style]="{'width':'200px'}" [filter]="!showSimpleFilter">
-                            <ng-template let-col let-issue="rowData" pTemplate type="body">                                
-                                <d3s-preview-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID">{{issue.Name}}</d3s-preview-tooltip>
-                            </ng-template>
-                        </p-column>           
-                        <p-column field="RaisedBy" header="Reported By" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="DateStarted" header="Created" sortable="true"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
-                            <ng-template let-col let-data="rowData" pTemplate type="body">
-                                <span>{{data.DateStarted | date: 'shortDate'}}</span>
-                            </ng-template>
-                        </p-column>                        
-                        <p-column field="EllapsedDays" header="Days Open" sortable="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
-                            <ng-template let-issue="rowData" pTemplate type="body">
-                                <div class="RowTools" *ngIf="issue.Activity > 0">                                
-                                    <a style="cursor:pointer;" (click)="openIssue(issue)"><i class="fa fa-check-circle-o"></i></a>                                    
-                                </div>
-                            </ng-template>
-                        </p-column>    
-                        <p-column [style]="{width:'28px'}">
-                                <ng-template let-data="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                        
-                                        <d3s-preview-tooltip objectType="Issue" [objectId]="data.IssueID" icon="info"></d3s-preview-tooltip>
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="issues" [scrollable]="true" scrollWidth="100%" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ActivityName','Criticality','IssueTypeName','Body','Name','RaisedBy','DateStarted','EllapsedDays']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                        <ng-template pTemplate="colgroup" let-columns>
+                            <colgroup>
+                                <col style="width:100px">
+                                <col style="width:100px">
+                                <col style="width:200px">
+                                <col style="width:300px">
+                                <col style="width:200px">
+                                <col style="width:250px">
+                                <col style="width:250px">
+                                <col >
+                                <col style="width:40px">
+                                <col style="width:28px">
+                            </colgroup>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'ActivityName'" style="width: 100px">
+                                    Status
+                                    <d3s-sortIcon [field]="'ActivityName'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Criticality'" style="width: 100px">
+                                    Criticality
+                                    <d3s-sortIcon [field]="'Criticality'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'IssueTypeName'" style="width: 200px">
+                                    Type
+                                    <d3s-sortIcon [field]="'IssueTypeName'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 300px">Description</th>
+                                <th style="width: 200px">Item Name</th>
+                                <th [pSortableColumn]="'RaisedBy'" style="width: 250px">
+                                    Reported By
+                                    <d3s-sortIcon [field]="'RaisedBy'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'DateStarted'" style="width: 250px">
+                                    Created
+                                    <d3s-sortIcon [field]="'DateStarted'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'EllapsedDays'">
+                                    Days Open
+                                    <d3s-sortIcon [field]="'EllapsedDays'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 28px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th><d3s-column-filter [field]="'ActivityName'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'Criticality'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'IssueTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'Body'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'RaisedBy'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'DateStarted'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'EllapsedDays'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="openIssue(item);" [pSelectableRow]="item">
+                                <td>
+                                    <a (click)="openIssue(item)" *ngIf="item.WorkflowItemID > 0">{{item.ActivityName}}</a>
+                                    <span *ngIf="!item.WorkflowItemID || item.WorkflowItemID <= 0">{{item.ActivityName}}</span>
+                                </td>
+                                <td>{{item.Criticality}}</td>
+                                <td>{{item.IssueTypeName}}</td>
+                                <td>
+                                    <span [innerHtml]="item?.Body"></span>
+                                </td>
+                                <td>
+                                    <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID">{{item.Name}}</d3s-preview-tooltip>
+                                </td>
+                                <td>{{item.RaisedBy}}</td>
+                                <td>
+                                    <span>{{item.DateStarted | date: 'shortDate'}}</span>
+                                </td>
+                                <td>{{item.EllapsedDays}}</td>
+                                <td>
+                                    <div class="RowTools" *ngIf="item.Activity > 0">
+                                        <a style="cursor:pointer;" (click)="openIssue(item)"><i class="fa fa-check-circle-o"></i></a>
                                     </div>
-                                </ng-template>
-                            </p-column>                        
-                    </p-dataTable>   
+                                </td>
+                                <td>
+                                    <div class="RowTools">
+                                        <d3s-preview-tooltip objectType="Issue" [objectId]="item.IssueID" icon="info"></d3s-preview-tooltip>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </div>
             </div>            
             <div style="min-height:100px" *ngIf="!isLoading && issues.length == 0">

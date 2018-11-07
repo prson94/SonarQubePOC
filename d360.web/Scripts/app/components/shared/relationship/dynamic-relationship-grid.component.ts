@@ -16,40 +16,56 @@ declare var CompanySettings;
     template: `                   
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical && !showDelete">                    
-                    <input #gb [hidden]="!simpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                    <p-dataTable #dt [globalFilter]="gb"  scrollable="true" (onFilter)=onFilter($event) scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column  [style]="{width:'28px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" *ngIf="hasEdit && !readOnly">                                
-                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>                                                                           
+                    <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="relations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 28px"></th>
+                                <th style="width: 28px"></th>
+                                <th style="width: 28px"></th>
+                                <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.datafield : null " style="width: 250px">
+                                    {{column.text}}
+                                    <d3s-sortIcon [field]="column.datafield"></d3s-sortIcon>
+                                </th>
+                            </tr>
+                            <tr [hidden]="simpleFilter">
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th *ngFor="let column of columns">
+                                    <d3s-column-filter *ngIf="column.filterable" [field]="column.datafield" [datatype]="'text'"></d3s-column-filter>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;showEditor=true;" [pSelectableRow]="item">
+                                <td>
+                                    <div class="RowTools" *ngIf="hasEdit && !readOnly">
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>
                                     </div>
-                                </ng-template>
-                        </p-column>                   
-                        <p-column  [style]="{width:'28px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" *ngIf="hasDelete && !readOnly">                                                    
-                                        <a style="cursor:pointer;" (click)="selected=item;doDelete();" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
+                                </td>
+                                <td>
+                                    <div class="RowTools" *ngIf="hasDelete && !readOnly">
+                                        <a style="cursor:pointer;" (click)="selected=item;doDelete();" title="Remove"><i class="fa fa-trash-o"></i></a>
                                     </div>
-                                </ng-template>
-                        </p-column>           
-                        <p-column  [style]="{width:'28px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" [ngClass]="{'RowTools': item.HasTechnicalRelationships, 'InActiveRowTools': !item.HasTechnicalRelationships}">                                
-                                        <a style="cursor:pointer;" (click)="selected=item;showTechnical=true;" title="Technical Relationships"><i class="fa fa-bolt"></i></a>                                                                           
+                                </td>
+                                <td>
+                                    <div class="RowTools" [ngClass]="{'RowTools': item.HasTechnicalRelationships, 'InActiveRowTools': !item.HasTechnicalRelationships}">
+                                        <a style="cursor:pointer;" (click)="selected=item;showTechnical=true;" title="Technical Relationships"><i class="fa fa-bolt"></i></a>
                                     </div>
-                                </ng-template>
-                        </p-column>                           
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  filterMatchMode="startsWith"  [filter]="!simpleFilter">
-                            <ng-template let-item="rowData" pTemplate type="body">
+                                </td>
+                                <td *ngFor="let column of columns">
                                     <d3s-dynamic-field-value *ngIf="column.text != 'Name';else nameField" [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
                                     <ng-template #nameField>
-                                        <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="selectObject(item)">{{item.Name}}</d3s-preview-tooltip>                                        
-                                    </ng-template>                                    
-                            </ng-template>
-                        </p-column>        
-                        <p-column></p-column>
-                    </p-dataTable>   
+                                        <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="selectObject(item)">{{item.Name}}</d3s-preview-tooltip>
+                                    </ng-template>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </span>
                 <div *ngIf="showTechnical && !shouldShowEditor()">
                     <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" [addTechnicalRelationship]="addRelationship" (allTechnicalRelationshipsDeleted)="selected.HasTechnicalRelationships=false;" (addTechnicalRelationshipChange)="addRelationship=false;addRelationshipChange.emit(addRelationship);selected.HasTechnicalRelationships=true;" (closeClick)="showTechnical=false" [hasEdit]="hasEdit" [hasDelete]="hasDelete"></d3s-relationship-technical-relations>                    
@@ -94,6 +110,9 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     private fields: GridField[] = [];
 
+    get globalFilterFields(): string[] {
+        return this.columns.map(c => c.datafield);
+    }
 
     get taxonomyName() {
         return CompanySettings.ArtifactType_TaxonomyTypeID || '';

@@ -26,7 +26,6 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
 import {
     ButtonModule,
     CalendarModule,
-    DataTableModule,
     DropdownModule,
     EditorModule,
     CheckboxModule,
@@ -38,6 +37,7 @@ import {
     TreeTableModule,
 } from 'primeng/primeng';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { TableModule } from 'primeng/table';
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
 
@@ -54,7 +54,6 @@ import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-
         //prime
         ButtonModule,
         CalendarModule,
-        DataTableModule,
         DropdownModule,
         EditorModule,
         CheckboxModule,
@@ -65,6 +64,7 @@ import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-
         SharedModule,
         SpinnerModule,
         TreeTableModule,
+        TableModule,
 
         //d3s        
         CoreModule,

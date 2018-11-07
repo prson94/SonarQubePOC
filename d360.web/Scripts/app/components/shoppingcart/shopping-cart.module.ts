@@ -9,8 +9,9 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 import {
     SharedModule,
     ButtonModule,
-    DataTableModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
@@ -39,7 +40,7 @@ import { ShoppingCartRequestComponent } from './shopping-cart-request.component'
         //prime                
         SharedModule,
         ButtonModule,
-        DataTableModule,
+        TableModule,
     ],
     declarations: [
         ShoppingCartComponent,

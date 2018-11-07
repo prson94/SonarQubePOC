@@ -49,33 +49,47 @@ import { HeaderActions } from '../../models/header.model';
                     </div>
                     <div class="row">
                         <div class="col s12">
-                            <p-dataTable #dt [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="details?.ItemSteps" selectionMode="single">                    
-                                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                <p-column field="StepName" header="Step Name" sortable="false">
-                                    <ng-template let-itemStep="rowData" pTemplate type="body">
-                                        <span *ngIf="itemStep.CompletedOn">{{itemStep.StepName}}</span>
-                                        <span *ngIf="!itemStep.CompletedOn && itemStep.ActivityType =='Form'"><a (click)="showForm(itemStep)">{{itemStep.StepName}}</a></span>
-                                    </ng-template>
-                                </p-column>
-                                <p-column field="StepType" header="Step Type" sortable="false"></p-column>
-                                <p-column header="Complete" sortable="false">
-                                    <ng-template let-itemStep="rowData" pTemplate type="body">
-                                        <span *ngIf="itemStep.CompletedOn;else other_content"><i class="fa fa-check enabled" title="True"></i></span>
-                                        <ng-template #other_content><span></span></ng-template>
-                                    </ng-template>
-                                </p-column>
-                                <p-column field="ActivityType" header="Activity Type" sortable="false"></p-column>
-                                <p-column field="StartedOn" header="Date Started" sortable="true">
-                                    <ng-template let-itemStep="rowData" pTemplate type="body">
-                                        <span>{{itemStep.StartedOn | date:'shortDate'}}</span>
-                                    </ng-template>
-                                </p-column>
-                                <p-column field="CompletedOn" header="Date Completed" sortable="true">
-                                    <ng-template let-itemStep="rowData" pTemplate type="body">
-                                        <span>{{itemStep.CompletedOn | date:'shortDate'}}</span>
-                                    </ng-template>
-                                </p-column>
-                            </p-dataTable>       
+                            <p-table #dt [value]="details?.ItemSteps" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Step Name</th>
+                                        <th>Step Type</th>
+                                        <th>Complete</th>
+                                        <th>Activity Type</th>
+                                        <th [pSortableColumn]="'StartedOn'">
+                                            Date Started
+                                            <d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'CompletedOn'">
+                                            Date Completed
+                                            <d3s-sortIcon [field]="'CompletedOn'"></d3s-sortIcon>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td>
+                                            <span *ngIf="item.CompletedOn">{{item.StepName}}</span>
+                                            <span *ngIf="!item.CompletedOn && item.ActivityType =='Form'"><a (click)="showForm(item)">{{item.StepName}}</a></span>
+                                        </td>
+                                        <td>{{item.StepType}}</td>
+                                        <td>
+                                            <span *ngIf="item.CompletedOn;else other_content"><i class="fa fa-check enabled" title="True"></i></span>
+                                            <ng-template #other_content><span></span></ng-template>
+                                        </td>
+                                        <td>{{item.ActivityType}}</td>
+                                        <td>
+                                            <span>{{item.StartedOn | date:'shortDate'}}</span>
+                                        </td>
+                                        <td>
+                                            <span>{{item.CompletedOn | date:'shortDate'}}</span>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                </ng-template>
+                            </p-table>
                         </div>
                     </div>
                 </div>

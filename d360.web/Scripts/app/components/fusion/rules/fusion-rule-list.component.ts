@@ -8,26 +8,47 @@ import { FusionRule } from '../../../models/fusion.model';
     selector: 'd3s-fusion-rule-list',
     template: `
 <header>Rules<d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
-<input [hidden]="!showSimpleFilter" #gbRules type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-<p-dataTable #dtRules [globalFilter]="gbRules" [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-    <p-footer *ngIf="dtRules.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRules.totalRecords" [first]="dtRules.first" [rows]="dtRules.rows"></d3s-grid-paging-info></p-footer>
-    <p-column header="Enabled" field="Enabled" sortable="true" [filter]="!showSimpleFilter" [style]="{width:'15%'}" filterMatchMode="equals">
-        <ng-template let-item="rowData" pTemplate type="body">
-            <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
-            <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
-        </ng-template>
-    </p-column>
-    <p-column header="Name" field="ObjectName" [filter]="!showSimpleFilter"></p-column>
-    <p-column header="Description" field="Description" [filter]="!showSimpleFilter"></p-column>
-    <p-column header="" [style]="{ 'width' : '100px'}">
-        <ng-template pTemplate type="body" let-row="rowData">
-            <div class="RowTools">
-                <a (click)="edit(row);"><i class="fa fa-pencil"></i></a>
-                <a (click)="delete(row);"><i class="fa fa-trash-o"></i></a>
-            </div>
-        </ng-template>
-    </p-column>
-</p-dataTable>
+<input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+<p-table #dt [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)"  [metaKeySelection]="true" [globalFilterFields]="['Enabled','ObjectName','Description']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+    <ng-template pTemplate="header">
+        <tr>
+            <th [pSortableColumn]="'Enabled'" style="width: 15%">
+                Enabled
+                <d3s-sortIcon [field]="'Enabled'"></d3s-sortIcon>
+            </th>
+            <th>Name</th>
+            <th>Description</th>
+            <th style="width:    100px"></th>
+        </tr>
+        <tr [hidden]="showSimpleFilter">
+            <th><d3s-column-filter [field]="'Enabled'" [datatype]="'text'"></d3s-column-filter></th>
+            <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
+            <th><d3s-column-filter [field]="'Description'" [datatype]="'text'"></d3s-column-filter></th>
+            <th></th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+        <tr [pSelectableRow]="item">
+            <td>
+                    <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
+                    <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
+            </td>
+            <td>{{item.ObjectName}}</td>
+            <td>{{item.Description}}</td>
+            <td>
+             
+                    <div class="RowTools">
+                        <a (click)="edit(item);"><i class="fa fa-pencil"></i></a>
+                        <a (click)="delete(item);"><i class="fa fa-trash-o"></i></a>
+                    </div>
+             
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template  pTemplate="summary">
+        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+    </ng-template>
+</p-table>
 `,
     providers: [FusionService]
 })

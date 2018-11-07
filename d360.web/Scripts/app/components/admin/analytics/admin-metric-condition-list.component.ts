@@ -16,19 +16,29 @@ import { MessagesService } from '../../../services/messages.service';
                <div *ngIf="!isLoading">
                     <div [ngSwitch]="formMode">
                         <div *ngSwitchCase="FormMode.Default">
-                            <p-dataTable #dt [value]="conditions" selectionMode="single"  [(selection)]="selection">
-                                <p-column field="FieldTypeName" header="Field"></p-column>
-                                <p-column field="OperatorText" header="Operator" [style]="{width:'100px'}"></p-column>
-                                <p-column field="ValuesText" header="Value"></p-column>
-                                <p-column [style]="{width:'100px'}">
-                                    <ng-template let-condition="rowData" let-i="rowIndex" pTemplate type="body">
+                            <p-table #dt [value]="conditions" selectionMode="single" [(selection)]="selection">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Field</th>
+                                        <th>Operator</th>
+                                        <th>Value</th>
+                                        <th style="width: 100px"></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                                    <tr [pSelectableRow]="item">
+                                        <td>{{item.FieldTypeName}}</td>
+                                        <td>{{item.OperatorText}}</td>
+                                        <td>{{item.ValuesText}}</td>
+                                        <td>
                                         <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="selection = condition; edit(i)"><i class="fa fa-pencil"></i></a>   
-                                            <a style="cursor:pointer;" (click)="selection = condition; delete(i)"><i class="fa fa-trash-o"></i></a>   
-                                        </div>
-                                    </ng-template>
-                                </p-column> 
-                            </p-dataTable>   
+                                            <a style="cursor:pointer;" (click)="selection = item; edit(i)"><i class="fa fa-pencil"></i></a>   
+                                            <a style="cursor:pointer;" (click)="selection = item; delete(i)"><i class="fa fa-trash-o"></i></a>   
+                                        </div> 
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
                         </div>
                         <div *ngSwitchCase="FormMode.Adding">
                             <d3s-admin-metric-condition-editor 

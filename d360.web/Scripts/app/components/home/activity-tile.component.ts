@@ -12,16 +12,38 @@ import { Count} from '../../models/counts.model';
                     <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <p-dataTable #dt *ngIf="!isLoading && counts.length > 0" sortField="Name" sortOrder="1" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect(selected)" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">                    
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="Name" header="Name" [sortable]="true">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                    <a (click)="doSelect(item)">{{item.Name}}</a>
-                            </ng-template>
-                        </p-column>                                                                           
-                        <p-column field="New" header="New" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          
-                        <p-column field="Total" header="Modified" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          
-                    </p-dataTable>                      
+                    <p-table #dt *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','New','Total']" sortField="Name" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'New'" style="text-align:center">
+                                    New
+                                    <d3s-sortIcon [field]="'New'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Total'" style="text-align:center">
+                                    Modified
+                                    <d3s-sortIcon [field]="'Total'"></d3s-sortIcon>
+                                </th>
+                            </tr>
+                           
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr  (dblclick)="selected=item;doSelect(selected)" [pSelectableRow]="item">
+                                <td>
+                                     <a (click)="doSelect(item)">{{item.Name}}</a>
+                                </td>
+                                <td style="text-align:center">{{item.New}}</td>
+                                <td style="text-align:center">{{item.Total}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
+                     
                     <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">No activity for this timeframe</div>                    
                 </div>
                 `

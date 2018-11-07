@@ -18,17 +18,17 @@ import { HomeComponent} from './home.component';
 import { ActivityTile } from './activity-tile.component';
 import { ActivityDetailsTile } from './activity-details-tile.component';
 import { BoardTile} from './board-tile.component';
-
 import { HomeRoutingModule } from './home.routes';
 
 import {
     GrowlModule,
-    DataTableModule,
     ButtonModule,
     TooltipModule,    
     SharedModule,
     InputTextModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,     
@@ -41,10 +41,10 @@ import {
         //primeng  
         InputTextModule,
         GrowlModule,       
-        DataTableModule,
         ButtonModule,
         TooltipModule,                     
         SharedModule,
+        TableModule,
 
         //d3s
         CoreModule,
@@ -55,6 +55,7 @@ import {
         SharedGridPagingInfoModule, 
         ShortcutModule,
         DashboardModule,
+
     ],
     declarations: [
         ActivityDetailsTile,

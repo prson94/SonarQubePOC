@@ -29,8 +29,9 @@ import {
     InputTextModule,
     MultiSelectModule,
     SharedModule,
-    DataTableModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -47,7 +48,7 @@ import {
         InputTextModule,
         MultiSelectModule,
         SharedModule,
-        DataTableModule,
+        TableModule,
 
         //editor
         CodemirrorModule,
