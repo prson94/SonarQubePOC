@@ -2600,7 +2600,7 @@
             Creates a new Data Quality Rule result record for the specified Rule with the specified rule Uid.  
              Looks for a rule implementation called 'default'.  If not found, it creates this rule implemention.        
              Current user must be an admin or http status code 403 is returned. If the specified RuleUid is not found http status code 401 is returned.            
-             If any of the specified AssetUIDs are not valid, a http status code 400 bad request with the Uids of the invalid assets is returned
+             If any of the specified AssetUIDs are not valid, a http status code 400 bad request with the Uids of the invalid assets is returned.  
              No rule results are written if there is any sort of error.  You must fix any errors and resubmit your request.  The timeout parameter is optional.  If specified,
              a value in seconds is used to override the default timeout of 600 seconds.
             </summary>
