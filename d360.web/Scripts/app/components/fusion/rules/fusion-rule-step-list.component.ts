@@ -11,7 +11,7 @@ import { FusionRule, FusionRuleStep } from '../../../models/fusion.model';
     <div *ngIf="!isLoading">
         <header>Steps for selected rule <d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-    <p-table #dt [value]="values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Step','Action','Description']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+    <p-table #dt [value]="values" [selection]="selection" (selectionChange)="selectionChange.emit($event)" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Step','Action','Description']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">
             <tr>
                 <th style="width: 10%">Step</th>

@@ -9,7 +9,7 @@ import { FusionRule } from '../../../models/fusion.model';
     template: `
 <header>Rules<d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-<p-table #dt [value]="values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Enabled','ObjectName','Description']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+<p-table #dt [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)"  [metaKeySelection]="true" [globalFilterFields]="['Enabled','ObjectName','Description']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
     <ng-template pTemplate="header">
         <tr>
             <th [pSortableColumn]="'Enabled'" style="width: 15%">
@@ -45,7 +45,7 @@ import { FusionRule } from '../../../models/fusion.model';
             </td>
         </tr>
     </ng-template>
-    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+    <ng-template  pTemplate="summary">
         <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
     </ng-template>
 </p-table>

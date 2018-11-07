@@ -17,7 +17,7 @@ declare var CompanySettings;
         <div *ngIf="UnMappedKeyColumns && UnMappedKeyColumns.length >0" class="red-text left"  style="font-weight:bold">
                 <span>**Warning: All key fields not mapped < </span><span *ngFor="let c of UnMappedKeyColumns;let first=first;let last=last;">{{c}}<i *ngIf="!last">,</i><i *ngIf="last">></i></span>
         </div>
-        <p-table #dt [value]="values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['SourceFieldName','TargetFieldName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+        <p-table #dt [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" [metaKeySelection]="true" [globalFilterFields]="['SourceFieldName','TargetFieldName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
             <ng-template pTemplate="header">
                 <tr>
                     <th>Source</th>

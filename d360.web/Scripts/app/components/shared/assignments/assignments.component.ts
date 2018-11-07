@@ -25,15 +25,15 @@ import { WorkflowType } from '../../../models/workflow.model';
                                     Name
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
-                                <th [pSortableColumn]="'Version'" style="text-align: 'center'">
+                                <th [pSortableColumn]="'Version'" style="text-align:center">
                                     Version
                                     <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
                                 </th>
-                                <th [pSortableColumn]="'Step'" style="text-align: 'left'">
+                                <th [pSortableColumn]="'Step'" style="text-align:left">
                                     Step
                                     <d3s-sortIcon [field]="'Step'"></d3s-sortIcon>
                                 </th>
-                                <th [pSortableColumn]="'Total'" style="text-align: 'center'">
+                                <th [pSortableColumn]="'Total'" style="text-align:center">
                                     Count
                                     <d3s-sortIcon [field]="'Total'"></d3s-sortIcon>
                                 </th>
@@ -44,9 +44,9 @@ import { WorkflowType } from '../../../models/workflow.model';
                                 <td>
                                     <a (click)="doSelect(item)">{{item.Name}}</a>
                                 </td>
-                                <td>{{item.Version}}</td>
+                                <td style="text-align:center">{{item.Version}}</td>
                                 <td>{{item.Step}}</td>
-                                <td>{{item.Total}}</td>
+                                <td style="text-align:center">{{item.Total}}</td>
                             </tr>
                         </ng-template>
                         <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
