@@ -10,24 +10,42 @@ import { FusionRule, FusionRuleStep } from '../../../models/fusion.model';
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <header>Steps for selected rule <d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
-        <input [hidden]="!showSimpleFilter" #gbRuleSteps type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-        <p-dataTable #dtRuleSteps [globalFilter]="gbRuleSteps" [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-            <p-footer *ngIf="dtRuleSteps.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleSteps.totalRecords" [first]="dtRuleSteps.first" [rows]="dtRuleSteps.rows"></d3s-grid-paging-info></p-footer>
-            <p-column header="Step" field="Step" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>
-            <p-column header="Action" field="Action" [style]="{width:'15%'}" [filter]="!showSimpleFilter"></p-column>
-            <p-column header="Description" field="Description" [filter]="!showSimpleFilter"></p-column>
-            <p-column header="" [style]="{width:'210px'}">
-                <ng-template pTemplate type="body" let-row="rowData" let-i="rowIndex">
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <p-table #dt [value]="values" [selection]="selection" (selectionChange)="selectionChange.emit($event)" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Step','Action','Description']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 10%">Step</th>
+                <th style="width: 15%">Action</th>
+                <th>Description</th>
+                <th style="width: 210px"></th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th><d3s-column-filter [field]="'Step'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'Action'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'Description'" [datatype]="'text'"></d3s-column-filter></th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+            <tr [pSelectableRow]="item">
+                <td>{{item.Step}}</td>
+                <td>{{item.Action}}</td>
+                <td>{{item.Description}}</td>
+                <td>
                     <div class="RowTools">
-                        <a (click)="history(row)"><i class="fa fa-history"></i></a>
-                        <a (click)="edit(row);"><i class="fa fa-pencil"></i></a>
-                        <a (click)="delete(row);"><i class="fa fa-trash-o"></i></a>
-                        <a *ngIf="i > 0" (click)="move(row, true);"><i class="fa fa-caret-up"></i></a>
-                        <a *ngIf="i < (values.length - 1)" (click)="move(row, false);"><i class="fa fa-caret-down"></i></a>
+                        <a (click)="history(item)"><i class="fa fa-history"></i></a>
+                        <a (click)="edit(item);"><i class="fa fa-pencil"></i></a>
+                        <a (click)="delete(item);"><i class="fa fa-trash-o"></i></a>
+                        <a *ngIf="rowIndex > 0" (click)="move(item, true);"><i class="fa fa-caret-up"></i></a>
+                        <a *ngIf="rowIndex < (values.length - 1)" (click)="move(item, false);"><i class="fa fa-caret-down"></i></a>
                     </div>
-                </ng-template>
-            </p-column>
-        </p-dataTable>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
     </div>
 
 `,

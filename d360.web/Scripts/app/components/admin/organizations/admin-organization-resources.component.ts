@@ -15,40 +15,71 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && !showHistory">
-                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                    <p-dataTable #dt [globalFilter]="gb" [value]="resources" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column header="Name" [style]="{'max-width':'140px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <a (click)="openResource(item)">{{item.FirstName}} {{item.LastName}}</a>
-                            </ng-template>
-                        </p-column>
-                        <p-column field="Email" header="Email" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Status" header="Status" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'max-width':'100px'}"></p-column>
-                        <p-column field="Accepted" header="Accepted" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'max-width':'100px'}">
-                            <ng-template let-col let-item="rowData" pTemplate type="body">
-                                <i *ngIf="item.Accepted == true" class="fa fa-check enabled" title="True"></i>
-                                <i *ngIf="item.Accepted == false" class="fa fa-times disabled" title="False"></i>
-                            </ng-template>
-                        </p-column>
-                        <p-column field="DateAccepted" header="Accepted On" [sortable]="true" [style]="{'max-width':'150px'}">
-                            <ng-template let-col let-item="rowData" pTemplate type="body">
-                                <span>{{item.DateAccepted | date : 'short'}}</span>
-                            </ng-template>
-                        </p-column>
-                        <p-column field="DateLastLoggedIn" header="Last Logon" [sortable]="true" [style]="{'max-width':'120px'}">
-                            <ng-template let-col let-item="rowData" pTemplate type="body">
-                                <span>{{item.DateLastLoggedIn | date : 'short'}}</span>
-                            </ng-template>
-                        </p-column>
-                        <p-column [style]="{width:'40px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showHistory=true"><i class="fa fa-history"></i></a>                                        
-                                </div>
-                            </ng-template>
-                        </p-column>
-                    </p-dataTable>  
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="resources" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Email','Status','Accepted','DateAccepted','DateLastLoggedIn']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="max-width: 140px">Name</th>
+                                <th [pSortableColumn]="'Email'">
+                                    Email
+                                    <d3s-sortIcon [field]="'Email'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Status'" style="max-width: 100px">
+                                    Status
+                                    <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Accepted'" style="max-width: 100px">
+                                    Accepted
+                                    <d3s-sortIcon [field]="'Accepted'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'DateAccepted'" style="max-width: 150px">
+                                    Accepted On
+                                    <d3s-sortIcon [field]="'DateAccepted'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'DateLastLoggedIn'" style="max-width: 120px">
+                                    Last Logon
+                                    <d3s-sortIcon [field]="'DateLastLoggedIn'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th></th>
+                                <th><d3s-column-filter [field]="'Email'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'Accepted'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
+                                <td>
+                                    <a (click)="openResource(item)">{{item.FirstName}} {{item.LastName}}</a>
+                                </td>
+                                <td>{{item.Email}}</td>
+                                <td>{{item.Status}}</td>
+                                <td>
+                                    <i *ngIf="item.Accepted == true" class="fa fa-check enabled" title="True"></i>
+                                    <i *ngIf="item.Accepted == false" class="fa fa-times disabled" title="False"></i>
+                                </td>
+                                <td>
+                                    <span>{{item.DateAccepted | date : 'short'}}</span>
+                                </td>
+                                <td>
+                                    <span>{{item.DateLastLoggedIn | date : 'short'}}</span>
+                                </td>
+                                <td>
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showHistory=true"><i class="fa fa-history"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </div>
                 <div *ngIf="!isLoading && showHistory">
                     <d3s-admin-organization-contract-history type="resource" [id]="selected?.ResourceID" [objectName]="(selected?.FirstName || '') + ' ' + (selected?.LastName || '')" (onClose)="showHistory = false"></d3s-admin-organization-contract-history>

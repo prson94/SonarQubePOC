@@ -3,16 +3,31 @@
     <div *ngIf="!isLoading">
         <div class="row">
             <div class="col m9 s12" style="padding:20px;">
-                <p-dataTable scrollable="true" scrollWidth="100%" [value]="items">
-                    <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>
-                    <p-column field="Name" header="Name">
-                        <ng-template let-item="rowData" pTemplate type="body">
-                            <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID">
-                                <a style="cursor:pointer;" (click)="navigate(item)">{{item.Name}}</a>
-                            </d3s-preview-tooltip>                            
-                        </ng-template>
-                    </p-column>
-                </p-dataTable>
+
+                <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'ObjectTypeName'">
+                                Type
+                                <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
+                            </th>
+                            <th>Name</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr [pSelectableRow]="item">
+                            <td>{{item.ObjectTypeName}}</td>
+                            <td>
+                                <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID">
+                                    <a style="cursor:pointer;" (click)="navigate(item)">{{item.Name}}</a>
+                                </d3s-preview-tooltip>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
             </div>
             <div class="col m3 s12" style="padding:20px;">
                 <div class="FieldName">

@@ -19,43 +19,58 @@ import { MessagesService } from '../../services/messages.service';
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter"> 
-                    <p-dataTable #dt [value]="results" [globalFilter]="gb" selectionMode="single" [selection]="selected" (selectionChange)="selectedChange.emit($event)" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked" (onRowDblclick)="selected=$event.data;showRuleImplementation(selected);">
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                        
-                        <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
-                            <ng-template pTemplate type="body" let-item="rowData">
-                                <a (click)="showRuleImplementation(item);">{{item.Name}}</a>
-                            </ng-template>
-                        </p-column>
-                        <p-column [style]="{width:'40px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="copyAs($event, item)"><i class="fa fa-copy"  title="Copy"></i></a>
-                                </div>
-                            </ng-template>
-                        </p-column>
-                        <p-column [style]="{width:'40px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">                                    
-                                    <a *ngIf="item.SourceUri" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
-                                </div>
-                            </ng-template>
-                        </p-column>
-                        <p-column [style]="{width:'40px'}">
-                            <ng-template let-imp="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=imp;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                </div>
-                            </ng-template>
-                        </p-column>                            
-                        <p-column [style]="{width:'40px'}">
-                                <ng-template let-imp="rowData" pTemplate type="body">
-                                    <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=imp;showDelete=true"><i class="fa fa-trash-o"></i></a>
-                                    </div>
-                                </ng-template>
-                        </p-column>                                                
-                    </p-dataTable>
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="results" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;showRuleImplementation(selected);" [pSelectableRow]="item">
+                                <td>
+                                        <a (click)="showRuleImplementation(item);">{{item.Name}}</a>
+                                </td>
+                                <td>
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="copyAs($event, item)"><i class="fa fa-copy" title="Copy"></i></a>
+                                        </div>
+                                </td>
+                                <td>
+                                        <div class="RowTools">
+                                            <a *ngIf="item.SourceUri" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
+                                        </div>
+                                </td>
+                                <td>
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=imp;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                        </div>
+                                </td>
+                                <td>
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=imp;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                        </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </div>  
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [copy]="copy" [objectType]="'RuleImplementation'" [title]="'Rule Implementation'" [selection]="selected" (saveClick)="saveImplementation($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                 <d3s-delete-form *ngIf="showDelete"

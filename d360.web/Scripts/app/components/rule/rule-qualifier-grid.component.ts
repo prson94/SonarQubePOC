@@ -16,21 +16,31 @@ import { FormMode } from '../../models/form.model';
                                         <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
                                     </header>
                                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                                    <p-dataTable *ngIf="!isLoading" [value]="qualifierTypes" selectionMode="single"  rows="25" paginator="true" [(selection)]="selectedQualifierType" [rowsPerPageOptions]="defaultPagingOptions" >                            
-                                        <p-column field="Name" header="Name"></p-column>
-                                        <p-column field="ResolutionObjectName" header="Resolution Object"></p-column>
-                                        <p-column field="ResolutionFieldTypeName" header="Resolution Field"></p-column>
-                                        <p-column>
-                                            <ng-template let-i="rowIndex" let-item="rowData" pTemplate="body">
-                                                <div class="RowTools">
-                                                    <a *ngIf="i > 0" (click)="moveUp(item)"><i class="fa fa-caret-up"></i></a>
-                                                    <a *ngIf="i < (qualifierTypes.length - 1)" (click)="moveDown(item)"><i class="fa fa-caret-down"></i></a>
-                                                    <a (click)="edit(item)"><i class="fa fa-pencil"></i></a>
-                                                    <a (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
-                                                </div>
-                                            </ng-template>
-                                        </p-column>
-                                    </p-dataTable>     
+                                    <p-table  [value]="qualifierTypes" selectionMode="single" rows="25" paginator="true" [(selection)]="selectedQualifierType" [rowsPerPageOptions]="defaultPagingOptions"   >
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Resolution Object</th>
+                                                <th>Resolution Field</th>
+                                                <th></th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-item let-i="rowIndex">
+                                            <tr [pSelectableRow]="item">
+                                                <td>{{item.Name}}</td>
+                                                <td>{{item.ResolutionObjectName}}</td>
+                                                <td>{{item.ResolutionFieldTypeName}}</td>
+                                                <td>
+                                                        <div class="RowTools">
+                                                            <a *ngIf="i > 0" (click)="moveUp(item)"><i class="fa fa-caret-up"></i></a>
+                                                            <a *ngIf="i < (qualifierTypes.length - 1)" (click)="moveDown(item)"><i class="fa fa-caret-down"></i></a>
+                                                            <a (click)="edit(item)"><i class="fa fa-pencil"></i></a>
+                                                            <a (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
+                                                        </div>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>    
                                 </span>
                                 <span *ngSwitchCase="FormMode.Adding">
                                     <d3s-rule-qualifier-editor [implementationId]="implementationId" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>

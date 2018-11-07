@@ -12,32 +12,67 @@ import { BaseComponent } from '../shared/base.component';
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading && !showDelete && !showEditor">
-                   <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                   <p-dataTable #dt sortField="Level" [sortOrder]="1" [globalFilter]="gb" [value]="levels" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="showEditor=true" [(selection)]="selectedLevel" >                                                        
-                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                    <p-column field="Level" header="Level" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
-                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
-                    <p-column field="Description" header="Description" [sortable]="true" [filter]="!showSimpleFilter">
-                        <ng-template let-col let-level="rowData" pTemplate type="body">
-                            <div [innerHtml]="level?.Description"></div>
-                        </ng-template>                                                        
-                    </p-column>    
-                        <p-column [style]="{width:'40px'}">
-                            <ng-template let-level="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selectedLevel=level;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                </div>
-                            </ng-template>
-                        </p-column>                            
-                        <p-column  [style]="{width:'40px'}">
-                            <ng-template let-level="rowData" pTemplate type="body">
-                                <div class="RowTools">                                
-                                    <a style="cursor:pointer;" (click)="selectedLevel=level;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                </div>
-                            </ng-template>
-                        </p-column>                            
-                    </p-dataTable>      
+                <span *ngIf="!isLoading && !showDelete && !showEditor">               
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+	                <p-table #dt [value]="levels" selectionMode="single" [globalFilterFields]="['Name','Level','Description']" [(selection)]="selectedLevel" [rows]="10" [paginator]="true" [pageLinks]="3">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Level'">
+                                    Level
+                                    <d3s-sortIcon [field]="'Level'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Description'">
+                                    Description
+                                    <d3s-sortIcon [field]="'Description'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                            </tr>
+			                <tr [hidden]="showSimpleFilter">
+                                <th>
+                                    <d3s-column-filter [field]="'Level'"></d3s-column-filter>
+                                </th>
+                                <th>
+                                    <d3s-column-filter [field]="'Name'"></d3s-column-filter>
+                                </th>
+                                <th>
+                                    <d3s-column-filter [field]="'Description'" ></d3s-column-filter>
+                                </th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="showEditor = true" [pSelectableRow]="item">
+                                <td>
+                                    {{item.Level}}
+                                </td>                                
+                                <td>
+                                    {{item.Name}}
+                                </td>
+                                <td>
+                                     <div [innerHtml]="item?.Description"></div>
+                                </td>
+                                <td>
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selectedLevel=item;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="RowTools">                                
+                                        <a style="cursor:pointer;" (click)="selectedLevel=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+		                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords" ></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table> 
                 </span>
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"

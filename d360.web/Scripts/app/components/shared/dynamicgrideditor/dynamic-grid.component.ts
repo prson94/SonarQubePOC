@@ -16,29 +16,47 @@ import { BaseComponent } from '../../shared/base.component';
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                    <p-dataTable #dt [globalFilter]="gb" [sortField]="sortField" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable ? 'custom' : false" [filter]="!showSimpleFilter"  (sortFunction)="customSort($event, column)">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
-                            </ng-template>
-                        </p-column>
-                        <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
-                                <ng-template let-item="rowData" pTemplate type="body">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [sortField]="sortField" [pageLinks]="3" [paginator]="true" 
+                        [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" (sortFunction)="customSort($event)">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.datafield : null">
+                                    {{column.text}}
+                                    <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th *ngFor="let column of columns">
+                                    <d3s-column-filter [field]="column.datafield" [datatype]="'text'"></d3s-column-filter>
+                                </th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;editItemClick.emit(selected)" [pSelectableRow]="item">
+                                <td *ngFor="let column of columns">
+                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
+                                </td>
+                                <td>
                                     <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
                                     </div>
-                                </ng-template>
-                        </p-column>                            
-                        <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
-                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                </td>
+                                <td>
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
                                     </div>
-                                </ng-template>
-                        </p-column>                            
-                    </p-dataTable>   
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType" [title]="itemName + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <d3s-delete-form *ngIf="showDelete"
@@ -82,7 +100,10 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     selected: any = null;
 
     theDeleteCallback: Function;
-    
+
+    get globalFilterFields(): string[] {
+        return this.columns.map(c => c.datafield);
+    }
 
     constructor(private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private messagesService: MessagesService) {
         super();
@@ -154,7 +175,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
             });
     }    
 
-    customSort(e: any, col: any) {
+    customSort(e: any) {
         let field = e.field;
         let direction = e.order;
         

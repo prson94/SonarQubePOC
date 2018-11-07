@@ -10,20 +10,34 @@ import { Router } from '@angular/router';
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" [hidden]="!simpleFilter">   
-   <p-dataTable #dt [globalFilter]="gb" [value]="items" [rows]="10" paginator="true" selectionMode="single" (onRowDblclick)="navigate($event)">
-        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-        <p-column header="Name" field="Name" [filter]="!simpleFilter" sortable="true">
-            <ng-template let-row="rowData" pTemplate type="body">                
-                <d3s-preview-tooltip [objectType]="row.ObjectType" [objectId]="row.ObjectID">{{row.Name}}</d3s-preview-tooltip>
-            </ng-template>
-        </p-column>
-        <p-column header="Current Score" sortable="true"  field="CurrentScore">
-            <ng-template let-row="rowData" pTemplate type="body">
-                <div>{{row.CurrentScore | scoreDisplay }}</div>
-            </ng-template>
-        </p-column>
-    </p-dataTable>
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','CurrentScore']" [paginator]="true" [rows]="10" >
+        <ng-template pTemplate="header">
+            <tr>
+                <th [pSortableColumn]="'Name'">Name
+    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon></th>
+    <th [pSortableColumn]="'CurrentScore'">Current Score
+    <d3s-sortIcon [field]="'CurrentScore'"></d3s-sortIcon></th>
+            </tr>
+		    <tr [hidden]="showSimpleFilter">
+                <th ><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+    <th ></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr (dblclick)="navigate(item)" [pSelectableRow]="item">
+                <td>
+                    <d3s-preview-tooltip [objectType]="item.ObjectType" [objectId]="item.ObjectID">{{item.Name}}</d3s-preview-tooltip>
+            </td>
+            <td>
+                    <div>{{item.CurrentScore | scoreDisplay }}</div>
+            </td>
+            </tr>
+        </ng-template>
+	    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords" ></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
 </div>
 `,
 })

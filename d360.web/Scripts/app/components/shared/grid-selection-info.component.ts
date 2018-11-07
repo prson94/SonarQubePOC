@@ -7,7 +7,7 @@ import { BaseComponent } from './base.component';
     selector: 'd3s-grid-selection-info',
     template: ` 
 <div style="position: relative">
-    <div style="position: absolute; top: 0; left: 0; font-weight: normal; padding-top: 5px; float:left; display:inline; width: 300px; z-index: 10; text-align: left;">
+    <div style="position: absolute; top: -54px; left: 0; font-weight: normal; padding-top: 5px; float:left; display:inline; width: 300px; z-index: 10; text-align: left;">
             <ng-container *ngIf="includeSelectLinks">
                 <a style="color: #51a6dc; cursor: pointer;" (click)="onSelectAllClick.emit()">Select All</a> | <a style="color: #51a6dc; cursor: pointer;" (click)="onSelectNoneClick.emit()">Select None</a> &nbsp;&nbsp;&nbsp;
             </ng-container>

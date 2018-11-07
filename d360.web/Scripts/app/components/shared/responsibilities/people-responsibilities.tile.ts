@@ -85,15 +85,16 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         this.router.navigateByUrl(url);
     }
 
-    onDoubleClick(e: any) {
-        if (e == null || e.data == null)
+    onDoubleClick(item: any) {
+        if (item == null)
             return;
 
-        if (e.data.AssigningItemID == e.data.ObjectID && e.data.AssigningItemType == e.data.ObjectType)
+        if (item.AssigningItemID == item.ObjectID && item.AssigningItemType == item.ObjectType)
             this.isEditing = true;
     }
 
     private columnSort(event) {
+        console.log(event);
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
         this.responsibilities = _.orderBy(this.responsibilities, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);

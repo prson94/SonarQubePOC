@@ -7,7 +7,6 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,    
     SharedModule,   
     TreeTableModule,
 } from 'primeng/primeng';
@@ -51,7 +50,6 @@ export function highchartsFactory() {
         WorkflowModule,
         //prime        
         ButtonModule,
-        DataTableModule,        
         SharedModule,  
         TreeTableModule,
 

@@ -12,12 +12,31 @@ import { AssetTypeMetricModel } from '../../../models/asset.model';
 <header>Asset Types</header>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-    <p-dataTable #dt [value]="models" selectionMode="single" [globalFilter]="gb" [(selection)]="selection" (onRowSelect)="onRowSelect($event)" [rows]="10" [paginator]="true" [pageLinks]="3">
-        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-        <p-column field="Class" header="Class" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'70px'}"></p-column>
-        <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-    </p-dataTable>
+
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <p-table #dt [value]="models" selectionMode="single" [globalFilterFields]="['Class','Name']" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selection" (onRowSelect)="onRowSelect($event)" >
+        <ng-template pTemplate="header">
+            <tr>
+                <th [pSortableColumn]="'Class'" style="width: 70px">Class
+<d3s-sortIcon [field]="'Class'"></d3s-sortIcon></th>
+                <th [pSortableColumn]="'Name'">Name
+<d3s-sortIcon [field]="'Name'"></d3s-sortIcon></th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th><d3s-column-filter [field]="'Class'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr [pSelectableRow]="item">
+                <td>{{item.Class}}</td>
+                <td>{{item.Name}}</td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
 </div>
                 `,
     providers: [MetricsService]

@@ -8,11 +8,12 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     InputTextModule,
     SharedModule,
     TooltipModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
@@ -44,10 +45,10 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
         SharedDeleteFormModule,
         //prime
         ButtonModule,
-        DataTableModule,        
         InputTextModule,
         SharedModule,
         TooltipModule,
+        TableModule,
     ],
     declarations: [
         ObjectRelationshipsComponent,

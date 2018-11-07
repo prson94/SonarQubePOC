@@ -46,7 +46,6 @@ export function highchartsFactory() {
 import {    
     InputTextModule,    
     CalendarModule,
-    DataTableModule,
     TreeTableModule,
     ButtonModule,
     DropdownModule,    
@@ -55,6 +54,8 @@ import {
     TooltipModule,        
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 
 @NgModule({
@@ -69,7 +70,6 @@ import {
         //primeng        
         InputTextModule, 
         CalendarModule, 
-        DataTableModule,
         TreeTableModule,
         ButtonModule,
         DropdownModule,        
@@ -77,6 +77,7 @@ import {
         MultiSelectModule,        
         TooltipModule,             
         SharedModule,
+        TableModule,
 
         //highcharts        
         ChartModule,

@@ -41,9 +41,10 @@ import {
     InputMaskModule,
     InputTextModule,
     SharedModule,
-    DataTableModule,
     TreeTableModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CodemirrorModule } from 'ng2-codemirror';
 
@@ -64,8 +65,8 @@ import { CodemirrorModule } from 'ng2-codemirror';
         InputMaskModule,
         InputTextModule,
         SharedModule,
-        DataTableModule,
         TreeTableModule,
+        TableModule,
 
         //color picker
         ColorPickerModule,

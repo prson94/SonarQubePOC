@@ -29,7 +29,6 @@ import {
     CalendarModule,    
     InputTextModule,
     ToggleButtonModule,
-    DataTableModule,
     ButtonModule,
     DropdownModule,
     CheckboxModule,
@@ -39,6 +38,8 @@ import {
     AutoCompleteModule,
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -53,7 +54,6 @@ import {
         GrowlModule,
         ToggleButtonModule,
         InputTextModule,
-        DataTableModule,
         ButtonModule,
         DropdownModule,
         CheckboxModule,                        
@@ -62,6 +62,7 @@ import {
         EditorModule,
         AutoCompleteModule,
         SharedModule,
+        TableModule,
 
         //d3s
         

@@ -14,38 +14,63 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && !showDelete && !showEditor && !showHistory">
-                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                    <p-dataTable #dt [globalFilter]="gb" [value]="contracts" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="Title" header="Title" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="ContractTypeName" header="Type" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'220px'}"></p-column>
-                        <p-column field="PublishedOn" header="Published On" [sortable]="true" [filter]="!showSimpleFilter">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                {{item.PublishedOn == null ? 'Never' : (item.PublishedOn | date : 'short' )}}
-                            </ng-template>
-                        </p-column>
-                        <p-column [style]="{width:'40px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                </div>
-                            </ng-template>
-                        </p-column>
-                        <p-column  [style]="{width:'40px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">                                
-                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                </div>
-                            </ng-template>
-                        </p-column>
-                        <p-column [style]="{width:'40px'}">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showHistory=true"><i class="fa fa-history"></i></a>                                        
-                                </div>
-                            </ng-template>
-                        </p-column>
-                    </p-dataTable>  
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="contracts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Title','ContractTypeName','PublishedOn']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Title'">
+                                    Title
+                                    <d3s-sortIcon [field]="'Title'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'ContractTypeName'" style="width: 220px">
+                                    Type
+                                    <d3s-sortIcon [field]="'ContractTypeName'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'PublishedOn'">
+                                    Published On
+                                    <d3s-sortIcon [field]="'PublishedOn'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th><d3s-column-filter [field]="'Title'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'ContractTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'PublishedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
+                                <td>{{item.Title}}</td>
+                                <td>{{item.ContractTypeName}}</td>
+                                <td>
+                                        {{item.PublishedOn == null ? 'Never' : (item.PublishedOn | date : 'short' )}}
+                                </td>
+                                <td>
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showHistory=true"><i class="fa fa-history"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </div>
                 <div *ngIf="showEditor">
                     <d3s-admin-organization-contract-editor 

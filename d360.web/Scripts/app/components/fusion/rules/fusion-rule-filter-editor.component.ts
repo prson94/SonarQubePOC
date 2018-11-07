@@ -72,10 +72,30 @@ import { TreeNode } from 'primeng/primeng';
                 </div>
                 <div style="clear:both"></div>
                 <div class="form-instructions">Run a test to see the returned results, according to your filters.</div>
-                <p-dataTable #dtItems [value]="queryValues" paginator="true" pageLinks="3" [loading]="QueryExecuting" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-                    <p-footer *ngIf="dtItems.totalRecords"><d3s-grid-paging-info [totalRecords]="dtItems.totalRecords" [first]="dtItems.first" [rows]="dtItems.rows"></d3s-grid-paging-info></p-footer>
-                    <p-column header="Name" field="Name" sortable="true" [style]="{width:'90%'}"></p-column>
-                </p-dataTable>
+               
+                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                <p-table #dt [value]="queryValues" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'Name'" style="width: 90%">
+                                Name
+                                <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                            </th>
+                        </tr>
+                        <tr [hidden]="showSimpleFilter">
+                            <th></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr [pSelectableRow]="item">
+                            <td>{{item.Name}}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+
             </div>
         </div>
 

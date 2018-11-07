@@ -7,9 +7,10 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
-    DataTableModule,
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../../shared/core.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
@@ -35,8 +36,8 @@ import { FollowersComponent } from './followers.component';
         TilesModule,
 
         //prime        
-        DataTableModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         FollowersComponent,

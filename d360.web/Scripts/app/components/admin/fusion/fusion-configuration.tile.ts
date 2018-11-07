@@ -31,6 +31,10 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
 
     columns: GridColumn[];
 
+    get globalFilterFields(): string[] {
+        return this.columns.map(c => c.datafield);
+    }
+
     constructor(private router: Router, private fusionService: FusionService, protected messagesService: MessagesService) {
         super();        
         this.theDeleteTypeCallback = this.deleteFusionConfig.bind(this);

@@ -7,11 +7,12 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     ButtonModule,
-    DataTableModule,
     InputTextModule,
     SharedModule,
     TooltipModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../core.module';
 import { SimpleAccordionModule } from '../simple-accordion.part';
@@ -38,10 +39,10 @@ import { PipesModule } from '../../../pipes/pipes.module';
         PipesModule,
         //prime
         ButtonModule,
-        DataTableModule,
         InputTextModule,
         SharedModule,
         TooltipModule,
+        TableModule,
     ],
     declarations: [
         DynamicLookupGridComponent,

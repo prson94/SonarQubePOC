@@ -1262,12 +1262,139 @@ p-treeTable td a {
     margin: 0 !important;
 }
 
+/* Turbo Table */
+
+
+.ui-table .ui-table-thead > tr > th,
+.ui-table .ui-table-tfoot > tr > td {
+    font-weight: bold;
+    text-transform: capitalize;
+    border-radius: 0;
+    background-color: #252c41;
+}
+
+.ui-table thead th {
+    text-align: left;
+    color: #fff;
+}
+
+.ui-table tr.ui-state-hover {
+    border: none;
+}
+
+.ui-table tr.ui-state-highlight {
+    border: none;
+}
+
+.ui-table thead {
+    border: none;
+}
+
+.ui-table th.ui-state-default {
+    border: none;
+}
+
+.ui-table th.ui-state-hover {
+    background: #d3d5d8;
+    border-color: #d9d9d9;
+    font-weight: bold;
+}
+
+.ui-table th.ui-state-active {
+    /*    background-color: transparent;
+    color: black;*/
+}
+
+.ui-table-odd {
+    background-color: #FFF;
+}
+
+.ui-table-even {
+    background: #f7f7f7; /*#F8F3F0*/
+}
+
+.ui-table-rowordering.ui-state-active {
+    background: #14a4ff none repeat scroll 0 0;
+}
+
+.ui-table tbody > tr.ui-widget-content {
+    border-color: #d9d9d9;
+}
+
+.ui-table .ui-table-thead > tr > th,
+.ui-table .ui-table-tfoot > tr > td,
+.ui-table .ui-table-data > tr > td {
+    border: none;
+    border-radius: 0;
+    word-wrap: break-word;
+    padding: 6px 10px;
+    height: auto;
+}
+
+.ui-table .ui-table-thead > tr > th {
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+/*.ui-table tbody td {
+    border:none;
+    border-radius: 0;
+    padding: 0 10px;
+    height:25px;    
+}*/
+.ui-table .ui-paginator {
+    border-top: 1px solid #999 !important;
+}
+
+.ui-table .ui-widget-header {
+    border-color: white;
+}
+
+.ui-paginator-bottom {
+    background: #ffffff;
+    border-color: #ffffff;
+}
+
+.ui-table-footer {
+    background: white;
+}
+
+.ui-table td > a  {
+    color:#646464;
+    cursor: pointer;
+}
+
+.ui-table .ui-state-highlight td > a {
+    color: #fff;
+}
+
+tbody.ui-table-tbody > tr {
+    border: none;
+}
+
+tbody.ui-table-tbody > tr:nth-child(odd) {
+        background: #f7f7f7;
+        
+}
+
+tbody.ui-table-tbody > tr.ui-state-highlight {
+    background-color: rgb(48, 169, 229);
+    color: #fff;
+}
+
+.ui-table-summary {
+    background-color: #fff;
+}
+
+.ui-table .ui-column-filter {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: .25em;
+}
 
 /*
     Stewarts overrides
 */
-
-
 .ui-widget, .ql-container {
     font-family: 'Nunito Sans', sans-serif;
     font-size: 14px;
@@ -1277,7 +1404,6 @@ p-treeTable td a {
     text-transform: none;
 }
     /* Buttons */
-
     .ui-button, button.ui-button.ui-state-default, .ui-button.ui-state-default {
         background: #30a9e5;
     }
@@ -1293,7 +1419,6 @@ p-treeTable td a {
 .ui-button-text-only .ui-button-text {
     padding: .5em 1.25em;
 }
-
 /* Tables */
 th.ui-state-default, .ui-treetable th.ui-state-default {
     background: #252c41;
@@ -1311,9 +1436,7 @@ th.ui-state-default, .ui-treetable th.ui-state-default {
 .ui-multiselect-item .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {
     background: #30a9e5;
 }
-
 /* paging controls on search tables*/
-
 .ui-widget-header {
     border: 1px solid #fff;
     background-color: #fff;

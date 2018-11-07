@@ -24,9 +24,10 @@ import {
     ButtonModule,
     InputTextModule,
     SharedModule,
-    DataTableModule,
     GrowlModule
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -40,9 +41,9 @@ import {
         ButtonModule,
         InputTextModule,
         SharedModule,
-        DataTableModule,
         GrowlModule,
-
+        TableModule,
+         
         //d3s        
         CoreModule,
         PipesModule,

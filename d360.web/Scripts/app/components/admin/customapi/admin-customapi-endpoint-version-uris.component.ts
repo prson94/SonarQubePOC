@@ -18,31 +18,52 @@ import { Router, ActivatedRoute } from '@angular/router';
                             </header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
-                                <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="uris" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected">                                                                        
-                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                                    
-                                    <p-column field="Format" header="Segment" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                                    <p-column field="UriType" header="Type" [sortable]="true" [filter]="!showSimpleFilter">
-                                        <ng-template let-row="rowData" pTemplate type="body">
-                                            <span *ngIf="row.UriType == 1">Collection</span>
-                                            <span *ngIf="row.UriType == 2">Singleton</span>                                            
-                                        </ng-template>
-                                    </p-column>                                    
-                                    <p-column [style]="{width:'40px'}">
-                                        <ng-template let-service="rowData" pTemplate type="body">
-                                            <div class="RowTools">
-                                                <a style="cursor:pointer;" (click)="selected=service;showEditor=true"><i class="fa fa-pencil"></i></a>                                                                                        
-                                            </div>
-                                        </ng-template>
-                                    </p-column>  
-                                    <p-column  [style]="{width:'40px'}" >
-                                        <ng-template let-service="rowData" pTemplate type="body">
-                                            <div class="RowTools">                              
-                                                <a  style="cursor:pointer;" (click)="selected=service;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                            </div>
-                                        </ng-template>
-                                    </p-column>     
-                                </p-dataTable>                                  
+                                
+                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                <p-table #dt sortField="Name" [sortOrder]="1" [value]="uris" selectionMode="single" [globalFilterFields]="['Format','UriType']" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th [pSortableColumn]="'Format'">
+                                                Segment
+                                                <d3s-sortIcon [field]="'Format'"></d3s-sortIcon>
+                                            </th>
+                                            <th [pSortableColumn]="'UriType'">
+                                                Type
+                                                <d3s-sortIcon [field]="'UriType'"></d3s-sortIcon>
+                                            </th>
+                                            <th style="width:40px"></th>
+                                            <th style="width:40px"></th>
+                                        </tr>
+                                        <tr [hidden]="showSimpleFilter">
+                                            <th><d3s-column-filter [field]="'Format'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th><d3s-column-filter [field]="'UriType'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th></th>
+                                            <th></th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-item>
+                                        <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
+                                            <td>{{item.Format}}</td>
+                                            <td>
+                                                <span *ngIf="item.UriType == 1">Collection</span>
+                                                <span *ngIf="item.UriType == 2">Singleton</span>   
+                                            </td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>                                                                                        
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="RowTools">                              
+                                                    <a  style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                    </ng-template>
+                                </p-table>
                             </span>             
                             <d3s-dynamic-editor *ngIf="showEditor" [parentID]="version?.ID" [objectID]="selected?.ID" [objectType]="'Uri'" [title]="'Uri'" [selection]="selected" (saveClick)="saveUri($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
                              <d3s-delete-form *ngIf="showDelete"

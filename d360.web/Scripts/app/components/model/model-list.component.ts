@@ -21,20 +21,39 @@ import * as _ from 'lodash';
                             <header>{{modelGroup}} Models
                                 <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>         
-                            <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                   
-                            <p-dataTable #dt sortField="TaxonomyTypeClass" sortOrder="1" [globalFilter]="gb"  [value]="models | modelType: modelGroup" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [selection]="selected" (selectionChange)="selected=$event;objectID=selected.ID"  (onRowDblclick)="selected=$event.data;showModel(selected);" >
-                                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                                
-                                <p-column field="Name" header="Name" sortable="true" [style]="{width:'200px'}" [filter]="!showSimpleFilter">
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                            <a (click)="showModel(item)">{{item.Name}}</a>
-                                    </ng-template>
-                                </p-column>                                                                                                                                                        
-                                <p-column field="Description" header="Description" sortable="true" [style]="{width:'500px'}" filterMatchMode="contains" [filter]="!showSimpleFilter">
-                                    <ng-template let-col let-data="rowData" pTemplate type="body">
-                                        <span [innerHtml]="data?.Description"></span>
-                                    </ng-template>                                                        
-                                </p-column>                                
-                            </p-dataTable>      
+                            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                            <p-table #dt [value]="models | modelType: modelGroup" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Description']" sortField="TaxonomyTypeClass" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th [pSortableColumn]="'Name'" style="width: 200px">
+                                            Name
+                                            <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'Description'" style="width: 500px">
+                                            Description
+                                            <d3s-sortIcon [field]="'Description'"></d3s-sortIcon>
+                                        </th>
+                                    </tr>
+                                    <tr [hidden]="showSimpleFilter">
+                                        <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                        <th><d3s-column-filter [field]="'Description'" [datatype]="'text'"></d3s-column-filter></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr (dblclick)="selected=item;showModel(selected);" [pSelectableRow]="item">
+                                        <td>
+                                               <a (click)="showModel(item)">{{item.Name}}</a>
+                                        </td>
+                                        <td>
+                                                <span [innerHtml]="item?.Description"></span>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                </ng-template>
+                            </p-table>
+    
                         </div>
                     </div>
                 </div>

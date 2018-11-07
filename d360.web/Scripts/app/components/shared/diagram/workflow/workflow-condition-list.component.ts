@@ -9,27 +9,35 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
         &nbsp;
         <d3s-tile-actions hideTooltip="true" [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
     </header>
-    <p-dataTable [value]="filteredConditions" selectionMode="single" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit(selection)" [immutable]="false">
-        <p-column field="@FieldName" header="Field Name"></p-column>
-        <p-column field="@Operator" header="Operator">
-            <ng-template let-item="rowData" pTemplate type="body">
-                {{(item['@Operator'] == 'C') ? 'value changed' : item['@Operator']}}
-            </ng-template>
-        </p-column>
-        <p-column field="@Value" header="Value">
-            <ng-template let-item="rowData" pTemplate type="body">
-                {{(item['@Operator'] == 'C') ? '[any value change]' : (item['@ValueLabel'] == null ? item['@Value'] : item['@ValueLabel']) }}
-            </ng-template>
-        </p-column>
-        <p-column *ngIf="!readonly">
-            <ng-template let-item="rowData" pTemplate type="body">
-                <div class="RowTools">
-                    <a style="cursor:pointer;" (click)="removeClick.emit(item)"><i class="fa fa-trash"></i></a>
-                    <!--<a style="cursor:pointer;" (click)="editClick.emit(item)"><i class="fa fa-pencil"></i></a>-->
-                </div>
-            </ng-template>
-        </p-column>
-    </p-dataTable>
+    <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Field Name</th>
+                <th>Operator</th>
+                <th>Value</th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr [pSelectableRow]="item">
+                <td>{{item['@FieldName']}}</td>
+                <td>
+                    {{(item['@Operator'] == 'C') ? 'value changed' : item['@Operator']}}
+                </td>
+                <td>
+                    {{(item['@Operator'] == 'C') ? '[any value change]' : (item['@ValueLabel'] == null ? item['@Value'] : item['@ValueLabel']) }}
+                </td>
+                <td>
+                    <div class="RowTools">
+                        <a style="cursor:pointer;" (click)="removeClick.emit(item)"><i class="fa fa-trash"></i></a>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
 `
 })
 

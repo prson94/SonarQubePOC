@@ -34,7 +34,6 @@ import {
     GrowlModule,
     InputTextModule,
     InputMaskModule,
-    DataTableModule,
     TreeTableModule,
     ButtonModule,
     DropdownModule,
@@ -45,6 +44,8 @@ import {
     TooltipModule,
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -59,7 +60,6 @@ import {
         GrowlModule,
         InputTextModule,
         InputMaskModule,
-        DataTableModule,
         TreeTableModule,
         ButtonModule,
         DropdownModule,
@@ -69,6 +69,7 @@ import {
         TabViewModule,
         TooltipModule,                
         SharedModule,
+        TableModule,
                 
         //d3s
         CoreModule,

@@ -21,9 +21,10 @@ import { GroupResponsibilityComponent } from './group-responsibility.component';
 
 import {
     GrowlModule,    
-    DataTableModule,    
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -36,9 +37,9 @@ import {
 
         //primeng
         GrowlModule,        
-        DataTableModule,
         SharedModule,
-        
+        TableModule,
+
         //d3s
         D3SSharedModule,        
         CoreModule,

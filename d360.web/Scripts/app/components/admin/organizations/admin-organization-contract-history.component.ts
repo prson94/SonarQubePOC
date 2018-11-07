@@ -15,23 +15,51 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading">
-                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                    <p-dataTable #dt [globalFilter]="gb" [value]="contracts" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                        <p-column field="ResourceName" header="Resource Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="ContractName" header="Contract Name" [sortable]="true" [filter]="!showSimpleFilter" ></p-column>
-                        <p-column field="Accepted" header="Accepted" [sortable]="true" [filter]="!showSimpleFilter">
-                            <ng-template let-col let-item="rowData" pTemplate type="body">
-                                <i *ngIf="item.Accepted == true" class="fa fa-check enabled" title="True"></i>
-                                <i *ngIf="item.Accepted == false" class="fa fa-times disabled" title="False"></i>
-                            </ng-template>
-                        </p-column>
-                        <p-column field="AcceptedOn" header="Accepted On" [sortable]="true">
-                            <ng-template let-col let-item="rowData" pTemplate type="body">
-                                <span>{{item.AcceptedOn | date : 'short'}}</span>
-                            </ng-template>
-                        </p-column>
-                    </p-dataTable>  
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="contracts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ResourceName','ContractName','Accepted','AcceptedOn']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'ResourceName'">
+                                    Resource Name
+                                    <d3s-sortIcon [field]="'ResourceName'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'ContractName'">
+                                    Contract Name
+                                    <d3s-sortIcon [field]="'ContractName'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Accepted'">
+                                    Accepted
+                                    <d3s-sortIcon [field]="'Accepted'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'AcceptedOn'">
+                                    Accepted On
+                                    <d3s-sortIcon [field]="'AcceptedOn'"></d3s-sortIcon>
+                                </th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th><d3s-column-filter [field]="'ResourceName'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'ContractName'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'Accepted'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
+                                <td>{{item.ResourceName}}</td>
+                                <td>{{item.ContractName}}</td>
+                                <td>
+                                    <i *ngIf="item.Accepted == true" class="fa fa-check enabled" title="True"></i>
+                                    <i *ngIf="item.Accepted == false" class="fa fa-times disabled" title="False"></i>
+                                </td>
+                                <td>
+                                    <span>{{item.AcceptedOn | date : 'short'}}</span>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </div>
 
                 `

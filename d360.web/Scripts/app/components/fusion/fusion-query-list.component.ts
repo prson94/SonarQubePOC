@@ -13,31 +13,48 @@ import { FusionConfigurationDetails, FusionQueryAttributeType  } from '../../mod
                             <d3s-tile-actions [hasAdd]="true" (addClick)="showAddQuery()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <span *ngIf="!isLoading && !showDelete && !showEditor">                        
-                        <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                        <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="queries" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
-                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                            
-                            <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Uri" header="Uri" [sortable]="false" [filter]="!showSimpleFilter">
-                                <ng-template let-query="rowData" pTemplate type="body">
-                                    <a target="_blank" href="/services/fusion/{{query.FusionID}}/{{query.ID}}/data?metadata=true">/services/fusion/{{query.FusionID}}/{{query.ID}}/data?metadata=true</a>                                        
-                                </ng-template>
-                            </p-column>
-                            <p-column [style]="{width:'40px'}">
-                                <ng-template let-query="rowData" pTemplate type="body">
-                                    <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=query;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                    </div>
-                                </ng-template>
-                            </p-column>                            
-                            <p-column  [style]="{width:'40px'}">
-                                <ng-template let-query="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
-                                        <a style="cursor:pointer;" (click)="selected=query;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                    </div>
-                                </ng-template>
-                            </p-column>                            
-                        </p-dataTable>      
+                    <span *ngIf="!isLoading && !showDelete && !showEditor">                                               
+                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                        <p-table #dt [value]="queries" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Uri']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'Name'">
+                                        Name
+                                        <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                    </th>
+                                    <th>Uri</th>
+                                    <th style="width: 40px"></th>
+                                    <th style="width: 40px"></th>
+                                </tr>
+                                <tr [hidden]="showSimpleFilter">
+                                    <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Uri'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr (dblclick)="selected=item" [pSelectableRow]="item">
+                                    <td>{{item.Name}}</td>
+                                    <td>
+                                        <a target="_blank" href="/services/fusion/{{item.FusionID}}/{{item.ID}}/data?metadata=true">/services/fusion/{{item.FusionID}}/{{item.ID}}/data?metadata=true</a>
+                                    </td>
+                                    <td>
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table> 
                     </span>
                     <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"

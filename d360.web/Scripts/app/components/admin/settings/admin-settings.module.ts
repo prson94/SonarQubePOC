@@ -27,9 +27,10 @@ import {
     DropdownModule,
     InputTextModule,
     SharedModule,
-    DataTableModule,
     ColorPickerModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -44,8 +45,8 @@ import {
         DropdownModule,
         InputTextModule,
         SharedModule,
-        DataTableModule,
         ColorPickerModule,
+        TableModule,
 
         //d3s        
         CoreModule,        

@@ -12,56 +12,55 @@ import { MapItem } from '../../../../models/lineage.model';
                 &nbsp;
                 <d3s-tile-actions hasExport="true" (exportClick)="export()"></d3s-tile-actions>     
             </header>
-            <input #gb type="text" pInputText placeholder="Search..." class="grid-simple-filter">         
-            <p-dataTable #dt [globalFilter]="gb" [value]="items" [rowsPerPageOptions]="defaultPagingOptions">
-                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-headerColumnGroup>
-                    <p-row>
-                        <p-column header="Source" colspan="2" [style]="{'text-align' : 'center' }"></p-column>
-                        <p-column header="Target" colspan="2" [style]="{'text-align' : 'center' }"></p-column>
-                    </p-row>
-                    <p-row>
-                        <p-column header="Business"></p-column>
-                        <p-column header="Technical"></p-column>
-                        <p-column header="Business"></p-column>
-                        <p-column header="Technical"></p-column>
-                    </p-row>
-                </p-headerColumnGroup>
-                <p-column field="searchableSource" [filter]="!showSimpleFilter">
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <span style="margin: 3px 0px 3px 0px">
-                            <b>{{item.SourceName}}</b><br/>
-                            {{item.SourceType}}
-                        </span>
-                    </ng-template>
-                </p-column>
-                <p-column field="searchableSourceFusion" [filter]="!showSimpleFilter">
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <span style="margin: 3px 0px 3px 0px">
-                            {{item.SourceFusion}}<br/>
-                            {{item.SourceFusionAttributeType}}<br/>
-                            {{item.SourceFusionAttribute}}
-                        </span>
-                    </ng-template>
-                </p-column>
-                <p-column field="searchableTarget" [filter]="!showSimpleFilter">
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <span style="margin: 3px 0px 3px 0px">
-                            <b>{{item.TargetName}}</b><br/>
-                            {{item.TargetType}}
-                        </span>
-                    </ng-template>
-                </p-column>
-                <p-column field="searchableTargetFusion" [filter]="!showSimpleFilter">
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <span style="margin: 3px 0px 3px 0px">
-                            {{item.TargetFusion}}<br/>
-                            {{item.TargetFusionAttributeType}}<br/>
-                            {{item.TargetFusionAttribute}}
-                        </span>
-                    </ng-template>
-                </p-column>
-            </p-dataTable>
+            
+            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['searchableSource','searchableSourceFusion','searchableTarget','searchableTargetFusion']" [rowsPerPageOptions]="defaultPagingOptions" [rows]="10">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th colspan="2" style="text-align: center">Source</th>
+                        <th colspan="2" style="text-align: center">Target</th>
+                    </tr>
+                    <tr>
+                        <th>Business</th>
+                        <th>Technical</th>
+                        <th>Business</th>
+                        <th>Technical</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>
+                            <span style="margin: 3px 0px 3px 0px">
+                                <b>{{item.SourceName}}</b><br />
+                                {{item.SourceType}}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="margin: 3px 0px 3px 0px">
+                                {{item.SourceFusion}}<br />
+                                {{item.SourceFusionAttributeType}}<br />
+                                {{item.SourceFusionAttribute}}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="margin: 3px 0px 3px 0px">
+                                <b>{{item.TargetName}}</b><br />
+                                {{item.TargetType}}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="margin: 3px 0px 3px 0px">
+                                {{item.TargetFusion}}<br />
+                                {{item.TargetFusionAttributeType}}<br />
+                                {{item.TargetFusionAttribute}}
+                            </span>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
         </div>
     `,
     providers: [DiagramService]

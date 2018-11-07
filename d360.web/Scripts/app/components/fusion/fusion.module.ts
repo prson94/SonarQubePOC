@@ -51,7 +51,6 @@ import {
     GrowlModule,
     InputTextModule,
     InputMaskModule,
-    DataTableModule,
     TreeTableModule,
     ButtonModule,
     DropdownModule,        
@@ -62,6 +61,8 @@ import {
     FileUploadModule,
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 import { CodemirrorModule } from 'ng2-codemirror';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
@@ -92,7 +93,6 @@ export function highchartsFactory() {
         GrowlModule,
         InputTextModule,
         InputMaskModule,
-        DataTableModule,
         TreeTableModule,
         ButtonModule,
         DropdownModule,             
@@ -102,6 +102,7 @@ export function highchartsFactory() {
         TreeModule,                
         FileUploadModule,
         SharedModule,
+        TableModule,
 
         //editor
         CodemirrorModule,

@@ -105,31 +105,31 @@ declare var CompanySettings;
                             </ng-template>
                         </div>
                         <div *ngSwitchCase="'Relationship'">
-                            <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                            <p-dataTable #dt
-                                            [globalFilter]="gb"
-                                            [loading]="relationItemsLoading"
-                                            loadingIcon="fa-spinner"
-                                            scrollable="true"
-                                            scrollWidth="100%"
-                                            [rowsPerPageOptions]="defaultPagingOptions"
-                                            [value]="field.Items"
-                                            [selection]="relationItems"
-                                            (selectionChange)="selectRelationItems($event)"
-                                            [formControlName]="field.FieldName"
-                                            [rows]="defaultInitialItemsPerPage"
-                                            paginator="true"
-                                            pageLinks="3"
-                                            lazy="true"
-                                            (onLazyLoad)="lazyLoad($event)"
-                                            [totalRecords]="field?.RecordCount"
-                                            ngDefaultControl>
-                                    <p-footer *ngIf="dt.totalRecords">
-                                        <d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
-                                    </p-footer>
-                                    <p-column field="Selected" [selectionMode]="field?.MultiSelect ? 'multiple' : 'single'" [style]="{'width':'30px'}"></p-column>
-                                    <p-column field="Text" header="Name"></p-column>
-                                </p-dataTable>
+                            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                            <p-table #dt [value]="field.Items" [selectionMode]="field?.MultiSelect ? 'multiple' : 'single'" [selection]="relationItems" (selectionChange)="selectRelationItems($event)" 
+                                [globalFilterFields]="['Text']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
+                                [lazy]="true" (onLazyLoad)="lazyLoad($event)" [totalRecords]="field?.RecordCount" [formControlName]="field.FieldName" ngDefaultControl>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 30px">
+                                            <p-tableHeaderCheckbox *ngIf="field?.MultiSelect"></p-tableHeaderCheckbox>
+                                        </th>
+                                        <th>Name</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td>
+                                            <p-tableRadioButton *ngIf="!field?.MultiSelect" [value]="item"></p-tableRadioButton>
+                                            <p-tableCheckbox *ngIf="field?.MultiSelect" [value]="item"></p-tableCheckbox>
+                                        </td>
+                                        <td>{{item.Text}}</td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                </ng-template>
+                            </p-table>
                         </div>
 
                         <input *ngSwitchCase="'Number'" [(ngModel)]="field.Value" [formControlName]="field.FieldName" style="width: 100%;" type="string">              

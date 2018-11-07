@@ -35,9 +35,9 @@ import {
     MultiSelectModule,
     SharedModule,
     TooltipModule,
-    DataTableModule,
 } from 'primeng/primeng';
-import { ResponsibilityTypeRelation } from '../../../models/responsibility-type.model';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [
@@ -56,8 +56,8 @@ import { ResponsibilityTypeRelation } from '../../../models/responsibility-type.
         InputTextModule,
         MultiSelectModule,
         SharedModule,
-        DataTableModule,
         TooltipModule,
+        TableModule,
 
         //d3s        
         CoreModule,

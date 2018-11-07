@@ -7,27 +7,54 @@
     </div>
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
-            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-            <p-dataTable #dt [globalFilter]="gb" [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedRow">
-                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="LastName" header="Last Name" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
-                <p-column field="FirstName" header="First Name" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
-                <p-column field="Owner" header="Owner" sortable="true" [style]="{ 'width': '25%' }" [filter]="!showSimpleFilter"></p-column>
-                <p-column [style]="{ 'width': '2%' }">
-                    <ng-template let-col let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID" icon="info"></d3s-preview-tooltip>
-                         </div>
-                    </ng-template>
-                </p-column>
-                <p-column [style]="{ 'width': '3%' }">
-                    <ng-template let-col let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <a (click)="delete(item.ResourceID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                        </div>
-                    </ng-template>
-                </p-column>
-            </p-dataTable>
+            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <p-table #dt [value]="groupItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['LastName','FirstName','Owner']" [paginator]="true" [rows]="20" [(selection)]="selectedRow">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th [pSortableColumn]="'LastName'" style="width: 30%">
+                            Last Name
+                            <d3s-sortIcon [field]="'LastName'"></d3s-sortIcon>
+                        </th>
+                        <th [pSortableColumn]="'FirstName'" style="width: 30%">
+                            First Name
+                            <d3s-sortIcon [field]="'FirstName'"></d3s-sortIcon>
+                        </th>
+                        <th [pSortableColumn]="'Owner'" style="width: 25%">
+                            Owner
+                            <d3s-sortIcon [field]="'Owner'"></d3s-sortIcon>
+                        </th>
+                        <th style="width: 2%"></th>
+                        <th style="width: 3%"></th>
+                    </tr>
+                    <tr [hidden]="showSimpleFilter">
+                        <th><d3s-column-filter [field]="'LastName'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th><d3s-column-filter [field]="'FirstName'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th><d3s-column-filter [field]="'Owner'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>{{item.LastName}}</td>
+                        <td>{{item.FirstName}}</td>
+                        <td>{{item.Owner}}</td>
+                        <td>
+                            <div class="RowTools">
+                                <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID" icon="info"></d3s-preview-tooltip>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a (click)="delete(item.ResourceID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
         </div>
         <div *ngSwitchCase="FormMode.Adding">
             <div class="row">

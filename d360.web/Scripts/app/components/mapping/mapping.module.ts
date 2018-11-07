@@ -17,9 +17,10 @@ import { MappingRoutingModule } from './mapping.routes';
 import { MappingComponent } from './mapping.component';
 
 import {    
-    DataTableModule,        
     SharedModule,
 } from 'primeng/primeng';
+
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [CommonModule,
@@ -40,8 +41,8 @@ import {
         TilesModule,
 
         //prime
-        DataTableModule,
         SharedModule,
+        TableModule,
     ],
     declarations: [
         MappingComponent,

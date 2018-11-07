@@ -1051,7 +1051,7 @@ insert into integration.ExecutionAssetField
                 }
                 catch (Exception ex)
                 {
-                    Storage.CreateFile($"igc-{companyID}", $@"{folderName}/{postModel.begin}_error.json", JsonConvert.SerializeObject(ex));
+                    Storage.CreateFile($"igc-{companyID}", $@"{folderName}/{postModel.begin}_error.json", JsonConvert.SerializeObject(ex, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
 
                     // Move onto next page.
                     postModel.begin = postModel.begin + postModel.pageSize;

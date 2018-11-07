@@ -147,28 +147,29 @@
                                                     Choose Objects
                                                 </div>
                                                 <div>
-                                                    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                                                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                                                     <div [hidden]="!objectsLoading">
                                                         <d3s-loading isLoading="true"></d3s-loading>
                                                     </div>
                                                     <div [hidden]="objectsLoading">
-                                                        <p-dataTable #dt
-                                                                     [globalFilter]="gb"
-                                                                     scrollable="true"
-                                                                     scrollWidth="100%"
-                                                                     [rowsPerPageOptions]="defaultPagingOptions"
-                                                                     [value]="objects"
-                                                                     [rows]="defaultInitialItemsPerPage"
-                                                                     paginator="true"
-                                                                     pageLinks="3"
-                                                                     [(selection)]="selectedObjects"
-                                                                     lazy="true"
-                                                                     (onLazyLoad)="lazyLoad($event)"
-                                                                     [totalRecords]="totalRecords">
-                                                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                                            <p-column selectionMode="multiple" [style]="{'width':'30px'}"></p-column>
-                                                            <p-column field="name" header="Name"></p-column>
-                                                        </p-dataTable>
+                                                        <p-table #dt [value]="objects" selectionMode="multiple" lazy="true" (onLazyLoad)="lazyLoad($event)" [totalRecords]="totalRecords"
+                                                                 [globalFilterFields]="['name']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selectedObjects">
+                                                            <ng-template pTemplate="header">
+                                                                <tr>
+                                                                    <th style="width: 30px"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                                                                    <th>Name</th>
+                                                                </tr>
+                                                            </ng-template>
+                                                            <ng-template pTemplate="body" let-item>
+                                                                <tr [pSelectableRow]="item">
+                                                                    <td><p-tableCheckbox [value]="item"></p-tableCheckbox></td>
+                                                                    <td>{{item.name}}</td>
+                                                                </tr>
+                                                            </ng-template>
+                                                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                                            </ng-template>
+                                                        </p-table>
                                                     </div>
                                                 </div>
                                             </div>

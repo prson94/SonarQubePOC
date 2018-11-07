@@ -12,40 +12,71 @@ declare var CurrentResourceID;
 @Component({
     selector: 'd3s-workflow-monitor-step-grid',
     template: ` 
-   <!-- <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">  -->                                            
-    <p-dataTable #dt [value]="itemSteps" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowClick)="stateService.workflowItemFilters.stepId=$event.StepID=$event.data.StepID;selectionChange.emit($event.data)">                                                                        
-        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-        <p-column field="Name" header="Step Name" [sortable]="allowSort" [filter]="!showSimpleFilter">
-            <ng-template pTemplate type="body" let-item="rowData">
-                <a *ngIf="item.IsAssignedLoginUser=='True'" (click)="doSelect(item)">{{item.Name}}</a>
-                <span *ngIf="item.IsAssignedLoginUser!='True'">{{item.Name}}</span>
-            </ng-template>
-        </p-column>     
-        <p-column field="Complete" header="Complete" [sortable]="allowSort" [filter]="!showSimpleFilter" [style]="{'width': '90px'}">
-            <ng-template let-col let-item="rowData" pTemplate type="body">
-                <span>
-                    <i *ngIf="item.Complete == true" class="fa fa-check enabled" title="True"></i>
-                    <i *ngIf="item.Complete == false" class="fa fa-times disabled" title="False"></i>
-                </span>
-            </ng-template>                                                        
-        </p-column> 
-        <p-column field="ActivityType" header="Activity Type" [sortable]="allowSort" [filter]="!showSimpleFilter">
-            <ng-template let-col let-item="rowData" pTemplate type="body">
-                {{helper.activityTypeName(item.ActivityType)}}
-            </ng-template>                                                        
-        </p-column>  
-        <p-column [hidden]="!showAssigneeColumn" field="Assignee" header="Assignee" [sortable]="allowSort" [filter]="!showSimpleFilter"></p-column>    
-        <p-column field="StartedOn" header="Date Started" [sortable]="allowSort" [filter]="!showSimpleFilter">
-            <ng-template let-col let-item="rowData" pTemplate type="body">
-                {{item.StartedOn | date:'shortDate'}}
-            </ng-template>                                                        
-        </p-column>  
-        <p-column field="CompletedOn" header="Date Completed" [sortable]="allowSort" [filter]="!showSimpleFilter">
-            <ng-template let-col let-item="rowData" pTemplate type="body">
-                {{item.CompletedOn | date:'shortDate'}}
-            </ng-template>  
-        </p-column>  
-    </p-dataTable> 
+    <p-table #dt [value]="itemSteps" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selection"> 
+        <ng-template pTemplate="header">
+            <tr>
+                <th [pSortableColumn]="allowSort">
+                    Step Name
+                    <d3s-sortIcon *ngIf="allowSort" [field]="'Name'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="allowSort" style="width:  90px">
+                    Complete
+                    <d3s-sortIcon *ngIf="allowSort" [field]="'Complete'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="allowSort">
+                    Activity Type
+                    <d3s-sortIcon *ngIf="allowSort" [field]="'ActivityType'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="allowSort" [hidden]="!showAssigneeColumn">
+                    Assignee
+                    <d3s-sortIcon *ngIf="allowSort" [field]="'Assignee'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="allowSort">
+                    Date Started
+                    <d3s-sortIcon *ngIf="allowSort" [field]="'StartedOn'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="allowSort">
+                    Date Completed
+                    <d3s-sortIcon *ngIf="allowSort" [field]="'CompletedOn'"></d3s-sortIcon>
+                </th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'Complete'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'ActivityType'" [datatype]="'text'"></d3s-column-filter></th>
+                <th [hidden]="!showAssigneeColumn"><d3s-column-filter [field]="'Assignee'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'CompletedOn'" [datatype]="'text'"></d3s-column-filter></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr (click)="rowClick(item)" [pSelectableRow]="item">
+                <td>
+                    <a *ngIf="item.IsAssignedLoginUser=='True'" (click)="doSelect(item)">{{item.Name}}</a>
+                    <span *ngIf="item.IsAssignedLoginUser!='True'">{{item.Name}}</span>
+                </td>
+                <td>
+                    <span>
+                        <i *ngIf="item.Complete == true" class="fa fa-check enabled" title="True"></i>
+                        <i *ngIf="item.Complete == false" class="fa fa-times disabled" title="False"></i>
+                    </span>
+                </td>
+                <td>
+                    {{helper.activityTypeName(item.ActivityType)}}
+                </td>
+                <td [hidden]="!showAssigneeColumn">{{item.Assignee}}</td>
+                <td>
+                    {{item.StartedOn | date:'shortDate'}}
+                </td>
+                <td>
+                    {{item.CompletedOn | date:'shortDate'}}
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
 `,
     providers: [],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -84,5 +115,10 @@ export class WorkflowMonitorStepGridComponent extends BaseComponent implements O
 
     doSelect(item:WorkflowItemStep) {
        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${item.TypeID}/${item.ID}/${item.ItemID}`);
+    }
+
+    rowClick(item: any) {
+        this.stateService.workflowItemFilters.stepId = item.StepID;
+        this.selectionChange.emit(item);
     }
 }
