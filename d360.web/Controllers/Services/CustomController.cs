@@ -363,8 +363,6 @@ namespace d360.web.Controllers.Services
             
             try
             {
-                var queryParams = Request.GetQueryNameValuePairs();
-
                 var config = (
                              from s in Company.ApiServices
                              from e in s.Endpoints
@@ -423,10 +421,10 @@ namespace d360.web.Controllers.Services
                 // special case for reference item lists
                 // add the code field with same value as id
                 var assetTypeId = config.First().AssetType.ID;
-                var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
-
                 // gov=4840 lloyds changed there mind they dont want this after all
-                /*if (assetType != null && assetType.Object == "ReferenceItemType")
+                /*var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
+                
+                if (assetType != null && assetType.Object == "ReferenceItemType")
                 {
                     columnSql += ", D.[Key] as [Code]";
                 }*/
@@ -664,7 +662,6 @@ namespace d360.web.Controllers.Services
 
                 #region Page Size Processing
 
-                var rawPageSize = string.Empty;
                 int pageSize = 200;
                 if (queryParams.Any(i => i.Key == "_pageSize"))
                 {
@@ -685,7 +682,6 @@ namespace d360.web.Controllers.Services
 
                 #region Page Number Processing
 
-                var rawPageNumber = string.Empty;
                 int pageNumber = 1;
                 if (queryParams.Any(i => i.Key == "_pageNum"))
                 {
@@ -958,11 +954,12 @@ namespace d360.web.Controllers.Services
 
                 // special case for reference item lists
                 // add the code field with same value as id
-                var assetTypeId = config.First().AssetType.ID;
-                var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
-
+                //var assetTypeId = config.First().AssetType.ID;
                 // gov-4840 lloyds doesnt want this after all
-                /* if (assetType != null && assetType.Object == "ReferenceItemType")
+                /*var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
+
+                
+                 if (assetType != null && assetType.Object == "ReferenceItemType")
                  {
                      columnSql += ", D.[Key] as [Code]";
                  }*/
@@ -1305,8 +1302,7 @@ namespace d360.web.Controllers.Services
                         else if (filter is MultiValueFilterModel)
                         {
                             var multiValueFilter = filter as MultiValueFilterModel;
-                            var fieldType = config.Where(f => f.FieldType.Name == filter.FieldName).Select(f => f.FieldType).FirstOrDefault();
-
+                            
                             var loopNumber = 1;
                             var dateFieldString = "";
      
@@ -1479,10 +1475,7 @@ namespace d360.web.Controllers.Services
                 var lastModifiedDate = Company.Query<DateTime?>(lastmodifiedDateSql, dbArgs).SingleOrDefault();
 
                 #region Calculate the page links
-
-                var uri = Request.RequestUri;
-                var qs = uri.ParseQueryString();
-
+                                        
                 var requestUri = RequestUri();
 
                 if (!requestUri.Contains("_pageSize="))
@@ -1632,8 +1625,6 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                var queryParams = Request.GetQueryNameValuePairs();
-
                 var config = (
                              from s in Company.ApiServices
                              from e in s.Endpoints
@@ -1707,8 +1698,6 @@ namespace d360.web.Controllers.Services
             {
                 //test the database connection
                 Company.Database.Connection.Open();
-
-                var queryParams = Request.GetQueryNameValuePairs();
 
                 var config = (
                              from s in Company.ApiServices

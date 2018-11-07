@@ -267,6 +267,7 @@ namespace d360.web.Models
     }
 
     [DataContract(Name = "item", Namespace = constants.NAMESPACE)]
+    [Serializable]
     public class EditableFieldLookupItem : Dictionary<string, object> { }
     
     public class FieldTypeItemDisplayFieldEditorModel

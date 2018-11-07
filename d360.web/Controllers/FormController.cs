@@ -810,19 +810,7 @@ namespace d360.web.Controllers
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-        
-        /// <param name="id">ID</param>
-        [Route("Artifact_RaiseIssue"), NonNullableParameters]
-        public JsonResult Artifact_RaiseIssue(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Issue", Name = "Issue", FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-                
+                        
         [HttpGet, Route("Artifact_SimilarItems"), NonNullableParameters]
         public JsonNetResult Artifact_SimilarItems(int typeID, string query)
         {
@@ -9442,10 +9430,7 @@ for json path");
             model.Deletes?.ForEach(d =>
             {
                 var mapItem = Company.GetById<MapItem>(d.ID);
-
-                var leftMaps = Company.MapItems.Where(m => m.TargetIntersectID == d.SourceIntersectID);
-                var rightMaps = Company.MapItems.Where(m => m.SourceIntersectID == d.TargetIntersectID);
-
+                
                 try
                 {
                     mapItem.Maps.ToList().ForEach(m =>
@@ -9532,9 +9517,6 @@ for json path");
                 var mapRuleItem = Company.GetById<MapRuleItem>(d.ID);
 
                 var mapRuleItemMapItem = Company.MapRuleItemMapItems.Where(m => m.MapRuleItemID == mapRuleItem.ID).FirstOrDefault();
-
-                var leftMaps = Company.MapRuleItems.Where(m => m.TargetFusionAttributeID == d.SourceFusionAttributeID);
-                var rightMaps = Company.MapRuleItems.Where(m => m.SourceFusionAttributeID == d.TargetFusionAttributeID);
 
                 try
                 {
@@ -12461,16 +12443,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
             }
 
-            var targetType = "";
+            
             var targetCardinality = Cardinality.Many;
             if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
-            {
-                targetType = relationshipType.Object;                
+            {                
                 targetCardinality = relationshipType.ObjectCardinality;
             }
             else
-            {
-                targetType = relationshipType.Subject;                
+            {             
                 targetCardinality = relationshipType.SubjectCardinality;
             }
 
@@ -14804,8 +14784,7 @@ order by DN.DisplayValue");
         public JsonResult Resource_ChangeMyPasswordFields()
         {
             var list = new List<EditableField>();
-            var id = Company.CurrentResourceID;
-
+            
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "CurrentPassword", Name = "Current Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Current Password", true, "", 7, 25) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "NewPassword", Name = "New Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "New Password", true, passwordRegex, null, null, passwordRegexMessage) });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "ConfirmNewPassword", Name = "Confirm New Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Confirm New Password", true, passwordRegex, null, null, passwordRegexMessage) });
@@ -17099,7 +17078,6 @@ order by DN.DisplayValue");
             }
         }
         
-
         [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddCustomSynonym")]
         public JsonResult AddCustomSynonym(FormCollection form)
         {

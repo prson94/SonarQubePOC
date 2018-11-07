@@ -1176,14 +1176,6 @@ where   h.ID <> @t order by h.[Level] desc;
         public ArtifactModelRequestList GetArtifacts(int id, int take = 10)
         {
             var list = new ArtifactModelRequestList();
-
-            string prefix = "";
-            var qs = Request.GetQueryNameValuePairs();
-            if (qs.Any(i => i.Key == "prefix"))
-            {
-                prefix = qs.Single(i => i.Key == "prefix").Value;
-            }
-
             var items = Company.Filter<Artifact>(i => i.ArtifactTypeID == id).AsQueryable();            
             var lItems = items.Take(take).ToList();
 
@@ -2053,8 +2045,6 @@ from    [Lookup] I
 
             if (def == null)
                 def = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
-
-            var sql = string.Empty;
 
             switch (def.ReferenceType)
             {
@@ -3019,10 +3009,8 @@ end",
                         {
                             var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
                             var tbTypePrefix = $"FT{pos}_{multiFieldReferencePosition}";
-                            var tbDetailPrefix = $"FD{pos}_{multiFieldReferencePosition}";
-                            var tbTypeDetailPrefix = $"FDT{pos}_{multiFieldReferencePosition}";
-                            var tbFAPrefix = $"FA{pos}_{multiFieldReferencePosition}";
-
+                            var tbDetailPrefix = $"FD{pos}_{multiFieldReferencePosition}";                            
+                            
                             // Determine the join syntax for the eventual query.
                             join.JoinStatement += $@" {joinType} join [IntersectType] {tbTypePrefix} on {tbTypePrefix}.ID = {i.FieldTypeID} 
 {joinType} join [Intersect] {tbPrefix} on {tbPrefix}.IntersectTypeID = {tbTypePrefix}.ID and 
@@ -3944,8 +3932,7 @@ where   Object = @type
 
         [Route("OwnershipLookupField/{type}/{id:int}/{fieldTypeID:int}/values")]
         public HttpResponseMessage GetOwnershipLookupGridField(string type, int id, int fieldTypeID)
-        {
-            var columnModels = new List<ComplexColumnModel>();
+        {            
             var gridFields = new List<GridField>();
             var columns = new List<GridColumn>();
             IEnumerable<dynamic> results = null;
@@ -6844,8 +6831,7 @@ where v.id = {0}", id)).FirstOrDefault();
             columns.Add(new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING });
 
             fieldTypes.ForEach(f =>
-            {
-                var pfx = $"Field{f.ID}";
+            {                
                 fields.Add(getGridFieldForColumn(f));
                 columns.Add(getGridColumnForColumn(f, 100, false, false));
             });
@@ -6872,9 +6858,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
         [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}"), HttpGet]
         public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool includeInverse = true)
-        {
-            var sType = type.ToString();
-
+        {            
             var joins = "";
             var columns = "";
             

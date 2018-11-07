@@ -697,6 +697,7 @@
     <Content Include="Scripts\app\53.chunk.js" />
     <Content Include="Scripts\app\54.chunk.js" />
     <Content Include="Scripts\app\55.chunk.js" />
+    <Content Include="Scripts\app\56.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
@@ -1107,6 +1108,9 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.module.ts" />

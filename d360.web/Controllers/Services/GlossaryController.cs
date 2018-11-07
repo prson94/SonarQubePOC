@@ -87,8 +87,7 @@ namespace d360.web.Controllers.Services
                                     foreach (var df in fld.FieldTypeFilteredLookupDisplayFields.OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
                                     {
                                         var selectPrefix = $"{name}_{df.FieldTypeID}_FLF_{df.ID}";
-                                        var selectTypePrefix = $"{name}_{df.FieldTypeID}_FLFT_{df.ID}";
-
+                                        
                                         columnSql.Add($"{selectPrefix}.FormattedValue as [{df.FieldTypeName}]");
                                         columnSql.Add($"{selectPrefix}.LookupUrl as [{df.FieldTypeName}Uri]");
                                         
