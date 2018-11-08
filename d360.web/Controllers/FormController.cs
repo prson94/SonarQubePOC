@@ -14956,10 +14956,15 @@ order by DN.DisplayValue");
                 if (id <= 0) throw new NotFoundException("Resource with ID less than or equal to 0 cannot be removed.");
 
                 var model = Community.Filter<CompanyResource>(i => i.ResourceID == id && i.CompanyID == Company.CurrentCompanyID).SingleOrDefault();
+                var globalResource = Company.Filter<GlobalReportingResource>(x => x.ResourceID == id).SingleOrDefault();
                 if (model == null) throw new NotFoundException("resource");
+                if (globalResource == null) throw new NotFoundException("resource");
+                model.State = CompanyResourceState.Deleted;
+                globalResource.State = CompanyResourceState.Deleted;
 
-                Community.Delete(model);
-                Company.Delete<GlobalReportingResource>(x => x.ResourceID == id);
+                Community.Update<CompanyResource>(model);
+                Company.Update<GlobalReportingResource>(globalResource);
+
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
