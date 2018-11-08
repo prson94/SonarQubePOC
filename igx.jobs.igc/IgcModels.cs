@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Net;
 
 namespace igx.jobs.igc
 {
@@ -201,50 +202,34 @@ namespace igx.jobs.igc
         public string Action { get; set; }
     }
 
-
     public class ExecutionAssetType
     {
         public long ExecutionID { get; set; }
         public int SynchedAssetTypeID { get; set; }
     }
 
-    public class D3sOwnershipItemsModel
+    public enum PageDataClass
     {
-        public string UserIdFieldName { get; set; }
-        public List<D3sOwnershipModel> Items { get; set; }
+        Fields,
+        Relations,
+        Responsibilities
     }
 
-    public class D3sOwnershipModel
+    public class PageBeginValueUpdatedEventArgs : EventArgs
     {
-        public string SourceID { get; set; }
-        public string RoleName { get; set; }
-        public string UserId { get; set; }
-
-        [JsonIgnore]
-        public string UserFullName { get; set; }
+        public int Value { get; set; }
+        public PageDataClass Class { get; set; }
     }
 
-    public class D3sRelationshipModel
+    public class PageErrorCapturedEventArgs : EventArgs
     {
-        public string SubjectSourceID { get; set; }
-
-        public string ObjectSourceID { get; set; }
-
-        public int PredicateType { get; set; }
-
-        public int IntersectTypeID { get; set; }
+        public string ErrorMessage { get; set; }
+        public HttpStatusCode StatusCode { get; set; }
     }
 
-    public class FailedExecutionModel
+    public class IgcPageErrorModel
     {
-        public long ExecutionID { get; set; }
-        public int CurrentCount { get; set; }
-        public int SynchedAssetTypeID { get; set; }
-    }
-
-    public class LastFullRefreshModel
-    {
-        public int ID { get; set; }
-        public DateTime StartedOn { get; set; }
+        public string message { get; set; }
+        public HttpStatusCode code { get; set; }
     }
 }

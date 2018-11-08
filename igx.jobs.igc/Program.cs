@@ -211,31 +211,6 @@ where		T.CompletedOn is null
         }
     }
 
-    public enum PageDataClass
-    {
-        Fields,
-        Relations,
-        Responsibilities
-    }
-
-    public class PageBeginValueUpdatedEventArgs : EventArgs
-    {
-        public int Value { get; set; }
-        public PageDataClass Class { get; set; }
-    }
-
-    public class PageErrorCapturedEventArgs : EventArgs
-    {
-        public string ErrorMessage { get; set; }
-        public HttpStatusCode StatusCode { get; set; }
-    }
-
-    public class IgcPageErrorModel
-    {
-        public string message { get; set; }
-        public HttpStatusCode code { get; set; }
-    }
-
     public class IgcIntegrationEngine
     {
         public event EventHandler<PageBeginValueUpdatedEventArgs> PageBeginValueUpdated;
@@ -352,7 +327,7 @@ where		T.CompletedOn is null
                 ExecutionAssetType.RetryLog = JsonConvert.SerializeObject(ExecutionAssetTypeRetryLog);
                 Company.Update(ExecutionAssetType);
             }
-            catch (Exception ex)
+            catch
             {
             }
         }
