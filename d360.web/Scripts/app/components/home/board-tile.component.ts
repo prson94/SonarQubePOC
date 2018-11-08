@@ -11,7 +11,7 @@ import { Count } from '../../models/counts.model';
                     <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <p-table #dt *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Total']" sortField="Name" [sortOrder]="1" [(selection)]="selected">
+                    <p-table #dt *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Total']" sortField="Name" [sortOrder]="1" [rows]="10" [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
@@ -36,7 +36,7 @@ import { Count } from '../../models/counts.model';
                                 <td>{{item.Total}}</td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <ng-template pTemplate="summary">
                             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>

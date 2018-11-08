@@ -1445,3 +1445,8 @@ th.ui-state-default, .ui-treetable th.ui-state-default {
 button.ui-button:disabled {
     opacity: 0.5;
 }
+
+.ui-paginator .ui-paginator-element {
+    min-width: 1.5em;
+    width: auto;
+}

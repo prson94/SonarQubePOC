@@ -2,6 +2,7 @@
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
@@ -14,16 +15,17 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
-import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
-import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
+import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 import { AdminExportTemplatesComponent } from './admin-export-templates.component';
+import { AdminExportTemplateFieldsComponent } from './admin-export-template-fields.component';
 
 import { AdminExportTemplatesRoutingModule } from './admin-export-templates.routes';
 
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
+import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
 
 
 import {
@@ -35,9 +37,9 @@ import {
     EditorModule,
     InputTextModule,
     MultiSelectModule,
-    SharedModule,
-    TreeTableModule,
+    SharedModule    
 } from 'primeng/primeng';
+import { TableModule } from 'primeng/table';
 import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
 
 
@@ -46,6 +48,7 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
         DeprecatedI18NPipesModule,
         FormsModule,
         HttpModule,
+        HttpClientModule,
 
         AdminExportTemplatesRoutingModule,
 
@@ -58,15 +61,14 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
         InputTextModule,
         MultiSelectModule,
         SharedModule,
-        TreeTableModule,
+        TableModule,
 
         //color picker 
         ColorPickerModule,
         SimpleAccordionModule,
 
         //d3s  
-        AdminModule,
-        AdminRelationshipEditorModule,
+        AdminModule,        
         CoreModule,
         PipesModule,
         SharedGridPagingInfoModule,
@@ -77,14 +79,23 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
 
         SharedObjectDetailsModule,
         SharedFieldDefinitionModule,
-        SharedResponsibilitiesModule,
+        SharedDynamicGridEditorModule,
         TilesModule,
     ],
     declarations: [
-        AdminExportTemplatesComponent,        
+        AdminExportTemplatesComponent,  
+        AdminExportTemplateFieldsComponent,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: XHRBackend,
+            useClass: AuthenticationConnectionBackend
+        },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: ErrorNotifyInterceptor,
+            multi: true
+        }
     ]
 })
 export class AdminExportTemplatesModule { }

@@ -2608,6 +2608,30 @@
             <param name="ruleResults">The rule results and the mappings of fusionattributes that tie to the results</param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Get">
+            <summary>
+            Returns all asset export templates
+            </summary>
+            <returns>An array of asset export template records</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.DeleteById(System.Int32)">
+            <summary>
+            Deletes a Export Template based on the specified ID
+            </summary>
+            <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Post(d360.core.entities.ArtifactTypeExportTemplate)">
+            <summary>
+            Creates a new Export Template record.  
+            </summary>
+            <returns>ExportTemplate model of the created item if item already exists http confict is returned.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Put(System.Int32,d360.core.entities.ArtifactTypeExportTemplate)">
+            <summary>
+            Updates the specified Export Template
+            </summary>
+            <returns>Http Status code OK and the item if updated, Http Status code of Not Found if item could not be updated</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.MetricsController">
             <summary>
             This service houses all endpoints handling metrics and scoring for assets throughout your environment.

@@ -447,7 +447,8 @@ select  RG.GroupID,
         end as [Owner]
 from    [Group] G
         inner join ResourceGroup RG on RG.GroupID = G.ID and G.ID = @id
-        inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID";
+        inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID
+        Where R.State = @userStatus";
 
         public static string InformationCatalogDiagramData = $@"
 select	0 as ID, 

@@ -29,6 +29,7 @@ export class FieldDefinition {
     FormDescription: string;
     Name: string;
     Type: string;
+    ExtOrder: number;
 }
 
 
