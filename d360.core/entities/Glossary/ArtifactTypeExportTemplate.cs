@@ -23,13 +23,19 @@ namespace d360.core.entities
         [DataMember]
         public string UsageNotes { get; set; }
 
+        [DataMember]
         public string IncludeFields { get; set; }
 
+        [DataMember]
         public bool IncludeUrl { get; set; }
+
+        [DataMember]
         public bool IncludeParent { get; set; }
 
+        [DataMember]
         public ExportView ExportViewType { get; set; }
 
+        [DataMember]
         public int ArtifactTypeID { get; set; }
 
         [DataMember]

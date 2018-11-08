@@ -131,7 +131,9 @@ namespace d360.core
         [Description("Rule Implementation Type"), EnableAudit(true), IsType(true)]
         RuleImplementationType,
         [Description("Organization Type"), EnableAudit(true), IsType(true)]
-        OrganizationType
+        OrganizationType,
+        [Description("Export Template"), EnableAudit(true), IsType(true)]
+        ExportTemplate
     }
 
     public class SystemObjectInfo

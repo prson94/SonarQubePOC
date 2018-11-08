@@ -1,49 +1,142 @@
-﻿import { Component, OnDestroy } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AdminBaseComponent } from '../admin-base.component'
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { MessagesService } from '../../../services/messages.service';
 import { Title } from '@angular/platform-browser';
+import { ExportTemplateService } from '../../../services/export-template.service';
+import { ExportTemplate } from '../../../models/export-template.model';
 
 @Component({
     selector: 'd3s-admin-export-templates-component',
     template: ` <div class="row">
-                    <div class="col l3 m5 s12">
+                    <div class="col l4 m5 s12">
                         <div class="tile tile-detail">
-                            list of templates
+                            <div>
+                    <header *ngIf="!showEditor">Export Templates
+                        <d3s-tile-actions [hasAdd]="!showDelete" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
+                    </header>                    
+                    <span *ngIf="!showEditor && !showDelete">
+                        <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                        <p-table #dt [value]="exportTemplates" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'Name'">
+                                        Name<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                    </th>
+                                    <th style="width: 28px"></th>
+                                    <th style="width: 28px"></th>
+                                </tr>
+                                <tr [hidden]="showSimpleFilter">
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td>{{item.Name}}</td>
+                                    <td>
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                        </div>
+                                    </td>
+                                    <td> 
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>                         
+                    </span>  
+                    <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'ExportTemplate'" [title]="'Export Template'" [selection]="selected" (saveClick)="saveExportTemplate($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+                    <d3s-delete-form *ngIf="showDelete"
+                        [callback]="theDeleteCallback"
+                        [itemId]="selected?.ID"
+                        [method]="'callback'"
+                        [prompt]="'Are you sure you want to delete the selected item?'"                                         
+                        (onCancel)="showDelete=false;"
+                    ></d3s-delete-form>  
+                </div>
+             </div>
+            </div>
+            <div class="col l8 m7 s12" *ngIf="!showEditor && !showDelete">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail" *ngIf="selected">  
+                            <object-detail [objectType]="'ExportTemplate'" [objectID]="selected?.ID"></object-detail>
                         </div>
                     </div>
-                    <div class="col l9 m7 s12">
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">  
-                                    selected template details
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <div>
+                </div>
+            </div>
+    <div>               
+                
                 `,
-    providers: [],       
+    providers: [ExportTemplateService],       
 })
 
-export class AdminExportTemplatesComponent extends AdminBaseComponent implements OnDestroy {
+export class AdminExportTemplatesComponent extends AdminBaseComponent implements OnDestroy, OnInit {
+    public selected: ExportTemplate;
+
+    private exportTemplates: ExportTemplate[];
+    private showDelete: boolean = false;
+    private showEditor: boolean = false;
+
+    theDeleteCallback: Function;
+    
     constructor(
             rightSidebarService: RightSidebarService,
             headerBreadcrumbService: HeaderBreadcrumbService,        
             titleService: Title,
+            private exportTemplateService: ExportTemplateService,
             protected messagesService: MessagesService,
         ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Artifacts";
+        this.areaName = "Export Templates";
         this.setCommonItems();
-        //this.load();
-        
+                
         this.setCommonRightSideBar(false);        
+        this.theDeleteCallback = this.deleteExportTemplate.bind(this);
     }
-
-
+    
     ngOnDestroy() {
         this.clearSidebar();
     }
+
+    ngOnInit() {
+        this.load();
+    }
+
+    private load() {
+        this.isLoading = true;
+        this.exportTemplateService.getExportTemplates().subscribe(result => {
+            this.exportTemplates = result;
+            if (this.selected == null && this.exportTemplates != null && this.exportTemplates.length > 0) this.selected = this.exportTemplates[0];
+            this.isLoading = false;
+        });
+    }
+
+    public deleteExportTemplate(id: number) {
+        this.exportTemplateService.deleteExportTemplates(id).subscribe(result => {            
+            this.showDelete = false;
+            this.selected = null;
+            this.load();
+        });
+    }   
+
+    public saveExportTemplate(event) {
+        this.exportTemplateService.saveExportTemplate(event.item).subscribe(result => {            
+                this.showEditor = false;
+                this.load();                
+            });
+    }
+
+    public closeEditor() {
+        this.showEditor = false;
+    }
+
 }
