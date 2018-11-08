@@ -90,7 +90,7 @@ export class LineageEditorPreviewComponent extends DiagramBaseComponent implemen
         this.menuItems = [];
 
         let eye: MenuItem = {
-            icon: 'fa-eye',
+            icon: 'fa fa-eye',
             items: []
         }
 
@@ -106,20 +106,20 @@ export class LineageEditorPreviewComponent extends DiagramBaseComponent implemen
         this.menuItems.push(eye);
 
         this.menuItems.push({
-            icon: 'fa-search-minus'
+            icon: 'fa fa-search-minus'
         });
 
         this.menuItems.push({
-            icon: 'fa-search-plus'
+            icon: 'fa fa-search-plus'
         });
     }
 
     public menuClick(e: MenuItem) {
-        if (e.icon == 'fa-search-plus') {
+        if (e.icon == 'fa fa-search-plus') {
             this.diagram.scale += .1;
             if (this.diagram.scale > 2.5)
                 this.diagram.scale = 2.5;
-        } else if (e.icon == 'fa-search-minus') {
+        } else if (e.icon == 'fa fa-search-minus') {
             this.diagram.scale -= .1;
             if (this.diagram.scale < .1)
                 this.diagram.scale = .1;
