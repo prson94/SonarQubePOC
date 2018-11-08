@@ -8857,10 +8857,11 @@ namespace d360.web.Controllers
 
             querySql = @"
 			select  r.LastName + ', ' + r.FirstName as Text, 'Resource|' + cast(r.ResourceID as varchar) + '|' + r.LastName + ', ' + r.FirstName  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
-			where r.[State] = 1 
+			where r.[State] = @userStatus 
 			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID) "
             + hideUsersSql;
             dbArgs.Add("id", id);
+            dbArgs.Add("userStatus", CompanyResourceState.Active);
 
             if (!string.IsNullOrEmpty(gbfilter))
             {
@@ -14399,7 +14400,7 @@ for json path, WITHOUT_ARRAY_WRAPPER
 				select	cast(ResourceID as varchar) as [value],
 						LastName + ', ' + FirstName as label 
 				from	reporting.Global_Resource 
-				where	[State] = 1 " + hideUsersSql +
+				where	[State] = {(int) CompanyResourceState.Active} " + hideUsersSql +
 				@"order by LastName + ', ' + FirstName
 				for json auto
 				) as [values]
@@ -14955,10 +14956,15 @@ order by DN.DisplayValue");
                 if (id <= 0) throw new NotFoundException("Resource with ID less than or equal to 0 cannot be removed.");
 
                 var model = Community.Filter<CompanyResource>(i => i.ResourceID == id && i.CompanyID == Company.CurrentCompanyID).SingleOrDefault();
+                var globalResource = Company.Filter<GlobalReportingResource>(x => x.ResourceID == id).SingleOrDefault();
                 if (model == null) throw new NotFoundException("resource");
+                if (globalResource == null) throw new NotFoundException("resource");
+                model.State = CompanyResourceState.Deleted;
+                globalResource.State = CompanyResourceState.Deleted;
 
-                Community.Delete(model);
-                Company.Delete<GlobalReportingResource>(x => x.ResourceID == id);
+                Community.Update<CompanyResource>(model);
+                Company.Update<GlobalReportingResource>(globalResource);
+
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)

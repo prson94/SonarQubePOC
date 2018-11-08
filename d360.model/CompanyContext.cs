@@ -2025,7 +2025,13 @@ where	R.SourceObject = 'FusionAttribute'
         public IQueryable<FollowDetail> GetFollowersByObject(SystemObjects type, int id)
         {
             var fs = type.ToString();
-            return Filter<FollowDetail>(i => i.ObjectType == fs && i.ObjectID == id);
+       
+            var sql = @"select f.* from FollowDetail f
+                        inner join reporting.Global_Resource r on
+                        r.ResourceID = f.ResourceID
+                        where r.State = @userStatus  and objectId=@objectId and objectType = @objectType";
+            
+            return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, objectId = id, objectType = fs }).AsQueryable();
         }
 
         public IQueryable<MostActiveUserReportModel> GetMostActiveUsersReport()
