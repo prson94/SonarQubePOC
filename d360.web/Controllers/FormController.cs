@@ -8853,10 +8853,11 @@ namespace d360.web.Controllers
 
             querySql = @"
 			select  r.LastName + ', ' + r.FirstName as Text, 'Resource|' + cast(r.ResourceID as varchar) + '|' + r.LastName + ', ' + r.FirstName  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
-			where r.[State] = 1 
+			where r.[State] = @userStatus 
 			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID) "
             + hideUsersSql;
             dbArgs.Add("id", id);
+            dbArgs.Add("userStatus", CompanyResourceState.Active);
 
             if (!string.IsNullOrEmpty(gbfilter))
             {
@@ -14395,7 +14396,7 @@ for json path, WITHOUT_ARRAY_WRAPPER
 				select	cast(ResourceID as varchar) as [value],
 						LastName + ', ' + FirstName as label 
 				from	reporting.Global_Resource 
-				where	[State] = 1 " + hideUsersSql +
+				where	[State] = {(int) CompanyResourceState.Active} " + hideUsersSql +
 				@"order by LastName + ', ' + FirstName
 				for json auto
 				) as [values]

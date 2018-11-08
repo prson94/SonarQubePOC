@@ -10,7 +10,9 @@ namespace d360.core.enums
         [Name("Active")]
         Active = 1,
         [Name("Inactive")]
-        Inactive = 2
+        Inactive = 2,
+       [Name("Deleted")]
+        Deleted = 3
     }
 
     public class CompanyResourceStateInfo

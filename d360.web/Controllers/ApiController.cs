@@ -1683,7 +1683,7 @@ order by 'Name'";
         {
             return Company.Query<GroupResourceInfo>(
                 QueryConstants.GroupResourceInfoList,
-                new { id }
+                new { id =id , userStatus  = CompanyResourceState.Active}
                 )
                 .OrderBy(i => i.LastName)
                 .ThenBy(i => i.FirstName)
@@ -4685,6 +4685,7 @@ from    (
                 IsAdministrator,
                 ResourceID as ID
         from	reporting.Global_Resource
+                where State <> @excludeStatus
         ) A 
         {joins}";
 
@@ -4695,7 +4696,7 @@ from    (
 
             var sql = string.Format(@"select * from ({0}) A order by FullName", querySql);
 
-            return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, new { id = typeID }));
+            return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, new { id = typeID, excludeStatus = CompanyResourceState.Deleted }));
         }
         
         [Route("resources/{typeID:int}/{id:int}")]

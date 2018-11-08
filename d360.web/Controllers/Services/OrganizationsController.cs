@@ -171,7 +171,12 @@ namespace d360.web.Controllers.Services
             if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
                 return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
-            return Company.Filter<OrganizationResourceDetail>(i => i.OrganizationID == id);
+            //return Company.Filter<OrganizationResourceDetail>(i => i.OrganizationID == id);
+            var sql = @"select o.* from OrganizationResourceDetail o
+                            inner join reporting.Global_Resource r on
+                            r.ResourceID = o.ResourceID
+                            where r.State =@userStatus and o.OrganizationID=@orgId";
+            return Company.Query<OrganizationResourceDetail>(sql, new { userStatus = CompanyResourceState.Active, orgId = id }).AsQueryable();
         }
 
         /// <summary>
