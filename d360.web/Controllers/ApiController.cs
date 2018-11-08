@@ -5211,7 +5211,7 @@ where    A.RuleID = @id", new { id });
                     }
                     artifactType = null;
                     break;
-                #endregion
+                #endregion                
                 case SystemObjects.Attribute:
                     #region Fields
                     var attr = Company.GetById<core.entities.Attribute>(id);
@@ -5307,6 +5307,77 @@ where    A.RuleID = @id", new { id });
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
                                     new ReadOnlyField { Name = group.GetName(i => i.Description), FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), Value = group.Description }
+                                }
+                            });
+                        }
+                    }
+                    group = null;
+                    break;
+                #endregion
+                case SystemObjects.ExportTemplate:
+                    #region Fields
+                    var template = Company.GetById<ArtifactTypeExportTemplate>(id);
+                    if (template != null)
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Name", FieldName = "Name", Value = template.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = "Include Glossary Url", FieldName = "IncludeUrl", Value = template.IncludeUrl ? "Yes" : "No"}                                
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = "Type Name", FieldName = "TypeName", Value = template.ArtifactType.Name}
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = "Include Parent Name", FieldName = "IncludeParent", Value = template.IncludeParent ? "Yes" : "No"}
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = "List Arrangement", FieldName = "Arrangement", Value = template.ExportViewType.ToString()}
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = "Has Template File", FieldName = "TemplateFile", Value = template.TemplateFile == null ? "No" : "Yes"}
+                            }
+                        });
+
+                        if (!string.IsNullOrEmpty(template.Description))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Descripition", FieldName = "Description", Value = template.Description }
+                                }
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(template.UsageNotes))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Usage Notes", FieldName = "UsageNotes", Value = template.UsageNotes }
                                 }
                             });
                         }

@@ -26,7 +26,7 @@ import * as _ from "lodash";
                     </d3s-workflowmonitor-list-filter>
                 </div>
                     <div class="col s12">                
-                        <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" styleClass="overridePaginator" [value]="items" selectionMode="single" [lazy]="true" [totalRecords]="totalRecords"  [scrollable]="true" scrollWidth="100%" [metaKeySelection]="true" 
+                        <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [value]="items" selectionMode="single" [lazy]="true" [totalRecords]="totalRecords"  [scrollable]="true" scrollWidth="100%" [metaKeySelection]="true" 
                             [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']" [pageLinks]="3" [paginator]="true" 
                             [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (onLazyLoad)="loadWorkflowMonitorItems($event)" [selection]="selection" 
                             (selectionChange)="gridSelectionChange($event)">

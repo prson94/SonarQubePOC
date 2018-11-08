@@ -13,7 +13,7 @@ import { StringConstants } from '../../static/string-constants';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>      
                 <span *ngIf="!isLoading">
                     <header>Users Assigned As {{responsibilityTypeName}}</header>                            
-                        <p-table #dt [value]="users" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [metaKeySelection]="true" sortField="OwnedItemCount" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                        <p-table #dt [value]="users" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [metaKeySelection]="true" sortField="OwnedItemCount" [sortOrder]="-1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'FirstName'">

@@ -273,6 +273,8 @@ namespace d360.web.Controllers
                     return Contract_EditFields(oid);
                 case "ENDPOINT":
                     return CustomAPIServiceEndpoint_EditFields(oid);
+                case "EXPORTTEMPLATE":
+                    return ExportTemplate_EditFields(oid);
                 case "FUSION":
                     return Fusion_EditFields(oid);
                 case "FUSIONATTRIBUTE":
@@ -342,6 +344,8 @@ namespace d360.web.Controllers
                     return Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
                 case "ENDPOINT":
                     return CustomAPIServiceEndpoint_AddFields(parentID.GetValueOrDefault());
+                case "EXPORTTEMPLATE":
+                    return ExportTemplate_AddFields();
                 case "FUSION":
                     return Fusion_AddFields(objectID.GetValueOrDefault());
                 case "FUSIONATTRIBUTE":
@@ -18937,6 +18941,55 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             Company.RebuildDisplayValuesRequest();
 
             return jsonSuccess("request submitted.", "", "add", HttpStatusCode.Created);
+        }
+
+        #endregion
+
+        #region Export Templates
+
+        private JsonResult ExportTemplate_EditFields(int id)
+        {
+            var template = Company.ArtifactTypeExportTemplates.Where(x => x.ID == id).FirstOrDefault();
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", Name = "ID", FieldType = DataType.Hidden.ToString(), Value = template.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250), Value = template.Name });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.Description });
+            var names = Enum.GetNames(typeof(ExportView)).Select(i => new SelectListItem { Text = i, Value = i, Selected = template.ExportViewType.ToString() == i }).ToList();
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "View Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
+
+            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = template.ArtifactTypeID == i.ID }).ToList();
+            
+            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "ArtifactTypeID", Name = "Artifact Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
+
+            list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() , Value = template.IncludeUrl.ToString()});
+            list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeParent.ToString() });
+            list.Add(new EditableField { Row = 7, Column = 1, Required = false, FieldName = "UsageNotes", Name = "Usage Notes", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.UsageNotes });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        private JsonResult ExportTemplate_AddFields()
+        {
+            var list = new List<EditableField>();
+                        
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldDescription = "", FieldType = DataType.Text.ToString() });
+
+            var names = Enum.GetNames(typeof(ExportView)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
+            
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "View Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
+
+            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "ArtifactTypeID", Name = "Artifact Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
+
+            list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 7, Column = 1, Required = false, FieldName = "UsageNotes", Name = "Usage Notes", FieldDescription = "", FieldType = DataType.Text.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
         }
 
         #endregion
