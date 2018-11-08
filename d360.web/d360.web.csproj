@@ -1109,6 +1109,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-fields.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.routes.ts" />

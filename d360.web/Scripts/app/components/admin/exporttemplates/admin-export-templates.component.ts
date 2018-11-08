@@ -72,6 +72,13 @@ import { ExportTemplate } from '../../../models/export-template.model';
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail" *ngIf="selected">  
+                            <d3s-admin-export-template-fields-component [exportTemplate]="selected" (saveFieldsClick)="saveFields($event)"></d3s-admin-export-template-fields-component>
+                        </div>
+                    </div>
+                </div>
             </div>
     <div>               
                 
@@ -133,6 +140,17 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
                 this.showEditor = false;
                 this.load();                
             });
+    }
+
+    public saveFields(event) {
+        this.selected.IncludeFields = event;
+        this.exportTemplateService.saveExportTemplate(this.selected).subscribe(result => {           
+            for (let i = 0; i < this.exportTemplates.length; i++) {
+                if (this.exportTemplates[i].ID == this.selected.ID) {
+                    this.exportTemplates[i].IncludeFields = this.selected.IncludeFields;
+                }
+            }
+        });
     }
 
     public closeEditor() {

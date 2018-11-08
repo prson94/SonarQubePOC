@@ -20,6 +20,7 @@ import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 import { AdminExportTemplatesComponent } from './admin-export-templates.component';
+import { AdminExportTemplateFieldsComponent } from './admin-export-template-fields.component';
 
 import { AdminExportTemplatesRoutingModule } from './admin-export-templates.routes';
 
@@ -82,7 +83,8 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
         TilesModule,
     ],
     declarations: [
-        AdminExportTemplatesComponent,              
+        AdminExportTemplatesComponent,  
+        AdminExportTemplateFieldsComponent,
     ],
     providers: [
         {
