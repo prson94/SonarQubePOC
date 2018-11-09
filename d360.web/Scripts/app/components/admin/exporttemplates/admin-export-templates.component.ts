@@ -67,15 +67,33 @@ import { ExportTemplate } from '../../../models/export-template.model';
             <div class="col l8 m7 s12" *ngIf="!showEditor && !showDelete">
                 <div class="row">
                     <div class="col s12">
-                        <div class="tile tile-detail" *ngIf="selected">  
+                        <div class="tile tile-detail" *ngIf="selected &&!isLoading">  
                             <object-detail [objectType]="'ExportTemplate'" [objectID]="selected?.ID"></object-detail>
+                        </div>
+                    </div>
+                </div>
+                <div class="row"><div class="col s12">&nbsp;</div></div>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail" *ngIf="selected">  
+                            <d3s-admin-export-template-fields-component [exportTemplate]="selected" (saveFieldsClick)="saveFields($event)"></d3s-admin-export-template-fields-component>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col s12">
                         <div class="tile tile-detail" *ngIf="selected">  
-                            <d3s-admin-export-template-fields-component [exportTemplate]="selected" (saveFieldsClick)="saveFields($event)"></d3s-admin-export-template-fields-component>
+                            <header>Template File</header>
+                            <div class="row">
+                                <div class="col s12">
+                                    An Excel template file can be used as the starting point for an export template.  Please use the buttons below to upload an Excel template file this will replace any existing template files already specified for the export template.  In order to clear out any existing export template files click <a style="cursor:pointer;" (click)="clearTemplate()"><i class="fa fa-trash-o"></i> here</a>.
+                                </div>
+                                <div class="col s12">&nbsp;</div>                        
+                                <div class="col s2">                                    
+                                    <p-fileUpload name="template" [url]="'./api/v2/ExportTemplates/TemplateFile/'+ selected.ID"
+                                        accept=".xls,.xlsx" maxFileSize="10000000" auto="auto"></p-fileUpload>                                                                         
+                                </div>                                
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -92,6 +110,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     private exportTemplates: ExportTemplate[];
     private showDelete: boolean = false;
     private showEditor: boolean = false;
+    uploadedFiles: any[] = [];
 
     theDeleteCallback: Function;
     
@@ -157,4 +176,11 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         this.showEditor = false;
     }
 
+
+    clearTemplate() {
+        this.isLoading = true;
+        this.exportTemplateService.saveTemplateFile(this.selected).subscribe(result => {
+            this.isLoading = false;
+        });
+    }
 }

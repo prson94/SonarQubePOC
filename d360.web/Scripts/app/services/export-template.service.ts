@@ -19,8 +19,7 @@ export class ExportTemplateService extends BaseService {
     }
 
     public deleteExportTemplates(id: number): Observable<any> {
-        return this.http.delete(`/api/v2/exporttemplates/${id}`);
-            
+       return this.http.delete(`/api/v2/exporttemplates/${id}`);            
     }
 
     public saveExportTemplate(exportTemplate: ExportTemplate): Observable<ExportTemplate> {
@@ -35,5 +34,9 @@ export class ExportTemplateService extends BaseService {
                 .map(item => { return <ExportTemplate>item })
                 .catch(err => this.handleError(err));
         
+    }
+
+    public saveTemplateFile(exportTemplate: ExportTemplate): Observable<any> {        
+        return this.http.post(`/api/v2/exporttemplates/templatefile/${exportTemplate.ID}`,'');
     }
 }
