@@ -16769,16 +16769,12 @@ order by DN.DisplayValue");
                 if (adjacentShortcut == null)
                     throw new Exception($"Shortcut is already sorted to the "+(moveUp ? "top." : "bottom."));
 
-                if (moveUp)
-                {
-                    adjacentShortcut.DisplayOrder++;
-                    shortcut.DisplayOrder--;
-                }
-                else
-                {
-                    adjacentShortcut.DisplayOrder--;
-                    shortcut.DisplayOrder++;
-                }
+
+                int newOrder = adjacentShortcut.DisplayOrder;
+                adjacentShortcut.DisplayOrder = shortcut.DisplayOrder;
+                shortcut.DisplayOrder = newOrder;
+
+
                 Company.SaveChanges();
                 message = $"Shortcut {shortcut.Name} moved {direction} successfully.";
             }
