@@ -19,7 +19,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ganss.XSS;
 using System.Text.RegularExpressions;
-F
+
 namespace igx.jobs.bulkloadprocessor
 {
     class Program
