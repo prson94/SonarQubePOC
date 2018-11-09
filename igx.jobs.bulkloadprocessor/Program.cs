@@ -19,7 +19,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ganss.XSS;
 using System.Text.RegularExpressions;
-
+F
 namespace igx.jobs.bulkloadprocessor
 {
     class Program
@@ -999,7 +999,7 @@ when matched then
 	update
 	set	T.FirstName = S.FirstName,
 		T.LastName = S.LastName,
-		T.Status = S.[State]
+		T.[State] = S.[State]
 when not matched by target then
     insert  (ResourceID, LastName, FirstName, Email, [State], IsAdministrator)
     values  (S.ResourceID, S.LastName, S.FirstName, S.Email, S.[State], 0);", transaction: trans);
