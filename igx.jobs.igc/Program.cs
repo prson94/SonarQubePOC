@@ -10,7 +10,6 @@ using d360.extensions.storage;
 using d360.model;
 using d360.utils.company;
 using Dapper;
-using igx.jobs;
 using igx.jobs.igc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -19,10 +18,8 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,7 +49,7 @@ namespace igx.jobs
         const string timerSettings = "0 */5 * * * *";
 #endif
 
-        //[Disable]
+        [Disable]
         public static void RunScheduleViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         {
             string functionName = "IGC_Integration_Schedule";
@@ -509,6 +506,8 @@ where		T.CompletedOn is null
                 Storage.CreateFolder($"igc-{Company.CurrentCompanyID}");
                 var rootFolderName = $"{ExecutionAssetType.ExecutionID}.{ExecutionAssetType.SynchedAssetTypeID}"; // storage folder.
 
+                #region Get data from IGC iteself.
+
                 Func<PageDataClass, bool> parsePostModel = delegate (PageDataClass c)
                 {
                     int ps = 100;
@@ -559,8 +558,199 @@ where		T.CompletedOn is null
                 parsePostModel(PageDataClass.Responsibilities);
                 processAssetPages(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/owners", PageDataClass.Responsibilities);
 
-                // Save to database staging tables.
-                saveToEnvironmentDatabase(cnn, Company.CurrentCompanyID, ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, Company.CurrentResourceID, !checkForChangesOnly);
+                #endregion
+
+                #region Save to database staging tables.
+
+                //saveToEnvironmentDatabase(cnn, Company.CurrentCompanyID, ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, Company.CurrentResourceID, !checkForChangesOnly);
+
+                var rootFolder = $"igc-{Company.CurrentCompanyID}";
+                var assetFolderName = $"{ExecutionAssetType.ExecutionID}.{ExecutionAssetType.SynchedAssetTypeID}"; // storage folder.
+
+                //var list = new List<ExecutionAssetSectionFieldModel>();
+
+                //Func<bool> postJsonTableContents = delegate ()
+                //{
+                //    var tbl = new System.Data.DataTable();
+
+                //    tbl.Columns.Add("ExecutionID", typeof(long));
+                //    tbl.Columns.Add("SynchedAssetTypeID", typeof(int));
+                //    tbl.Columns.Add("SourceID", typeof(string));
+                //    tbl.Columns.Add("Section", typeof(int));
+                //    tbl.Columns.Add("FieldName", typeof(string));
+                //    tbl.Columns.Add("FieldValue", typeof(string));
+
+                //    foreach (var a in list)
+                //    {
+                //        var row = tbl.NewRow();
+
+                //        row["ExecutionID"] = a.ExecutionID;
+                //        row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
+                //        row["SourceID"] = a.SourceID;
+                //        row["Section"] = (int)a.Section;
+                //        row["FieldName"] = a.FieldName;
+                //        row["FieldValue"] = a.FieldValue;
+
+                //        tbl.Rows.Add(row);
+                //    }
+
+                //    if (cnn.State != System.Data.ConnectionState.Open)
+                //        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                //    using (var assetBulkCopy = new SqlBulkCopy(cnn))
+                //    {
+                //        assetBulkCopy.BatchSize = 25000;
+                //        assetBulkCopy.DestinationTableName = "integration.ExecutionAssetSectionField";
+                //        assetBulkCopy.BulkCopyTimeout = 3600;
+
+                //        assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                //        assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
+                //        assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
+                //        assetBulkCopy.ColumnMappings.Add("Section", "Section");
+                //        assetBulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+                //        assetBulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+
+                //        assetBulkCopy.WriteToServer(tbl);
+                //    }
+
+                //    tbl.Dispose();
+                //    cnn.Close();
+
+                //    return true;
+                //};
+
+                //Func<PageDataClass, string, bool> parsePageCollection = delegate (PageDataClass pc, string path)
+                //{
+                //    List<StorageFileInfo> pages = Storage.ListFiles(path);
+                //    int totalPageCount = pages.Count;
+
+                //    var fieldsToMatch = new List<string>();
+
+                //    switch (pc)
+                //    {
+                //        case PageDataClass.Fields:
+                //            fieldsToMatch = fields.Select(i => i.SourceField).Distinct().ToList();
+                //            break;
+                //        case PageDataClass.Relations:
+                //            fieldsToMatch = relations.Select(i => i.SourceField).Distinct().ToList();
+                //            break;
+                //        case PageDataClass.Responsibilities:
+                //            fieldsToMatch = roles.Select(i => i.SourceIdField).Distinct().ToList();
+                //            break;
+                //    }
+
+                //    foreach (var p in pages)
+                //    {
+                //        totalPageCount--;
+
+                //        var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
+                //        if (page.items.Count > 0)
+                //        {
+                //            foreach (var asset in page.items.Children())
+                //            {
+                //                var sourceID = asset["_id"].Value<string>();
+
+                //                foreach (var f in fieldsToMatch)
+                //                {
+                //                    list.Add(new ExecutionAssetSectionFieldModel
+                //                    {
+                //                        ExecutionID = ExecutionAssetType.ExecutionID,
+                //                        SynchedAssetTypeID = ExecutionAssetType.SynchedAssetTypeID,
+                //                        SourceID = sourceID,
+                //                        Section = pc,
+                //                        FieldName = f,
+                //                        FieldValue = JsonConvert.SerializeObject(asset[f])//.Value<string>()
+                //                    });
+                //                }
+                //            }
+                //        }
+
+                //        // Now decide if we are over the limit to send to database, or are on the last page to parse.
+                //        if (list.Count >= 500000 || totalPageCount == 0)
+                //        {
+                //            postJsonTableContents();
+                //            list = new List<ExecutionAssetSectionFieldModel>();//HashSet<ExecutionAssetJsonModel>();
+                //        }
+                //    }
+
+                //    return true;
+                //};
+
+                //parsePageCollection(PageDataClass.Fields, $"{rootFolder}/{assetFolderName}/fields");
+                //parsePageCollection(PageDataClass.Relations, $"{rootFolder}/{assetFolderName}/relations");
+                //parsePageCollection(PageDataClass.Responsibilities, $"{rootFolder}/{assetFolderName}/owners");
+
+
+                Func<PageDataClass, string, bool> savePageToDb = delegate (PageDataClass pc, string path)
+                {
+                    var tbl = new System.Data.DataTable();
+
+                    tbl.Columns.Add("ExecutionID", typeof(long));
+                    tbl.Columns.Add("SynchedAssetTypeID", typeof(int));
+                    tbl.Columns.Add("Section", typeof(int));
+                    tbl.Columns.Add("Name", typeof(string));
+                    tbl.Columns.Add("Json", typeof(string));
+
+                    List<StorageFileInfo> pages = Storage.ListFiles(path);
+                    int pageTotal = pages.Count;
+                    int pageProcessCount = 0;
+                    foreach (var p in pages)
+                    {
+                        pageTotal--;
+                        pageProcessCount++;
+
+                        var row = tbl.NewRow();
+
+                        row["ExecutionID"] = ExecutionAssetType.ExecutionID;
+                        row["SynchedAssetTypeID"] = ExecutionAssetType.SynchedAssetTypeID;
+                        row["Section"] = (int)pc;
+                        row["Name"] = p.Name;
+                        row["Json"] = Storage.GetFileContentsAsString(path, p.Name);
+
+                        tbl.Rows.Add(row);
+
+                        if (pageProcessCount >= 50 || pageTotal == 0)
+                        {
+                            if (cnn.State != System.Data.ConnectionState.Open)
+                                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                            using (var assetBulkCopy = new SqlBulkCopy(cnn))
+                            {
+                                assetBulkCopy.BatchSize = 5;
+                                assetBulkCopy.DestinationTableName = "integration.ExecutionAssetTypeSectionPage";
+                                assetBulkCopy.BulkCopyTimeout = 3600;
+
+                                assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
+                                assetBulkCopy.ColumnMappings.Add("Section", "Section");
+                                assetBulkCopy.ColumnMappings.Add("Name", "Name");
+                                assetBulkCopy.ColumnMappings.Add("Json", "Json");
+
+                                assetBulkCopy.WriteToServer(tbl);
+                            }
+
+                            tbl.Rows.Clear();
+                            cnn.Close();
+                            pageProcessCount = 0;
+                        }
+                    }
+
+                    return true;
+                };
+
+                savePageToDb(PageDataClass.Fields, $"{rootFolder}/{assetFolderName}/fields");
+                savePageToDb(PageDataClass.Relations, $"{rootFolder}/{assetFolderName}/relations");
+                savePageToDb(PageDataClass.Responsibilities, $"{rootFolder}/{assetFolderName}/owners");
+
+                if (!checkForChangesOnly)
+                {
+                    if (cnn.State != System.Data.ConnectionState.Open)
+                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    cnn.Execute("delete integration.ExecutionAsset where SynchedAssetTypeID = @at", new { at = ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 3600);
+                }
+
+                #endregion
 
                 #region Load into the Field working table
 
@@ -782,186 +972,183 @@ insert into integration.ExecutionAssetField
         {
             var rootFolder = $"igc-{companyID}";
             var assetFolderName = $"{executionID}.{synchedAssetTypeID}"; // storage folder.
-            var path = "";
-            List<StorageFileInfo> pages = null;
 
-            var list = new HashSet<IntegrationExecutionAsset>();
+            var list = new List<ExecutionAssetJsonModel>();
 
-            path = $"{rootFolder}/{assetFolderName}/fields";
-            pages = Storage.ListFiles(path);
-
-            pages.ForEach(p => {
-                IgcDynamicArrayModels page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
-                if (page.items.Count > 0)
-                {
-                    foreach (var obj in page.items.Children())
-                    {
-                        var sourceID = obj["_id"].Value<string>();
-
-                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
-                        if (executionAsset == null)
-                        {
-                            executionAsset = new IntegrationExecutionAsset
-                            {
-                                ExecutionID = executionID,
-                                SynchedAssetTypeID = synchedAssetTypeID,
-                                SourceID = sourceID,
-                                RawObject = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
-                            };
-                            list.Add(executionAsset);
-                        }
-                    }
-                }
-            });
-
-            path = $"{rootFolder}/{assetFolderName}/owners";
-            pages = Storage.ListFiles(path);
-
-            pages.ForEach(p => {
-                IgcDynamicArrayModels page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
-                if (page.items.Count > 0)
-                {
-                    foreach (var obj in page.items.Children())
-                    {
-                        var sourceID = obj["_id"].Value<string>();
-
-                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
-
-                        if (executionAsset != null)
-                        {
-                            executionAsset.RawResponsibilitites = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
-                        }
-                        else
-                        {
-                            executionAsset = new IntegrationExecutionAsset
-                            {
-                                ExecutionID = executionID,
-                                SynchedAssetTypeID = synchedAssetTypeID,
-                                SourceID = sourceID,
-                                RawResponsibilitites = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
-                            };
-                            list.Add(executionAsset);
-                        }
-                    }
-                }
-            });
-
-            path = $"{rootFolder}/{assetFolderName}/relations";
-            pages = Storage.ListFiles(path);
-
-            pages.ForEach(p => {
-                IgcDynamicArrayModels page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
-                if (page.items.Count > 0)
-                {
-                    foreach (var obj in page.items.Children())
-                    {
-                        var sourceID = obj["_id"].Value<string>();
-
-                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
-
-                        if (executionAsset != null)
-                        {
-                            executionAsset.RawRelationships = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
-                        }
-                        else
-                        {
-
-                            executionAsset = new IntegrationExecutionAsset
-                            {
-                                ExecutionID = executionID,
-                                SynchedAssetTypeID = synchedAssetTypeID,
-                                SourceID = sourceID,
-                                RawRelationships = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
-                            };
-                            list.Add(executionAsset);
-                        }
-                    }
-                }
-            });
-
-            #region Save to database via Bulk Insert
-
-            var assetTable = new System.Data.DataTable();
-
-            assetTable.Columns.Add("Uid", typeof(Guid));
-
-            assetTable.Columns.Add("ExecutionID", typeof(long));
-            assetTable.Columns.Add("SynchedAssetTypeID", typeof(int));
-            assetTable.Columns.Add("SourceID", typeof(string));
-
-            assetTable.Columns.Add("RawObject", typeof(string));
-            assetTable.Columns.Add("RawRelationships", typeof(string));
-            assetTable.Columns.Add("RawResponsibilitites", typeof(string));
-
-            assetTable.Columns.Add("ErrorMessages", typeof(string));
-
-            var loadedAssetIDs = new List<string>();
-            foreach(var a in list)//list.ForEach(a =>
+            Func<bool> postJsonTableContents = delegate ()
             {
-                if (!loadedAssetIDs.Contains(a.SourceID))
+                var tbl = new System.Data.DataTable();
+
+                tbl.Columns.Add("ExecutionID", typeof(long));
+                tbl.Columns.Add("SynchedAssetTypeID", typeof(int));
+                tbl.Columns.Add("SourceID", typeof(string));
+                tbl.Columns.Add("PageDataClass", typeof(int));
+                tbl.Columns.Add("Json", typeof(string));
+
+                foreach (var a in list)
                 {
-                    loadedAssetIDs.Add(a.SourceID);
-
-                    var row = assetTable.NewRow();
-
-                    row["Uid"] = a.Uid;
+                    var row = tbl.NewRow();
 
                     row["ExecutionID"] = a.ExecutionID;
                     row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
                     row["SourceID"] = a.SourceID;
+                    row["PageDataClass"] = (int)a.PageDataClass;
+                    row["Json"] = a.Json;
 
-                    row["RawObject"] = a.RawObject;
-                    row["RawRelationships"] = a.RawRelationships;
-                    row["RawResponsibilitites"] = a.RawResponsibilitites;
-
-                    row["ErrorMessages"] = a.ErrorMessages;
-
-                    assetTable.Rows.Add(row);
+                    tbl.Rows.Add(row);
                 }
-            }//);
 
-            if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                if (cnn.State != System.Data.ConnectionState.Open)
+                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
+                using (var assetBulkCopy = new SqlBulkCopy(cnn))
+                {
+                    assetBulkCopy.BatchSize = 5000; //assetTable.Rows.Count;
+                    assetBulkCopy.DestinationTableName = "integration.ExecutionAssetJson";
+                    assetBulkCopy.BulkCopyTimeout = 3600;
 
-            using (var trans = cnn.BeginTransaction())
+                    assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
+                    assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
+                    assetBulkCopy.ColumnMappings.Add("PageDataClass", "PageDataClass");
+                    assetBulkCopy.ColumnMappings.Add("Json", "Json");
+
+                    assetBulkCopy.WriteToServer(tbl);
+                }
+
+                tbl.Dispose();
+                cnn.Close();
+
+                return true;
+            };
+
+            Func<PageDataClass, string, bool> parsePageCollection = delegate (PageDataClass pc, string path)
             {
-                try
+                List<StorageFileInfo> pages = Storage.ListFiles(path);
+                int totalPageCount = pages.Count;
+                
+                foreach (var p in pages)
                 {
-                    if (fullRefresh)
+                    totalPageCount--;
+
+                    var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
+                    if (page.items.Count > 0)
                     {
-                        cnn.Execute("delete integration.ExecutionAsset where SynchedAssetTypeID = @at", new { at = synchedAssetTypeID }, transaction: trans, commandTimeout: 3600);
+                        list.AddRange(
+                            page.items.Children().Select(i => new ExecutionAssetJsonModel
+                            {
+                                ExecutionID = executionID,
+                                SynchedAssetTypeID = synchedAssetTypeID,
+                                SourceID = i["_id"].Value<string>(),
+                                PageDataClass = pc,
+                                Json = JsonConvert.SerializeObject(i, Formatting.None, new DecimalJsonConverter())
+                            })
+                        );
                     }
 
-                    using (var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans))
+                    // Now decide if we are over the limit to send to database, or are on the last page to parse.
+                    if (list.Count >= 50000 || totalPageCount == 0)
                     {
-                        assetBulkCopy.BatchSize = 5000; //assetTable.Rows.Count;
-                        assetBulkCopy.DestinationTableName = "[integration].[ExecutionAsset]";
-                        assetBulkCopy.BulkCopyTimeout = 3600;
-
-                        assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
-
-                        assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                        assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
-                        assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
-
-                        assetBulkCopy.ColumnMappings.Add("RawObject", "RawObject");
-                        assetBulkCopy.ColumnMappings.Add("RawRelationships", "RawRelationships");
-                        assetBulkCopy.ColumnMappings.Add("RawResponsibilitites", "RawResponsibilitites");
-
-                        assetBulkCopy.ColumnMappings.Add("ErrorMessages", "ErrorMessages");
-
-                        assetBulkCopy.WriteToServer(assetTable);
-
-                        trans.Commit();
+                        postJsonTableContents();
+                        list = new List<ExecutionAssetJsonModel>();//HashSet<ExecutionAssetJsonModel>();
                     }
                 }
-                catch (Exception ex)
-                {
-                    trans.Rollback();
-                    throw ex;
-                }
+
+                return true;
+            };
+
+            parsePageCollection(PageDataClass.Fields, $"{rootFolder}/{assetFolderName}/fields");
+            parsePageCollection(PageDataClass.Relations, $"{rootFolder}/{assetFolderName}/relations");
+            parsePageCollection(PageDataClass.Responsibilities, $"{rootFolder}/{assetFolderName}/owners");
+
+            if (fullRefresh)
+            {
+                if (cnn.State != System.Data.ConnectionState.Open)
+                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                cnn.Execute("delete integration.ExecutionAsset where SynchedAssetTypeID = @at", new { at = synchedAssetTypeID }, commandTimeout: 3600);
             }
+
+            #region Save to database via Bulk Insert
+
+            //var assetTable = new System.Data.DataTable();
+
+            //assetTable.Columns.Add("Uid", typeof(Guid));
+
+            //assetTable.Columns.Add("ExecutionID", typeof(long));
+            //assetTable.Columns.Add("SynchedAssetTypeID", typeof(int));
+            //assetTable.Columns.Add("SourceID", typeof(string));
+
+            //assetTable.Columns.Add("RawObject", typeof(string));
+            //assetTable.Columns.Add("RawRelationships", typeof(string));
+            //assetTable.Columns.Add("RawResponsibilitites", typeof(string));
+
+            //assetTable.Columns.Add("ErrorMessages", typeof(string));
+
+            //var loadedAssetIDs = new List<string>();
+            //foreach(var a in list)//list.ForEach(a =>
+            //{
+            //    if (!loadedAssetIDs.Contains(a.SourceID))
+            //    {
+            //        loadedAssetIDs.Add(a.SourceID);
+
+            //        var row = assetTable.NewRow();
+
+            //        row["Uid"] = a.Uid;
+
+            //        row["ExecutionID"] = a.ExecutionID;
+            //        row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
+            //        row["SourceID"] = a.SourceID;
+
+            //        row["RawObject"] = a.RawObject;
+            //        row["RawRelationships"] = a.RawRelationships;
+            //        row["RawResponsibilitites"] = a.RawResponsibilitites;
+
+            //        row["ErrorMessages"] = a.ErrorMessages;
+
+            //        assetTable.Rows.Add(row);
+            //    }
+            //}//);
+
+            //if (cnn.State != System.Data.ConnectionState.Open)
+            //    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+
+            //using (var trans = cnn.BeginTransaction())
+            //{
+            //    try
+            //    {
+
+
+            //        using (var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans))
+            //        {
+            //            assetBulkCopy.BatchSize = 5000; //assetTable.Rows.Count;
+            //            assetBulkCopy.DestinationTableName = "[integration].[ExecutionAsset]";
+            //            assetBulkCopy.BulkCopyTimeout = 3600;
+
+            //            assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
+
+            //            assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+            //            assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
+            //            assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
+
+            //            assetBulkCopy.ColumnMappings.Add("RawObject", "RawObject");
+            //            assetBulkCopy.ColumnMappings.Add("RawRelationships", "RawRelationships");
+            //            assetBulkCopy.ColumnMappings.Add("RawResponsibilitites", "RawResponsibilitites");
+
+            //            assetBulkCopy.ColumnMappings.Add("ErrorMessages", "ErrorMessages");
+
+            //            assetBulkCopy.WriteToServer(assetTable);
+
+            //            trans.Commit();
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        trans.Rollback();
+            //        throw ex;
+            //    }
+            //}
 
             #endregion
         }

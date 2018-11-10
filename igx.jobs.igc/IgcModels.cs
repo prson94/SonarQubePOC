@@ -208,11 +208,30 @@ namespace igx.jobs.igc
         public int SynchedAssetTypeID { get; set; }
     }
 
+    public class ExecutionAssetJsonModel
+    {
+        public long ExecutionID { get; set; }
+        public int SynchedAssetTypeID { get; set; }
+        public string SourceID { get; set; }
+        public PageDataClass PageDataClass { get; set; }
+        public string Json { get; set; }
+    }
+
+    public class ExecutionAssetSectionFieldModel
+    {
+        public long ExecutionID { get; set; }
+        public int SynchedAssetTypeID { get; set; }
+        public string SourceID { get; set; }
+        public PageDataClass Section { get; set; }
+        public string FieldName { get; set; }
+        public string FieldValue { get; set; }
+    }
+
     public enum PageDataClass
     {
-        Fields,
-        Relations,
-        Responsibilities
+        Fields = 1,
+        Relations = 2,
+        Responsibilities = 3
     }
 
     public class PageBeginValueUpdatedEventArgs : EventArgs
