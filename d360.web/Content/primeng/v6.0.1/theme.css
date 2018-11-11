@@ -36,7 +36,8 @@ th.ui-state-default { background-color: #999; }
 /* Interaction Cues
 ----------------------------------*/
 .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {
-    border: none;       
+    border: none;
+    background-color: #FFEF99;
 }
 /*.ui-state-highlight a, .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #000; }*/
 .ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #f44336; background: #f5554a; color: #cd0a0a; }
@@ -661,12 +662,7 @@ button.ui-button:disabled {
     padding-bottom: 5px;
     padding-top: 5px;
 }
-/*.ui-datatable tbody td {
-    border:none;
-    border-radius: 0;
-    padding: 0 10px;
-    height:25px;    
-}*/
+
 .ui-datatable .ui-paginator {
     border-top: 1px solid #999 !important;
 }
@@ -1079,6 +1075,9 @@ button.ui-button:disabled {
     border-color :#FFB230;
 }
 
+.ui-growl-item-container {
+    color: #fff;
+}
 /* TabMenu */
 .ui-tabmenu {
     border: 0 none;
