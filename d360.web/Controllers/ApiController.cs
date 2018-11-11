@@ -1380,13 +1380,7 @@ order by 'Name'";
                 })
             );
         }
-
-        [Route("fusion/{typeID:int}/ownership/relationshiptypes")]
-        public List<IntersectType> GetAllowedIntersectTypesForFusionOwnership(int typeID)
-        {
-            return Company.Filter<IntersectType>(i => i.Subject != "IntersectType" && i.Object != "IntersectType").OrderBy(i => i.Name).ToList();
-        }
-
+        
         [Route("fusion/{fusionID:int}/rules")]
         public HttpResponseMessage GetFusionRules(int fusionID)
         {
@@ -3885,7 +3879,7 @@ where   R.ReferenceItemTypeID = {id}
 
             if (ft != null && lookup != null)
             {
-                if (AnyOwnershipLookupGridValues(type, id, lookup))
+                if (AnyOwnershipLookupGridValues(type, id))
                 {
                     list.Add(new DetailReadOnlyRowModel
                     {
@@ -3914,7 +3908,7 @@ where   R.ReferenceItemTypeID = {id}
             return list;
         }
 
-        private bool AnyOwnershipLookupGridValues(string type, int id, FieldTypeLookup lookup)
+        private bool AnyOwnershipLookupGridValues(string type, int id)
         {            
             type = type.CleanForSql();
 

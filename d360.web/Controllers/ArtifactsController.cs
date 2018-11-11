@@ -721,7 +721,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                 true,
                 sortDataField, sortOrder, pagenum, pagesize,
                 new string[] { "P.DisplayValue" },
-                filter, extraParams: d, applyHiddenFilters: true, includeIdColumn: false, idColumn: "O.ID", innerIdColumn:"O.ObjectID");
+                filter, extraParams: d, includeIdColumn: false, idColumn: "O.ID", innerIdColumn:"O.ObjectID");
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 

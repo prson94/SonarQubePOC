@@ -25,14 +25,12 @@ namespace d360.web.Controllers.V2
     public class DataQualityController : BaseApiController
     {
         #region DI
-
-        IQueueSource QueueSource;
-
+                
         public DataQualityController
-(CommunityContext community, CompanyContext company, IQueueSource queueSource)
+(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
-            QueueSource = queueSource;
+        
         }
 
         #endregion

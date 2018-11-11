@@ -26,7 +26,7 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        public ExportTemplatesController(CommunityContext community, CompanyContext company, IQueueSource queueSource)
+        public ExportTemplatesController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
             
