@@ -37,7 +37,8 @@ import {
     EditorModule,
     InputTextModule,
     MultiSelectModule,
-    SharedModule    
+    SharedModule,
+    FileUploadModule,
 } from 'primeng/primeng';
 import { TableModule } from 'primeng/table';
 import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
@@ -62,6 +63,7 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
         MultiSelectModule,
         SharedModule,
         TableModule,
+        FileUploadModule,
 
         //color picker 
         ColorPickerModule,

@@ -25,12 +25,10 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        IQueueSource QueueSource;
-
-        public CrossReferencesController(CommunityContext community, CompanyContext company, IQueueSource queueSource)
+        public CrossReferencesController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
-            QueueSource = queueSource;
+            
         }
 
         #endregion

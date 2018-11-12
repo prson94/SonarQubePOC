@@ -59,7 +59,7 @@ import { forEach } from '@angular/router/src/utils/collection';
                         </div>                        
                     <div>             
                     <div class="row">
-                        <div class="col s4">
+                        <div class="col s12">
                             <button pButton label="Save Changes" (click)="save()"></button>
                             <button pButton type="button" (click)="reset()" label="Revert Changes"></button>
                         </div>

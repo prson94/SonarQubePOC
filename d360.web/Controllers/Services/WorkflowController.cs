@@ -165,8 +165,7 @@ order by wi.StartedOn desc",
 
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
+            document.SaveAs(stream);            
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
@@ -313,8 +312,7 @@ order by wi.StartedOn desc";
         public WorkflowDiagramModel GetWorkflowDiagram(int id, int? version = null)
         {
             var nodes = Company.Query<WorkflowDiagramNode>(QueryConstants.WorkflowDiagramNodes, new { id, version }).ToList();
-            var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id, version }).ToList();
-            var name = Company.Query<string>(@"select name from workflow.[type] where id = @id", new { id }).ToList().First().ToString();
+            var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id, version }).ToList();            
             var type = Company.WorkflowTypes.Find(id);
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
@@ -2314,8 +2312,7 @@ order by wi.StartedOn desc";
             document.AutoFitColumn(1, index);
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
+            document.SaveAs(stream);            
             stream.Position = 0;
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);
@@ -3055,8 +3052,7 @@ order by wi.StartedOn desc";
 
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
+            document.SaveAs(stream);            
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      

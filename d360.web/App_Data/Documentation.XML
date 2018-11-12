@@ -2626,6 +2626,12 @@
             </summary>
             <returns>ExportTemplate model of the created item if item already exists http confict is returned.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.PostTemplateFile(System.Int32)">
+            <summary>
+            Uploads a new Export Template template file for the specified export template.  
+            </summary>
+            <returns>Http 200 if upload was successful.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Put(System.Int32,d360.core.entities.ArtifactTypeExportTemplate)">
             <summary>
             Updates the specified Export Template

@@ -27,8 +27,7 @@ namespace d360.web.Handlers
         }
         private HttpResponseMessage GenerateResponse(HttpRequestMessage request, HttpResponseMessage response)
         {
-            string errorMessage = null;
-            HttpStatusCode statusCode = response.StatusCode;
+            string errorMessage = null;            
             if (!IsResponseValid(response))
             {
                 object responseContent;
@@ -46,8 +45,7 @@ namespace d360.web.Handlers
 
                             if (httpError != null)
                             {
-                                errorMessage = httpError.Message;
-                                statusCode = HttpStatusCode.InternalServerError;
+                                errorMessage = httpError.Message;                                
                                 responseContent = null;
                             }
 

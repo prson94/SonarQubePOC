@@ -2455,16 +2455,6 @@ namespace d360.model
         }
 
         /// <summary>
-        /// Parses the specified XML string to a dynamic.
-        /// </summary>
-        /// <param name="xmlString">The XML string.</param>
-        /// <returns>A dynamic object.</returns>
-        public static dynamic ParseDynamic(this string xmlString)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Gets the array element.
         /// </summary>
         /// <param name="info">The property info.</param>
