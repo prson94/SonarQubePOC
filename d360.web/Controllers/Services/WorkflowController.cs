@@ -99,8 +99,7 @@ order by wi.StartedOn desc",
             
             return Company.Query<dynamic>(sql);
         }
-
-        
+                
         [Route("all/issues"), HttpGet]
         public HttpResponseMessage GetIssuesForAllUsers()
         {
@@ -170,7 +169,7 @@ order by wi.StartedOn desc",
             HttpResponseMessage result = null;
             // serve the file to the client      
             result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -180,55 +179,12 @@ order by wi.StartedOn desc",
             };
             return result;
         }
-
-        internal List<UiRequestFilterValue> GetFilterValuesFromRequest(HttpRequestBase Request, bool applyHiddenFilters = false)
-        {
-            var query = Request.Params;
-            var filters = new List<UiRequestFilterValue>();
-
-            int relfilterscount = 0;
-
-          
-
-            #region Field Filters
-
-            if (int.TryParse(query["filterscount"], out relfilterscount))
-            {
-                for (int i = 0; i < relfilterscount; i++)
-                {
-                    var fField = query["filterdatafield" + i];
-                    var fCondition = query["filtercondition" + i];
-                    var fValue = query["filtervalue" + i];
-
-                    if (fValue.EndsWith(".000")) fValue = fValue.Replace(".000", "");
-
-                    if (!string.IsNullOrEmpty(fValue))
-                    {
-                        filters.Add(new UiRequestFieldFilterValue
-                        {
-                            Condition = fCondition,
-                            FieldName = fField,
-                            RawValue = fValue
-                        });
-                    }
-                }
-            }
-
-            #endregion
-
-           
-
-            return filters;
-        }
-
-
+        
         [HttpGet, Route("workflowmonitor/filter/definition")]
         public HttpResponseMessage GetFilerDefinition()
         {
-
             var filterValues = new List<string>() { "Artifact", "Rule", "Policy", "Model", "Action", "Relationship", "Fusion" }.OrderBy(x=>x).ToList();
            
-
             var filterColumns = new List<GridFilterColumn>();
             filterColumns.Add(new GridFilterColumn { text = "Asset", datafield = "Asset", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
             filterColumns.Add(new GridFilterColumn { text = "Type", datafield = "Type", filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = filterValues,columntype=GridColumn.COLUMN_TYPE_COMBO });
@@ -242,10 +198,6 @@ order by wi.StartedOn desc",
             return Request.CreateResponse(HttpStatusCode.OK, filterColumns.OrderBy(x => x.text).ToList());
 
         }
-
-
-
-
 
         [Route("issue/type/{objectid:int}/{objecttype}"), HttpGet]
         public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype) 

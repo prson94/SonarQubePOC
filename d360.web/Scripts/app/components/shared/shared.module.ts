@@ -35,7 +35,6 @@ import { SimpleAccordionModule } from './simple-accordion.part';
 import { SharedObjectDetailsModule } from './objectdetails/shared-object-details.module';
 
 import { AttributesTile } from './attributes.tile';
-import { FusionFiltersComponent } from './fusion-filters.component';
 import { GroupMembersComponent } from './group-members.component';
 import { MessagesBarComponent } from './messages-bar.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
@@ -51,8 +50,7 @@ import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.co
 
 @NgModule({
     declarations: [     
-        AttributesTile,        
-        FusionFiltersComponent,        
+        AttributesTile,                
         GroupMembersComponent,                            
         MessagesBarComponent,                                        
         ObjectDefinitionTile,
@@ -65,8 +63,7 @@ import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.co
         UserListComponent,
         ResourceMultiSelectGridComponent,
     ],
-    exports: [                                                                                                                       
-        FusionFiltersComponent,         
+    exports: [                                                                                                                                        
         GroupMembersComponent,                             
         MessagesBarComponent,                                                  
         ObjectDefinitionTile,
