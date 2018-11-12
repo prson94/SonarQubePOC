@@ -96,6 +96,18 @@ namespace igx.jobs.apiexecutionprocessor
 
                             storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(putResults));
                             break;
+                        case ApiExecutionAction.DeleteAssets:
+                            var deleteFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(dbExecutionItem.Fields);
+                            assetType = company.Filter<AssetType>(i => i.uid == deleteFields.AssetTypeUid).Single();
+                            string deleteAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
+                            var deleteAssets = JsonConvert.DeserializeObject<AssetDeletes>(deleteAssetsJson);
+
+                            var deleteResults = companyConnection.DeleteAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, deleteAssets);
+                            dbExecutionItem.Processed = deleteResults.Count(i => i.Success);
+                            dbExecutionItem.Error = deleteResults.Count(i => !i.Success);
+
+                            storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(deleteResults));
+                            break;
                     }
 
                     companyConnection.Close();

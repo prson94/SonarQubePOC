@@ -506,7 +506,7 @@ where		T.CompletedOn is null
                 Storage.CreateFolder($"igc-{Company.CurrentCompanyID}");
                 var rootFolderName = $"{ExecutionAssetType.ExecutionID}.{ExecutionAssetType.SynchedAssetTypeID}"; // storage folder.
 
-                #region Get data from IGC iteself.
+                #region Get data from IGC itself.
 
                 Func<PageDataClass, bool> parsePostModel = delegate (PageDataClass c)
                 {

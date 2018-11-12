@@ -939,3 +939,78 @@ end
 GO
 
 ------------------------------------------------------------------
+
+
+-- GOV-5945 - Delete Asset API -----------------------------------
+create procedure [asset].[BulkDelete]
+--declare 
+	@uid uniqueidentifier,
+	@r int
+as
+begin
+	set nocount on;
+/*
+	--TESTING LOGIC
+	declare @uid uniqueidentifier = 'A9B94F4B-14F6-474F-9572-80F954C8FC59', @r int = 1
+
+	drop table if exists #AssetTable;
+	create table #AssetTable (
+		ItemNumber int not null,
+
+		Uid uniqueidentifier null,
+		AssetID bigint null,
+
+		[Message] nvarchar(2500) null,
+		Success bit null
+	);
+	
+	insert into #AssetTable (ItemNumber, [Uid]) values (1, null);--'AC8AE7C0-8CD0-482D-AC44-DB05502150B3');
+*/
+	update	T
+	set		T.AssetID = S.ID
+	from	#AssetTable T
+			inner join Asset S on S.Uid = T.Uid
+			inner join AssetType ST on ST.Uid = @uid and ST.ID = S.AssetTypeID;
+
+	-- Validation checks
+	update	#AssetTable
+	set		Success = 0,
+			[Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset when you are attempting to delete it'
+	where	[Uid] is null or [Uid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER); -- (empty guid)
+
+	update	#AssetTable
+	set		Success = 0,
+			[Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
+	where	AssetID is null;
+	--------------------
+
+	-- Now upsert the valid assets.
+	drop table if exists #ObjectMergeTableResult;
+	create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
+	CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+
+	declare @current int = 1,	-- to track which ItemNumber row you are on.
+			@max int = 0
+
+	select @max = max(ItemNumber) from #AssetTable
+
+	while @current <= @max
+	begin
+		if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null)
+		begin
+			declare @assetId bigint;
+			select @assetId = AssetID from #AssetTable where ItemNumber = @current
+			exec DeleteAssetById @assetId, @r
+		end
+		set @current = @current + 1
+	end
+
+	update	#AssetTable
+	set		Success = 1
+	where	Success is null
+			and AssetID is not null;
+
+	select * from #AssetTable
+end
+GO
+------------------------------------------------------------------
