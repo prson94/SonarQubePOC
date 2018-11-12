@@ -18,7 +18,7 @@ import { BaseComponent } from '../../shared/base.component';
                         <p-table #dt [value]="relationships" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ID','SubjectName','PredicateName','ObjectName']" [pageLinks]="3" [paginator]="true" [rows]="20">
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th [pSortableColumn]="'ID'" style="width: 10%;text-align: center">
+                                    <th [pSortableColumn]="'ID'" style="width: 10%;">
                                         ID
                                         <d3s-sortIcon [field]="'ID'"></d3s-sortIcon>
                                     </th>
