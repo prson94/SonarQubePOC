@@ -946,12 +946,12 @@ select	I.ID as IntersectID,
 		S.[Object],
 		S.ObjectID,
 		P.SubjectID as ParentID,
-		dbo.GenerateObjectUrl(SP.[Object], SPT.[ObjectID], SP.ObjectID) as ParentUrl,
+		dbo.GenerateAssetUrl(SP.ID) as ParentUrl,
 		DP.DisplayValue as ParentName,
 		D.DisplayValue as [Name],
         ST.[Name] as ObjectTypeName,
 		null as [Description],
-		dbo.GenerateObjectUrl(S.[Object], ST.[ObjectID], S.ObjectID) as [Url]       
+		dbo.GenerateAssetUrl(S.ID) as [Url]       
         ,null as [CustomID]
 from	[Intersect] I
 		inner join IntersectType T on T.ID = I.IntersectTypeID  and T.PredicateID = @predicateId	
@@ -1048,7 +1048,7 @@ where	T.ID = @id";
 					inner join AssetType t on t.ID = a.AssetTypeID
 					left join ObjectStyle os on os.ObjectType = t.[Object] and os.ObjectID = t.ObjectID
 					cross apply dbo.GetAssetDisplayValueById(a.ID) d
-					cross apply dbo.GetAssetUrl(@type, t.ObjectID, a.ObjectID) u
+					cross apply dbo.GetAssetUrlById(a.ID) u
                     where 
 	                    a.[Object] = @type
 	                    and (@typeID is null or t.objectID = @typeID)
@@ -1280,7 +1280,7 @@ select
 from fusion.RulePromotion P
 cross apply (
 	select A.DisplayValue as [Name], AUrl.[Url] as [Url] from AssetDetail A
-	cross apply [dbo].[GetAssetUrl](A.[Object], A.TypeID, A.ObjectID) AUrl
+	cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
 	where A.[Object] = P.ObjectType and A.ObjectID = P.ObjectID
 	union all
 	select N.[Name], null as Url from [Intersect] I
@@ -1335,7 +1335,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 from
 	                Shoppingcartitem i
                 left join assetdetail d on d.id = i.[Objectid]                
-				cross apply getasseturl(d.Type,d.TypeID,d.ObjectID) u
+				cross apply getasseturlbyid(d.ID) u
                 where 
 	                i.ShoppingCartID = @id";
 
@@ -1547,7 +1547,7 @@ from
 	left join Asset A on A.[Object] = coalesce(s.[Object], I.[Object]) and A.ObjectID = coalesce(s.ObjectID, I.ObjectID)
 	left join AssetType AST on AST.id = A.AssetTypeID
 	cross apply dbo.GetAssetDisplayValueById(A.ID) DV
-	cross apply dbo.GetAssetUrl(A.[Object], AST.ObjectID, A.ObjectID) UL
+	cross apply dbo.GetAssetUrlById(A.ID) UL
 	inner join workflow.VersionStep VS on VS.ID = IST.StepID
 	left join AssetDetail D on D.Object = I.Object and D.ObjectID = I.ObjectID
 	left join [Intersect] DI on 'Intersect' = I.Object and DI.ID = I.ObjectID
@@ -1580,7 +1580,7 @@ order by IST.StartedOn desc, IST.CompletedOn desc
 	            ta.Name as ObjectTypeName, 
 	            ta.Object, 
 	            ta.ObjectID, 
-	            dbo.GenerateNgObjectUrl(ta.Object, ta.ObjectID, 0) as NgUrl, 
+	            dbo.GenerateAssetTypeUrl(ta.ID) as NgUrl, 
 	            v.id as VersionID,
 	            dbo.GetWorkflowObjectsSummary(v.id, @filteredObject, @filteredObjectId) as ObjectNames, 
  	            null as Responsibility, 

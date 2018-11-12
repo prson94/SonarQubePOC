@@ -2243,9 +2243,10 @@ select  A.ID,
 	    A.TextPath,
 	    A.SourceID,
         'FusionAttribute' as Object,
-        [dbo].GenerateObjectUrl('FusionAttribute', A.FusionAttributeTypeID, A.ID) as Url
+        [dbo].GenerateAssetUrl(F_Asset.ID) as Url
         {sqlColumnString}
 from    FusionAttribute A
+inner join Asset F_Asset on F_Asset.Object = 'FusionAttribute' and F_Asset.ObjectID = A.ID 
         {sqlJoinString}
 where   A.ID = {sourceFusionAttributeID}";
 
@@ -2259,10 +2260,11 @@ select  A.ID,
 	    A.TextPath,
 	    A.SourceID,
         'FusionAttribute' as Object,
-        [dbo].GenerateObjectUrl('FusionAttribute', A.FusionAttributeTypeID, A.ID) as Url
+        [dbo].GenerateAssetUrl(F_Asset.ID) as Url
         {sqlColumnString}
 from    FusionAttribute c
         inner join FusionAttribute A on c.ID = {sourceFusionAttributeID} and A.ID = c.ParentID and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}
+        inner join Asset F_Asset on F_Asset.Object = 'FusionAttribute' and F_Asset.ObjectID = A.ID 
         {sqlJoinString}";
                     break;
                 case 3: //Child Reference
@@ -2273,9 +2275,10 @@ select  A.ID,
         A.TextPath,
         A.SourceID,
         'FusionAttribute' as Object,
-        [dbo].GenerateObjectUrl('FusionAttribute', A.FusionAttributeTypeID, A.ID) as Url
+        [dbo].GenerateAssetUrl(F_Asset.ID) as Url
         {sqlColumnString}
 from    FusionAttribute A
+        inner join Asset F_Asset on F_Asset.Object = 'FusionAttribute' and F_Asset.ObjectID = A.ID 
         {sqlJoinString}
 where   A.ParentID = {sourceFusionAttributeID}
         and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
@@ -2290,11 +2293,12 @@ select  A.ID,
         A.TextPath,
         A.SourceID,
         'FusionAttribute' as Object,
-        [dbo].GenerateObjectUrl('FusionAttribute', A.FusionAttributeTypeID, A.ID) as Url
+        [dbo].GenerateAssetUrl(F_Asset.ID) as Url
         {sqlColumnString}
 from    [Intersect] I
         inner join FusionAttribute A on (I.Subject = 'FusionAttribute' and I.Object = 'FusionAttribute') and I.SubjectID = {sourceFusionAttributeID} 
                                         and A.ID = I.ObjectID and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}
+        inner join Asset F_Asset on F_Asset.Object = 'FusionAttribute' and F_Asset.ObjectID = A.ID 
         {sqlJoinString}";
 
                     break;
@@ -3020,7 +3024,7 @@ end",
 )
 outer apply (
 	select DisplayValue as [Name], {tbDetailPrefix}DU.[Url] as [Url] from AssetDetail {tbDetailPrefix}D
-	cross apply [dbo].[GetAssetUrl]({tbDetailPrefix}D.[Object], {tbDetailPrefix}D.TypeID, {tbDetailPrefix}D.ObjectID) {tbDetailPrefix}DU
+	cross apply [dbo].[GetAssetUrlById]({tbDetailPrefix}D.ID) {tbDetailPrefix}DU
 	where {tbDetailPrefix}D.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
 		and {tbDetailPrefix}D.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
 	union all
@@ -4816,7 +4820,7 @@ select	O.ID as AssetID,
         A.Threshold,
         A.RuleDimensionID,
         D.Name as Dimension,
-        dbo.GenerateObjectUrl('Rule', A.RuleTypeID, A.ID) as Url,
+        dbo.GenerateAssetUrl(O.ID) as Url,
         {0}
         A.RuleTypeID
 from	[Rule] A
@@ -4924,7 +4928,7 @@ where    A.RuleID = @id", new { id });
 										c.ForeColor as IconForeColor, 
 										c.BackColor as IconBackColor
 									from [dbo].assetdetail c   
-									cross apply [dbo].getAssetUrl(c.[object],c.ObjectID, c.TypeID) cU                              
+									cross apply [dbo].getAssetUrlById(c.ID) cU                              
 									where c.[Object] not in @exclude and (c.DisplayValue like @beginsWith or (len(@val) > 2 and c.DisplayValue like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
@@ -5115,8 +5119,8 @@ where    A.RuleID = @id", new { id });
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
                         if (parent != null)
                         {
-                            var parentUrl = Company.Query<string>($"select dbo.GenerateObjectUrl('Artifact', {parent.ArtifactTypeID}, {parent.ID})").First();
                             var parentAsset = Company.GetAssetDetail("Artifact", parent.ID);
+                            var parentUrl = Company.Query<string>($"select dbo.GenerateAssetUrl({parentAsset.ID})").First();
 
                             model.rows.Insert(1,new DetailReadOnlyRowModel
                             {
@@ -7628,7 +7632,7 @@ from	    TaxonomyType FAT
         [Route("breadcrumb/typeahead")]
         public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetBreadcrumbTypeahead(string q, int num, SystemObjects objectType, int objectId)
         {
-            var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrl(ast.[object],astt.objectid, ast.objectid) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
+            var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
 
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });            
         }

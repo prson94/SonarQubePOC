@@ -86,7 +86,7 @@ from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)							
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
 			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
@@ -289,7 +289,7 @@ from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id) and I.[object] = @obj and I.[objectid] = @id
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
 			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl            		
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
@@ -1196,7 +1196,7 @@ order by wi.StartedOn desc";
 	                        [workflow].[version] v
 	                        inner join [workflow].item i on v.id = i.versionid
 	                        left join AssetDetail od on i.objectid = od.objectid and i.[object] = od.[object] 
-							outer apply [dbo].[GetAssetUrl](od.[Object], od.TypeID, od.ObjectID) AUrl
+							outer apply [dbo].[GetAssetUrlById](od.ID) AUrl
 							left join [Intersect] IT on i.Object = 'Intersect' and I.ObjectID = IT.ID
 							outer apply dbo.GetIntersectNames(IT.ID) IName	                         
                           where 
