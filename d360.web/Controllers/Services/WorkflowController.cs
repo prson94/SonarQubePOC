@@ -86,9 +86,9 @@ from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)							
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl
+			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
@@ -99,8 +99,7 @@ order by wi.StartedOn desc",
             
             return Company.Query<dynamic>(sql);
         }
-
-        
+                
         [Route("all/issues"), HttpGet]
         public HttpResponseMessage GetIssuesForAllUsers()
         {
@@ -165,13 +164,12 @@ order by wi.StartedOn desc",
 
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
+            document.SaveAs(stream);            
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
             result = Request.CreateResponse(HttpStatusCode.OK);
-            //  result.
+            
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -181,55 +179,12 @@ order by wi.StartedOn desc",
             };
             return result;
         }
-
-        internal List<UiRequestFilterValue> GetFilterValuesFromRequest(HttpRequestBase Request, bool applyHiddenFilters = false)
-        {
-            var query = Request.Params;
-            var filters = new List<UiRequestFilterValue>();
-
-            int relfilterscount = 0;
-
-          
-
-            #region Field Filters
-
-            if (int.TryParse(query["filterscount"], out relfilterscount))
-            {
-                for (int i = 0; i < relfilterscount; i++)
-                {
-                    var fField = query["filterdatafield" + i];
-                    var fCondition = query["filtercondition" + i];
-                    var fValue = query["filtervalue" + i];
-
-                    if (fValue.EndsWith(".000")) fValue = fValue.Replace(".000", "");
-
-                    if (!string.IsNullOrEmpty(fValue))
-                    {
-                        filters.Add(new UiRequestFieldFilterValue
-                        {
-                            Condition = fCondition,
-                            FieldName = fField,
-                            RawValue = fValue
-                        });
-                    }
-                }
-            }
-
-            #endregion
-
-           
-
-            return filters;
-        }
-
-
+        
         [HttpGet, Route("workflowmonitor/filter/definition")]
         public HttpResponseMessage GetFilerDefinition()
         {
-
             var filterValues = new List<string>() { "Artifact", "Rule", "Policy", "Model", "Action", "Relationship", "Fusion" }.OrderBy(x=>x).ToList();
            
-
             var filterColumns = new List<GridFilterColumn>();
             filterColumns.Add(new GridFilterColumn { text = "Asset", datafield = "Asset", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
             filterColumns.Add(new GridFilterColumn { text = "Type", datafield = "Type", filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = filterValues,columntype=GridColumn.COLUMN_TYPE_COMBO });
@@ -243,10 +198,6 @@ order by wi.StartedOn desc",
             return Request.CreateResponse(HttpStatusCode.OK, filterColumns.OrderBy(x => x.text).ToList());
 
         }
-
-
-
-
 
         [Route("issue/type/{objectid:int}/{objecttype}"), HttpGet]
         public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype) 
@@ -289,9 +240,9 @@ from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id) and I.[object] = @obj and I.[objectid] = @id
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl            		
+			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl            		
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource'
@@ -313,8 +264,7 @@ order by wi.StartedOn desc";
         public WorkflowDiagramModel GetWorkflowDiagram(int id, int? version = null)
         {
             var nodes = Company.Query<WorkflowDiagramNode>(QueryConstants.WorkflowDiagramNodes, new { id, version }).ToList();
-            var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id, version }).ToList();
-            var name = Company.Query<string>(@"select name from workflow.[type] where id = @id", new { id }).ToList().First().ToString();
+            var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id, version }).ToList();            
             var type = Company.WorkflowTypes.Find(id);
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
@@ -1203,7 +1153,7 @@ order by wi.StartedOn desc";
 	                        [workflow].[version] v
 	                        inner join [workflow].item i on v.id = i.versionid
 	                        left join AssetDetail od on i.objectid = od.objectid and i.[object] = od.[object] 
-							outer apply [dbo].[GetAssetUrl](od.[Object], od.TypeID, od.ObjectID) AUrl
+							outer apply [dbo].[GetAssetUrlById](od.ID) AUrl
 							left join [Intersect] IT on i.Object = 'Intersect' and I.ObjectID = IT.ID
 							outer apply dbo.GetIntersectNames(IT.ID) IName	                         
                           where 
@@ -2321,8 +2271,7 @@ order by wi.StartedOn desc";
             document.AutoFitColumn(1, index);
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
+            document.SaveAs(stream);            
             stream.Position = 0;
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);
@@ -3079,8 +3028,7 @@ order by wi.StartedOn desc";
 
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
+            document.SaveAs(stream);            
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      

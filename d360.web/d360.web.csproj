@@ -953,7 +953,6 @@
     <Content Include="Scripts\app\components\shared\diagram\impact.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage.component.html" />
     <Content Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.html" />
-    <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
     <Content Include="node-test.html" />
     <Content Include="packages.config">
@@ -1580,7 +1579,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk-load-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />

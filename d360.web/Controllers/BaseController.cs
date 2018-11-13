@@ -1215,7 +1215,7 @@ namespace d360.web.Controllers
             string filter = "", string ownerUsers = "", string ownerGroups = "",
             string sortDefaultField = "DisplayValue", string sortDefaultDirection = "asc",
             Dictionary<string, object> extraParams = null,
-            bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false, string idColumn = "A.ID", string innerIdColumn = "A.ID")
+            bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false, string idColumn = "A.ID", string innerIdColumn = "A.ID")
         {            
             var dbArgs = new Dapper.DynamicParameters();
             var obj = objectType.Replace("Type", "");

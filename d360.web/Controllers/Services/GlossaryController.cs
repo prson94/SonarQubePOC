@@ -195,7 +195,7 @@ namespace d360.web.Controllers.Services
             var querySql = $@"
 select	A.ID,
         {columns}
-		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url,
+		dbo.GenerateAssetUrl(O.ID) as Url,
         O.UID as uid
         {parentColumns}
 from	Artifact A 
@@ -286,8 +286,7 @@ from    FieldWithRelation F
                                     foreach (var df in fld.FieldTypeFilteredLookupDisplayFields.OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
                                     {
                                         var selectPrefix = $"{name}_{df.FieldTypeID}_FLF_{df.ID}";
-                                        var selectTypePrefix = $"{name}_{df.FieldTypeID}_FLFT_{df.ID}";
-
+                                        
                                         columnSql.Add($"{selectPrefix}.FormattedValue as [{df.FieldTypeName}]");
                                         columnSql.Add($"{selectPrefix}.LookupUrl as [{df.FieldTypeName}Uri]");
 
@@ -379,7 +378,7 @@ from    FieldWithRelation F
             var querySql = $@"
 select	A.ID,
         {columns}
-		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url,
+		dbo.GenerateAssetUrl(O.ID) as Url,
         O.Uid as Uid
         , P.[uid] as ParentUid, P.ObjectID as ParentID
 from	Artifact A 
@@ -463,14 +462,15 @@ from    FieldWithRelation F
 		A.Description,
         A.ParentID,
 		P.Name as Parent,
-        dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
+        dbo.GenerateAssetUrl(P_Asset.ID) as ParentUrl,
 		A.Status,
         A.DateLastCertified,
         {columns}
-		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+		dbo.GenerateAssetUrl(O.ID) as Url
 from	Artifact A 
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         left join Artifact P on P.ID = A.ParentID 
+        left join Asset P_Asset on P_Asset.Object = 'Artifact' and P_Asset.ObjectID = P.ID
         {joins}
 where   O.ID not in ({GetNoReadSqlStatement()}) 
         and A.ArtifactTypeID = @id ";
@@ -698,13 +698,14 @@ where   O.ID not in ({GetNoReadSqlStatement()})
             var querySql = $@"select	A.ID,
         A.ParentID,
 		P.DisplayValue as Parent,
-        dbo.GenerateObjectUrl('Taxonomy', P.TaxonomyTypeID, P.ID) as ParentUrl,
+        dbo.GenerateAssetUrl(P_Asset.ID) as ParentUrl,
         {columns}
-		dbo.GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as Url
+		dbo.GenerateAssetUrl(O.ID) as Url
 from	Taxonomy A 
         {joins} 
         inner join Asset O on O.Object = 'Taxonomy' and O.ObjectID = A.ID 
         left join Taxonomy P on P.ID = A.ParentID 
+        left join Asset P_Asset on P_Asset.Object = 'Taxonomy' and P_Asset.ObjectID = P.ID
 where   O.ID not in ({GetNoReadSqlStatement()}) 
         and A.TaxonomyTypeID = @id ";
 

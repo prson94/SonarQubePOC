@@ -1196,7 +1196,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                     events.Clear();
                 }
             }
-            catch (Exception wex)
+            catch (Exception)
             {
 
             }
@@ -1396,7 +1396,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                     events.Clear();
                 }
             }
-            catch (Exception wex)
+            catch (Exception)
             {
 
             }

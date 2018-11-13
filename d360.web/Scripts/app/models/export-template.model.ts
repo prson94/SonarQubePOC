@@ -4,4 +4,5 @@
     ID: number;
     ArtifactTypeID: number;
     IncludeFields: string;
+    HasTemplateFile: boolean;
 }

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -25,7 +26,7 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        public ExportTemplatesController(CommunityContext community, CompanyContext company, IQueueSource queueSource)
+        public ExportTemplatesController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
             
@@ -42,12 +43,12 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(List<ArtifactTypeExportTemplate>))
         ]
-        public async Task<IEnumerable<ArtifactTypeExportTemplate>> Get()
+        public async Task<IEnumerable<dynamic>> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return (await Company.QueryAsync<ArtifactTypeExportTemplate>("select ID, ArtifactTypeID, Name, Description,IncludeFields,ExportViewType,IncludeUrl,IncludeParent,UsageNotes from ArtifactTypeExportTemplate"));            
+            return (await Company.QueryAsync<dynamic>("select ID, ArtifactTypeID, Name, Description,IncludeFields,ExportViewType,IncludeUrl,IncludeParent,UsageNotes,CASE WHEN templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile from ArtifactTypeExportTemplate"));            
         }
 
         /// <summary>
@@ -104,6 +105,48 @@ namespace d360.web.Controllers.V2
 
             return model;
         }
+
+        /// <summary>
+        /// Uploads a new Export Template template file for the specified export template.  
+        /// </summary>
+        /// <returns>Http 200 if upload was successful.</returns>
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            Route("TemplateFile/{templateId}")
+        ]
+        public async Task<HttpResponseMessage> PostTemplateFile(int templateId)
+        {
+            var context = Request.Properties["MS_HttpContext"] as System.Web.HttpContextWrapper;
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            if(!Company.ArtifactTypeExportTemplates.Any(x=>x.ID == templateId))
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Template not found"));
+
+            byte[] template = null;
+            try
+            {
+                if (context.Request.Files.Count > 0)
+                {
+                    var file = context.Request.Files[0];
+                    var target = new MemoryStream();
+                    file.InputStream.CopyTo(target);
+                    template = target.ToArray();
+                }
+            }
+            catch
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Error while opening file"));
+            }
+
+            var res = await Company.Database.Connection.ExecuteAsync("update ArtifactTypeExportTemplate  set TemplateFile = @t where ID = @id", new { @t = template, @id=templateId  });
+
+            return Request.CreateResponse(HttpStatusCode.OK, "updated");
+        }
+
 
         /// <summary>
         /// Updates the specified Export Template

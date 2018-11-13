@@ -8,12 +8,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-configuration',
-    template: ` 
-                <div class="tile tile-detail" *ngIf="showFusionFilter">
-                    <div style="text-align:right;"><a (click)="showFusionFilter=false;" style="cursor:pointer;color:black;display:block; padding:0 5px 0 5px; background-color: #c3c3c3;"><i class="fa fa-2x fa-remove"></i></a></div>
-                    <d3s-fusion-filters-tile [fusionTypeID]="selected?.FusionTypeID" [fusionID]="selected?.ID"></d3s-fusion-filters-tile>                                    
-                </div>
-                <div class="tile tile-detail" *ngIf="!showFusionFilter">
+    template: `                 
+                <div class="tile tile-detail">
                     <header>Configuration <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">                   
@@ -33,8 +29,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     <th [pSortableColumn]="'Enabled'" style="width: 11%">
                                         Enabled
                                         <d3s-sortIcon [field]="'Enabled'"></d3s-sortIcon>
-                                    </th>
-                                    <th style="width: 30px"></th>
+                                    </th>                                    
                                     <th style="width: 30px"></th>
                                 </tr>
                                 <tr [hidden]="showSimpleFilter">
@@ -42,8 +37,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     <th><d3s-column-filter [field]="'FusionType'" [datatype]="'text'"></d3s-column-filter></th>
                                     <th><d3s-column-filter [field]="'Description'" [datatype]="'text'"></d3s-column-filter></th>
                                     <th><d3s-column-filter [field]="'Enabled'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th></th>
-                                    <th></th>
+                                    <th></th>                                    
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-item>
@@ -63,12 +57,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                         <div class="RowTools">
                                             <d3s-preview-tooltip objectType="Fusion" [objectId]="item.ID" icon="info"></d3s-preview-tooltip>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <div class="RowTools" (click)="showFusionFilter=true;">
-                                            <i class="fa fa-filter"></i>
-                                        </div>
-                                    </td>
+                                    </td>                                    
                                 </tr>
                             </ng-template>
                             <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
@@ -86,8 +75,6 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
     private fusions: Fusion[] = [];
     private selected: Fusion;
 
-    private showFusionFilter: boolean = false;
-     
     constructor(private fusionService: FusionService, private router: Router) {
         super();
     }

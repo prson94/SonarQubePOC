@@ -46,16 +46,7 @@ namespace d360.web.Controllers
             }
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        [Route("AttributesForIntersect"), NonNullableParameters]
-        public JsonResult AttributesForIntersect(int id, int? parentID = null)
-        {
-            var sType = SystemObjects.Intersect.ToString();
-            var attributes = Company.Filter<AttributeDetail>(i => i.ObjectType == sType && i.ObjectID == id).ToList();
-
-            var list = expandNode(null, parentID, attributes, 1, 3);
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
+            
 
         #endregion
 
@@ -200,48 +191,6 @@ namespace d360.web.Controllers
             }
 
             return list;
-        }
-
-        List<AttributeNode> expandNode(AttributeNode node, int? parentID, List<AttributeDetail> attributes, int level, int maxLevels = 10)
-        {
-            var list = new List<AttributeNode>();
-            foreach (var attr in attributes.Where(i => i.ParentID == parentID).OrderBy(i => i.Name))
-            {
-                bool isFolderNode = attributes.Any(i => i.ParentID == attr.ID);
-                var objectType = (SystemObjects)System.Enum.Parse(typeof(SystemObjects), attr.ObjectType);
-
-                AttributeNode d = loadNode(attr.FormattedValue,
-                                            attr.ID,
-                                            isFolderNode,
-                                            objectType,
-                                            "D",
-                                            attr.ObjectID,
-                                            attr.Name,
-                                            attr.AttributeTypeID
-                                            );
-
-                if (level <= maxLevels)
-                {
-                    d.Children.AddRange(expandNode(d, attr.ID, attributes, level + 1));
-                }
-
-                list.Add(d);
-            }
-
-            return list;
-        }
-        
-        AttributeNode loadNode(string text, int id, bool isFolderNode, SystemObjects objectType, string nodeType, int objectID, string attributeTypeName, int? attributeTypeID)
-        {
-            return new AttributeNode { 
-                Text = text,
-                ID = id,
-                AttributeType = attributeTypeName,
-                IsFolderAttribute = isFolderNode,
-                AttributeTypeID = (attributeTypeID.HasValue) ? attributeTypeID.Value : 0,
-                ObjectType = objectType.ToString(),
-                ObjectID = objectID
-            };
         }
 
         #endregion

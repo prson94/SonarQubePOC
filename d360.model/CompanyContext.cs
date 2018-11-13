@@ -1569,7 +1569,7 @@ from	cache.Relationships R
 		inner join AssetDetail D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID
 		inner join FusionAttribute FA on FA.ID = R.TargetObjectID
 		inner join FusionAttributeType FAT on FAT.ID = FA.FusionAttributeTypeID
-		cross apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) AUrl
+		cross apply [dbo].[GetAssetUrlById](D.ID) AUrl
 		outer apply (
 					select	count(1) as [Count]
 					from	FusionAttributeType

@@ -5544,23 +5544,19 @@ begin
 end
 GO;
 
-alter procedure [metrics].[LoadFromStaging]
+ALTER procedure [metrics].[LoadFromStaging]
 as
 begin
-	-- 1. Remove all except the most recent staging values, grouped by date (not time).
-
 	set nocount on;
 
 	DECLARE @TranName VARCHAR(20);  
 	SELECT @TranName = 'UpdateScores';  
 	begin transaction @TranName;
 
+	-- 1. Remove all except the most recent staging values, grouped by date (not time).
 	begin try
-
 		update	metrics.StagingScoreItem
-
 		set		Processing = 1
-
 		where	Archived = 0;
 
 		-- STEP: Get the list of uniue asset / date combinations in order to calculate the score for these assets, for these 
@@ -5621,12 +5617,12 @@ begin
 
 		--select * from #step1
 
-
 		-- STEP: Calculate the level and adjust the weight at each level.
 		drop table if exists #step2;
 		create table #step2 (
 			AssetUid uniqueidentifier not null, EffectiveDate date not null,
 			MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
+			IsRelevant bit,
 			Weight decimal(5,3) not null,
 			[Value] bit not null,
 			[Level] int null,
@@ -5660,27 +5656,36 @@ begin
 
 		insert into #step2 (AssetUid, EffectiveDate, MetricAssetUid, ParentUid, IsGroup, Weight, [Value], [Level])
 			select	*
-
 			from	h
-
 			order by EffectiveDate, [Level];
 
-		--select * from #step2
+		update	#step2
+		set		IsRelevant = 1
+		where	IsGroup = 0
+
+		declare @maxLevel int
+		select	@maxLevel = max(Level) from #step2
+		while @maxLevel >= 1
+		begin
+			update	T
+			set		T.IsRelevant = case when [RelevantItemCount] > 0 then 1 else 0 end
+			from	#step2 T
+					cross apply (
+						select	count(1) as [RelevantItemCount]
+						from	#step2
+						where	ParentUid = T.MetricAssetUid
+								and [Level] = @maxLevel + 1
+								and IsRelevant = 1
+					) S		
+			where	T.IsGroup = 1
+					and T.[Level] = @maxLevel 
+
+			set @maxLevel = @maxLevel - 1
+		end
+
+		--select * from #step2 order by AssetUid, EffectiveDate desc, [Level]
 
 		-- Fix the weights that users inevitably screwed up. Adjust them based on sibling ratios.
-
-
-
-
-
-
-
-
-
-
-
-
-
 		update	T
 		set		T.AdjustedWeight = IIF(T.Weight = 0, 1, T.Weight) / IIF(S.Weight = 0, 1, S.Weight) --select *
 		from	#step2 T
@@ -5690,6 +5695,7 @@ begin
 					where	AssetUid = T.AssetUid
 							and EffectiveDate = T.EffectiveDate
 							and ( (ParentUid = T.ParentUid) or (ParentUid is null and T.ParentUid is null) )
+							and IsRelevant = 1
 				) S;
 
 		update	#step2
@@ -5730,7 +5736,7 @@ begin
 			set @currentLevel = @currentLevel - 1
 		end;
 
-		-- Adjust for any groups that have no child meatrics, and set the Score value appropriately.
+		-- Adjust for any groups that have no child metrics, and set the Score value appropriately.
 		update	#step2
 		set		Score = case when Value = 1 then AdjustedWeight else 0 end
 		where	Score is null;
@@ -5738,9 +5744,7 @@ begin
 		--select * from #step2
 
 		-- Merge SCORES
-
 		merge		metrics.Score as T
-
 		using		(
 					select		AssetUid,
 								EffectiveDate,
@@ -5748,12 +5752,12 @@ begin
 					from		#step2
 					where		[Level] = 1
 								and Score is not null
+								and IsRelevant = 1
 					group by	AssetUid,
 								EffectiveDate
 					) S
 		on			(T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate)
 		when		matched then
-
 			update	set
 					T.Value = S.Value
 		when		not matched by target then
@@ -5763,9 +5767,9 @@ begin
 		-- Merge SCOREITEMS
 		merge		metrics.ScoreItem as T
 		using		(
-					select		AssetUid,
+					select		distinct
+								AssetUid,
 								MetricAssetUid,
-
 								EffectiveDate,
 								Value,
 								AdjustedWeight
@@ -5787,12 +5791,6 @@ begin
 		set		Processing = 0,
 				Archived = 1
 		where	Processing = 1;
-
-
-
-
-
-
 
 		commit transaction @TranName;
 	end try

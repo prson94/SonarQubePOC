@@ -33,8 +33,6 @@ namespace d360.model
 
         #endregion
 
-        internal List<string> CalculatedFieldTypes = new List<string>() { DataType.Attribute.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(), DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.OwnershipLookup.ToString() };
-
         #region Engine Methods
 
         private string wildcardValue(string value)

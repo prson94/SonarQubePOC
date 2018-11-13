@@ -34,13 +34,11 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        ISecurityContextProvider SecProvider;
         IStorageProvider Storage;
 
         public FormController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
             : base(community, company)
-        {
-            SecProvider = secProvider;
+        {            
             Storage = storage;
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
