@@ -41,7 +41,6 @@ import { ObjectDefinitionTile } from './object-definition.tile';
 import { ObjectFollowersComponent } from './object-followers.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
-import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
 import { TakeSurveyComponent } from './take-survey.component';
 import { UserListComponent } from './user-list.component';
@@ -56,8 +55,7 @@ import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.co
         ObjectDefinitionTile,
         ObjectFollowersComponent,                          
         ResourceResponsibilityComponent,        
-        ResourceResponsibilityGridComponent,                
-        StructureTile,
+        ResourceResponsibilityGridComponent,                        
         SynonymsTile,
         TakeSurveyComponent,                 
         UserListComponent,

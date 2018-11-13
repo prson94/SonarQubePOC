@@ -1380,73 +1380,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             }
         }
 
-        public Intersect AddIntersect(SystemObjects subject, int subjectID, SystemObjects @object, int objectID, int? predicateID)
-        {
-            return AddIntersect(subject.ToString(), subjectID, @object.ToString(), objectID, predicateID);
-        }
-
-        public Intersect AddIntersect(string subject, int subjectID, string @object, int objectID, int? predicateID)
-        {
-            Intersect intersect = null;
-
-            var subjectDetail = GetObjectDetail(subject, subjectID);
-            var objectDetail = GetObjectDetail(@object, objectID);
-
-            if (subjectDetail == null)
-                throw new NotFoundException("Subject");
-
-            if (objectDetail == null)
-                throw new NotFoundException("Object");
-
-            var intersectType = Filter<IntersectType>(i => (
-                    (i.Subject == subjectDetail.Type && i.SubjectID == subjectDetail.TypeID && i.Object == objectDetail.Type && i.ObjectID == objectDetail.TypeID) ||
-                    (i.Object == subjectDetail.Type && i.ObjectID == subjectDetail.TypeID && i.Subject == objectDetail.Type && i.SubjectID == objectDetail.TypeID)
-                )
-            ).FirstOrDefault();
-
-            if (intersectType == null)
-                throw new NotFoundException($"Relation type [{subjectDetail.Name} to {objectDetail.Name}]");
-
-            intersect = Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && (
-                    (i.Subject == subject && i.SubjectID == subjectID && i.Object == @object && i.ObjectID == objectID) ||
-                    (i.Object == subject && i.ObjectID == subjectID && i.Subject == @object && i.SubjectID == objectID)
-                )
-            ).SingleOrDefault();
-
-            if (intersect == null)
-            {
-                intersect = new Intersect { IntersectTypeID = intersectType.ID };
-
-                if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
-                {
-                    intersect.Subject = subject;
-                    intersect.SubjectID = subjectID;
-                    intersect.Object = @object;
-                    intersect.ObjectID = objectID;
-
-                    Intersects.Add(intersect);
-                }
-                else
-                {
-                    intersect.Subject = @object;
-                    intersect.SubjectID = objectID;
-                    intersect.Object = subject;
-                    intersect.ObjectID = subjectID;
-
-                    Intersects.Add(intersect);
-                }
-
-                SaveChanges();
-            }
-            else
-            {
-                intersect.State = State.Active;
-                SaveChanges();
-            }
-
-            return intersect;
-        }
-
         public IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID)
         {
             Intersect intersect = null;
@@ -2033,53 +1966,10 @@ where	R.SourceObject = 'FusionAttribute'
             
             return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, objectId = id, objectType = fs }).AsQueryable();
         }
-
-        public IQueryable<MostActiveUserReportModel> GetMostActiveUsersReport()
-        {
-            return Database.SqlQuery<MostActiveUserReportModel>("report.GetMostActiveUsers").AsQueryable();
-        }
-
-        public dynamic GetSocialDataForCurrentResource()
-        {
-            return Query<dynamic>(@"
-select	* 
-from	(
-		select		count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id
-		) FC
-		full join	(
-					select count(1) as GroupCount from ResourceGroup where ResourceID = @id
-					) G on 1=1
-		full join	(
-					select dbo.[GetObjectStatisticScore]('Resource', @id) * 100 as Score
-					) S on 1=1", new { id = CurrentResourceID }).SingleOrDefault();
-        }
-
-        public dynamic GetSocialDataForGroup(int id)
-        {
-            return Query<dynamic>(@"select	* from 
-(select	count(1) as FollowerCount from Follow where ObjectType = 'Group' and ObjectID = @id) FC
-full join (select count(1) as MemberCount from ResourceGroup where GroupID = @id) G on 1=1", new { id = id }).SingleOrDefault();
-        }
-
-        public dynamic GetSocialDataForResource(int id)
-        {
-            return Query<dynamic>(@"select	* from 
-(select	count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id) FC
-full join (select count(1) as FollowingCount from Follow where ResourceID = @id) FO on 1=1
-full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @id) G on 1=1", new { id = id }).SingleOrDefault();
-        }
-
+                
         #endregion
 
         #region Token Processing Methods
-
-        private string getObjectDisplayValue(IFieldsObject obj, int id)
-        {
-            var info = obj.GetFieldsObjectInfo();
-            string query = string.Format("select utility.GetObjectDisplayValue('{0}', {1}, {2})", info.Object.ToString(), id, info.TypeID);
-            var value = Database.SqlQuery<string>(query).FirstOrDefault();
-            return value;
-        }
 
         private string renderTemplate(string templateType, string action, SystemObjects type, int id)
         {
@@ -2090,11 +1980,6 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             var html = "";
             if (model != null) html = model.Body;
             return html;
-        }
-
-        public string RenderEmail(string action, SystemObjects type, int id)
-        {
-            return renderTemplate("Email", action, type, id);
         }
 
         public string RenderTooltip(string action, SystemObjects type, int id)
@@ -2963,20 +2848,7 @@ select @err";
                 QueueSource.CreateTopicMessages(events);
             }
         }
-
-        public void PerformObjectActionAfterSaveChanges(BaseObject obj)
-        {
-            if (obj is FusionAttributeType)
-            {
-                var o = obj as FusionAttributeType;
-
-                if (!o.ScanEnabled)
-                {
-                    var cmd = Database.Connection.Execute($"exec UpdateObject @Object, @ObjectID, @ResourceID", new { Object = "FusionAttributeType", ObjectID = o.ID, ResourceID = CurrentResourceID });
-                }
-            }
-        }
-
+        
         public string GetUserHomePage()
         {
             var homePage = Favorites.FirstOrDefault(f => f.ResourceID == CurrentResourceID && f.IsHomePage);

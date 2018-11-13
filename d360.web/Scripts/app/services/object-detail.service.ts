@@ -112,20 +112,7 @@ export class ObjectDetailService extends BaseService {
             .then(response => <ToolbarItemNg[]>response.json())
             .catch(err => this.handleError(err));
     }
-
-    getRelationsHierarchy(predicateType: PredicateType, type: string, id: number): Promise<HierarchyModel[]> {
-        return this.http.get(`relations/hierarchy/${predicateType}/${type}/${id}`)
-            .toPromise()
-            .then(response => <HierarchyModel[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    getRelationsHierarchyTree(predicateType: PredicateType, type: string, id: number): Promise<TreeNode[]> {
-        return this.getRelationsHierarchy(predicateType, type, id).then(result => {
-            return FormHelper.formTree(result, 'UID', 'ParentID');
-        });
-    }
-    
+        
     getLookupGrid(uri: string): Promise<LookupGrid> {
         return this.http.get(uri)
             .toPromise()
@@ -136,8 +123,6 @@ export class ObjectDetailService extends BaseService {
     getLookupGridExport(type: string, id: number, fieldTypeID: number, lookupType: number) {
         let uri = `api/dynamiclookup/export/${type}/${id}/${fieldTypeID}/${lookupType}/excel.xls`;
         this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(d => this.downloadFile(d));              
-
-        //window.location.assign(`api/dynamiclookup/export/${type}/${id}/${fieldTypeID}/${lookupType}/excel.xls`);
     }
 
     downloadFile(data: Response) {

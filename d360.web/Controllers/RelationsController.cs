@@ -24,89 +24,7 @@ namespace d360.web.Controllers
         { }
 
         #endregion
-
-        #region Models
-
-        public class SourcesToObjectModel
-        {
-            public int ID { get; set; }
-            public int IntersectID { get; set; }
-            public int IntersectTypeID { get; set; }
-            public string Type { get; set; }
-            public bool IsStart { get; set; }
-            public bool IsEnd { get; set; }
-            public int Level { get; set; }
-            public int NodeID { get; set; }
-            public string TypeName { get; set; }
-            public string ObjectType { get; set; }
-            public int ObjectTypeID { get; set; }
-            public string ObjectName { get; set; }
-            public string O { get; set; }
-            public int OID { get; set; }
-            public string BackColor { get; set; }
-            public string ForeColor { get; set; }
-            public int PredicateID { get; set; }
-            public string Predicate { get; set; }
-            public int RawSourceRuleCount { get; set; }
-            public int SourceRuleCount { get; set; } = 0;
-            public int RawMappingRuleCount { get; set; }
-            public int LinkMappingRuleCount { get; set; }
-            public int ChallengeCount { get; set; }
-            public int OpenEventCount { get; set; }
-            public int OpenIssueCount { get; set; }
-            public int RawTransformationCount { get; set; }
-            public int LinkTransformationCount { get; set; }
-        }
-
-        /// <summary>
-        /// This is the new model that corresponds to GetHierarchyByPredicateType stored procedure.
-        /// </summary>
-        public class HierarchyViewModel
-        {
-            public string Object { get; set; }
-            public int ObjectID { get; set; }
-            public string ObjectType { get; set; }
-            public int ObjectTypeID { get; set; }
-            public string Name { get; set; }
-            public string Url { get; set; }
-            public string ObjectTypeName { get; set; }
-            public int Level { get; set; }
-            public int GroupNumber { get; set; }
-        }
-
-        public class HierarchyModel
-        {
-            public int ID { get; set; }
-            public string Subject { get; set; }
-            public string Object { get; set; }
-            public int SubjectID { get; set; }
-            public int ObjectID { get; set; }
-            public string ObjectType { get; set; }
-            public int ObjectTypeID { get; set; }
-            public string ParentID { get; set; }
-            public string Name { get; set; }
-            public string Path { get; set; }
-            public string Url { get; set; }
-            public string ObjectTypeName { get; set; }
-            public int Level { get; set; }
-            public int PredicateID { get; set; }
-            public string PredicatePhrase { get; set; }
-            public PredicateType Type { get; set; }
-            public int GroupNumber { get; set; }
-            public string UID { get; set; }
-
-        }
-
-        public class HierarchyArtifactsModel
-        {
-            public PredicateType MapType { get; set; }
-            public SystemObjects Type { get; set; }
-            public int ID { get; set; }
-            public bool IsSubject { get; set; }
-        }
-
-        #endregion
-
+                
         #region Json
 
         [HttpGet, Route("Predicates")]
@@ -384,19 +302,7 @@ order by	SubjectName,
             document.SaveAs(stream);
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", string.Format("Relationship Types {0}.xlsx", System.DateTime.Now.ToShortDateString()));
         }
-
-        [HttpGet, Route("PossibleRelationshipsByIntersect"), NonNullableParameters]
-        public JsonNetResult PossibleRelationshipsByIntersect(int id)
-        {
-            var list = Company.Query<AllowedIntersectionType>("GetAllowedIntersectionTypesByIntersect @intersectID", new { intersectID = id }).ToList().Select(i => new ContextToolbarItem {
-                Icon = "plus",
-                Title = i.TargetName,
-                Type = "local",
-                Uri = "/form/AddRelationship?intersectTypeID=" + i.IntersectTypeID + "&type=Intersect&id=" + i.ParentIntersectID                
-            });
-            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
+        
         [HttpGet, Route("GetPossibleRelationshipsObjectByIntersect"), NonNullableParameters]
         public JsonNetResult GetPossibleRelationshipsObjectByIntersect(int id)
         {
@@ -409,37 +315,7 @@ order by	SubjectName,
             });
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
-
-        #region Hierarchy
-
-        [HttpGet, Route("hierarchy/{mapType}/{type}/{id:int}")]
-        public JsonNetResult GetHierarchy(SystemObjects type, int id, PredicateType mapType)
-        {
-            return new JsonNetResult
-            {
-                Data = new { },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPost, Route("hierarchy/artifacts")]
-        public JsonNetResult GetHierarchyArtifactsNg(HierarchyArtifactsModel model)
-        {
-            return GetHierarchyArtifacts(model);
-        }
-
-        [HttpGet, Route("hierarchy/artifacts")]
-        public JsonNetResult GetHierarchyArtifacts(HierarchyArtifactsModel model)
-        {
-            return new JsonNetResult
-            {
-                Data = null,//itemList,
-                Formatting = Formatting.None
-            };
-        }
-
-        #endregion Hierarchy
-
+             
         [HttpGet, Route("ChildRelationshipsBySourceAndTarget"), NonNullableParameters]
         public JsonNetResult ChildRelationshipsBySourceAndTarget(SystemObjects s, int sID, SystemObjects t, int tID)
         {
@@ -461,24 +337,6 @@ from[Intersect] O
             return new JsonNetResult { Data = Company.Query<dynamic>(sql, new { s = new Dapper.DbString { Value = sType, IsAnsi = true, IsFixedLength = true, Length = 50 }, sid = sID, o = new Dapper.DbString { Value = tType.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, oid = tID }).OrderBy(i => i.ObjectTypeName).ThenBy(i => i.ObjectName), Formatting = Formatting.None };
         }
 
-        JArray convertList(JToken i)
-        {
-            if (i == null)
-            {
-                return null;
-            }
-            else
-            {
-                if (i is JArray)
-                {
-                    return (JArray)i;
-                }
-                else
-                {
-                    return new JArray(i);
-                }
-            }
-        }
 
         #endregion
     }

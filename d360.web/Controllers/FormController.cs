@@ -2955,12 +2955,6 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpGet, Route("GetSiteNavFolderAvailableItems")]
-        public JsonNetResult GetSiteNavFolderAvailableItems()
-        {
-            throw new NotImplementedException("Do we even need this?");
-        }
-
         #endregion
 
         #region FieldType

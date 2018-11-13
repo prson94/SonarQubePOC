@@ -18,29 +18,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        [Route("HomeSocial")]
-        public JsonNetResult HomeSocial()
-        {
-            return new JsonNetResult { Data = Company.GetSocialDataForCurrentResource(), Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [Route("GroupSocial"), NonNullableParameters]
-        public JsonNetResult GroupSocial(int id)
-        {
-            return new JsonNetResult { Data = Company.GetSocialDataForGroup(id), Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [Route("ProfileSocial"), NonNullableParameters]
-        public JsonNetResult ProfileSocial(int id)
-        {
-            return new JsonNetResult { Data = Company.GetSocialDataForResource(id), Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [Route("RelationshipAggregates"), NonNullableParameters]
-        public JsonNetResult RelationshipAggregates(SystemObjects type, int id)
-        {
-            return new JsonNetResult { Data = Company.GetAggregateRelationshipBreakdownsByObject(type, id), Formatting = Newtonsoft.Json.Formatting.None };
-        }
 
         [Route("FollowingBreakdownByResource"), NonNullableParameters]
         public async Task<JsonNetResult> FollowingBreakdownByResource(int id)
@@ -123,8 +100,7 @@ group by    RD.Type,
 order by    { QueryConstants.HighLevelTypeCaseStatement} + T.Name";
 
             var query = await Company.QueryAsync<dynamic>(sql, new { id });
-
-
+            
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
     }
