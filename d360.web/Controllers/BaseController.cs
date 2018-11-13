@@ -709,9 +709,10 @@ namespace d360.web.Controllers
                                     }
                                 }
                             }
-                            catch
+                            catch(Exception ex)
                             {
                                 fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+                                SendException(ex);
                             }
                         }
 
@@ -928,9 +929,11 @@ namespace d360.web.Controllers
                                     );
                                 }
                             }
-                            catch
+                            catch(Exception ex)
                             {
                                 fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+
+                                SendException(ex);
                             }
                         }
 
