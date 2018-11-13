@@ -1966,42 +1966,7 @@ where	R.SourceObject = 'FusionAttribute'
             
             return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, objectId = id, objectType = fs }).AsQueryable();
         }
-
-        public IQueryable<MostActiveUserReportModel> GetMostActiveUsersReport()
-        {
-            return Database.SqlQuery<MostActiveUserReportModel>("report.GetMostActiveUsers").AsQueryable();
-        }
-
-        public dynamic GetSocialDataForCurrentResource()
-        {
-            return Query<dynamic>(@"
-select	* 
-from	(
-		select		count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id
-		) FC
-		full join	(
-					select count(1) as GroupCount from ResourceGroup where ResourceID = @id
-					) G on 1=1
-		full join	(
-					select dbo.[GetObjectStatisticScore]('Resource', @id) * 100 as Score
-					) S on 1=1", new { id = CurrentResourceID }).SingleOrDefault();
-        }
-
-        public dynamic GetSocialDataForGroup(int id)
-        {
-            return Query<dynamic>(@"select	* from 
-(select	count(1) as FollowerCount from Follow where ObjectType = 'Group' and ObjectID = @id) FC
-full join (select count(1) as MemberCount from ResourceGroup where GroupID = @id) G on 1=1", new { id = id }).SingleOrDefault();
-        }
-
-        public dynamic GetSocialDataForResource(int id)
-        {
-            return Query<dynamic>(@"select	* from 
-(select	count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id) FC
-full join (select count(1) as FollowingCount from Follow where ResourceID = @id) FO on 1=1
-full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @id) G on 1=1", new { id = id }).SingleOrDefault();
-        }
-
+                
         #endregion
 
         #region Token Processing Methods

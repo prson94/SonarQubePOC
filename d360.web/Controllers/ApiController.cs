@@ -4576,11 +4576,6 @@ where   OA.ID not in ({GetNoReadSqlStatement()})
         
         #region Reports
 
-        [Route("reports/mostactiveusers")]
-        public IQueryable<MostActiveUserReportModel> GetMostActiveUsersReport()
-        {
-            return Company.GetMostActiveUsersReport();
-        }
 
         [Route("reports/layouts")]
         public IEnumerable<dynamic> GetReportLayouts()
