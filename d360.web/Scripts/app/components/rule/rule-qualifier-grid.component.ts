@@ -16,7 +16,7 @@ import { FormMode } from '../../models/form.model';
                                         <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
                                     </header>
                                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                                    <p-table  [value]="qualifierTypes" selectionMode="single" rows="25" paginator="true" [(selection)]="selectedQualifierType" [rowsPerPageOptions]="defaultPagingOptions"   >
+                                    <p-table  #dt [value]="qualifierTypes" selectionMode="single" [rows]="25" paginator="true" [(selection)]="selectedQualifierType" [rowsPerPageOptions]="defaultPagingOptions"  [pageLinks]="3" >
                                         <ng-template pTemplate="header">
                                             <tr>
                                                 <th>Name</th>
@@ -39,6 +39,9 @@ import { FormMode } from '../../models/form.model';
                                                         </div>
                                                 </td>
                                             </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="summary">
+                                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                                         </ng-template>
                                     </p-table>    
                                 </span>

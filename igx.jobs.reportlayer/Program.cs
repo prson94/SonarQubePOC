@@ -196,7 +196,7 @@ select  A.ObjectID as ID,
         A.DisplayValue, 
         {parentSqlColumn}
         {columns} 
-        dbo.GenerateObjectUrl('{objectType}', A.TypeID, A.ObjectID) as Url, 
+        dbo.GenerateAssetUrl(A.ID) as Url, 
         cast(S.Value * 100 as int) as CurrentScore 
 from    AssetDetail A 
         outer apply (
@@ -251,7 +251,7 @@ select  A.[Uid],
         L.Name as LevelName, 
         L.Description as LevelDescription,
         {columns} 
-        dbo.GenerateObjectUrl('{o.Object.Replace("Type", "")}', A.TypeID, A.ID) as Url, 
+        dbo.GenerateAssetUrl(A.AssetID) as Url, 
         cast(S.Value * 100 as int) as CurrentScore
 from    h as A  
         {joins} 
@@ -1178,12 +1178,12 @@ select	I.ID as IntersectID,
 		S.ObjectID as SourceID,
 		S.DisplayValue as SourceName,
 		S.TypeName as SourceType,
-		dbo.GenerateObjectUrl(S.Object, S.TypeID, S.ObjectID) as SourceUrl,
+		dbo.GenerateAssetUrl(S.ID) as SourceUrl,
 
 		O.ObjectID as TargetID,
 		O.DisplayValue as TargetName,
 		O.TypeName as TargetType,
-		dbo.GenerateObjectUrl(O.Object, O.TypeID, O.ObjectID) as TargetUrl 
+		dbo.GenerateAssetUrl(O.ID) as TargetUrl 
 
 from	[Intersect] I
 		inner join IntersectType T on T.ID = I.IntersectTypeID

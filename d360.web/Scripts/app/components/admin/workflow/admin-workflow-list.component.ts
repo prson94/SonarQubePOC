@@ -82,7 +82,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     ];
 
     get globalFilterFields(): string[] {
-        return this.columns.filter(c => c.datafield);
+        return this.columns.map(c => c.datafield);
     }
 
     constructor(private workflowService: WorkflowService, protected router: Router) {

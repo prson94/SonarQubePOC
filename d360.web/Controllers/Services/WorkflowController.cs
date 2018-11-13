@@ -86,9 +86,9 @@ from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)							
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl
+			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
@@ -240,9 +240,9 @@ from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id) and I.[object] = @obj and I.[objectid] = @id
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl            		
+			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl            		
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource'
@@ -375,6 +375,13 @@ order by wi.StartedOn desc";
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Workflow item step id.");
                 }
+
+                var fieldElement = XElement.Parse(workflowItemStep.Fields);
+                var reassigned = new XElement("Reassigned");
+                reassigned.Add(new XAttribute("objectId", objectId));
+                reassigned.Add(new XAttribute("objectType", objectType));
+                fieldElement.Add(reassigned);
+                workflowItemStep.Fields = fieldElement.ToString();
 
                 workflowItemStep.CompletedBy = Company.CurrentResourceID;
                 workflowItemStep.CompletedOn = DateTime.UtcNow;
@@ -1146,7 +1153,7 @@ order by wi.StartedOn desc";
 	                        [workflow].[version] v
 	                        inner join [workflow].item i on v.id = i.versionid
 	                        left join AssetDetail od on i.objectid = od.objectid and i.[object] = od.[object] 
-							outer apply [dbo].[GetAssetUrl](od.[Object], od.TypeID, od.ObjectID) AUrl
+							outer apply [dbo].[GetAssetUrlById](od.ID) AUrl
 							left join [Intersect] IT on i.Object = 'Intersect' and I.ObjectID = IT.ID
 							outer apply dbo.GetIntersectNames(IT.ID) IName	                         
                           where 
@@ -2519,6 +2526,21 @@ order by wi.StartedOn desc";
             return fieldChanges;
         }
 
+        private void SetReassignObjectName(dynamic ItemFields)
+        {
+            if (ItemFields !=null && ItemFields.Reassigned != null)
+            {
+                int objectId = (int)ItemFields.Reassigned["@objectId"];
+                var objectType = ItemFields.Reassigned["@objectType"];
+                var sql = @"Select D.DisplayValue as ObjectName
+                            From
+                            Asset A
+                            cross apply dbo.GetAssetDisplayValueById(A.ID) D
+                            where   A.Object = @obj and A.ObjectID = @objId";
+                var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId= objectId }).FirstOrDefault();
+                ItemFields.Reassigned["@objectName"] = objectName;
+            }
+        }
         [Route("step/detail/{itemStepId:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowVersionStepDetail(int itemStepId)
         {
@@ -2599,6 +2621,7 @@ order by wi.StartedOn desc";
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail.Settings,detail.ItemID);
                 detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
+                SetReassignObjectName(detail.ItemFields);
                 if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
                     detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
 
@@ -2630,6 +2653,7 @@ order by wi.StartedOn desc";
                     }
                 }
 
+                
                 if (detail.IsIssueType)
                 {
                     var issueSql = @"select 

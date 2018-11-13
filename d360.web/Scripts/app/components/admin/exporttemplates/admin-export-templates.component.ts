@@ -86,12 +86,15 @@ import { ExportTemplate } from '../../../models/export-template.model';
                             <header>Template File</header>
                             <div class="row">
                                 <div class="col s12">
-                                    An Excel template file can be used as the starting point for an export template.  Please use the buttons below to upload an Excel template file this will replace any existing template files already specified for the export template.  In order to clear out any existing export template files click <a style="cursor:pointer;" (click)="clearTemplate()"><i class="fa fa-trash-o"></i> here</a>.
+                                    An Excel template file can be used as the starting point for an export template, providing custom static content on a first worksheet. Exported data will be output to a second worksheet.                                    
                                 </div>
                                 <div class="col s12">&nbsp;</div>                        
                                 <div class="col s2">                                    
                                     <p-fileUpload name="template" [url]="'./api/v2/ExportTemplates/TemplateFile/'+ selected.ID"
                                         accept=".xls,.xlsx" maxFileSize="10000000" auto="auto"></p-fileUpload>                                                                         
+                                </div>     
+                                <div class="col s12">
+                                    <a style="padding-left:7px;padding-bottom:20px;cursor:pointer;" (click)="clearTemplate()">Remove Template</a>
                                 </div>                                
                             </div>
                         </div>
@@ -180,6 +183,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     clearTemplate() {
         this.isLoading = true;
         this.exportTemplateService.saveTemplateFile(this.selected).subscribe(result => {
+            this.selected.HasTemplateFile = false;
             this.isLoading = false;
         });
     }

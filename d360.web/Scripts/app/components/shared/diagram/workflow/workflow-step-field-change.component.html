@@ -9,7 +9,7 @@
 
 
 
-            <p-table #dt [value]="fieldUpdate.Field" selectionMode="single" [metaKeySelection]="true">
+            <p-table #dt [value]="fieldUpdate.Field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Field</th>
@@ -43,6 +43,9 @@
                             </div>
                         </td>
                     </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-table>
         </div>
