@@ -1608,7 +1608,7 @@ order by IST.StartedOn desc, IST.CompletedOn desc
             where {0} t.State <> 3
             {1}
             group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,ta.Name, ta.Object, 
-            ta.ObjectID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
+            ta.ObjectID, ta.ID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
 			)
             select 
 	            a.*,
