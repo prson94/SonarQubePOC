@@ -22,7 +22,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                             <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                         </div>
                         <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
-                        <p-table #dt [value]="results?.results" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [lazy]="true"  (onLazyLoad)="loadRuleResultsLazy($event)">
+                        <p-table #dt [value]="results?.results" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [rows]="5" [lazy]="true"  (onLazyLoad)="loadRuleResultsLazy($event)">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'RunDate'" style="width: 150px">
@@ -85,7 +85,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                                     <td></td>
                                 </tr>
                             </ng-template>
-                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <ng-template  pTemplate="summary">
                                 <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                             </ng-template>
                         </p-table>

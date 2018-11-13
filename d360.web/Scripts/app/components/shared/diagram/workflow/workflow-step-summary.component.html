@@ -218,7 +218,7 @@
             <div *ngSwitchCase="WorkflowActivityType.FieldChange" class="row"  style="padding-top:10px">
                 <div class="col s12" *ngIf="step?.settings?.FieldUpdate?.Field != null">
 
-                    <p-table *ngIf="!isLoading" #dt [value]="step.settings.FieldUpdate.Field" selectionMode="single" [metaKeySelection]="true">
+                    <p-table *ngIf="!isLoading" #dt [value]="step.settings.FieldUpdate.Field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th>Field</th>
@@ -245,6 +245,9 @@
                                     </div>
                                 </td>
                             </tr>
+                        </ng-template>
+                        <ng-template pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
                 </div>

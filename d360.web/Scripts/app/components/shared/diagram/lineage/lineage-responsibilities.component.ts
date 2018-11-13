@@ -8,7 +8,7 @@ import { BaseComponent } from '../../base.component';
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
-            <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [rowsPerPageOptions]="defaultPagingOptions">
+            <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [rowsPerPageOptions]="defaultPagingOptions" [rows]="5">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Role</th>
@@ -21,7 +21,7 @@ import { BaseComponent } from '../../base.component';
                         <td>{{item.SecurityAssetName}}</td>
                     </tr>
                 </ng-template>
-                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <ng-template pTemplate="summary">
                     <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-table>
