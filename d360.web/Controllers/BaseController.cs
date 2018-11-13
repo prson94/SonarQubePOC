@@ -711,7 +711,7 @@ namespace d360.web.Controllers
                             }
                             catch(Exception ex)
                             {
-                                fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+                                fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
                                 SendException(ex);
                             }
                         }
@@ -931,7 +931,7 @@ namespace d360.web.Controllers
                             }
                             catch(Exception ex)
                             {
-                                fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+                                fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
 
                                 SendException(ex);
                             }
