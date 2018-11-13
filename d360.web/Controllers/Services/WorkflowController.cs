@@ -2487,13 +2487,13 @@ order by wi.StartedOn desc";
             return relChange;
         }
 
-        private IList<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(dynamic settings,int itemId)
+        private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(WorkflowStepDetail detail)
         {
-            IList<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
-            if (settings != null && settings.FieldUpdate != null && settings.FieldUpdate.Field != null)
+            List<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
+            if (detail.Settings != null && detail.Settings.FieldUpdate != null && detail.Settings.FieldUpdate.Field != null)
             {
                 
-                dynamic fields = new JArray(settings.FieldUpdate.Field);
+                dynamic fields = new JArray(detail.Settings.FieldUpdate.Field);
                 for (int i = 0; i < fields.Count; i++)
                 {
                     var fieldChange = new WorkflowStepFieldChange();
@@ -2501,20 +2501,21 @@ order by wi.StartedOn desc";
                     int fieldTypeId = field["@FieldId"] != null ? field["@FieldId"] : 0;
                     if (fieldTypeId == 0) continue;
                     fieldChange.FormValue = field["@UseFormValue"] != null ? field["@UseFormValue"] : false;
-                    fieldChange.CurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : "";
+                    fieldChange.UseCurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : false;
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
-                    FieldType fiedType = Company.GetById<FieldType>(fieldTypeId);
-                    fieldChange.FieldName = fiedType.FriendlyName;
+                    FieldType fieldType = Company.GetById<FieldType>(fieldTypeId);
+                    fieldChange.FieldName = fieldType.FriendlyName;
+                    fieldChange.Type = fieldType.Type;
                     string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
                     int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
                     if (fieldChange.FormValue && formFieldId != null && stepId != 0)
                     {
-                        
+
                         var stepSql = @"select fields from workflow.itemstep where  stepid=@stepid and itemid=@itemid";
-                        dynamic stepFields = Company.Query<string>(stepSql, new { stepid= stepId, itemid=itemId }).FirstOrDefault();
-                        stepFields = XmlToDynamic(stepFields,false);
-                       
+                        dynamic stepFields = Company.Query<string>(stepSql, new { stepid = stepId, itemid = detail.ItemID }).FirstOrDefault();
+                        stepFields = XmlToDynamic(stepFields, false);
+
 
                         if (stepFields.fields != null && stepFields.fields.form != null && stepFields.fields.form.field != null)
                         {
@@ -2524,9 +2525,11 @@ order by wi.StartedOn desc";
                             fieldChange.Value = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
                         }
                     }
-                    else{
-                        fieldChange.Value = field["@Value"] != null ? field["@Value"] : "";
-                    }
+                    else if (fieldChange.UseCurrentDate)
+                        fieldChange.Value = detail.CompletedOn.HasValue ? detail.CompletedOn.Value.ToShortDateString() : "";
+                    else
+                        fieldChange.Value = field["@ValueLabel"] != null ? field["@ValueLabel"] : field["@Value"] != null ? field["@Value"] : "";
+
                     fieldChanges.Add(fieldChange);
                 }
   
@@ -2628,7 +2631,7 @@ order by wi.StartedOn desc";
 
             try
             {
-                detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail.Settings,detail.ItemID);
+                detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail);
                 detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
                 SetReassignObjectName(detail.ItemFields);
                 if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))

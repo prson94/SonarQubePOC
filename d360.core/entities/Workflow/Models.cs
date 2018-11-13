@@ -194,7 +194,7 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public string Value { get; set; }
         [DataMember]
-        public string CurrentDate { get; set; }
+        public bool UseCurrentDate { get; set; }
         [DataMember]
         public bool FormValue { get; set; }
 

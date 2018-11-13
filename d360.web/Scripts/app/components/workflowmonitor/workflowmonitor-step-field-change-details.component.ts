@@ -37,7 +37,12 @@ import { WorkflowStepFieldChangeDetail } from "../../models/workflow.model";
                             <ng-template pTemplate="body" let-item>
                                 <tr [pSelectableRow]="item">
                                     <td>{{item.FieldName}}</td>
-                                    <td>{{item.Value}}</td>
+                                    <td>
+                                         <div [ngSwitch]="item.Type">
+	                                        <span *ngSwitchCase="'Html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item.Value"></span>
+	                                        <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" >{{item.Value}}</span>
+                                        </div>
+                                    </td>
                                     <td>{{item.FormValue}}</td>
                                     <td>{{item.AppendValue}}</td>
                                     <td>{{item.ClearValue}}</td>
