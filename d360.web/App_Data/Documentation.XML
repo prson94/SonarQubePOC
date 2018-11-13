@@ -3233,11 +3233,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:d360.web.Controllers.RelationsController.HierarchyViewModel">
-            <summary>
-            This is the new model that corresponds to GetHierarchyByPredicateType stored procedure.
-            </summary>
-        </member>
         <member name="M:d360.web.Models.Attributes.FileDownloadAttribute.CheckAndHandleFileResult(System.Web.Mvc.ActionExecutedContext)">
             <summary>
             If the current response is a FileResult (an MVC base class for files) then write a
@@ -3312,22 +3307,6 @@
             </summary>
             <param name="request"></param>
             <param name="key"></param>
-            <returns></returns>
-        </member>
-        <member name="M:System.Net.Http.HttpRequestMessageExtensions.GetHeader(System.Net.Http.HttpRequestMessage,System.String)">
-            <summary>
-            Returns an individual HTTP Header value
-            </summary>
-            <param name="request"></param>
-            <param name="key"></param>
-            <returns></returns>
-        </member>
-        <member name="M:System.Net.Http.HttpRequestMessageExtensions.GetCookie(System.Net.Http.HttpRequestMessage,System.String)">
-            <summary>
-            Retrieves an individual cookie from the cookies collection
-            </summary>
-            <param name="request"></param>
-            <param name="cookieName"></param>
             <returns></returns>
         </member>
     </members>
