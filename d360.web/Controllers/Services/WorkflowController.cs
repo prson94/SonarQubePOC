@@ -88,7 +88,7 @@ from	    Issue I
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
 			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl
+			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
@@ -291,7 +291,7 @@ from	    Issue I
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
 			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl            		
+			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl            		
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource'

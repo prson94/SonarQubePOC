@@ -481,7 +481,7 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @ID AND A.[State] = 1";
 	FROM	FieldType FT
 			left join AssetType D on FT.[Object] <> 'IntersectType' and D.[Object] = FT.[Object] and D.ObjectID = FT.ObjectID
 			left join IntersectType T on FT.[Object] = 'IntersectType' and T.ID = FT.ObjectID
-			outer apply [dbo].[GetAssetUrl](D.[Object], D.ID, D.ObjectID) AUrl
+			outer apply [dbo].[GetAssetTypeUrlById](D.ID) AUrl
 			outer apply dbo.GetIntersectTypeNames(T.ID) ITN
 	WHERE	FT.LookupObjectType = @type
             AND FT.LookupObjectID = @id";

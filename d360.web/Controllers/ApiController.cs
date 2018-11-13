@@ -1987,7 +1987,7 @@ order by 'Name'";
 select  'Lookup' as Object,
         I.ID as ObjectID,
         I.ID,
-        dbo.GenerateObjectUrl('Lookup', I.LookupTypeID, I.ID) as Url
+        dbo.GenerateUrlByTypeName('Lookup', I.LookupTypeID, I.ID) as Url
         {sqlColumnString}
 from    [Lookup] I
         {sqlJoinString}";
@@ -2967,8 +2967,8 @@ end
                             columnModels.Add(new ComplexColumnModel {
                                 DisplayColumn = $@"
 case 
-    when {tbPrefix}.Value is not null then [dbo].GenerateObjectUrl({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID)
-    when {tbtPrefix}.DefaultValue is not null then [dbo].GenerateObjectUrl({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID) 
+    when {tbPrefix}.Value is not null then [dbo].GenerateUrlByTypeName({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID)
+    when {tbtPrefix}.DefaultValue is not null then [dbo].GenerateUrlByTypeName({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID) 
     else '' 
 end",
                                 datafield = $"{dataField}_Url" });
@@ -2995,7 +2995,7 @@ end",
                             columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                             columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{obj}'", datafield = $"{dataField}_Object" });
                             columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('{obj}', A{pos}.{i.Object}ID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = '{obj}' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                         }
 
                         //Add here, only after you determine if this should be a link ABOVE.
@@ -3029,13 +3029,13 @@ outer apply (
 		and {tbDetailPrefix}D.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
 	union all
 	select [Name], {tbDetailPrefix}TU.[Url] as [Url] from AssetType {tbDetailPrefix}T
-	cross apply [dbo].[GetAssetUrl]({tbDetailPrefix}T.[Object], {tbDetailPrefix}T.ObjectID, {tbDetailPrefix}T.ObjectID) {tbDetailPrefix}TU
+	cross apply [dbo].[GetAssetTypeUrlById]({tbDetailPrefix}T.ID) {tbDetailPrefix}TU
 	where {tbDetailPrefix}T.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
 		and {tbDetailPrefix}T.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
 		
 	union all
 	select TextPath as [Name], {tbDetailPrefix}FU.[Url] as [Url] from FusionAttribute {tbDetailPrefix}F
-	cross apply [dbo].[GetAssetUrl]('FusionAttribute', {tbDetailPrefix}F.FusionAttributeTypeID, {tbDetailPrefix}F.ID) {tbDetailPrefix}FU
+	cross apply [dbo].[GetAssetUrlById]((select ID from Asset where Object = 'FusionAttribute' and ObjectID = {tbDetailPrefix}F.ID)) {tbDetailPrefix}FU
 	where 'FusionAttribute' = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
 		and {tbDetailPrefix}F.ID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
   ) {tbDetailPrefix}
@@ -3194,7 +3194,7 @@ outer apply (
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'FusionAttribute'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('FusionAttribute', A{pos}.FusionAttributeTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'FusionAttribute' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                                 break;
                                 
                                 #endregion
@@ -3223,7 +3223,7 @@ outer apply (
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Policy'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Policy', A{pos}.PolicyTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Policy' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                                 break;
                                 
                                 #endregion
@@ -3253,7 +3253,7 @@ outer apply (
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Resource'", datafield = $"{dataField}_Object" });
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ResourceID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Resource', 1, A{pos}.ResourceID)", datafield = $"{dataField}_Url" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Resource' and ObjectID = A{pos}.ResourceID))", datafield = $"{dataField}_Url" });
                                 }
                                 else
                                 {
@@ -3297,7 +3297,7 @@ outer apply (
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Rule'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Rule' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                                 break;                                
                                 
                                 #endregion
@@ -3325,7 +3325,7 @@ outer apply (
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Taxonomy'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Taxonomy', A{pos}.TaxonomyTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Taxonomy' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                                 break;
 
                                 #endregion
@@ -3355,7 +3355,7 @@ outer apply (
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'ReferenceItemType'", datafield = $"{dataField}_Object" });
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('ReferenceItemType', A{pos}.ID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetTypeUrl((select ID from AssetType where Object = 'ReferenceItemType' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                                     #endregion
                                 }
                                 else
