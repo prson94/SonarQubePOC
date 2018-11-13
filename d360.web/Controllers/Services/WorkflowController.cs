@@ -426,6 +426,13 @@ order by wi.StartedOn desc";
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Workflow item step id.");
                 }
 
+                var fieldElement = XElement.Parse(workflowItemStep.Fields);
+                var reassigned = new XElement("Reassigned");
+                reassigned.Add(new XAttribute("objectId", objectId));
+                reassigned.Add(new XAttribute("objectType", objectType));
+                fieldElement.Add(reassigned);
+                workflowItemStep.Fields = fieldElement.ToString();
+
                 workflowItemStep.CompletedBy = Company.CurrentResourceID;
                 workflowItemStep.CompletedOn = DateTime.UtcNow;
 
@@ -2570,6 +2577,21 @@ order by wi.StartedOn desc";
             return fieldChanges;
         }
 
+        private void SetReassignObjectName(dynamic ItemFields)
+        {
+            if (ItemFields !=null && ItemFields.Reassigned != null)
+            {
+                int objectId = (int)ItemFields.Reassigned["@objectId"];
+                var objectType = ItemFields.Reassigned["@objectType"];
+                var sql = @"Select D.DisplayValue as ObjectName
+                            From
+                            Asset A
+                            cross apply dbo.GetAssetDisplayValueById(A.ID) D
+                            where   A.Object = @obj and A.ObjectID = @objId";
+                var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId= objectId }).FirstOrDefault();
+                ItemFields.Reassigned["@objectName"] = objectName;
+            }
+        }
         [Route("step/detail/{itemStepId:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowVersionStepDetail(int itemStepId)
         {
@@ -2650,6 +2672,7 @@ order by wi.StartedOn desc";
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail.Settings,detail.ItemID);
                 detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
+                SetReassignObjectName(detail.ItemFields);
                 if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
                     detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
 
@@ -2681,6 +2704,7 @@ order by wi.StartedOn desc";
                     }
                 }
 
+                
                 if (detail.IsIssueType)
                 {
                     var issueSql = @"select 
