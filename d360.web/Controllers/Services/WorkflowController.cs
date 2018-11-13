@@ -306,7 +306,15 @@ order by wi.StartedOn desc";
                 var itemStep = Company.WorkflowItemSteps.FirstOrDefault(x => x.ID == itemStepId);
                 if (itemStep == null)
                     throw new Exception("item step id not found");
-
+                else
+                {
+                    var fieldElement = XElement.Parse(itemStep.Fields);
+                    var reassigned = new XElement("Reassigned");
+                    reassigned.Add(new XAttribute("reassignType", "Resource"));
+                    fieldElement.Add(reassigned);
+                    itemStep.Fields = fieldElement.ToString();
+                    Company.SaveChanges();
+                }
                 //remove all the current version step items assignments
                 var currentAssignments = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemStep.ItemID);
 
@@ -378,6 +386,7 @@ order by wi.StartedOn desc";
 
                 var fieldElement = XElement.Parse(workflowItemStep.Fields);
                 var reassigned = new XElement("Reassigned");
+                reassigned.Add(new XAttribute("reassignType", "Object"));
                 reassigned.Add(new XAttribute("objectId", objectId));
                 reassigned.Add(new XAttribute("objectType", objectType));
                 fieldElement.Add(reassigned);
@@ -2528,7 +2537,7 @@ order by wi.StartedOn desc";
 
         private void SetReassignObjectName(dynamic ItemFields)
         {
-            if (ItemFields !=null && ItemFields.Reassigned != null)
+            if (ItemFields !=null && ItemFields.Reassigned != null && ItemFields.Reassigned["@reassignType"]== "Object")
             {
                 int objectId = (int)ItemFields.Reassigned["@objectId"];
                 var objectType = ItemFields.Reassigned["@objectType"];

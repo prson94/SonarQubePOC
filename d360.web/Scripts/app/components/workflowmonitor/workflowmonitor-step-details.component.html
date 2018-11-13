@@ -103,10 +103,10 @@
                     <div *ngIf="step.ItemFields && step.ItemFields.Reassigned">
                         <div class="row">
                             <div class="col s12 FieldName">
-                                The action is re-assigned to Object
+                                Action is Reassigned to {{step?.ItemFields?.Reassigned['@reassignType']}}
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row" *ngIf="step?.ItemFields?.Reassigned['@reassignType']=='Object'">
                             <div class="col s6">
                                 <span class="FieldName">
                                     Asset Type:
