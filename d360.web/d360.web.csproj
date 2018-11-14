@@ -440,7 +440,6 @@
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
     <Compile Include="Models\Formatters\DictionaryXmlMediaTypeFormatter.cs" />
-    <Compile Include="Models\Formatters\ExpandoJsonConverter.cs" />
     <Compile Include="Models\ModelMetadataExtensions.cs" />
     <Compile Include="Models\Action Models.cs" />
     <Compile Include="Models\Workflow Models.cs" />
