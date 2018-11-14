@@ -1729,7 +1729,7 @@ namespace d360.model
 						            1 as ResourceTypeID, 
 						            R.[State],
 						            case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
-				            from	reporting.Global_Resource R where isadministrator = 1 and R.[State] = 1'");
+				            from	reporting.Global_Resource R where isadministrator = 1 and R.[State] = 1");
                 }
             }
 
