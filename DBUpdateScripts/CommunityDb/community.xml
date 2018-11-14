@@ -8,5 +8,6 @@
 
 
     <include file="scripts/d3s-schema.sql"/>
+    <include file="scripts/GOV-1234.xml"/>    
 
 </databaseChangeLog>
