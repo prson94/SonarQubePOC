@@ -8,6 +8,5 @@
 
 
     <include file="CommunityDb/d3s-schema.sql"/>
-    <include file="CommunityDb/GOV-1234.xml" />
 
 </databaseChangeLog>
