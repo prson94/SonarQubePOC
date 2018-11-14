@@ -5092,10 +5092,7 @@ where    A.RuleID = @id", new { id });
         public DetailReadOnlyModel GetObjectDetailFields(SystemObjects type, int id)
         {
             var model = new DetailReadOnlyModel() { columns = 2 };
-
-            var sections = new List<ReadOnlySection>();
-
-            var list = new List<ReadOnlyField>();
+                        
             int row = 0;
             switch (type)
             {
@@ -6615,9 +6612,7 @@ where v.id = {0}", id)).FirstOrDefault();
                     #endregion
 
             }
-
-            sections.Add(new ReadOnlySection { Name = "Governance", Fields = list, ID = 0 });
-
+            
             return model;
         }
 

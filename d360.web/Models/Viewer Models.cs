@@ -517,20 +517,6 @@ namespace d360.web.Models
         public string DataType { get; set; }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class ReadOnlySection
-    {
-        [DataMember]
-        public int ID { get; set; }
-
-        [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public List<ReadOnlyField> Fields { get; set; }
-    }
-
-
     [DataContract]
     public class ResponsibilityTypeRelationViewModel
     {

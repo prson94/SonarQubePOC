@@ -7,11 +7,7 @@ using System.Linq;
 using System.Web;
 
 namespace d360.web.Models
-{
-    public class AssetDynamicApiObject: DynamicObject
-    {
-
-    }
+{    
     public enum FieldTypeComplexLookupRelationDirection
     {
         Both = 0,
