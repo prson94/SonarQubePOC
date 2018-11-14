@@ -1,5 +1,5 @@
 ﻿
-<div class="tile tile-detail" style="max-height: 150px; height: 150px;" *ngIf="hasHeader">
+<div class="tile tile-detail" style="max-height: 190px; height: 190px;" *ngIf="hasHeader">
     <div class="row" *ngIf="!isLoading">
         <div class="col s12 m6">
             <header>{{model?.Type?.Name}}</header>
@@ -39,7 +39,7 @@
         </div>
     </div>
     <div class="row" *ngIf="!isLoading">
-        <div class="col s6" *ngIf="!isReadOnly" style="max-height: 50px; overflow-y: auto">
+        <div class="col s6" *ngIf="!isReadOnly" style="max-height: 90px; overflow-y: auto">
             <div *ngFor="let e of errors" class="errorMessage">&bull; {{e}}</div>
         </div>
         <div class="col s2" [class.offset-s6]="(!isReadOnly && errors != null && errors.length < 1) || isReadOnly">
@@ -59,7 +59,7 @@
             </div>
         </div>
     </div>
-    <div class="row" *ngIf="!isReadOnly && !isLoading" style="position: absolute; top: 97px; width: 100%;">
+    <div class="row" *ngIf="!isReadOnly && !isLoading" style="position: absolute; top: 137px; width: 100%;">
         <div class="col s6">
             <div>
                 <button pButton type="button" label="Back" (click)="backClick()"></button>
