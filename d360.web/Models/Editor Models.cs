@@ -25,12 +25,7 @@ namespace d360.web.Models
 
         public bool IsUsed { get; set; }
     }
-
-    public class ExternalScoreModel
-    {
-        public decimal Value { get; set; }
-    }
-
+    
     public class PrimeSelectItem
     {
         public string label { get; set; }
@@ -93,31 +88,7 @@ namespace d360.web.Models
 
         public int[] PredicateIDs { get; set; }
     }
-
-    public class ArtifactTypeEditorModel : BaseEditorModel
-    {
-        public ArtifactType ArtifactType { get; set; }
-
-        public int? ParentID { get; set; } = null;
-
-        public List<PrimeSelectItem> Predicates { get; set; } = new List<PrimeSelectItem>();
-
-        public List<PrimeSelectItem> Tokens { get; set; } = new List<PrimeSelectItem>();
-
-        public int? SelectedPredicateID { get; set; } = null;
-
-        public string IconBackColor { get; set; }
-
-        public string IconForeColor { get; set; }
-    }
-
-    public class ClaimsMatrixEditorItemModel
-    {
-        public Claim Claim { get; set; }
-        public ClaimObject ClaimObject { get; set; }
-        public int? ID { get; set; }
-    }
-
+       
     public class CompanySettingsIpRestrictionEditorModel
     {
         public string Name { get; set; }
@@ -265,11 +236,7 @@ namespace d360.web.Models
         public bool Selected { get; set; }
 
     }
-
-    [DataContract(Name = "item", Namespace = constants.NAMESPACE)]
-    [Serializable]
-    public class EditableFieldLookupItem : Dictionary<string, object> { }
-    
+        
     public class FieldTypeItemDisplayFieldEditorModel
     {
         public int FieldTypeID { get; set; }
@@ -762,32 +729,7 @@ namespace d360.web.Models
         }
 
     }
-
-    public class HierarchyPostModel : BaseEditorModel
-    {
-        public HierarchyPostModel()
-        {
-            IsAddingParent = false;
-            GroupNumber = -1;
-        }
-
-        public int IntersectID { get; set; }
-        public PredicateType HierarchyType { get; set; }
-        public int PredicateID { get; set; }
-        public bool IsAddingParent { get; set; }
-
-        public int ObjectID { get; set; }
-        public string Object { get; set; }
-        public string ObjectType { get; set; }
-        public int ObjectTypeID { get; set; }
-        public int SubjectID { get; set; }
-        public string Subject { get; set; }
-        public string SubjectType { get; set; }
-        public int SubjectTypeID { get; set; }
-        public int GroupNumber { get; set; }
-    }
-
-    
+        
     public class QuestionTypeItemEditorModel
     {
         public int ID { get; set; }
@@ -853,40 +795,7 @@ namespace d360.web.Models
         public List<LineageEditorRow> Adds { get; set; }
         public List<LineageEditorRow> Deletes { get; set; }
     }
-
-    public class LineageEditorModelV2
-    {
-        public string Focal { get; set; }
-        public int FocalID { get; set; }
-
-        public List<LineageNodeModel> Nodes { get; set; } = new List<LineageNodeModel>();
-        public List<LineageLinkModel> Links { get; set; } = new List<LineageLinkModel>();
-    }
-
-    public class LineageNodeModel
-    {
-        public string Key { get; set; }
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-        public string ObjectType { get; set; }
-        public int ObjectTypeID { get; set; }
-        public string Group { get; set; }
-        public bool IsGroup { get; set; }
-        public int Order { get; set; }
-        public int IntersectTypeID { get; set; }
-        public string Category { get; set; }
-        public string BusinessTransformation { get; set; }
-        public string TechnicalTransformation { get; set; }
-        public int? MapTypeTemplateID { get; set; }
-    }
-
-    public class LineageLinkModel
-    {
-        public int IntersectID { get; set; }
-        public string From { get; set; }
-        public string To { get; set; }
-    }
-
+         
     public class LineageEditorTechnicalModel
     {
         public SystemObjects Focal { get; set; }
@@ -990,9 +899,6 @@ namespace d360.web.Models
         public List<MetricAssetVersionConditionViewModel> Conditions { get; set; } = new List<MetricAssetVersionConditionViewModel>();
 
         #endregion
-
-        //public List<MetricAssetViewModel> Children { get; set; } = new List<MetricAssetViewModel>();
-
     }
 
     public class MetricAssetVersionConditionViewModel

@@ -2065,3 +2065,14 @@ begin
 end
 GO
 ------------------------------------------------------------------
+
+
+------------------------------------------------------------------
+-- GOV-5959
+-- update DateLastLoggedIn column in Complex Lookup json
+------------------------------------------------------------------
+update FieldTypeLookup
+set Definition = replace(Definition, '"FieldTypeName":"DateLastLoggedIn"', '"FieldTypeName":"LastLoggedInOn"')
+where Definition like '%DatelastLoggedIn%';
+GO
+------------------------------------------------------------------
