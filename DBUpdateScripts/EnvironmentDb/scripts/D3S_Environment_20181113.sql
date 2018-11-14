@@ -1,3 +1,5 @@
+--liquibase formatted sql
+
 CREATE SCHEMA [analytics]
 GO
 CREATE SCHEMA [api]
