@@ -7,6 +7,6 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
 
-    <include file="scripts/D3SEnvironment_2018.11.13.sql"/>
+    <include file="scripts/D3SEnvironment_20181113.sql"/>
 
 </databaseChangeLog>
