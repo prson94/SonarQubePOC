@@ -7,7 +7,6 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
 
-    <include file="CommunityDb/d3s-schema.sql"/>
-    <include file="CommunityDb/GOV-1234.xml" />
+    <include file="scripts/d3s-schema.sql"/>
 
 </databaseChangeLog>
