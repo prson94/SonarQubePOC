@@ -16,8 +16,8 @@ import { ExportTemplate } from '../../../models/export-template.model';
                     <header>Export Templates
                         <d3s-tile-actions [hasAdd]="!showDelete" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
                     </header>                    
-                    <span>
-                        <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                    <span>                        
+                        <input type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                         <p-table #dt [value]="exportTemplates" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
                             <ng-template pTemplate="header">
                                 <tr>
