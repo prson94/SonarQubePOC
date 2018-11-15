@@ -761,21 +761,7 @@ namespace d360.web.Controllers
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        /// <param name="id">ArtifactID</param>
-        [Route("Artifact_DeleteFields"), NonNullableParameters]
-        public JsonResult Artifact_DeleteFields(int id)
-        {
-            if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
+        
         /// <param name="id">ArtifactID</param>
         [Route("Artifact_EditFields"), NonNullableParameters]
         public JsonResult Artifact_EditFields(int id)
@@ -1027,19 +1013,7 @@ namespace d360.web.Controllers
 
         #region ArtifactType
 
-        /// <param name="id">ArtifactID</param>
-        [Route("ArtifactType_DeleteFields"), NonNullableParameters]
-        public JsonResult ArtifactType_DeleteFields(int id)
-        {
-            if (!Company.HasAssetPermission(SystemObjects.ArtifactType, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
+    
         [HttpDelete, ActionName("ArtifactType"), Route("ArtifactType"), NonNullableParameters]
         public JsonResult DeleteArtifactType(int id)
         {
@@ -1772,15 +1746,6 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">AttributeID</param>
-        [Route("Attribute_DeleteFields"), NonNullableParameters]
-        public JsonResult Attribute_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">AttributeID</param>
         [Route("Attribute_EditFields"), NonNullableParameters]
         public JsonResult Attribute_EditFields(int id)
         {
@@ -1949,25 +1914,6 @@ namespace d360.web.Controllers
 
         #region AttributeType
 
-        #region Field Generation
-
-        /// <param name="id">AttributeTypeID</param>
-        [Route("AttributeType_DeleteFields"), NonNullableParameters]
-        public JsonResult AttributeType_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<AttributeType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
         #region Form Get/Post
 
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddAttributeType")]
@@ -2094,181 +2040,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region AttributeTypeCategory
-
-        #region Field Generation
-
-       /// <summary>
-       /// 
-       /// </summary>
-       /// <returns></returns>
-        [Route("AttributeTypeCategory_AddFields")]
-        public JsonResult AttributeTypeCategory_AddFields()
-        {
-            var o = new AttributeTypeCategory();
-
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = o.GetName(i => i.Name), FieldDescription = o.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = o.GetName(i => i.Description), FieldDescription = o.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">AttributeTypeCategoryID</param>
-        [Route("AttributeTypeCategory_DeleteFields"), NonNullableParameters]
-        public JsonResult AttributeTypeCategory_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">AttributeTypeCategoryID</param>
-        [Route("AttributeTypeCategory_EditFields"), NonNullableParameters]
-        public JsonResult AttributeTypeCategory_EditFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<AttributeTypeCategory>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddAttributeTypeCategory")]
-        public JsonResult AddAttributeTypeCategory(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("attribute type category");
-
-                var a = new AttributeTypeCategory
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description")
-                };
-
-                Company.Add<AttributeTypeCategory>(a);
-
-                dynamic custom = new
-                {
-                    Name = a.Name,
-                    action = "add",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteAttributeTypeCategory")]
-        public JsonResult DeleteAttributeTypeCategory(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("attribute type category");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<AttributeTypeCategory>(id);
-                if (model == null) throw new NotFoundException("attribute type category");
-
-                Company.Delete(model);
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditAttributeTypeCategory")]
-        public JsonResult EditAttributeTypeCategory(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("attribute type category");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<AttributeTypeCategory>(id);
-                if (model == null) throw new NotFoundException("attribute type category");
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-
-                Company.Update(model);
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region AttributeTypeRelation
 
         #region Field Generation
@@ -2299,23 +2070,6 @@ namespace d360.web.Controllers
                 .ToList()
             });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "AllowMultipleEntries", Name = relation.GetName(i => i.AllowMultipleEntries), FieldDescription = relation.GetDescription(i => i.AllowMultipleEntries), FieldType = DataType.Boolean.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="at">AttributeTypeID</param>
-        /// <param name="ot">ObjectType</param>
-        /// <param name="oid">ObjectID</param>
-        [Route("AttributeTypeRelation_DeleteFields"), NonNullableParameters]
-        public JsonResult AttributeTypeRelation_DeleteFields(int at, string ot, int oid)
-        {
-            var list = new List<EditableField>();
-            var sType = ot.ToString();
-            var a = Company.Filter<AttributeTypeRelationDetail>(i => i.AttributeTypeID == at && i.ObjectID == oid && i.ObjectType == sType).SingleOrDefault();
-
-            list.Add(new EditableField { FieldName = "AttributeTypeID", FieldType = DataType.Hidden.ToString(), Value = a.AttributeTypeID.ToString() });
-            list.Add(new EditableField { FieldName = "ObjectType", FieldType = DataType.Hidden.ToString(), Value = a.ObjectType });
-            list.Add(new EditableField { FieldName = "ObjectID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -3701,25 +3455,6 @@ namespace d360.web.Controllers
         }
         #endregion
 
-        #region Field Generation
-
-        /// <param name="id">ID of the object</param>
-        [Route("FieldType_DeleteFields"), NonNullableParameters]
-        public JsonResult FieldType_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<FieldType>(id);
-
-            if (!Company.HasAssetTypePermission(a.Object, a.ObjectID, Permission.ModifyAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
         #region Form Get/Post
 
         private void CheckIsFieldTypeNameReserved(string name)
@@ -4736,21 +4471,6 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">FusionAttributeTypeID</param>
-        [Route("Fusion_DeleteFields"), NonNullableParameters]
-        public JsonResult Fusion_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<Fusion>(id);
-
-            if (!Company.HasAssetPermission(SystemObjects.Fusion, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">FusionAttributeTypeID</param>
         [Route("Fusion_EditFields"), NonNullableParameters]
         public JsonResult Fusion_EditFields(int id)
         {
@@ -5221,40 +4941,9 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Field Generation
-
-        /// <param name="id">RuleID</param>
-        [Route("FusionRule_DeleteFields"), NonNullableParameters]
-        public ActionResult FusionRule_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<FusionRule>(id);
-            if (a == null) return new HttpNotFoundResult();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
         #endregion
 
         #region FusionRuleFilter
-
-        #region Field Generation
-
-        [Route("FusionRuleFilter_DeleteFields"), NonNullableParameters]
-        public JsonResult FusionRuleFilter_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
 
         string getFusionRuleFilterSql(FusionRuleFilterEditorModel form, bool getNameColumn = true)
         {
@@ -5593,20 +5282,7 @@ namespace d360.web.Controllers
 
         #region FusionRuleItem
 
-        #region Field Generation
-
-        [Route("FusionRuleItem_DeleteFields"), NonNullableParameters]
-        public JsonResult FusionRuleItem_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
+        
         #region Form Get/Post
 
         [HttpGet, Route("GetAddFusionRuleItem"), NonNullableParameters]
@@ -5883,619 +5559,7 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        private void AddPromotionStepSettings(FusionRuleStep item, FormCollection form)
-        {
-            var action = (parseTextField(form, "Action") ?? "").ToUpper();
-
-            if (action == "PROMOTE")
-            {
-                #region PROMOTE
-
-                var promoteTo = parseTextField(form, "PrOptionsDropdown"); // Pipe delimited Object | ObjectID
-
-                var promoteToInfo = promoteTo.Split('|');
-                var objectType = "";
-                var objectID = "";
-                var parentObjectType = "";
-
-                if (promoteToInfo.Length >= 2)
-                {
-                    objectID = promoteToInfo[0];
-                    objectType = promoteToInfo[1];
-                }
-
-                if (promoteToInfo.Length >= 3)
-                {
-                    parentObjectType = promoteToInfo[2];
-                }
-
-                var parentSearchType = parseTextField(form, "PrOptionsParentSearchDropdown"); 
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = objectID });
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectID", Value = objectType });
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectSearch", Value = parentSearchType });
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectTypeID", Value = parentObjectType });
-
-                if ((parentSearchType ?? "").ToUpper().Trim() == "DIRECT")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parseTextField(form, "PrOptionsParentDropdown") });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject", Value = objectType });
-                }
-                else if ((parentSearchType ?? "").ToUpper().Trim() == "RESULTFROMSTEP")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject", Value = "Step" });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parseTextField(form, "PromotionParentStep") });
-                }
-                else if ((parentSearchType ?? "").ToUpper().Trim() == "FUSIONOWNER")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject", Value = "Owner" });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parseTextField(form, "PromotionParentOwnerRule") });
-                }
-
-                #endregion PROMOTE
-            }
-            else if (action == "FIND")
-            {
-                #region FIND
-
-                var findSearchType = parseTextField(form, "FindSearchType"); 
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = findSearchType });
-
-                //if the search type is result from step the object is step and the object id is the step id
-                var findType = (findSearchType ?? "").ToUpper();
-
-                if (findType == "GLOSSARY")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = parseTextField(form, "FindTypeName") });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectID", Value = parseTextField(form, "FindTypeID") });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "FilterField", Value = parseTextField(form, "FindSearchField") });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TargetField", Value = parseTextField(form, "TargetSearchField") });
-                }
-                else if (findType == "FUSION")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "FilterField", Value = parseTextField(form, "FindSearchField") });
-
-                    handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, form);
-                }
-                else
-                {
-                    handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, form);
-                }
-
-                #endregion FIND
-            }
-            else if (action == "FINDRELATION")
-            {
-                #region FINDRELATION
-
-                var intersectType = parseTextField(form, "FindIntersectType");
-                var searchType = parseTextField(form, "FindSearchType");
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Search", Value = searchType });
-
-                handleSearchParameters("Find", "", item.FusionRuleStepSettings, searchType, item.ID, form);
-
-                #endregion FINDRELATION
-            }
-            else if (action == "RELATE")
-            {
-                #region RELATE
-
-                var intersectType = parseTextField(form, "RelateIntersectType");
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
-
-                //subject settings
-                var subjectSearch = parseTextField(form, "RelateSubjectSearchType");
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = subjectSearch });
-
-                handleSearchParameters("Relate", "Subject", item.FusionRuleStepSettings, subjectSearch, item.ID, form);
-
-                // object settings
-                var objectSearch = parseTextField(form, "RelateObjectSearchType");
-
-                handleSearchParameters("Relate", "Object", item.FusionRuleStepSettings, objectSearch, item.ID, form);
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = objectSearch });
-
-                #endregion RELATE
-            }
-            else if (action == "LINEAGE")
-            {
-                #region LINEAGE
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = "ResultFromStep" });
-
-                handleSearchParameters("Lineage", "Subject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = "ResultFromStep" });
-
-                handleSearchParameters("Lineage", "Object", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalSubjectSearch", Value = "ResultFromStep" });
-
-                handleSearchParameters("Lineage", "TechnicalSubject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalObjectSearch", Value = "ResultFromStep" });
-
-                handleSearchParameters("Lineage", "TechnicalObject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Role", Value = parseTextField(form, "LineageRole") });
-
-                #endregion LINEAGE
-            }
-        }
-
-        private void AddPromotionStepSettings(FusionRuleStep item)
-        {
-
-            var action = item.Action.ToUpper();
-            var settings = item.Settings;
-
-            if (action == "PROMOTE")
-            {
-                #region PROMOTE
-
-                var objectType = settings["Object"];
-                var objectID = settings["ObjectID"];
-                var parentObjectType = settings["ParentObjectTypeID"] ?? "";
-                var parentObjectSearch = settings.ContainsKey("ParentObjectSearch") ? settings["ParentObjectSearch"] ?? "" : "";
-
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = objectType });
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectID", Value = objectID });
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectSearch", Value = parentObjectSearch });
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectTypeID", Value = parentObjectType });
-
-                var parentObjectID = settings.ContainsKey("ParentObjectID") ? settings["ParentObjectID"] ?? "" : "";
-
-                if ((parentObjectSearch ?? "").ToUpper().Trim() == "DIRECT")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parentObjectID });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject", Value = objectType });
-                }
-                else if ((parentObjectSearch ?? "").ToUpper().Trim() == "RESULTFROMSTEP")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject", Value = "Step" });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parentObjectID });
-                }
-                else if ((parentObjectSearch ?? "").ToUpper().Trim() == "FUSIONOWNER")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject", Value = "Owner" });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parentObjectID });
-                }
-
-                #endregion PROMOTE
-            }
-            else if (action == "FIND")
-            {
-                #region FIND
-
-                var findSearchType = settings["FindSearchType"]; //ObjectSearch
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = settings["FindSearchType"] });
-
-                //if the search type is result from step the object is step and the object id is the step id
-                var findType = (findSearchType ?? "").ToUpper();
-
-                if (findType == "GLOSSARY")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = settings["Object"] });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectID", Value = settings["ObjectID"] });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "FilterField", Value = settings["FilterField"] });
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TargetField", Value = settings["TargetField"] });
-                }
-                else if (findType == "FUSION")
-                {
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "FilterField", Value = settings["FilterField"] });
-
-                    handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, settings);
-                }
-                else
-                {
-                    handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, settings);
-                }
-
-                #endregion FIND
-            }
-            else if (action == "FINDRELATION")
-            {
-                #region FINDRELATION
-
-                var intersectType = settings["FindIntersectType"];
-                var searchType = settings["FindSearchType"];
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Search", Value = searchType });
-
-                handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, searchType, item.ID, settings);
-
-                #endregion FINDRELATION
-            }
-            else if (action == "RELATE")
-            {
-                #region RELATE
-
-                var intersectType = settings["IntersectType"];
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
-
-                //subject settings
-                var subjectSearch = settings["RelateSubjectSearchType"];
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = subjectSearch });
-
-                handleSearchParameters("Relate", "Subject", item.FusionRuleStepSettings, subjectSearch, item.ID, settings);
-
-                // object settings
-                var objectSearch = settings["RelateObjectSearchType"];
-
-                handleSearchParameters("Relate", "Object", item.FusionRuleStepSettings, objectSearch, item.ID, settings);
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = objectSearch });
-
-                #endregion RELATE
-            }
-            else if (action == "LINEAGE")
-            {
-                #region LINEAGE
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = "ResultFromStep" });
-
-                handleSearchParameters("Lineage", "Subject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = "ResultFromStep" });
-
-                handleSearchParameters("Lineage", "Object", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
-
-                try
-                {
-                    //The user can skip adding these items, so do not error out of the whole process.  Should have better way to do this.
-                    handleSearchParameters("Lineage", "TechnicalSubject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
-                    handleSearchParameters("Lineage", "TechnicalObject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
-
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalSubjectSearch", Value = "ResultFromStep" });
-                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalObjectSearch", Value = "ResultFromStep" });
-                }
-                catch
-                {
-                }
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Role", Value = settings["Role"] });
-
-                #endregion LINEAGE
-            }
-          
-        }
-
-        private void handleSearchParameters(string area, string target, ICollection<FusionRuleStepSetting> fusionRuleStepSettings, string searchType, int id, FormCollection form)
-        {
-            var searchUpper = (searchType ?? "").ToUpper();
-            if (searchUpper == "RESULTFROMSTEP")
-            {
-                fusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = id,
-                                Name = target,
-                                Value = "Step"
-                            });
-
-                fusionRuleStepSettings.Add(
-                    new FusionRuleStepSetting
-                    {
-                        RuleStepID = id,
-                        Name = $"{target}ID",
-                        Value = parseTextField(form, $"{area}{target}Step")
-                    });
-
-                //special find parent option
-                if (string.Compare(area, "FIND", true) == 0)
-                {
-                    var findParent = parseBooleanField(form, "FindParent");
-
-                    if (findParent)
-                    {
-                        fusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = id,
-                                Name = "FindParent",
-                                Value = "1"
-                            });
-                    }
-                }
-            }
-            else if (searchUpper == "SELF")
-            {
-                fusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = id,
-                                Name = target,
-                                Value = "Self"
-                            });
-
-                fusionRuleStepSettings.Add(
-                    new FusionRuleStepSetting
-                    {
-                        RuleStepID = id,
-                        Name = $"{target}ID",
-                        Value = "0"
-                    });
-            }
-            else if (searchUpper == "DIRECT")
-            {
-                var subjectObject = parseTextField(form, $"{area}{target}Item", "").Split('|');
-
-                if (subjectObject.Length >= 2)
-                {
-                    fusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = id,
-                                    Name = target,
-                                    Value = subjectObject[0]
-                                });
-
-                    fusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = id,
-                            Name = $"{target}ID",
-                            Value = subjectObject[1]
-                        });
-                }
-            }
-            else if (searchUpper == "FUSIONOWNER")
-            {
-                fusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = id,
-                                Name = target,
-                                Value = "Owner"
-                            });
-
-                fusionRuleStepSettings.Add(
-                    new FusionRuleStepSetting
-                    {
-                        RuleStepID = id,
-                        Name = $"{target}ID",
-                        Value = parseTextField(form, $"{area}{target}OwnerRule")
-                    });
-
-            }
-            else if (searchUpper == "FUSION")
-            {
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = $"{target}",
-                    Value = "FusionAttributeType"
-                });
-
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = $"{target}ID",
-                    Value = parseTextField(form, $"{area}{target}FusionAttribute")
-                });
-            }
-            else if (searchUpper == "PROMOTION")
-            {
-                var filterField = parseTextField(form, "FindSearchField");
-
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = "FilterField",
-                    Value = filterField
-                });
-
-                if (filterField != "-2")
-                {
-                    fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                    {
-                        RuleStepID = id,
-                        Name = "TargetField",
-                        Value = parseTextField(form, "TargetSearchField")
-                    });
-                }
-
-
-
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = "PromotionStepID",
-                    Value = parseTextField(form, "PromotionStepName")
-                });
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = "PromotionFusionAttributeTypeID",
-                    Value = parseTextField(form, "FusionAttributeTypeName")
-                });
-            }
-        }
-
-        private void handleSearchParameters(string area, string target, ICollection<FusionRuleStepSetting> fusionRuleStepSettings, string searchType, int id, Dictionary<string, string> settings)
-        {
-               var searchUpper = (searchType ?? "").ToUpper();
-            if (searchUpper == "RESULTFROMSTEP")
-            {
-                fusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = id,
-                                Name = target,
-                                Value = "Step"
-                            });
-
-                fusionRuleStepSettings.Add(
-                    new FusionRuleStepSetting
-                    {
-                        RuleStepID = id,
-                        Name = $"{target}ID",
-                        Value = settings[$"{area}{target}Step"]
-                    });
-
-                //special find parent option
-                if (string.Compare(area, "FIND", true) == 0)
-                {
-                    
-                    var findParent = (settings.ContainsKey("FindParent") && settings["FindParent"] == "true");
-
-                    if (findParent)
-                    {
-                        fusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = id,
-                                Name = "FindParent",
-                                Value = "1"
-                            });
-                    }
-                }
-            }
-            else if (searchUpper == "SELF")
-            {
-                fusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = id,
-                                Name = target,
-                                Value = "Self"
-                            });
-
-                fusionRuleStepSettings.Add(
-                    new FusionRuleStepSetting
-                    {
-                        RuleStepID = id,
-                        Name = $"{target}ID",
-                        Value = "0"
-                    });
-            }
-            else if (searchUpper == "DIRECT")
-            {
-                var subjectObject = settings[$"{area}{target}Item"].Split('|');
-
-                if (subjectObject.Length >= 2)
-                {
-                    fusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = id,
-                                    Name = target,
-                                    Value = subjectObject[0]
-                                });
-
-                    fusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = id,
-                            Name = $"{target}ID",
-                            Value = subjectObject[1]
-                        });
-                }
-            }
-            else if (searchUpper == "FUSIONOWNER")
-            {
-                fusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = id,
-                                Name = target,
-                                Value = "Owner"
-                            });
-
-                fusionRuleStepSettings.Add(
-                    new FusionRuleStepSetting
-                    {
-                        RuleStepID = id,
-                        Name = $"{target}ID",
-                        Value = settings[$"{target}ID"]
-                    });
-
-            }
-            else if (searchUpper == "FUSION")
-            {
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = $"{target}",
-                    Value = "FusionAttributeType"
-                });
-
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = $"{target}ID",
-                    Value = settings[$"{area}{target}FusionAttribute"]
-                });
-            }
-            else if (searchUpper == "PROMOTION")
-            {
-                var filterField = settings["FindSearchField"];
-
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = "FilterField",
-                    Value = filterField
-                });
-
-                if (filterField != "-2")
-                {
-                    fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                    {
-                        RuleStepID = id,
-                        Name = "TargetField",
-                        Value = settings["TargetSearchField"]
-                    });
-                }
-
-
-
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = "PromotionStepID",
-                    Value = settings["PromotionStepName"]
-                });
-                fusionRuleStepSettings.Add(new FusionRuleStepSetting
-                {
-                    RuleStepID = id,
-                    Name = "PromotionFusionAttributeTypeID",
-                    Value = settings["FusionAttributeTypeName"]
-                });
-            }
-
-        }
-
+        
         [HttpGet, Route("GetEditFusionRuleStep"), NonNullableParameters]
         public JsonNetResult GetEditFusionRuleStep(int ruleID, int ruleStepID)
         {
@@ -6664,98 +5728,10 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Field Generation
-
-        /// <param name="id">RuleID</param>
-        [Route("FusionRuleStep_AddFields"), NonNullableParameters]
-        public ActionResult FusionRuleStep_AddFields(int id)
-        {
-            var list = new List<EditableField>();
-            var currentRule = Company.GetById<FusionRule>(id);
-            if (currentRule == null) return new HttpNotFoundResult();
-
-            list.Add(new EditableField { FieldName = "ruleID", FieldType = DataType.Hidden.ToString(), Value = currentRule.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Description", false, "", 1, 4000) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Action", true, "", 1, 25) });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Step", Name = "Step", FieldType = DataType.Text.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("FusionRuleStep_EditFields"), NonNullableParameters]
-        public ActionResult FusionRuleStep_EditFields(int id, int ruleStepID)
-        {
-            var list = new List<EditableField>();
-            var currentRule = Company.GetById<FusionRule>(id);
-            if (currentRule == null) return new HttpNotFoundResult();
-
-            var step = currentRule.FusionRuleSteps.FirstOrDefault(x => x.ID == ruleStepID);
-
-            if (step == null) return new HttpNotFoundResult();
-
-            list.Add(new EditableField { FieldName = "ruleStepID", FieldType = DataType.Hidden.ToString(), Value = step.ID.ToString() });
-            list.Add(new EditableField { FieldName = "ruleID", FieldType = DataType.Hidden.ToString(), Value = currentRule.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Description", false, "", 1, 4000), Value = step.Description });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Action", true, "", 1, 25), Value = step.Action });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Step", Name = "Step", FieldType = DataType.Text.ToString(), Value = step.Step.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("FusionRuleStep_DeleteFields"), NonNullableParameters]
-        public ActionResult FusionRuleStep_DeleteFields(int id, int ruleStepID)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<FusionRule>(id);
-            if (a == null) return new HttpNotFoundResult();
-
-            var step = a.FusionRuleSteps.First(x => x.ID == ruleStepID);
-            if (step == null) return new HttpNotFoundResult();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { FieldName = "RuleStepID", FieldType = DataType.Hidden.ToString(), Value = step.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("FusionRuleStep_MoveFields"), NonNullableParameters]
-        public ActionResult FusionRuleStep_MoveFields(int id, int ruleStepID, string direction)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<FusionRule>(id);
-            if (a == null) return new HttpNotFoundResult();
-
-            var step = a.FusionRuleSteps.First(x => x.ID == ruleStepID);
-            if (step == null) return new HttpNotFoundResult();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { FieldName = "RuleStepID", FieldType = DataType.Hidden.ToString(), Value = step.ID.ToString() });
-            list.Add(new EditableField { FieldName = "Direction", FieldType = DataType.Hidden.ToString(), Value = direction });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-
-        #endregion
-
         #endregion
 
         #region FusionRuleStepMapping
-
-        #region Field Generation
-
-        [Route("FusionRuleStepMapping_DeleteFields"), NonNullableParameters]
-        public JsonResult FusionRuleStepMapping_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
+        
         #region Form Get/Post
 
         List<SelectListItem> loadSourceItemOptions(FusionRuleStep ruleStep, FusionRuleStepMapping existingItem = null)
@@ -7315,60 +6291,6 @@ namespace d360.web.Controllers
         #endregion
 
         #region FusionType
-
-        #region Field Generation
-
-        [Route("FusionType_AddFields")]
-        public JsonResult FusionType_AddFields()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var fusionType = new FusionType();
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = fusionType.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = fusionType.GetName(i => i.Description), FieldType = DataType.Html.ToString() });
-            loadIconFields(list, 3);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">FusionTypeID</param>
-        [Route("FusionType_DeleteFields"), NonNullableParameters]
-        public JsonResult FusionType_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<FusionType>(id);
-
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">FusionTypeID</param>
-        [Route("FusionType_EditFields"), NonNullableParameters]
-        public JsonResult FusionType_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<FusionType>(id);
-
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var style = Company.GetObjectStyle(SystemObjects.FusionType, id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = a.GetName(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
-            loadIconFields(list, 3, style);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
 
         #region Form Get/Post
 
@@ -7983,27 +6905,6 @@ namespace d360.web.Controllers
 
         #region IntersectType
 
-        #region Field Generation
-
-        /// <param name="id">IntersectTypeID</param>
-        [Route("IntersectType_DeleteFields"), NonNullableParameters]
-        public JsonResult IntersectType_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            if (Company.Any<Intersect>(i => i.IntersectTypeID == id))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<IntersectType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
 
         #region Json Feeds To Support Editing
 
@@ -8605,208 +7506,12 @@ namespace d360.web.Controllers
         #endregion
 
         #region Group
-
-        #region Field Generation
-
-        [Route("Group_AddFields")]
-        public JsonResult Group_AddFields()
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.Group, 0, Permission.ModifyAsset))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            var resList = GetCompanyResources()
-                .OrderBy(i => i.LastName)
-                .ThenBy(i => i.FirstName)
-                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName })
-                .ToList()
-                .Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() })
-                .ToList();
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, Name = Fields.GroupPrimaryOwner_Name, FieldName = "PrimaryOwnerResourceID", FieldDescription = Fields.GroupPrimaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList });
-            resList.Insert(0, new SelectListItem { Text = "None", Value = "", Group = new SelectListGroup { Name = "" } });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = false, Name = Fields.GroupSecondaryOwner_Name, FieldName = "SecondaryOwnerResourceID", FieldDescription = Fields.GroupSecondaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList });
-
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("Group_AddGroupUserFields"), NonNullableParameters]
-        public JsonResult Group_AddGroupUserFields(int id)
-        {
-            if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.ModifyAsset))
-                return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
-
-            if (!Company.Any<Group>(i => i.ID == id)) return jsonException("No group exists for the specified ID.", HttpStatusCode.NotFound);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
-            var resList = GetCompanyResources()
-                .Where(i => !currentGroupUsers.Contains(i.ResourceID))
-                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName }).ToList().Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() }).ToList();
-            resList.Insert(0, new SelectListItem { Text = "Please select", Value = "" });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ResourceID", Name = "Resource", FieldType = DataType.Lookup.ToString(), Items = resList });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">GroupID</param>
-        [Route("Group_DeleteFields"), NonNullableParameters]
-        public JsonResult Group_DeleteFields(int id)
-        {
-            if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<Group>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("Group_DeleteGroupUserFields"), NonNullableParameters]
-        public JsonResult Group_DeleteGroupUserFields(int groupID, int resourceID)
-        {
-            if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset)) return jsonException("You do not have permissions to remove users.", HttpStatusCode.Forbidden);
-            var group = Company.GetById<Group>(groupID);
-            if (group == null) return jsonException("No group exists for the specified ID.", HttpStatusCode.NotFound);
-            if (!Community.Any<Resource>(i => i.ID == resourceID)) return jsonException("No user exists for the specified ID.", HttpStatusCode.NotFound);
-            if (resourceID == group.PrimaryOwnerResourceID) return jsonException("You may not remove this user as they are the group's primary owner.", HttpStatusCode.NotFound);
-            if (resourceID == group.SecondaryOwnerResourceID) return jsonException("You may not remove this user as they are the group's secondary owner.", HttpStatusCode.NotFound);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Required = true, FieldName = "GroupID", FieldType = DataType.Hidden.ToString(), Value = groupID.ToString() });
-            list.Add(new EditableField { FieldName = "ResourceID", FieldType = DataType.Hidden.ToString(), Value = resourceID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">GroupID</param>
-        [Route("Group_EditFields"), NonNullableParameters]
-        public JsonResult Group_EditFields(int id)
-        {
-            if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.ModifyAsset))
-                return jsonException("You do not have permissions to edit this.", HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<Group>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
-            var resList = GetCompanyResources()
-                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName, MembershipStatus = currentGroupUsers.Any(o => o == i.ResourceID) ? "Current Member" : "Not Yet a Member" })
-                .OrderBy(i => i.MembershipStatus)
-                .ThenBy(i => i.LastName)
-                .ThenBy(i => i.FirstName)
-                .ToList()
-                .Select(i => new SelectListItem { Group = new SelectListGroup { Name = i.MembershipStatus }, Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() })
-                .ToList();
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, Name = Fields.GroupPrimaryOwner_Name, FieldName = "PrimaryOwnerResourceID", FieldDescription = Fields.GroupPrimaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList, Value = (a.PrimaryOwnerResourceID.HasValue ? a.PrimaryOwnerResourceID.Value.ToString() : "") });
-            resList.Insert(0, new SelectListItem { Text = "None", Value = "", Group = new SelectListGroup { Name = "" } });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, Name = Fields.GroupSecondaryOwner_Name, FieldName = "SecondaryOwnerResourceID", FieldDescription = Fields.GroupSecondaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList, Value = (a.SecondaryOwnerResourceID.HasValue ? a.SecondaryOwnerResourceID.Value.ToString() : "") });
-
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
+                
         #region Form Get/Post
 
-        #region Group : Add
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddGroup")]
-        public JsonResult AddGroup(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("group");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.Group, 0, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var primaryOwnerResourceID = parseIntField(form, "PrimaryOwnerResourceID");
-                var secondaryOwnerResourceID = parseNullableIntField(form, "SecondaryOwnerResourceID");
-
-                var a = new Group
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                    PrimaryOwnerResourceID = primaryOwnerResourceID,
-                    SecondaryOwnerResourceID = secondaryOwnerResourceID
-                };
-
-                Company.Add(a);
-                Company.Add(new ResourceGroup { GroupID = a.ID, ResourceID = primaryOwnerResourceID, IsOwner = true });
-
-                try
-                {
-                    if (secondaryOwnerResourceID.HasValue)
-                    {
-                        if (!primaryOwnerResourceID.Equals(secondaryOwnerResourceID))
-                            Company.Add(new ResourceGroup { GroupID = a.ID, ResourceID = secondaryOwnerResourceID.Value, IsOwner = true });
-                    }
-                }
-                catch
-                {
-                }
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
 
         #region Group : Add User
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddGroupUser")]
-        public JsonResult AddGroupUser(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("group user");
-
-                var id = parseIntField(form, "ID");
-                var resourceID = parseIntField(form, "ResourceID");
-                var owner = false;
-
-                if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                Company.Add(new ResourceGroup { GroupID = id, ResourceID = resourceID, IsOwner = owner });
-
-                return jsonSuccess("User successfully assigned.", resourceID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+                
 
         [HttpPost, AjaxValidateAntiForgeryToken,  ValidateInput(false), ActionName("ResourceGroup"), Route("ResourceGroup")]
         public JsonResult PostResourceGroup(ResourceGroup[] model)
@@ -8881,35 +7586,7 @@ namespace d360.web.Controllers
         #endregion
 
         #region Group : Delete User
-
-        [HttpPut, Route("DeleteGroupUser")]
-        public JsonResult DeleteGroupUser(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("group user");
-
-                var groupID = parseIntField(form, "GroupID");
-                var resourceID = parseIntField(form, "ResourceID");
-
-                if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
-
-                return jsonSuccess("User successfully removed from group.", resourceID.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
+        
         [HttpDelete,  ActionName("ResourceGroup"), Route("ResourceGroup"), NonNullableParameters]
         public JsonResult DeleteResourceGroup(int groupID, int resourceID)
         {
@@ -8978,57 +7655,6 @@ namespace d360.web.Controllers
 
         #region Group : Edit
 
-        [HttpPut, ValidateInput(false), Route("EditGroup")]
-        public JsonResult EditGroup(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("group");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Group>(id);
-                if (model == null) throw new NotFoundException("group");
-
-                if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var primaryOwnerResourceID = parseIntField(form, "PrimaryOwnerResourceID");
-                var secondaryOwnerResourceID = parseNullableIntField(form, "SecondaryOwnerResourceID");
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-                model.PrimaryOwnerResourceID = primaryOwnerResourceID;
-                model.SecondaryOwnerResourceID = secondaryOwnerResourceID;
-
-                Company.Update(model);
-
-                var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
-
-                if (!currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
-                {
-                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value, IsOwner = true });
-                }
-                if (model.SecondaryOwnerResourceID.HasValue)
-                {
-                    if (!currentGroupUsers.Any(o => o == model.SecondaryOwnerResourceID))
-                    {
-                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
-                    }
-                }
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-        
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  ActionName("Group"), Route("Group")]
         public JsonResult PostGroup(Group model)
         {
@@ -9170,117 +7796,6 @@ namespace d360.web.Controllers
 
         #region Supporting Json Feeds
 
-        /// <summary>
-        /// Gets a list of intersect types that support lineage.
-        /// </summary>
-        /// <returns>A list of relevant fusion attribute types.</returns>
-        [Route("Lineage_IntersectTypes")]
-        public JsonNetResult Lineage_IntersectTypes()
-        {
-            var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.DataLineage).Select(i => i.ID).Distinct().ToList();
-            return new JsonNetResult
-            {
-                Data = Company
-                    .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&
-                        i.Subject != "IntersectType" && i.Object != "IntersectType" &&
-                        i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType"
-                    )
-                    .ToList()
-                    .Select(i => new { title = $"{i.SubjectName} {i.PredicateName ?? "to"} {i.ObjectName}", value = $"{i.ID}" })
-                    .OrderBy(i => i.title),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [Route("Lineage_IntersectTypeSources")]
-        public JsonNetResult Lineage_IntersectTypeSources()
-        {
-            var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.DataLineage).Select(i => i.ID).Distinct().ToList();
-
-            var detail = Company
-                    .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&
-                        i.Subject != "IntersectType" && i.Object != "IntersectType" &&
-                        i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType"
-                    ).ToList();
-
-            var sources = detail.Select(i => new { i.Subject, i.SubjectID, i.SubjectName }).Distinct().ToList();
-            var sourcesList = sources.Select(i => new { value = i.Subject + '|' + i.SubjectID, label = i.SubjectName, intersectTypeID = detail.First(d => d.Subject == i.Subject && d.SubjectID == i.SubjectID)?.ID ?? -1 });
-
-
-            return new JsonNetResult
-            {
-                Data = sourcesList.ToList().OrderBy(i => i.label),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [Route("Lineage_IntersectTypeTargets"), NonNullableParameters]
-        public JsonNetResult Lineage_IntersectTypeTargets(string type, int id)
-        {
-            var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.DataLineage).Select(i => i.ID).Distinct().ToList();
-
-            var targets = Company
-                    .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&
-                        i.Subject != "IntersectType" && i.Object != "IntersectType" &&
-                        i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType"
-                    )
-                    .Where(i => i.Subject == type && i.SubjectID == id)
-                    .ToList().Select(i => new { value = i.Object + '|' + i.ObjectID, label = i.ObjectName, intersectTypeID = i.ID }).Distinct();
-
-
-
-            return new JsonNetResult
-            {
-                Data = targets.ToList().OrderBy(i => i.label),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        /// <summary>
-        /// Gets a list of subjects based on the given intersect type.
-        /// </summary>
-        /// <param name="id">The Intersect Type's ID</param>
-        /// <returns>A list of name/value pairs.</returns>
-        [Route("Lineage_MapSubjects"), NonNullableParameters]
-        public JsonNetResult Lineage_MapSubjects(int id)
-        {
-            var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
-            if (intersectType == null)
-                return new JsonNetResult { Data = new { message = "Intersect Type not found." } };
-
-            var list = Company.Query<dynamic>(@"
-select  Name as title, 
-        Object+'|'+cast(ObjectID as varchar) as value 
-from    AssetDetail
-where   Type = @type 
-        and TypeID = @id
-order by Name", new { type = new Dapper.DbString { IsAnsi = true, Value = intersectType.Subject }, id = id = intersectType.SubjectID });
-
-            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        /// <summary>
-        /// Gets a list of objects based on the given intersect type.
-        /// </summary>
-        /// <param name="id">The Intersect Type's ID</param>
-        /// <returns>A list of name/value pairs.</returns>
-        [Route("Lineage_MapObjects"), NonNullableParameters]
-        public JsonNetResult Lineage_MapObjects(int id)
-        {
-            var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
-            if (intersectType == null)
-                return new JsonNetResult { Data = new { message = "Intersect Type not found." } };
-
-            var list = Company.Query<dynamic>(@"
-select  Name as title, 
-        Object+'|'+cast(ObjectID as varchar) as value 
-from    AssetDetail
-where   Type = @type 
-        and TypeID = @id
-order by Name", new { type = new Dapper.DbString { IsAnsi = true, Value = intersectType.Object }, id = id = intersectType.ObjectID });
-
-            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
-        }
 
         /// <summary>
         /// Gets a list of fusion attributes based on a search string provided 
@@ -9311,109 +7826,6 @@ from    FusionAttribute A
 order by A.TextPath", new { phrase, intersect.SubjectID });
 
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        /// <summary>
-        /// Gets a list of map rules based on the currently selected map.
-        /// </summary>
-        /// <param name="model">The intersectID we are searching under.</param>
-        /// <returns>A deep hierarchy of map rules.</returns>
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("MapRulesByMap")]
-        public JsonNetResult MapRulesByMap(SourceTargetIntersectModel model)
-        {
-            var list = Company.Query<string>(@"
-select	MR.ID,
-		(
-			select	I.ID,
-					I.FusionAttributeID,
-					A.TextPath as FusionAttributeTextPath
-			from	MapRuleItem I
-					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 1
-			for json path
-		) as Sources,
-		(
-			select	I.ID,
-					I.FusionAttributeID,
-					A.TextPAth as FusionAttributeTextPath
-			from	MapRuleItem I
-					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 0
-			for json path
-		) as Targets,
-		MR.Transformation
-from	MapRule MR
-		inner join MapRuleMap MRM on MRM.MapRuleID = MR.ID
-		inner join Map M on M.ID = MRM.MapID
-		inner join MapItem SMI on SMI.MapID = M.ID and SMI.IntersectID = @s and SMI.DiagramKey = @sd
-		inner join MapItem TMI on TMI.MapID = M.ID and TMI.IntersectID = @t and TMI.DiagramKey = @td
-for json path", new { s = model.SourceIntersectID, sd = model.SourceDiagramKey, t = model.TargetIntersectID, td = model.TargetDiagramKey });
-
-            var json = string.Join("", list);
-            var arr = (string.IsNullOrEmpty(json)) ? new JArray() : JArray.Parse(json);
-
-            return new JsonNetResult
-            {
-                Data = arr,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        /// <summary>
-        /// Gets a list of map rules based on the currently selected object.
-        /// </summary>
-        /// <param name="models">A collection of source/target intersect IDs.</param>
-        /// <returns>A deep hierarchy of map rules.</returns>
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("MapRulesByObject")]
-        public JsonNetResult MapRulesByObject(SourceTargetIntersectModels models)
-        {
-            if (models == null)
-                jsonNetException("No valid models present.", HttpStatusCode.BadRequest);
-
-            if (models.Items.Count <= 0)
-                jsonNetException("No valid models present.", HttpStatusCode.BadRequest);
-
-            var modelsSql = "";
-
-            models.Items.ForEach(m =>
-            {
-                modelsSql += (string.IsNullOrEmpty(modelsSql)) ? "" : " union ";
-                modelsSql += $"select {m.SourceIntersectID} as SourceIntersectID, {m.TargetIntersectID} as TargetIntersectID";
-            });
-            //need work on this query.
-            var list = Company.Query<string>($@"
-select	MR.ID,
-        O.SourceIntersectID,
-        O.TargetIntersectID,
-        (
-			select	I.ID,
-					I.SourceFusionAttributeID as FusionAttributeID,
-					A.TextPath as FusionAttributeTextPath
-			from	MapRuleItem I
-					inner join FusionAttribute A on A.ID = I.SourceFusionAttributeID and I.MapRuleID = MR.ID
-			for json path
-		) as Sources,
-		(
-			select	I.ID,
-					I.TargetFusionAttributeID as FusionAttributeID,
-					A.TextPath as FusionAttributeTextPath
-			from	MapRuleItem I
-					inner join FusionAttribute A on A.ID = I.TargetFusionAttributeID and I.MapRuleID = MR.ID
-			for json path
-		) as Targets,
-		MR.Transformation
-from	MapRule MR
-		inner join MapItemMap MIM on
-        inner join MapItem MI on MI.SourceIntersectID
-		inner join ({modelsSql}) O on O.SourceIntersectID = SMI.IntersectID and O.SourceDiagramKey = SMI.DiagramKey and O.TargetIntersectID = TMI.IntersectID and O.TargetDiagramKey = TMI.DiagramKey
-for json path");
-
-            var json = string.Join("", list);
-            var arr = (string.IsNullOrEmpty(json)) ? new JArray() : JArray.Parse(json);
-
-            return new JsonNetResult
-            {
-                Data = arr,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
         }
 
         #endregion
@@ -10110,21 +8522,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         }
 
         /// <param name="id">LookupID</param>
-        [Route("Lookup_DeleteFields"), NonNullableParameters]
-        public JsonResult Lookup_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<Lookup>(id);
-
-            if (!Company.HasAssetTypePermission(SystemObjects.LookupType, a.LookupTypeID, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LookupID</param>
         [Route("Lookup_EditFields"), NonNullableParameters]
         public JsonResult Lookup_EditFields(int id)
         {
@@ -10262,54 +8659,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         #endregion
 
         #region LookupType
-
-        #region Field Generation
-
-        [Route("LookupType_AddFields")]
-        public JsonResult LookupType_AddFields()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LookupTypeID</param>
-        [Route("LookupType_DeleteFields"), NonNullableParameters]
-        public JsonResult LookupType_DeleteFields(int id)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.LookupType, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LookupTypeID</param>
-        [Route("LookupType_EditFields"), NonNullableParameters]
-        public JsonResult LookupType_EditFields(int id)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.LookupType, id, Permission.ModifyAsset))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<LookupType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
+        
         #region Form Get/Post
 
         public class LookupTypeModel
@@ -10643,19 +8993,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        /// <param name="id">ArtifactID</param>
-        [Route("Organization_DeleteFields"), NonNullableParameters]
-        public JsonResult Organization_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
         #endregion
 
         [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("Organization"), Route("Organization")]
@@ -10842,19 +9179,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Title", Name = "Title", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Title), Validations = checkAndAddValidation("Text", "Title", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ContractType", Name = "Contract Type", FieldType = DataType.Lookup.ToString(), Value = a.ContractType.ToString(), Items = contractTypes });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Body", Name = "Body", FieldType = DataType.Html.ToString(), Value = a.Body });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ID</param>
-        [Route("Contract_DeleteFields"), NonNullableParameters]
-        public JsonResult Contract_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11072,19 +9396,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        /// <param name="id">ID</param>
-        [Route("OrganizationDomain_DeleteFields"), NonNullableParameters]
-        public JsonResult OrganizationDomain_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
         #endregion
 
         [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("OrganizationDomain"), Route("OrganizationDomain")]
@@ -11226,19 +9537,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Email", Name = "Email", FieldType = DataType.Text.ToString(), Value = a.Email, Validations = checkAndAddValidation("Text", "Email", true, "", 5, 500) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">Organization Invitation ID</param>
-        [Route("OrganizationInvitation_DeleteFields"), NonNullableParameters]
-        public JsonResult OrganizationInvitation_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11387,8 +9685,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             {
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-
+                
                 var model = Company.GetById<OrganizationType>(id);
                 if (model == null) throw new NotFoundException("organizationType");
 
@@ -11438,19 +9735,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         }
 
         /// <param name="id">PolicyID</param>
-        [Route("Policy_DeleteFields"), NonNullableParameters]
-        public JsonResult Policy_DeleteFields(int id)
-        {
-            if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">PolicyID</param>
         [Route("Policy_EditFields"), NonNullableParameters]
         public JsonResult Policy_EditFields(int id)
         {
@@ -11474,21 +9758,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 )
             );
 
-
-
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        [Route("Policy_SimilarItems"), NonNullableParameters]
-        public JsonNetResult Policy_SimilarItems(int typeID, string query)
-        {
-            return new JsonNetResult
-            {
-                Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = "Policy", typeID, query }),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
+        
         #endregion
 
         #region Form Get/Post
@@ -11675,94 +9947,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         #endregion
 
         #region PolicyTypeLevel
-
-        #region Field Generation
-
-        [Route("PolicyTypeLevel_AddFields"), NonNullableParameters]
-        public JsonResult PolicyTypeLevel_AddFields(int id)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var type = Company.GetById<PolicyType>(id);
-            if (type == null) return jsonException("Type not found.", HttpStatusCode.NotFound);
-            var existingLevels = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id).Select(i => i.Level).ToList();
-
-            var levels = new List<SelectListItem>();
-            for (int i = 1; i <= type.MaximumDepth; i++)
-            {
-                if (!existingLevels.Contains(i)) levels.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString() });
-            }
-
-            var list = new List<EditableField>();
-            var a = new PolicyTypeLevel();
-
-            list.Add(new EditableField { Required = true, FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField
-            {
-                Group = "",
-                Row = 1,
-                Column = 2,
-                Required = true,
-                FieldName = "Level",
-                Name = a.GetName(i => i.Level),
-                Items = levels,
-                FieldDescription = a.GetDescription(i => i.Level),
-                FieldType = DataType.Lookup.ToString(),
-                Validations = checkAndAddValidation("Text", "Level", true, "", 1, 250)
-            });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
-
-            a = null;
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id">PolicyTypeID</param>
-        /// <param name="level">Level</param>
-        /// <returns></returns>
-        [Route("PolicyTypeLevel_DeleteFields"), NonNullableParameters]
-        public JsonResult PolicyTypeLevel_DeleteFields(int id, int level)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { FieldName = "Level", FieldType = DataType.Hidden.ToString(), Value = level.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id">PolicyTypeID</param>
-        /// <param name="level">Level</param>
-        /// <returns></returns>
-        [Route("PolicyTypeLevel_EditFields"), NonNullableParameters]
-        public JsonResult PolicyTypeLevel_EditFields(int id, int level)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.PolicyTypeID.ToString() });
-            list.Add(new EditableField { ReadOnly = true, FieldName = "Level", FieldType = DataType.Hidden.ToString(), Value = a.Level.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
+                
         #region Form Get/Post
 
         [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPolicyTypeLevel")]
@@ -11896,20 +10081,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Functional Type", FieldType = DataType.Lookup.ToString(), Items = functionalTypes });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">PredicateID</param>
-        [Route("Predicate_DeleteFields"), NonNullableParameters]
-        public JsonResult Predicate_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException("You do not have permissions to delete this.", HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -12087,20 +10258,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("ReferenceItem_DeleteFields"), NonNullableParameters]
-        public JsonResult ReferenceItem_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ReferenceItem>(id);
-
-            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ID, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
         /// <param name="id">LookupID</param>
         [Route("ReferenceItem_EditFields"), NonNullableParameters]
         public JsonResult ReferenceItem_EditFields(int id)
@@ -12239,9 +10396,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<ReferenceItem>(model, fields);
-
                 
-
                 if (!string.IsNullOrEmpty(form["ParentID"]))
                 {
                     if (!Company.UpdateObjectParentRelationship(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, SystemObjects.ReferenceItem, parseIntField(form, "ParentID"), model.ID))
@@ -12472,24 +10627,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        /// <param name="id">RelationshipID</param>
-        [Route("Relationship_DeleteFields"), NonNullableParameters]
-        public JsonResult Relationship_DeleteFields(int id)
-        {
-            var intersect = Company.GetById<Intersect>(id);
-
-            if (
-                !Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ModifyRelationships) ||
-                !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ModifyRelationships)
-                )
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
 
         /// <param name="id">RelationshipID</param>
         [Route("Relationship_EditFields"), NonNullableParameters]
@@ -12966,45 +11103,11 @@ order by TP.TextPath";
             return Json(items, JsonRequestBehavior.AllowGet);
         }
         
-
         #endregion
 
         #endregion
 
         #region Report
-
-        #region Field Generation
-
-        /// <param name="id">ID of the object</param>
-        [Route("Report_DeleteFields"), NonNullableParameters]
-        public JsonResult Report_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<Report>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("PowerBICredentials_AddFields")]
-        public JsonResult PowerBICredentials_AddFields()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            
-            list.Add(new EditableField { Row = 1, Column = 1, Name= "Username", FieldName = "Username", FieldType = DataType.Text.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Name = "Password", FieldName = "Password", FieldType = DataType.Password.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
 
         #region Form Get/Post
 
@@ -13341,9 +11444,7 @@ order by TP.TextPath";
                 else
                 {
                     throw new MissingPropertiesException("Report");
-                }
-
-                
+                }                
             }
             catch (BaseException ex)
             {
@@ -13407,32 +11508,12 @@ order by TP.TextPath";
             return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, file.InputStream);
         }
 
-
         #endregion
 
         #endregion
 
         #region ReportTile
-
-        #region Field Generation
-
-        /// <param name="id">ID of the object</param>
-        [Route("ReportTile_DeleteFields"), NonNullableParameters]
-        public JsonResult ReportTile_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ReportTile>(id);
-
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-            
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
+        
         #region Form Get/Post
         
         [HttpPost, AjaxValidateAntiForgeryToken,  ValidateInput(false), Route("AddReportTile")]
@@ -13882,66 +11963,6 @@ order by TP.TextPath";
         #endregion
 
         #region ResponsibilityType
-
-        #region Field Generation
-
-        [Route("ResponsibilityType_AddFields")]
-        public JsonResult ResponsibilityType_AddFields()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAllocationOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResponsibilityTypeID</param>
-        [Route("ResponsibilityType_DeleteFields"), NonNullableParameters]
-        public JsonResult ResponsibilityType_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<ResponsibilityType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResponsibilityTypeID</param>
-        [Route("ResponsibilityType_EditFields"), NonNullableParameters]
-        public JsonResult ResponsibilityType_EditFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<ResponsibilityType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name });
-            var selectedAllocations = Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id).ToList();
-            var allocations = Company
-                .GetAllocationOptions()
-                .Select(i => new SelectListItem {
-                    Text = i.Name,
-                    Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
-                    Selected = selectedAllocations.Any(c => c.ObjectType == i.ObjectType && c.ObjectID == i.ObjectTypeID)
-                }).ToList();
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = allocations });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
 
         #region Form Get/Post
 
@@ -14477,57 +12498,6 @@ order by DN.DisplayValue");
         
         #endregion
 
-        #region Field Generation
-
-        [Route("ResponsibilityTypeRelationRule_AddFields")]
-        public JsonResult ResponsibilityTypeRelationRule_AddFields()
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAllocationOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResponsibilityTypeRelationRuleID</param>
-        [Route("ResponsibilityTypeRelationRule_DeleteFields"), NonNullableParameters]
-        public JsonResult ResponsibilityTypeRelationRule_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ResponsibilityType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResponsibilityTypeRelationRuleID</param>
-        [Route("ResponsibilityTypeRelationRule_EditFields"), NonNullableParameters]
-        public JsonResult ResponsibilityTypeRelationRule_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ResponsibilityType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name });
-            var selectedAllocations = Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id).ToList();
-            var allocations = Company
-                .GetAllocationOptions()
-                .Select(i => new SelectListItem
-                {
-                    Text = i.Name,
-                    Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
-                    Selected = selectedAllocations.Any(c => c.ObjectType == i.ObjectType && c.ObjectID == i.ObjectTypeID)
-                }).ToList();
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = allocations });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
         #region Form Get/Post
 
         [HttpDelete,  Route("DeleteResponsibilityTypeRelationRuleByID"), NonNullableParameters]
@@ -14703,22 +12673,7 @@ order by DN.DisplayValue");
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        /// <param name="id">ResourceID</param>
-        [Route("Resource_DeleteFields"), NonNullableParameters]
-        public JsonResult Resource_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Community.GetById<Resource>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
+        
         /// <param name="id">ResourceID</param>
         [Route("Resource_EditFields"), NonNullableParameters]
         public JsonResult Resource_EditFields(int id)
@@ -14785,19 +12740,6 @@ order by DN.DisplayValue");
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "CurrentPassword", Name = "Current Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Current Password", true, "", 7, 25) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "NewPassword", Name = "New Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "New Password", true, passwordRegex, null, null, passwordRegexMessage) });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "ConfirmNewPassword", Name = "Confirm New Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Confirm New Password", true, passwordRegex, null, null, passwordRegexMessage) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("Resource_ChangeUserPasswordFields"), NonNullableParameters]
-        public JsonResult Resource_ChangeUserPasswordFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Community.GetById<Resource>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "NewPassword", Name = "New Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "New Password", true, passwordRegex, null, null, passwordRegexMessage) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ConfirmNewPassword", Name = "Confirm New Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Confirm New Password", true, passwordRegex, null, null, passwordRegexMessage) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -15121,45 +13063,7 @@ order by DN.DisplayValue");
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpPut, ValidateInput(false), Route("ChangeUserPassword")]
-        public JsonResult ChangeUserPassword(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("resource");
-
-                var id = parseIntField(form, "ID");
-                var model = Community.GetById<Resource>(id);
-
-                if (model == null) throw new NotFoundException("resource");
-
-                var password1 = parseTextField(form, "NewPassword");
-                var password2 = parseTextField(form, "ConfirmNewPassword");
-                                
-                if (!password1.Equals(password2))
-                {
-                    throw new ConflictException("Password values do not match", "Password values do not match.  Please try again.");
-                }
-
-                Community.ChangePassword(id, "", password1);
-
-                return jsonSuccess("Password successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
+        
         #endregion
 
         #endregion
@@ -15220,19 +13124,7 @@ order by DN.DisplayValue");
         }
 
         #endregion
-
-        #region Field Generation
-
-        /// <param name="id">ResponseTypeID</param>
-        [Route("QuestionType_DeleteFields"), NonNullableParameters]
-        public JsonResult QuestionType_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
+              
 
         #region Form Get/Post
 
@@ -15414,21 +13306,6 @@ order by DN.DisplayValue");
             
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).ToList(), 3);
 
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">RuleID</param>
-        [Route("Rule_DeleteFields"), NonNullableParameters]
-        public JsonResult Rule_DeleteFields(int id)
-        {
-            var model = Company.GetById<Rule>(id);
-
-            if (!Company.HasAssetPermission(SystemObjects.Rule, model.ID, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -15642,19 +13519,6 @@ order by DN.DisplayValue");
         }
 
         /// <param name="id">RuleID</param>
-        [Route("RuleDimension_DeleteFields"), NonNullableParameters]
-        public JsonResult RuleDimension_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">RuleID</param>
         [Route("RuleDimension_EditFields"), NonNullableParameters]
         public JsonResult RuleDimension_EditFields(int id)
         {
@@ -15816,21 +13680,6 @@ order by DN.DisplayValue");
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "SourceID", Name = FieldInfo.RuleImplementation_SourceID, FieldType = DataType.Text.ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "SourceUri", Name = FieldInfo.RuleImplementation_SourceUri, FieldType = DataType.Text.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">RuleImplementationID</param>
-        [Route("RuleImplementation_DeleteFields"), NonNullableParameters]
-        public JsonResult RuleImplementation_DeleteFields(int id)
-        {
-            var model = Company.GetById<RuleImplementation>(id);
-
-            if (!Company.HasAssetPermission(SystemObjects.Rule, model.RuleID, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -16209,22 +14058,7 @@ order by DN.DisplayValue");
                         
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        /// <param name="id">PolicyTypeID</param>
-        [Route("RuleType_DeleteFields"), NonNullableParameters]
-        public JsonResult RuleType_DeleteFields(int id)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.RuleType, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<RuleType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
+        
         /// <param name="id">PolicyTypeID</param>
         [Route("RuleType_EditFields"), NonNullableParameters]
         public JsonResult RuleType_EditFields(int id)
@@ -16825,15 +14659,6 @@ order by DN.DisplayValue");
         }
 
         /// <param name="id">SurveyTypeID</param>
-        [Route("SurveyType_DeleteFields"), NonNullableParameters]
-        public JsonResult SurveyType_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">SurveyTypeID</param>
         [Route("SurveyType_EditFields"), NonNullableParameters]
         public JsonResult SurveyType_EditFields(int id)
         {
@@ -16990,39 +14815,6 @@ order by DN.DisplayValue");
             };
 
             return Json(model, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Field Generation
-
-        [Route("Synonym_AddFields"), NonNullableParameters]
-        public JsonResult Synonym_AddFields(string type, int id)
-        {
-            var list = new List<EditableField>();
-            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id }).ToList();
-            var typeIsSubject = true;
-            if (items.Count > 0)
-            {
-                typeIsSubject = (bool)items[0].TargetingSubject;
-            }
-            list.Add(new EditableField { FieldName = "TypeIsSubject", FieldType = DataType.Hidden.ToString(), Value = typeIsSubject.ToString() });
-            list.Add(new EditableField { FieldName = "Type", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Synonym", Name = "Synonym", FieldType = DataType.Lookup.ToString(), Items = items.Select(i => new SelectListItem { Text = i.Name, Value = i.ID }).ToList() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">Object's ID</param>
-        [Route("Synonym_DeleteFields"), NonNullableParameters]
-        public JsonResult Synonym_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "IntersectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
         }
 
         #endregion
