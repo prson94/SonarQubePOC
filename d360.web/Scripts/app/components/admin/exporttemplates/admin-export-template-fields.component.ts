@@ -99,7 +99,8 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         this.availableFields = [];
         //load available fields for the artifact type
         this.fieldsService.getFields(this.exportTemplate.ArtifactTypeID, 'ArtifactType')
-            .then(data => {                 
+            .then(data => {       
+                data = data.filter(x => x.Type != 'Relation Lookup' && x.Type != 'Filtered Lookup' && x.Type != 'Ownership Lookup' && x.Type != 'Fusion Lookup')
                 //split the string of selected fields and populate the selected fields array
                 this.availableFields = this.setInitialFields(data);                
             });        

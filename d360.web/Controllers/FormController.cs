@@ -18953,7 +18953,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
-            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = template.ArtifactTypeID == i.ID }).ToList();
+            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = template.ArtifactTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
             
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "ArtifactTypeID", Name = "Artifact Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
@@ -18975,7 +18975,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
 
-            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(x=>x.Text).ToList();
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "ArtifactTypeID", Name = "Artifact Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Glossary Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
