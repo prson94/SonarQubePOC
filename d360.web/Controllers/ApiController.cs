@@ -5327,7 +5327,7 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField{ Name = "Type Name", FieldName = "TypeName", Value = template.ArtifactType.Name}
+                                new ReadOnlyField{ Name = "Artifact Type", FieldName = "TypeName", Value = template.ArtifactType.Name}
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
