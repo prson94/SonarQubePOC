@@ -172,7 +172,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain a valid existing export template."));
 
             //create the new record
-            var res = await Company.Database.Connection.ExecuteAsync("update ArtifactTypeExportTemplate set Name = @name,Description = @desc, ExportViewType = @exp, IncludeUrl = @url, IncludeParent = @parent,IncludeFields = @incl, UsageNotes =@notes  where id = @id", new { url = model.IncludeUrl, parent= model.IncludeParent,  name = model.Name, id = id, desc = model.Description, exp = model.ExportViewType, incl = model.IncludeFields, notes = model.UsageNotes });
+            var res = await Company.Database.Connection.ExecuteAsync("update ArtifactTypeExportTemplate set Name = @name,Description = @desc, ExportViewType = @exp, IncludeUrl = @url, IncludeParent = @parent,IncludeFields = @incl, UsageNotes =@notes,ArtifactTypeID=@ty  where id = @id", new { ty=model.ArtifactTypeID, url = model.IncludeUrl, parent= model.IncludeParent,  name = model.Name, id = id, desc = model.Description, exp = model.ExportViewType, incl = model.IncludeFields, notes = model.UsageNotes });
 
             if (res > 0) return model; // updated
 

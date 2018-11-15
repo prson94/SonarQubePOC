@@ -14,7 +14,7 @@ import { ExportTemplate } from '../../../models/export-template.model';
                         <div class="tile tile-detail">
                             <div>
                     <header>Export Templates
-                        <d3s-tile-actions [hasAdd]="!showDelete" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
+                        <d3s-tile-actions [hasAdd]="!showDelete" (addClick)="selected=null;showEditor=true;showDelete=false;"></d3s-tile-actions>                            
                     </header>                    
                     <span>                        
                         <input type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
@@ -38,12 +38,12 @@ import { ExportTemplate } from '../../../models/export-template.model';
                                     <td>{{item.Name}}</td>
                                     <td>
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;showDelete=false;"><i class="fa fa-pencil"></i></a>
                                         </div>
                                     </td>
                                     <td> 
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true;showEditor=false"><i class="fa fa-trash-o"></i></a>
                                         </div>
                                     </td>
                                 </tr>
