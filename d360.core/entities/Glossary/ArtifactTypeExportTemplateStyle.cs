@@ -29,6 +29,13 @@ namespace d360.core.entities
         [DataMember]
         public int? BackgroundColor { get; set; }
 
+        [NotMapped, DataMember]
+        public string TextColor { get; set; }
+
+ 
+        [NotMapped, DataMember]
+        public string BgColor { get; set; }
+        [DataMember]
         public int ArtifactTypeExportTemplateID { get; set; }
 
         public DateTime? UpdatedOn { get; set; }

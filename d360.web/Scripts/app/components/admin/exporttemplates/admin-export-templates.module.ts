@@ -42,6 +42,8 @@ import {
 } from 'primeng/primeng';
 import { TableModule } from 'primeng/table';
 import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
+import { AdminExportTemplateStylesComponent } from './admin-export-template-styles.component';
+import { AdminExportTemplateStyleFormComponent } from './admin-export-template-style-form.component';
 
 
 @NgModule({
@@ -87,6 +89,8 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
     declarations: [
         AdminExportTemplatesComponent,  
         AdminExportTemplateFieldsComponent,
+        AdminExportTemplateStylesComponent,
+        AdminExportTemplateStyleFormComponent,
     ],
     providers: [
         {

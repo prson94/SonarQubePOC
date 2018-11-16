@@ -15,6 +15,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Drawing;
 
 namespace d360.web.Controllers.V2
 {
@@ -104,6 +105,108 @@ namespace d360.web.Controllers.V2
             }
 
             return model;
+        }
+
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            Route("Styles/{templateId:int}")
+        ]
+        public IEnumerable<ArtifactTypeExportTemplateStyle> GetStyles(int templateId)
+        {
+            var context = Request.Properties["MS_HttpContext"] as System.Web.HttpContextWrapper;
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            var styles = Company.ArtifactTypeExportTemplateStyles.Where(x => x.ArtifactTypeExportTemplateID == templateId).ToList();
+            styles.ForEach(x => {
+                x.BgColor =  x.BackgroundColor.HasValue?  ColorTranslator.ToHtml(Color.FromArgb(x.BackgroundColor.Value)) : "#FFFFFF";
+                x.TextColor= x.Color.HasValue ? ColorTranslator.ToHtml(Color.FromArgb(x.Color.Value)) : "#000000";
+            });
+            return styles;
+
+        }
+
+
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            Route("Style")
+        ]
+        public async Task<ArtifactTypeExportTemplateStyle> SaveTemplateStyle(ArtifactTypeExportTemplateStyle model)
+        {
+            var context = Request.Properties["MS_HttpContext"] as System.Web.HttpContextWrapper;
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            if (!Company.ArtifactTypeExportTemplates.Any(x => x.ID == model.ArtifactTypeExportTemplateID))
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Template not found"));
+
+            if (!string.IsNullOrEmpty(model.BgColor))
+                model.BackgroundColor = ColorTranslator.FromHtml(model.BgColor).ToArgb();
+
+            if (!string.IsNullOrEmpty(model.TextColor))
+                model.Color = ColorTranslator.FromHtml(model.TextColor).ToArgb();
+
+            Company.Add(model);
+            await Company.SaveChangesAsync();
+
+            return model;
+        }
+
+        [
+            HttpPut,
+            MapToApiVersion("2.0"),
+            Route("Style/{id}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+        ]
+        public async Task<ArtifactTypeExportTemplateStyle> UpdateTemplateStyle(int id,ArtifactTypeExportTemplateStyle model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            //validate the model input
+            if (model.ID <= 0  || model.ArtifactTypeExportTemplateID <= 0)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
+
+            //check that there is a export template exists
+            if (!Company.ArtifactTypeExportTemplateStyles.Any(x => x.ID == model.ID))
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain a valid existing export template style."));
+            var data = Company.GetById<ArtifactTypeExportTemplateStyle>(model.ID);
+            data.IsBold = model.IsBold;
+            data.Column = model.Column;
+            data.Row = model.Row;
+
+            if (!string.IsNullOrEmpty(model.BgColor))
+                data.BackgroundColor = ColorTranslator.FromHtml(model.BgColor).ToArgb();
+
+            if (!string.IsNullOrEmpty(model.TextColor))
+                data.Color =ColorTranslator.FromHtml(model.TextColor).ToArgb();
+
+            Company.Entry(data).State = System.Data.Entity.EntityState.Modified;
+            var res =await Company.SaveChangesAsync();
+            if (res > 0) return model; // updated
+
+            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Export Template Style not found to update."));
+
+        }
+
+        [
+            HttpDelete,
+            MapToApiVersion("2.0"),
+            Route("Style/{id}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+        ]
+        public async Task<HttpResponseMessage> DeleteStyle(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+           
+            var res = await Company.Database.Connection.ExecuteAsync("delete ArtifactTypeExportTemplateStyle where id = @id", new { id = id });
+
+            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
+
+            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
 
         /// <summary>
