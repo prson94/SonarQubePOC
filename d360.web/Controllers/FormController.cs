@@ -1062,23 +1062,6 @@ namespace d360.web.Controllers
 
         #region AssetType
 
-        #region Field Generation
-
-        /// <param name="id">AssetTypeID</param>
-        [Route("AssetType_DeleteFields"), NonNullableParameters]
-        public JsonResult AssetType_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
         #region Form Get/Post
 
         [HttpGet, ActionName("AssetType"), Route("AssetType")]
@@ -11670,22 +11653,6 @@ order by TP.TextPath";
 
         #region Responsibility
 
-        #region Field Generation
-
-        /// <param name="id">ResponsibilityTypeRelationOverrideItemID</param>
-        [Route("Responsibility_DeleteFields"), NonNullableParameters]
-        public JsonResult Responsibility_DeleteFields(long id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ResponsibilityTypeRelationOverrideItem>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
         #region Form Get/Post
 
         List<SelectListItem> getResponsibilityResources(string selectedID = "")
@@ -15066,20 +15033,6 @@ order by DN.DisplayValue");
         }
 
         /// <param name="id">TaxonomyID</param>
-        [Route("Taxonomy_DeleteFields"), NonNullableParameters]
-        public JsonResult Taxonomy_DeleteFields(int id)
-        {
-            if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">TaxonomyID</param>
         [Route("Taxonomy_EditFields"), NonNullableParameters]
         public JsonResult Taxonomy_EditFields(int id)
         {
@@ -15370,21 +15323,6 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
 
         #region TaxonomyType
 
-        /// <param name="id">TaxonomyTypeID</param>
-        [Route("TaxonomyType_DeleteFields"), NonNullableParameters]
-        public JsonResult TaxonomyType_DeleteFields(int id)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<TaxonomyType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
         [HttpDelete, Route("DeleteTaxonomyType")]
         public JsonResult DeleteTaxonomyType(FormCollection form)
         {
@@ -15418,103 +15356,8 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
 
         #region TaxonomyTypeLevel
 
-        #region Field Generation
-
-        [Route("TaxonomyTypeLevel_AddFields"), NonNullableParameters]
-        public JsonResult TaxonomyTypeLevel_AddFields(int id)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var type = Company.GetById<TaxonomyType>(id);
-            if (type == null) return jsonException("Type not found.", HttpStatusCode.NotFound);
-            var existingLevels = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id).Select(i => i.Level).ToList();
-
-            var levels = new List<SelectListItem>();
-            for (int i = 1; i <= type.MaximumDepth; i++)
-            {
-                if (!existingLevels.Contains(i)) levels.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString() });
-            }
-
-            var list = new List<EditableField>();
-            var a = new TaxonomyTypeLevel();
-
-            list.Add(new EditableField { Required = true, FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField
-            {
-                Group = "",
-                Row = 1,
-                Column = 2,
-                Required = true,
-                FieldName = "Level",
-                Name = a.GetName(i => i.Level),
-                Items = levels,
-                FieldDescription = a.GetDescription(i => i.Level),
-                FieldType = DataType.Lookup.ToString(),
-                Validations = checkAndAddValidation("Text", "Level", true, "", 1, 250)
-            });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
-
-            a = null;
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id">TaxonomyTypeID</param>
-        /// <param name="level">Level</param>
-        /// <returns></returns>
-        [Route("TaxonomyTypeLevel_DeleteFields"), NonNullableParameters]
-        public JsonResult TaxonomyTypeLevel_DeleteFields(int id, int level)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.DeleteAsset))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { FieldName = "Level", FieldType = DataType.Hidden.ToString(), Value = level.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id">TaxonomyTypeID</param>
-        /// <param name="level">Level</param>
-        /// <returns></returns>
-        [Route("TaxonomyTypeLevel_EditFields"), NonNullableParameters]
-        public JsonResult TaxonomyTypeLevel_EditFields(int id, int level)
-        {
-            if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level).SingleOrDefault();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.TaxonomyTypeID.ToString() });
-            list.Add(new EditableField { ReadOnly = true, FieldName = "Level", FieldType = DataType.Hidden.ToString(), Value = a.Level.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
         #region Form Get/Post
-
-        public class TaxonomyTypeLevelModel
-        {
-            public string Name { get; set; }
-            public string Description { get; set; }
-            public string Level { get; set; }
-            public string TaxonomyTypeID { get; set; }
-        }
-                
+    
         [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddTaxonomyTypeLevel")]
         public JsonResult AddTaxonomyTypeLevel(FormCollection form)
         {
@@ -16779,6 +16622,5 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
         }
 
         #endregion
-
     }
 }

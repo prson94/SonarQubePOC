@@ -2813,9 +2813,6 @@
         <member name="M:d360.web.Controllers.FormController.Artifact_EditFields(System.Int32)">
             <param name="id">ArtifactID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.AssetType_DeleteFields(System.Int32)">
-            <param name="id">AssetTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Attribute_AddFields(System.Int32,System.String,System.Int32,System.Int32)">
             <param name="at">AttributeTypeID</param>
             <param name="ot">ObjectType</param>
@@ -2973,9 +2970,6 @@
         <member name="M:d360.web.Controllers.FormController.Relationship_EditFields(System.Int32)">
             <param name="id">RelationshipID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Responsibility_DeleteFields(System.Int64)">
-            <param name="id">ResponsibilityTypeRelationOverrideItemID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Resource_AddFields(System.Int32)">
             <param name="id">ResourceTypeID</param>
         </member>
@@ -3004,30 +2998,8 @@
             <param name="t">TaxonomyTypeID</param>
             <param name="p">ParentID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Taxonomy_DeleteFields(System.Int32)">
-            <param name="id">TaxonomyID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Taxonomy_EditFields(System.Int32)">
             <param name="id">TaxonomyID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TaxonomyType_DeleteFields(System.Int32)">
-            <param name="id">TaxonomyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_DeleteFields(System.Int32,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="id">TaxonomyTypeID</param>
-            <param name="level">Level</param>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_EditFields(System.Int32,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="id">TaxonomyTypeID</param>
-            <param name="level">Level</param>
-            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FieldsController._FieldTypesByObjectFull(d360.core.SystemObjects,System.Int32)">
             <summary>
