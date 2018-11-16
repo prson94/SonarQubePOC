@@ -313,6 +313,7 @@
     </None>
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\d3s-us-processor-Nightly - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\gov-preview-eng.pubxml" />
     <None Include="Properties\PublishProfiles\US - Nightly.pubxml" />
     <None Include="Properties\PublishProfiles\US - Client Development.pubxml" />
     <None Include="Properties\PublishProfiles\US - Production.pubxml" />
