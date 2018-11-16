@@ -1,0 +1,5 @@
+--liquibase formatted sql
+
+CREATE FULLTEXT CATALOG [FieldCatalog] WITH ACCENT_SENSITIVITY = ON
+AS DEFAULT
+GO
