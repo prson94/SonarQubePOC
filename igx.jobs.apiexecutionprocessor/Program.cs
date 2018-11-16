@@ -69,32 +69,45 @@ namespace igx.jobs.apiexecutionprocessor
                 if (dbExecutionItem != null)
                 {
                     AssetType assetType = null;
+                    IntersectType intersectType = null;
 
                     switch (info.Action)
                     {
                         case ApiExecutionAction.PostAssets:
-                            var postFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
-                            assetType = company.Filter<AssetType>(i => i.uid == postFields.AssetTypeUid).Single();
+                            var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
+                            assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).Single();
                             string postAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
                             var postAssets = JsonConvert.DeserializeObject<AssetInserts>(postAssetsJson);
 
-                            var postResults = companyConnection.InsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, postAssets);
-                            dbExecutionItem.Processed = postResults.Count(i => i.Success);
-                            dbExecutionItem.Error = postResults.Count(i => !i.Success);
+                            var postAssetsResults = companyConnection.InsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, postAssets);
+                            dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
+                            dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
 
-                            storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(postResults));
+                            storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(postAssetsResults));
                             break;
                         case ApiExecutionAction.PutAssets:
-                            var putFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
-                            assetType = company.Filter<AssetType>(i => i.uid == putFields.AssetTypeUid).Single();
+                            var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
+                            assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).Single();
                             string putAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
                             var putAssets = JsonConvert.DeserializeObject<AssetUpdates>(putAssetsJson);
 
-                            var putResults = companyConnection.UpdateAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, putAssets);
-                            dbExecutionItem.Processed = putResults.Count(i => i.Success);
-                            dbExecutionItem.Error = putResults.Count(i => !i.Success);
+                            var putAssetsResults = companyConnection.UpdateAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, putAssets);
+                            dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
+                            dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
 
-                            storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(putResults));
+                            storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(putAssetsResults));
+                            break;
+                        case ApiExecutionAction.PostRelationships:
+                            var postRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(dbExecutionItem.Fields);
+                            intersectType = company.Filter<IntersectType>(i => i.uid == postRelationshipsFields.IntersectTypeUid).Single();
+                            string postRelationshipsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
+                            var postRelationships = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(postRelationshipsJson);
+
+                            var postRelationshipsResults = companyConnection.BulkRelationshipsImport(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, intersectType, postRelationships);
+                            dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);
+                            dbExecutionItem.Error = postRelationshipsResults.Count(i => !i.Success);
+
+                            storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(postRelationshipsResults));
                             break;
                     }
 
