@@ -2810,17 +2810,8 @@
             <param name="at">ArtifactTypeID</param>
             <param name="p">ParentID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Artifact_DeleteFields(System.Int32)">
-            <param name="id">ArtifactID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_EditFields(System.Int32)">
             <param name="id">ArtifactID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ArtifactType_DeleteFields(System.Int32)">
-            <param name="id">ArtifactID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.AssetType_DeleteFields(System.Int32)">
-            <param name="id">AssetTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Attribute_AddFields(System.Int32,System.String,System.Int32,System.Int32)">
             <param name="at">AttributeTypeID</param>
@@ -2828,34 +2819,11 @@
             <param name="oid">ObjectID</param>
             <param name="p">ParentID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Attribute_DeleteFields(System.Int32)">
-            <param name="id">AttributeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Attribute_EditFields(System.Int32)">
             <param name="id">AttributeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.AttributeType_DeleteFields(System.Int32)">
-            <param name="id">AttributeTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.AttributeTypeCategory_AddFields">
-            <summary>
-            
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.AttributeTypeCategory_DeleteFields(System.Int32)">
-            <param name="id">AttributeTypeCategoryID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.AttributeTypeCategory_EditFields(System.Int32)">
-            <param name="id">AttributeTypeCategoryID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.AttributeTypeRelation_AddFields(System.Int32)">
             <param name="at">AttributeTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.AttributeTypeRelation_DeleteFields(System.Int32,System.String,System.Int32)">
-            <param name="at">AttributeTypeID</param>
-            <param name="ot">ObjectType</param>
-            <param name="oid">ObjectID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.AttributeTypeRelation_EditFields(System.Int32,System.String,System.Int32)">
             <summary>
@@ -2932,9 +2900,6 @@
             <param name="id">IntersectTypeID></param>
             <returns>A list of child relationship types</returns>
         </member>
-        <member name="M:d360.web.Controllers.FormController.FieldType_DeleteFields(System.Int32)">
-            <param name="id">ID of the object</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Fusion_AddFields(System.Int32)">
             <summary>
             
@@ -2942,23 +2907,8 @@
             <param name="ft">FusionTypeID</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Fusion_DeleteFields(System.Int32)">
-            <param name="id">FusionAttributeTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Fusion_EditFields(System.Int32)">
             <param name="id">FusionAttributeTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.FusionRule_DeleteFields(System.Int32)">
-            <param name="id">RuleID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.FusionRuleStep_AddFields(System.Int32)">
-            <param name="id">RuleID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.FusionType_DeleteFields(System.Int32)">
-            <param name="id">FusionTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.FusionType_EditFields(System.Int32)">
-            <param name="id">FusionTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.FusionAttribute_AddFields(System.Int32,System.Int32)">
             <param name="fat">FusionAttributeTypeID</param>
@@ -2966,35 +2916,6 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.FusionAttribute_EditFields(System.Int32)">
             <param name="id">FusionAttributeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.IntersectType_DeleteFields(System.Int32)">
-            <param name="id">IntersectTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Group_DeleteFields(System.Int32)">
-            <param name="id">GroupID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Group_EditFields(System.Int32)">
-            <param name="id">GroupID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_IntersectTypes">
-            <summary>
-            Gets a list of intersect types that support lineage.
-            </summary>
-            <returns>A list of relevant fusion attribute types.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_MapSubjects(System.Int32)">
-            <summary>
-            Gets a list of subjects based on the given intersect type.
-            </summary>
-            <param name="id">The Intersect Type's ID</param>
-            <returns>A list of name/value pairs.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_MapObjects(System.Int32)">
-            <summary>
-            Gets a list of objects based on the given intersect type.
-            </summary>
-            <param name="id">The Intersect Type's ID</param>
-            <returns>A list of name/value pairs.</returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.MapRule_FindFusion(System.Int32,System.String)">
             <summary>
@@ -3005,46 +2926,17 @@
             <param name="phrase">Part of the text path to search for.</param>
             <returns>A list of name/value pairs.</returns>
         </member>
-        <member name="M:d360.web.Controllers.FormController.MapRulesByMap(d360.web.Models.SourceTargetIntersectModel)">
-            <summary>
-            Gets a list of map rules based on the currently selected map.
-            </summary>
-            <param name="model">The intersectID we are searching under.</param>
-            <returns>A deep hierarchy of map rules.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.MapRulesByObject(d360.web.Models.SourceTargetIntersectModels)">
-            <summary>
-            Gets a list of map rules based on the currently selected object.
-            </summary>
-            <param name="models">A collection of source/target intersect IDs.</param>
-            <returns>A deep hierarchy of map rules.</returns>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Lookup_AddFields(System.Int32)">
             <param name="id">LookupTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Lookup_DeleteFields(System.Int32)">
-            <param name="id">LookupID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Lookup_EditFields(System.Int32)">
             <param name="id">LookupID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.LookupType_DeleteFields(System.Int32)">
-            <param name="id">LookupTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.LookupType_EditFields(System.Int32)">
-            <param name="id">LookupTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Organization_EditFields(System.Int32)">
             <param name="id">Organization ID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Organization_DeleteFields(System.Int32)">
-            <param name="id">ArtifactID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Contract_EditFields(System.Int32)">
             <param name="id">Contract ID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Contract_DeleteFields(System.Int32)">
-            <param name="id">ID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.OrganizationDomain_AddFields(System.Int32)">
             <param name="o">Organization ID</param>
@@ -3052,42 +2944,14 @@
         <member name="M:d360.web.Controllers.FormController.OrganizationDomain_EditFields(System.Int32)">
             <param name="id">Organization Domain ID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.OrganizationDomain_DeleteFields(System.Int32)">
-            <param name="id">ID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.OrganizationInvitation_AddFields(System.Int32)">
             <param name="o">Organization ID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.OrganizationInvitation_EditFields(System.Int32)">
             <param name="id">Organization Invitation ID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.OrganizationInvitation_DeleteFields(System.Int32)">
-            <param name="id">Organization Invitation ID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Policy_DeleteFields(System.Int32)">
-            <param name="id">PolicyID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Policy_EditFields(System.Int32)">
             <param name="id">PolicyID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.PolicyTypeLevel_DeleteFields(System.Int32,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="id">PolicyTypeID</param>
-            <param name="level">Level</param>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.PolicyTypeLevel_EditFields(System.Int32,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="id">PolicyTypeID</param>
-            <param name="level">Level</param>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Predicate_DeleteFields(System.Int32)">
-            <param name="id">PredicateID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Predicate_EditFields(System.Int32)">
             <param name="id">PredicateID</param>
@@ -3103,52 +2967,16 @@
             <param name="type">Object</param>
             <param name="id">ObjectID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Relationship_DeleteFields(System.Int32)">
-            <param name="id">RelationshipID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Relationship_EditFields(System.Int32)">
             <param name="id">RelationshipID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Report_DeleteFields(System.Int32)">
-            <param name="id">ID of the object</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ReportTile_DeleteFields(System.Int32)">
-            <param name="id">ID of the object</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Responsibility_DeleteFields(System.Int64)">
-            <param name="id">ResponsibilityTypeRelationOverrideItemID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponsibilityType_DeleteFields(System.Int32)">
-            <param name="id">ResponsibilityTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponsibilityType_EditFields(System.Int32)">
-            <param name="id">ResponsibilityTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponsibilityTypeRelationRule_DeleteFields(System.Int32)">
-            <param name="id">ResponsibilityTypeRelationRuleID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponsibilityTypeRelationRule_EditFields(System.Int32)">
-            <param name="id">ResponsibilityTypeRelationRuleID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Resource_AddFields(System.Int32)">
             <param name="id">ResourceTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Resource_DeleteFields(System.Int32)">
-            <param name="id">ResourceID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Resource_EditFields(System.Int32)">
             <param name="id">ResourceID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.QuestionType_DeleteFields(System.Int32)">
-            <param name="id">ResponseTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Rule_DeleteFields(System.Int32)">
-            <param name="id">RuleID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Rule_EditFields(System.Int32)">
-            <param name="id">RuleID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.RuleDimension_DeleteFields(System.Int32)">
             <param name="id">RuleID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.RuleDimension_EditFields(System.Int32)">
@@ -3157,55 +2985,21 @@
         <member name="M:d360.web.Controllers.FormController.RuleImplementation_AddFields(System.Int32)">
             <param name="ruleID">RuleID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.RuleImplementation_DeleteFields(System.Int32)">
-            <param name="id">RuleImplementationID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.RuleImplementation_EditFields(System.Int32)">
             <param name="id">RuleImplementationID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.RuleType_DeleteFields(System.Int32)">
-            <param name="id">PolicyTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.RuleType_EditFields(System.Int32)">
             <param name="id">PolicyTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.SurveyType_DeleteFields(System.Int32)">
-            <param name="id">SurveyTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.SurveyType_EditFields(System.Int32)">
             <param name="id">SurveyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Synonym_DeleteFields(System.Int32)">
-            <param name="id">Object's ID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Taxonomy_AddFields(System.Int32,System.Int32)">
             <param name="t">TaxonomyTypeID</param>
             <param name="p">ParentID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Taxonomy_DeleteFields(System.Int32)">
-            <param name="id">TaxonomyID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Taxonomy_EditFields(System.Int32)">
             <param name="id">TaxonomyID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TaxonomyType_DeleteFields(System.Int32)">
-            <param name="id">TaxonomyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_DeleteFields(System.Int32,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="id">TaxonomyTypeID</param>
-            <param name="level">Level</param>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_EditFields(System.Int32,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="id">TaxonomyTypeID</param>
-            <param name="level">Level</param>
-            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FieldsController._FieldTypesByObjectFull(d360.core.SystemObjects,System.Int32)">
             <summary>

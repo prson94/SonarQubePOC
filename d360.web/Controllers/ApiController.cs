@@ -444,11 +444,7 @@ namespace d360.web.Controllers
             else
                 return 0;
         }
-        string calculateStaticColumnWidth(int thisColumnWidth, decimal dynamicFieldWidth, int remainingWidth, int staticFieldCount)
-        {
-            return string.Format("{0}%", thisColumnWidth + ((dynamicFieldWidth == 0) ? remainingWidth / staticFieldCount : 0));
-        }
-
+        
         GridColumn getGridColumnForColumn(FieldType item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true, bool useNameAsDataField = false)
         {
             string cellsFormat = "";
@@ -5327,7 +5323,7 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField{ Name = "Type Name", FieldName = "TypeName", Value = template.ArtifactType.Name}
+                                new ReadOnlyField{ Name = "Artifact Type", FieldName = "TypeName", Value = template.ArtifactType.Name}
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
