@@ -9,13 +9,13 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
         &nbsp;
         <d3s-tile-actions hideTooltip="true" [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
     </header>
-    <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true">
+    <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">
             <tr>
                 <th>Field Name</th>
                 <th>Operator</th>
                 <th>Value</th>
-                <th></th>
+                <th *ngIf="!readonly"></th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
@@ -27,14 +27,14 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
                 <td>
                     {{(item['@Operator'] == 'C') ? '[any value change]' : (item['@ValueLabel'] == null ? item['@Value'] : item['@ValueLabel']) }}
                 </td>
-                <td>
+                <td *ngIf="!readonly">
                     <div class="RowTools">
                         <a style="cursor:pointer;" (click)="removeClick.emit(item)"><i class="fa fa-trash"></i></a>
                     </div>
                 </td>
             </tr>
         </ng-template>
-        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+        <ng-template pTemplate="summary">
             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
         </ng-template>
     </p-table>
