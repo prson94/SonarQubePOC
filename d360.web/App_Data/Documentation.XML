@@ -2712,18 +2712,20 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,System.Collections.Generic.List{System.Collections.Generic.Dictionary{System.String,System.String}})">
             <summary>
             Takes a given set of relationships and bulk inserts/updates them.
             </summary>
             <param name="uid">The unique identifier of the relationship type.</param>
+            <param name="relationships">The payload of your request. Must include SubjectUid and ObjectUid.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
             <summary>
             Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
             </summary>
             <param name="uid">The unique identifier of the intersect type.</param>
+            <param name="relationships">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetExecutionStatus(System.Guid)">

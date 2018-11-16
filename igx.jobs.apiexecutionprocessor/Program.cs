@@ -101,7 +101,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var postRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(dbExecutionItem.Fields);
                             intersectType = company.Filter<IntersectType>(i => i.uid == postRelationshipsFields.IntersectTypeUid).Single();
                             string postRelationshipsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
-                            var postRelationships = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(postRelationshipsJson);
+                            var postRelationships = JsonConvert.DeserializeObject<RelationshipInserts>(postRelationshipsJson);
 
                             var postRelationshipsResults = companyConnection.BulkRelationshipsImport(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, intersectType, postRelationships);
                             dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);

@@ -7,9 +7,20 @@ namespace d360.core.entities
 {
     [JsonArray]
     [DataContract(Name = "relationships")]
-    public class BulkRelationshipImport : List<RelationshipImportRequest>
+    public class RelationshipInserts : List<RelationshipInsert>
     {
 
+    }
+
+    
+    public class RelationshipInsert
+    {
+        [DataMember]
+        public Guid SubjectAssetUid { get; set; }
+        [DataMember]
+        public Guid ObjectAssetUid { get; set; }
+        [DataMember]
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
     public class RelationshipImportRequest

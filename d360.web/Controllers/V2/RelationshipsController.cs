@@ -129,15 +129,16 @@ where	coalesce(S.uid, I.SubjectUid) is not null
         /// Takes a given set of relationships and bulk inserts/updates them.
         /// </summary>
         /// <param name="uid">The unique identifier of the relationship type.</param>
+        /// <param name="relationships">The payload of your request. Must include SubjectUid and ObjectUid.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost, 
             MapToApiVersion("2.0"), 
             Route("{uid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),//, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk relationship results, including any error messages.", typeof(List<DatabaseBulkRelationshipResult>))
         ]
-        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid uid)
+        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid uid, List<Dictionary<string,string>> relationships)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships of this type.")));
@@ -151,14 +152,14 @@ where	coalesce(S.uid, I.SubjectUid) is not null
 
                 if (intersectType == null)
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with UID {uid} could not be found.")));
-
-                var import = readRequestJsonContent<List<Dictionary<string, string>>>(Request).Result;
+                if (relationships == null)
+                    relationships = readRequestJsonContent<List<Dictionary<string, string>>>(Request).Result;
 
                 var results = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(
                     QueueSource, 
                     Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID, 
-                    intersectType, 
-                    import);
+                    intersectType,
+                    relationships);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -176,6 +177,7 @@ where	coalesce(S.uid, I.SubjectUid) is not null
         /// Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
         /// </summary>
         /// <param name="uid">The unique identifier of the intersect type.</param>
+        /// <param name="relationships">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -185,7 +187,7 @@ where	coalesce(S.uid, I.SubjectUid) is not null
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid uid)
+        public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid uid, RelationshipInserts relationships)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
@@ -200,7 +202,8 @@ where	coalesce(S.uid, I.SubjectUid) is not null
                 if (intersectType == null)
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with UID {uid} could not be found.")));
 
-                var relationships = readRequestJsonContent<List<Dictionary<string,string>>>(Request).Result;
+                if (relationships == null)
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
 
                 var executionInfo = new ApiExecutionInfo
                 {

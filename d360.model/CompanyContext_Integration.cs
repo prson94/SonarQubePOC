@@ -1407,6 +1407,28 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             return results;
         }
 
+        public static List<DatabaseBulkRelationshipResult> BulkRelationshipsImport(this SqlConnection cnn,
+            IQueueSource queue,
+            string companyUrlPrefix,
+            int currentCompanyID,
+            int currentResourceID,
+            IntersectType rt,
+            RelationshipInserts import)
+        {
+            var values = new List<Dictionary<string, string>>();
+            import.ForEach(i =>
+            {
+                var dict = new Dictionary<string, string>();
+                dict.Add("SubjectUid", i.SubjectAssetUid.ToString());
+                dict.Add("ObjectUid", i.ObjectAssetUid.ToString());
+                foreach (var f in i.Fields)
+                    if (!dict.ContainsKey(f.Key))
+                        dict.Add(f.Key, f.Value);
+                values.Add(dict);
+            });
+
+            return BulkRelationshipsImport(cnn, queue, companyUrlPrefix, currentCompanyID, currentResourceID, rt, values);
+        }
         #endregion API v2 logic
 
         #region IGC integration logic
