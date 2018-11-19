@@ -21,8 +21,6 @@ namespace d360.model
 
         public DbSet<IntegrationExecution> IntegrationExecutions { get; set; }
 
-        public DbSet<IntegrationExecutionAsset> IntegrationExecutionAssets { get; set; }
-
         public DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
 
         public DbSet<IntegrationSetting> IntegrationSettings { get; set; }
@@ -1542,21 +1540,5 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
         }
 
         #endregion API v2 logic
-
-        #region IGC integration logic
-
-        public static IEnumerable<T> ProcessExecutionAssetType<T>(this SqlConnection cnn, long executionID, int synchedAssetTypeID, int assetTypeID, int resourceID, int section)
-        {
-            if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-            return cnn.Query<T>(
-                "exec integration.ProcessExecutionAssetType @executionID, @synchedAssetTypeID, @assetTypeID, @resourceID, @section",
-                new { executionID, synchedAssetTypeID, assetTypeID, resourceID, section },
-                commandTimeout: 7200
-                );
-        }
-
-        #endregion IGC integration logic
     }
 }

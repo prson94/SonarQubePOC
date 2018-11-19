@@ -1014,3 +1014,6 @@ begin
 end
 GO
 ------------------------------------------------------------------
+
+CREATE NONCLUSTERED INDEX [IX_FusionAttribute_TypeID_SourceID] ON [dbo].[FusionAttribute] ([FusionAttributeTypeID], [SourceID]) WITH (ONLINE = ON)
+GO;

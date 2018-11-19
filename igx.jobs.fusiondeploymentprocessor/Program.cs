@@ -77,7 +77,7 @@ namespace igx.jobs.fusiondeploymentprocessor
 
         const string functionName = "FusionDeployment_Process";
 #if DEBUG
-        const string timerSettings = "*/5 * * * * *";
+        const string timerSettings = "*/1 * * * * *";
 #else
         const string timerSettings = "0 */15 * * * *";
 #endif
@@ -107,7 +107,7 @@ from	plugin.FusionAttributeType A
                 community.Dispose();
 
 #if DEBUG
-                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 15 || i.CompanyID == 110 || i.CompanyID == 8).ToList();
+                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 187).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -119,9 +119,9 @@ from	plugin.FusionAttributeType A
                     {
                         #region Lists
 
-#if DEBUG
-                        clientFusionTypes = clientFusionTypes.Where(i => i.FusionTypeID == 26).ToList();
-#endif
+//#if DEBUG
+//                        clientFusionTypes = clientFusionTypes.Where(i => i.FusionTypeID == 26).ToList();
+//#endif
 
                         var c_FusionTypes = (
                             from cft in clientFusionTypes
