@@ -2076,3 +2076,9 @@ set Definition = replace(Definition, '"FieldTypeName":"DateLastLoggedIn"', '"Fie
 where Definition like '%DatelastLoggedIn%';
 GO
 ------------------------------------------------------------------
+
+------------------------------------------------------------------
+-- GOV-5959
+-- clean up unused code / objects
+------------------------------------------------------------------
+drop table dbo.[language]

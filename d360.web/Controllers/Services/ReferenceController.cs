@@ -304,12 +304,6 @@ namespace d360.web.Controllers.Services
         public IQueryable<ReferenceItemType> GetReferenceLists()
         {
             return Company.Table<ReferenceItemType>();
-        }
-
-        [Route("languages"), HttpGet]
-        public IQueryable<Language> GetLanguages()
-        {
-            return Company.Languages.AsQueryable();
-        }
+        }        
     }
 }

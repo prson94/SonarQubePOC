@@ -184,8 +184,6 @@ namespace d360.model
 
         public DbSet<IssueTypeRelation> IssueTypeRelations { get; set; }
 
-        public DbSet<Language> Languages { get; set; }
-
         public DbSet<Lookup> Lookups { get; set; }
 
         public DbSet<LookupType> LookupTypes { get; set; }
@@ -1621,84 +1619,6 @@ where	R.SourceObject = 'FusionAttribute'
             sql += " ORDER BY I.Name";
 
             return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
-        }
-
-        internal class RelationModel
-        {
-            public int ID { get; set; }
-            public int IntersectTypeID { get; set; }
-            public string Object { get; set; }
-            public int ObjectID { get; set; }
-            public string Name { get; set; }
-            public string Type { get; set; }
-            public int TypeID { get; set; }
-            public string TypeName { get; set; }
-            public string IconBackColor { get; set; }
-            public string IconForeColor { get; set; }
-            public string IconText { get; set; }
-        }
-
-        /// <summary>
-        /// Gets a list of relationship counts for a given object, broken up by All Glossary Items, Critical Glossary ITems, and All Models.
-        /// </summary>
-        /// <param name="type">The type of object</param>
-        /// <param name="id">The ID of the object</param>
-        /// <returns>A list of aggregate relationship data. <seealso cref="RelationshipAggregate"/></returns>
-        public List<RelationshipAggregate> GetAggregateRelationshipBreakdownsByObject(SystemObjects type, int id)
-        {
-            var list = new List<RelationshipAggregate>();
-            var models = Query<RelationModel>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
-            list.AddRange(
-                models.Where(i => i.Object != "Taxonomy")
-                    .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText } )
-                    .Select(i => new RelationshipAggregate {
-                        Group = "1",
-                        GroupName = "All Glossary Items",
-                        Count = i.Count(),
-                        IconBackColor = i.Key.IconBackColor,
-                        IconForeColor = i.Key.IconForeColor,
-                        IconText = i.Key.IconText,
-                        IntersectTypeID = i.Key.IntersectTypeID,
-                        Type = i.Key.Type,
-                        TypeID = i.Key.TypeID,
-                        TypeName = i.Key.TypeName
-                    }).OrderBy(i => i.TypeName)
-                );
-            list.AddRange(
-                models.Where(i => i.Object != "Taxonomy")
-                    .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText })
-                    .Select(i => new RelationshipAggregate
-                    {
-                        Group = "2",
-                        GroupName = "Critical Glossary Items",
-                        Count = i.Count(),
-                        IconBackColor = i.Key.IconBackColor,
-                        IconForeColor = i.Key.IconForeColor,
-                        IconText = i.Key.IconText,
-                        IntersectTypeID = i.Key.IntersectTypeID,
-                        Type = i.Key.Type,
-                        TypeID = i.Key.TypeID,
-                        TypeName = i.Key.TypeName
-                    }).OrderBy(i => i.TypeName)
-                );
-            list.AddRange(
-                models.Where(i => i.Object == "Taxonomy")
-                    .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText })
-                    .Select(i => new RelationshipAggregate
-                    {
-                        Group = "3",
-                        GroupName = "All Models",
-                        Count = i.Count(),
-                        IconBackColor = i.Key.IconBackColor,
-                        IconForeColor = i.Key.IconForeColor,
-                        IconText = i.Key.IconText,
-                        IntersectTypeID = i.Key.IntersectTypeID,
-                        Type = i.Key.Type,
-                        TypeID = i.Key.TypeID,
-                        TypeName = i.Key.TypeName
-                    }).OrderBy(i => i.TypeName)
-                );
-            return list;
         }
 
         #endregion

@@ -163,7 +163,6 @@
     <Compile Include="entities\Relation\MapSequenceContext.cs" />
     <Compile Include="entities\Relation\MapSequence.cs" />
     <Compile Include="entities\Relation\Map.cs" />
-    <Compile Include="entities\Language.cs" />
     <Compile Include="entities\Community\Plugins\FusionTypeField.cs" />
     <Compile Include="entities\Community\Plugins\FusionAttributeTypeField.cs" />
     <Compile Include="entities\Community\Environment.cs" />
