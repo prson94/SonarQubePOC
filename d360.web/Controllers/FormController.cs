@@ -2482,7 +2482,7 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 57, formModel.ShowAllUsersAPIKey.ToString().ToLower());
                 updateCompanySetting(settings, 58, formModel.WorkflowCatchAllGroup.ToString());
                 updateCompanySetting(settings, 59, formModel.WorkflowDigestEmailEnabled.ToString().ToLower());
-                updateCompanySetting(settings, 60, formModel.MaxDropdownItems.ToString());
+                updateCompanySetting(settings, 60, Math.Abs(formModel.MaxDropdownItems).ToString());
 
                 #endregion
 
