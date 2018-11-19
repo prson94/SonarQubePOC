@@ -10,7 +10,6 @@ using d360.extensions.storage;
 using d360.model;
 using d360.utils.company;
 using Dapper;
-using igx.jobs;
 using igx.jobs.igc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -19,11 +18,11 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -87,7 +86,7 @@ namespace igx.jobs
                         if (settings.Count > 0)
                         {
 #if DEBUG
-                            var IDs = new List<int>() { 1 }; //, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+                            var IDs = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }; //, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
 #else
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
@@ -104,10 +103,19 @@ namespace igx.jobs
                                     cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                                 cnn.Execute(@"
+update  T
+set     T.CompletedOn = getutcdate()
+from    integration.ExecutionAssetType T
+        cross apply openjson(T.RetryLog) with (RetryCount int '$.RetryCount') R 
+where   T.CompletedOn is null
+        and R.RetryCount >= 10");
+
+                                cnn.Execute(@"
 declare @dt datetime
 set @dt = getutcdate()
 
-delete  T
+update  T
+set     T.CompletedOn = getutcdate()
 from	integration.ExecutionAsset T
 		inner join integration.ExecutionAssetType EA on EA.ExecutionID = T.ExecutionID and EA.SynchedAssetTypeID = T.SynchedAssetTypeID
 		inner join integration.SynchedAssetType A on A.ID = T.SynchedAssetTypeID
@@ -115,7 +123,8 @@ from	integration.ExecutionAsset T
 where	EA.CompletedOn is null
 		and EA.StartedOn < DATEADD(hh, -(coalesce(A.DeleteExecutionTimeoutHours, S.DeleteExecutionTimeoutHours)), @dt)
 
-delete  T
+update  T
+set     T.CompletedOn = getutcdate()
 from	integration.ExecutionAssetType T
 		inner join integration.SynchedAssetType A on A.ID = T.SynchedAssetTypeID
 		inner join integration.Setting S on S.ID = A.IntegrationSettingID
@@ -213,19 +222,27 @@ where		T.CompletedOn is null
 
     public class IgcIntegrationEngine
     {
-        public event EventHandler<PageBeginValueUpdatedEventArgs> PageBeginValueUpdated;
+        #region Events
 
+        public event EventHandler<PageBeginValueUpdatedEventArgs> PageBeginValueUpdated;
         protected virtual void OnPageBeginValueUpdated(PageBeginValueUpdatedEventArgs e)
         {
             PageBeginValueUpdated?.Invoke(this, e);
         }
 
         public event EventHandler<PageErrorCapturedEventArgs> PageErrorCaptured;
-
         protected virtual void OnPageErrorCaptured(PageErrorCapturedEventArgs e)
         {
             PageErrorCaptured?.Invoke(this, e);
         }
+
+        public event EventHandler<StepCompletedEventArgs> StepCompleted;
+        protected virtual void OnStepCompleted(StepCompletedEventArgs e)
+        {
+            StepCompleted?.Invoke(this, e);
+        }
+
+        #endregion
 
         const string functionName = "IGC_Integration";
 
@@ -282,13 +299,22 @@ where		T.CompletedOn is null
 
         public CompanyContext Company { get; set; }
 
+        public int DefaultResourceID { get; set; }
+
         #endregion
+
+        #region ctor
 
         public IgcIntegrationEngine()
         {
             PageBeginValueUpdated += IgcIntegrationEngine_PageBeginValueUpdated;
             PageErrorCaptured += IgcIntegrationEngine_PageErrorCaptured;
+            StepCompleted += IgcIntegrationEngine_StepCompleted;
         }
+
+        #endregion
+
+        #region Event Handlers
 
         private void IgcIntegrationEngine_PageErrorCaptured(object sender, PageErrorCapturedEventArgs e)
         {
@@ -332,6 +358,21 @@ where		T.CompletedOn is null
             }
         }
 
+        private void IgcIntegrationEngine_StepCompleted(object sender, StepCompletedEventArgs e)
+        {
+            ExecutionAssetTypeRetryLog.LastStepCompleted = e.Step;
+            try
+            {
+                ExecutionAssetType.RetryLog = JsonConvert.SerializeObject(ExecutionAssetTypeRetryLog);
+                Company.Update(ExecutionAssetType);
+            }
+            catch
+            {
+            }
+        }
+
+        #endregion
+
         public void RunSingle()
         {
             var Caching = new DummyCachingProvider();
@@ -356,68 +397,75 @@ where		T.CompletedOn is null
             var roles = Company.Filter<IntegrationAssetTypeRoleItem>(i => i.Active && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
 
             #region Get global settings
+
             var setting = Company.GetById<IntegrationSetting>(QueueModel.IntegrationSettingID);
             string baseUri = setting.SourceUri;
             int defaultPageSize = setting.PageSize;
             int defaultRefreshInterval = setting.RefreshInterval;
-            int defaultResourceID = setting.TargetResourceID;
+            DefaultResourceID = setting.TargetResourceID;
             AuthenticationHeaderValue = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
             setting = null;
+
             #endregion
 
             var now = DateTime.UtcNow;
             string url;
+            int currentStep = 1;
 
+            #region Get type definition: step (1)
 
-            #region Get type definition
-
-            try
+            if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
             {
-                // First, get the type definition of the asset type, to pull enum values.
-                url = $"{baseUri}types/{SynchedAssetType.SourceAssetTypeName}?showEditProperties=true";
-
-                var igcType = GetFromApi<IgcTypeModel>(url).Result;
-
-                if (igcType != null)
+                try
                 {
-                    var enumValues = new List<EnumResolutionModel>();
+                    // First, get the type definition of the asset type, to pull enum values.
+                    url = $"{baseUri}types/{SynchedAssetType.SourceAssetTypeName}?showEditProperties=true";
 
-                    ExecutionAssetType.RawDefinition = JsonConvert.SerializeObject(igcType);
+                    var igcType = GetFromApi<IgcTypeModel>(url).Result;
 
-                    igcType.EditInfo.Properties.ForEach(p =>
+                    if (igcType != null)
                     {
-                        if (p.Type.Name == "enum")
+                        var enumValues = new List<EnumResolutionModel>();
+
+                        ExecutionAssetType.RawDefinition = JsonConvert.SerializeObject(igcType);
+
+                        igcType.EditInfo.Properties.ForEach(p =>
                         {
-                            if (p.Type.Values != null)
+                            if (p.Type.Name == "enum")
                             {
-                                enumValues.AddRange(p.Type.Values.Select(i => new EnumResolutionModel
+                                if (p.Type.Values != null)
                                 {
-                                    PropertyName = p.Name,
-                                    Code = i.Code,
-                                    DisplayValue = i.DisplayName
-                                }));
+                                    enumValues.AddRange(p.Type.Values.Select(i => new EnumResolutionModel
+                                    {
+                                        PropertyName = p.Name,
+                                        Code = i.Code,
+                                        DisplayValue = i.DisplayName
+                                    }));
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    if (enumValues.Count > 0)
-                    {
-                        ExecutionAssetType.EnumFieldValues = JsonConvert.SerializeObject(enumValues);
+                        if (enumValues.Count > 0)
+                        {
+                            ExecutionAssetType.EnumFieldValues = JsonConvert.SerializeObject(enumValues);
+                        }
+
+                        Company.Update(ExecutionAssetType);
                     }
 
-                    Company.Update(ExecutionAssetType);
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
-            }
-            catch (HttpRequestException rex)
-            {
-                if (rex.Message.Contains("403 (Forbidden)"))
+                catch (HttpRequestException rex)
                 {
-                    throw rex;
+                    if (rex.Message.Contains("403 (Forbidden)"))
+                    {
+                        throw rex;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
+                catch (Exception ex)
+                {
+                    CoreFunction.AITrackException(functionName, ex);
+                }
             }
 
             #endregion
@@ -450,7 +498,7 @@ where		T.CompletedOn is null
 
                 var errors = new List<string>();
                 var errorBegins = new List<int?>();
-                var hasRootError = false;   //Used to determine if we should run the stored proecdure called (Section=0) that actually deletes assets. If an error occured do not try to delete.
+                //var hasRootError = false;   //Used to determine if we should run the stored proecdure called (Section=0) that actually deletes assets. If an error occured do not try to delete.
 
                 #region Delta or Full Refresh
 
@@ -506,8 +554,9 @@ where		T.CompletedOn is null
 
                 #endregion
 
-                Storage.CreateFolder($"igc-{Company.CurrentCompanyID}");
-                var rootFolderName = $"{ExecutionAssetType.ExecutionID}.{ExecutionAssetType.SynchedAssetTypeID}"; // storage folder.
+                var rootFolderName = $"{Company.CurrentCompanyID}/{ExecutionAssetType.SynchedAssetTypeID}/{ExecutionAssetType.ExecutionID}"; // storage folder.
+
+                #region Get data from IGC itself.
 
                 Func<PageDataClass, bool> parsePostModel = delegate (PageDataClass c)
                 {
@@ -545,185 +594,296 @@ where		T.CompletedOn is null
                     return true;
                 };
 
-                // Fields Request
-                parsePostModel(PageDataClass.Fields);
-                var igcReportedAssetCount = processAssetPages(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/fields", PageDataClass.Fields);
-                ExecutionAssetType.CurrentSourceAssetCount = igcReportedAssetCount;
-                Company.Update(ExecutionAssetType);
+                // Fields Request : step (2)
+                currentStep = 2;
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                {
+                    parsePostModel(PageDataClass.Fields);
+                    var igcReportedAssetCount = DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/fields", PageDataClass.Fields);
+                    ExecutionAssetType.CurrentSourceAssetCount = igcReportedAssetCount;
+                    Company.Update(ExecutionAssetType);
 
-                // Relations request
-                parsePostModel(PageDataClass.Relations);
-                processAssetPages(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/relations", PageDataClass.Relations);
-                
-                // Ownership request
-                parsePostModel(PageDataClass.Responsibilities);
-                processAssetPages(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/owners", PageDataClass.Responsibilities);
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
 
-                // Save to database staging tables.
-                saveToEnvironmentDatabase(cnn, Company.CurrentCompanyID, ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, Company.CurrentResourceID, !checkForChangesOnly);
+                // Relations Request : step (3)
+                currentStep = 3;
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                {
+                    parsePostModel(PageDataClass.Relations);
+                    DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/relations", PageDataClass.Relations);
 
-                #region Load into the Field working table
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
 
-                // Load JSON field data into execution Asset Field table
-                cnn.Execute(
-                    @"delete F from integration.ExecutionAssetField F inner join integration.ExecutionAsset A on A.ExecutionID = @ExecutionID and A.SynchedAssetTypeID = @SynchedAssetTypeID and A.[Uid] = F.[Uid]", 
-                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID }, 
-                    commandTimeout: 3600
-                );
+                // Ownership Request : step (4)
+                currentStep = 4;
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                {
+                    parsePostModel(PageDataClass.Responsibilities);
+                    DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/owners", PageDataClass.Responsibilities);
 
-                // Load JSON field data into execution Asset Field table
-                cnn.Execute(@"
-insert into integration.ExecutionAssetField
-	select	EA.Uid,
-			1 as Section,
-			RF.[key] as FieldName,
-			RF.[value] as FieldValue
-	from	integration.ExecutionAsset EA
-			cross apply OPENJSON(EA.RawObject) RF	
-	where	EA.ExecutionID = @ExecutionID and EA.SynchedAssetTypeID = @SynchedAssetTypeID
-", new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 3600);
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
 
-                // Load JSON relationship data into execution Asset Field table
-                cnn.Execute(@"
-insert into integration.ExecutionAssetField
-	select	EA.Uid,
-			2 as Section,
-			RF.[key] as FieldName,
-			RIF.items as FieldValue
-	from	integration.ExecutionAsset EA
-			cross apply OPENJSON(EA.RawRelationships) RF	
-			inner join [integration].[SynchedAssetTypeRelationItem] R on R.SynchedAssetTypeID = EA.SynchedAssetTypeID and R.[SourceField] = RF.[key] COLLATE DATABASE_DEFAULT and RF.[key] is not null
-			outer apply OPENJSON(RF.[value]) with (items nvarchar(max) '$.items' as json) RIF
-	where	EA.ExecutionID = @ExecutionID and EA.SynchedAssetTypeID = @SynchedAssetTypeID
-			and EA.RawRelationships is not null 
-			and RIF.items <> '[]'
-", new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 3600);
+                #endregion
 
-                // Load JSON responsibility data into execution Asset Field table
-                cnn.Execute(@"
-insert into integration.ExecutionAssetField
-	select	EA.Uid,
-			3 as Section,
-			RF.[key] as FieldName,
-			RF.[value] as FieldValue
-	from	integration.ExecutionAsset EA
-			cross apply OPENJSON(EA.RawResponsibilitites) RF	
-			inner join [integration].[SynchedAssetTypeRoleItem] R on R.SynchedAssetTypeID = EA.SynchedAssetTypeID and R.SourceIdField = RF.[key] COLLATE DATABASE_DEFAULT
-	where	EA.ExecutionID = @ExecutionID and EA.SynchedAssetTypeID = @SynchedAssetTypeID
-			and EA.RawResponsibilitites is not null 
-", new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 3600);
+                #region  Common set of variables we will use on next 3 steps below.
 
-                #endregion  
+                int requestNumber = 0;
+                int totalPageCount = 0;
+                string path = "";
+                List<StorageFileInfo> pages = null;
+                var procedureCommand = "exec integration.ProcessExecutionAssetType @ExecutionID, @SynchedAssetTypeID, @requestNumber, @AssetTypeID, @r, @section";
 
-                Func<int, DateTime> processStep = delegate (int section) {
-                    DateTime start = DateTime.UtcNow;
-                    try
+                #endregion
+
+                #region Field Data
+
+                currentStep = 5;
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                {
+                    path = $"igc/{rootFolderName}/fields";
+                    pages = Storage.ListFiles(path);
+                    requestNumber = 1;
+                    totalPageCount = pages.Count;
+
+                    foreach (var p in pages)
                     {
-                        Log.WriteLine($"Begin: Processing Section {section}");
-                        if (section == 0)
+                        var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
+
+                        if (page.items.Count > 0)
                         {
-                            if (!hasRootError && !checkForChangesOnly)
+                            var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 1, requestNumber, fields.Select(i => i.SourceField).ToList());          // step (5)
+
+                            if (hasChanges)
                             {
-                                cnn.ProcessExecutionAssetType<dynamic>(ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, SynchedAssetType.AssetTypeID, defaultResourceID, section);
+                                if (cnn.State != System.Data.ConnectionState.Open)
+                                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                                // Section 0 : Asset
+                                cnn.Query<dynamic>(
+                                    procedureCommand, 
+                                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 0 }, 
+                                    commandTimeout: 3600);
+
+                                // Section 1 : Fields
+                                cnn.Query<dynamic>(
+                                    procedureCommand,
+                                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 1 },
+                                    commandTimeout: 3600);
                             }
                         }
-                        else if (section == 2)
+
+                        requestNumber++;
+                    }
+
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
+
+                #endregion
+
+                #region Relationship Data
+
+                currentStep = 6;
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                {
+                    path = $"igc/{rootFolderName}/relations";
+                    pages = Storage.ListFiles(path);
+                    requestNumber = 1;
+                    totalPageCount = pages.Count;
+
+                    foreach (var p in pages)
+                    {
+                        var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
+                        if (page.items.Count > 0)
                         {
-                            var relationshipActions = cnn.ProcessExecutionAssetType<RelationshipAction>(ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, SynchedAssetType.AssetTypeID, defaultResourceID, 2);
+                            var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 2, requestNumber, relations.Select(i => i.SourceField).ToList());          // step (5)
 
-                            #region Send Relationship Events
-
-                            try
+                            if (hasChanges)
                             {
-                                var queue = new AzureQueueSource();
+                                if (cnn.State != System.Data.ConnectionState.Open)
+                                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                                var events = new List<EventInfo>();
+                                // Section 2 : Relationships
+                                var relationshipActions = cnn.Query<RelationshipAction>(
+                                    procedureCommand,
+                                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 2 },
+                                    commandTimeout: 14400);
 
-                                if (SynchedAssetType.TriggerTopicMessage)
+                                #region Send Relationship Events
+
+                                try
                                 {
-                                    int lastIntersectID = 0;
+                                    var queue = new AzureQueueSource();
 
-                                    foreach (var relationshipAction in relationshipActions)
+                                    var events = new List<EventInfo>();
+
+                                    if (SynchedAssetType.TriggerTopicMessage)
                                     {
-                                        var changeType = ChangeType.Add;
+                                        int lastIntersectID = 0;
 
-                                        switch (relationshipAction.Action)
+                                        foreach (var relationshipAction in relationshipActions)
                                         {
-                                            case "D":
-                                                changeType = ChangeType.Delete;
-                                                break;
-                                            case "U":
-                                                changeType = ChangeType.Update;
-                                                break;
-                                        }
+                                            var changeType = ChangeType.Add;
 
-                                        // Check to make sure we do not send multiple workflows out for the same intersect ID.
-                                        if (relationshipAction.IntersectID != lastIntersectID)
-                                        {
-                                            events.Add(new EventInfo
+                                            switch (relationshipAction.Action)
                                             {
-                                                CompanyID = Company.CurrentCompanyID,
-                                                DomainPrefix = QueueModel.UrlPrefix,
-                                                ResourceID = defaultResourceID,
-                                                Action = changeType,
-                                                Object = new EventObjectInfo
+                                                case "D":
+                                                    changeType = ChangeType.Delete;
+                                                    break;
+                                                case "U":
+                                                    changeType = ChangeType.Update;
+                                                    break;
+                                            }
+
+                                            // Check to make sure we do not send multiple workflows out for the same intersect ID.
+                                            if (relationshipAction.IntersectID != lastIntersectID)
+                                            {
+                                                events.Add(new EventInfo
                                                 {
-                                                    Object = SystemObjects.Intersect,
-                                                    ObjectType = SystemObjects.IntersectType,
-                                                    ObjectID = relationshipAction.IntersectID,
-                                                    ObjectTypeID = relationshipAction.IntersectTypeID
-                                                }
-                                            });
-                                        }
+                                                    CompanyID = Company.CurrentCompanyID,
+                                                    DomainPrefix = QueueModel.UrlPrefix,
+                                                    ResourceID = DefaultResourceID,
+                                                    Action = changeType,
+                                                    Object = new EventObjectInfo
+                                                    {
+                                                        Object = SystemObjects.Intersect,
+                                                        ObjectType = SystemObjects.IntersectType,
+                                                        ObjectID = relationshipAction.IntersectID,
+                                                        ObjectTypeID = relationshipAction.IntersectTypeID
+                                                    }
+                                                });
+                                            }
 
-                                        if (events.Count > 50)
-                                        {
-                                            queue.CreateTopicMessages(events);
-                                            events.Clear();
-                                        }
+                                            if (events.Count > 50)
+                                            {
+                                                queue.CreateTopicMessages(events);
+                                                events.Clear();
+                                            }
 
-                                        lastIntersectID = relationshipAction.IntersectID;
+                                            lastIntersectID = relationshipAction.IntersectID;
+                                        }
+                                    }
+
+                                    if (events.Count > 0)
+                                    {
+                                        queue.CreateTopicMessages(events);
+                                        events.Clear();
                                     }
                                 }
-
-                                if (events.Count > 0)
+                                catch (Exception wex)
                                 {
-                                    queue.CreateTopicMessages(events);
-                                    events.Clear();
+                                    Log.WriteLine($"Workflow error - Company: {QueueModel.CompanyID}, Exception: {wex.GetFullExceptionData()}");
+                                    CoreFunction.AITrackException(functionName, wex);
                                 }
-                            }
-                            catch (Exception wex)
-                            {
-                                Log.WriteLine($"Workflow error - Company: {QueueModel.CompanyID}, Exception: {wex.GetFullExceptionData()}");
-                                CoreFunction.AITrackException(functionName, wex);
-                            }
 
-                            #endregion
+                                #endregion
+                            }
                         }
-                        else
+
+                        requestNumber++;
+                    }
+
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
+
+                #endregion
+
+                #region Responsibility Data
+
+                currentStep = 7;
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                {
+                    path = $"igc/{rootFolderName}/owners";
+                    pages = Storage.ListFiles(path);
+                    requestNumber = 1;
+                    totalPageCount = pages.Count;
+
+                    foreach (var p in pages)
+                    {
+                        var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
+
+                        if (page.items.Count > 0)
                         {
-                            cnn.ProcessExecutionAssetType<dynamic>(ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, SynchedAssetType.AssetTypeID, defaultResourceID, section);
+                            var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 3, requestNumber, roles.Select(i => i.SourceIdField).ToList());
+
+                            if (hasChanges)
+                            {
+                                if (cnn.State != System.Data.ConnectionState.Open)
+                                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                                // Section 3 : Fields
+                                cnn.Query<dynamic>(
+                                    procedureCommand,
+                                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 3 },
+                                    commandTimeout: 7200);
+                            }
                         }
-                    }
-                    catch (Exception rex)
-                    {
-                        Log.WriteLine($"Error - Company: {QueueModel.CompanyID}, Exception: {rex.GetFullExceptionData()}");
-                        CoreFunction.AITrackException(functionName, rex);
-                    }
-                    finally
-                    {
-                        DateTime end = DateTime.UtcNow;
-                        Log.WriteLine($"End: Processing Section {section}. Took {end.Subtract(start).Minutes} minutes, {end.Subtract(start).Seconds} seconds.");
+                        
+                        requestNumber++;
                     }
 
-                    return DateTime.UtcNow;
-                };
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
 
-                processStep(0); // Section 0 : Asset
-                processStep(1); // Section 1 : Fields
-                processStep(2); // Section 2 : Relationships
-                processStep(3); // Section 3 : Responsibilities
-                processStep(4); // Section 4 : Capture metrics for this run
+                #endregion
+
+                #region Metrics
+
+                currentStep = 8;
+                if (cnn.State != System.Data.ConnectionState.Open)
+                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                // Section 4 : Gather metric on this run
+                cnn.Query<dynamic>(
+                    procedureCommand,
+                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 4 },
+                    commandTimeout: 3600);
+
+                OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+
+                #endregion
+
+                #region Perform asset deletions, if full refresh
+
+                currentStep = 9;
+                if (!checkForChangesOnly)
+                {
+                    // You can do a delete based on asset hash missing attributes.
+                    if (cnn.State != System.Data.ConnectionState.Open)
+                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    // Section 3 : Fields
+                    cnn.Query<dynamic>(
+                        procedureCommand,
+                        new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 5 },
+                        commandTimeout: 3600);
+
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
+
+                #endregion
+
+                // Clear out execution asset json table.
+                currentStep = 10;
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                {
+                    if (cnn.State != System.Data.ConnectionState.Open)
+                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Execute("delete integration.ExecutionAssetField where SynchedAssetTypeID = @at", new { at = ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 7200);
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
+
+                // Clean up asset hash table.
+                currentStep = 11;
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                {
+                    if (cnn.State != System.Data.ConnectionState.Open)
+                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Execute("update integration.AssetHash set RequestNumber = null, [Action] = null where SynchedAssetTypeID = @at", new { at = ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 7200);
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
 
                 // Set the last synch time so we can start the next delta check from this date.
                 SynchedAssetType.LastSynchOn = now;
@@ -737,7 +897,7 @@ insert into integration.ExecutionAssetField
                     ExecutionAssetTypeRetryLog.RetryCount++;
 
                     ExecutionAssetType.ProcessedDelete = true;
-                    ExecutionAssetType.ErrorMessage += oex.GetFullExceptionData();
+                    ExecutionAssetType.ErrorMessage += oex.GetFullExceptionData() + " Stack: " + oex.StackTrace;
                 }
                 catch (Exception cex)
                 {
@@ -776,202 +936,42 @@ insert into integration.ExecutionAssetField
             }
         }
 
-        #region Generic
+        #region Utils
 
-        void saveToEnvironmentDatabase(SqlConnection cnn, int companyID, long executionID, int synchedAssetTypeID, int resourceID, bool fullRefresh)
+        string CalculateHash(string input)
         {
-            var rootFolder = $"igc-{companyID}";
-            var assetFolderName = $"{executionID}.{synchedAssetTypeID}"; // storage folder.
-            var path = "";
-            List<StorageFileInfo> pages = null;
+            MD5 md5 = MD5.Create();
 
-            var list = new HashSet<IntegrationExecutionAsset>();
+            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
 
-            path = $"{rootFolder}/{assetFolderName}/fields";
-            pages = Storage.ListFiles(path);
+            byte[] hash = md5.ComputeHash(inputBytes);
 
-            pages.ForEach(p => {
-                IgcDynamicArrayModels page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
-                if (page.items.Count > 0)
-                {
-                    foreach (var obj in page.items.Children())
-                    {
-                        var sourceID = obj["_id"].Value<string>();
-
-                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
-                        if (executionAsset == null)
-                        {
-                            executionAsset = new IntegrationExecutionAsset
-                            {
-                                ExecutionID = executionID,
-                                SynchedAssetTypeID = synchedAssetTypeID,
-                                SourceID = sourceID,
-                                RawObject = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
-                            };
-                            list.Add(executionAsset);
-                        }
-                    }
-                }
-            });
-
-            path = $"{rootFolder}/{assetFolderName}/owners";
-            pages = Storage.ListFiles(path);
-
-            pages.ForEach(p => {
-                IgcDynamicArrayModels page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
-                if (page.items.Count > 0)
-                {
-                    foreach (var obj in page.items.Children())
-                    {
-                        var sourceID = obj["_id"].Value<string>();
-
-                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
-
-                        if (executionAsset != null)
-                        {
-                            executionAsset.RawResponsibilitites = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
-                        }
-                        else
-                        {
-                            executionAsset = new IntegrationExecutionAsset
-                            {
-                                ExecutionID = executionID,
-                                SynchedAssetTypeID = synchedAssetTypeID,
-                                SourceID = sourceID,
-                                RawResponsibilitites = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
-                            };
-                            list.Add(executionAsset);
-                        }
-                    }
-                }
-            });
-
-            path = $"{rootFolder}/{assetFolderName}/relations";
-            pages = Storage.ListFiles(path);
-
-            pages.ForEach(p => {
-                IgcDynamicArrayModels page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
-                if (page.items.Count > 0)
-                {
-                    foreach (var obj in page.items.Children())
-                    {
-                        var sourceID = obj["_id"].Value<string>();
-
-                        IntegrationExecutionAsset executionAsset = list.SingleOrDefault(i => i.SourceID == sourceID);
-
-                        if (executionAsset != null)
-                        {
-                            executionAsset.RawRelationships = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
-                        }
-                        else
-                        {
-
-                            executionAsset = new IntegrationExecutionAsset
-                            {
-                                ExecutionID = executionID,
-                                SynchedAssetTypeID = synchedAssetTypeID,
-                                SourceID = sourceID,
-                                RawRelationships = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter())
-                            };
-                            list.Add(executionAsset);
-                        }
-                    }
-                }
-            });
-
-            #region Save to database via Bulk Insert
-
-            var assetTable = new System.Data.DataTable();
-
-            assetTable.Columns.Add("Uid", typeof(Guid));
-
-            assetTable.Columns.Add("ExecutionID", typeof(long));
-            assetTable.Columns.Add("SynchedAssetTypeID", typeof(int));
-            assetTable.Columns.Add("SourceID", typeof(string));
-
-            assetTable.Columns.Add("RawObject", typeof(string));
-            assetTable.Columns.Add("RawRelationships", typeof(string));
-            assetTable.Columns.Add("RawResponsibilitites", typeof(string));
-
-            assetTable.Columns.Add("ErrorMessages", typeof(string));
-
-            var loadedAssetIDs = new List<string>();
-            foreach(var a in list)//list.ForEach(a =>
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < hash.Length; i++)
             {
-                if (!loadedAssetIDs.Contains(a.SourceID))
-                {
-                    loadedAssetIDs.Add(a.SourceID);
-
-                    var row = assetTable.NewRow();
-
-                    row["Uid"] = a.Uid;
-
-                    row["ExecutionID"] = a.ExecutionID;
-                    row["SynchedAssetTypeID"] = a.SynchedAssetTypeID;
-                    row["SourceID"] = a.SourceID;
-
-                    row["RawObject"] = a.RawObject;
-                    row["RawRelationships"] = a.RawRelationships;
-                    row["RawResponsibilitites"] = a.RawResponsibilitites;
-
-                    row["ErrorMessages"] = a.ErrorMessages;
-
-                    assetTable.Rows.Add(row);
-                }
-            }//);
-
-            if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-
-            using (var trans = cnn.BeginTransaction())
-            {
-                try
-                {
-                    if (fullRefresh)
-                    {
-                        cnn.Execute("delete integration.ExecutionAsset where SynchedAssetTypeID = @at", new { at = synchedAssetTypeID }, transaction: trans, commandTimeout: 3600);
-                    }
-
-                    using (var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans))
-                    {
-                        assetBulkCopy.BatchSize = 5000; //assetTable.Rows.Count;
-                        assetBulkCopy.DestinationTableName = "[integration].[ExecutionAsset]";
-                        assetBulkCopy.BulkCopyTimeout = 3600;
-
-                        assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
-
-                        assetBulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                        assetBulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
-                        assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
-
-                        assetBulkCopy.ColumnMappings.Add("RawObject", "RawObject");
-                        assetBulkCopy.ColumnMappings.Add("RawRelationships", "RawRelationships");
-                        assetBulkCopy.ColumnMappings.Add("RawResponsibilitites", "RawResponsibilitites");
-
-                        assetBulkCopy.ColumnMappings.Add("ErrorMessages", "ErrorMessages");
-
-                        assetBulkCopy.WriteToServer(assetTable);
-
-                        trans.Commit();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    trans.Rollback();
-                    throw ex;
-                }
+                sb.Append(hash[i].ToString("X2"));
             }
-
-            #endregion
+            return sb.ToString();
         }
 
-        int processAssetPages(IgcPostSearchRequestModel postModel, int companyID, string url, string folderName, PageDataClass pageDataClass)
+        long ConvertDateToUnixTimeMilliseconds(DateTime? date = null)
+        {
+            long epoch = 0;
+
+            if (!date.HasValue)
+                date = DateTime.UtcNow;
+
+            epoch = (long)(date.Value.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
+
+            return epoch;
+        }
+
+        int DownloadAndSavePageFromIgc(IgcPostSearchRequestModel postModel, int companyID, string url, string folderName, PageDataClass pageDataClass)
         {
             #region First remove any files that may be been there before.
             try
             {
-                var itemsToRemove = Storage.ListFiles($"igc-{companyID}/{folderName}");
+                var itemsToRemove = Storage.ListFiles($"igc/{folderName}");
                 itemsToRemove.ForEach(f => {
                     var fileNameBeginRawValue = f.Name.Replace(".json", "").Replace("_error", "");
                     int fileNameBeginValue;
@@ -1005,7 +1005,7 @@ insert into integration.ExecutionAssetField
                         }
                         // serialize JSON directly to a file
                         Storage.CreateFile(
-                            $"igc-{companyID}", 
+                            $"igc", 
                             $@"{folderName}/{postModel.begin}.json", 
                             JsonConvert.SerializeObject(models, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore })
                         );
@@ -1026,7 +1026,7 @@ insert into integration.ExecutionAssetField
                 }
                 catch (Exception ex)
                 {
-                    Storage.CreateFile($"igc-{companyID}", $@"{folderName}/{postModel.begin}_error.json", JsonConvert.SerializeObject(ex, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+                    Storage.CreateFile($"igc", $@"{folderName}/{postModel.begin}_error.json", JsonConvert.SerializeObject(ex, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
 
                     // Move onto next page.
                     postModel.begin = postModel.begin + postModel.pageSize;
@@ -1038,18 +1038,6 @@ insert into integration.ExecutionAssetField
             }
 
             return igcCount;
-        }
-
-        long ConvertDateToUnixTimeMilliseconds(DateTime? date = null)
-        {
-            long epoch = 0;
-
-            if (!date.HasValue)
-                date = DateTime.UtcNow;
-
-            epoch = (long)(date.Value.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
-
-            return epoch;
         }
 
         async Task<T> GetFromApi<T>(string uri)
@@ -1099,6 +1087,182 @@ insert into integration.ExecutionAssetField
             }
 
             return JsonConvert.DeserializeObject<T>(jsonRaw, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
+        }
+
+        bool ParseAndSaveAssetsOnIgcPage(SqlConnection cnn, IgcDynamicArrayModels page, short section, int requestNumber, List<string> fieldsToKeep)
+        {
+            bool hasChanges = false;
+
+            List<string> propertiesToRemove = null;
+            var hashModels = new List<AssetHashModel>();
+            var pageAssets = new Dictionary<string, JObject>();
+
+            if (page.items.Count > 0)
+            {
+                foreach (var i in page.items.Children())
+                {
+                    var sourceID = i["_id"].Value<string>();
+
+                    if (!pageAssets.ContainsKey(sourceID))
+                    {
+                        JObject obj = (JObject)i;
+
+                        // Remove fields we do not want.
+                        if (propertiesToRemove == null)
+                        {
+                            propertiesToRemove = obj.Properties().Where(pr => !fieldsToKeep.Contains(pr.Name)).Select(pr => pr.Name).ToList();
+                            propertiesToRemove.Add("_id"); // No need for this as we are storing it on each record.
+                        }
+
+                        if (propertiesToRemove != null)
+                        {
+                            propertiesToRemove.ForEach(pr => { obj.Remove(pr); });
+                        }
+
+                        var json = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
+
+                        var assetHashModel = new AssetHashModel
+                        {
+                            SynchedAssetTypeID = ExecutionAssetType.SynchedAssetTypeID,
+                            Section = section,
+                            RequestNumber = requestNumber,
+                            SourceID = sourceID,
+                            Hash = CalculateHash(json)
+                        };
+                        hashModels.Add(assetHashModel);
+                        pageAssets.Add(sourceID, obj);
+                    }
+                }
+            }
+
+            #region See which assets have been changed, based on hashes.
+
+            var tbl = new System.Data.DataTable();
+
+            tbl.Columns.Add("SynchedAssetTypeID", typeof(int));
+            tbl.Columns.Add("SourceID", typeof(string));
+            tbl.Columns.Add("Section", typeof(short));
+            tbl.Columns.Add("RequestNumber", typeof(int));
+            tbl.Columns.Add("Hash", typeof(string));
+
+            // Load rows to send to database.
+            hashModels.ForEach(h => {
+                var row = tbl.NewRow();
+
+                row["SynchedAssetTypeID"] = h.SynchedAssetTypeID;
+                row["SourceID"] = h.SourceID;
+                row["Section"] = h.Section;
+                row["RequestNumber"] = h.RequestNumber;
+                row["Hash"] = h.Hash;
+
+                tbl.Rows.Add(row);
+            });
+
+            if (cnn.State != System.Data.ConnectionState.Open)
+                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+            var p = new DynamicParameters();
+            p.Add("@SynchedAssetTypeID", ExecutionAssetType.SynchedAssetTypeID);
+            p.Add("@Section", section, System.Data.DbType.Int16, System.Data.ParameterDirection.Input);
+            p.Add("@RequestNumber", requestNumber, System.Data.DbType.Int32, System.Data.ParameterDirection.Input);
+            p.Add("@Hashes", tbl.AsTableValuedParameter());
+
+            hashModels = cnn.Query<AssetHashModel>("integration.MergeAssetHashes", p, commandTimeout: 3600, commandType: System.Data.CommandType.StoredProcedure).ToList();
+
+            hasChanges = (hashModels.Count > 0);
+
+            tbl.Dispose();
+            cnn.Close();
+
+            #endregion
+
+            #region Load the fields for changed assets
+
+            cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section  }, commandTimeout: 3600);
+
+            var fieldTbl = new System.Data.DataTable();
+
+            fieldTbl.Columns.Add("SynchedAssetTypeID", typeof(int));
+            fieldTbl.Columns.Add("Section", typeof(short));
+            fieldTbl.Columns.Add("SourceID", typeof(string));
+            fieldTbl.Columns.Add("FieldName", typeof(string));
+            fieldTbl.Columns.Add("FieldValue", typeof(string));
+
+            hashModels.ForEach(h => {
+                var pageAsset = pageAssets[h.SourceID];
+                if (pageAsset != null)
+                {
+                    foreach (var pr in pageAsset.Properties())
+                    {
+                                    
+                        var fieldRow = fieldTbl.NewRow();
+
+                        fieldRow["SynchedAssetTypeID"] = ExecutionAssetType.SynchedAssetTypeID;
+                        fieldRow["Section"] = section;
+                        fieldRow["SourceID"] = h.SourceID;
+                        fieldRow["FieldName"] = pr.Name;
+
+                        switch (section)
+                        {
+                            case 1:     // Fields
+                                fieldRow["FieldValue"] = pr.Value;//.ToString(Formatting.None);
+                                break;
+                            case 2:     // Relationships
+                                if (pr.Value is JObject)
+                                {
+                                    var items = (pr.Value as JObject).Property("items");
+                                    if (items != null)
+                                    {
+                                        fieldRow["FieldValue"] = items.Value.ToString(Formatting.None);
+                                    }
+                                    else
+                                    {
+                                        fieldRow["FieldValue"] = pr.Value.ToString(Formatting.None);
+                                    }
+                                }
+                                else
+                                {
+                                    fieldRow["FieldValue"] = pr.Value;//.ToString(Formatting.None);
+                                }
+                                break;
+                            case 3:     // Responsibilities
+                                fieldRow["FieldValue"] = pr.Value;//.ToString(Formatting.None);
+                                break;
+                        }
+
+                        fieldTbl.Rows.Add(fieldRow);
+                    }
+                }
+            });
+
+            // If data in fields datatable, push to the server.
+            if (fieldTbl.Rows.Count > 0)
+            {
+                if (cnn.State != System.Data.ConnectionState.Open)
+                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                using (var bulkCopy = new SqlBulkCopy(cnn))
+                {
+                    bulkCopy.BatchSize = 5000;
+                    bulkCopy.DestinationTableName = "integration.ExecutionAssetField";
+                    bulkCopy.BulkCopyTimeout = 3600;
+
+                    bulkCopy.ColumnMappings.Add("SynchedAssetTypeID", "SynchedAssetTypeID");
+                    bulkCopy.ColumnMappings.Add("Section", "Section");
+                    bulkCopy.ColumnMappings.Add("SourceID", "SourceID");
+                    bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+                    bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+
+                    bulkCopy.WriteToServer(fieldTbl);
+                }
+            }
+
+            fieldTbl.Dispose();
+            cnn.Close();
+
+            #endregion
+
+            return hasChanges;
         }
 
         async Task<T> PostJsonToApiAsync<T>(string uri, string requestBody)
@@ -1160,62 +1324,5 @@ insert into integration.ExecutionAssetField
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// GOV-5373: Removes trailing .0 on any inferred numbers.
-    /// </summary>
-    internal class DecimalJsonConverter : JsonConverter
-    {
-        public DecimalJsonConverter()
-        {
-        }
-
-        public override bool CanRead
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            throw new NotImplementedException("Unnecessary because CanRead is false. The type will skip the converter.");
-        }
-
-        public override bool CanConvert(Type objectType)
-        {
-            return (objectType == typeof(decimal) || objectType == typeof(float) || objectType == typeof(double));
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            if (DecimalJsonConverter.IsWholeValue(value))
-            {
-                writer.WriteRawValue(JsonConvert.ToString(Convert.ToInt64(value)));
-            }
-            else
-            {
-                writer.WriteRawValue(JsonConvert.ToString(value));
-            }
-        }
-
-        private static bool IsWholeValue(object value)
-        {
-            if (value is decimal)
-            {
-                decimal decimalValue = (decimal)value;
-                int precision = (Decimal.GetBits(decimalValue)[3] >> 16) & 0x000000FF;
-                return precision == 0;
-            }
-            else if (value is float || value is double)
-            {
-                double doubleValue = (double)value;
-                return doubleValue == Math.Truncate(doubleValue);
-            }
-
-            return false;
-        }
     }
 }

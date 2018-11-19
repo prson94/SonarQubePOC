@@ -2082,3 +2082,7 @@ GO
 -- clean up unused code / objects
 ------------------------------------------------------------------
 drop table dbo.[language]
+------------------------------------------------------------------
+
+CREATE NONCLUSTERED INDEX [IX_FusionAttribute_TypeID_SourceID] ON [dbo].[FusionAttribute] ([FusionAttributeTypeID], [SourceID]) WITH (ONLINE = ON)
+GO;

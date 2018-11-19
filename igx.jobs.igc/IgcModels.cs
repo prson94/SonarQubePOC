@@ -124,11 +124,6 @@ namespace igx.jobs.igc
         public JArray items { get; set; }
     }
 
-    public class IgcRelationshipModel : IgcModels
-    {
-        public List<IgcModel> items { get; set; }
-    }
-
     public class IgcPostSearchRequestModel
     {
         public int? begin { get; set; }
@@ -194,6 +189,25 @@ namespace igx.jobs.igc
 
     #endregion
 
+    public class AssetHashModel
+    {
+        public int SynchedAssetTypeID { get; set; }
+        public int Section { get; set; }
+        public int RequestNumber { get; set; }
+        public string SourceID { get; set; }
+        public string Hash { get; set; }
+        public string Action { get; set; } //returned from db to determine what type of action this was for hash
+    }
+
+    public class AssetFieldModel
+    {
+        public int SynchedAssetTypeID { get; set; }
+        public int Section { get; set; }
+        public string SourceID { get; set; }
+        public string FieldName { get; set; }
+        public string FieldValue { get; set; }
+    }
+
     public class RelationshipAction
     {
         //IntersectTypeID, IntersectID, [Action]
@@ -210,9 +224,9 @@ namespace igx.jobs.igc
 
     public enum PageDataClass
     {
-        Fields,
-        Relations,
-        Responsibilities
+        Fields = 1,
+        Relations = 2,
+        Responsibilities = 3
     }
 
     public class PageBeginValueUpdatedEventArgs : EventArgs
@@ -227,9 +241,71 @@ namespace igx.jobs.igc
         public HttpStatusCode StatusCode { get; set; }
     }
 
+    public class StepCompletedEventArgs : EventArgs
+    {
+        public int Step { get; set; }
+    }
+
     public class IgcPageErrorModel
     {
         public string message { get; set; }
         public HttpStatusCode code { get; set; }
+    }
+
+    /// <summary>
+    /// GOV-5373: Removes trailing .0 on any inferred numbers.
+    /// </summary>
+    internal class DecimalJsonConverter : JsonConverter
+    {
+        public DecimalJsonConverter()
+        {
+        }
+
+        public override bool CanRead
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("Unnecessary because CanRead is false. The type will skip the converter.");
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(decimal) || objectType == typeof(float) || objectType == typeof(double));
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            if (DecimalJsonConverter.IsWholeValue(value))
+            {
+                writer.WriteRawValue(JsonConvert.ToString(Convert.ToInt64(value)));
+            }
+            else
+            {
+                writer.WriteRawValue(JsonConvert.ToString(value));
+            }
+        }
+
+        private static bool IsWholeValue(object value)
+        {
+            if (value is decimal)
+            {
+                decimal decimalValue = (decimal)value;
+                int precision = (Decimal.GetBits(decimalValue)[3] >> 16) & 0x000000FF;
+                return precision == 0;
+            }
+            else if (value is float || value is double)
+            {
+                double doubleValue = (double)value;
+                return doubleValue == Math.Truncate(doubleValue);
+            }
+
+            return false;
+        }
     }
 }
