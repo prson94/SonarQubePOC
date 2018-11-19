@@ -2086,3 +2086,2710 @@ drop table dbo.[language]
 
 CREATE NONCLUSTERED INDEX [IX_FusionAttribute_TypeID_SourceID] ON [dbo].[FusionAttribute] ([FusionAttributeTypeID], [SourceID]) WITH (ONLINE = ON)
 GO;
+
+create FUNCTION [dbo].[GetAssetTypeUrlById]
+(	
+	@AssetTypeID int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	-- Add the SELECT statement with parameter references here
+	SELECT CASE T.Object
+		WHEN 'ArtifactType' THEN 'artifact/' + CAST(T.ObjectID as varchar)
+		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(T.ObjectID as varchar)-- + '/' +  + CAST(@ObjectID as varchar)
+		WHEN 'ReferenceItemType' THEN 'reference/' + CAST(T.ObjectID as varchar)
+		WHEN 'FusionType' THEN 'fusion/' + CAST(T.ObjectID as varchar)
+		WHEN 'PolicyType' THEN 'policy/' + CAST(T.ObjectID as varchar) + '/structure'		
+		WHEN 'ResourceType' THEN 'resource/list/' + CAST(T.ObjectID as varchar)
+		WHEN 'RuleType' THEN 'quality/rule/' + CAST(T.ObjectID as varchar)	
+		WHEN 'TaxonomyType' THEN 'model/' + CAST(T.ObjectID as varchar) + '/structure'	
+	end as Url
+	from AssetType T
+	where T.ID = @AssetTypeID
+)
+GO;
+
+create FUNCTION [dbo].[GenerateAssetTypeUrl] 
+(
+	@AssetTypeID int
+)
+RETURNS varchar(500)
+AS
+BEGIN
+	DECLARE @Type varchar(50), @TypeID int;
+	DECLARE @Url varchar(500) = '';
+
+	select 
+		@Type = T.[Object],
+		@TypeID = T.ObjectID
+	from
+		AssetType T
+	where T.ID = @AssetTypeID;
+
+	SET @Url = CASE @Type
+		WHEN 'ArtifactType' THEN 'artifact/' + CAST(@TypeID as varchar)
+		WHEN 'ReferenceItemType' THEN 'reference/' + CAST(@TypeID as varchar)	
+		WHEN 'FusionType' THEN 'fusion/' + CAST(@TypeID as varchar)
+		WHEN 'PolicyType' THEN 'policy/' + CAST(@TypeID as varchar) + '/structure'		
+		WHEN 'ResourceType' THEN 'resource/list/' + CAST(@TypeID as varchar)
+		WHEN 'RuleType' THEN 'quality/rule/' + CAST(@TypeID as varchar)	
+		WHEN 'TaxonomyType' THEN 'model/' + CAST(@TypeID as varchar) + '/structure'				
+	END
+
+	RETURN @Url
+END
+GO;
+
+create FUNCTION [dbo].[GenerateAssetUrl] 
+(
+	@AssetID bigint
+)
+RETURNS varchar(500)
+AS
+BEGIN
+	declare @Url varchar(500) = '';
+	declare @Type varchar(50), @TypeID int, @ObjectID int = 0;
+
+
+	select
+		@ObjectID = A.ObjectID,
+		@Type = A.[Object],
+		@TypeID = T.ObjectID
+	from
+		Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID
+	where
+		A.ID = @AssetID;
+
+
+	SET @Url = CASE @Type
+		WHEN 'Artifact' THEN 'artifact/' +  + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
+		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(@TypeID as varchar)-- + '/' +  + CAST(@ObjectID as varchar)
+		WHEN 'FusionAttribute' THEN 'fusion/fusionattribute/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)		
+		WHEN 'Fusion' THEN 'fusion/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
+		WHEN 'Group' THEN 'groups/' + CAST(@ObjectID as varchar)	
+		WHEN 'Policy' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/id/' + CAST(@ObjectID as varchar)	
+		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar)
+		WHEN 'Rule' THEN 'quality/rule/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
+		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar) + '/id/' + CAST(@ObjectID as varchar)	
+	END
+
+	RETURN @Url
+END
+GO;
+
+create FUNCTION [dbo].[GenerateUrlByTypeName] 
+(
+	@Type varchar(50),
+	@TypeID int,
+	@ObjectID int = 0
+)
+RETURNS varchar(500)
+AS
+BEGIN
+	DECLARE @Url varchar(500) = ''
+
+	SET @Url = CASE @Type
+		WHEN 'Lookup' THEN 'admin/lookups/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
+		WHEN 'LookupType' THEN 'admin/lookups/' + CAST(@TypeID as varchar)
+		WHEN 'ShoppingCartType' THEN 'cart/' + CAST(@ObjectID as varchar)	
+	END
+
+	RETURN @Url
+END
+GO;
+
+ALTER view [cache].[ObjectDetails]
+as
+select
+	T.Object,
+	T.ObjectID,
+	T.Name,
+	T.Name as TextPath,
+	cast(null as nvarchar) as Description,		
+	T.Url,
+	T.Url as NgUrl,
+	cast(null as varchar) as Parent,
+	cast(null as int) as ParentID,
+	cast(null as nvarchar) as ParentName,
+	T.ObjectType,
+	T.ObjectTypeID,
+	T.ObjectTypeName,
+	T.IconBackColor,
+	T.IconForeColor,
+	T.IconText
+from
+	( select	A.Object as Object,
+		A.ObjectID as ObjectID,
+		AName.DisplayValue as Name,						
+		AUrl.[Url] as [Url],
+		AST.Object as ObjectType,
+		AST.ObjectID as ObjectTypeID,
+		AST.Name as ObjectTypeName,
+		coalesce(S.IconBackColor, '#000') as IconBackColor,
+		coalesce(S.IconForeColor, '#fff') as IconForeColor,
+		coalesce(S.IconText, 'leaf') as IconText
+	from	AssetType AST
+		left join ObjectStyle S on S.ObjectType = AST.Object and S.ObjectID = AST.ObjectID
+		left join Asset A on A.AssetTypeID = AST.ID
+		cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
+		cross apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+			) T		
+union -- types
+select
+	T_t.Object,
+	T_t.ObjectID,
+	T_t.Name,
+	T_t.Name as TextPath,
+	cast(null as nvarchar) as Description,		
+	T_t.Url,
+	T_t.Url as NgUrl,
+	cast(null as varchar) as Parent,
+	cast(null as int) as ParentID,
+	cast(null as nvarchar) as ParentName,
+	T_t.ObjectType,
+	T_t.ObjectTypeID,
+	T_t.ObjectTypeName,
+	T_t.IconBackColor,
+	T_t.IconForeColor,
+	T_t.IconText
+from
+( select	AST.Object as Object,
+		AST.ObjectID as ObjectID,
+		AST.Name as Name,						
+		AUrl.[Url] as [Url],
+		AST.Object as ObjectType,
+		AST.ObjectID as ObjectTypeID,
+		null as ObjectTypeName,
+		coalesce(S.IconBackColor, '#000') as IconBackColor,
+		coalesce(S.IconForeColor, '#fff') as IconForeColor,
+		coalesce(S.IconText, 'leaf') as IconText
+	from	AssetType AST
+		left join ObjectStyle S on S.ObjectType = AST.Object and S.ObjectID = AST.ObjectID		
+		cross apply [dbo].[GetAssetTypeUrlByID](AST.ID) AUrl
+			) T_t
+union -- intersects
+select	'Intersect' as Object,
+		I.ID as ObjectID,
+		IName.Name as Name,
+		IName.Name as TextPath,		
+		cast(null as nvarchar) as Description,
+		null as Url,
+		null as NgUrl,
+		cast(null as varchar) as Parent,
+		cast(null as int) as ParentID,
+		cast(null as nvarchar) as ParentName,
+		'IntersectType' as ObjectType,
+		IT.ID as ObjectTypeID,
+		ITypeName.Name as ObjectTypeName,
+		coalesce(S.IconBackColor, '#000') as IconBackColor,
+		coalesce(S.IconForeColor, '#fff') as IconForeColor,
+		coalesce(S.IconText, 'leaf') as IconText
+from	IntersectType IT		
+		inner join [Intersect] I on I.IntersectTypeID = IT.ID		
+		left join ObjectStyle S on S.ObjectType = 'IntersectType' and S.ObjectID = IT.ID		
+		cross apply dbo.GetIntersectNames(I.ID) IName	
+		cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName
+
+union -- intersect types
+select	'IntersectType' as Object,
+		I_T.ID as ObjectID,
+		ITypeName.Name as Name,
+		ITypeName.Name as TextPath,		
+		cast(null as nvarchar) as Description,
+		null as Url,
+		null as NgUrl,
+		cast(null as varchar) as Parent,
+		cast(null as int) as ParentID,
+		cast(null as nvarchar) as ParentName,
+		'IntersectType' as ObjectType,
+		0 as ObjectTypeID,
+		null as ObjectTypeName,
+		coalesce(S.IconBackColor, '#000') as IconBackColor,
+		coalesce(S.IconForeColor, '#fff') as IconForeColor,
+		coalesce(S.IconText, 'leaf') as IconText
+from	IntersectType I_T				
+		left join ObjectStyle S on S.ObjectType = 'IntersectType' and S.ObjectID = I_T.ID				
+		cross apply dbo.GetIntersectTypeNames(I_T.ID) ITypeName
+GO;
+
+
+ALTER VIEW [dbo].[AssetWithFieldInfo]   
+AS   
+SELECT   
+     ss.ID
+     ,ss.[Object]
+	 ,ss.ObjectID
+	 ,cast(null as datetime) as EffectiveStartDate
+	 ,(gr.firstname + ' ' + gr.lastname) as ResourceName
+	 ,ft.id as FieldTypeID
+	 ,ft.FriendlyName  
+	 ,f.FormattedValue
+FROM [dbo].[asset] ss   
+	inner join [dbo].[assettype] sst on (sst.id = ss.assettypeid)
+	inner JOIN [dbo].[fieldtype] ft on (ft.[object] = sst.[object] and ft.[objectid] = sst.[objectid])
+	left join [dbo].[field] f on(ss.[object] = f.objecttype and ss.[objectid] = f.objectid and f.fieldtypeid= ft.id)
+	left join reporting.global_resource gr on (ss.updatedby = gr.resourceid)
+GO;
+
+ALTER VIEW [dbo].[FieldWithRelation]
+AS
+	SELECT	F.FieldTypeID,
+			T.Name,
+			T.FriendlyName,
+			T.Category,
+			T.Description,
+			T.DisplayDescription,
+			T.FormDescription,
+			T.ValidationDescription,
+			T.Type,
+			T.LookupObjectType,
+			T.LookupObjectID,
+			T.LookupDisplayFormat,
+			T.MinimumLength,
+			T.MaximumLength,
+			T.Length,
+			T.Pattern,
+			T.IsDisplayable,
+			T.IsEditable,
+			T.IsListable,
+			T.IsRequired,
+			T.SortOrder,
+			T.AllowMultipleValues,
+			F.ObjectType,
+			F.ObjectID,
+			F.Value,
+			F.FormattedValue,
+			case  
+				when (T.AllowMultipleValues = 0 and T.LookupObjectType = 'ReferenceItemType') then 
+					[dbo].GenerateAssetTypeUrl((select ID from AssetType Where Object = 'ReferenceItemType' and ObjectID = T.LookupObjectID))
+				when (T.AllowMultipleValues = 0 and T.LookupObjectType = 'ReferenceItem') then 
+					[dbo].GenerateAssetUrl((select ID from AssetType Where Object = 'ReferenceItem' and ObjectID = T.LookupObjectID))
+				when (T.AllowMultipleValues = 0 and T.LookupObjectType = 'Resource') then 
+					[dbo].GenerateAssetUrl((select ID from Asset WHere Object = 'Resource' and ObjectID = T.LookupObjectID))
+				else null
+			end as LookupUrl
+	FROM	FieldType T
+			left join Field F on F.FieldTypeID = T.ID
+	WHERE	(F.Value is not null OR T.DefaultValue is not null)
+GO;
+
+ALTER VIEW [dbo].[FollowDetail]
+AS
+	with ArtifactTypes as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'ArtifactType' and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			cast('Artifact' as varchar(50)) as [Object],
+			C.ID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Artifact C
+			inner join Follow P on P.ObjectType = 'ArtifactType' and P.ObjectID = C.ArtifactTypeID and P.FollowTypeID = 3
+	),
+	DomainTypes as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'ReferenceItemType' and FollowTypeID = 3
+	),
+	Groups as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'Group' and ObjectID = 0 and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			P.ObjectType as [Object],
+			C.ID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	[Group] C
+			inner join Follow P on P.ObjectType = 'Group' and P.ObjectID = 0 and P.FollowTypeID = 3
+	),
+	PolicyTypes as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'PolicyType' and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			cast('Policy' as varchar(50)) as [Object],
+			C.ID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Policy C
+			inner join Follow P on P.ObjectType = 'PolicyType' and P.ObjectID = C.PolicyTypeID and P.FollowTypeID = 3
+	),
+	PolicyParents as
+	(
+	select	F.ID as FollowID,
+			T.ID,
+			T.ParentID,
+			F.ResourceID,
+			1 as HardFollow
+	from	Policy T
+			inner join Follow F on F.ObjectType = 'Policy' and F.ObjectID = T.ID and F.FollowTypeID = 3
+	union all
+	select	P.FollowID,
+			C.ID,
+			C.ParentID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Policy C
+			inner join PolicyParents P on P.ID = C.ParentID
+	),
+	Resources as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'ResourceType' and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			cast('Resource' as varchar(50)) as [Object],
+			C.ResourceID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	reporting.Global_Resource C
+			inner join Follow P on P.ObjectType = 'ResourceType' and P.FollowTypeID = 3
+	where	C.ResourceID > 0
+	),
+	TaxonomyParents as
+	(
+	select	F.ID as FollowID,
+			T.ID,
+			T.ParentID,
+			F.ResourceID,
+			1 as HardFollow
+	from	Taxonomy T
+			inner join Follow F on F.ObjectType = 'Taxonomy' and F.ObjectID = T.ID and F.FollowTypeID = 3
+	union all
+	select	P.FollowID,
+			C.ID,
+			C.ParentID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Taxonomy C
+			inner join TaxonomyParents P on P.ID = C.ParentID
+	)
+
+	SELECT		F.FollowID,
+				F.ResourceID,
+				R.Email,
+				R.Email as FollowerEmail,
+				R.FirstName + ' ' + R.LastName as FollowerName,
+				R.FirstName as FollowerFirstName,
+				R.LastName as FollowerLastName,
+				'Resource' as FollowerObjectType,
+				F.ResourceID as FollowerObjectID,
+				dbo.GenerateAssetUrl((select ID from Asset where Object ='Resource' and ObjectID = F.ResourceID)) as FollowerUrl,
+				F.ObjectID,
+				F.[Object] as ObjectType,
+				O.ObjectID as ID,
+				O.Name,
+				O.TextPath,
+				O.Description,
+				O.ParentID,
+				O.Parent as ParentType,
+				O.Url,
+				O.ObjectTypeID as TypeID,
+				O.ObjectType as [Type],
+				case O.ObjectType
+					when 'ResourceType' then 'User'
+					when 'Group' then 'Group'
+					else O.ObjectTypeName
+				end as [TypeName],
+				O.IconBackColor,
+				O.IconForeColor,
+				O.IconText,
+				0 AS OpenEventCount,
+				0 as CurrentScore,
+				cast(F.HardFollow as bit) as HardFollow
+	FROM		(
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	ArtifactTypes
+				union
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	DomainTypes
+				union
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	Groups
+				union
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	PolicyTypes
+				union
+				select	FollowID,
+						'Policy', 
+						ID as ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	PolicyParents
+				union
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	Resources
+				union
+				select	FollowID,
+						'Taxonomy' as [Object], 
+						ID as ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	TaxonomyParents
+				union
+				select	ID as FollowID,
+						ObjectType as [Object], 
+						ObjectID, 
+						ResourceID, 
+						1 as HardFollow 
+				from	Follow
+				where	FollowTypeID = 1	
+				) F
+				inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID
+				inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
+GO;
+
+alter view [dbo].[IntersectDetail]
+as
+	
+	select	I.IntersectID as ID,
+			I.IntersectTypeID,
+			I.State,
+			I.Subject,
+			I.SubjectID,
+			S.Name as SubjectName,
+			S.Name as SubjectShortName,
+			case when S.AssetID is not null then
+				dbo.GenerateAssetUrl(S.AssetID)
+			else
+				dbo.GenerateAssetTypeUrl(S.AssetTypeID)
+			end as SubjectUrl,
+			S.Type as SubjectType,
+			S.TypeID as SubjectTypeID,
+			S.TypeName as SubjectTypeName,
+			S.BackColor as SubjectIconBackColor,
+			S.ForeColor as SubjectIconForeColor,
+			S.Icon as SubjectIconText,
+
+			I.Object,
+			I.ObjectID,
+			O.Name as ObjectName,
+			O.Name as ObjectShortName,
+			case when O.AssetID is not null then
+				dbo.GenerateAssetUrl(O.AssetID)
+			else
+				dbo.GenerateAssetTypeUrl(O.AssetTypeID)
+			end as ObjectUrl,
+			O.Type as ObjectType,
+			O.TypeID as ObjectTypeID,
+			O.TypeName as ObjectTypeName,
+			O.BackColor as ObjectIconBackColor,
+			O.ForeColor as ObjectIconForeColor,
+			O.Icon as ObjectIconText,
+
+			I.PredicateID,
+			I.PredicateType,
+			case I.PredicateType
+				when 1 then 'DataLineage'
+				when 2 then 'ReferenceLineage'
+				when 3 then 'InterTypeHierarchy'
+				when 4 then 'IntraTypeHierarchy'
+				when 5 then 'UserOwnership'
+				when 6 then 'Grammar'
+				when 7 then 'Simple'
+				when 8 then 'FusionMapping'
+				when 9 then 'SeeAlso'
+				when 10 then 'Usage'
+				when 11 then 'ObjectOwnerhip'
+			end as PredicateTypeName,
+			I.PredicateName,
+			I.PredicateInverse
+	from	PredicateIntersect I with(nolock)
+			inner join (
+				select A.ID as AssetID, A.AssetTypeID as AssetTypeID, coalesce(FA.TextPath,DisplayValue) as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName from AssetDetail A
+				left join FusionAttribute FA on FA.ID = A.ObjectID and A.Object = 'FusionAttribute'
+				union all
+				select null as AssetID, null as AssetTypeID, NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName from [Intersect] I
+				inner join IntersectType T on T.ID = I.IntersectTypeID
+				cross apply dbo.GetIntersectNames(I.ID) NI	
+				cross apply dbo.GetIntersectTypeNames(T.ID) NIT
+				union all
+				select null as AssetID, TA.ID as AssetTypeID, TA.Name, TA.Object, TA.ObjectID, null as ForeColor, null as BackColor, null as Icon, 'ReferenceItemType' as Type, 0 as TypeID, TA.Name as TypeName from AssetType TA
+				where TA.Object = 'ReferenceItemType'
+			) S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+			inner join (
+				select A.ID as AssetID, A.AssetTypeID as AssetTypeID, coalesce(FA.TextPath,DisplayValue) as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName from AssetDetail A
+				left join FusionAttribute FA on FA.ID = A.ObjectID and A.Object = 'FusionAttribute'
+				union all
+				select null as AssetID, null as AssetTypeID, NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName from [Intersect] I
+				inner join IntersectType T on T.ID = I.IntersectTypeID
+				cross apply dbo.GetIntersectNames(I.ID) NI	
+				cross apply dbo.GetIntersectTypeNames(T.ID) NIT
+				union all
+				select null as AssetID, TA.ID as AssetTypeID, TA.Name, TA.Object, TA.ObjectID, null as ForeColor, null as BackColor, null as Icon, 'ReferenceItemType' as Type, 0 as TypeID, TA.Name as TypeName from AssetType TA
+				where TA.Object = 'ReferenceItemType'
+			) O on O.Object = I.Object and O.ObjectID = I.ObjectID
+GO;
+
+alter view [dbo].[SiteNavAvailable] as
+	select
+		u.ID,
+		u.ObjectID as ObjectID,
+		u.[Name],
+		u.[url] as [Route],
+		u.[Object],
+		null as SortOrder,
+		null as ParentID
+	from
+	(
+
+		select
+			A.ID,
+			A.ObjectID,
+			A.[Object],
+			A.[Name],
+			dbo.GenerateAssetTypeUrl(A.ID) As [url]
+		from AssetType A
+		where A.[Object] in ('ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType')
+	) u
+	left join SiteNav v on v.Object = u.Object and v.ObjectID = u.ObjectID
+	where v.ObjectID is null and u.ID not in (
+		select distinct 
+			C.ChildAssetTypeID 
+		from SiteNav n
+		inner join AssetType T on T.Object = n.Object and T.ObjectID = n.Objectid
+		cross apply dbo.GetAssetTypeChildrenByID(T.ID) C
+	);
+GO;
+
+alter view [dbo].[SiteNavFlat] as
+	select
+		u.ID as ObjectID,
+		u.Name,
+		u.url as Route,
+		u.Object,
+		null as SortOrder,
+		u.ParentID as ParentID
+	from
+	(
+		select
+		A.ID,
+		A.ParentID,
+		A.Name,
+		dbo.GenerateAssetTYpeUrl(T.ID) As url,
+		'ArtifactType' as [Object]
+		FROM ArtifactType A
+		inner join AssetType T on T.Object = 'ArtifactType' and T.ObjectID = A.ID
+		
+		UNION ALL
+		
+		SELECT
+		A.ID,
+		null as ParentID,
+		A.Name,
+		dbo.GenerateAssetTypeUrl(T.ID)  As url,
+		'TaxonomyType' as [Object]
+		FROM TaxonomyType A
+		inner join AssetType T on T.Object = 'TaxonomyType' and T.ObjectID = A.ID
+
+		UNION ALL
+		
+		SELECT
+		A.ID,
+		null as ParentID,
+		A.Name,
+		dbo.GenerateAssetTypeUrl(T.ID)  As url,
+		'PolicyType' as [Object]
+		FROM PolicyType A
+		inner join AssetType T on T.Object = 'PolicyType' and T.ObjectID = A.ID
+	) u
+GO;
+
+ALTER PROCEDURE [dbo].[GetAvailableSiteNavigation]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	select
+		u.ID as ObjectID,
+		u.Name,
+		u.url as Route,
+		u.Object,
+		null as SortOrder,
+		null as ParentID
+	from
+	(
+		select
+		A.ID,
+		A.Name,
+		dbo.GenerateAssetTypeUrl(T.ID) As url,
+		'ArtifactType' as [Object]
+		FROM ArtifactType A
+		inner join AssetType T on T.Object = 'ArtifactType' and T.ObjectID = A.ID
+
+		UNION ALL
+		
+		SELECT
+		A.ID,
+		A.Name,
+		dbo.GenerateAssetTypeUrl(T.ID)  As url,
+		'TaxonomyType' as [Object]
+		FROM TaxonomyType A
+		inner join AssetType T on T.Object = 'TaxonomyType' and T.ObjectID = A.ID
+		
+		UNION ALL
+		
+		SELECT
+		A.ID,
+		A.Name,
+		dbo.GenerateAssetTypeUrl(T.ID)  As url,
+		'PolicyType' as [Object]
+		FROM PolicyType A
+		inner join AssetType T on T.Object = 'PolicyType' and T.ObjectID = A.ID
+	) u
+	left join SiteNav v on v.Object = u.Object and v.ObjectID = u.ID
+	where v.ObjectID is null 
+END
+GO
+
+ALTER PROCEDURE [dbo].[GetCommentDetailByID]
+	@id int
+AS
+BEGIN
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	P (ID, ParentID)
+	AS
+	(
+		SELECT		C.ID,
+					C.ParentID
+		FROM		Comment C
+		WHERE		ID = @id
+	)
+
+	SELECT		C.*,
+				C.CreatingResourceID,
+				O.DisplayValue as ObjectName,				
+				AUrl.Url as ObjectUrl,
+				case
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectType
+					ELSE 'Resource'
+				end as ObjectType,
+				O.DisplayValue as ResourceName,
+				case 
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectID
+					ELSE C.CreatingResourceID
+				end as ObjectID,
+				(
+				select	CRD.Object,
+						CRD.ObjectID,
+						CRD.TextPath,
+						CRD.ObjectTypeName,
+						CRD.Url,
+						CRD.ForeColor as IconForeColor,
+						CRD.BackColor as IconBackColor,
+						CRD.NgUrl
+				from	CommentRelation CR
+				inner join (
+					select Object, ObjectID, ForeColor, BackColor, TypeName as ObjectTypeName, AUrl.Url as Url, AUrl.Url as NgUrl, DisplayValue as TextPath from AssetDetail A
+					cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
+					union all
+					select T.Object, T.ObjectID, OS.IconForeColor as ForeColor, OS.IconBackColor as BackColor, null as ObjectTypeName, TUrl.Url as Url, TUrl.Url as NgUrl, Name as TextPath from AssetType T
+					cross apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
+					left join ObjectStyle OS on OS.ObjectType = T.Object and OS.ObjectID = T.ObjectID
+				) CRD on CR.CommentID = C.ID 
+					and CR.ObjectType = CRD.[Object] 
+					and CR.ObjectID = CRD.ObjectID
+				where Object != 'Resource'
+					and TextPath != 'FirstNameLastName'
+				for xml path('tag'), root('tags'), type
+				) as TagsXml,
+				(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML,
+			CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			ELSE
+				cast(0 as bit)
+			END as CreatorIsOwner
+	FROM		Comment C
+				left join AssetDetail O on O.[Object] = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID
+				outer apply [dbo].[GetAssetUrlById](O.ID) AUrl
+				INNER JOIN P ON C.ID = P.ID
+	ORDER BY	C.ParentID, C.DateCreated DESC
+END
+GO;
+
+ALTER FUNCTION [utility].[GetIntersectNames]
+(	
+	@id int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	SELECT	SA.DisplayValue + ' / ' + OA.DisplayValue as Name
+	FROM	[Intersect] I
+			left join AssetDetail SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+			left join AssetDetail OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+	WHERE	I.ID = @id					
+)
+GO;
+
+ALTER FUNCTION [utility].[ObjectDetail]
+(
+--declare
+	@type varchar(50), 
+	@id int
+--set @type = 'Domain'
+--set @id = 1
+)
+RETURNS @tbl TABLE 
+(
+	ID int,
+	AssetID bigint,
+	UID uniqueidentifier,
+	AssetTypeID int,
+	Name nvarchar(max),
+	TextPath nvarchar(2500),
+	Description nvarchar(max),
+	ParentID int null,
+	ParentType nvarchar(250),
+	Url nvarchar(2500),
+	TypeID int,
+	[Type] varchar(25),
+	[TypeName] nvarchar(250),
+	IconBackColor varchar(15),
+	IconForeColor varchar(15),
+	IconText varchar(15),
+	Status nvarchar(25) null
+) 
+AS
+BEGIN
+	if @type = 'Artifact' or @type = 'Attribute' or @type = 'Fusion' or @type = 'FusionAttribute' or @type = 'Policy' or @type = 'ReferenceItem' or @type = 'Rule' or @type = 'Taxonomy'
+	begin
+		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,											TypeID,	[Type],	TypeName, Status)
+			SELECT			ObjectID,	UID, ID, 		AssetTypeID, DisplayValue,	DisplayValue,	NULL,			null,		null,		dbo.GenerateAssetUrl(ID),	TypeID,	Type,	TypeName, NULL
+			FROM	AssetDetail
+			where	Object = @type 
+					and ObjectID = @id
+	end
+
+	if @type = 'ArtifactType' or @type = 'AttributeType' or @type = 'FusionType' or @type = 'FusionAttributeType' or @type = 'PolicyType' or @type = 'ReferenceItemType' or @type = 'RuleType' or @type = 'TaxonomyType'
+	begin
+		insert into @tbl (	ID,		UID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ObjectID, UID,		Name,	Name,		Description,	NULL,		NULL,		turl.[url] as Url,	ObjectID,		@type,	'Asset Type'
+			FROM	AssetType O
+			cross apply [dbo].GetAssetTypeUrlById(o.id) turl
+			WHERE	Object = @type
+					and ObjectID = @id
+	end
+
+	if @type = 'Group'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			G.ID,		G.Name,	G.Name,		G.Description,	NULL,		NULL,		dbo.GenerateAssetUrl(A.ID),	0,		@type,	'Group'
+			FROM	[Group] G
+			inner join Asset A on A.Object = 'Group' and A.ObjectID = G.ID
+			WHERE	G.ID = @id
+	end
+
+	if @type = 'Intersect'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name	
+			FROM	[Intersect] O
+					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
+					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
+					CROSS APPLY dbo.GetIntersectTypeNames(T.ID) ITN
+	end
+
+	if @type = 'IntersectType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		null,	ID,		@type,	'Intersect Type'
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
+			WHERE	ID = @id
+	end
+
+	if @type = 'Issue'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	'',	'',		'',				NULL,		NULL,		null,	O.IssueTypeID,	'IssueType',	T.Name
+			FROM	Issue O
+					INNER JOIN IssueType T ON O.IssueTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type'
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Lookup'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	T.Name + ' Item',	T.Name,		'',				NULL,		NULL,		dbo.GenerateUrlByTypeName(@type, O.LookupTypeID, O.ID),	O.LookupTypeID,	'LookupType',	T.Name
+			FROM	[Lookup] O
+					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'LookupType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		Name,	Name,		'',				0,			@type,		dbo.GenerateUrlByTypeName(@type, ID, 0),	ID,		@type,	'Lookup Type'
+			FROM	LookupType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'FusionQueryAttribute'
+	begin
+		insert into @tbl (	ID,		Name,		TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,						[Type],					TypeName)
+			SELECT			O.ID,	O.DisplayValue,	O.DisplayValue,	'',				NULL,	@type,		null,
+																											O.FusionQueryAttributeTypeID,	'FusionQueryAttributeType',	T.Name
+			FROM	FusionQueryAttribute O
+					INNER JOIN FusionQueryAttributeType T ON O.FusionQueryAttributeTypeID = T.ID and O.ID = @id					
+	end
+	
+	if @type = 'FusionQueryAttributeType'
+	begin
+		insert into @tbl (	ID, Name,		TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	O.Name,	'',				NULL,		NULL,		null,	ID,		@type,	'Fusion Query Attribute Type'
+			FROM	FusionQueryAttributeType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Report'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report'
+			FROM	Report O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'Resource'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
+			select	ResourceID, FirstName + ' ' + LastName, dbo.GenerateAssetUrl(A.ID), 1, 'ResourceType', 'Employee'
+			from	reporting.Global_Resource R
+			inner join Asset A on A.Object = 'Resource' and A.objectID = R.ResourceID
+			where	ResourceID = @id
+	end
+
+	if @type = 'ResponsibilityType'
+	begin
+		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		null,	ID,		@type,	'Responsibility Type'
+			FROM	ResponsibilityType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'ResourceType'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
+		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type')
+	end
+
+	if @type = 'RuleImplementation'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		null,	T.RuleTypeID,	'RuleType',	T.DisplayValue, 'Active'
+			FROM	[RuleImplementation] O
+					inner join [Rule] T on T.ID = O.RuleID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateUrlByTypeName('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
+			WHERE	O.ID = @id
+	end
+
+	update	T
+	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
+			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
+			T.IconText =	--case @type
+							--	when 'Taxonomy' then 'IM'
+							--	when 'TaxonomyType' then 'IM'
+								--else 
+								COALESCE(S.IconText, 'leaf') 
+							--end
+	from	@tbl T
+			left join ObjectStyle S ON S.ObjectType = T.[Type] and S.ObjectID = T.TypeID
+
+	RETURN
+END
+GO;
+
+ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]
+--declare
+	@TemplateType varchar(25),
+	@Type varchar(50),
+	@ID int,
+	@Action varchar(50),
+	@SubjectName VARCHAR (200) = 'Governing Domain',
+	@resourceId int = -1
+--set @TemplateType = 'Lookup'
+--set @Type = 'Artifact'
+--set @ID = 7004--16435
+--set @Action = 'Preview'--'Certificate'
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	declare @html nvarchar(max),
+			@link nvarchar(2500),
+			@icon nvarchar(250),
+			@hasDynamicFields bit = 0,
+			@hasStats bit = 0,
+			@typeID int,
+
+			@showIcon bit = 1,
+
+			@current int,
+			@max int,
+			@name nvarchar(250),
+			@value nvarchar(max);
+
+	declare @tbl table (ID int identity, Name nvarchar(250), Value nvarchar(max));
+
+	if @TemplateType = 'Tooltip'
+	begin
+		select	@html = TemplateBody
+		from	TooltipTemplate
+		where	Name = @Type
+				and [Action] = @Action
+	end
+
+	-- Get the static tokens, depending on the type.
+	declare @n nvarchar(250), @t nvarchar(250), @s nvarchar(25), @v int, @dc datetime, @du datetime, @d nvarchar(4000);
+
+	-- Get common fields
+	select	@typeID = C_D.TypeID,
+			@icon = '<div title=''' + C_D.DisplayValue + ''' class=''tooltip-icon'' style=''background-color: ' + C_D.BackColor + '; color: ' + C_D.ForeColor + '''><i class=''fa fa-' + C_D.Icon + '''></i></div>',
+			@n = C_D.DisplayValue,
+			@t = C_D.TypeName,
+			@d = f.formattedvalue,
+			@link = AUrl.Url
+	from	AssetDetail C_D	
+			cross apply [dbo].[GetAssetUrlById](C_D.ID) AUrl
+			left join fieldtype ft on (ft.[object] = C_D.[type] and ft.objectid = C_D.typeid and ft.name = 'Description')
+			left join field f on (f.fieldtypeid = ft.id and f.[objecttype] = C_D.[object] and f.objectid = C_D.objectid)
+	where	C_D.[Object] = @Type
+			and C_D.ObjectID = @ID;
+
+	--fusion attributes arent in cache
+	if @Type = 'FusionAttribute'
+	begin		
+		select 
+			@typeID = fa.fusionattributetypeid,
+			@n = fa.name,
+			@t = fat.Name,
+			@link = dbo.GenerateAssetUrl(a.ID) 
+		from fusionattribute fa 
+		inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = fa.ID
+			inner join fusionattributetype fat on (fa.fusionattributetypeid = fat.id) 
+		where fa.id = @ID
+	end
+
+	if @n is not null
+	begin
+		if @link is null
+		begin
+			insert into @tbl values ('Name', @n)
+		end
+		else
+		begin
+			insert into @tbl values ('Name', '<a routerLink="/' + @link + '">' + @n + '</a>')
+		end
+		insert into @tbl values ('Description', @d)
+	end
+	insert into @tbl values ('Type', @t)
+
+	if @Action = 'AssigningItemPreview'
+	begin
+		set @html = '<h3>{Name}</h3>'
+	end
+
+
+	if @Action = 'LookupPreview'
+	begin
+		set @html = '{Items}'
+
+		if @Type = 'FusionAttribute'
+		begin
+			-- BUILD LIST HTML -----------------------------------------
+			declare @fusionAttributeItemsHtml nvarchar(max)
+
+			set @fusionAttributeItemsHtml = '<div style="height: 200px; overflow-y: scroll"><table class="hoverable bordered striped" style="width:100%"><thead>'
+			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '<th style="margin-right: 15px">Name</th>'
+			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</thead><tbody>'
+
+			select		--top 10 
+						@fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '<tr>' 
+											+ '<td>' + Name + '</td>'
+											+ '</tr>'
+			from		FusionAttribute
+			where		ParentID = @ID
+			order by	Name asc
+
+			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</tbody>'
+			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</table></div>'
+
+			insert into @tbl values ('Items', @fusionAttributeItemsHtml)
+			------------------------------------------------------------------
+		end;
+
+		if @Type = 'LookupType' OR @Type = 'Lookup'
+		begin
+			-- BUILD LOOKUP LIST HTML -----------------------------------------
+			declare @lookups table (RowID int identity, ID int)
+
+			declare @MyLookupTypeID int
+			if @Type = 'Lookup'
+				begin
+					select @MyLookupTypeID = LookupTypeID from [Lookup] where ID = @ID 
+				end
+			else
+				begin
+					set @MyLookupTypeID = @ID
+				end
+
+			insert into @lookups 
+				select top 10 ID from [Lookup] where LookupTypeID = @MyLookupTypeID order by ID desc
+
+			declare @lookupFieldTypes table (ID int identity, Name nvarchar(250))
+			insert into @lookupFieldTypes
+				select FriendlyName from FieldType where [Object] = 'LookupType' and ObjectID = @MyLookupTypeID order by ColumnOrder asc
+
+			declare @lookupHtml nvarchar(max)
+
+			set @lookupHtml = '<table class="hoverable bordered striped" style="width:100%">'
+
+			-- Loop through field name list ---------
+			set @lookupHtml = @lookupHtml + '<thead>'
+			set		@current = 1
+			select	@max = max(ID) from @lookupFieldTypes
+			while @current <= @max
+			begin
+				select	@name = Name
+				from	@lookupFieldTypes
+				where	ID = @current
+
+				set @lookupHtml = @lookupHtml + '<th style="margin-right: 15px">' + @name  + '</th>'
+
+				set @current = @current + 1
+			end
+			set @lookupHtml = @lookupHtml + '</thead>'
+			-----------------------------------------
+
+			set @lookupHtml = @lookupHtml + '<tbody>'
+
+			-- Loop through event list --------------
+			select	@current = min(RowID) from @lookups
+			select	@max = max(RowID) from @lookups
+
+			while @current <= @max
+			begin
+				set @lookupHtml = @lookupHtml + '<tr>'	-- Open row for selected event.
+
+				declare @lookupFields table (Name nvarchar(250), Value nvarchar(4000))
+
+				declare @lookupID int
+
+				select	@lookupID = ID from @lookups where RowID = @current
+
+				insert into @lookupFields
+					select		FriendlyName,
+								FormattedValue
+					from		FieldWithRelation
+					where		ObjectType = 'Lookup' 
+								and ObjectID = @lookupID
+
+					-- Loop through each field for this selected event --
+					declare @lfCurrent int,
+							@lfMax int
+					set		@lfCurrent = 1
+					select	@lfMax = max(ID) from @lookupFieldTypes
+					while @lfCurrent <= @lfMax
+					begin
+						select	@name = Name from @lookupFieldTypes where ID = @lfCurrent
+
+						select @lookupHtml = @lookupHtml + '<td>' + coalesce(Value, '') + '</td>' from @lookupFields where Name = @name
+
+						set @lfCurrent = @lfCurrent + 1
+					end
+					-----------------------------------------------------
+
+				delete @lookupFields
+
+				set @lookupHtml = @lookupHtml + '</tr>'	-- Close off row for selected lookup.
+
+				set @current = @current + 1
+			end
+			-----------------------------------------
+
+			set @lookupHtml = @lookupHtml + '</tbody>'
+
+			set @lookupHtml = @lookupHtml + '</table>'
+
+			insert into @tbl values ('Items', @lookupHtml)
+			------------------------------------------------------------------
+		end;
+
+		if @Type = 'ReferenceItemType' OR @Type = 'ReferenceItem'
+		begin
+			-- BUILD LOOKUP LIST HTML -----------------------------------------
+			declare @refs table (RowID int identity, ID int)
+			declare @isHierarchy bit = 0;
+
+			declare @MyRefTypeID int
+			if @Type = 'ReferenceItem'
+				begin
+					select @MyRefTypeID = ReferenceItemTypeID from ReferenceItem where ID = @ID 
+
+					-- check if this item is in a hierarchy if so set the flag as true
+					select  @isHierarchy = count(1) from intersecttypedetail where [object] = 'ReferenceItemType' and [objectid] = @MyRefTypeID and predicatetype = 3
+				end
+			else
+				begin
+					set @MyRefTypeID = @ID
+				end
+
+			if @isHierarchy = 1 
+				begin
+				insert into @refs 					
+					select	top 500 
+							ri.ID 
+					from	[ReferenceItem] ri
+							inner join Asset ast on (ri.id = ast.objectid and ast.[object] = 'ReferenceItem')
+							inner join [intersect] id on (id.objectid = ri.id and id.[object] = 'ReferenceItem')
+							inner join [intersect] id_2 on (id_2.[object] = 'ReferenceItem' and id_2.[objectid] = @id and id_2.subjectid = id.subjectid)
+							inner join [intersecttypedetail] it on (it.id = id.intersecttypeid and it.id = id_2.intersecttypeid and it.[object]='ReferenceItemType' and it.predicatetype = 3)
+					where	ri.ReferenceItemTypeID = @MyRefTypeID 
+							and ast.[State] = 1 
+							and ast.ID not in (select AssetID from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and ResourceID = @resourceId)
+					order by DisplayValue asc
+				end
+			else
+				begin
+				insert into @refs 
+					select	top 500 
+							ri.ID 
+					from	[ReferenceItem] ri
+							inner join Asset ast on (ri.id = ast.objectid and ast.[object] = 'ReferenceItem')
+					where	ri.ReferenceItemTypeID = @MyRefTypeID 
+							and ast.[State] = 1 
+							and ast.ID not in (select AssetID from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and ResourceID = @resourceId)
+					order by DisplayValue asc
+				end
+
+			declare @refFieldTypes table (ID int identity, Name nvarchar(250))
+			insert into @refFieldTypes values ('Code')
+			insert into @refFieldTypes
+				select FriendlyName from FieldType where [Object] = 'ReferenceItemType' and ObjectID = @MyRefTypeID order by ColumnOrder asc
+
+			declare @refHtml nvarchar(max)
+
+			set @refHtml = '<table class="hoverable bordered striped" style="width:100%; min-width: 400px">'
+
+			-- Loop through field name list ---------
+			set @refHtml = @refHtml + '<thead>'
+			set		@current = 1
+			select	@max = max(ID) from @refFieldTypes
+			while @current <= @max
+			begin
+				select	@name = Name
+				from	@refFieldTypes
+				where	ID = @current
+
+				set @refHtml = @refHtml + '<th style="margin-right: 15px">' + @name  + '</th>'
+
+				set @current = @current + 1
+			end
+			set @refHtml = @refHtml + '</thead>'
+			-----------------------------------------
+
+			set @refHtml = @refHtml + '<tbody>'
+
+			-- Loop through event list --------------
+			select	@current = min(RowID) from @refs
+			select	@max = max(RowID) from @refs
+
+			while @current <= @max
+			begin
+				set @refHtml = @refHtml + '<tr>'	-- Open row for selected event.
+
+				declare @refFields table (Name nvarchar(250), Value nvarchar(4000))
+
+				declare @refID int
+
+				select	@refID = ID from @refs where RowID = @current
+
+				insert into @refFields
+					select	'Code', Code from ReferenceItem where ID = @refID
+
+				insert into @refFields
+					select		FriendlyName,
+								FormattedValue
+					from		FieldWithRelation
+					where		ObjectType = 'ReferenceItem' 
+								and ObjectID = @refID
+
+					-- Loop through each field for this selected event --
+					declare @rfCurrent int,
+							@rfMax int,
+							@rfCurrentVal nvarchar(max);
+
+					set		@rfCurrent = 1
+					select	@rfMax = max(ID) from @refFieldTypes
+					while @rfCurrent <= @rfMax
+					begin
+						select	@name = Name from @refFieldTypes where ID = @rfCurrent
+
+						if exists (select 1 from @refFields where Name = @name)
+						begin
+							select @refHtml = @refHtml + '<td>' + coalesce(Value, '1') + '</td>' from @refFields where Name = @name;
+						end
+						else
+						begin
+							set @refHtml = @refHtml + '<td>&nbsp;</td>';
+						end
+
+						set @rfCurrent = @rfCurrent + 1
+					end
+					-----------------------------------------------------
+
+				delete @refFields
+
+				set @refHtml = @refHtml + '</tr>'	-- Close off row for selected lookup.
+
+				set @current = @current + 1
+			end
+
+			-----------------------------------------
+
+			set @refHtml = @refHtml + '</tbody>'
+
+			set @refHtml = @refHtml + '</table>'
+
+			if @max >= 500
+			begin
+				set @refHtml = @refHtml + '<div style="font-weight:bold;padding-top:10px">Showing top 500 items</div>'	
+			end
+
+			insert into @tbl values ('Items', @refHtml)
+			------------------------------------------------------------------
+		end;
+
+		if @Type = 'Resource' OR @Type = 'ResourceType'
+		begin
+			-- BUILD Resource LIST HTML -----------------------------------------
+			declare @resourceItemsHtml nvarchar(max)
+
+			set @resourceItemsHtml = '<table class="hoverable bordered striped" style="width:100%"><thead>'
+			set @resourceItemsHtml = @resourceItemsHtml + '<th style="margin-right: 15px">First Name</th><th style="margin-right: 15px">Last Name</th><th>Email</th>'
+			set @resourceItemsHtml = @resourceItemsHtml + '</thead><tbody>'
+
+			select		top 10 
+						@resourceItemsHtml = @resourceItemsHtml + '<tr>' + 
+											'<td>' + FirstName + '</td>' + 
+											'<td>' + LastName + '</td>' + 
+											'<td>' + Email + '</td>'
+											+ '</tr>'
+			from		reporting.Global_Resource
+			order by	LastName, FirstName asc
+
+			set @resourceItemsHtml = @resourceItemsHtml + '</tbody>'
+			set @resourceItemsHtml = @resourceItemsHtml + '</table>'
+
+			insert into @tbl values ('Items', @resourceItemsHtml)
+			------------------------------------------------------------------
+		end;
+
+		if @Type = 'ReferenceItem'
+		begin
+
+			declare @myReferenceListID int
+
+			select	@myReferenceListID = ReferenceItemTypeID from ReferenceItem where ID = @ID
+			-- BUILD LIST HTML -----------------------------------------
+			declare @referenceItemHtml nvarchar(max)
+
+			set @referenceItemHtml = '<table class="hoverable bordered striped" style="width:100%">'
+			set @referenceItemHtml = @referenceItemHtml + '<thead><th style="margin-right: 15px">Name</th></thead>'
+			set @referenceItemHtml = @referenceItemHtml + '<tbody>'
+
+
+
+			select		top 10 
+						@referenceItemHtml = @referenceItemHtml + '<tr>' + '<td>' + DisplayValue + '</td>' + '</tr>'             
+			from		ReferenceItem
+			where		ReferenceItemTypeID = @myReferenceListID
+			order by	DisplayValue desc
+
+			set @referenceItemHtml = @referenceItemHtml + '</tbody>'
+			set @referenceItemHtml = @referenceItemHtml + '</table>'
+
+			insert into @tbl values ('Items', @referenceItemHtml)
+			------------------------------------------------------------------
+		end;
+
+		if @Type = 'ReferenceItemType'
+		begin
+
+		--	declare @myReferenceListID int
+
+			--select	@myReferenceListID = ReferenceItemTypeID from ReferenceItem where ID = @ID
+			-- BUILD LIST HTML -----------------------------------------
+			declare @referenceItemTypeHtml nvarchar(max)
+
+			set @referenceItemTypeHtml = '<table class="hoverable bordered striped" style="width:100%">'
+			set @referenceItemTypeHtml = @referenceItemTypeHtml + '<thead><th style="margin-right: 15px">Display Value</th></thead>'
+			set @referenceItemTypeHtml = @referenceItemTypeHtml + '<tbody>'
+
+
+
+			select		top 10 
+						@referenceItemTypeHtml = @referenceItemTypeHtml + '<tr>' + '<td>' + DisplayValue + '</td>' + '</tr>'             
+			from		ReferenceItem
+			where		ReferenceItemTypeID = @ID
+			order by	DisplayValue desc
+
+			set @referenceItemTypeHtml = @referenceItemTypeHtml + '</tbody>'
+			set @referenceItemTypeHtml = @referenceItemTypeHtml + '</table>'
+
+			insert into @tbl values ('Items', @referenceItemTypeHtml)
+			------------------------------------------------------------------
+		end;
+
+	end
+
+	if @Action = 'None'
+	begin
+		set @html = '<h3>{Name}</h3><div>'
+	end
+
+	if @Action = 'Preview'
+	begin
+		set @html = '<h3 style="positon: relative">{Name} <small style="background-color: #fff; float:right;font-size:65%;">{Type}</small></h3><div>{Description}</div>'
+		set @showIcon = 0
+
+		if @Type = 'Artifact'
+		begin
+			declare @artifactPathHtml nvarchar(2500) = '<table>';
+			declare @artLevelResult table(ID int identity, LevelName nvarchar(250), DisplayValue nvarchar(250), Url varchar(1000));
+
+			with ap as (
+				select	O.ID,
+						O.ParentID,
+						'INVALID' as DisplayValue,
+						L.Name as LevelName,
+						dbo.GenerateAssetUrl(A.ID) as Url,
+						1 as [Level]
+				from	Artifact O
+						inner join Asset A on A.Object = 'Artifact' and A.ObjectID = O.ID
+						inner join ArtifactType L on L.ID = O.ArtifactTypeID
+				where	O.ID = @ID
+				union all
+				select	O.ID,
+						O.ParentID,
+						'INVALID' as DisplayValue,
+						L.Name as LevelName,
+						dbo.GenerateAssetUrl(A.ID) as Url,
+						C.[Level] + 1 as [Level]
+				from	Artifact O
+						inner join Asset A on A.Object = 'Artifact' and A.ObjectID = O.ID
+						inner join ArtifactType L on L.ID = O.ArtifactTypeID
+						inner join ap as C on C.ParentID = O.ID
+			)
+
+			insert into @artLevelResult
+				select LevelName, DisplayValue, Url from ap order by [Level] desc
+
+			select		@artifactPathHtml = coalesce(@artifactPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast([ID] as varchar) + '</td><td>' +  LevelName + '</td><td><b><a href="' + Url + '">' + DisplayValue + '</a></b>' + '</td></tr>'
+			from		@artLevelResult
+
+			set @artifactPathHtml =  @artifactPathHtml + '</table>'
+
+			set @html = @html + '<div><b>Path:</b></div><div>' + coalesce(@artifactPathHtml,'') + '</div>'
+
+			set @hasDynamicFields = 1
+		end;
+
+		if @Type = 'FusionAttribute'
+		begin
+			declare @faPathHtml nvarchar(2500) = '<table>';
+			declare @faLevelResult table(ID int identity, LevelName nvarchar(250), Name nvarchar(250));
+
+			with fap as (
+				select	O.ID,
+						O.ParentID,
+						O.Name,
+						L.Name as LevelName,
+						1 as [Level]
+				from	FusionAttribute O
+						inner join FusionAttributeType L on L.ID = O.FusionAttributeTypeID
+				where	O.ID = @ID
+				union all
+				select	O.ID,
+						O.ParentID,
+						O.Name,
+						L.Name as LevelName,
+						C.[Level] + 1 as [Level]
+				from	FusionAttribute O
+						inner join FusionAttributeType L on L.ID = O.FusionAttributeTypeID
+						inner join fap as C on C.ParentID = O.ID
+			)
+
+			insert into @faLevelResult
+				select LevelName, Name from fap order by [Level] desc
+
+			select		@faPathHtml = @faPathHtml + 
+						'<tr><td colspan="2">Configuration</td><td><b><a href="/fusion/' + cast(F.ID as nvarchar) + '">' + coalesce(F.Name,'') + '</a></b></td></tr>' 
+			from		Fusion F 
+						inner join FusionAttribute A on A.FusionID = F.ID and A.ID = @ID
+
+			select		@faPathHtml = coalesce(@faPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast(ID as varchar) + '</td><td>' +  LevelName + '</td><td><b>' + Name + '</b>' + '</td></tr>'
+			from		@faLevelResult
+
+			set @faPathHtml =  @faPathHtml + '</table>'
+
+			set @html = @html + '<div><b>Path:</b></div><div>' + coalesce(@faPathHtml,'') + '</div>'
+
+			set @hasDynamicFields = 1
+		end
+
+		if @Type = 'Intersect'
+		begin
+			set @hasDynamicFields = 1
+		end;
+
+
+		if @Type = 'Issue'
+		begin
+			insert into @tbl values('Name', '')
+			insert into @tbl values('Description', '')
+
+			if exists (select id from issue where id = @ID)
+			begin			
+				set @html = @html + '<div><b>Issue Type:</b> {IssueType}</div>'
+				set @html = @html + '<div><b>Criticality:</b> {Criticality}</div>'
+
+				insert into @tbl 
+					select 'IssueType', it.name 
+					from issuetype it inner join issue i on(i.issuetypeid = it.id) 
+					where i.id = @ID
+
+				insert into @tbl 
+					select 'Criticality', case when i.Criticality = 0 then 'Negligible' when i.Criticality = 1 then 'Low' when i.Criticality = 2 then 'Medium' when i.Criticality = 3 then 'High'  when i.Criticality = 4 then 'Critical' else 'N/A' end
+					from issuetype it inner join issue i on(i.issuetypeid = it.id) 
+					where i.id = @ID
+
+				set @hasDynamicFields = 1
+			end			
+		end;
+
+		if @Type = 'Resource'
+		begin
+			--declare @e nvarchar(500)--, @fn nvarchar(250), @ln nvarchar(250)
+			--select	@e = Email--, @fn = FirstName, @ln = LastName
+			--from	reporting.Global_Resource
+			--where	ResourceID = @ID
+
+			--insert into @tbl values ('Email', @e)
+			--insert into @tbl values ('FirstName', @fn)
+			--insert into @tbl values ('LastName', @ln)
+			--insert into @tbl values ('Role', '')
+
+			--set @html = @html + '<div><b>Email:</b> {Email}</div>'
+			--set @html = @html + '<div><b>First Name:</b> {FirstName}</div>'
+			--set @html = @html + '<div><b>Last Name:</b> {LastName}</div>'
+
+			set @hasDynamicFields = 1
+		end;
+
+		if @Type = 'Rule'
+		begin
+			insert into @tbl
+				select	'Name', DisplayValue
+				from	[Rule] O
+				where	ID = @ID
+
+			set @hasDynamicFields = 1
+		end;
+
+		if @Type = 'RuleDimension'
+		begin
+			insert into @tbl
+				select	'Description', [Description]
+				from	RuleDimension
+				where	ID = @ID
+			insert into @tbl
+				select	'Name', [Name]
+				from	RuleDimension
+				where	ID = @ID
+
+			--set @html = @html + '<div><b>Path:</b> {Description}</div>'
+
+		end;
+
+		if @Type = 'Taxonomy'
+		begin
+			declare @taxonomyPathHtml nvarchar(2500) = '<table>';
+
+			with tp as (
+				select	O.ID,
+						O.ParentID,
+						O.DisplayValue,
+						coalesce(L.Name, 'Level ' + cast(O.[Level] as varchar)) as LevelName,
+						O.[Level]
+				from	[Taxonomy] O
+						left join TaxonomyTypeLevel L on L.TaxonomyTypeID = O.TaxonomyTypeID and L.[Level] = O.[Level]
+				where	O.ID = @ID
+				union all
+				select	O.ID,
+						O.ParentID,
+						O.DisplayValue,
+						coalesce(L.Name, 'Level ' + cast(O.[Level] as varchar)) as LevelName,
+						O.[Level]
+				from	[Taxonomy] O
+						outer apply (
+									select Name from TaxonomyTypeLevel where TaxonomyTypeID = O.TaxonomyTypeID and [Level] = O.[Level]
+									) L
+						--left join TaxonomyTypeLevel L on L.TaxonomyTypeID = O.TaxonomyTypeID and L.[Level] = O.[Level]
+						inner join tp as C on C.ParentID = O.ID
+			)
+
+			select		@taxonomyPathHtml = coalesce(@taxonomyPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast([Level] as varchar) + '</td><td>' +  LevelName + '</td><td><b>' + DisplayValue + '</b>' + '</td></tr>'
+			from		tp
+			order by	[Level]
+
+			set @taxonomyPathHtml =  @taxonomyPathHtml + '</table>'
+
+			set @html = @html + '<div><b>Path:</b></div><div>' + coalesce(@taxonomyPathHtml,'') + '</div>'
+
+			set @hasDynamicFields = 1
+		end;
+
+		if @Type = 'TaxonomyType'
+		begin
+			insert into @tbl
+				select	'Name', Name
+				from	TaxonomyType O
+				where	ID = @ID
+
+			set @hasDynamicFields = 1
+		end;
+
+		-- If required, get dynamic fields to add to list.
+		if @hasDynamicFields = 1
+		begin
+			select	@html = @html + '<div><b>' + FriendlyName + '</b>: ' + '{' + Name + '}' + '</div>' 
+			from	FieldWithRelation
+			where	ObjectType = @Type
+					and ObjectID = @ID
+					and Name not in (select Name from @tbl)
+
+			insert into @tbl
+				select	Name,
+						FormattedValue
+				from	FieldWithRelation
+				where	ObjectType = @Type
+						and ObjectID = @ID
+						and Name not in (select Name from @tbl)
+		end;
+	end
+
+	if @Action = 'Statistics'
+	begin
+		set @html = '<h3>{Name}</h3><div>{Statistics}</div>'
+
+		set @hasStats = case @Type
+							when 'Artifact' then 1
+							when 'Taxonomy' then 1
+							else 0
+						end
+
+		-- If required, build statistics table
+		if @hasStats = 1
+		begin
+			-- BUILD STATS LIST HTML -----------------------------------------
+			declare @statsHtml nvarchar(max)
+
+			declare @stats table (ID int identity, Name nvarchar(250), Score bit)
+
+			--insert into @stats 
+			--	select		G.Name + ': ' + I.Name,
+			--				MR.Value
+			--	from		metrics.ScoreItem S
+			--				inner join metrics.MapResult MR on MR.ScoreID = S.ID and S.EffectiveEndDate = '12/31/9999' --and S.Object = @Type and S.ObjectID = @ID
+			--				inner join metrics.Map M on M.ID = MR.MapID
+			--				inner join metrics.[Group] G on G.ID = M.GroupID
+			--				inner join metrics.Item I on I.ID = M.ItemID
+			--	order by	G.Name + ': ' + I.Name
+
+			set @statsHtml = '<table class="hoverable bordered striped" style="width:100%">'
+
+			-- Loop through field name list ---------
+			set @statsHtml = @statsHtml + '<tbody>'
+			set		@current = 1
+			select	@max = max(ID) from @stats
+			while @current <= @max
+			begin
+				select	@statsHtml = @statsHtml + '<tr><td>' + Name  + '</td>' + '<td>' + case when Score = 1 then 'Pass' else 'Fail' end  + ' </td></tr>'
+				from	@stats
+				where	ID = @current
+
+				set @current = @current + 1
+			end
+			set @statsHtml = @statsHtml + '</tbody>'
+			-----------------------------------------
+
+			insert into @tbl values ('Statistics', @statsHtml)
+
+			------------------------------------------------------------------
+		end;
+	end
+
+	if exists (select 1 from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and resourceid = @resourceId and [object] = @Type and objectid = @ID)
+	begin
+		set @html = 'This item either does not exist or you do not have access to its details.';
+
+		-- Return the properly formatted values.
+		select	'' as Title,
+				@html as Body;
+	end
+	else
+	begin
+		-- Replace the fields in the template with the appropriate text value.
+		set		@current = 1
+		select	@max = max(ID) from @tbl
+
+		while @current <= @max
+		begin
+			select	@name = '{' + Name + '}',
+					@value = COALESCE(Value, '')
+			from	@tbl 
+			where	ID = @current
+
+			if @showIcon = 1
+			begin
+				if @name = '{Name}' and @icon is not null
+				begin
+					update	@tbl 
+					set		Value = '<div class="pull-left" style="width: 30px">' + @icon + '</div>' + '<div class="pull-right">' + @value + '</div>'
+					where	ID = @current
+					--set @usedIconAlready = 1
+				end
+			end
+
+			set @html = REPLACE(@html, @name, @value)
+
+			set @current = @current + 1
+		end
+
+		--if @showIcon = 1 and @icon is not null
+		--begin
+		--	set @html = @icon + '<br/>' + @html
+		--end
+
+		set @html = '<div style="max-height: 500px; min-width: 400px; overflow-y: auto">' + @html + '</div>'
+
+		-- Return the properly formatted values.
+		select	'' as Title,
+				@html as Body;
+	end
+END
+GO;
+
+ALTER FUNCTION [dbo].[ArtifactNgSiteNavigation](@id int)
+RETURNS XML
+WITH RETURNS NULL ON NULL INPUT
+BEGIN 
+	RETURN 
+	(
+	SELECT	name,
+			url,
+			'Menu_AT' + cast(id as varchar(15)) as menuID,
+			0 as feature,
+			case when @@NESTLEVEL > 24 then null else  dbo.ArtifactNgSiteNavigation(id) end as items
+	FROM	(				
+					select
+						FAT.ID,
+						FAT.Name,
+						AUrl.[Url] as [Url]
+					from	    ArtifactType FAT					
+					inner join AssetType T on T.Object = 'ArtifactType' and T.ObjectID = FAT.ID
+					outer apply (
+							select	IT.SubjectID
+							from	IntersectType IT 
+									inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = FAT.ID and P.ID = IT.PredicateID and P.Type = 3
+							) IT
+					cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
+					where IT.SubjectID = @id and FAT.ID <> @id
+			--		) A
+			) BG
+			FOR XML PATH('nav'), TYPE
+	)
+END
+GO;
+
+ALTER FUNCTION [dbo].[GetArtifactParentByAssetID]
+(
+	@Id bigint
+)
+RETURNS TABLE 
+
+AS
+RETURN 
+(	
+	select	IAD.ObjectAssetID as ID,
+			IAD.ObjectID as ObjectID,
+			IAD.SubjectID as ParentID,
+            ID.DisplayValue as ParentDisplayValue,						
+			PUrl.Url as ParentUrl							
+				    from	[utility].IntersectAsset IAD							
+                            inner join dbo.Asset IA on IA.Object = 'Artifact' and IA.ObjectID = IAD.SubjectID and IAD.PredicateType = 3
+                            inner join dbo.AssetType IAT on IAT.ID = IA.AssetTypeID
+                            cross apply [dbo].[GetArtifactDisplayValue](IA.ID) ID
+							cross apply dbo.GetAssetUrlById(IA.ID) PUrl
+					where IAD.[Object] = 'Artifact' and IAD.ObjectAssetID = @Id
+)
+GO;
+
+ALTER FUNCTION [dbo].[ArtifactSiteNavigation](@id int)
+RETURNS XML
+WITH RETURNS NULL ON NULL INPUT
+BEGIN 
+	RETURN 
+	(
+	SELECT	name,
+			url,
+			'Menu_AT' + cast(id as varchar(15)) as menuID,
+			0 as feature,
+			dbo.ArtifactSiteNavigation(id) as items
+	FROM	(
+			--SELECT	A.name,
+			--		A.url,
+			--		NULL AS items
+			--FROM	(
+					SELECT		TOP 1000
+								a.id,
+								a.name,
+								dbo.GenerateAssetTypeurl(T.ID) As url
+					FROM		ArtifactType  A
+								inner join AssetType T on T.Object = 'ArtifactType' and T.ObjectID = A.ID
+					WHERE		ParentID = @id
+					ORDER BY	name
+			--		) A
+			) BG
+			FOR XML PATH('nav'), TYPE
+	)
+END
+GO;
+
+ALTER PROCEDURE [dbo].[GetCommentDetailByID]
+	@id int
+AS
+BEGIN
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	P (ID, ParentID)
+	AS
+	(
+		SELECT		C.ID,
+					C.ParentID
+		FROM		Comment C
+		WHERE		ID = @id
+	)
+
+	SELECT		C.*,
+				C.CreatingResourceID,
+				O.DisplayValue as ObjectName,				
+				AUrl.Url as ObjectUrl,
+				case
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectType
+					ELSE 'Resource'
+				end as ObjectType,
+				O.DisplayValue as ResourceName,
+				case 
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectID
+					ELSE C.CreatingResourceID
+				end as ObjectID,
+				(
+				select	CRD.Object,
+						CRD.ObjectID,
+						CRD.TextPath,
+						CRD.ObjectTypeName,
+						CRD.Url,
+						CRD.ForeColor as IconForeColor,
+						CRD.BackColor as IconBackColor,
+						CRD.NgUrl
+				from	CommentRelation CR
+				inner join (
+					select Object, ObjectID, ForeColor, BackColor, TypeName as ObjectTypeName, AUrl.Url as Url, AUrl.Url as NgUrl, DisplayValue as TextPath from AssetDetail A
+					cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
+					union all
+					select T.Object, T.ObjectID, OS.IconForeColor as ForeColor, OS.IconBackColor as BackColor, null as ObjectTypeName, TUrl.Url as Url, TUrl.Url as NgUrl, Name as TextPath from AssetType T
+					cross apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
+					left join ObjectStyle OS on OS.ObjectType = T.Object and OS.ObjectID = T.ObjectID
+				) CRD on CR.CommentID = C.ID 
+					and CR.ObjectType = CRD.[Object] 
+					and CR.ObjectID = CRD.ObjectID
+				where Object != 'Resource'
+					and TextPath != 'FirstNameLastName'
+				for xml path('tag'), root('tags'), type
+				) as TagsXml,
+				(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML,
+			CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			ELSE
+				cast(0 as bit)
+			END as CreatorIsOwner
+	FROM		Comment C
+				left join AssetDetail O on O.[Object] = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID
+				outer apply [dbo].[GetAssetUrlById](O.ID) AUrl
+				INNER JOIN P ON C.ID = P.ID
+	ORDER BY	C.ParentID, C.DateCreated DESC
+END
+GO;
+
+ALTER PROCEDURE [dbo].[GetCommentDetailsByFollower]
+--declare
+	@resourceID int,
+	@skip int,
+	@take int,
+	@dateStart datetime = null,
+	@dateEnd datetime = null,
+	@commentTypeID int = 0,
+	@searchPhrase varchar(100) = ''
+--set @resourceID = 1
+--set @skip = 0
+--set @take = 200
+AS
+BEGIN
+	set nocount on;
+
+	drop table if exists #commentIds;
+	create table #commentIds (id int);
+
+	insert into #commentIds
+		select	CommentID as ID
+		from	FollowDetail f
+				inner join CommentRelation cr on cr.ObjectID = f.ObjectID and cr.ObjectType = f.ObjectType
+		where	f.ResourceID = @resourceId
+		union all
+		select	ID 
+		from	Comment 
+		where	CreatingResourceID = @resourceid
+		union all
+		select	ID 
+		from	comment c2
+				inner join	ResponsibilityDetail o on o.ResourceID = @resourceID and o.Object = c2.OwnerObjectType and o.ObjectID = c2.OwnerObjectID;
+
+	with p as
+	(
+	select	c.*,
+			case 
+				when c.CreatingResourceID = @resourceID then 1
+				when c.VisibilityID = 2 then 1
+				when c.VisibilityID = 3 then 1
+				when coalesce(c.VisibilityID, 4) = 4  then 1
+				else 0
+			end as IsVisible
+	from	Comment c
+	inner join #commentIds S on S.ID = C.ID
+	where   C.isdeleted = 0
+			AND (
+					coalesce(@commentTypeID,0) = 0 OR (C.CommentTypeID = @commentTypeID)
+				) 
+			AND (
+					(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
+					(@dateStart is null and @dateEnd is null)
+				)
+			AND C.ParentID is null
+			AND (
+				coalesce(ltrim(rtrim(@searchPhrase)),'')='' or 
+				lower(Body) like lower('%'+@searchPhrase+'%')
+				)
+	order by c.datecreated DESC
+	OFFSET		@skip ROWS 
+	FETCH NEXT	@take ROWS ONLY
+	)
+
+	select	a.*,
+			a.OwnerObjectType as ObjectType,
+			a.OwnerObjectId as ObjectId,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			R.Email as ResourceEmail,
+			D.DisplayValue as ObjectName,
+			AUrl.Url as ObjectUrl,
+			(
+			select	CRD.Object,
+					CRD.ObjectID,
+					CRD.TextPath,
+					CRD.ObjectTypeName,
+					CRD.Url,
+					CRD.BackColor as IconBackColor,
+					CRD.ForeColor as IconForeColor,
+					CRD.NgUrl
+			from	CommentRelation CR
+				inner join (
+					select Object, ObjectID, ForeColor, BackColor, TypeName as ObjectTypeName, AUrl.Url as Url, AUrl.Url as NgUrl, DisplayValue as TextPath from AssetDetail A
+					cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
+					union all
+					select T.Object, T.ObjectID, OS.IconForeColor as ForeColor, OS.IconBackColor as BackColor, null as ObjectTypeName, TUrl.Url as Url, TUrl.Url as NgUrl, Name as TextPath from AssetType T
+					cross apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
+					left join ObjectStyle OS on OS.ObjectType = T.Object and OS.ObjectID = T.ObjectID
+				) CRD on CR.CommentID = a.ID and a.ParentID is null and CR.ObjectType = CRD.[Object] and CR.ObjectID = CRD.ObjectID
+			for xml path('tag'), root('tags'), type
+			) as TagsXml,
+			(
+			select	CommentID,
+					ResourceID,
+					vote as VoteValue
+			from	commentvote
+			where	commentid = a.ID
+			for		xml path('vote'), root('votes'), type
+			) as VotesXML,
+			0 as CreatorIsOwner
+	from	(
+			select	* 
+			from	p
+			union all
+			select	r.*,
+					1 as IsVisible 
+			from	Comment r
+					inner join p on r.ParentID = p.ID
+			) a
+			left join reporting.Global_Resource R on R.ResourceID = a.CreatingResourceID
+			left join AssetDetail D on D.[Object] = a.OwnerObjectType and D.ObjectID = a.OwnerObjectID
+			outer apply [dbo].[GetAssetUrlById](D.ID) AUrl
+	where	IsVisible = 1;
+END
+GO;
+
+ALTER PROCEDURE [dbo].[GetCommentDetailsByType]
+--declare
+	@type varchar(50), 
+	@id int,
+	@skip int,
+	@take int,
+	@dateStart datetime = null,
+	@dateEnd datetime = null,
+	@commentTypeID int = 0,
+	@searchPhrase varchar(100) = ''
+--set @type = 'Artifact'
+--set @id = 733
+--set @skip = 0
+--set @take = 100
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	 P
+	AS
+	(
+		SELECT		C.*,
+					CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+						1
+					WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+						1
+					ELSE
+						0
+					END as CreatorIsOwner,
+					coalesce(C.OwnerObjectType, CR.ObjectType) as ObjectType,
+					coalesce(C.OwnerObjectID, CR.ObjectID) as ObjectID,
+					(
+					select	a.[Object],
+							a.ObjectID,
+							utility.getassetdisplayvalue(a.id) as TextPath,
+							ast.Name as ObjectTypeName,							
+							os.IconForeColor,
+							os.IconBackColor,
+							dbo.generateAsseturl(a.ID) as Url
+					from	CommentRelation CR
+							inner join asset a on (CR.CommentID = C.ID and a.[object] = CR.[ObjectType] and a.objectid = CR.ObjectID)
+							inner join assettype ast on ( a.assettypeid = ast.id)
+							inner join objectstyle os on (ast.[object] = os.[objecttype] and ast.[objectid] = os.[objectid])							
+					for xml path('tag'), root('tags'), type
+					) as TagsXml
+		FROM		Comment C
+					INNER JOIN CommentRelation CR	ON C.ID = CR.CommentID
+													AND (
+														coalesce(@commentTypeID,0) = 0 OR (C.CommentTypeID = @commentTypeID)
+														) --in (1,2,3,7)
+													AND CR.ObjectType = @type 
+													AND CR.ObjectID = @id
+													AND (
+														(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
+														(@dateStart is null and @dateEnd is null)
+														)
+													AND C.ParentID IS NULL	
+													and c.isdeleted = 0			
+		WHERE
+			coalesce(ltrim(rtrim(@searchPhrase)),'')='' or (lower(Body) like lower('%'+@searchPhrase+'%')) 
+		ORDER BY	C.DateCreated DESC
+		OFFSET  @skip ROWS 
+		FETCH NEXT @take ROWS ONLY 
+
+		UNION ALL
+
+		SELECT	C.*,
+				0 as CreatorIsOwner, 
+				cast('Resource' as varchar(50)) as ObjectType,
+				C.CreatingResourceID as ObjectID,
+				NULL as TagsXml
+		FROM	P
+				INNER JOIN Comment C ON C.ParentID = P.ID
+	)
+
+	select	P.*,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			R.Email as ResourceEmail,
+			utility.getassetdisplayvalue(a.id),
+			dbo.generateasseturl(a.id) as ObjectUrl,
+			(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML
+	from	P
+			left join reporting.Global_Resource R on R.ResourceID = P.CreatingResourceID			
+			left join asset a on a.[object] = p.objecttype and a.objectid = p.objectid
+			left join assettype ast on a.assettypeid = ast.id
+	where
+		isdeleted = 0;
+END
+GO;
+
+ALTER proc [dbo].[GetPageInformation]
+--declare 
+	@o varchar(50),-- = 'Artifact',
+	@oid int,-- = 23450,
+	@rid int --= 1
+as
+begin
+	declare @breadcrumbsRaw table ([Level] int, [TypeName] nvarchar(500), [Name] nvarchar(max), [TypeUrl] nvarchar(2500), [Url] nvarchar(2500));
+	declare @breadcrumbs table ([Name] nvarchar(max), [Url] nvarchar(2500), Active bit, IsType bit);
+
+	with h as
+		(
+		select	A.ID,
+				A.[ObjectID], 
+				A.AssetTypeID,
+				I.SubjectID as [ParentID], 
+				0 as [Level]
+		from	Asset A
+				left join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
+		where	A.[Object] = @o and A.ObjectID = @oid
+		union all
+		select	P.ID,
+				P.[ObjectID] as ID, 
+				P.AssetTypeID,
+				I.SubjectID as ParentID, 
+				h.[Level]-1 as [Level]
+		from	Asset P
+				inner join h on P.[Object] = @o and P.ObjectID = h.ParentID
+				outer apply (
+							select	SubjectID
+							from	PredicateIntersect 
+							where	Object = P.Object 
+									and ObjectID = P.ObjectID 
+									and PredicateType = 3
+							) I
+		)
+
+	insert into @breadcrumbsRaw
+		select		distinct	
+					[Level],
+					ltrim(rtrim(T.Name)),
+					ltrim(rtrim(D.DisplayValue)),
+					UT.Url,
+					U.Url
+		from		h 
+					inner join AssetType T on T.ID = h.AssetTypeID
+					left join dbo.GetAssetDisplayValue() D on D.ID = h.ID
+					cross apply dbo.GetAssetUrlByID(h.ID) U
+					cross apply dbo.GetAssetTypeUrlById(T.ID) UT
+		where		ltrim(rtrim(T.Name)) is not null
+					and ltrim(rtrim(D.DisplayValue)) is not null
+		order by	[Level]
+
+	declare @max int = 0,
+			@min int
+	select	@min = min([Level]) from @breadcrumbsRaw
+
+	insert into @breadcrumbs values ('Glossary', null, 0, 0)
+
+	while @min <= @max
+	begin
+		insert into @breadcrumbs
+			select	TypeName, TypeUrl, 0, 1 from @breadcrumbsRaw where [Level] = @min
+
+		insert into @breadcrumbs
+			select	Name, 
+					Url, 
+					case @min when 0 then 1 else 0 end, 
+					0 
+			from	@breadcrumbsRaw 
+			where	[Level] = @min
+
+		set @min = @min + 1
+	end
+
+	select	distinct
+			O.[Uid],
+			A.ID,
+			O.ID as AssetID,
+			O.AssetTypeID,
+			OD.DisplayValue,
+			T.Name as [TypeName],
+			case 
+				when Dash.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasDashboards,
+			case 
+				when Work.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasWorkflow,
+			case 
+				when Child.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasChildArtifacts,
+			case 
+				when Attr.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as AllowAttributes,
+			case 
+				when Hier.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as AllowPredicateHierarchies,
+			(
+			select	*
+			from	(
+					select	P.ID as [ID],
+							P.Name as [Name]
+					from	[Predicate] P
+					where	exists(SELECT * FROM IntersectType IT WHERE P.[type] = 6 and P.ID = IT.PredicateID and ((IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR (IT.Object = T.Object and IT.ObjectID =T.ObjectID)))
+					union	
+					select	P.ID as [ID], 
+							P.Name as [Name] 
+					from	[NymRelation] R 
+							inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = T.Object and R.ObjectID = T.ObjectID
+					) NMT
+			for		json path
+			)
+			as NymTypes,
+			(
+			select	* 
+			from	@breadcrumbs
+			for		json path
+			) as Breadcrumbs
+	from	Artifact A 
+			inner join Asset O on O.Object = @o and O.ObjectID = A.ID 
+			inner join AssetType T on T.ID = O.AssetTypeID
+			left join dbo.GetAssetDisplayValue() OD on OD.ID = O.ID
+			--cross apply [dbo].GetAssetDisplayValueById(O.ID) as OD
+			cross apply (
+						select	count(1) as [Count]
+						from	Report
+						where	ObjectType = O.Object
+								and ObjectID = T.ObjectID
+						) Dash
+			cross apply (
+						select	count(1) as [Count]
+						from	workflow.EventRegistration WER
+								inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 --ACTIVE
+						where	WER.Object = T.Object
+								and WER.ObjectID = T.ObjectID
+						) Work
+			cross apply (
+						select	count(1) as [Count]
+						from	[PredicateIntersect]
+						where	Subject = O.Object
+								and SubjectID = O.ObjectID
+								and PredicateType = 3
+						) Child
+			cross apply (
+						select	count(1) as [Count]
+						from	AttributeTypeRelation
+						where	ObjectType = T.Object and ObjectID = T.ObjectID
+						) Attr
+			cross apply (
+						select	count(1) as [Count]
+						from	IntersectType IT
+								inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3 -- TypeOf
+						where	((IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR (IT.Object = T.Object and IT.ObjectID = T.ObjectID))
+						) Hier
+	where   A.ID = @oid 
+			and A.[Visible] = 1 
+			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+	for json path, WITHOUT_ARRAY_WRAPPER
+end
+GO;
+
+ALTER PROCEDURE [dbo].[GetSiteNavigation]
+(
+	@ResourceID int = 0
+)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
+		NULL AS Items	
+FROM SiteNav n
+WHERE n.Name = '#Monitor' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
+		NULL AS Items		
+FROM SiteNav n
+WHERE n.Name = '#Home' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
+		(		
+			select
+				FAT.name,
+				AUrl.[Url] as [url],
+				0 as feature,		
+				dbo.ArtifactNgSiteNavigation(fat.id) as items
+					from	    ArtifactType FAT					
+						inner join AssetType T on T.Object = 'ArtifactType' and T.ObjectID = FAT.ID					
+						cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
+						left join SiteNav v on v.ObjectID = FAT.ID and v.Object = 'ArtifactType'
+					where 
+						not exists  (
+							select	IT.SubjectID
+							from	IntersectType IT 
+									inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = FAT.ID and P.ID = IT.PredicateID and P.Type = 3
+							) 	
+							and v.ObjectID is null				
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Glossary' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+UNION ALL
+
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
+		(
+			SELECT	name,
+					url,
+					0 as feature,
+					null as items
+			FROM	(
+					SELECT		TOP 1000
+								a.id,
+								a.name,
+								dbo.GenerateAssetTypeUrl(T.ID) As url
+					FROM		TaxonomyType a
+								inner join AssetType T on T.Object = 'TaxonomyType' and T.objectID = a.id
+								left join SiteNav v on v.ObjectID = a.ID and v.Object = 'TaxonomyType'
+					WHERE		v.ObjectID is null
+					ORDER BY	a.name
+					) BG
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Models' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
+		(
+			SELECT	name,
+					url,
+					0 as feature,
+					null as items
+			FROM	(
+					SELECT		TOP 1000
+								a.id,
+								a.name,
+								dbo.GenerateAssetTypeUrl(T.ID) As url
+					FROM		PolicyType a
+								inner join AssetType T on T.Object = 'PolicyType' and T.ObjectID = a.ID
+								left join SiteNav v on v.ObjectID = a.ID and v.Object = 'PolicyType'
+					WHERE		v.ObjectID is null
+					ORDER BY	a.name
+					) BG
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Policy' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+		
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
+		null AS Items
+FROM SiteNav n
+WHERE n.Name = '#Reference' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		2 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
+		(
+		SELECT		FT.name, 
+					dbo.GenerateAssetTypeUrl(T.ID)  As url,
+					2 as feature,
+					(
+					SELECT		name, 
+								dbo.GenerateAssetUrl(A.ID)  As url,
+								'F' + cast(F.ID as varchar(15)) as menuID,
+								2 as feature
+					FROM		Fusion F
+								inner join Asset A on A.Object = 'Fusion' and A.ObjectID = F.ID
+					WHERE		F.FusionTypeID = FT.ID
+					ORDER BY	name
+					FOR XML PATH('nav'), TYPE
+					) AS items	
+		FROM		FusionType FT
+					inner join AssetType T on T.Object = 'FusionType' and T.ObjectID = FT.ID
+		ORDER BY	name
+		FOR XML PATH('nav'), TYPE
+		) AS Items	
+	FROM SiteNav n
+WHERE n.Name = '#Fusion' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+		
+UNION ALL
+
+SELECT	n.Name as MenuID, 
+		n.SortOrder,
+		4 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
+		(
+        SELECT	'People' AS name, --'#People' as MenuID,
+                'community/groups' AS url, 		        
+                0 as feature,
+		        NULL AS Items
+        FOR XML PATH('nav'), TYPE
+        ) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+UNION ALL
+
+SELECT	'#Admin' as MenuID,
+		999 as SortOrder,
+		0 as Feature,
+		'fa-cogs' as Icon,
+		'Administration' as Title,
+		(
+			select	*
+			from	(
+					SELECT	'Security' AS name, 
+							'#/' AS url, 
+							0 as feature,
+							(
+							select	*
+							from	(
+									SELECT	'Groups' AS name, 
+											'#/groups/administration' AS url, 
+											--'Menu_A_S_G' as menuID,
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Users' AS name, 
+											'#/resources/administration' AS url, 
+											--'Menu_A_S_R' as menuID,
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Responsibilities' AS name, 
+											'#/governance/administration' AS url, 
+											0 as feature,
+											NULL AS items
+                            ) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+						
+					union all
+
+					SELECT	'MetaModel' AS name, 
+							'#/' AS url,
+							0 as feature, 
+							(
+							select	*
+							from	(
+									SELECT	'Artifacts' AS name, 
+											'#/artifacts/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Attributes' AS name, 
+											'#/attributes/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Lookups' AS name, 
+											'#/lookups/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Models' AS name, 
+											'#/catalogs/administration' AS url, 
+											0 as feature,
+											NULL AS items
+                                    union all
+									SELECT	'Policies' AS name, 
+											'#/policies/administration' AS url, 
+											1 as feature,
+											NULL AS items
+                                    union all
+									SELECT	'Relationships' AS name, 
+											'#/relations/administration' AS url, 
+											0 as feature,
+											NULL AS items
+                                    union all
+                                    SELECT	'Rules' AS name, 
+											'#/rules/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+						
+					union all
+
+					SELECT	'Metrics' AS name, 
+							'#/' AS url,
+							0 as feature, 
+							(
+							select	*
+							from	(
+									SELECT	'Scoring' AS name, 
+											'#/analytics/administration' AS url, 
+											5 as feature,
+											NULL AS items
+									union all
+					                SELECT	'Dashboards' AS name, 
+							                '#/reporting/administration' AS url, 
+							                0 as feature,
+							                NULL AS items
+                                    union all
+					                SELECT	'Surveys' AS name, 
+							                '#/surveys/administration' AS url, 
+							                7 as feature,
+							                (
+							                SELECT	'Response Types' AS name, 
+									                '#/surveyresponsetypes/administration' AS url, 
+									                7 as feature,
+									                NULL AS items
+							                FOR XML PATH('nav'), TYPE
+							                ) AS items
+									) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+						
+					union all
+
+					SELECT	'Reference' AS name, 
+							'#/domains/administration' AS url, 
+							0 as feature,
+							NULL AS items
+
+					union all
+
+					SELECT	'Workflow' AS name, 
+							'#/workflow/administration' AS url, 
+							0 as feature,
+							NULL AS items
+
+                    union all
+
+                    SELECT	'Templates' AS name, 
+							'#/templates/administration' AS url, 
+							0 as feature,
+							NULL AS items
+
+					union all
+
+					SELECT	'Integration' AS name, 
+							'#/' AS url, 
+							0 as feature,
+							(
+							select	*
+							from	(
+									SELECT	'Bulk Loader' AS name, 
+											'#/load' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Fusion' AS name, 
+											'#/fusion/administration' AS url, 
+											2 as feature,
+											NULL AS items
+									union all
+									SELECT	'API' AS name, 
+											'/swagger' AS url, 
+											0 as feature,
+											NULL AS items
+									) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+
+                    union all
+
+                    SELECT	'Settings' AS name, 
+							'#/settings' AS url, 
+							0 as feature,
+							NULL AS items
+            ) bg
+			for xml path('nav'), type
+		) as Items
+
+	where 1 = 1
+
+	UNION ALL
+
+	SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
+		(
+		SELECT	RT.name, 				
+				dbo.GenerateAssetTypeUrl(T.ID) As url,
+				0 as feature,
+				null AS items	
+		FROM	RuleType RT
+				inner join AssetType T on T.Object = 'RuleType' and T.ObjectID = RT.ID
+				LEFT JOIN SiteNav v on v.ObjectID = RT.ID and v.Object ='RuleType'
+		WHERE	v.ObjectID IS NULL
+		FOR XML PATH('nav'), TYPE
+		) AS Items
+	FROM SiteNav n
+	WHERE n.Name = '#Data Quality' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+	UNION ALL
+
+	SELECT 
+		'~' + Name AS MenuID,
+		s.SortOrder,
+		0 AS Feature,
+		s.Icon as Icon,
+		s.Title as Title,
+		dbo.CustomSiteNavigation(ID) AS Items
+	from SiteNav s
+	where ParentID IS NULL and Name not like '#%' AND dbo.HasSiteNavPermission(s.ID, @ResourceID) = 1
+
+	order by sortorder
+END
+GO;
