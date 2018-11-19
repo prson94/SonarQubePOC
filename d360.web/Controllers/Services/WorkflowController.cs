@@ -2037,7 +2037,7 @@ order by wi.StartedOn desc";
                                     left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
                                     left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
                                 where
-                                    wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3 
+                                    wt.id = @typeId  and wvs.steptype = 2 and wvs.activitytype = 3 
                                     and wv.[version]=@verid and wvs.id = @sid  
                                    
                            ";
