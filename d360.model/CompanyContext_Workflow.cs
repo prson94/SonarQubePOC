@@ -98,8 +98,6 @@ namespace d360.model
                 cnn.Open();
 
                 prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
-
-                cnn.Close();
             }
 
             return prefix;

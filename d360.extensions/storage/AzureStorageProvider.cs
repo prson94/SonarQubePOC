@@ -67,6 +67,12 @@ namespace d360.extensions.storage
             blockBlob.Delete();
         }
 
+        public bool FileExists(string folderName, string fileName)
+        {
+            var c = getContainer(folderName);
+            return c.GetBlockBlobReference(fileName).Exists();
+        }
+
         public Stream GetFile(string folderName, string fileName)
         {
             using (var stream = new MemoryStream())

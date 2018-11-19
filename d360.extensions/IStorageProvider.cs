@@ -23,6 +23,7 @@ namespace d360.extensions
         void CreateFile(string folderName, string fileName, string content);
         void CreateFile(string folderName, string fileName, string content, string contentType);
         void DeleteFile(string folderName, string fileName);
+        bool FileExists(string folderName, string fileName);
         Stream GetFile(string folderName, string fileName);
         byte[] GetFileAsBytes(string folderName, string fileName);
         string GetFileSecureUrl(string folderName, string fileName);

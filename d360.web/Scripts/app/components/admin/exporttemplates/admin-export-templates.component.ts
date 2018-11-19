@@ -108,8 +108,13 @@ import { ExportTemplate } from '../../../models/export-template.model';
                         </div>
                     </div>
                 </div>
+                 <div class="row">
+                    <div class="col s12">
+                        <d3s-admin-export-template-styles [templateId]="selected?.ID"></d3s-admin-export-template-styles>
+                    </div>
+                </div>
             </div>
-    <div>               
+    </div>               
                 
                 `,
     providers: [ExportTemplateService],       

@@ -43,6 +43,11 @@ namespace d360.core.entities
         public Guid AssetTypeUid { get; set; }
     }
 
+    public class ApiExecutionFields_DeleteAssets
+    {
+        public Guid AssetTypeUid { get; set; }
+    }
+
     public class ApiExecutionFields_PostRelationships
     {
         public Guid IntersectTypeUid { get; set; }

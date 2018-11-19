@@ -8,6 +8,7 @@ namespace d360.core.entities
     public class RetryLogModel
     {
         public int RetryCount { get; set; }
+        public int LastStepCompleted { get; set; } = 0;
         public bool LastRetryInError { get; set; }
         public RetryLogBeginsModel Begins { get; set; }
     }
@@ -53,7 +54,7 @@ namespace d360.core.entities
         public string EnumFieldValues { get; set; }
 
         [DataMember]
-        public string RetryLog { get; set; } = "{RetryCount:0, LastRetryInError: false, Begins:{Fields:0,Relations:0,Responsibilities:0}}";
+        public string RetryLog { get; set; } = "{RetryCount:0, LastRetryInError: false, LastStepCompleted: 0, Begins:{Fields:0,Relations:0,Responsibilities:0}}";
 
         [IgnoreDataMember, ForeignKey("ExecutionID")]
         public virtual IntegrationExecution Execution { get; set; }
