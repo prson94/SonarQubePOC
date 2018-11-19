@@ -631,6 +631,56 @@ order by	P.[Path]
             }
         }
 
+        /// <summary>
+        /// Removes a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assets">The payload of your request.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteAssetsAsync(Guid uid, AssetDeletes assets)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
+
+            var prefix = "Assets.DeleteAssetsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+
+                if (assetType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
+
+                if (assets == null)
+                    assets = readRequestJsonContent<AssetDeletes>(Request).Result;
+
+                var results = (Company.Database.Connection as SqlConnection).DeleteAssets(
+                    QueueSource,
+                    Company.CurrentCompanyDomain,
+                    Company.CurrentCompanyID,
+                    Company.CurrentResourceID,
+                    assetType,
+                    assets
+                );
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
         #region Batch
 
         /// <summary>
@@ -769,7 +819,88 @@ order by	P.[Path]
                     Total = assets.Count,
                     StartedOn = DateTime.UtcNow,
                     ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostAssets { AssetTypeUid = uid })
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PutAssets { AssetTypeUid = uid })
+                });
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
+                            }
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Removes a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assets">The payload of your request.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            Route("batch/{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteBulkAssetsAsync(Guid uid, AssetDeletes assets)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
+
+            var prefix = "Assets.DeleteBulkAssetsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+
+                if (assetType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
+
+                if (assets == null)
+                    assets = readRequestJsonContent<AssetDeletes>(Request).Result;
+
+                var executionInfo = new ApiExecutionInfo
+                {
+                    CompanyID = Company.CurrentCompanyID,
+                    CompanyDomainPrefix = Company.CurrentCompanyDomain,
+                    ExecutionID = Guid.NewGuid(),
+                    Action = ApiExecutionAction.DeleteAssets
+                };
+
+                // Save to storage container.
+                Storage.CreateFolder(executionInfo.StorageFolder);
+                Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
+
+                // Save to queue.
+                await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+
+                // Save to the database.
+                Company.Add(new ApiExecution
+                {
+                    ExecutionID = executionInfo.ExecutionID,
+                    Error = 0,
+                    Processed = 0,
+                    Total = assets.Count,
+                    StartedOn = DateTime.UtcNow,
+                    ResourceID = Company.CurrentResourceID,
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_DeleteAssets { AssetTypeUid = uid })
                 });
 
                 return await Task.FromResult<IHttpActionResult>(

@@ -40,6 +40,20 @@ namespace d360.core.entities
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
+    [JsonArray]
+    [DataContract(Name = "assets")]
+    public class AssetDeletes : List<AssetDelete>
+    {
+
+    }
+
+    [DataContract(Name = "asset")]
+    public class AssetDelete
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+    }
+
     public class AssetImportResult
     {
         public int ItemNumber { get; set; }
