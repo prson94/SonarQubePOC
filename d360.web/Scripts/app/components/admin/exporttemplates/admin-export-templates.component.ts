@@ -13,11 +13,11 @@ import { ExportTemplate } from '../../../models/export-template.model';
                     <div class="col l4 m5 s12">
                         <div class="tile tile-detail">
                             <div>
-                    <header *ngIf="!showEditor">Export Templates
-                        <d3s-tile-actions [hasAdd]="!showDelete" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
+                    <header>Export Templates
+                        <d3s-tile-actions [hasAdd]="!showDelete" (addClick)="selected=null;showEditor=true;showDelete=false;"></d3s-tile-actions>                            
                     </header>                    
-                    <span *ngIf="!showEditor && !showDelete">
-                        <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                    <span>                        
+                        <input type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                         <p-table #dt [value]="exportTemplates" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
                             <ng-template pTemplate="header">
                                 <tr>
@@ -38,31 +38,39 @@ import { ExportTemplate } from '../../../models/export-template.model';
                                     <td>{{item.Name}}</td>
                                     <td>
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;showDelete=false;"><i class="fa fa-pencil"></i></a>
                                         </div>
                                     </td>
                                     <td> 
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true;showEditor=false"><i class="fa fa-trash-o"></i></a>
                                         </div>
                                     </td>
                                 </tr>
                             </ng-template>
-                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <ng-template pTemplate="summary">
                                 <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                             </ng-template>
                         </p-table>                         
-                    </span>  
-                    <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'ExportTemplate'" [title]="'Export Template'" [selection]="selected" (saveClick)="saveExportTemplate($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
-                    <d3s-delete-form *ngIf="showDelete"
-                        [callback]="theDeleteCallback"
-                        [itemId]="selected?.ID"
-                        [method]="'callback'"
-                        [prompt]="'Are you sure you want to delete the selected item?'"                                         
-                        (onCancel)="showDelete=false;"
-                    ></d3s-delete-form>  
+                    </span>                      
                 </div>
              </div>
+            </div>
+            <div class="col l8 m7 s12" *ngIf="showEditor || showDelete">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                        <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'ExportTemplate'" [title]="'Export Template'" [selection]="selected" (saveClick)="saveExportTemplate($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+                        <d3s-delete-form *ngIf="showDelete"
+                            [callback]="theDeleteCallback"
+                            [itemId]="selected?.ID"
+                            [method]="'callback'"
+                            [prompt]="'Are you sure you want to delete the selected item?'"                                         
+                            (onCancel)="showDelete=false;"
+                        ></d3s-delete-form>  
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="col l8 m7 s12" *ngIf="!showEditor && !showDelete">
                 <div class="row">
@@ -86,19 +94,27 @@ import { ExportTemplate } from '../../../models/export-template.model';
                             <header>Template File</header>
                             <div class="row">
                                 <div class="col s12">
-                                    An Excel template file can be used as the starting point for an export template.  Please use the buttons below to upload an Excel template file this will replace any existing template files already specified for the export template.  In order to clear out any existing export template files click <a style="cursor:pointer;" (click)="clearTemplate()"><i class="fa fa-trash-o"></i> here</a>.
+                                    An Excel template file can be used as the starting point for an export template, providing custom static content on a first worksheet. Exported data will be output to a second worksheet.                                    
                                 </div>
                                 <div class="col s12">&nbsp;</div>                        
                                 <div class="col s2">                                    
                                     <p-fileUpload name="template" [url]="'./api/v2/ExportTemplates/TemplateFile/'+ selected.ID"
                                         accept=".xls,.xlsx" maxFileSize="10000000" auto="auto"></p-fileUpload>                                                                         
+                                </div>     
+                                <div class="col s12">
+                                    <a style="padding-left:7px;padding-bottom:20px;cursor:pointer;" (click)="clearTemplate()">Remove Template</a>
                                 </div>                                
                             </div>
                         </div>
                     </div>
                 </div>
+                 <div class="row">
+                    <div class="col s12">
+                        <d3s-admin-export-template-styles [templateId]="selected?.ID"></d3s-admin-export-template-styles>
+                    </div>
+                </div>
             </div>
-    <div>               
+    </div>               
                 
                 `,
     providers: [ExportTemplateService],       
@@ -180,6 +196,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     clearTemplate() {
         this.isLoading = true;
         this.exportTemplateService.saveTemplateFile(this.selected).subscribe(result => {
+            this.selected.HasTemplateFile = false;
             this.isLoading = false;
         });
     }

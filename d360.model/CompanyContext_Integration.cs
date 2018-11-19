@@ -1205,140 +1205,6 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             return results;
         }
 
-        public static List<DatabaseBulkAssetResult> DeleteAssets(this SqlConnection cnn,
-            IQueueSource queue,
-            string companyUrlPrefix,
-            int currentCompanyID,
-            int currentResourceID,
-            AssetType at,
-            AssetDeletes import)
-        {
-            List<DatabaseBulkAssetResult> results = null;
-
-            #region Build data tables for bulk load.
-
-            var assetTable = new System.Data.DataTable();
-            assetTable.Columns.Add("ItemNumber", typeof(int));
-            assetTable.Columns.Add("Message", typeof(string));
-            assetTable.Columns.Add("Success", typeof(bool));
-            assetTable.Columns.Add("Uid", typeof(Guid));
-
-            #endregion
-
-            #region Generate data sets
-
-            for (int i = 1; i <= import.Count; i++)
-            {
-                var model = import[i - 1];
-
-                var row = assetTable.NewRow();
-
-                row["ItemNumber"] = i;
-                row["Uid"] = model.Uid;
-
-                assetTable.Rows.Add(row);
-            }
-
-            #endregion
-
-            if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-            using (var trans = cnn.BeginTransaction())
-            {
-                try
-                {
-                    cnn.Execute("DROP TABLE IF EXISTS #AssetTable", transaction: trans);
-
-                    #region Asset Bulk Copy
-
-                    cnn.Execute(@"
-    create table #AssetTable (
-        ItemNumber int not null,
-
-        Uid uniqueidentifier null,
-        AssetID bigint null,
-
-        [Message] nvarchar(2500) null,
-        Success bit null
-    )", transaction: trans);
-
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetTable_Uid ON #AssetTable ( [Uid] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
-
-                    var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
-
-                    assetBulkCopy.BatchSize = assetTable.Rows.Count;
-                    assetBulkCopy.DestinationTableName = "#AssetTable";
-                    assetBulkCopy.BulkCopyTimeout = 3600;
-
-                    assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
-                    assetBulkCopy.WriteToServer(assetTable);
-
-                    #endregion
-
-                    cnn.Execute("exec asset.BulkDelete @uid, @r", new { at.uid, r = currentResourceID }, trans, 1800);
-
-                    results = cnn.Query<DatabaseBulkAssetResult>("select * from #AssetTable", transaction: trans).ToList();
-                    trans.Commit();
-                }
-                catch (Exception ex)
-                {
-                    trans.Rollback();
-                    throw ex;
-                }
-            }
-
-            cnn.Close();
-
-            #region Send Relationship Events
-
-            try
-            {
-                var events = new List<EventInfo>();
-                var objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), at.Object);
-                foreach (var result in results)
-                {
-                    var changeType = result.IsNew ? ChangeType.Add : ChangeType.Update;
-
-                    events.Add(new EventInfo
-                    {
-                        CompanyID = currentCompanyID,
-                        DomainPrefix = companyUrlPrefix,
-                        ResourceID = currentResourceID,
-                        Action = changeType,
-                        Object = new EventObjectInfo
-                        {
-                            Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), result.Object),
-                            ObjectType = objectType,
-                            ObjectID = result.ObjectID,
-                            ObjectTypeID = at.ObjectID
-                        }
-                    });
-
-                    if (events.Count > 50)
-                    {
-                        queue.CreateTopicMessages(events);
-                        events.Clear();
-                    }
-                }
-
-                if (events.Count > 0)
-                {
-                    queue.CreateTopicMessages(events);
-                    events.Clear();
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-
-            #endregion
-
-            return results;
-        }
-
         public static List<DatabaseBulkRelationshipResult> BulkRelationshipsImport(this SqlConnection cnn,
             IQueueSource queue,
             string companyUrlPrefix,
@@ -1539,6 +1405,28 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             return results;
         }
 
+        public static List<DatabaseBulkRelationshipResult> BulkRelationshipsImport(this SqlConnection cnn,
+            IQueueSource queue,
+            string companyUrlPrefix,
+            int currentCompanyID,
+            int currentResourceID,
+            IntersectType rt,
+            RelationshipInserts import)
+        {
+            var values = new List<Dictionary<string, string>>();
+            import.ForEach(i =>
+            {
+                var dict = new Dictionary<string, string>();
+                dict.Add("SubjectUid", i.SubjectAssetUid.ToString());
+                dict.Add("ObjectUid", i.ObjectAssetUid.ToString());
+                foreach (var f in i.Fields)
+                    if (!dict.ContainsKey(f.Key))
+                        dict.Add(f.Key, f.Value);
+                values.Add(dict);
+            });
+
+            return BulkRelationshipsImport(cnn, queue, companyUrlPrefix, currentCompanyID, currentResourceID, rt, values);
+        }
         #endregion API v2 logic
     }
 }

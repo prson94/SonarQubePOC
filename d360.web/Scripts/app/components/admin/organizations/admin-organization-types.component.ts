@@ -15,7 +15,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="organizationTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','OrganizationCount']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                    <p-table #dt [value]="organizationTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','OrganizationCount']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (selectionChange)="type=$event;typeChange.emit(type)" [selection]="type">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">

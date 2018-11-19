@@ -90,13 +90,6 @@ namespace d360.web.Models
         public bool Active { get; set; }
     }
 
-
-    public class ClaimsMatrixDisplayModel
-    {
-        public int ResponsibilityTypeID { get; set; }
-        public List<ClaimsMatrixEditorItemModel> Items { get; set; }
-    }
-
     public class CommentData
     {
         public string ObjectType { get; set; }
@@ -142,12 +135,6 @@ namespace d360.web.Models
         public int? Id { get; set; }
     }
 
-    public class CountTempModel
-    {
-        public int TypeID { get; set; }
-        public int Count { get; set; }
-    }
-
     public class DetailReadOnlyModel
     {
         public DetailReadOnlyModel()
@@ -184,40 +171,6 @@ namespace d360.web.Models
         public string FriendlyName { get; set; }
         [DataMember]
         public string Value { get; set; }
-    }
-
-    public class DynamicField
-    {
-        public string Name { get; set; }
-        public string FriendlyName { get; set; }
-        public string Description { get; set; }
-
-        public string Value { get; set; }
-
-        public bool IsLookup { get; set; }
-
-        public int? Length { get; set; }
-        public int? MaximumLength { get; set; }
-        public int? MinimumLength { get; set; }
-        public string Pattern { get; set; }
-
-        public string Type { get; set; }
-        public NameValueCollection Options { get; set; }
-    }
-
-    public class DomainHierarchyItem
-    {
-        public DomainHierarchyItem()
-        {
-            expanded = true;
-        }
-
-        public string Type { get; set; }
-        public int ID { get; set; }
-        public string HierarchyID { get; set; }
-        public string ParentHierarchyID { get; set; }
-        public string Name { get; set; }
-        public bool expanded { get; set; }
     }
 
     public class FieldLoader
@@ -445,96 +398,6 @@ namespace d360.web.Models
         public string apiName { get; set; }
     }
 
-    public class GridDynamicAttributeField
-    {
-        public string label { get; set; }
-        public int attributeID { get; set; }
-        public bool allowMultiple { get; set; }
-        public bool isComplex { get; set; }
-        public string description { get; set; }
-        public int fieldCount { get; set; }
-    }
-
-    public class GridLayout
-    {
-        public GridLayout(List<FieldType> types)
-        {
-            Columns = new List<GridColumn>();
-            Fields = new List<GridField>();
-
-            types.ForEach(t =>
-            {
-                var c = new GridColumn { datafield = t.Name, text = t.FriendlyName };
-                var f = new GridField { name = t.Name };
-
-                switch (t.Type)
-                {
-                    case "Boolean":
-                        f.type = "bool";
-                        break;
-                    case "Date":
-                        c.cellsformat = "MMM d yyyy";
-                        f.type = "date";
-                        break;
-                    case "DateTime":
-                        c.cellsformat = "MMM d yyyy hh:mm:ss tt";
-                        f.type = "date";
-                        break;
-                    case "Number":
-                        f.type = "number";
-                        break;
-                    default:
-                        f.type = "string";
-                        break;
-                }
-
-                Columns.Add(c);
-                Fields.Add(f);
-            });
-        }
-
-        public List<GridColumn> Columns { get; set; }
-
-        public List<GridField> Fields { get; set; }
-    }
-
-    public class IntersectLookupModel
-    {
-        public int IntersectID { get; set; }
-        public int SubjectNodeID { get; set; }
-        public string Subject { get; set; }
-        public int SubjectID { get; set; }
-        public int ObjectNodeID { get; set; }
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-    }
-
-    public class IntersectTypeListViewModel
-    {
-        public int ID { get; set; }
-        public string Source { get; set; }
-        public int SourceID { get; set; }
-        public string SourceName { get; set; }
-        public string Target { get; set; }
-        public int TargetID { get; set; }
-        public string TargetName { get; set; }
-    }
-
-    public class KnockoutListItem
-    {
-        public KnockoutListItem()
-        {
-
-        }
-        public KnockoutListItem(string t, string v)
-        {
-            title = t;
-            value = v;
-        }
-        public string title { get; set; }
-        public string value { get; set; }
-    }
-
     public class ListIntItem
     {
         public string title { get; set; }
@@ -554,36 +417,6 @@ namespace d360.web.Models
         public string TargetDiagramKey { get; set; }
     }
 
-    public class OptionsToRelateDbModel
-    {
-        public int IntersectTypeID { get; set; }
-        public string Menu { get; set; }
-        public string SubMenu { get; set; }
-        public string Type { get; set; }
-        public int ID { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class OptionsToRelateJsonModel
-    {
-        public string html { get; set; }
-        public List<OptionsToRelateJsonModel> items { get; set; }
-    }
-
-    public class RawSourceRuleItem
-    {
-        public int IntersectMapID { get; set; }
-        public int SourceRuleID { get; set; }
-        public string Name { get; set; }
-        public string SourceObject { get; set; }
-        public int SourceObjectID { get; set; }
-        public string SourceObjectName { get; set; }
-        public string SourceTypeName { get; set; }
-        public string Description { get; set; }
-        public string RuleContexts { get; set; }
-        public string ItemContexts { get; set; }
-        public int SortOrder { get; set; }
-    }
 
     [DataContract(Namespace = constants.NAMESPACE)]
     public class ReadOnlyFieldValue
@@ -684,42 +517,6 @@ namespace d360.web.Models
         public string DataType { get; set; }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class ReadOnlySection
-    {
-        [DataMember]
-        public int ID { get; set; }
-
-        [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public List<ReadOnlyField> Fields { get; set; }
-    }
-
-    public class RelationAttributeValue
-    {
-        public int AttributeTypeID { get; set; }
-        public string Name { get; set; }
-        public string Value { get; set; }
-        public int TargetID { get; set; }        
-    }   
-
-    public class ReportOverlayModel : ObjectModel
-    {
-        public int ReportID { get; set; }
-        public string ReportName { get; set; }
-        public List<SelectListItem> ObjectTypes { get; set; }
-    }
-
-    public class ResponsibilityTypeHierarchy
-    {
-        public int StartID { get; set; }
-        public string StartName { get; set; }
-        public int? EndID { get; set; }
-        public string EndName { get; set; }
-    }
-
     [DataContract]
     public class ResponsibilityTypeRelationViewModel
     {
@@ -775,72 +572,7 @@ namespace d360.web.Models
         [DataMember]
         public List<PermissionInfo> Permissions { get; set; } = new List<PermissionInfo>();
     }
-
-    public class SchemaFieldLookupItemModel
-    {
-        public SchemaFieldLookupItemModel()
-        {
-            Enabled = true;
-        }
-
-        public string Value { get; set; }
-        public string Text { get; set; }
-        public bool Enabled { get; set; }
-    }
-
-    public class SchemaFieldModel
-    {
-        public SchemaFieldModel()
-        {
-            LookupItems = new List<SchemaFieldLookupItemModel>();
-        }
-
-        public SystemObjects Type { get; set; }
-        public int TypeID { get; set; }
-        public FieldType Field { get; set; }
-
-        public List<SchemaFieldLookupItemModel> LookupItems { get; set; }
-    }
-
-    public class SourceRulesViewModel
-    {
-        public List<SourceRuleViewModel> Rules { get; set; }
-    }
-
-    public class SourceRuleViewModel
-    {
-        public int SourceRuleID { get; set; }
-        public string Name { get; set; }
-        public string RuleContexts { get; set; }
-        public List<SourceRuleItemViewModel> Items { get; set; }
-    }
-
-    public class SourceRuleItemViewModel
-    {
-        public int IntersectMapID { get; set; }
-        public string SourceObject { get; set; }
-        public int SourceObjectID { get; set; }
-        public string SourceObjectName { get; set; }
-        public string SourceTypeName { get; set; }
-        public string Description { get; set; }
-        public string ItemContexts { get; set; }
-        public int SortOrder { get; set; }
-    }
-
-    [DataContract(Name = "Survey", Namespace = constants.NAMESPACE)]
-    public class SurveyModel
-    {
-        [DataMember]
-        public int ID { get; set; }
-        [DataMember]
-        public int ResourceID { get; set; }
-        [DataMember]
-        public string ResourceName { get; set; }
-        [DataMember]
-        public int PercentComplete { get; set; }
-    }
-
-
+    
     [DataContract(Name = "ObjectSurvey", Namespace = constants.NAMESPACE)]
     public class ObjectSurveyModel
     {
@@ -866,8 +598,7 @@ namespace d360.web.Models
     }
 
     public class SurveyResponseQuestionModel
-    {
-        
+    {        
         public int Id { get; set; }
         
         public string Name { get; set; }        
@@ -879,8 +610,7 @@ namespace d360.web.Models
     }
 
     public class SurveyResponseValueModel
-    {
-     
+    {     
         public int ID { get; set; }
      
         public string Name { get; set; }

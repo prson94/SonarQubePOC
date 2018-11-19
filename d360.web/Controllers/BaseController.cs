@@ -57,37 +57,6 @@ namespace System.Net.Http
 
             return match.Value;
         }
-
-        /// <summary>
-        /// Returns an individual HTTP Header value
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static string GetHeader(this HttpRequestMessage request, string key)
-        {
-            IEnumerable<string> keys = null;
-            if (!request.Headers.TryGetValues(key, out keys))
-                return null;
-
-            return keys.First();
-        }
-
-        /// <summary>
-        /// Retrieves an individual cookie from the cookies collection
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="cookieName"></param>
-        /// <returns></returns>
-        public static string GetCookie(this HttpRequestMessage request, string cookieName)
-        {
-            System.Net.Http.Headers.CookieHeaderValue cookie = request.Headers.GetCookies(cookieName).FirstOrDefault();
-            if (cookie != null)
-                return cookie[cookieName].Value;
-
-            return null;
-        }
-
     }
 }
 
@@ -740,9 +709,10 @@ namespace d360.web.Controllers
                                     }
                                 }
                             }
-                            catch
+                            catch(Exception ex)
                             {
-                                fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+                                fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
+                                SendException(ex);
                             }
                         }
 
@@ -959,9 +929,11 @@ namespace d360.web.Controllers
                                     );
                                 }
                             }
-                            catch
+                            catch(Exception ex)
                             {
-                                fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+                                fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
+
+                                SendException(ex);
                             }
                         }
 

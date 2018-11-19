@@ -34,7 +34,7 @@ namespace igx.jobs.databasetaskprocessor
 
     public static class DatabaseTaskProcessor
     {
-        public static void SendMailToUser(string toName, string toEmail, string subject, string body, string templateID, Dictionary<string, string> templateTags, string fromName = "Data3Sixty Workflow")
+        public static void SendMailToUser(string toName, string toEmail, string subject, string templateID, Dictionary<string, string> templateTags, string fromName = "Data3Sixty Workflow")
         {
             // Create the email object first, then add the properties.
             var message = new MandrillMessage();
@@ -47,7 +47,7 @@ namespace igx.jobs.databasetaskprocessor
             message.TrackOpens = false;
             message.TrackClicks = false;
 
-            var tags = new Dictionary<string, object>();
+            
             if (templateTags != null)
             {
                 foreach (var k in templateTags.Keys)
@@ -246,8 +246,7 @@ namespace igx.jobs.databasetaskprocessor
                             };
 
                             #endregion
-
-                            var total = outerCompanyConnection.Query<int>("select count(1) from [queue].[Task] where MachineAssigned is null and NumberOfRetries < 2").Single();
+                                                        
                             var checkoutAndGetQueueItemSql = $@"
 declare @IDs table (ID uniqueidentifier)
 insert into @IDs
@@ -352,24 +351,7 @@ from    [queue].[Task] T
                                                     }
 
                                                     break;
-                                            #endregion
-                                            case "FollowChildren":
-                                                #region
-                                                switch (q.Object)
-                                                    {
-                                                        case "Taxonomy":
-                                                            var processItems = companyConnection.Query<int>(Sql.TaxonomyParents, new { id = (int)q.ObjectID });
-                                                            foreach (var item in processItems)
-                                                            {
-                                                                companyConnection.Execute("SetChildrenByFollowID @id", new { id = (int)item }, null, 180); //3 minute timeout
-                                                        }
-                                                            break;
-                                                    }
-
-                                                //cleanup orphaned FollowChild records
-                                                companyConnection.Execute("delete from followchild where not exists(select * from follow f where f.followtypeid = 3 and f.objecttype = parentobjecttype and f.objectid = parentobjectid)", null, null, 500);
-                                                    break;
-                                            #endregion
+                                            #endregion                                            
                                             case "FusionCache":
                                                 #region
                                                 companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID", new { FusionID = q.ObjectID }, null, 10800);    // 180 minute timeout.
@@ -379,37 +361,6 @@ from    [queue].[Task] T
                                                 #region
                                                 switch (q.Object)
                                                     {
-                                                        case "Comment":
-                                                        #region
-                                                        var comment = companyConnection.Query<CommentInfo>(Sql.Comment, new { CommentID = q.ObjectID }, null, true, 900).FirstOrDefault();
-
-                                                            if (comment != null)
-                                                            {
-                                                                var resourcesToNotify = companyConnection.Query<CommentNotificationUser>(Sql.Resources, new { CommentID = q.ObjectID }, null, true, 900).ToList();
-
-                                                                resourcesToNotify.ForEach(r =>
-                                                                {
-                                                                    var tags = new Dictionary<string, string>();
-                                                                    tags.Add("user", r.Name);
-                                                                    tags.Add("author", comment.Author);
-                                                                    tags.Add("origin", comment.OriginationType);
-
-                                                                    tags.Add("ownerName", comment.OwnerName);
-                                                                    tags.Add("ownerType", comment.OwnerTypeName);
-                                                                    tags.Add("body", comment.Body);
-                                                                    tags.Add("ownerUrl", $"https://{c.UrlPrefix}.data3sixty.com/{comment.OwnerUrl}");
-                                                                    var parentReference = "";
-                                                                    if (comment.ParentID.HasValue)
-                                                                    {
-                                                                        parentReference = string.Format("<p>This is a reply to the original comment by {0} on {1}</p><p style=\"margin-top: 10px; margin-bottom: 10px; border: 1px solid #3979a2; background-color:#eeeeee\">{2}</p>", comment.ParentAuthor, comment.ParentDateCreated, comment.ParentBody);
-                                                                    }
-                                                                    tags.Add("parentReference", parentReference);
-                                                                    tags.Add("createDate", comment.DateCreated.ToShortDateString());
-                                                                    SendMailToUser(r.Name, r.Email, "Data3Sixty - New Comment Added", "", "comment-notification-immediate", tags, "Data3Sixty Community");
-                                                                });
-                                                            }
-                                                            break;
-                                                    #endregion
                                                     case "FusionExecution":
                                                         #region
                                                         var execution = companyConnection.Query<FusionExecution>(@"select * from fusion.Execution where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
@@ -433,7 +384,7 @@ from    [queue].[Task] T
                                                                     tags.Add("executionUrl", $"https://{c.UrlPrefix}.data3sixty.com/fusion/history/{fusionInfo.FusionID}");
                                                                     tags.Add("startDate", execution.DateStarted.Value.ToShortDateString());
                                                                     tags.Add("startTime", execution.DateStarted.Value.ToShortTimeString());
-                                                                    SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");
+                                                                    SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");
                                                                 });
                                                             }
                                                             break;

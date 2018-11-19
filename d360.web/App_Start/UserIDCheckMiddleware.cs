@@ -151,7 +151,7 @@ from	Resource R
 
                     if (!string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiSecret))
                     {
-                        u = cnn.Query<usercompany>(baseSql + @" and R.APIPublicKey = @pub and R.APIPrivateKey = @pri", new { com = companyID, pri = apiSecret, pub = apiKey }).FirstOrDefault();
+                        u = cnn.Query<usercompany>(baseSql + @" and R.APIPublicKey = @pub and R.APIPrivateKey = @pri", new { com = companyID, pri = new Dapper.DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = apiSecret }, pub = new Dapper.DbString { IsAnsi = true, IsFixedLength = true, Length = 25, Value = apiKey } }).FirstOrDefault();
                     }
                     else if (!string.IsNullOrEmpty(username))
                     {

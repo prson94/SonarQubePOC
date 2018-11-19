@@ -440,7 +440,6 @@
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
     <Compile Include="Models\Formatters\DictionaryXmlMediaTypeFormatter.cs" />
-    <Compile Include="Models\Formatters\ExpandoJsonConverter.cs" />
     <Compile Include="Models\ModelMetadataExtensions.cs" />
     <Compile Include="Models\Action Models.cs" />
     <Compile Include="Models\Workflow Models.cs" />
@@ -1013,7 +1012,19 @@
     <Content Include="fonts\nunitosans\NunitoSans-Regular.ttf" />
     <Content Include="fonts\nunitosans\NunitoSans-SemiBold.ttf" />
     <Content Include="fonts\nunitosans\NunitoSans-SemiBoldItalic.ttf" />
+    <None Include="Properties\PublishProfiles\d3s-ui-au-east-development - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-au-east-uat - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-central-Development - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-central-UAT - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-eu-north-development - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-eu-north-UAT - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-london-development - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-london-uat - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-pune-development - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-pune-UAT - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-us-east-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-Nightly - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-us-east-UAT - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
     <Content Include="Views\Authentication\NoAccess.cshtml" />
     <None Include="Web.Debug.config">
@@ -1109,6 +1120,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-fields.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-style-form.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-styles.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.routes.ts" />
@@ -1587,7 +1600,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rule-dimensions.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\structure.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />

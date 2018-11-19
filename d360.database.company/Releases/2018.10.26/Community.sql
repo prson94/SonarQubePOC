@@ -1,4 +1,4 @@
-﻿/*
+/*
 alter table [dbo].[CompanyResource] add [LastLoggedInOn] datetime null
 alter table [dbo].[CompanyResource] add [State] int constraint DF_CompanyResource_State default(1) not null
 GO

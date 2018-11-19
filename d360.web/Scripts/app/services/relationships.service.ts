@@ -168,14 +168,7 @@ export class RelationshipsService extends BaseService {
             .toPromise()
             .catch(err => this.handleError(err));
     }
-
-    getHierarchyArtifacts(model: HierarchyArtifactsModel): Promise<HierarchyArtifactItem[]> {
-        return this.http.post('relations/hierarchy/artifacts', model)
-            .toPromise()
-            .then(response => <HierarchyArtifactItem[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
+    
     postHierarchy(model: HierarchyPostModel): Promise<any> {
         return this.http.post('relations/hierarchy/save', model)
             .toPromise()

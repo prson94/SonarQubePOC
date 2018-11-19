@@ -86,9 +86,9 @@ from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)							
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl
+			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
@@ -240,9 +240,9 @@ from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id) and I.[object] = @obj and I.[objectid] = @id
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) DUrl
+			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
 			left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
-			outer apply [dbo].[GetAssetUrl](T.[Object], T.ObjectID, T.ObjectID) TUrl            		
+			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl            		
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource'
@@ -306,7 +306,15 @@ order by wi.StartedOn desc";
                 var itemStep = Company.WorkflowItemSteps.FirstOrDefault(x => x.ID == itemStepId);
                 if (itemStep == null)
                     throw new Exception("item step id not found");
-
+                else
+                {
+                    var fieldElement = XElement.Parse(itemStep.Fields);
+                    var reassigned = new XElement("Reassigned");
+                    reassigned.Add(new XAttribute("reassignType", "Resource"));
+                    fieldElement.Add(reassigned);
+                    itemStep.Fields = fieldElement.ToString();
+                    Company.SaveChanges();
+                }
                 //remove all the current version step items assignments
                 var currentAssignments = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemStep.ItemID);
 
@@ -375,6 +383,14 @@ order by wi.StartedOn desc";
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Workflow item step id.");
                 }
+
+                var fieldElement = XElement.Parse(workflowItemStep.Fields);
+                var reassigned = new XElement("Reassigned");
+                reassigned.Add(new XAttribute("reassignType", "Object"));
+                reassigned.Add(new XAttribute("objectId", objectId));
+                reassigned.Add(new XAttribute("objectType", objectType));
+                fieldElement.Add(reassigned);
+                workflowItemStep.Fields = fieldElement.ToString();
 
                 workflowItemStep.CompletedBy = Company.CurrentResourceID;
                 workflowItemStep.CompletedOn = DateTime.UtcNow;
@@ -1146,7 +1162,7 @@ order by wi.StartedOn desc";
 	                        [workflow].[version] v
 	                        inner join [workflow].item i on v.id = i.versionid
 	                        left join AssetDetail od on i.objectid = od.objectid and i.[object] = od.[object] 
-							outer apply [dbo].[GetAssetUrl](od.[Object], od.TypeID, od.ObjectID) AUrl
+							outer apply [dbo].[GetAssetUrlById](od.ID) AUrl
 							left join [Intersect] IT on i.Object = 'Intersect' and I.ObjectID = IT.ID
 							outer apply dbo.GetIntersectNames(IT.ID) IName	                         
                           where 
@@ -2471,13 +2487,13 @@ order by wi.StartedOn desc";
             return relChange;
         }
 
-        private IList<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(dynamic settings,int itemId)
+        private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(WorkflowStepDetail detail)
         {
-            IList<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
-            if (settings != null && settings.FieldUpdate != null && settings.FieldUpdate.Field != null)
+            List<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
+            if (detail.Settings != null && detail.Settings.FieldUpdate != null && detail.Settings.FieldUpdate.Field != null)
             {
                 
-                dynamic fields = new JArray(settings.FieldUpdate.Field);
+                dynamic fields = new JArray(detail.Settings.FieldUpdate.Field);
                 for (int i = 0; i < fields.Count; i++)
                 {
                     var fieldChange = new WorkflowStepFieldChange();
@@ -2485,20 +2501,21 @@ order by wi.StartedOn desc";
                     int fieldTypeId = field["@FieldId"] != null ? field["@FieldId"] : 0;
                     if (fieldTypeId == 0) continue;
                     fieldChange.FormValue = field["@UseFormValue"] != null ? field["@UseFormValue"] : false;
-                    fieldChange.CurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : "";
+                    fieldChange.UseCurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : false;
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
-                    FieldType fiedType = Company.GetById<FieldType>(fieldTypeId);
-                    fieldChange.FieldName = fiedType.FriendlyName;
+                    FieldType fieldType = Company.GetById<FieldType>(fieldTypeId);
+                    fieldChange.FieldName = fieldType.FriendlyName;
+                    fieldChange.Type = fieldType.Type;
                     string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
                     int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
                     if (fieldChange.FormValue && formFieldId != null && stepId != 0)
                     {
-                        
+
                         var stepSql = @"select fields from workflow.itemstep where  stepid=@stepid and itemid=@itemid";
-                        dynamic stepFields = Company.Query<string>(stepSql, new { stepid= stepId, itemid=itemId }).FirstOrDefault();
-                        stepFields = XmlToDynamic(stepFields,false);
-                       
+                        dynamic stepFields = Company.Query<string>(stepSql, new { stepid = stepId, itemid = detail.ItemID }).FirstOrDefault();
+                        stepFields = XmlToDynamic(stepFields, false);
+
 
                         if (stepFields.fields != null && stepFields.fields.form != null && stepFields.fields.form.field != null)
                         {
@@ -2508,9 +2525,11 @@ order by wi.StartedOn desc";
                             fieldChange.Value = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
                         }
                     }
-                    else{
-                        fieldChange.Value = field["@Value"] != null ? field["@Value"] : "";
-                    }
+                    else if (fieldChange.UseCurrentDate)
+                        fieldChange.Value = detail.CompletedOn.HasValue ? detail.CompletedOn.Value.ToShortDateString() : "";
+                    else
+                        fieldChange.Value = field["@ValueLabel"] != null ? field["@ValueLabel"] : field["@Value"] != null ? field["@Value"] : "";
+
                     fieldChanges.Add(fieldChange);
                 }
   
@@ -2519,6 +2538,21 @@ order by wi.StartedOn desc";
             return fieldChanges;
         }
 
+        private void SetReassignObjectName(dynamic ItemFields)
+        {
+            if (ItemFields !=null && ItemFields.Reassigned != null && ItemFields.Reassigned["@reassignType"]== "Object")
+            {
+                int objectId = (int)ItemFields.Reassigned["@objectId"];
+                var objectType = ItemFields.Reassigned["@objectType"];
+                var sql = @"Select D.DisplayValue as ObjectName
+                            From
+                            Asset A
+                            cross apply dbo.GetAssetDisplayValueById(A.ID) D
+                            where   A.Object = @obj and A.ObjectID = @objId";
+                var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId= objectId }).FirstOrDefault();
+                ItemFields.Reassigned["@objectName"] = objectName;
+            }
+        }
         [Route("step/detail/{itemStepId:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowVersionStepDetail(int itemStepId)
         {
@@ -2597,8 +2631,9 @@ order by wi.StartedOn desc";
 
             try
             {
-                detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail.Settings,detail.ItemID);
+                detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail);
                 detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
+                SetReassignObjectName(detail.ItemFields);
                 if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
                     detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
 
@@ -2630,6 +2665,7 @@ order by wi.StartedOn desc";
                     }
                 }
 
+                
                 if (detail.IsIssueType)
                 {
                     var issueSql = @"select 

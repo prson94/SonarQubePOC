@@ -1,13 +1,6 @@
-﻿using d360.core;
-using d360.core.entities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Web;
+﻿using System.Collections.Generic;
 using System.Web.Mvc;
-using System.Xml.Linq;
+
 
 namespace d360.web.Models
 {
@@ -43,6 +36,5 @@ namespace d360.web.Models
     {
         public List<long> ItemStepIDs { get; set; } = new List<long>();
         public List<WorkflowFormModelField> Fields { get; set; } = new List<WorkflowFormModelField>();
-}
-    
+    }    
 }

@@ -272,7 +272,7 @@ namespace igx.jobs.indexer
 	                ObjectArt.DisplayValue as 'SynonymFor',	
 	                I.Object as 'SynonymForObject',
 	                I.ObjectID as 'SynonymForObjectID',		
-	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ObjectID) as 'Url',	
+	                dbo.GenerateAssetUrl(ObjectArt.ID) as 'Url',	
 	                ArtType.Name as 'SynonymForObjectType',
                     P.Name as 'PredicateName'
                 from [intersect] I
@@ -289,7 +289,7 @@ namespace igx.jobs.indexer
 	                ObjectArt.DisplayValue as 'SynonymFor',	
 	                I.Subject as 'SynonymForObject',
 	                I.SubjectID as 'SynonymForObjectID',		
-	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
+	                dbo.GenerateAssetUrl(ObjectArt.ID) as 'Url',	
 	                ArtType.Name as 'SynonymForObjectType',
                     P.Name as 'PredicateName'	
                 from [intersect] I
@@ -305,6 +305,7 @@ namespace igx.jobs.indexer
                 return new AddToIndexModel
                 {
                     Group = "Synonym",
+                    
                     CompanyID = companyID,
                     Type = "Synonym",
                     ItemUniqueID = $"{o.SynonymObjectType}|{o.SynonymObjectID}|{o.SynonymForObjectType}|{o.SynonymForObjectID}",
@@ -325,16 +326,16 @@ namespace igx.jobs.indexer
             var sql = @"
 select 
 	s.Name as 'Synonym'
-	,c.Name as 'SynonymFor'
+	,d.DisplayValue as 'SynonymFor'
 	,s.[Object] as 'SynonymForObject'
 	,s.[ObjectID] as 'SynonymForObjectID'
-	,dbo.GenerateObjectUrl(s.[Object], c.ObjectTypeID, s.[ObjectID]) as 'Url'
-	,c.ObjectTypeName as 'SynonymForObjectType'	
+	,dbo.GenerateAssetUrl(d.ID) as 'Url'
+	,d.TypeName as 'SynonymForObjectType'	
     ,p.Name as 'PredicateName'    
     ,s.ID as 'ID'                
 from
 	[dbo].[nym] s
-	inner join [cache].[objectdetails] c on (s.[Object] = c.[Object] and s.[ObjectID] = c.[ObjectID])
+    inner join AssetDetail d on d.object = s.object and d.objectid = s.objectid
     inner join [dbo].[predicate] p on (s.predicateid = p.id)";
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
@@ -392,8 +393,10 @@ from
             var sql = @"SELECT R.[ID]
                                     ,R.DisplayValue as [Name]    
                                     ,T.Name as [RuleType]
-								    ,[dbo].GenerateNgObjectUrl('Rule',R.RuleTypeID,R.ID) as [Url]
-                                FROM [dbo].[Rule] R inner join RuleType T on T.ID = R.RuleTypeID";
+								    ,[dbo].GenerateAssetUrl(A.ID) as [Url]
+                                FROM [dbo].[Rule] R 
+                                inner join RuleType T on T.ID = R.RuleTypeID
+                                inner join Asset A on A.Object = 'Rule' and A.ObjectID = R.ID";
 
             var sType = SystemObjects.Rule.ToString();
 

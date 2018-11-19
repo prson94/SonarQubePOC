@@ -297,6 +297,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\gov-preview-eng.pubxml" />
     <None Include="Properties\PublishProfiles\US - Production.pubxml" />
     <None Include="Properties\PublishProfiles\US - Development.pubxml" />
     <None Include="Properties\PublishProfiles\US - Nightly.pubxml" />

@@ -54,7 +54,11 @@ namespace d360.web.Controllers
 
                 var querySql = @"select 	                            
                                    ga.*,
-                                     R.FirstName + ' ' + R.LastName as ResourceName, 
+                                    case when R.State = 1 then
+                                        R.FirstName + ' ' + R.LastName
+                                    else
+                                        R.FirstName + ' ' + R.LastName + ' (deleted)'
+                                    end as ResourceName,
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
                                      fa.[Version] as 'Version',	                            
@@ -73,7 +77,11 @@ namespace d360.web.Controllers
                     querySql += @" UNION 
                                     select 	                            
                                     ga.*,
-                                     R.FirstName + ' ' + R.LastName as ResourceName, 
+                                    case when R.State = 1 then
+                                        R.FirstName + ' ' + R.LastName
+                                    else
+                                        R.FirstName + ' ' + R.LastName + ' (deleted)'
+                                    end as ResourceName, 
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
                                      fa.[Version] as 'Version',	                            
@@ -123,8 +131,12 @@ namespace d360.web.Controllers
 									ga.ActionObject,
 									ga.ActionObjectTypeName,
 									ga.ActionObjectName,     
-	                                 ga.ActionDescription,
-                                     R.FirstName + ' ' + R.LastName as ResourceName, 
+	                                ga.ActionDescription,
+                                    case when R.State = 1 then
+                                        R.FirstName + ' ' + R.LastName
+                                    else
+                                         R.FirstName + ' ' + R.LastName + ' (deleted)'
+                                    end as ResourceName, 
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
                                      fa.[Version] as 'Version',	                            

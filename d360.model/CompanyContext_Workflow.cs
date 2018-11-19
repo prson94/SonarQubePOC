@@ -98,8 +98,6 @@ namespace d360.model
                 cnn.Open();
 
                 prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
-
-                cnn.Close();
             }
 
             return prefix;
@@ -1729,7 +1727,7 @@ namespace d360.model
 						            1 as ResourceTypeID, 
 						            R.[State],
 						            case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
-				            from	reporting.Global_Resource R where isadministrator = 1 and R.[State] = 1'");
+				            from	reporting.Global_Resource R where isadministrator = 1 and R.[State] = 1");
                 }
             }
 

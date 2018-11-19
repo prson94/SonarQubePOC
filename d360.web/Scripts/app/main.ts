@@ -3,14 +3,17 @@ import { enableProdMode, LOCALE_ID } from '@angular/core';
 import { AppModule }              from './app.module';
 
 declare var __BUILD_DATE: string;
+declare var VersionNumber: string;
 
 if (window.location.href.indexOf('.local') < 0) {
     enableProdMode();
 }
 else {
-    console.log("Running in d3s developer mode...");
+    console.log("Running in govern developer mode...");
 }
 
-console.log("Data3Sixty Client: " + __BUILD_DATE);
+console.log("Govern Assembly Version: " + VersionNumber)
+console.log("Govern Build Date: " + __BUILD_DATE);
+
 
 platformBrowserDynamic().bootstrapModule(AppModule, { preserveWhitespaces: false });

@@ -6,7 +6,9 @@ import { BaseComponent } from './base.component';
 @Component({
     selector: 'd3s-grid-paging-info',
     template: `   
+        <ng-container *ngIf="totalRecords">
             Rows {{startValue}} - {{endValue}} of {{totalRecords?.toLocaleString()}} Items
+        </ng-container>
         `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

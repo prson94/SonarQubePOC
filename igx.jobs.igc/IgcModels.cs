@@ -222,13 +222,6 @@ namespace igx.jobs.igc
         public int SynchedAssetTypeID { get; set; }
     }
 
-    public class ExecutionAssetJsonModel
-    {
-        public int SynchedAssetTypeID { get; set; }
-        public string SourceID { get; set; }
-        public string Json { get; set; }
-    }
-
     public enum PageDataClass
     {
         Fields = 1,

@@ -184,8 +184,6 @@ namespace d360.model
 
         public DbSet<IssueTypeRelation> IssueTypeRelations { get; set; }
 
-        public DbSet<Language> Languages { get; set; }
-
         public DbSet<Lookup> Lookups { get; set; }
 
         public DbSet<LookupType> LookupTypes { get; set; }
@@ -1380,73 +1378,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             }
         }
 
-        public Intersect AddIntersect(SystemObjects subject, int subjectID, SystemObjects @object, int objectID, int? predicateID)
-        {
-            return AddIntersect(subject.ToString(), subjectID, @object.ToString(), objectID, predicateID);
-        }
-
-        public Intersect AddIntersect(string subject, int subjectID, string @object, int objectID, int? predicateID)
-        {
-            Intersect intersect = null;
-
-            var subjectDetail = GetObjectDetail(subject, subjectID);
-            var objectDetail = GetObjectDetail(@object, objectID);
-
-            if (subjectDetail == null)
-                throw new NotFoundException("Subject");
-
-            if (objectDetail == null)
-                throw new NotFoundException("Object");
-
-            var intersectType = Filter<IntersectType>(i => (
-                    (i.Subject == subjectDetail.Type && i.SubjectID == subjectDetail.TypeID && i.Object == objectDetail.Type && i.ObjectID == objectDetail.TypeID) ||
-                    (i.Object == subjectDetail.Type && i.ObjectID == subjectDetail.TypeID && i.Subject == objectDetail.Type && i.SubjectID == objectDetail.TypeID)
-                )
-            ).FirstOrDefault();
-
-            if (intersectType == null)
-                throw new NotFoundException($"Relation type [{subjectDetail.Name} to {objectDetail.Name}]");
-
-            intersect = Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && (
-                    (i.Subject == subject && i.SubjectID == subjectID && i.Object == @object && i.ObjectID == objectID) ||
-                    (i.Object == subject && i.ObjectID == subjectID && i.Subject == @object && i.SubjectID == objectID)
-                )
-            ).SingleOrDefault();
-
-            if (intersect == null)
-            {
-                intersect = new Intersect { IntersectTypeID = intersectType.ID };
-
-                if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
-                {
-                    intersect.Subject = subject;
-                    intersect.SubjectID = subjectID;
-                    intersect.Object = @object;
-                    intersect.ObjectID = objectID;
-
-                    Intersects.Add(intersect);
-                }
-                else
-                {
-                    intersect.Subject = @object;
-                    intersect.SubjectID = objectID;
-                    intersect.Object = subject;
-                    intersect.ObjectID = subjectID;
-
-                    Intersects.Add(intersect);
-                }
-
-                SaveChanges();
-            }
-            else
-            {
-                intersect.State = State.Active;
-                SaveChanges();
-            }
-
-            return intersect;
-        }
-
         public IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID)
         {
             Intersect intersect = null;
@@ -1569,7 +1500,7 @@ from	cache.Relationships R
 		inner join AssetDetail D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID
 		inner join FusionAttribute FA on FA.ID = R.TargetObjectID
 		inner join FusionAttributeType FAT on FAT.ID = FA.FusionAttributeTypeID
-		cross apply [dbo].[GetAssetUrl](D.[Object], D.TypeID, D.ObjectID) AUrl
+		cross apply [dbo].[GetAssetUrlById](D.ID) AUrl
 		outer apply (
 					select	count(1) as [Count]
 					from	FusionAttributeType
@@ -1688,84 +1619,6 @@ where	R.SourceObject = 'FusionAttribute'
             sql += " ORDER BY I.Name";
 
             return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
-        }
-
-        internal class RelationModel
-        {
-            public int ID { get; set; }
-            public int IntersectTypeID { get; set; }
-            public string Object { get; set; }
-            public int ObjectID { get; set; }
-            public string Name { get; set; }
-            public string Type { get; set; }
-            public int TypeID { get; set; }
-            public string TypeName { get; set; }
-            public string IconBackColor { get; set; }
-            public string IconForeColor { get; set; }
-            public string IconText { get; set; }
-        }
-
-        /// <summary>
-        /// Gets a list of relationship counts for a given object, broken up by All Glossary Items, Critical Glossary ITems, and All Models.
-        /// </summary>
-        /// <param name="type">The type of object</param>
-        /// <param name="id">The ID of the object</param>
-        /// <returns>A list of aggregate relationship data. <seealso cref="RelationshipAggregate"/></returns>
-        public List<RelationshipAggregate> GetAggregateRelationshipBreakdownsByObject(SystemObjects type, int id)
-        {
-            var list = new List<RelationshipAggregate>();
-            var models = Query<RelationModel>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
-            list.AddRange(
-                models.Where(i => i.Object != "Taxonomy")
-                    .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText } )
-                    .Select(i => new RelationshipAggregate {
-                        Group = "1",
-                        GroupName = "All Glossary Items",
-                        Count = i.Count(),
-                        IconBackColor = i.Key.IconBackColor,
-                        IconForeColor = i.Key.IconForeColor,
-                        IconText = i.Key.IconText,
-                        IntersectTypeID = i.Key.IntersectTypeID,
-                        Type = i.Key.Type,
-                        TypeID = i.Key.TypeID,
-                        TypeName = i.Key.TypeName
-                    }).OrderBy(i => i.TypeName)
-                );
-            list.AddRange(
-                models.Where(i => i.Object != "Taxonomy")
-                    .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText })
-                    .Select(i => new RelationshipAggregate
-                    {
-                        Group = "2",
-                        GroupName = "Critical Glossary Items",
-                        Count = i.Count(),
-                        IconBackColor = i.Key.IconBackColor,
-                        IconForeColor = i.Key.IconForeColor,
-                        IconText = i.Key.IconText,
-                        IntersectTypeID = i.Key.IntersectTypeID,
-                        Type = i.Key.Type,
-                        TypeID = i.Key.TypeID,
-                        TypeName = i.Key.TypeName
-                    }).OrderBy(i => i.TypeName)
-                );
-            list.AddRange(
-                models.Where(i => i.Object == "Taxonomy")
-                    .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText })
-                    .Select(i => new RelationshipAggregate
-                    {
-                        Group = "3",
-                        GroupName = "All Models",
-                        Count = i.Count(),
-                        IconBackColor = i.Key.IconBackColor,
-                        IconForeColor = i.Key.IconForeColor,
-                        IconText = i.Key.IconText,
-                        IntersectTypeID = i.Key.IntersectTypeID,
-                        Type = i.Key.Type,
-                        TypeID = i.Key.TypeID,
-                        TypeName = i.Key.TypeName
-                    }).OrderBy(i => i.TypeName)
-                );
-            return list;
         }
 
         #endregion
@@ -2033,53 +1886,10 @@ where	R.SourceObject = 'FusionAttribute'
             
             return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, objectId = id, objectType = fs }).AsQueryable();
         }
-
-        public IQueryable<MostActiveUserReportModel> GetMostActiveUsersReport()
-        {
-            return Database.SqlQuery<MostActiveUserReportModel>("report.GetMostActiveUsers").AsQueryable();
-        }
-
-        public dynamic GetSocialDataForCurrentResource()
-        {
-            return Query<dynamic>(@"
-select	* 
-from	(
-		select		count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id
-		) FC
-		full join	(
-					select count(1) as GroupCount from ResourceGroup where ResourceID = @id
-					) G on 1=1
-		full join	(
-					select dbo.[GetObjectStatisticScore]('Resource', @id) * 100 as Score
-					) S on 1=1", new { id = CurrentResourceID }).SingleOrDefault();
-        }
-
-        public dynamic GetSocialDataForGroup(int id)
-        {
-            return Query<dynamic>(@"select	* from 
-(select	count(1) as FollowerCount from Follow where ObjectType = 'Group' and ObjectID = @id) FC
-full join (select count(1) as MemberCount from ResourceGroup where GroupID = @id) G on 1=1", new { id = id }).SingleOrDefault();
-        }
-
-        public dynamic GetSocialDataForResource(int id)
-        {
-            return Query<dynamic>(@"select	* from 
-(select	count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id) FC
-full join (select count(1) as FollowingCount from Follow where ResourceID = @id) FO on 1=1
-full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @id) G on 1=1", new { id = id }).SingleOrDefault();
-        }
-
+                
         #endregion
 
         #region Token Processing Methods
-
-        private string getObjectDisplayValue(IFieldsObject obj, int id)
-        {
-            var info = obj.GetFieldsObjectInfo();
-            string query = string.Format("select utility.GetObjectDisplayValue('{0}', {1}, {2})", info.Object.ToString(), id, info.TypeID);
-            var value = Database.SqlQuery<string>(query).FirstOrDefault();
-            return value;
-        }
 
         private string renderTemplate(string templateType, string action, SystemObjects type, int id)
         {
@@ -2090,11 +1900,6 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             var html = "";
             if (model != null) html = model.Body;
             return html;
-        }
-
-        public string RenderEmail(string action, SystemObjects type, int id)
-        {
-            return renderTemplate("Email", action, type, id);
         }
 
         public string RenderTooltip(string action, SystemObjects type, int id)
@@ -2963,20 +2768,7 @@ select @err";
                 QueueSource.CreateTopicMessages(events);
             }
         }
-
-        public void PerformObjectActionAfterSaveChanges(BaseObject obj)
-        {
-            if (obj is FusionAttributeType)
-            {
-                var o = obj as FusionAttributeType;
-
-                if (!o.ScanEnabled)
-                {
-                    var cmd = Database.Connection.Execute($"exec UpdateObject @Object, @ObjectID, @ResourceID", new { Object = "FusionAttributeType", ObjectID = o.ID, ResourceID = CurrentResourceID });
-                }
-            }
-        }
-
+        
         public string GetUserHomePage()
         {
             var homePage = Favorites.FirstOrDefault(f => f.ResourceID == CurrentResourceID && f.IsHomePage);

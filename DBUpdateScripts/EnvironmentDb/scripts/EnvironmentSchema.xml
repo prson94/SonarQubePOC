@@ -1,0 +1,20 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet author="Andy Kelly" id="D3S-Environment-Schema">
+        <sqlFile dbms="mssql"
+                encoding="utf8"
+                endDelimiter="GO"
+                path="D3S_Environment_20181113.sql  "
+                relativeToChangelogFile="true"
+                splitStatements="true"
+                stripComments="true"/>
+
+    </changeSet>
+
+</databaseChangeLog>

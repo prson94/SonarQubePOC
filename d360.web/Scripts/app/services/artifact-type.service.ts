@@ -31,14 +31,7 @@ export class ArtifactTypeService extends BaseService {
             .then(response => response.json())
             .catch(err=>this.handleError(err));
     }
-
-    postArtifactType(model: ArtifactTypeEditorModel): Promise<any> {
-        return this.http.post('form/ArtifactType', model)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err=>this.handleError(err));
-    }
-
+    
     getArtifactTypeTree(): Promise<TreeNode[]> {
         return this.http.get('internal/artifacts/types')
             .toPromise()
@@ -79,13 +72,6 @@ export class ArtifactTypeService extends BaseService {
             node.children.push(child);
             this.formTreeR(child, data);
         });
-    }
-
-    public getTopLevelSummary(): Promise<ArtifactTypeSummary[]> {
-        return this.http.get('internal/artifacts/typeswithstatistics')
-            .toPromise()
-            .then(response => <ArtifactTypeSummary[]>response.json())
-            .catch(err => this.handleError(err));
     }
     
     public getArtifactTypeStatus(artifactTypeId: number): Promise<ArtifactTypeStatusCount[]> {

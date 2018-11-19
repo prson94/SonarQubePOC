@@ -107,15 +107,7 @@ namespace d360.web.Controllers
             document.SaveAs(stream);
             return File(stream.ToArray(), "application/vnd.ms-excel", string.Format("Load Template for {0}.xlsx", fusion.FusionType.Name));
         }
-
-        internal class GenericFusionAttribute
-        {
-            public string SourceID { get; set; }
-            public string ParentSourceID { get; set; }
-            public int FusionAttributeTypeID { get; set; }
-            public string Name { get; set; }
-        }
-
+        
         [Route("{typeID:int}/configurations/{id:int}/template/{attributeTypeID:int}"), HttpPost]
         public async Task<HttpStatusCodeResult> UploadFusionManualLoad(int typeID, int id, int attributeTypeID)
         {

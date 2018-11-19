@@ -69,7 +69,7 @@ namespace d360.web.Controllers
                 parentSqlJoin = @" outer apply (
 				    select	I.SubjectID as ParentID,
                             ID.DisplayValue,
-                            dbo.GenerateObjectUrl('Artifact', IAT.ObjectID, I.SubjectID) as ParentUrl
+                            dbo.GenerateAssetUrl(IA.ID) as ParentUrl
 				    from	[PredicateIntersect] I
                             inner join Asset IA on I.Object = A.Object and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
@@ -85,7 +85,7 @@ select	distinct
         A.ObjectID as ID,
         {parentSqlColumn}
         {columns}
-        A.ID as AssetID,dbo.GenerateNgObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url
+        A.ID as AssetID,dbo.GenerateAssetUrl(A.ID) as Url
 from	AssetDetail A 
         {parentSqlJoin} 
         {joins} 
@@ -221,7 +221,7 @@ where   A.Type = 'ArtifactType'
                 parentSqlJoin = @" outer apply (
 				    select	I.SubjectID as ParentID,
                             ID.DisplayValue,
-                            dbo.GenerateObjectUrl('Artifact', IAT.ObjectID, I.SubjectID) as ParentUrl
+                            dbo.GenerateAssetUrl(IA.ID) as ParentUrl
 				    from	[PredicateIntersect] I
                             inner join Asset IA on I.Object = 'Artifact' and I.ObjectID = A.ID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
@@ -235,7 +235,7 @@ where   A.Type = 'ArtifactType'
 select	A.ObjectID as ID,
         {parentSqlColumn}
         {columns}
-		dbo.GenerateNgObjectUrl('Artifact', A.TypeID, A.ObjectID) as Url
+		dbo.GenerateAssetUrl(A.ID) as Url
 from	AssetDetail A 
         {parentSqlJoin}
         {joins} 
@@ -460,6 +460,11 @@ where   A.Type = 'ArtifactType'
                 SetRowStyles(document, i, styles);
             }
 
+            for (int i = 1; i < columnNumber; i++)
+            {
+                SetColumnCellStyle(document, i,index-1, styles);
+            }
+
             document.AutoFitColumn(1, columnNumber);
 
             return document;
@@ -536,6 +541,17 @@ where   A.Type = 'ArtifactType'
             return document;
         }
 
+        private void SetColumnCellStyle(SLDocument document, int column,int totalRows, ICollection<ArtifactTypeExportTemplateStyle> styles)
+        {
+            if (styles == null) return;
+            //style for the whole column
+            var columnStyle = styles.Where(x => x.Row == -1 && x.Column == column).FirstOrDefault();
+
+            if (columnStyle != null)
+            {
+                document.SetCellStyle(1,column,totalRows,column, CreateStyle(columnStyle));
+            }
+        }
         private void SetColumnStyles(SLDocument document, int column, ICollection<ArtifactTypeExportTemplateStyle> styles)
         {
             if (styles == null) return;
@@ -706,9 +722,9 @@ select	O.ID as AssetID,
         O.ObjectID as ID,
         P.ID as ParentID,
         P.DisplayValue as Parent,
-        dbo.GenerateObjectUrl('Artifact', P.TypeID, P.ObjectID) as ParentUrl,
+        dbo.GenerateAssetUrl(P.ID) as ParentUrl,
         {0}
-        dbo.GenerateObjectUrl('Artifact', O.TypeID, O.ObjectID) as Url
+        dbo.GenerateAssetUrl(O.ID) as Url
 from	AssetDetail O
         {1} 
         inner join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = O.Object and PI.SubjectID = @p and PI.ObjectID = O.ObjectID and PI.PredicateType = 3 
