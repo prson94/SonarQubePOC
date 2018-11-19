@@ -133,12 +133,12 @@ ALTER procedure [integration].[ProcessExecutionAssetType]
 	@AssetTypeID int,
 	@ResourceID int,
 	@Section int --0 = Asset, 1 = Field, 2 = Relationships, 3 = Responsibilities
---set @ExecutionID = 34606
+--set @ExecutionID = 36001
 --set @SynchedAssetTypeID = 13
 --set @RequestNumber  = 1
 --set @AssetTypeID = 51
 --set @ResourceID = 0
---set @Section = 0
+--set @Section = 2
 as
 begin
 	set nocount on;
@@ -191,7 +191,7 @@ begin
 						R.SynchedAssetTypeID = @SynchedAssetTypeID
 						and R.Section = 1
 						and R.RequestNumber = @RequestNumber
-						and R.[Action] is not null
+						and R.[Action] in ('A', 'U')
 			group by	A.AssetTypeID, 
 						R.SourceID,
 						A.ID,
@@ -214,7 +214,7 @@ begin
 					A.SynchedAssetTypeID = @SynchedAssetTypeID
 					and A.RequestNumber = @RequestNumber
 					and A.Section = 1
-					and A.[Action] is not null
+					and A.[Action] in ('A', 'U')
 					and F.ArrayValueDelimiter is null;
 
 		BEGIN	-- Process ParentSourceID
@@ -728,6 +728,7 @@ begin
 			where	H.SynchedAssetTypeID = @SynchedAssetTypeID
 					and H.Section = @section
 					and H.RequestNumber = @RequestNumber
+					and H.[Action] in ('A', 'U')
 					and RIIF._type is not null;
 
 		drop table if exists #Rel_Step2;
