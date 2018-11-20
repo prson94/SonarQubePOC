@@ -27,7 +27,6 @@ import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactItemComponent } from './artifact-item.component';
 import { ArtifactListComponent } from './artifact-list.component';
 import { ArtifactTopLevelListComponent } from './artifact-top-level-list.component';
-import { ArtifactTypeMetricsComponent } from './artifact-type-metrics.component';
 import { ArtifactTopLevelFilterComponent } from './artifact-top-level-filter.component';
 import { ArtifactCustomExportComponent } from './artifact-custom-export.component';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
@@ -102,8 +101,7 @@ import { TableModule } from 'primeng/table';
         ArtifactGridComponent,
         ArtifactItemComponent,
         ArtifactListComponent,
-        ArtifactTopLevelListComponent,
-        ArtifactTypeMetricsComponent,        
+        ArtifactTopLevelListComponent,        
         ArtifactTopLevelFilterComponent,
     ],
     providers: [

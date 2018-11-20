@@ -80,14 +80,7 @@ export class ArtifactTypeService extends BaseService {
             .then(response => <ArtifactTypeStatusCount[]>response.json())
             .catch(err => this.handleError(err));
     }
-
-    public getArtifactTypeUsedVsUnusedResponsibilities(artifactTypeId: number): Promise<ArtifactTypeUsedVsUnusedResponsibility[]> {
-        return this.http.get(`queries/${artifactTypeId}/UsedVsUnusedResponsibilitiesByArtifactType`)
-            .toPromise()
-            .then(response => <ArtifactTypeUsedVsUnusedResponsibility[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
+    
     public getPossibleArtifactOwners(artifactTypeId: number): Promise<any[]> {
         return this.http.get(`/api/artifacttype/possibleowners/${artifactTypeId}`)
             .toPromise()
