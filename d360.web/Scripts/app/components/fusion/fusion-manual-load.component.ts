@@ -5,6 +5,7 @@ import { FusionService } from '../../services/fusion.service';
 import { FusionConfigurationDetails } from '../../models/fusion.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { MessagesService } from '../../services/messages.service';
+import { JsonResult } from '../../models/jsonresult.model';
 
 @Component({
     selector: 'd3s-fusion-manual-load',
@@ -75,11 +76,17 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
 
     onErrorFileUpload(event: any) {
         
-        if (event.xhr &&  event.xhr.status == 400) {
-            let msg: string = "";
-            let errMsg = JSON.parse(event.xhr.responseText);
-            msg = errMsg.message != null ? errMsg.message : event.xhr.responseText;
-            this.messagesService.showError('Error', msg);
+        if (event.xhr &&  event.xhr.status > 300) {
+            try {
+                let result: JsonResult;
+                result = JSON.parse(event.xhr.responseText);
+                this.messagesService.showError(result.title, result.message);
+            } catch (e) {
+                let msg: string = "";
+                let errMsg = JSON.parse(event.xhr.responseText);
+                msg = errMsg.message != null ? errMsg.message : event.xhr.responseText;
+                this.messagesService.showError('Error', msg);
+            }
         }
       
     }
@@ -101,9 +108,14 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
         }
 
         if (event.xhr &&  event.xhr.status == 200) {
-            
-            msg += event.xhr.responseText;
-            this.messagesService.showInfoMessage('Success', msg);
+            try {
+                let result: JsonResult;
+                result = JSON.parse(event.xhr.responseText);
+                this.messagesService.showInfoMessage(result.title, result.message);
+            } catch (e) {
+                msg += event.xhr.responseText;
+                this.messagesService.showInfoMessage('Success', msg);
+            }
         }
 
     }
