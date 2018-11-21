@@ -2487,6 +2487,44 @@ order by wi.StartedOn desc";
             return relChange;
         }
 
+        private List<EmailedResourceResponsibility> GetEmailResources(List<int> responsiblities,List<string> emails)
+        {
+
+            var dbArgs = new Dapper.DynamicParameters();
+            string sql = string.Empty;
+            List<EmailedResourceResponsibility> results;
+
+            if (responsiblities.Count != 0)
+            {
+                sql = $@"WITH CTE(FullName,ResourceID,ResponsibilityTypeName,Email) 
+                        as 
+                         (Select distinct  R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,rd.ResponsibilityTypeName,R.Email
+                        from ResponsibilityDetail rd
+                         inner join reporting.Global_Resource R on
+                         rd.resourceId = r.resourceId and rd.securityasset='R'
+                         where r.email  IN ('{string.Join("','",emails)}')
+                        and rd.ResponsibilityTypeID IN ( {string.Join(",", responsiblities)}))
+
+                        SELECT cte.FullName,cte.ResourceID,cte.email,
+	                        STRING_AGG(cte.ResponsibilityTypeName, ', ') WITHIN GROUP (ORDER BY cte.ResponsibilityTypeName asc) as Responsibility
+                        from cte
+                        group by cte.FullName,cte.ResourceID,cte.Email";
+
+                 results = Company.Query<EmailedResourceResponsibility>(sql).ToList();
+
+            }
+            else
+            {
+                sql = @"Select R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,R.Email
+						From reporting.Global_Resource R  
+						where state=1 and email =@email";
+                dbArgs.Add("email", emails);
+                 results = Company.Query<EmailedResourceResponsibility>(sql, dbArgs).ToList();
+
+
+            }
+            return results;
+        }
         private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(WorkflowStepDetail detail)
         {
             List<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
@@ -2707,7 +2745,7 @@ order by wi.StartedOn desc";
                         ObjectTypeID = detail.ObjectTypeID,
                     };
 
-
+                    List<int> responsiblities = new List<int>();
                     if (detail.Settings != null)
                     {
                         if (detail.Settings.MessageSubjectTemplate != null)
@@ -2738,6 +2776,7 @@ order by wi.StartedOn desc";
                                     var resp = Company.GetById<ResponsibilityType>(resIdInt);
                                     if (resp != null)
                                     {
+                                        responsiblities.Add(resp.ID);
                                         responsibilitiesList.Add(new { id = resp.ID, name = resp.Name });
                                     }
                                 }
@@ -2785,8 +2824,8 @@ order by wi.StartedOn desc";
                         }
 
                         //get all relevant resource info
-                        var emailResources = Company.GlobalReportingResources.Where(g => resourceEmails.Contains(g.Email.ToLower())).ToList();
-
+                        //var emailResources = Company.GlobalReportingResources.Where(g => resourceEmails.Contains(g.Email.ToLower())).ToList();
+                        var emailResources = this.GetEmailResources(responsiblities, resourceEmails);
                         for (int i = 0; i < emails.email.Count; i++)
                         {
                             var e = emails.email[i];
@@ -2797,11 +2836,13 @@ order by wi.StartedOn desc";
                             {
                                 e.name = res.FullName;
                                 e.id = res.ResourceID;
+                                e.responsibility = res.Responsibility;
                             }
                             else
                             {
                                 e.name = (string)null;
                                 e.id = 0;
+                                e.responsibility = (string)null;
                             }
                         }
 
