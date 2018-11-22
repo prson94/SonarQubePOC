@@ -4793,3 +4793,14 @@ SELECT	'#Admin' as MenuID,
 	order by sortorder
 END
 GO;
+
+
+
+------------------------------------------------------------------
+-- GOV-6040
+-- Bulk load users fails when it encounters a field with a null asset id
+-- cause the assetid of resources that have null assetid's to get updated by the trigger
+------------------------------------------------------------------
+
+update field set updatedon = getutcdate() where assetid is null and objecttype = 'Resource'
+go
