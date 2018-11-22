@@ -9,7 +9,7 @@
 
       <changeSet author="Andy Kelly" id="Community Schema">
         <sqlFile dbms="mssql"
-                encoding="utf8"
+                encoding="UTF-16LE"
                 endDelimiter="GO"
                 path="d3s-schema.sql  "
                 relativeToChangelogFile="true"
