@@ -989,7 +989,7 @@ where A.FusionTypeID = @id", columns, joins);
 
 
         [Route("{typeID:int}/configurations/{id:int}/template/{attributeTypeID:int}"), HttpPost]
-        public async Task<HttpResponseMessage> UploadFusionManualLoad(int typeID, int id, int attributeTypeID)
+        public async Task<IHttpActionResult> UploadFusionManualLoad(int typeID, int id, int attributeTypeID)
         {
             var context = Request.Properties["MS_HttpContext"] as System.Web.HttpContextWrapper;
             try
@@ -1199,31 +1199,35 @@ where A.FusionTypeID = @id", columns, joins);
                     }
                 }
 
-                return Request.CreateResponse(HttpStatusCode.OK, "file  uploaded and queued for processing.");
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, "File Saved", "File uploaded and queued for processing."));
+                //return Request.CreateResponse(HttpStatusCode.OK, "file uploaded and queued for processing.");
             }
             catch (InvalidFieldException ex)
             {
-                SendException(ex, new Dictionary<string, string>() {
-                            { "FusionID", id.ToString() },
-                            { "FusionAttributeTypeID", attributeTypeID.ToString() }
-                });
-                return Request.CreateErrorResponse(ex.StatusCode, ex.StatusDescription);
+                //SendException(ex, new Dictionary<string, string>() {
+                //            { "FusionID", id.ToString() },
+                //            { "FusionAttributeTypeID", attributeTypeID.ToString() }
+                //});
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, "Invalid Field", ex.StatusDescription));
+                //return Request.CreateErrorResponse(ex.StatusCode, ex.StatusDescription);
             }
             catch (BaseException ex)
             {
-                SendException(ex, new Dictionary<string, string>() {
-                            { "FusionID", id.ToString() },
-                            { "FusionAttributeTypeID", attributeTypeID.ToString() }
-                });
-                return Request.CreateResponse(ex.StatusCode, ex.StatusDescription);
+                //SendException(ex, new Dictionary<string, string>() {
+                //            { "FusionID", id.ToString() },
+                //            { "FusionAttributeTypeID", attributeTypeID.ToString() }
+                //});
+                //return Request.CreateResponse(ex.StatusCode, ex.StatusDescription);
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, "Govern Exception", ex.StatusDescription));
             }
             catch (Exception ex)
             {
-                SendException(ex, new Dictionary<string, string>() {
-                            { "FusionID", id.ToString() },
-                            { "FusionAttributeTypeID", attributeTypeID.ToString() }
-                });
-               return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+                // SendException(ex, new Dictionary<string, string>() {
+                //             { "FusionID", id.ToString() },
+                //             { "FusionAttributeTypeID", attributeTypeID.ToString() }
+                // });
+                //return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown Error", ex.Message));
             }
         }
 

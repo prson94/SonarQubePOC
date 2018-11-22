@@ -31,7 +31,9 @@ import { WorkflowStepDetail, EmailTaskRecipientType } from '../../models/workflo
             <span class="FieldName">Recipients:</span>
             <div *ngFor="let e of displayEmails; let i = index">
                 <ng-container *ngIf="showAll == true || (showAll == false && i < 5)">
-                    {{e['@address']}} <span *ngIf="e.name != null">(<d3s-preview-tooltip [objectType]="'Resource'" [objectId]="e.id"><a>{{e.name}}</a></d3s-preview-tooltip>)</span>  
+                    {{e['@address']}} <span *ngIf="e.name != null">(<d3s-preview-tooltip [objectType]="'Resource'" [objectId]="e.id"><a>{{e.name}}</a></d3s-preview-tooltip>)
+                    <i *ngIf="e.responsibility">({{e.responsibility}})</i>
+                    </span>  
                 </ng-container>
             </div>
             <div *ngIf="displayEmails.length > 5 && showAll == false">

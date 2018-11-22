@@ -58,6 +58,13 @@ namespace d360.core.entities.Workflow
         public WorkflowEventRegistration Event { get; set; } = new WorkflowEventRegistration();
     }
 
+    public class EmailedResourceResponsibility
+    {
+        public string FullName { get; set; }
+        public  int ResourceID { get; set; }
+        public string Email { get; set; }
+        public string Responsibility { get; set; }
+    }
     public class WorkflowStepDetail
     {
         [DataMember]

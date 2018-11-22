@@ -19,50 +19,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        [Route("{id:int}/UsedVsUnusedResponsibilitiesByArtifactType")]
-        public JsonNetResult UsedVsUnusedResponsibilitiesByArtifactType(int id)
-        {
-            var query = Company.Query<dynamic>(@"select	T.Name as Responsibility, 
-		AT.Name as ArtifactType, 
-		AT.ID as ArtifactTypeID,
-		coalesce(O.[Count], 0) as [AssignedCount], 
-		OT.Total - coalesce(O.[Count], 0) as UnassignedCount, 
-		OT.Total
-from	ResponsibilityType T
-		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and T.ResponsibilityTypeGroup = 1
-		inner join ArtifactType AT on R.ObjectType = 'ArtifactType' and AT.ID = @id and AT.ID = R.ObjectID
-		cross apply (
-					select	coalesce(count(1), 0) as Total
-					from	Artifact
-					where	ArtifactTypeID = AT.ID
-					) OT
-		left join	(
-					select		RD.ResponsibilityTypeID,
-								RD.ObjectType,
-								RD.ObjectTypeID,
-								count(1) as [Count]
-					from		(
-								select		RD.ResponsibilityTypeID,
-											RD.ObjectType,
-											RD.ObjectTypeID,
-											RD.ObjectID
-								from		ResponsibilityDetail RD
-								where		RD.ObjectType = 'Artifact'
-								group by	RD.ResponsibilityTypeID,
-											RD.ObjectType,
-											RD.ObjectTypeID,
-											RD.ObjectID
-								) RD
-					group by	RD.ResponsibilityTypeID,
-								RD.ObjectType,
-								RD.ObjectTypeID
-					) O on O.ResponsibilityTypeID = T.ID and O.ObjectTypeID = AT.ID
-order by	AT.Name,
-			T.Name", new { id = id });
-
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-        
         [Route("FollowingByResourceByType"), NonNullableParameters]
         public JsonNetResult GetFollowingByResourceByType(int resourceID, string type, int id)
         {

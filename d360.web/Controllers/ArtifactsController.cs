@@ -460,6 +460,11 @@ where   A.Type = 'ArtifactType'
                 SetRowStyles(document, i, styles);
             }
 
+            for (int i = 1; i < columnNumber; i++)
+            {
+                SetColumnCellStyle(document, i,index-1, styles);
+            }
+
             document.AutoFitColumn(1, columnNumber);
 
             return document;
@@ -536,6 +541,17 @@ where   A.Type = 'ArtifactType'
             return document;
         }
 
+        private void SetColumnCellStyle(SLDocument document, int column,int totalRows, ICollection<ArtifactTypeExportTemplateStyle> styles)
+        {
+            if (styles == null) return;
+            //style for the whole column
+            var columnStyle = styles.Where(x => x.Row == -1 && x.Column == column).FirstOrDefault();
+
+            if (columnStyle != null)
+            {
+                document.SetCellStyle(1,column,totalRows,column, CreateStyle(columnStyle));
+            }
+        }
         private void SetColumnStyles(SLDocument document, int column, ICollection<ArtifactTypeExportTemplateStyle> styles)
         {
             if (styles == null) return;

@@ -45,7 +45,7 @@
                     <div class="directions">
                         The maximum number of items to show in a dropdown list before enabling typeahead search.
                     </div>
-                    <input type="number" [(ngModel)]="companySettings.MaxDropdownItems" style="width: 95%" /> <br />
+                    <input type="number" min="0" [(ngModel)]="companySettings.MaxDropdownItems" style="width: 95%" /> <br />
                 </div>
                 <div class="tile tile-detail">
                     <header>Workflow</header>

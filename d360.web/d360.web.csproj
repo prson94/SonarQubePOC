@@ -1120,6 +1120,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-fields.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-style-form.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-styles.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.routes.ts" />
@@ -1471,7 +1473,6 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-type-metrics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.routes.ts" />
