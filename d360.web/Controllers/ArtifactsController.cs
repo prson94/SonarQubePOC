@@ -223,7 +223,7 @@ where   A.Type = 'ArtifactType'
                             ID.DisplayValue,
                             dbo.GenerateAssetUrl(IA.ID) as ParentUrl
 				    from	[PredicateIntersect] I
-                            inner join Asset IA on I.Object = 'Artifact' and I.ObjectID = A.ID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
+                            inner join Asset IA on I.Object = 'Artifact' and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
                             left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
 				    ) P";
