@@ -1,7 +1,7 @@
 ﻿import { FormEvents } from "../../../models/form.model";
 import { Input, Output, Component, EventEmitter, OnChanges, SimpleChanges, OnInit } from "@angular/core";
 import { BaseComponent } from "../../shared/base.component";
-import { ExportTemplateStyle } from "../../../models/export-template.model";
+import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";
 import { SelectItem, Column } from "primeng/primeng";
 import { ExportTemplateService } from "../../../services/export-template.service";
 import { MessagesService } from "../../../services/messages.service";
@@ -41,6 +41,7 @@ import * as _ from "lodash";
                         <div class="col s12">
                             <input *ngIf="model.SelectionType == 'Column'" min="1" max="99999"  name="displayColumn" style="height:25px;width:50%;display:block;" type="number" [(ngModel)]="model.Column" required />
                             <input  *ngIf="model.SelectionType == 'Row'"  min="1" max="99999" name="displayRow" style="height:25px;width:50%;display:block;" type="number" [(ngModel)]="model.Row" required />
+                            <input  *ngIf="model.SelectionType == 'Header'" disabled min="1" max="99999" name="displayRow" style="height:25px;width:50%;display:block;" type="number" [(ngModel)]="model.Row" required />
                         </div>
                     </div>
                 </div>
@@ -79,6 +80,8 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
 
 
     @Input() mode: string;
+    @Input()
+    exportViewType: ExportViewType;
     @Input() selectedStyle: ExportTemplateStyle;
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
@@ -110,10 +113,16 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
         if (changes["mode"].currentValue == 'Edit' && changes["selectedStyle"].currentValue) {
             this.model = _.clone(changes["selectedStyle"].currentValue);
         }
-        this.model.SelectionType = this.model.Column == -1 ? "Row" : "Column";  
+        this.model.SelectionType = this.exportViewType != ExportViewType.Pivot ? "Header" : this.model.Column == -1 ? "Row" : "Column";  
+
+        if (this.exportViewType == ExportViewType.Pivot)
+            this.selections = [{ label: "Column", value: "Column" }, { label: "Row", value: "Row" }];
+        else
+            this.selections = [{ label: "Header", value: "Header" }];
+
     }
     selectionChange() {
-        if (this.model.SelectionType == "Row") {
+        if (this.model.SelectionType == "Row" || this.model.SelectionType == "Header") {
             this.model.Column = -1;
             this.model.Row = 1;
         } else {

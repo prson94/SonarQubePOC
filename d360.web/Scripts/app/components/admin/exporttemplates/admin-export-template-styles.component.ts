@@ -2,7 +2,7 @@
 import { BaseComponent } from "../../shared/base.component";
 import { ExportTemplateService } from "../../../services/export-template.service";
 import { MessagesService } from "../../../services/messages.service";
-import { ExportTemplateStyle } from "../../../models/export-template.model";
+import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";
 
 @Component({
     selector: 'd3s-admin-export-template-styles',
@@ -10,7 +10,7 @@ import { ExportTemplateStyle } from "../../../models/export-template.model";
   <div *ngIf="!showEditor && !showDelete" class="row">
                 <div class="tile tile-detail">
                     <header *ngIf="!showEditor">Styling Rules
-                        <d3s-tile-actions [hasAdd]="true" (addClick)="mode='Add';showEditor=true;"></d3s-tile-actions>                            
+                        <d3s-tile-actions [hasAdd]="canAdd()" (addClick)="mode='Add';showEditor=true;"></d3s-tile-actions>                            
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
@@ -30,8 +30,9 @@ import { ExportTemplateStyle } from "../../../models/export-template.model";
                             <ng-template pTemplate="body" let-item>
                                 <tr  [pSelectableRow]="item">
                                     <td>
-                                        <span *ngIf="item.Column ==-1">Row {{item.Row}}</span>
-                                        <span *ngIf="item.Row ==-1">Column {{item.Column}}</span>
+                                        <span *ngIf="isPivot() && item.Column ==-1">Row {{item.Row}}</span>
+                                        <span *ngIf="isPivot() && item.Row ==-1">Column {{item.Column}}</span>
+                                         <span *ngIf="!isPivot()">Header</span>
                                     </td>
                                     <td style="padding: 5px">
                                         <span [ngStyle]="getRowStyles(item)">Style Sample</span>
@@ -57,7 +58,7 @@ import { ExportTemplateStyle } from "../../../models/export-template.model";
         </div>  
           <div *ngIf="showEditor && !showDelete" class="row">
                 <div class="tile tile-detail">
-                   <d3s-admin-export-template-style-form [mode]="mode" [templateId]="templateId" [selectedStyle]="selectedStyle" (onSuccess)="showEditor=false;load()" (onCancel)="showEditor=false;"></d3s-admin-export-template-style-form>
+                   <d3s-admin-export-template-style-form [mode]="mode" [exportViewType]="exportViewType" [templateId]="templateId" [selectedStyle]="selectedStyle" (onSuccess)="showEditor=false;load()" (onCancel)="showEditor=false;"></d3s-admin-export-template-style-form>
                 </div>
         </div>
         <div class="tile tile-detail" *ngIf="showDelete">
@@ -80,6 +81,8 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     showDelete: boolean = false;
     @Input()
     templateId: number;
+    @Input()
+    exportViewType: ExportViewType;
     mode: string;
     theDeleteCallback: Function;
 
@@ -93,13 +96,25 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
  
         this.showEditor = false;
         this.showDelete = false;
-       this.load();
+        this.load();
     }
 
+    isPivot(): boolean {
+        return this.exportViewType == ExportViewType.Pivot;
+    }
     ngOnInit(): void {
         this.load();
     }
 
+    canAdd(): boolean {
+        if (this.exportViewType == ExportViewType.Pivot)
+            return true;
+        else if ((this.exportViewType == ExportViewType.Grouped || this.exportViewType == ExportViewType.None)
+                && (this.styleRules == null || this.styleRules.length == 0))
+            return true;
+        else
+            return false;
+    }
     private getRowStyles(item:ExportTemplateStyle): any {
         let styles = {
             'background-color': item.BgColor,
@@ -131,7 +146,10 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
             return;
         }
         this.exportTemplateService.getExportTemplateStyles(this.templateId).subscribe(result => {
-            this.styleRules = result;
+            if (this.exportViewType != ExportViewType.Pivot)
+                this.styleRules = result.filter(x => x.Column == -1);
+            else
+                this.styleRules = result;
             this.isLoading = false;
         });
     }
