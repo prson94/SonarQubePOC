@@ -39,6 +39,7 @@ namespace igx.jobs.bulkloadprocessor
         public async static Task Run([QueueTrigger("%BulkLoadQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
         {
             var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(myQueueItem);
+            Load load = null;
 
             try
             {
@@ -59,469 +60,480 @@ namespace igx.jobs.bulkloadprocessor
 
                 #endregion
 
-                var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID);
-
-                #region Create Load Items from Load file
-
-                var load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID); //.Include("LoadItems.LoadItemColumns")
-
-                companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                var loadItemRowCount = companyConnection.Query<int>("select count(1) from LoadItem where LoadID = @id", new { id = load.ID }).Single();
-                companyConnection.Close();
-
-                if (loadItemRowCount <= 0)
+                try
                 {
-                    var memoryStream = new MemoryStream(load.File);
-                    var xls = new SLDocument(memoryStream);
+                    var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID);
 
-                    var stats = xls.GetWorksheetStatistics();
+                    #region Create Load Items from Load file
 
-                    var numberOfRows = stats.NumberOfRows;
-                    var rowIndex = stats.StartRowIndex + 1;
-                    var numberOfColumns = load.LoadColumns.Count;
+                    load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID); //.Include("LoadItems.LoadItemColumns")
 
-                    var loadItems = new List<LoadItem>();
-                    var loadItemColumns = new List<LoadItemColumn>();
+                    companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    var loadItemRowCount = companyConnection.Query<int>("select count(1) from LoadItem where LoadID = @id", new { id = load.ID }).Single();
+                    companyConnection.Close();
 
-                    while (rowIndex <= stats.EndRowIndex)
+                    if (loadItemRowCount <= 0)
                     {
-                        // Empty row validation.
-                        var numberOfEmptyColumns = 0;
-                        foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
-                        {
-                            var testValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
-                            if (string.IsNullOrEmpty(testValue))
-                                numberOfEmptyColumns++;
-                        }
+                        var memoryStream = new MemoryStream(load.File);
+                        var xls = new SLDocument(memoryStream);
 
-                        // Empty row check.
-                        if (numberOfEmptyColumns < numberOfColumns)
-                        {
-                            var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex };
-                            loadItems.Add(loadItem);
+                        var stats = xls.GetWorksheetStatistics();
 
+                        var numberOfRows = stats.NumberOfRows;
+                        var rowIndex = stats.StartRowIndex + 1;
+                        var numberOfColumns = load.LoadColumns.Count;
+
+                        var loadItems = new List<LoadItem>();
+                        var loadItemColumns = new List<LoadItemColumn>();
+
+                        while (rowIndex <= stats.EndRowIndex)
+                        {
+                            // Empty row validation.
+                            var numberOfEmptyColumns = 0;
                             foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
                             {
-                                var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
-                                var isDate = false;
-
-                                if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
-                                    format.Contains("[$-F400]") || format.Contains("[$-409]"))
-                                    isDate = true;
-
-                                var loadValue = string.Empty;
-
-                                if (isDate)
-                                {
-                                    loadValue = xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString();
-                                }
-                                else
-                                {
-                                    loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
-
-                                    Regex tagRegex = new Regex(@"<[^>]+>");
-                                    if (tagRegex.IsMatch(loadValue))
-                                    {
-                                        var sanitizer = new HtmlSanitizer();
-                                        loadValue = sanitizer.Sanitize(loadValue);
-                                    }
-                                }
-
-
-                                loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue });
+                                var testValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+                                if (string.IsNullOrEmpty(testValue))
+                                    numberOfEmptyColumns++;
                             }
+
+                            // Empty row check.
+                            if (numberOfEmptyColumns < numberOfColumns)
+                            {
+                                var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex };
+                                loadItems.Add(loadItem);
+
+                                foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
+                                {
+                                    var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
+                                    var isDate = false;
+
+                                    if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
+                                        format.Contains("[$-F400]") || format.Contains("[$-409]"))
+                                        isDate = true;
+
+                                    var loadValue = string.Empty;
+
+                                    if (isDate)
+                                    {
+                                        loadValue = xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString();
+                                    }
+                                    else
+                                    {
+                                        loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+
+                                        Regex tagRegex = new Regex(@"<[^>]+>");
+                                        if (tagRegex.IsMatch(loadValue))
+                                        {
+                                            var sanitizer = new HtmlSanitizer();
+                                            loadValue = sanitizer.Sanitize(loadValue);
+                                        }
+                                    }
+
+
+                                    loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue });
+                                }
+                            }
+                            rowIndex++;
                         }
-                        rowIndex++;
+
+                        companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                        #region Bulk LoadItems
+
+                        using (var trans = companyConnection.BeginTransaction())
+                        {
+                            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
+                            {
+                                bulkCopy.BatchSize = loadItems.Count;
+                                bulkCopy.DestinationTableName = "dbo.LoadItem";
+                                bulkCopy.BulkCopyTimeout = 3600;
+
+                                var table = new System.Data.DataTable();
+                                var columnName = "LoadID";
+                                table.Columns.Add(columnName, typeof(int));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                columnName = "RowIndex";
+                                table.Columns.Add(columnName, typeof(int));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                foreach (var item in loadItems)
+                                {
+                                    var row = table.NewRow();
+
+                                    row["LoadID"] = item.LoadID;
+                                    row["RowIndex"] = item.RowIndex;
+
+                                    table.Rows.Add(row);
+                                }
+
+                                bulkCopy.WriteToServer(table);
+                            }
+                            trans.Commit();
+                        }
+
+                        #endregion
+
+                        #region Bulk LoadItemColumns
+
+                        using (var trans = companyConnection.BeginTransaction())
+                        {
+                            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
+                            {
+                                bulkCopy.BatchSize = loadItemColumns.Count;
+                                bulkCopy.DestinationTableName = "dbo.LoadItemColumn";
+                                bulkCopy.BulkCopyTimeout = 3600;
+
+                                var table = new System.Data.DataTable();
+                                var columnName = "LoadID";
+                                table.Columns.Add(columnName, typeof(int));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                columnName = "RowIndex";
+                                table.Columns.Add(columnName, typeof(int));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                columnName = "ColumnIndex";
+                                table.Columns.Add(columnName, typeof(int));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                columnName = "Value";
+                                table.Columns.Add(columnName, typeof(string));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                foreach (var item in loadItemColumns)
+                                {
+                                    var row = table.NewRow();
+
+                                    row["LoadID"] = item.LoadID;
+                                    row["RowIndex"] = item.RowIndex;
+                                    row["ColumnIndex"] = item.ColumnIndex;
+                                    if (string.IsNullOrEmpty(item.Value))
+                                        row["Value"] = DBNull.Value;
+                                    else
+                                        row["Value"] = item.Value;
+
+                                    table.Rows.Add(row);
+                                }
+
+                                bulkCopy.WriteToServer(table);
+                            }
+                            trans.Commit();
+                        }
+
+                        #endregion
+
+                        companyConnection.Close();
                     }
+
+                    #endregion
 
                     companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                    #region Bulk LoadItems
-
-                    using (var trans = companyConnection.BeginTransaction())
+                    switch (load.Action)
                     {
-                        using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
-                        {
-                            bulkCopy.BatchSize = loadItems.Count;
-                            bulkCopy.DestinationTableName = "dbo.LoadItem";
-                            bulkCopy.BulkCopyTimeout = 3600;
+                        case "M":
+                            if (load.ObjectID == 0)
+                                BulkLoadMembership(companyConnection, load.ID);
+                            else
+                                BulkLoadUsers(companyConnection, loadInfo.CompanyID, load.ID);
+                            break;
+                        case "O":
+                            await BulkLoadOwnership(company, load.ID);
+                            break;
+                        case "P":   // Promotions
+                            executeWithTry(companyConnection, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
+                            company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
+                            break;
+                        case "R":   // Relations                                
+                            await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Relate);
+                            break;
+                        case "U":   // Unrelate
+                            await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Unrelate);
+                            break;
+                        case "B":
+                        case "BL":  // Business Lineage
+                            executeWithTry(companyConnection, $@"EXEC bulkload.BusinessLineage {load.ID}", loadInfo.CompanyID, 2400);
+                            break;
+                        case "T":
+                        case "TL":  // Technical Lineage
+                            #region 
 
-                            var table = new System.Data.DataTable();
-                            var columnName = "LoadID";
-                            table.Columns.Add(columnName, typeof(int));
-                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+                            #region
+                            /*
+                                Source Fusion Configuration,
+                                Source Fusion Path,
+                                Target Fusion Configuration,
+                                Target Fusion Path,
+                                Group
+                             */
+                            #endregion
 
-                            columnName = "RowIndex";
-                            table.Columns.Add(columnName, typeof(int));
-                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+                            #region Get data to pre-populate
 
-                            foreach (var item in loadItems)
-                            {
-                                var row = table.NewRow();
-
-                                row["LoadID"] = item.LoadID;
-                                row["RowIndex"] = item.RowIndex;
-
-                                table.Rows.Add(row);
-                            }
-
-                            bulkCopy.WriteToServer(table);
-                        }
-                        trans.Commit();
-                    }
-
-                    #endregion
-
-                    #region Bulk LoadItemColumns
-
-                    using (var trans = companyConnection.BeginTransaction())
-                    {
-                        using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
-                        {
-                            bulkCopy.BatchSize = loadItemColumns.Count;
-                            bulkCopy.DestinationTableName = "dbo.LoadItemColumn";
-                            bulkCopy.BulkCopyTimeout = 3600;
-
-                            var table = new System.Data.DataTable();
-                            var columnName = "LoadID";
-                            table.Columns.Add(columnName, typeof(int));
-                            bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                            columnName = "RowIndex";
-                            table.Columns.Add(columnName, typeof(int));
-                            bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                            columnName = "ColumnIndex";
-                            table.Columns.Add(columnName, typeof(int));
-                            bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                            columnName = "Value";
-                            table.Columns.Add(columnName, typeof(string));
-                            bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                            foreach (var item in loadItemColumns)
-                            {
-                                var row = table.NewRow();
-
-                                row["LoadID"] = item.LoadID;
-                                row["RowIndex"] = item.RowIndex;
-                                row["ColumnIndex"] = item.ColumnIndex;
-                                if (string.IsNullOrEmpty(item.Value))
-                                    row["Value"] = DBNull.Value;
-                                else
-                                    row["Value"] = item.Value;
-
-                                table.Rows.Add(row);
-                            }
-
-                            bulkCopy.WriteToServer(table);
-                        }
-                        trans.Commit();
-                    }
-
-                    #endregion
-
-                    companyConnection.Close();
-                }
-
-                #endregion
-
-                companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-                switch (load.Action)
-                {
-                    case "M":
-                        if (load.ObjectID == 0)
-                            BulkLoadMembership(companyConnection, load.ID);
-                        else
-                            BulkLoadUsers(companyConnection, loadInfo.CompanyID, load.ID);
-                        break;
-                    case "O":
-                        await BulkLoadOwnership(company, load.ID);
-                        break;
-                    case "P":   // Promotions
-                        executeWithTry(companyConnection, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
-                        company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
-                        break;
-                    case "R":   // Relations                                
-                        await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Relate);
-                        break;
-                    case "U":   // Unrelate
-                        await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Unrelate);
-                        break;
-                    case "B":
-                    case "BL":  // Business Lineage
-                        executeWithTry(companyConnection, $@"EXEC bulkload.BusinessLineage {load.ID}", loadInfo.CompanyID, 2400);
-                        break;
-                    case "T":
-                    case "TL":  // Technical Lineage
-                        #region 
-
-                        #region
-                        /*
-                            Source Fusion Configuration,
-                            Source Fusion Path,
-                            Target Fusion Configuration,
-                            Target Fusion Path,
-                            Group
-                         */
-                        #endregion
-
-                        #region Get data to pre-populate
-
-                        var fusions = company.Table<Fusion>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = x.Name.ToLower(), ID = x.ID });
-
-                        #endregion
-
-                        var mappingList = new List<SimpleTypeModel>();
-
-                        load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
-
-                        foreach (var loadItem in load.LoadItems)
-                        {
-                            #region Vars
-
-                            var rawSourceFusion = "";
-                            var rawSourceFusionPath = "";
-                            var rawTargetFusion = "";
-                            var rawTargetFusionPath = "";
-                            var rawGroup = "";
-
-                            LoadItemColumn sourceFusionColumn = null;
-                            LoadItemColumn sourceFusionPathColumn = null;
-                            LoadItemColumn targetFusionColumn = null;
-                            LoadItemColumn targetFusionPathColumn = null;
-                            LoadItemColumn groupColumn = null;
-
-                            SimpleTypeModel verifiedSourceFusion = null;
-                            SimpleTypeModel verifiedSourceFusionPath = null;
-                            SimpleTypeModel verifiedTargetFusion = null;
-                            SimpleTypeModel verifiedTargetFusionPath = null;
-
-                            var currentColumnIndex = 1;
+                            var fusions = company.Table<Fusion>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = x.Name.ToLower(), ID = x.ID });
 
                             #endregion
 
-                            #region Verify source fusion
+                            var mappingList = new List<SimpleTypeModel>();
 
-                            sourceFusionColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            rawSourceFusion = (sourceFusionColumn.Value + "").Trim().ToLower();
-                            verifiedSourceFusion = fusions.SingleOrDefault(i => i.Name == rawSourceFusion);
-                            currentColumnIndex++;
+                            load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
-                            if (verifiedSourceFusion != null)
+                            foreach (var loadItem in load.LoadItems)
                             {
-                                sourceFusionColumn.LookupObject = "Fusion";
-                                sourceFusionColumn.LookupObjectID = verifiedSourceFusion.ID;
-                            }
+                                #region Vars
 
-                            #endregion
+                                var rawSourceFusion = "";
+                                var rawSourceFusionPath = "";
+                                var rawTargetFusion = "";
+                                var rawTargetFusionPath = "";
+                                var rawGroup = "";
 
-                            #region Verify source fusion attribute
+                                LoadItemColumn sourceFusionColumn = null;
+                                LoadItemColumn sourceFusionPathColumn = null;
+                                LoadItemColumn targetFusionColumn = null;
+                                LoadItemColumn targetFusionPathColumn = null;
+                                LoadItemColumn groupColumn = null;
 
-                            if (verifiedSourceFusion != null)
-                            {
-                                sourceFusionPathColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                                rawSourceFusionPath = (sourceFusionPathColumn.Value + "").Trim().ToLower();
-                                verifiedSourceFusionPath = company.Filter<FusionAttribute>(i => i.FusionID == verifiedSourceFusion.ID && i.TextPath.ToLower() == rawSourceFusionPath).Select(i => new SimpleTypeModel { Name = "FusionAttribute", ID = i.ID }).FirstOrDefault();
+                                SimpleTypeModel verifiedSourceFusion = null;
+                                SimpleTypeModel verifiedSourceFusionPath = null;
+                                SimpleTypeModel verifiedTargetFusion = null;
+                                SimpleTypeModel verifiedTargetFusionPath = null;
 
-                                if (verifiedSourceFusionPath != null)
+                                var currentColumnIndex = 1;
+
+                                #endregion
+
+                                #region Verify source fusion
+
+                                sourceFusionColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                                rawSourceFusion = (sourceFusionColumn.Value + "").Trim().ToLower();
+                                verifiedSourceFusion = fusions.SingleOrDefault(i => i.Name == rawSourceFusion);
+                                currentColumnIndex++;
+
+                                if (verifiedSourceFusion != null)
                                 {
-                                    sourceFusionPathColumn.LookupObject = verifiedSourceFusionPath.Name;
-                                    sourceFusionPathColumn.LookupObjectID = verifiedSourceFusionPath.ID;
+                                    sourceFusionColumn.LookupObject = "Fusion";
+                                    sourceFusionColumn.LookupObjectID = verifiedSourceFusion.ID;
                                 }
-                            }
-                            currentColumnIndex++;
 
-                            #endregion
+                                #endregion
 
-                            #region Verify target fusion
+                                #region Verify source fusion attribute
 
-                            targetFusionColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            rawTargetFusion = (targetFusionColumn.Value + "").Trim().ToLower();
-                            verifiedTargetFusion = fusions.SingleOrDefault(i => i.Name == rawTargetFusion);
-                            currentColumnIndex++;
-
-                            if (verifiedTargetFusion != null)
-                            {
-                                targetFusionColumn.LookupObject = "Fusion";
-                                targetFusionColumn.LookupObjectID = verifiedTargetFusion.ID;
-                            }
-
-                            #endregion
-
-                            #region Verify target fusion attribute
-
-                            if (verifiedTargetFusion != null)
-                            {
-                                targetFusionPathColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                                rawTargetFusionPath = (targetFusionPathColumn.Value + "").Trim().ToLower();
-                                verifiedTargetFusionPath = company.Filter<FusionAttribute>(i => i.FusionID == verifiedTargetFusion.ID && i.TextPath.ToLower() == rawTargetFusionPath).Select(i => new SimpleTypeModel { Name = "FusionAttribute", ID = i.ID }).FirstOrDefault();
-
-                                if (verifiedTargetFusionPath != null)
+                                if (verifiedSourceFusion != null)
                                 {
-                                    targetFusionPathColumn.LookupObject = verifiedTargetFusionPath.Name;
-                                    targetFusionPathColumn.LookupObjectID = verifiedTargetFusionPath.ID;
+                                    sourceFusionPathColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                                    rawSourceFusionPath = (sourceFusionPathColumn.Value + "").Trim().ToLower();
+                                    verifiedSourceFusionPath = company.Filter<FusionAttribute>(i => i.FusionID == verifiedSourceFusion.ID && i.TextPath.ToLower() == rawSourceFusionPath).Select(i => new SimpleTypeModel { Name = "FusionAttribute", ID = i.ID }).FirstOrDefault();
+
+                                    if (verifiedSourceFusionPath != null)
+                                    {
+                                        sourceFusionPathColumn.LookupObject = verifiedSourceFusionPath.Name;
+                                        sourceFusionPathColumn.LookupObjectID = verifiedSourceFusionPath.ID;
+                                    }
                                 }
-                            }
-                            currentColumnIndex++;
+                                currentColumnIndex++;
 
-                            #endregion
+                                #endregion
 
-                            #region Get group
+                                #region Verify target fusion
 
-                            groupColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            rawGroup = (groupColumn.Value + "").Trim().ToLower();
+                                targetFusionColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                                rawTargetFusion = (targetFusionColumn.Value + "").Trim().ToLower();
+                                verifiedTargetFusion = fusions.SingleOrDefault(i => i.Name == rawTargetFusion);
+                                currentColumnIndex++;
 
-                            #endregion
-
-                            #region Validated data.  Decide if we should insert the record.
-
-                            if (verifiedSourceFusion != null && verifiedSourceFusionPath != null &&
-                                verifiedTargetFusion != null && verifiedTargetFusionPath != null)
-                            {
-                                // OK to proceed with insert.
-                                var technicalMapping = company.Filter<MapRuleItem>(i =>
-                                    i.SourceFusionAttributeID == verifiedSourceFusionPath.ID &&
-                                    i.TargetFusionAttributeID == verifiedTargetFusionPath.ID)
-                                    .SingleOrDefault();
-
-                                if (technicalMapping == null)
+                                if (verifiedTargetFusion != null)
                                 {
-                                    technicalMapping = new MapRuleItem
-                                    {
-                                        SourceFusionAttributeID = verifiedSourceFusionPath.ID,
-                                        TargetFusionAttributeID = verifiedTargetFusionPath.ID
-                                    };
+                                    targetFusionColumn.LookupObject = "Fusion";
+                                    targetFusionColumn.LookupObjectID = verifiedTargetFusion.ID;
+                                }
 
-                                    try
+                                #endregion
+
+                                #region Verify target fusion attribute
+
+                                if (verifiedTargetFusion != null)
+                                {
+                                    targetFusionPathColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                                    rawTargetFusionPath = (targetFusionPathColumn.Value + "").Trim().ToLower();
+                                    verifiedTargetFusionPath = company.Filter<FusionAttribute>(i => i.FusionID == verifiedTargetFusion.ID && i.TextPath.ToLower() == rawTargetFusionPath).Select(i => new SimpleTypeModel { Name = "FusionAttribute", ID = i.ID }).FirstOrDefault();
+
+                                    if (verifiedTargetFusionPath != null)
                                     {
-                                        company.Add(technicalMapping);
+                                        targetFusionPathColumn.LookupObject = verifiedTargetFusionPath.Name;
+                                        targetFusionPathColumn.LookupObjectID = verifiedTargetFusionPath.ID;
+                                    }
+                                }
+                                currentColumnIndex++;
+
+                                #endregion
+
+                                #region Get group
+
+                                groupColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                                rawGroup = (groupColumn.Value + "").Trim().ToLower();
+
+                                #endregion
+
+                                #region Validated data.  Decide if we should insert the record.
+
+                                if (verifiedSourceFusion != null && verifiedSourceFusionPath != null &&
+                                    verifiedTargetFusion != null && verifiedTargetFusionPath != null)
+                                {
+                                    // OK to proceed with insert.
+                                    var technicalMapping = company.Filter<MapRuleItem>(i =>
+                                        i.SourceFusionAttributeID == verifiedSourceFusionPath.ID &&
+                                        i.TargetFusionAttributeID == verifiedTargetFusionPath.ID)
+                                        .SingleOrDefault();
+
+                                    if (technicalMapping == null)
+                                    {
+                                        technicalMapping = new MapRuleItem
+                                        {
+                                            SourceFusionAttributeID = verifiedSourceFusionPath.ID,
+                                            TargetFusionAttributeID = verifiedTargetFusionPath.ID
+                                        };
+
+                                        try
+                                        {
+                                            company.Add(technicalMapping);
+                                            loadItem.Object = "MapRuleItem";
+                                            loadItem.ObjectID = technicalMapping.ID;
+                                            loadItem.Status = true;
+                                            loadItem.StatusMessage = "Successfully created technical mapping.";
+
+                                            mappingList.Add(new SimpleTypeModel { Name = rawGroup, ID = technicalMapping.ID }); //This is used for post processing.
+                                        }
+                                        catch (BaseException ex)
+                                        {
+                                            loadItem.Status = false;
+                                            loadItem.StatusMessage = ex.StatusDescription;
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            loadItem.Status = false;
+                                            loadItem.StatusMessage = ex.Message;
+                                        }
+                                    }
+                                    else
+                                    {
                                         loadItem.Object = "MapRuleItem";
                                         loadItem.ObjectID = technicalMapping.ID;
                                         loadItem.Status = true;
-                                        loadItem.StatusMessage = "Successfully created technical mapping.";
+                                        loadItem.StatusMessage = "Technical mapping already exists.";
 
                                         mappingList.Add(new SimpleTypeModel { Name = rawGroup, ID = technicalMapping.ID }); //This is used for post processing.
-                                    }
-                                    catch (BaseException ex)
-                                    {
-                                        loadItem.Status = false;
-                                        loadItem.StatusMessage = ex.StatusDescription;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        loadItem.Status = false;
-                                        loadItem.StatusMessage = ex.Message;
                                     }
                                 }
                                 else
                                 {
-                                    loadItem.Object = "MapRuleItem";
-                                    loadItem.ObjectID = technicalMapping.ID;
-                                    loadItem.Status = true;
-                                    loadItem.StatusMessage = "Technical mapping already exists.";
+                                    // Log errors.
+                                    loadItem.Status = false;
 
-                                    mappingList.Add(new SimpleTypeModel { Name = rawGroup, ID = technicalMapping.ID }); //This is used for post processing.
-                                }
-                            }
-                            else
-                            {
-                                // Log errors.
-                                loadItem.Status = false;
-
-                                if (verifiedSourceFusion == null)
-                                {
-                                    loadItem.StatusMessage += $" Could not find source fusion configuration [{rawSourceFusion}].";
-                                }
-
-                                if (verifiedSourceFusionPath == null)
-                                {
-                                    loadItem.StatusMessage += $" Could not find source fusion path [{rawSourceFusionPath}].";
-                                }
-
-                                if (verifiedTargetFusion == null)
-                                {
-                                    loadItem.StatusMessage += $" Could not find target fusion [{rawTargetFusion}].";
-                                }
-
-                                if (verifiedTargetFusionPath == null)
-                                {
-                                    loadItem.StatusMessage += $" Could not find target fusion path [{rawTargetFusionPath}].";
-                                }
-                            }
-
-                            #endregion
-
-                            company.Update(loadItem);
-                        }
-
-                        #region Now process maprules based on groups.
-
-                        try
-                        {
-                            var groups = mappingList.Select(i => i.Name).Distinct().ToList();
-                            foreach (var group in groups)
-                            {
-                                if (group != "")
-                                {
-                                    var groupedMapRuleItems = mappingList.Where(i => i.Name == group).Select(i => i.ID).ToList();
-
-                                    if (groupedMapRuleItems.Count > 0)
+                                    if (verifiedSourceFusion == null)
                                     {
-                                        var mapRuleExistenceSql = "select M1.MapRuleID from MapRuleItemMapRule M1";
-                                        var firstID = groupedMapRuleItems[0];
+                                        loadItem.StatusMessage += $" Could not find source fusion configuration [{rawSourceFusion}].";
+                                    }
 
-                                        groupedMapRuleItems.RemoveAt(0);
+                                    if (verifiedSourceFusionPath == null)
+                                    {
+                                        loadItem.StatusMessage += $" Could not find source fusion path [{rawSourceFusionPath}].";
+                                    }
 
-                                        var tableIndex = 2;
-                                        groupedMapRuleItems.ForEach(i =>
+                                    if (verifiedTargetFusion == null)
+                                    {
+                                        loadItem.StatusMessage += $" Could not find target fusion [{rawTargetFusion}].";
+                                    }
+
+                                    if (verifiedTargetFusionPath == null)
+                                    {
+                                        loadItem.StatusMessage += $" Could not find target fusion path [{rawTargetFusionPath}].";
+                                    }
+                                }
+
+                                #endregion
+
+                                company.Update(loadItem);
+                            }
+
+                            #region Now process maprules based on groups.
+
+                            try
+                            {
+                                var groups = mappingList.Select(i => i.Name).Distinct().ToList();
+                                foreach (var group in groups)
+                                {
+                                    if (group != "")
+                                    {
+                                        var groupedMapRuleItems = mappingList.Where(i => i.Name == group).Select(i => i.ID).ToList();
+
+                                        if (groupedMapRuleItems.Count > 0)
                                         {
-                                            mapRuleExistenceSql += $" inner join MapRuleItemMapRule M{tableIndex} on M{tableIndex}.MapRuleID = M{tableIndex - 1}.MapRuleID and M{tableIndex}.MapRuleItemID = {i}";
-                                            tableIndex++;
-                                        });
+                                            var mapRuleExistenceSql = "select M1.MapRuleID from MapRuleItemMapRule M1";
+                                            var firstID = groupedMapRuleItems[0];
 
-                                        mapRuleExistenceSql += $" where M1.MapRuleItemID = {firstID}";
+                                            groupedMapRuleItems.RemoveAt(0);
 
-
-                                        //Make sure you add the rmeoved ID back into the ID list.
-                                        groupedMapRuleItems.Add(firstID);
-
-                                        var mapRuleCheck = company.Query<dynamic>(mapRuleExistenceSql).FirstOrDefault();
-
-                                        if (mapRuleCheck == null)
-                                        {
-                                            var mapRule = new MapRule { MapRuleItems = new List<MapRuleItem>() };
-                                            var mapRuleItems = company.Filter<MapRuleItem>(i => groupedMapRuleItems.Contains(i.ID));
-                                            foreach (var mri in mapRuleItems)
+                                            var tableIndex = 2;
+                                            groupedMapRuleItems.ForEach(i =>
                                             {
-                                                mapRule.MapRuleItems.Add(mri);
+                                                mapRuleExistenceSql += $" inner join MapRuleItemMapRule M{tableIndex} on M{tableIndex}.MapRuleID = M{tableIndex - 1}.MapRuleID and M{tableIndex}.MapRuleItemID = {i}";
+                                                tableIndex++;
+                                            });
+
+                                            mapRuleExistenceSql += $" where M1.MapRuleItemID = {firstID}";
+
+
+                                            //Make sure you add the rmeoved ID back into the ID list.
+                                            groupedMapRuleItems.Add(firstID);
+
+                                            var mapRuleCheck = company.Query<dynamic>(mapRuleExistenceSql).FirstOrDefault();
+
+                                            if (mapRuleCheck == null)
+                                            {
+                                                var mapRule = new MapRule { MapRuleItems = new List<MapRuleItem>() };
+                                                var mapRuleItems = company.Filter<MapRuleItem>(i => groupedMapRuleItems.Contains(i.ID));
+                                                foreach (var mri in mapRuleItems)
+                                                {
+                                                    mapRule.MapRuleItems.Add(mri);
+                                                }
+                                                company.Add(mapRule);
                                             }
-                                            company.Add(mapRule);
                                         }
                                     }
                                 }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            load.Notes += $" {ex.Message}";
-                        }
+                            catch (Exception ex)
+                            {
+                                load.Notes += $" {ex.Message}";
+                            }
 
-                        #endregion
+                            #endregion
 
-                        break;
-                        #endregion
+                            break;
+                            #endregion
+                    }
+
+                    companyConnection.Close();
+
+                    load.DateCompleted = DateTime.UtcNow;
+                    company.Update(load);
                 }
-
-                companyConnection.Close();
-
-                load.DateCompleted = DateTime.UtcNow;
-                company.Update(load);
+                catch (Exception ex)
+                {
+                    if (load != null)
+                    {
+                        load.DateCompleted = DateTime.UtcNow;
+                        company.Update(load);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, loadInfo.CompanyID);                
+                CoreFunction.AITrackException(functionName, ex, loadInfo.CompanyID);
             }
         }
 
@@ -670,11 +682,6 @@ set		T.Status = S.Status,
 from	LoadItem T
 		inner join #GroupLoadItems S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex;", new { id = loadId }, transaction: trans);
 
-                    company.Execute(@"
-update	[Load]
-set		DateCompleted = getutcdate()
-where	ID = @id", new { id = loadId }, transaction: trans);
-
                     trans.Commit();
                 }
                 catch 
@@ -684,22 +691,7 @@ where	ID = @id", new { id = loadId }, transaction: trans);
                 }
             }
         }
-
-        public class CommunityUserAddResult
-        {
-            public int LoadID { get; set; }
-            public int RowIndex { get; set; }
-            public string UserStatus { get; set; }
-            public string Email { get; set; }
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
-            public int EnvironmentID { get; set; }
-            public int? ClientID { get; set; }
-            public int? ResourceID { get; set; }
-            public bool? Success { get; set; }
-            public string Message { get; set; }
-        }
-
+               
         private static void BulkLoadUsers(SqlConnection company, int companyID, int loadId)
         {
             var load = company.Query<Load>("select * from [Load] where ID = @loadId", new { loadId }).SingleOrDefault();
@@ -720,13 +712,13 @@ where	ID = @id", new { id = loadId }, transaction: trans);
                 throw new Exception($"Bulk load data does not contain the correct number of columns in LoadColumn table.  Load ID [{loadId}]");
             }
             
-            var usersToLoad = company.Query<dynamic>(@"
+            var usersToLoad = company.Query<CommunityUserAddModel>(@"
 select	I.LoadID,
 		I.RowIndex,
-		C1.Value as [UserStatus],
-		C2.Value as [Email],
-		C3.Value as [FirstName],
-		C4.Value as [LastName]
+		rtrim(ltrim(C1.Value)) as [UserStatus],
+		rtrim(ltrim(C2.Value)) as [Email],
+		rtrim(ltrim(C3.Value)) as [FirstName],
+		rtrim(ltrim(C4.Value)) as [LastName]
 from	LoadItem I
 		inner join LoadItemColumn C1 on C1.LoadID = I.LoadID and C1.RowIndex = I.RowIndex and C1.ColumnIndex = 1
 		inner join LoadItemColumn C2 on C2.LoadID = I.LoadID and C2.RowIndex = I.RowIndex and C2.ColumnIndex = 2
@@ -745,6 +737,8 @@ where	I.LoadID = @loadId", new { loadId }, commandTimeout: 1200).ToList();
             tbl.Columns.Add("FirstName", typeof(string));
             tbl.Columns.Add("LastName", typeof(string));
             tbl.Columns.Add("EnvironmentID", typeof(int));
+            tbl.Columns.Add("Success", typeof(bool));
+            tbl.Columns.Add("Message", typeof(string));
 
             foreach (var userToLoad in usersToLoad)
             {
@@ -753,7 +747,13 @@ where	I.LoadID = @loadId", new { loadId }, commandTimeout: 1200).ToList();
                 row["LoadID"] = userToLoad.LoadID;
                 row["RowIndex"] = userToLoad.RowIndex;
                 row["UserStatus"] = userToLoad.UserStatus;
-                row["Email"] = userToLoad.Email;
+                row["Message"] = "";
+                if (string.IsNullOrEmpty(userToLoad.Email) || !Regex.IsMatch(userToLoad.Email+"", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
+                {
+                    row["Success"] = false;
+                    row["Message"] = "Email is not in a valid format; ";
+                }
+                row["Email"] = userToLoad.Email + "";
                 row["FirstName"] = userToLoad.FirstName;
                 row["LastName"] = userToLoad.LastName;
                 row["EnvironmentID"] = companyID;
@@ -763,7 +763,9 @@ where	I.LoadID = @loadId", new { loadId }, commandTimeout: 1200).ToList();
 
             #endregion
 
-            List<CommunityUserAddResult> userResults = null;
+            List<CommunityUserAddResultModel> userResults = null;
+
+            #region Process in Community database.
 
             var community = new SqlConnection(d360.core.constants.COMMUNITY_DATABASE_CONNECTION);
             community.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -781,9 +783,9 @@ create table #Users (
     LoadID int not null,
     RowIndex int not null,
     UserStatus nvarchar(50) null,
-    Email nvarchar(1000) null,
-    FirstName nvarchar(1000) null,
-    LastName nvarchar(50) null,
+    Email nvarchar(500) null,
+    FirstName nvarchar(250) null,
+    LastName nvarchar(250) null,
 	EnvironmentID int not null, 
 	ClientID int null,
 	ResourceID int null,
@@ -809,27 +811,45 @@ CREATE NONCLUSTERED INDEX IX_TempUsers ON #Users ( Email ASC );
                     usersBulkCopy.ColumnMappings.Add("FirstName", "FirstName");
                     usersBulkCopy.ColumnMappings.Add("LastName", "LastName");
                     usersBulkCopy.ColumnMappings.Add("EnvironmentID", "EnvironmentID");
+                    usersBulkCopy.ColumnMappings.Add("Success", "Success");
+                    usersBulkCopy.ColumnMappings.Add("Message", "Message");
 
                     usersBulkCopy.WriteToServer(tbl);
 
-                    community.Execute(@"
-update	T
+                    community.Execute(@"update	T
 set		T.ClientID = S.ClientID
 from	#Users T
-		inner join Company S on S.ID = T.EnvironmentID;
+		inner join Company S on S.ID = T.EnvironmentID;", transaction: trans);
 
-update	T
+                    //community.Execute(@"update	#Users set Message = '';", transaction: trans);
+
+                    community.Execute(@"update	#Users
+set		Success = 0,
+        Message = Message + 'User does not have a valid email address; '
+where   [Email] is null or [Email] = '';", transaction: trans);
+
+                    community.Execute(@"update	#Users
+set		Success = 0,
+        Message = Message + 'User does not have a valid first name; '
+where   [FirstName] is null or [FirstName] = '';", transaction: trans);
+
+                    community.Execute(@"update	#Users
+set		Success = 0,
+        Message = Message + 'User does not have a valid last name; '
+where   [LastName] is null or [LastName] = '';", transaction: trans);
+
+                    community.Execute(@"update	T
 set		T.ResourceID = S.ID
 from	#Users T
-		inner join [Resource] S on S.Email = T.Email;
+		inner join [Resource] S on S.Email = T.Email;", transaction: trans);
 
-update	T
+                    community.Execute(@"update	T
 set		T.Success = case
 						when S.[Count] > 0 then cast(0 as bit)
 						else null
 					end,
 		T.Message = case
-						when S.[Count] > 0 then 'User is a member of another account and may not be modified.'
+						when S.[Count] > 0 then 'User is a member of another account and may not be modified; '
 						else null
 					end
 from	#Users T
@@ -837,8 +857,9 @@ from	#Users T
 			select	count(1) as [Count]
 			from	CompanyResource CR
 					inner join Company C on C.ID = CR.CompanyID and C.ClientID <> T.ClientID and CR.ResourceID = T.ResourceID
-		) S;", transaction: trans);
-
+		) S
+where   T.Success is null;", transaction: trans);
+                    
                     community.Execute(@"
 merge into  [Resource] T
 using       (
@@ -899,7 +920,7 @@ from	#Users T
 		left join #UserMembershipsResult S on S.ResourceID = T.ResourceID
 where	T.Success = 1", transaction: trans);
 
-                    userResults = community.Query<CommunityUserAddResult>("select * from #Users", transaction: trans).ToList();
+                    userResults = community.Query<CommunityUserAddResultModel>("select * from #Users", transaction: trans).ToList();
 
                     trans.Commit();
                 }
@@ -909,6 +930,10 @@ where	T.Success = 1", transaction: trans);
                     throw;
                 }
             }
+
+            #endregion
+
+            #region Process in Environment database.
 
             tbl = new System.Data.DataTable();
 
@@ -929,16 +954,18 @@ where	T.Success = 1", transaction: trans);
                 row["LoadID"] = userResult.LoadID;
                 row["RowIndex"] = userResult.RowIndex;
                 row["UserStatus"] = userResult.UserStatus;
-                row["Email"] = userResult.Email;
+                row["Email"] = userResult.Email+"";
                 row["FirstName"] = userResult.FirstName;
                 row["LastName"] = userResult.LastName;
-                row["ResourceID"] = userResult.ResourceID;
+
+                if (userResult.ResourceID.HasValue)
+                    row["ResourceID"] = userResult.ResourceID.Value;
+
                 row["Success"] = userResult.Success;
                 row["Message"] = userResult.Message;
 
                 tbl.Rows.Add(row);
             }
-
 
             using (var trans = company.BeginTransaction())
             {
@@ -951,9 +978,9 @@ create table #Users (
     LoadID int not null,
     RowIndex int not null,
     UserStatus nvarchar(50) null,
-    Email nvarchar(1000) null,
-    FirstName nvarchar(1000) null,
-    LastName nvarchar(50) null,
+    Email nvarchar(500) null,
+    FirstName nvarchar(250) null,
+    LastName nvarchar(250) null,
 	ResourceID int null,
     Success bit null,
     Message nvarchar(2500) null
@@ -1056,6 +1083,8 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                     throw;
                 }
             }
+
+            #endregion
         }
 
         private static async Task BulkLoadOwnership(CompanyContext company, int loadId)
