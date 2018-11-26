@@ -14,7 +14,7 @@ import { ExportTemplateStyle } from "../../../models/export-template.model";
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <p-table [value]="styleRules" selectionMode="single" [metaKeySelection]="true" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" >
+                        <p-table #dt [value]="styleRules" selectionMode="single" [metaKeySelection]="true" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" >
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th>
@@ -47,6 +47,9 @@ import { ExportTemplateStyle } from "../../../models/export-template.model";
                                         </div>
                                     </td>
                                 </tr>
+                            </ng-template>
+                            <ng-template pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                             </ng-template>
                         </p-table>
                     </span>                            

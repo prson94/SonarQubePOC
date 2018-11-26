@@ -2487,7 +2487,7 @@ order by wi.StartedOn desc";
             return relChange;
         }
 
-        private List<EmailedResourceResponsibility> GetEmailResources(List<int> responsiblities,List<string> emails)
+        private List<EmailedResourceResponsibility> GetEmailResources(int assetId,List<int> responsiblities,List<string> emails)
         {
 
             var dbArgs = new Dapper.DynamicParameters();
@@ -2503,6 +2503,7 @@ order by wi.StartedOn desc";
                          inner join reporting.Global_Resource R on
                          rd.resourceId = r.resourceId and rd.securityasset='R'
                          where r.email  IN ('{string.Join("','",emails)}')
+                         and rd.AssetID={assetId}
                         and rd.ResponsibilityTypeID IN ( {string.Join(",", responsiblities)}))
 
                         SELECT cte.FullName,cte.ResourceID,cte.email,
@@ -2637,7 +2638,8 @@ order by wi.StartedOn desc";
 					cast(1 as bit)
 				else
 					cast(0 as bit)
-				end as IsPublishedVersion
+				end as IsPublishedVersion,
+                a.id as AssetId
 			from workflow.itemstep si
 			inner join workflow.item i on i.id = si.itemid
 			left join Asset a on a.[Object] = i.Object and a.ObjectID = i.ObjectID
@@ -2703,7 +2705,7 @@ order by wi.StartedOn desc";
                     }
                 }
 
-                
+                var assetId = detail.AssetId;
                 if (detail.IsIssueType)
                 {
                     var issueSql = @"select 
@@ -2717,7 +2719,8 @@ order by wi.StartedOn desc";
 				        A.[Object],
 				        A.ObjectID,
 				        TA.[Object] as ObjectType,
-				        TA.ObjectID as ObjectTypeID
+				        TA.ObjectID as ObjectTypeID,
+                        A.ID as AssetId
 			        from workflow.item i
 			        inner join Issue s on s.ID = i.ObjectID
 			        inner join IssueType t on t.id = s.IssueTypeID
@@ -2730,6 +2733,7 @@ order by wi.StartedOn desc";
                     if (issueDetails != null)
                     {
                         detail.IssueDetails = issueDetails;
+                        assetId = issueDetails.AssetId;
                     }
 
                 }
@@ -2825,7 +2829,7 @@ order by wi.StartedOn desc";
 
                         //get all relevant resource info
                         //var emailResources = Company.GlobalReportingResources.Where(g => resourceEmails.Contains(g.Email.ToLower())).ToList();
-                        var emailResources = this.GetEmailResources(responsiblities, resourceEmails);
+                        var emailResources = this.GetEmailResources(assetId, responsiblities, resourceEmails);
                         for (int i = 0; i < emails.email.Count; i++)
                         {
                             var e = emails.email[i];

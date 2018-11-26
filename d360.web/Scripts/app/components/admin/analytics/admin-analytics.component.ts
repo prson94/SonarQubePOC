@@ -4,10 +4,10 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarItem } from '../../../models/rightsidebar.model';
-import { AssetTypeMetricModel } from '../../../models/asset.model';
+//import { RightSidebarItem } from '../../../models/rightsidebar.model';
+import { AssetTypeMetricModel } from '../../../models/asset.model'; 
 import { EventEmitter } from 'events';
-import { MetricsService } from '../../../services/metrics.service';
+import { MetricsService } from '../../../services/metrics.service'; 
 
 @Component({
     selector: 'd3s-admin-analytics-component',
@@ -34,7 +34,6 @@ import { MetricsService } from '../../../services/metrics.service';
 export class AdminAnalyticsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     private selectedAssetType: AssetTypeMetricModel = null;
     private selectedMetric = null;
-    private models: AssetTypeMetricModel[] = [];
 
     constructor(
         rightSidebarService: RightSidebarService,
@@ -51,15 +50,6 @@ export class AdminAnalyticsComponent extends AdminBaseComponent implements OnIni
     }
 
     ngOnInit() {
-        this.metricsService.getAssetTypes()
-            .subscribe(r => {
-                this.models = r;
-                this.isLoading = false;
-                if (this.models.length && this.models.length > 0) {
-                    this.selectedAssetType = this.models[0];
-                    //this.selectionChange.emit(this.selection);
-                }
-            });
     }
 
     ngOnDestroy() {
