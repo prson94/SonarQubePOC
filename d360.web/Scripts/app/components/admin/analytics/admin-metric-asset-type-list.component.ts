@@ -17,7 +17,7 @@ import { AssetTypeMetricModel } from '../../../models/asset.model';
     <p-table #dt [value]="models" selectionMode="single" [globalFilterFields]="['Class','Name']" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selection" (onRowSelect)="onRowSelect($event)" >
         <ng-template pTemplate="header">
             <tr>
-                <th [pSortableColumn]="'Class'" style="width: 70px">Class
+                <th [pSortableColumn]="'Class'" style="width: 100px">Class
 <d3s-sortIcon [field]="'Class'"></d3s-sortIcon></th>
                 <th [pSortableColumn]="'Name'">Name
 <d3s-sortIcon [field]="'Name'"></d3s-sortIcon></th>

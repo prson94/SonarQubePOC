@@ -102,7 +102,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     ngOnInit() {
-        this.load();
+        //this.load(); 
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -116,32 +116,38 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.isLoading = true;
         this.metrics = [];
         this.metricTree = [];
-        this.metricsService.getMetricsByAssetType(this.assetType.Uid)
-            .subscribe(r => {
+        if (this.assetType) {
+            this.metricsService.getMetricsByAssetType(this.assetType.Uid)
+                .subscribe(r => {
 
-                this.metrics = r;
-                if (this.metrics) {
-                    this.metrics.filter(g => g.ParentUid == null).forEach(g => {
-                        let n = {
-                            data: g,
-                            children: [],
-                            expanded: true
+                    this.metrics = r;
+                    if (this.metrics) {
+                        this.metrics.filter(g => g.ParentUid == null).forEach(g => {
+                            let n = {
+                                data: g,
+                                children: [],
+                                expanded: true
+                            }
+                            this.metricTree.push(n);
+                            this.addChildren(n);
+                        });
+                        if (this.metricTree != null && this.metricTree.length > 0) {
+                            this.selection = this.metricTree[0].data;
+                            this.selectionChange.emit(this.selection);
                         }
-                        this.metricTree.push(n);
-                        this.addChildren(n);
-                    });
-                    if (this.metricTree != null && this.metricTree.length > 0) {
-                        this.selection = this.metricTree[0].data;
-                        this.selectionChange.emit(this.selection);
                     }
-                }
 
-                this.metricsService.getFieldTypeViewModelsByAssetType(this.assetType.Uid)
-                    .subscribe(f => {
-                        this.metricListFieldTypes = f;
-                        this.isLoading = false;
-                    });
-            });
+                    this.metricsService.getFieldTypeViewModelsByAssetType(this.assetType.Uid)
+                        .subscribe(f => {
+                            this.metricListFieldTypes = f;
+                            this.isLoading = false;
+                        });
+                });
+        }
+        else {
+            this.selection = null;
+            this.metricTree = [];
+        }
     }
 
     addChildren(node: TreeNode) {
