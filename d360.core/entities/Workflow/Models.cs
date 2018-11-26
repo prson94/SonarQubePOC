@@ -184,6 +184,8 @@ namespace d360.core.entities.Workflow
         public WorkflowStepReleationshipChange RelationshipChange { get; set; }
 
         public State StateChange { get; set; }
+
+        public int AssetId { get; set; }
     }
 
     public class WorkflowStepFieldChange
@@ -240,6 +242,7 @@ namespace d360.core.entities.Workflow
         public int ObjectID { get; set; }
         public string ObjectType { get; set; }
         public int ObjectTypeID { get; set; }
+        public int AssetId { get; set; }
     }
 
 }
