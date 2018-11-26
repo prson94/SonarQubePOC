@@ -8,7 +8,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { TagService } from '../../services/tag.service';
-
+import { MessagesService } from '../../services/messages.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType, WorkflowIssueType } from '../../models/workflow.model';
@@ -97,6 +97,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         protected headerBreadcrumbService: HeaderBreadcrumbService,  
         private headerActionsService: HeaderActionsService,
         webAnalyticsService: WebAnalyticsService,
+        private messagesService: MessagesService,
         rightSidebarService: RightSidebarService) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -161,6 +162,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         data.item.ObjectType = this.selectedObjectType;        
         this.workflowService.raiseIssue(data.item)
             .then(res => {
+                this.showMessageForResult(this.messagesService, res);
                 this.isLoading = false;
                 this.location.back();
             });
