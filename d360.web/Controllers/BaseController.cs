@@ -924,9 +924,12 @@ namespace d360.web.Controllers
 
                                     }
 
-                                    fld.Items.AddRange(
-                                        items
-                                    );
+                                    if (items != null) // missing null check causes exception if items is null GOV-6041
+                                    {
+                                        fld.Items.AddRange(
+                                            items
+                                        );
+                                    }
                                 }
                             }
                             catch(Exception ex)
