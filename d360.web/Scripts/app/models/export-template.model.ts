@@ -5,6 +5,7 @@
     ArtifactTypeID: number;
     IncludeFields: string;
     HasTemplateFile: boolean;
+    ExportViewType: ExportViewType;
 }
 
 export class ExportTemplateStyle {
@@ -16,4 +17,10 @@ export class ExportTemplateStyle {
     ArtifactTypeExportTemplateID: number;
     ID: number;
     SelectionType: string;
+}
+
+export enum ExportViewType {
+    None = 0,
+    Pivot = 1,
+    Grouped = 2
 }

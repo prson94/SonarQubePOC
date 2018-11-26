@@ -110,7 +110,7 @@ import { ExportTemplate } from '../../../models/export-template.model';
                 </div>
                  <div class="row">
                     <div class="col s12">
-                        <d3s-admin-export-template-styles [templateId]="selected?.ID"></d3s-admin-export-template-styles>
+                        <d3s-admin-export-template-styles [exportViewType]="selected?.ExportViewType" [templateId]="selected?.ID"></d3s-admin-export-template-styles>
                     </div>
                 </div>
             </div>
@@ -157,7 +157,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         this.isLoading = true;
         this.exportTemplateService.getExportTemplates().subscribe(result => {
             this.exportTemplates = result;
-            if (this.selected == null && this.exportTemplates != null && this.exportTemplates.length > 0) this.selected = this.exportTemplates[0];
+            if (this.exportTemplates != null && this.exportTemplates.length > 0) this.selected = this.exportTemplates[0];
             this.isLoading = false;
         });
     }
