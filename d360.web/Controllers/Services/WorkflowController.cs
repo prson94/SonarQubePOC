@@ -2493,17 +2493,20 @@ order by wi.StartedOn desc";
             var dbArgs = new Dapper.DynamicParameters();
             string sql = string.Empty;
             List<EmailedResourceResponsibility> results;
+            var asset = Company.GetAssetDetail(assetId);
 
-            if (responsiblities.Count != 0)
+            if (responsiblities.Count != 0 && asset != null)
             {
-                sql = $@"WITH CTE(FullName,ResourceID,ResponsibilityTypeName,Email) 
+               
+                
+                    sql = $@"WITH CTE(FullName,ResourceID,ResponsibilityTypeName,Email) 
                         as 
                          (Select distinct  R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,rd.ResponsibilityTypeName,R.Email
                         from ResponsibilityDetail rd
                          inner join reporting.Global_Resource R on
-                         rd.resourceId = r.resourceId and rd.securityasset='R'
+                         rd.resourceId = r.resourceId 
                          where r.email  IN ('{string.Join("','",emails)}')
-                         and rd.AssetID={assetId}
+                         and ((rd.AssetID = {assetId}) or (rd.AssetID = 0 and rd.AssetTypeID ={asset.AssetTypeID}) and rd.IsVisible=1)
                         and rd.ResponsibilityTypeID IN ( {string.Join(",", responsiblities)}))
 
                         SELECT cte.FullName,cte.ResourceID,cte.email,
