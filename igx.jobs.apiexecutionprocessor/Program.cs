@@ -34,7 +34,7 @@ namespace igx.jobs.apiexecutionprocessor
         }
     }
 
-    public class BulkLoadProcessor
+    public class ApiExecutionProcessor
     {
         const string functionName = "ApiExecution_Process";
 
@@ -98,9 +98,11 @@ namespace igx.jobs.apiexecutionprocessor
                             storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(putAssetsResults));
                             break;
                         case ApiExecutionAction.DeleteAssets:
+                            var deleteAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(dbExecutionItem.Fields);
+                            assetType = company.Filter<AssetType>(i => i.uid == deleteAssetsFields.AssetTypeUid).Single();
+
                             string deleteAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
                             var deleteAssets = JsonConvert.DeserializeObject<AssetDeletes>(deleteAssetsJson);
-
                             var deleteAssetsResults = companyConnection.DeleteAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, deleteAssets);
                             dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);

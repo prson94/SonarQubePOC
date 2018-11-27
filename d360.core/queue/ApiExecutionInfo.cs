@@ -23,12 +23,12 @@ namespace d360.core.queue
         public ApiExecutionAction Action { get; set; }
 
         [JsonIgnore]
-        public string StorageFolder { get { return $"api-execution-{CompanyID}"; } }
+        public string StorageFolder { get { return $"api-execution"; } }
 
         [JsonIgnore]
-        public string RequestFileName { get { return $"{ExecutionID}_request.json"; } }
+        public string RequestFileName { get { return $"{CompanyID}/{ExecutionID}_request.json"; } }
 
         [JsonIgnore]
-        public string ResponseFileName { get { return $"{ExecutionID}_response.json"; } }
+        public string ResponseFileName { get { return $"{CompanyID}/{ExecutionID}_response.json"; } }
     }
 }

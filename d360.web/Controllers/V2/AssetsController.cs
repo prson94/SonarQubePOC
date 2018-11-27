@@ -723,7 +723,7 @@ order by	P.[Path]
                 };
 
                 // Save to storage container.
-                Storage.CreateFolder(executionInfo.StorageFolder);
+                //Storage.CreateFolder(executionInfo.StorageFolder);
                 Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
                 // Save to queue.
@@ -804,7 +804,7 @@ order by	P.[Path]
                 };
 
                 // Save to storage container.
-                Storage.CreateFolder(executionInfo.StorageFolder);
+                //Storage.CreateFolder(executionInfo.StorageFolder);
                 Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
                 // Save to queue.
@@ -885,7 +885,7 @@ order by	P.[Path]
                 };
 
                 // Save to storage container.
-                Storage.CreateFolder(executionInfo.StorageFolder);
+                //Storage.CreateFolder(executionInfo.StorageFolder);
                 Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
                 // Save to queue.
