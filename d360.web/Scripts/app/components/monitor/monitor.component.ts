@@ -11,49 +11,57 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 @Component({
     selector: 'd3s-monitor',
     template: ` 
-<div class="row">
-    <div class="col s12" [class.m6]="!expandRow">
-     
-        <d3s-monitor-workflow-version 
-            (onFilterChanged)="onFilterChanged($event)"
-            [selectAll]="selectAll"
-            [selectedWorkflowTypes]="selectedWorkflowTypes" 
-            (onMonitorListChanged)="onMonitorListChanged($event)" 
-            [objectType]="objectType" 
-            [objectId]="objectId" 
-            (onMonitorFilterTypesChanged)="onMonitorFilterTypesChanged($event)"
-            (onMonitorListLoadCompleted)="loadComplete($event)">
-        </d3s-monitor-workflow-version>
-
-       
-    </div>
-    <div class="col s12 m6">
-        <!--<div *ngIf="selectedWorkflowType == null" class="tile tile-detail">
-            <d3s-loading [isLoading]="true"></d3s-loading>
-        </div>-->
-        <div class="row">
-                <div class="col s12">
-                    <div class="tile tile-detail" *ngIf="selectedWorkflowType != null">                                              
-                        <object-detail [objectType]="'Monitor'" [objectID]="selectedWorkflowType?.VersionID" ></object-detail>
+<p-tabView (onChange)="tabClick($event)">
+    <p-tabPanel header="Items">
+        <ng-container *ngIf="tabIsLoaded('items') || tabIsActive('items')">
+            <div [hidden]="!tabIsActive('items')" class="row">
+                <d3s-workflow-monitor></d3s-workflow-monitor>
+            </div>
+        </ng-container>
+    </p-tabPanel>
+    <p-tabPanel header="Monitor">
+        <ng-container *ngIf="tabIsLoaded('monitor') || tabIsActive('monitor')">
+            <div [hidden]="!tabIsActive('monitor')" class="row">
+                <div class="col s12" [class.m6]="!expandRow">   
+                    <d3s-monitor-workflow-version 
+                        (onFilterChanged)="onFilterChanged($event)"
+                        [selectAll]="selectAll"
+                        [selectedWorkflowTypes]="selectedWorkflowTypes" 
+                        (onMonitorListChanged)="onMonitorListChanged($event)" 
+                        [objectType]="objectType" 
+                        [objectId]="objectId" 
+                        (onMonitorFilterTypesChanged)="onMonitorFilterTypesChanged($event)"
+                        (onMonitorListLoadCompleted)="loadComplete($event)">
+                    </d3s-monitor-workflow-version>
+                </div>
+                <div class="col s12 m6">
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="tile tile-detail" *ngIf="selectedWorkflowType != null">                                              
+                                <object-detail [objectType]="'Monitor'" [objectID]="selectedWorkflowType?.VersionID" ></object-detail>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">  
+                        <div class="col s12">
+                            <d3s-workflow-diagram *ngIf="selectedWorkflowType != null"
+                                [id]="selectedWorkflowType?.TypeID" 
+                                [version]="selectedWorkflowType?.Version" 
+                                [filteredObject]="objectType"
+                                [filteredObjectId]="objectId"
+                                [readonly]="true" 
+                                [hasHeader]="false"
+                                [selectedStepId]="selectedWorkflowItem?.VersionStepID"
+                                [monitorView]="true">
+                            </d3s-workflow-diagram>
+                        </div>
                     </div>
                 </div>
-           </div>
-        <div class="row">  
-            <div class="col s12">
-                <d3s-workflow-diagram *ngIf="selectedWorkflowType != null"
-                    [id]="selectedWorkflowType?.TypeID" 
-                    [version]="selectedWorkflowType?.Version" 
-                    [filteredObject]="objectType"
-                    [filteredObjectId]="objectId"
-                    [readonly]="true" 
-                    [hasHeader]="false"
-                    [selectedStepId]="selectedWorkflowItem?.VersionStepID"
-                    [monitorView]="true">
-                </d3s-workflow-diagram>
             </div>
-        </div>
-    </div>
-</div>
+        </ng-container>
+    </p-tabPanel>
+</p-tabView>
+
               `,
     providers: [ObjectDetailService],
 })
@@ -72,6 +80,11 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
     sub: any;
     type: number;
+    tabs: any[] = [
+        { key: 'items', loaded: false },
+        { key: 'monitor', loaded: false },
+    ];
+    activeTab = this.tabs[0];
 
     constructor(
         protected titleService: Title,
@@ -131,5 +144,21 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
     onMonitorFilterTypesChanged($event) {
         this.filteredTypes = $event ? $event : [];
-     }
+    }
+
+    tabIsLoaded(key: string) {
+        return this.tabs.find(t => t.key == key).loaded || false;
+    }
+
+    tabIsActive(key: string) {
+        return this.activeTab.key == key;
+    }
+
+    tabClick(e: any) {
+        this.activeTab = this.tabs[e.index];
+        if (!this.activeTab.loaded)
+            this.activeTab.loaded = true;
+        console.log(e);
+    }
+
 }
