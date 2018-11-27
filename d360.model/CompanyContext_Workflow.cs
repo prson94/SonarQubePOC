@@ -1642,7 +1642,9 @@ namespace d360.model
                                     var type = o.Split('|')[0];
                                     if (int.TryParse(o.Split('|')[1], out var id))
                                     {
-                                        objectNames.Add(GetObjectDetail(type.Replace("Type", ""), id).Name);
+                                        var objDetail = GetObjectDetail(type.Replace("Type", ""), id);
+                                        if(objDetail!= null)
+                                            objectNames.Add(objDetail.Name);
                                     }
                                 }
 
