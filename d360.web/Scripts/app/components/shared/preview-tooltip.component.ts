@@ -20,7 +20,7 @@ import { TooltipSingletonService } from '../../services/tooltip-singleton.servic
                         <div>&nbsp;</div>
                         <div *ngFor="let field of data?.Levels; let ii=index">
                             <div *ngIf="ii==0"><b>Path:</b></div>
-                            <div><span  *ngIf="field.Level">{{field.Level}}&nbsp;{{field.LevelName}}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="float:center;"><b><a [routerLink]="field?.Url">{{field?.Path}}</a></b></span></div>
+                            <div><span  *ngIf="field.Level">{{field.Level}}&nbsp;{{field.LevelName}}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="float:center;"><b><a [routerLink]="formattedUrl(field?.Url)">{{field?.Path}}</a></b></span></div>
                         </div> 
                         <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
                         <div *ngIf="data?.AssetID && data?.AssetID >0"><b>Asset ID</b>: <span [innerHtml]="data.AssetID"></span></div>
@@ -83,6 +83,13 @@ export class PreviewTooltipComponent  {
             this.showPanel(tip, item);
             this.ref.markForCheck();
         }
+    }
+
+    private formattedUrl(url: string): string {
+        if (url != null && !url.startsWith("/"))
+            return "/" + url;
+        else
+            return url;
     }
 
     show(item, tip) {        
