@@ -73,7 +73,7 @@ declare var CurrentResourceID;
                 </td>
             </tr>
         </ng-template>
-        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+        <ng-template pTemplate="summary">
             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
         </ng-template>
     </p-table>

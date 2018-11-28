@@ -131,7 +131,7 @@ export class BaseComponent {
             if (hasFollowers && CompanySettings.ShowFollowersSidebar != 'false') this.rightSidebarService.showItem(new RightSidebarItem('Followers', 'followers', ['fa-bookmark-o'], `/sidebar/followers${this.objectContextUrl()}`));
 
             if (hasMonitor) {
-                this.monitorSidebar = new RightSidebarItem('Workflow Monitor', 'monitor', ['fa-television'], `/sidebar/workflowmonitor${this.objectContextUrl()}`);
+                this.monitorSidebar = new RightSidebarItem('Workflow', 'monitor', ['fa-usb'], `/sidebar/workflowmonitor${this.objectContextUrl()}`);
                 this.rightSidebarService.showItem(this.monitorSidebar);
             }
 

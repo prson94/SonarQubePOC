@@ -4804,3 +4804,20 @@ GO;
 
 update field set updatedon = getutcdate() where assetid is null and objecttype = 'Resource'
 go
+
+
+
+
+------------------------------------------------------------------
+-- GOV-5569
+-- Update nav tooltip and icon (if it has not already been changed to something else)
+------------------------------------------------------------------
+update SiteNav
+set Title = 'Workflow'
+where [Name] = '#Monitor';
+go
+
+update SiteNav
+set Icon = 'fa-usb'
+where [Name] = '#Monitor' and Icon = 'fa-television'; --don't override customizations
+go

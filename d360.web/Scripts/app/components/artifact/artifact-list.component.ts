@@ -56,7 +56,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);
                     this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
 
-                    if (this.artifactType.HasV2Workflows) this.rightSidebarService.showItem(new RightSidebarItem('Workflow Monitor', 'workflowmonitor', ['fa-television'], `/sidebar/workflowmonitor${this.objectContextUrl()}`));
+                    if (this.artifactType.HasV2Workflows) this.rightSidebarService.showItem(new RightSidebarItem('Workflow', 'workflowmonitor', ['fa-usb'], `/sidebar/workflowmonitor${this.objectContextUrl()}`));
 
                     this.isLoading = false;
                 });            
