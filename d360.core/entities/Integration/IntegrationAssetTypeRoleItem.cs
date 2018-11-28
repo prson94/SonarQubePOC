@@ -24,7 +24,7 @@ namespace d360.core.entities
         public string SourceNameField { get; set; } = string.Empty;
 
         [DataMember]
-        public string RoleName { get; set; }
+        public int ResponsibilityTypeID { get; set; }
 
         [DataMember]
         public bool Active { get; set; } = true;

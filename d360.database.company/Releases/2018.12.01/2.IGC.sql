@@ -1,7 +1,14 @@
-﻿alter table integration.ExecutionAssetType drop column CurrentTargetAssetCount
+﻿alter table integration.ExecutionAssetType add RetryLog varchar(500) null
+GO;
+update	integration.ExecutionAssetType 
+set		RetryLog = '{RetryCount:0, LastRetryInError: false, LastStepCompleted: 11, Begins:{Fields:0,Relations:0,Responsibilities:0}}' 
+where	RetryLog is null
+GO;
 
+alter table integration.ExecutionAssetType drop column CurrentTargetAssetCount
+GO;
 alter table integration.ExecutionAssetTypeMetric add [CurrentSourceAssetCount] [int] NOT NULL CONSTRAINT [DF_IntegrationExecutionAssetTypeMetric_CurrentSourceAssetCount] DEFAULT ((0))
-
+GO;
 
 -- Role table changes.
 alter table [integration].[SynchedAssetTypeRoleItem] add ResponsibilityTypeID int null
