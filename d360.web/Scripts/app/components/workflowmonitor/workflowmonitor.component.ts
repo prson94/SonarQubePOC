@@ -6,6 +6,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { RightSidebarService } from '../../services/right-sidebar.service';
+import { GridFilterExpression } from '../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -14,7 +15,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div class="col s6">
         <div class="tile tile-detail" *ngIf="!isLoading">
-            <d3s-workflowmonitor-list (selectionChange)="listChange($event)"></d3s-workflowmonitor-list>  
+            <d3s-workflowmonitor-list (selectionChange)="listChange($event)" [predefinedFilters]="predefinedFilters"></d3s-workflowmonitor-list>  
         </div>
     </div>
     <div class="col s6">
@@ -31,6 +32,8 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 })
 
 export class WorkflowMonitorComponent extends BaseComponent implements OnInit, OnDestroy {
+    @Input() predefinedFilters: GridFilterExpression[] = [];
+
     itemStepId: number = null;
     itemId: number = null;
     detailVisible = false;
@@ -45,11 +48,13 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
         this.rightSidebarService = rightSidebarService;
     }
     ngOnInit() {
-        this.clearSidebar();        
+        if (!this.predefinedFilters || this.predefinedFilters.length < 1)
+            this.clearSidebar();        
     }
 
     ngOnDestroy() {
-        this.clearSidebar();
+        if (!this.predefinedFilters || this.predefinedFilters.length < 1)
+            this.clearSidebar();     
     }    
 
     listChange($event) {

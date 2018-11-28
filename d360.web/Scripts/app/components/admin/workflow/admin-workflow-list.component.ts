@@ -118,6 +118,6 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     }
 
     navigate(id: string) {
-        this.router.navigateByUrl(`/monitor/type/${id}`);
+        this.router.navigateByUrl(`/monitor/type/${id}?tab=monitor`);
     }
 }

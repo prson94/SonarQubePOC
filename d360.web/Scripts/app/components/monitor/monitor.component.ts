@@ -7,21 +7,22 @@ import { ObjectDetailService } from '../../services/object-detail.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { RightSidebarService } from '../../services/right-sidebar.service';
+import { GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-monitor',
     template: ` 
-<p-tabView (onChange)="tabClick($event)">
+<p-tabView (onChange)="tabClick($event)" [activeIndex]="activeIndex">
     <p-tabPanel header="Items">
-        <ng-container *ngIf="tabIsLoaded('items') || tabIsActive('items')">
-            <div [hidden]="!tabIsActive('items')" class="row">
-                <d3s-workflow-monitor></d3s-workflow-monitor>
+        <ng-template pTemplate="content">
+            <div class="row">
+                <d3s-workflow-monitor *ngIf="filtersLoaded" [predefinedFilters]="predefinedFilters"></d3s-workflow-monitor>
             </div>
-        </ng-container>
+        </ng-template>
     </p-tabPanel>
     <p-tabPanel header="Monitor">
-        <ng-container *ngIf="tabIsLoaded('monitor') || tabIsActive('monitor')">
-            <div [hidden]="!tabIsActive('monitor')" class="row">
+        <ng-template pTemplate="content">
+            <div class="row">
                 <div class="col s12" [class.m6]="!expandRow">   
                     <d3s-monitor-workflow-version 
                         (onFilterChanged)="onFilterChanged($event)"
@@ -58,7 +59,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
                     </div>
                 </div>
             </div>
-        </ng-container>
+        </ng-template>
     </p-tabPanel>
 </p-tabView>
 
@@ -76,15 +77,20 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     selectAll: boolean = true;
     isFiltered: boolean = false;
     filteredTypes: any[];
+    predefinedFilters: GridFilterExpression[] = [];
+    filtersLoaded = false;
     expandRow: boolean = false;
 
     sub: any;
+    querySub: any;
     type: number;
     tabs: any[] = [
-        { key: 'items', loaded: false },
-        { key: 'monitor', loaded: false },
+        { key: 'items' },
+        { key: 'monitor' },
     ];
-    activeTab = this.tabs[0];
+    
+    activeIndex = 0;
+    activeTab = this.tabs[this.activeIndex];
 
     constructor(
         protected titleService: Title,
@@ -98,7 +104,8 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnInit() {
-        this.clearSidebar();
+        
+        this.predefinedFilters = [];
         this.isLoading = true;
         this.sub = this.route.params.subscribe(params => {
             if (params['id'] != null) {
@@ -106,14 +113,38 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
                 this.selectedWorkflowTypes.push(+params['id']);
                 this.selectAll = false;
             }
+
+        });
+
+        this.querySub = this.route.queryParams.subscribe(params => {
+            if (params['tab'] != null) {
+                let i = this.tabs.findIndex(t => t.key == params['tab'].toLowerCase());
+                if (i > -1) {
+                    this.activeIndex = i;
+                    this.activeTab = this.tabs[i];
+                }
+            }
         });
 
         if (this.objectType != null && this.objectId != null && this.selectedWorkflowTypes == null) {
             this.selectAll = true;
             this.isFiltered = true;
+
+            this.objectDetailService.getObject(this.objectId, this.objectType)
+                .then(o => {
+                    let assetFilter = new GridFilterExpression();
+                    assetFilter.field = "Asset";
+                    assetFilter.fieldtype = GridFilterFieldType.Normal;
+                    assetFilter.value = o.DisplayValue;
+                    assetFilter.condition = "EQUAL";
+                    this.predefinedFilters.push(assetFilter);
+                    this.filtersLoaded = true;
+                });
         }
 
         if (!this.isFiltered) {
+            this.filtersLoaded = true;
+            this.clearSidebar();
             this.setBrowserTitle(this.titleService, 'Workflow Monitor');
 
             this.headerBreadcrumbService.clearBreadcrumbs();
@@ -126,8 +157,9 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnDestroy() {
-        this.clearSidebar();
+        //this.clearSidebar();
         this.sub.unsubscribe();
+        this.querySub.unsubscribe();
     }
 
     loadComplete(e: any) {
@@ -145,20 +177,4 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     onMonitorFilterTypesChanged($event) {
         this.filteredTypes = $event ? $event : [];
     }
-
-    tabIsLoaded(key: string) {
-        return this.tabs.find(t => t.key == key).loaded || false;
-    }
-
-    tabIsActive(key: string) {
-        return this.activeTab.key == key;
-    }
-
-    tabClick(e: any) {
-        this.activeTab = this.tabs[e.index];
-        if (!this.activeTab.loaded)
-            this.activeTab.loaded = true;
-        console.log(e);
-    }
-
 }
