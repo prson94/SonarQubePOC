@@ -157,7 +157,13 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         this.isLoading = true;
         this.exportTemplateService.getExportTemplates().subscribe(result => {
             this.exportTemplates = result;
-            if (this.exportTemplates != null && this.exportTemplates.length > 0) this.selected = this.exportTemplates[0];
+            if (this.selected == null && this.exportTemplates != null && this.exportTemplates.length > 0)
+                this.selected = this.exportTemplates[0];
+            else if (this.selected != null && this.exportTemplates != null && this.exportTemplates.length > 0) {
+                let item = this.exportTemplates.filter(x => x.ID == this.selected.ID);
+                if (item != null && item.length != 0)
+                    this.selected = item[0];
+            }
             this.isLoading = false;
         });
     }
