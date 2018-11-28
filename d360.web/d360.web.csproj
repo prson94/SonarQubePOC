@@ -397,7 +397,6 @@
     <Compile Include="Controllers\DiagramsController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\QueriesController.cs" />
-    <Compile Include="Controllers\RedirectController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MonitorController.cs">
       <SubType>Code</SubType>
