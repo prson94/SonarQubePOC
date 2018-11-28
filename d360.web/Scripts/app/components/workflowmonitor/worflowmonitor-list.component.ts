@@ -97,7 +97,7 @@ import * as _ from "lodash";
 })
 
 export class WorkflowMonitorListComponent extends BaseComponent  implements OnInit, OnDestroy,OnChanges {
-
+    @Input() predefinedFilters: GridFilterExpression[] = [];
     
     private items: WorkflowMonitorItem[] = [];;
     private subItems : Subscription
@@ -118,7 +118,13 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
      }
 
     ngOnChanges(changes: SimpleChanges): void {
-      }
+        if (changes['predefinedFilters']) {
+            console.log('predefinedFilters change', changes['predefinedFilters']);
+            this.isLoading = true;
+            this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0});
+            //this.loadData();
+        }
+     }
 
     ngOnDestroy(): void {
         this.subItems.unsubscribe();
@@ -139,6 +145,12 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
     private getFilter(): GridFilterExpression[] {
         let filter: GridFilterExpression[] = [];
+
+        if (this.predefinedFilters && this.predefinedFilters.length > 0) {
+            filter = _.clone(this.predefinedFilters);
+            return filter;
+        }
+
         if ((!this.stateService.workflowItemFilters) ||
             ((!this.stateService.workflowItemFilters.columFilters || this.stateService.workflowItemFilters.columFilters.length < 1) &&
                 (!this.stateService.workflowItemFilters.workflowTypeFilters ||
@@ -159,6 +171,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
 
     private loadData() {
         let filter: GridFilterExpression[] = this.getFilter();
+        console.log('loadData', filter);
         if (filter == null || filter.length < 1) {
             this.items = [];
             this.totalRecords = 0;
