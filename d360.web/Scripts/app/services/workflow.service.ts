@@ -522,7 +522,7 @@ export class WorkflowService extends BaseService {
     }
 
     exportItemSteps(itemId: number) {
-        window.location.assign(`services/workflow/item/${itemId}/excel/excel.xls`);
+        this.http.get(`services/workflow/item/${itemId}/excel/excel.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, "Workflow Steps.xlsx"));
     }
 
     getWorkflowStepDetail(itemStepId: number) {
