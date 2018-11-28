@@ -8,7 +8,7 @@
 
    <changeSet author="Andy Kelly" id="D3S-Environment-Schema">
         <sqlFile dbms="mssql"
-                encoding="utf8"
+                encoding="UTF-16LE"
                 endDelimiter="GO"
                 path="D3S_Environment_20181113.sql  "
                 relativeToChangelogFile="true"
