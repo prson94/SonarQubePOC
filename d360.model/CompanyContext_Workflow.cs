@@ -928,41 +928,44 @@ namespace d360.model
                     {
                         // split by | for type id
                         // add item
-                        var parts = rel.Split('|');
-
-                        var intersect = new Intersect();
-
-                        intersect.IntersectTypeID = intersectType.ID;
-
-                        if (isSubject)
+                        if (!string.IsNullOrEmpty(rel))
                         {
-                            intersect.Subject = objectInfo.Object.ToString();
-                            intersect.SubjectID = objectInfo.ObjectID;
-                            intersect.Object = (parts[0] ?? "").Replace("Type", "");
-                            intersect.ObjectID = int.Parse(parts[1]);
-                        }
-                        else
-                        {
-                            intersect.Object = objectInfo.Object.ToString();
-                            intersect.ObjectID = objectInfo.ObjectID;
-                            intersect.Subject = (parts[0] ?? "").Replace("Type", "");
-                            intersect.SubjectID = int.Parse(parts[1]);
-                        }
+                            var parts = rel.Split('|');
 
-                        //check that this relationship doesnt already exist
+                            var intersect = new Intersect();
+
+                            intersect.IntersectTypeID = intersectType.ID;
+
+                            if (isSubject)
+                            {
+                                intersect.Subject = objectInfo.Object.ToString();
+                                intersect.SubjectID = objectInfo.ObjectID;
+                                intersect.Object = (parts[0] ?? "").Replace("Type", "");
+                                intersect.ObjectID = int.Parse(parts[1]);
+                            }
+                            else
+                            {
+                                intersect.Object = objectInfo.Object.ToString();
+                                intersect.ObjectID = objectInfo.ObjectID;
+                                intersect.Subject = (parts[0] ?? "").Replace("Type", "");
+                                intersect.SubjectID = int.Parse(parts[1]);
+                            }
+
+                            //check that this relationship doesnt already exist
 
 
-                        if (!Intersects.Any(x => x.IntersectTypeID == intersectTypeId && x.Subject == intersect.Subject && x.SubjectID == intersect.SubjectID && x.Object == intersect.Object && x.ObjectID == intersect.ObjectID))
-                        {
+                            if (!Intersects.Any(x => x.IntersectTypeID == intersectTypeId && x.Subject == intersect.Subject && x.SubjectID == intersect.SubjectID && x.Object == intersect.Object && x.ObjectID == intersect.ObjectID))
+                            {
 
-                            intersect.CreatedBy = CurrentResourceID;
-                            intersect.CreatedOn = DateTime.UtcNow;
-                            intersect.UpdatedBy = CurrentResourceID;
-                            intersect.UpdatedOn = DateTime.UtcNow;
+                                intersect.CreatedBy = CurrentResourceID;
+                                intersect.CreatedOn = DateTime.UtcNow;
+                                intersect.UpdatedBy = CurrentResourceID;
+                                intersect.UpdatedOn = DateTime.UtcNow;
 
-                            Intersects.Add(intersect);
+                                Intersects.Add(intersect);
 
-                            SaveChanges();
+                                SaveChanges();
+                            }
                         }
 
                     }
@@ -1632,7 +1635,7 @@ namespace d360.model
                         {
                             value = (string)field.Attribute("displayvalue");
 
-                            if (value != null)
+                            if (!string.IsNullOrEmpty(value))
                             {
                                 List<string> objects = value.Split(',').ToList();
                                 List<string> objectNames = new List<string>();
@@ -1642,7 +1645,9 @@ namespace d360.model
                                     var type = o.Split('|')[0];
                                     if (int.TryParse(o.Split('|')[1], out var id))
                                     {
-                                        objectNames.Add(GetObjectDetail(type.Replace("Type", ""), id).Name);
+                                        var objDetail = GetObjectDetail(type.Replace("Type", ""), id);
+                                        if(objDetail!= null)
+                                            objectNames.Add(objDetail.Name);
                                     }
                                 }
 

@@ -2446,9 +2446,11 @@ order by wi.StartedOn desc";
                         stepFields = XmlToDynamic(stepFields, false);
                         if (stepFields.fields != null && stepFields.fields.form != null && stepFields.fields.form.field != null)
                         {
-                            dynamic sfields = new JArray(stepFields.fields.form.field);
-                            var sfield = sfields[0];
-                            int IntersectTypeId = sfield["@intersectTypeId"] != null ? sfield["@intersectTypeId"]:0;
+                            JArray sfields = new JArray(stepFields.fields.form.field);
+                            JObject jo = sfields.Children<JObject>()
+                                    .FirstOrDefault(o => o["@type"] != null && o["@type"].ToString() == "relationshipType" && o["@intersectTypeId"] != null); ;
+                            
+                            int IntersectTypeId =  jo != null && jo["@intersectTypeId"] != null ? Convert.ToInt32(jo["@intersectTypeId"]) : 0;
                             var interceptSql = @"SELECT	
 						                         ITypeName.Name AS Name
 					                        FROM	IntersectType IT    
@@ -2464,17 +2466,25 @@ order by wi.StartedOn desc";
 
                         if (itemStepFields.fields != null && itemStepFields.fields.form != null && itemStepFields.fields.form.field != null)
                         {
-                            dynamic sfields = new JArray(itemStepFields.fields.form.field);
-                            var sfield = sfields[0];
-                            string changedType = sfield["@value"] != null ? sfield["@value"] : null;
-                            if (changedType != null)
+                            JArray sfields = new JArray(itemStepFields.fields.form.field);
+                            JObject jo = sfields.Children<JObject>()
+                                    .FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype" );
+
+                            //var sfield = sfields[0];
+                            string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
+                            if (changedTypes != null)
                             {
-                                var types = changedType.Split('|');
-                                if (types.Length == 2) {
-                                    var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
-                                    string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
-                                    relChange.Relationship = $"{objectName} / {displayValue}";
+                                relChange.Relationship += $"{objectName}";
+                                foreach (var changedType in changedTypes.Split(',')){
+                                    var types = changedType.Split('|');
+                                    if (types.Length == 2) {
+                                        var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
+                                        string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
+                                        displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
+                                        relChange.Relationship += $" / {displayValue}";
+                                    }
                                 }
+                               
                             }
 
                         }
