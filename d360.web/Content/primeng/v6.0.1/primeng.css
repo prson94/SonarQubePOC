@@ -5421,6 +5421,7 @@ input[type=text]::-ms-clear {
 
 .ui-tabview .ui-tabview-nav { 
     margin: 0;
+    border: none;
 }
 
 .ui-tabview .ui-tabview-nav li { 

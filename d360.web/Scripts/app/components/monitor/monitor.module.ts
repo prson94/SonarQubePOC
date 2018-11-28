@@ -15,7 +15,7 @@ import { MonitorComponent } from './monitor.component';
 import { MonitorFilterComponent } from './monitor-filter.component';
 import { MonitorListComponent } from './monitor-list.component';
 
-
+import { WorkflowMonitorModule } from '../workflowmonitor/workflowmonitor.module';
 import { WorkflowDiagramModule } from '../shared/diagram/workflow/workflow-diagram.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
@@ -27,6 +27,7 @@ import {
     InputTextModule,
     TooltipModule,
     ButtonModule,
+    TabViewModule,
 } from 'primeng/primeng';
 import { TableModule } from 'primeng/table';
 import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.component';
@@ -48,13 +49,15 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
         ButtonModule,
         TableModule,
         MonitorRoutingModule,
+        TabViewModule,
 
         //d3s        
         CoreModule,        
         TilesModule,
         SharedGridPagingInfoModule,
         WorkflowDiagramModule,
-        SharedObjectDetailsModule
+        SharedObjectDetailsModule,
+        WorkflowMonitorModule,
     ],
     declarations: [   
         MonitorComponent,
