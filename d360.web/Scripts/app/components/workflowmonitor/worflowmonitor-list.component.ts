@@ -15,13 +15,13 @@ import * as _ from "lodash";
     selector: 'd3s-workflowmonitor-list',
     providers: [WorkflowMonitorService],
     template: ` <d3s-loading [isLoading]="isEditing"></d3s-loading>                                                
-                <header>
+                <header *ngIf="showHeader">
                   WorkFlow Items
                   <d3s-tile-actions  [hasExport]="true"  (exportClick)="export()" ></d3s-tile-actions>
                 </header>                    
                 <div class="row" >                    
                 <div class="col s12">                                                
-                    <d3s-workflowmonitor-list-filter  [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
+                    <d3s-workflowmonitor-list-filter  [showExport]="!showHeader" (exportClick)="export()" [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
                        (filterChange)= "OnFilterChange()"   (exportToExcel)="export()"     [selectAll]="true" >
                     </d3s-workflowmonitor-list-filter>
                 </div>
@@ -98,7 +98,8 @@ import * as _ from "lodash";
 
 export class WorkflowMonitorListComponent extends BaseComponent  implements OnInit, OnDestroy,OnChanges {
     @Input() predefinedFilters: GridFilterExpression[] = [];
-    
+    @Input() showHeader: boolean = true;
+
     private items: WorkflowMonitorItem[] = [];;
     private subItems : Subscription
     private totalRecords: number;

@@ -331,17 +331,20 @@ th.ui-state-default { background-color: #999; }
 /* Tabview */
 .ui-tabview.ui-widget-content {
     border:0px none;
-    background: none;
+    background: #fff;
+    padding: 0;
 }
 
 .ui-tabview:not(.ui-ribbon) .ui-tabview-nav {
     background: transparent;
+    border-bottom: 1px solid #606060;
 }
 
 .ui-tabview .ui-tabview-nav > li.ui-state-default {
     background: none;
     color: #30a9e5;
     border: none;
+    cursor: pointer;
 }
 
 .ui-tabview .ui-tabview-nav > li.ui-state-default.ui-state-hover {
@@ -353,11 +356,11 @@ th.ui-state-default { background-color: #999; }
 .ui-tabview .ui-tabview-nav > li.ui-state-default.ui-state-active {
     background: none;
     font-weight: bold;
-    color: #30a9e5;
+    color: #606060;
     border-top: none;
     border-left: none;
     border-right: none;
-    border-bottom: 4px solid #30a9e5;
+    border-bottom: 4px solid #606060;
 }
 
 /*

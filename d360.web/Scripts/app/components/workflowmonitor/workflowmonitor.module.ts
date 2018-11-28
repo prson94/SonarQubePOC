@@ -91,7 +91,11 @@ import { TableModule } from 'primeng/table';
         WorkflowMonitorStepRelationshipChangeDetailsComponent,
     ],
     exports: [
-        WorkflowMonitorComponent,        
+        WorkflowMonitorComponent,  
+        WorkflowMonitorListComponent,
+        WorkflowMonitorStepListComponent,
+        WorkflowMonitorStepDetailsComponent,
+
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

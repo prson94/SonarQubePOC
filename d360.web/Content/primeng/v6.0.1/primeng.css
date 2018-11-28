@@ -5421,7 +5421,6 @@ input[type=text]::-ms-clear {
 
 .ui-tabview .ui-tabview-nav { 
     margin: 0;
-    border: none;
 }
 
 .ui-tabview .ui-tabview-nav li { 
@@ -5433,16 +5432,18 @@ input[type=text]::-ms-clear {
     white-space: nowrap; 
 }
 
-.ui-tabview .ui-tabview-nav li a { 
-    float: left; 
-    padding: .5em 1em; 
-    text-decoration: none; 
+.ui-tabview .ui-tabview-nav li a {
+    float: left;
+    padding: .5em 1em;
+    text-decoration: none;
+    color: #51a6dc;
 }
 
 .ui-tabview .ui-tabview-nav li.ui-tabview-selected a, 
 .ui-tabview .ui-tabview-nav li.ui-state-disabled a, 
 .ui-tabview .ui-tabview-nav li.ui-state-processing a { 
     cursor: text; 
+    color: #606060;
 }
 
 .ui-tabview .ui-tabview-nav li a, 

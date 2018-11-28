@@ -12,7 +12,18 @@ import { WorkflowListItem } from '../../models/workflow.model';
             <div class="col s9">
                 <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
                 <div *ngIf="!isLoading">
-                    <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+                    <table style="width: 100%">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+                                </td>
+                                <td *ngIf="showFilter" style="width:32px">
+                                    <a style="font-size:1.1em" [style.color]="filterMode ? null : '#f00'" (click)="filterModeChange.emit(!filterMode)"><i class="fa fa-filter"></i></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>        
             </div>
         </div>   
@@ -22,8 +33,12 @@ import { WorkflowListItem } from '../../models/workflow.model';
 
 export class MonitorFilterComponent extends BaseComponent implements OnInit {
     @Input() selectAll: boolean = false;
+    @Input() showFilter: boolean = false;
+    @Input() filterMode: boolean = false;
+    @Output() filterModeChange = new EventEmitter();
     @Input() selection: any[];
     @Output() selectionChange = new EventEmitter();
+    @Output() filterClick = new EventEmitter();
     items: any[];
 
     constructor(protected workflowService: WorkflowService) {
