@@ -297,10 +297,10 @@ where   A.RuleImplementationID = @id";
                         typeSql += $@"( gra.firstName Like '{ff.RawValue}%' or gra.lastName Like '{ff.RawValue}%' or gra.firstName + ' ' + gra.lastName LIKE '{ff.RawValue}%' ) and ";
                         break;
                     case "Object":
-                        typeSql += $@"ass.Object = '{ff.RawValue}' and ";
+                        typeSql += $@"coalesce(cod.Object, ass.Object) = '{ff.RawValue}' and ";
                         break;
                     case "ObjectID":
-                        typeSql += $@"ass.ObjectID = cast({ff.RawValue} as int) and ";
+                        typeSql += $@"coalesce(cod.ObjectID, ass.ObjectID) = cast({ff.RawValue} as int) and ";
                         break;
                     case "ObjectType":
                         typeSql += $@"assettype.Object = '{ff.RawValue}' and ";
@@ -324,7 +324,7 @@ where   A.RuleImplementationID = @id";
 
 
             var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
-		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],ITypeName.Name, assettype.ObjectId, ass.Object, ass.ObjectId";
+		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId)";
 
             var fromSql = @"		from [workflow].[type] wt 
                                 inner join [workflow].[version] wv on (wt.id = wv.typeid) 
@@ -371,8 +371,8 @@ where   A.RuleImplementationID = @id";
                         else        'Complete'    end as [Status],
                         assettype.Object as ObjectType,
                         assettype.ObjectID as ObjectTypeID,
-                        ass.Object,
-                        ass.ObjectiD 
+                        coalesce(cod.Object, ass.Object) as Object,
+                        coalesce(cod.objectID, ass.ObjectID) as ObjectID  
                         {fromSql}
                         {assignedSql}
                         {whereSql} 
