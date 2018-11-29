@@ -1456,27 +1456,30 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                 var events = new List<EventInfo>();
                 foreach (var result in results)
                 {
-                    var changeType = result.IsNew ? ChangeType.Add : ChangeType.Update;
-
-                    events.Add(new EventInfo
+                    if (result.Success)
                     {
-                        CompanyID = currentCompanyID,
-                        DomainPrefix = companyUrlPrefix,
-                        ResourceID = currentResourceID,
-                        Action = changeType,
-                        Object = new EventObjectInfo
+                        var changeType = result.IsNew ? ChangeType.Add : ChangeType.Update;
+
+                        events.Add(new EventInfo
                         {
-                            Object = SystemObjects.Intersect,
-                            ObjectType = SystemObjects.IntersectType,
-                            ObjectID = result.ID,
-                            ObjectTypeID = rt.ID
-                        }
-                    });
+                            CompanyID = currentCompanyID,
+                            DomainPrefix = companyUrlPrefix,
+                            ResourceID = currentResourceID,
+                            Action = changeType,
+                            Object = new EventObjectInfo
+                            {
+                                Object = SystemObjects.Intersect,
+                                ObjectType = SystemObjects.IntersectType,
+                                ObjectID = result.ID,
+                                ObjectTypeID = rt.ID
+                            }
+                        });
 
-                    if (events.Count > 50)
-                    {
-                        queue.CreateTopicMessages(events);
-                        events.Clear();
+                        if (events.Count > 50)
+                        {
+                            queue.CreateTopicMessages(events);
+                            events.Clear();
+                        }
                     }
                 }
 

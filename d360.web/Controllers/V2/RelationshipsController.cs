@@ -138,7 +138,7 @@ where	coalesce(S.uid, I.SubjectUid) is not null
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),//, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk relationship results, including any error messages.", typeof(List<DatabaseBulkRelationshipResult>))
         ]
-        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid uid, List<Dictionary<string,string>> relationships)
+        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid uid, RelationshipInserts relationships)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships of this type.")));
@@ -153,7 +153,7 @@ where	coalesce(S.uid, I.SubjectUid) is not null
                 if (intersectType == null)
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with UID {uid} could not be found.")));
                 if (relationships == null)
-                    relationships = readRequestJsonContent<List<Dictionary<string, string>>>(Request).Result;
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
 
                 var results = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(
                     QueueSource, 
