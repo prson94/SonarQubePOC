@@ -2423,6 +2423,41 @@ order by wi.StartedOn desc";
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
+        private void SetWorkFlowStepRelationshipAssets(dynamic form)
+        {
+            string assets = string.Empty;
+            if (form != null && form.field != null)
+            {
+                JArray sfields = new JArray(form.field);
+                JObject jo = sfields.Children<JObject>()
+                        .FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype");
+
+                //var sfield = sfields[0];
+                string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
+                if (changedTypes != null)
+                {
+                   
+                    foreach (var changedType in changedTypes.Split(','))
+                    {
+                        var types = changedType.Split('|');
+                        if (types.Length == 2)
+                        {
+                            var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
+                            string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
+                            displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
+                            assets += $"/ {displayValue} ";
+                        }
+                    }
+                    if (assets.StartsWith("/"))
+                        assets = assets.Substring(1, assets.Length - 1);
+
+                    jo["@displayvalue"] = assets;
+                    form.field = sfields;
+                }
+          
+            }
+           
+        }
         private WorkflowStepReleationshipChange GetWorkFlowStepRelationshipChanges(dynamic settings, int itemId,string objectName)
         {
             WorkflowStepReleationshipChange relChange =null;
@@ -3039,6 +3074,7 @@ order by wi.StartedOn desc";
                             if (res != null)
                                 form.resourceName = res.FullName;
                         }
+                        SetWorkFlowStepRelationshipAssets(form);
                     }
                 }
             }
