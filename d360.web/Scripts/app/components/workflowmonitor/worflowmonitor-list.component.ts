@@ -21,7 +21,7 @@ import * as _ from "lodash";
                 </header>                    
                 <div class="row" >                    
                 <div class="col s12">                                                
-                    <d3s-workflowmonitor-list-filter  [showExport]="!showHeader" (exportClick)="export()" [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
+                    <d3s-workflowmonitor-list-filter  [showExport]="!showHeader" [usePredefinedFilters]="predefinedFilters && predefinedFilters.length > 0" (exportClick)="export()" [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
                        (filterChange)= "OnFilterChange()"   (exportToExcel)="export()"     [selectAll]="true" >
                     </d3s-workflowmonitor-list-filter>
                 </div>
@@ -120,10 +120,8 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['predefinedFilters']) {
-            console.log('predefinedFilters change', changes['predefinedFilters']);
             this.isLoading = true;
             this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0});
-            //this.loadData();
         }
      }
 
@@ -172,7 +170,6 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
 
     private loadData() {
         let filter: GridFilterExpression[] = this.getFilter();
-        console.log('loadData', filter);
         if (filter == null || filter.length < 1) {
             this.items = [];
             this.totalRecords = 0;

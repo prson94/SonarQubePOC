@@ -54,6 +54,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     @Input() workflowTypeFilters: GridFilterExpression;
     @Output() workflowTypeFiltersChange = new EventEmitter();
     @Input() showExport: boolean = false;
+    @Input() usePredefinedFilters: boolean = false;
     @Output() exportClick = new EventEmitter();
 
     constructor(protected workflowService: WorkflowService,
@@ -81,9 +82,12 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
                 });
 
                 this.selection = [];
-                if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
+                if (this.usePredefinedFilters) {
+                    this.items.forEach(i => this.selection.push(i.value));
+                    this.change(this.selection);
+                }
+                else if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
                     this.workflowTypeFilters.value.split(",").forEach(i => this.selection.push(i));
-                    //this.change(this.selection);
                 } else if (this.selectAll) {
                     this.items.forEach(i => this.selection.push(i.value));
                     this.change(this.selection);
@@ -107,12 +111,13 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     }
 
     change(e: any) {
-     
+        if (this.usePredefinedFilters)
+            return;
         let data = new GridFilterExpression();
         data.field = "WorkflowId";
         data.condition = "IN";
         data.fieldtype = GridFilterFieldType.Normal;
-
+        
         let typeList = "";
         e.forEach(s => typeList += s.toString() + ',');
         data.value = typeList;
