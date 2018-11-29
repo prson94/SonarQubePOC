@@ -795,6 +795,8 @@ create table #Users (
 create table #UsersResult (LoadID int, RowIndex int, ResourceID int, [Action] varchar(25) not null);
 create table #UserMembershipsResult (ResourceID int, [Action] varchar(25) not null);
 CREATE NONCLUSTERED INDEX IX_TempUsers ON #Users ( Email ASC );
+CREATE NONCLUSTERED INDEX IX_TempUsers_LoadID_Email ON #Users ( LoadID ASC, Email ASC );
+CREATE NONCLUSTERED INDEX IX_TempUsers_LoadID_RowIndex_Email ON #Users ( LoadID ASC, RowIndex ASC, Email ASC );
 ", transaction: trans);
 
                     var usersBulkCopy = new SqlBulkCopy(community, SqlBulkCopyOptions.Default, trans)
@@ -821,7 +823,14 @@ set		T.ClientID = S.ClientID
 from	#Users T
 		inner join Company S on S.ID = T.EnvironmentID;", transaction: trans);
 
-                    //community.Execute(@"update	#Users set Message = '';", transaction: trans);
+                    // Check for duplicate email addresses and invalidate the ones with higher row indices.
+                    community.Execute(@"update	T
+set		T.Success = 0,
+		T.Message = 'User email address already used in bulk load file'
+from	#Users T
+		inner join	(
+					select LoadID, min(RowIndex) as MinRowIndex, Email from #Users group by LoadID, Email
+					) S on S.LoadID = T.LoadID and S.Email = T.Email and S.MinRowIndex <> T.RowIndex;", transaction: trans);
 
                     community.Execute(@"update	#Users
 set		Success = 0,
