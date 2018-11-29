@@ -61,7 +61,7 @@
                 <td>
                     {{item.Comment}}
                     <div *ngIf="item.ActivityType == WorkflowActivityType.Form">
-                        <a (click)="selection = item; formMode = FormMode.FormHistory" style="text-decoration:underline;">View Form History</a>
+                        <a (click)="selection = item; formMode = FormMode.FormHistory" style="text-decoration:underline;cursor:pointer;">View Form History</a>
                     </div>
                 </td>
                 <td>{{item.Status}}</td>
