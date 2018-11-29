@@ -2,8 +2,6 @@
 using d360.model;
 using d360.web.Filters;
 using Microsoft.Web.Http;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Net.Http;
 using System.ServiceModel.Channels;
@@ -30,27 +28,13 @@ namespace d360.web.Controllers
 
         #endregion
 
-        public class WebActivityEntity : TableEntity
+        public class WebActivityEntity
         {
             public string Activity { get; set; }
 
             public int ObjectId { get; set; }
 
             public string ObjectName { get; set; }
-
-            public int ResourceID { get; set; }
-
-            public string ResourceName { get; set; }
-
-            public string IP { get; set; }
-
-            public string UserAgent { get; set; }
-
-            public string Path { get; set; }
-
-            public string Host { get; set; }
-
-            public string BrowserLanguages { get; set; }
         }
 
         
@@ -58,31 +42,17 @@ namespace d360.web.Controllers
         [ValidateHttpAntiForgeryToken]
         public async Task PostLogActivity(WebActivityEntity value)
         {
-            //write the activity somewhere
-            //Company.CurrentResourceID - current user
-            //Company.CurrentCompanyID - current company
-            //DateTime.UtcNow - current time
-            //GetClientIp - client IP Address
-                        
-            value.ResourceID = Company.CurrentResourceID;            
+            var IP = GetClientIp(Request);            
             
-            value.IP = GetClientIp(Request);
-            value.UserAgent = HttpContext.Current.Request.UserAgent;            
-            value.Host = Company.CurrentCompanyDomain;
-            value.Path = HttpContext.Current.Request.UrlReferrer.AbsolutePath;
-            value.BrowserLanguages = string.Join(",",HttpContext.Current.Request.UserLanguages);
-            value.RowKey = Guid.NewGuid().ToString();
-            value.PartitionKey = value.ResourceID.ToString();
-
             try
             {
                 Company.AddWebStatistic(
                     (SystemObjects)Enum.Parse(typeof(SystemObjects), value.ObjectName),
                     value.ObjectId,
-                    value.IP,
-                    value.UserAgent,
-                    value.Host,
-                    value.BrowserLanguages,
+                    IP,
+                    HttpContext.Current.Request.UserAgent,
+                    Company.CurrentCompanyDomain,
+                    string.Join(",", HttpContext.Current.Request.UserLanguages),
                     value.Activity,
                     Company.CurrentResourceID,
                     DateTime.UtcNow
