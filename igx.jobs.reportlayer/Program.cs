@@ -1165,6 +1165,60 @@ from	workflow.ItemStep S
 
                             #endregion
 
+                            #region Workflow Forms
+
+                            objectName = $"{SCHEMA}.[WorkflowForms]";
+                            viewNames.Add(objectName);
+
+                            selectSql = @"
+                                select 
+	                                t.ID as WorkflowID,
+	                                i.ID as ItemID,
+	                                coalesce(a.DisplayValue, ai.DisplayValue, arn.[Name], '[unknown]') as WorkflowItem,
+	                                coalesce(a.ID, ai.ID) as AssetID,
+	                                si.StepID,
+	                                form.fieldId,
+	                                form.fieldLabel as Field,
+	                                coalesce(form.fieldValue, form.fieldValueRaw) as FieldValue,
+	                                form.resId as ResourceID,
+	                                si.CompletedOn as [Date]
+                                from workflow.itemstep si
+	                                inner join workflow.item i on i.ID = si.ItemID
+	                                left join AssetDetail a on a.[Object] = i.[Object] and a.ObjectiD = i.ObjectID
+	                                left join Issue on issue.ID = i.ObjectID and i.[Object] = 'Issue'
+	                                left join AssetDetail ai on ai.[Object] = issue.[Object] and ai.ObjectID = issue.ObjectID
+	                                left join IntersectDetail ar on ar.ID = i.ID and i.[Object] = 'Intersect'
+	                                outer apply dbo.GetIntersectNames(ar.ID) arn
+	                                inner join workflow.versionstep vs on vs.ID = si.StepID
+	                                inner join workflow.[version] v on v.ID = vs.VersionID
+	                                inner join workflow.[type] t on t.ID = v.TypeID
+	                                cross apply (
+		                                select 
+			                                sif.ID,
+			                                f.n.value('(../@ResourceID)[1]','int') as resId,
+			                                f.n.value('(./@label)[1]','varchar(max)') as fieldLabel,
+			                                f.n.value('(./@value)[1]','varchar(max)') as fieldValueRaw,
+			                                f.n.value('(./@displayvalue)[1]','varchar(max)') as fieldValue,
+			                                f.n.value('(./@fieldtype)[1]','varchar(max)') as fieldType,
+			                                f.n.value('(./@id)[1]','varchar(max)') as fieldId
+		                                from 
+			                                workflow.itemstep sif
+			                                cross apply sif.Fields.nodes('fields/form/field') f(n)
+		                                where 
+			                                sif.ID = si.ID
+	                                ) form
+                                where 
+	                                vs.StepType = 2 and vs.ActivityType = 3";
+
+                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                            viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                            executeSqlWithTry(companyConnection, viewSql);
+                            #endregion
+
+
                             prefix = "Global";
 
                             #region InterRelationships
