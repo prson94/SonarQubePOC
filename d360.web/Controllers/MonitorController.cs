@@ -296,6 +296,18 @@ where   A.RuleImplementationID = @id";
                                             inner join reporting.Global_Resource GRA on WIA.ResourceObjectID = GRA.ResourceID ";
                         typeSql += $@"( gra.firstName Like '{ff.RawValue}%' or gra.lastName Like '{ff.RawValue}%' or gra.firstName + ' ' + gra.lastName LIKE '{ff.RawValue}%' ) and ";
                         break;
+                    case "Object":
+                        typeSql += $@"coalesce(cod.Object, ass.Object) = '{ff.RawValue}' and ";
+                        break;
+                    case "ObjectID":
+                        typeSql += $@"coalesce(cod.ObjectID, ass.ObjectID) = cast({ff.RawValue} as int) and ";
+                        break;
+                    case "ObjectType":
+                        typeSql += $@"assettype.Object = '{ff.RawValue}' and ";
+                        break;
+                    case "ObjectTypeID":
+                        typeSql += $@"assettype.ObjectID = cast({ff.RawValue} as int) and ";
+                        break;
                 }
             }
 
@@ -312,7 +324,7 @@ where   A.RuleImplementationID = @id";
 
 
             var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
-		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],ITypeName.Name";
+		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId)";
 
             var fromSql = @"		from [workflow].[type] wt 
                                 inner join [workflow].[version] wv on (wt.id = wv.typeid) 
@@ -356,7 +368,11 @@ where   A.RuleImplementationID = @id";
                          gr.firstName + ' ' + gr.lastName as 'Initiator' ,                    
                          wi.startedOn as 'StartedOn',                    wi.CompletedOn as 'CompletedOn',
                         case when   wi.CompletedOn is null then    'Pending'            
-                        else        'Complete'    end as [Status]  
+                        else        'Complete'    end as [Status],
+                        assettype.Object as ObjectType,
+                        assettype.ObjectID as ObjectTypeID,
+                        coalesce(cod.Object, ass.Object) as Object,
+                        coalesce(cod.objectID, ass.ObjectID) as ObjectID  
                         {fromSql}
                         {assignedSql}
                         {whereSql} 

@@ -17,7 +17,18 @@ import { StringHelpers } from '../../static/string-helpers';
                         <div class="col s10" style="padding-right: 0px">
                            <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
                             <div *ngIf="!isLoading">
-                                <p-multiSelect [options]="items" [style]="{'width':'100%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+                                <table style="width: 100%">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+                                                </td>
+                                                <td *ngIf="showExport" style="width:32px">
+                                                    <a style="font-size:1.1em" (click)="exportClick.emit()"><i class="fa fa-download"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                             </div>        
                         </div>
                     </div>   
@@ -34,7 +45,6 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     
     @Input() selectAll: boolean = false;
     @Input() selection: any[];
-    //@Output() selectionChange = new EventEmitter();
     @Output() filterChange = new EventEmitter();
     items: any[];
     @Output() exportToExcel = new EventEmitter();
@@ -43,6 +53,9 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     @Output() columnFiltersChange = new EventEmitter();
     @Input() workflowTypeFilters: GridFilterExpression;
     @Output() workflowTypeFiltersChange = new EventEmitter();
+    @Input() showExport: boolean = false;
+    @Input() usePredefinedFilters: boolean = false;
+    @Output() exportClick = new EventEmitter();
 
     constructor(protected workflowService: WorkflowService,
         protected ref:ChangeDetectorRef,
@@ -69,9 +82,12 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
                 });
 
                 this.selection = [];
-                if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
+                if (this.usePredefinedFilters) {
+                    this.items.forEach(i => this.selection.push(i.value));
+                    this.change(this.selection);
+                }
+                else if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
                     this.workflowTypeFilters.value.split(",").forEach(i => this.selection.push(i));
-                    //this.change(this.selection);
                 } else if (this.selectAll) {
                     this.items.forEach(i => this.selection.push(i.value));
                     this.change(this.selection);
@@ -95,12 +111,13 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     }
 
     change(e: any) {
-     
+        if (this.usePredefinedFilters)
+            return;
         let data = new GridFilterExpression();
         data.field = "WorkflowId";
         data.condition = "IN";
         data.fieldtype = GridFilterFieldType.Normal;
-
+        
         let typeList = "";
         e.forEach(s => typeList += s.toString() + ',');
         data.value = typeList;

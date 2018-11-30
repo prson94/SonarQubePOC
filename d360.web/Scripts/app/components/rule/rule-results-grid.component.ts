@@ -22,7 +22,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                             <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                         </div>
                         <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
-                        <p-table #dt [value]="results?.results" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [rows]="5" [lazy]="true"  (onLazyLoad)="loadRuleResultsLazy($event)">
+                        <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]"  [lazy]="true"  (onLazyLoad)="loadRuleResultsLazy($event)" [totalRecords]="totalRecords">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'RunDate'" style="width: 150px">
@@ -85,11 +85,10 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                                     <td></td>
                                 </tr>
                             </ng-template>
-                            <ng-template  pTemplate="summary">
+                            <ng-template pTemplate="summary">
                                 <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                             </ng-template>
                         </p-table>
-
                 </span>                
                 `,
     providers: [RulesService],
@@ -103,8 +102,10 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     simpleTextFilter: string;
     showSimpleFilter: boolean = false;
     
-    private rowsPerPage: number = 10;
+    private rowsPerPage: number = 5;
+    private totalRecords: number = 0;
     private results: RuleResultPagedResults;
+    private items;
     columns: GridColumn[] = [];
     filtercolumns: GridFilterColumn[] = [];
 
@@ -132,23 +133,10 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['implementationId'] && this.implementationId) {
             this.filters = [];
-            //this.getFieldsDefinition();
             this.getData();
         }
     }
-    
-    //getFieldsDefinition() {
-    //    this.isLoading = true;
-
-    //    //this.gridDefinitionService.getGridDefinition(this.fusionObjectID, this.fusionObject, this.fusionId, 'FusionID')
-    //    //    .then(result => {
-    //    //        if (result) {
-    //    //            this.columns = result.Columns;
-    //    //            this.filtercolumns = result.FilterColumns;
-    //    //        }                
-    //    //        this.isLoading = false;
-    //    //    });
-    //}
+   
 
     public filterGridData(filterData) {     
         this.currentPageNumber = 0;        
@@ -165,7 +153,6 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
         if (this.filters && this.filters.length > 0) {
             for (var i = this.filters.length - 1; i >= 0; i--) {
                 if (!this.filters[i].field || !this.filters[i].value) {
-                    //console.log("REMOVING FILTER", i);
                     this.filters.splice(i, 1);
                 }
             }
@@ -174,11 +161,11 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
         this.ruleService.getResultsByRule(this.implementationId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleTextFilter)
             .then(res => {
                 this.results = res;
-
-                //if (!this.rule && this.results && this.results.results && this.results.results.length > 0) {
-                //    this.rule = this.results.results[0];
-                //    this.ruleChange.emit(this.rule);
-                //}
+                if (this.results != null) {
+                    this.totalRecords = this.results.total;
+                    this.items = this.results.results;
+                }
+                
             });
 
     }
@@ -189,7 +176,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
-
+        console.log(event);
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;

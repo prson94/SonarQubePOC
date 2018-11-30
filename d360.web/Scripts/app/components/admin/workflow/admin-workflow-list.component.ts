@@ -47,7 +47,7 @@ import { GridColumn } from '../../../models/grid-definition.model';
                         <a style="cursor:pointer;" (click)="cloneWorkflow(item.ID)"><i class="fa fa-copy"></i></a> 
                         <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.ID)"><i class="fa fa-trash-o"></i></a>    
                         <a style="cursor:pointer;" (click)="onViewClick.emit(item.ID)"><i class="fa fa-eye"></i></a>    
-                        <a style="cursor:pointer;" (click)="navigate(item.ID)"><i class="fa fa-television"></i></a>                                      
+                        <a style="cursor:pointer;" (click)="navigate(item.ID)"><i class="fa fa-usb"></i></a>                                      
                     </div>
                 </td>
             </tr>

@@ -3,7 +3,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { ObjectDetailService } from '../../services/object-detail.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { RightSidebarService } from '../../services/right-sidebar.service';
@@ -12,59 +11,80 @@ import { GridFilterExpression, GridFilterFieldType } from '../../models/grid-def
 @Component({
     selector: 'd3s-monitor',
     template: ` 
-<p-tabView (onChange)="tabClick($event)" [activeIndex]="activeIndex">
-    <p-tabPanel header="Items">
-        <ng-template pTemplate="content">
-            <div class="row">
-                <d3s-workflow-monitor *ngIf="filtersLoaded" [predefinedFilters]="predefinedFilters"></d3s-workflow-monitor>
-            </div>
-        </ng-template>
-    </p-tabPanel>
-    <p-tabPanel header="Monitor">
-        <ng-template pTemplate="content">
-            <div class="row">
-                <div class="col s12" [class.m6]="!expandRow">   
-                    <d3s-monitor-workflow-version 
-                        (onFilterChanged)="onFilterChanged($event)"
-                        [selectAll]="selectAll"
-                        [selectedWorkflowTypes]="selectedWorkflowTypes" 
-                        (onMonitorListChanged)="onMonitorListChanged($event)" 
-                        [objectType]="objectType" 
-                        [objectId]="objectId" 
-                        (onMonitorFilterTypesChanged)="onMonitorFilterTypesChanged($event)"
-                        (onMonitorListLoadCompleted)="loadComplete($event)">
-                    </d3s-monitor-workflow-version>
-                </div>
-                <div class="col s12 m6">
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="tile tile-detail" *ngIf="selectedWorkflowType != null">                                              
-                                <object-detail [objectType]="'Monitor'" [objectID]="selectedWorkflowType?.VersionID" ></object-detail>
+
+<div class="row">
+    <div class="col s12 m6">
+        <div class="tile tile-detail">
+            <p-tabView (onChange)="tabClick($event)" [activeIndex]="activeIndex">
+                <p-tabPanel header="Workflow Items">
+                    <ng-template pTemplate="content">
+                        <div class="row">
+                            <div *ngIf="!isLoading">
+                                <d3s-workflowmonitor-list [showHeader]="false" (selectionChange)="listChange($event)" [predefinedFilters]="predefinedFilters"></d3s-workflowmonitor-list>  
                             </div>
                         </div>
-                    </div>
-                    <div class="row">  
-                        <div class="col s12">
-                            <d3s-workflow-diagram *ngIf="selectedWorkflowType != null"
-                                [id]="selectedWorkflowType?.TypeID" 
-                                [version]="selectedWorkflowType?.Version" 
-                                [filteredObject]="objectType"
-                                [filteredObjectId]="objectId"
-                                [readonly]="true" 
-                                [hasHeader]="false"
-                                [selectedStepId]="selectedWorkflowItem?.VersionStepID"
-                                [monitorView]="true">
-                            </d3s-workflow-diagram>
+                    </ng-template>
+                </p-tabPanel>
+                <p-tabPanel header="Workflow Versions">
+                    <ng-template pTemplate="content">
+                        <div class="row">
+                            <d3s-monitor-workflow-version 
+                                [showHeader]="false"
+                                (onFilterChanged)="onFilterChanged($event)"
+                                [selectAll]="selectAll"
+                                [selectedWorkflowTypes]="selectedWorkflowTypes" 
+                                (onMonitorListChanged)="onMonitorListChanged($event)" 
+                                [objectType]="objectType" 
+                                [objectId]="objectId" 
+                                (onMonitorFilterTypesChanged)="onMonitorFilterTypesChanged($event)"
+                                (onMonitorListLoadCompleted)="loadComplete($event)">
+                            </d3s-monitor-workflow-version>
+                        </div>
+                    </ng-template>
+                </p-tabPanel>
+            </p-tabView>
+        </div>     
+    </div>
+    <div class="col s12 m6">
+        <ng-container *ngIf="tabIsLoaded('items')">
+            <div [hidden]="!tabIsActive('items')">
+                <div class="tile tile-detail">
+                    <d3s-workflow-monitor-step-list [itemId]="itemId" (selectionChange)="stepChange($event)"></d3s-workflow-monitor-step-list>
+                </div>
+                <div class="tile tile-detail" [hidden]="!detailVisible">
+                    <d3s-workflow-monitor-step-details [itemStepId]="itemStepId" [(visible)]="detailVisible"></d3s-workflow-monitor-step-details>
+                </div>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="tabIsLoaded('monitor')">
+            <div [hidden]="!tabIsActive('monitor')">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail" *ngIf="selectedWorkflowType != null">                                              
+                            <object-detail [objectType]="'Monitor'" [objectID]="selectedWorkflowType?.VersionID" ></object-detail>
                         </div>
                     </div>
                 </div>
+                <div class="row">  
+                    <div class="col s12">
+                        <d3s-workflow-diagram *ngIf="selectedWorkflowType != null"
+                            [id]="selectedWorkflowType?.TypeID" 
+                            [version]="selectedWorkflowType?.Version" 
+                            [filteredObject]="objectType"
+                            [filteredObjectId]="objectId"
+                            [readonly]="true" 
+                            [hasHeader]="false"
+                            [selectedStepId]="selectedWorkflowItem?.VersionStepID"
+                            [monitorView]="true">
+                        </d3s-workflow-diagram>
+                    </div>
+                </div>
             </div>
-        </ng-template>
-    </p-tabPanel>
-</p-tabView>
-
+        </ng-container>
+    </div>
+</div>
               `,
-    providers: [ObjectDetailService],
+    providers: [],
 })
 
 export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -81,12 +101,16 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     filtersLoaded = false;
     expandRow: boolean = false;
 
+    itemStepId: number = null;
+    itemId: number = null;
+    detailVisible = false;
+
     sub: any;
     querySub: any;
     type: number;
     tabs: any[] = [
-        { key: 'items' },
-        { key: 'monitor' },
+        { key: 'items', loaded: false },
+        { key: 'monitor', loaded: false },
     ];
     
     activeIndex = 0;
@@ -97,7 +121,6 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected router: Router,
         protected route: ActivatedRoute,
-        private objectDetailService: ObjectDetailService,
         rightSidebarService: RightSidebarService) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -122,34 +145,45 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
                 if (i > -1) {
                     this.activeIndex = i;
                     this.activeTab = this.tabs[i];
+                    this.activeTab.loaded = true;
                 }
             }
         });
+
+        this.activeTab.loaded = true;
 
         if (this.objectType != null && this.objectId != null && this.selectedWorkflowTypes == null) {
             this.selectAll = true;
             this.isFiltered = true;
 
-            this.objectDetailService.getObject(this.objectId, this.objectType)
-                .then(o => {
-                    let assetFilter = new GridFilterExpression();
-                    assetFilter.field = "Asset";
-                    assetFilter.fieldtype = GridFilterFieldType.Normal;
-                    assetFilter.value = o.DisplayValue;
-                    assetFilter.condition = "EQUAL";
-                    this.predefinedFilters.push(assetFilter);
-                    this.filtersLoaded = true;
-                });
+            let fieldPrefix = "Object";
+            if (this.objectType.indexOf('Type') > -1)
+                fieldPrefix += "Type";
+
+            let assetFilter = new GridFilterExpression();
+            assetFilter.field = fieldPrefix;
+            assetFilter.fieldtype = GridFilterFieldType.Normal;
+            assetFilter.value = this.objectType;
+            assetFilter.condition = "EQUAL";
+            this.predefinedFilters.push(assetFilter);
+
+            assetFilter = new GridFilterExpression();
+            assetFilter.field = fieldPrefix + "ID";
+            assetFilter.fieldtype = GridFilterFieldType.Normal;
+            assetFilter.value = this.objectId.toString();
+            assetFilter.condition = "EQUAL";
+            this.predefinedFilters.push(assetFilter);
+            this.filtersLoaded = true;
         }
 
         if (!this.isFiltered) {
             this.filtersLoaded = true;
             this.clearSidebar();
-            this.setBrowserTitle(this.titleService, 'Workflow Monitor');
+            this.setBrowserTitle(this.titleService, 'Workflow');
 
             this.headerBreadcrumbService.clearBreadcrumbs();
             this.headerBreadcrumbService.clearCurrentObjectInfo();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow Monitor', SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow', SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
         }
 
 
@@ -177,4 +211,40 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     onMonitorFilterTypesChanged($event) {
         this.filteredTypes = $event ? $event : [];
     }
+
+    listChange($event) {
+        if ($event) {
+            this.itemId = $event.Id
+        } else {
+            this.itemId = null;
+            this.detailVisible = false;
+        }
+    }
+
+    tabClick(e: any) {
+        this.activeIndex = e.index;
+        this.activeTab = this.tabs[e.index];
+        this.activeTab.loaded = true;
+        //console.log(e);
+    }
+
+    tabIsLoaded(key: string) {
+        return this.tabs.find(t => t.key == key).loaded || false;
+    }
+
+    tabIsActive(key: string) {
+        return this.activeTab.key == key;
+    }
+
+    stepChange($event) {
+        if ($event) {
+            this.itemStepId = $event.ID;
+            this.detailVisible = true;
+        } else {
+            this.itemStepId = null;
+            this.detailVisible = false;
+        }
+
+    }
+
 }

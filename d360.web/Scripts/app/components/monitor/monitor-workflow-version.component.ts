@@ -6,14 +6,16 @@ import { EventListener } from "@angular/core/src/debug/debug_node";
 @Component({
     selector: `d3s-monitor-workflow-version`,
     template: `
-    <div class="tile tile-detail" style="padding-bottom: 15px">
+    <div style="padding-bottom: 15px">
     <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
         <div *ngIf="!isLoading">    
-        <header>   
+        <header *ngIf="showHeader">   
                 Workflow Versions
                  <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
          </header>
-            <d3s-monitor-filter [hidden]="isFiltered" (selectionChange)="filterChange($event)" [selectAll]="selectAll"></d3s-monitor-filter>
+            <d3s-monitor-filter *ngIf="showHeader" [hidden]="isFiltered" (selectionChange)="filterChange($event)" [selectAll]="selectAll"></d3s-monitor-filter>
+            <d3s-monitor-filter *ngIf="!showHeader" [(filterMode)]="showSimpleFilter"  [showFilter]="true" [hidden]="isFiltered" (selectionChange)="filterChange($event)" [selectAll]="selectAll"></d3s-monitor-filter>
+
             <d3s-monitor-list 
                     [showSimpleFilter]="showSimpleFilter"
                     [workflowTypes]="selectedWorkflowTypes" 
@@ -38,6 +40,7 @@ export class MonitorWorkflowVersionComponent extends BaseComponent implements On
     @Input() objectType: string;
     @Input() objectId: number;
     @Input() selectAll: boolean = true;
+    @Input() showHeader: boolean = true;
 
     @Input()selectedWorkflowTypes: any[];
     selectedWorkflowType: any = null;

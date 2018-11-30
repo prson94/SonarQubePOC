@@ -67,7 +67,7 @@ import * as _ from 'lodash';
                                                             <a (click)="selected=item;showRule(selected);">{{item["Dimension"]}}</a>
                                                     </td>
                                                     <td *ngFor="let column of columns">
-                                                            <a><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>
+                                                            <a (click)="selected=item;showRule(selected);"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>
                                                     </td>
                                                     <td *ngIf="hasModifyAssetPermissions()">
                                                             <div class="RowTools">
