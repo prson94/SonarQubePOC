@@ -54,7 +54,16 @@ import { Observable } from "rxjs/Observable";
                     <div class="col s12" [hidden]="showCustomExport">                
                         <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" 
                             [sortField]="stateService.artifactTypeFilters.sortField" [sortOrder]="stateService.artifactTypeFilters.sortOrder" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" 
-                            [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" [lazy]="true" (onLazyLoad)="loadArtifactsLazy($event)" [totalRecords]="totalRecords">
+                            [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" [lazy]="true" (onLazyLoad)="loadArtifactsLazy($event)" [totalRecords]="totalRecords" [scrollable]="true" scrollWidth="100%">
+                            <ng-template pTemplate="colgroup" >
+                                <colgroup>
+                                    <col *ngFor="let col of columns" [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
+                                    <col style="width: 30px">
+                                    <col style="width: 30px">
+                                    <col style="width: 30px">
+                                    <col style="width: 30px">
+                                </colgroup>
+                            </ng-template>                            
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th *ngFor="let col of columns" [pSortableColumn]="col.sortable ? col.datafield : null" [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
