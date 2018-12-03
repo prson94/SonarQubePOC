@@ -2609,7 +2609,18 @@ order by wi.StartedOn desc";
                             JArray sfields = new JArray(stepFields.fields.form.field);
                             JObject jo = sfields.Children<JObject>()
                                 .FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
-                            fieldChange.Value = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
+                            var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
+                            var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
+                            switch (fieldtype)
+                            {
+                                case "date":
+                                    fieldChange.Value = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+                                    break;
+                                default:
+                                    fieldChange.Value = displayvalue;
+                                    break;
+                            }
+
                         }
                     }
                     else if (fieldChange.UseCurrentDate)
