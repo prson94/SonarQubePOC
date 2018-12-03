@@ -3132,10 +3132,12 @@ order by wi.StartedOn desc";
                 var dataColIndex = 0;
                 rowIndex++;
 
+                var activityType = row.ActivityType != null ? ((WorkflowActivityType)Enum.ToObject(typeof(WorkflowActivityType), row.ActivityType)).GetName() : "";
+
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.StepType ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Complete ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.ActivityType ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, activityType ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Assignee ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.StartedOn != null ? row.StartedOn.ToShortDateString() : "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.CompletedOn != null ? row.CompletedOn.ToShortDateString() : "");
