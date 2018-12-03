@@ -3013,8 +3013,9 @@ end",
 ({tbTypePrefix}.Subject = '{i.Object}' and {tbTypePrefix}.SubjectID = {i.ObjectID} and {tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn})
 )
 outer apply (
-	select DisplayValue as [Name], {tbDetailPrefix}DU.[Url] as [Url] from AssetDetail {tbDetailPrefix}D
+	select {(i.Object == "FusionAttributeType" ? $"{tbDetailPrefix}TP.TextPath" : "DisplayValue")} as [Name], {tbDetailPrefix}DU.[Url] as [Url] from AssetDetail {tbDetailPrefix}D
 	cross apply [dbo].[GetAssetUrlById]({tbDetailPrefix}D.ID) {tbDetailPrefix}DU
+    {(i.Object == "FusionAttributeType" ? $"cross apply [dbo].GetAssetTextPathById({tbDetailPrefix}D.ID, '.') {tbDetailPrefix}TP " : " ")}
 	where {tbDetailPrefix}D.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
 		and {tbDetailPrefix}D.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
 	union all
@@ -3022,12 +3023,6 @@ outer apply (
 	cross apply [dbo].[GetAssetTypeUrlById]({tbDetailPrefix}T.ID) {tbDetailPrefix}TU
 	where {tbDetailPrefix}T.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
 		and {tbDetailPrefix}T.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
-		
-	union all
-	select TextPath as [Name], {tbDetailPrefix}FU.[Url] as [Url] from FusionAttribute {tbDetailPrefix}F
-	cross apply [dbo].[GetAssetUrlById]((select ID from Asset where Object = 'FusionAttribute' and ObjectID = {tbDetailPrefix}F.ID)) {tbDetailPrefix}FU
-	where 'FusionAttribute' = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
-		and {tbDetailPrefix}F.ID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
   ) {tbDetailPrefix}
 ";
 
