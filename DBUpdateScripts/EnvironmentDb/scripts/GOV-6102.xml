@@ -1,0 +1,53 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet author="Pappas" id="gov-6102">
+		<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+ALTER TRIGGER [reporting].[ReportingGlobalResource_AfterInsert]
+	ON [reporting].[Global_Resource]
+	FOR INSERT
+AS
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Add', [queue].WriteIndexXml('', 'Resource', ResourceID, 0), 'Resource', ResourceID from inserted;
+
+	merge	dbo.Asset as T
+	using	(
+			SELECT	T.ID as AssetTypeID, 
+					1 as [State], 
+					O.ResourceID as SourceID, 
+					'Resource' as Object, 
+					O.ResourceID as ObjectID
+			FROM	inserted O 
+					inner join  AssetType T on T.Object = 'ResourceType' and T.ObjectID = 1
+			) as S
+	on		(T.Object = S.Object and T.ObjectID = S.ObjectID)
+	when	matched then
+	update	set
+			T.UpdatedOn = getutcdate(),
+			T.UpdatedBy = 0
+	when not matched by target then
+	insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+	values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0);			
+		</sql>
+		<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+if not exists (select 1 from AssetType where Object = 'ResourceType' and ObjectID = 1)
+begin
+	INSERT INTO [dbo].[AssetType] ([Name],[Description],[Class],[DisplayFormat],[State],[Hierarchical],[HierarchyMaximumDepth],[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
+	VALUES ('User', 'A resource account', 11, '{FirstName} {LastName}', 1, 0, 0, 'ResourceType',1, getutcdate(), 0, getutcdate(), 0, '00000001-0000-0000-0000-A00000000011')
+end
+		</sql>
+	</changeSet>
+
+</databaseChangeLog>
