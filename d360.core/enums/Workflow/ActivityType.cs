@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Linq;
 
 namespace d360.core.enums.Workflow
 {
@@ -42,6 +43,10 @@ namespace d360.core.enums.Workflow
 
     public static class ActivityTypeExtensions
     {
+        public static string GetName(this WorkflowActivityType type)
+        {
+            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
+        }
         public static List<ActivityTypeInfo> GetList(this WorkflowActivityType type)
         {
             var list = new List<ActivityTypeInfo>();
