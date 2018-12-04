@@ -154,7 +154,7 @@
                                 <td>{{item.Name}}</td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <ng-template pTemplate="summary">
                             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
@@ -205,7 +205,7 @@
                 </div>
                 <div class="col l4 m5 s12">
                     <button pButton type="button" label="Test Filters" [disabled]="disableTestThen" (click)="testThen()"></button>
-                    <p-table #dt [value]="ThenTestRows" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="5">
+                    <p-table #dt2 [value]="ThenTestRows" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="5">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
@@ -219,8 +219,8 @@
                                 <td>{{item.Name}}</td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        <ng-template pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt2.first" [rows]="dt2.rows" [totalRecords]="dt2.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
                 </div>
