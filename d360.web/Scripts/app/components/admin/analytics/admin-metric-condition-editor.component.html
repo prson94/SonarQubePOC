@@ -8,7 +8,7 @@
             <div>
                 <select [ngModel]="condition.FieldTypeID" (ngModelChange)="changeFieldType($event)" style="width: 95%">
                     <option></option>
-                    <option *ngFor="let i of metricConditionEditorFieldTypes" [value]="i.ID" [disabled]="i.Disabled">{{i.Name}}</option>
+                    <option *ngFor="let i of metricConditionEditorFieldTypes | metricConditionDisabledFilter" [value]="i.ID">{{i.Name}}</option>
                 </select>
             </div>
         </div>

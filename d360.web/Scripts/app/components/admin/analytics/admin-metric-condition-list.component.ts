@@ -10,7 +10,7 @@ import { MessagesService } from '../../../services/messages.service';
     template: ` 
                 <header *ngIf="formMode == FormMode.Default">
                     &nbsp;
-                    <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>   
+                    <d3s-tile-actions [hasAdd]="showAddButton()" (addClick)="add()"></d3s-tile-actions>   
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                <div *ngIf="!isLoading">
@@ -196,6 +196,10 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         this.conditionsChange.emit(this.conditions);
         this.formMode = FormMode.Default;
         this.formModeChange.emit(this.formMode);
+    }
+
+    showAddButton() {
+        return (this.usedFieldTypeIDs.length < this.metricConditionListFieldTypes.length);
     }
 
     refreshSelectedFieldTypeIds() {
