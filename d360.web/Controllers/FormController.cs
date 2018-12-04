@@ -3465,6 +3465,11 @@ namespace d360.web.Controllers
                 model.FieldType.ColumnOrder = maxColumnOrder + 1;
                 model.FieldType.UpdatedBy = Company.CurrentResourceID;
 
+                //set the default formatted value to the same as the default value, for lists the trigger will update this to the display value for the list
+                // however for strings, bools etc it will stay since the lookupobjecttype is null since the trigger only looks at where it is not null.
+                if(!string.IsNullOrEmpty(model.FieldType.DefaultValue))
+                    model.FieldType.DefaultFormattedValue = model.FieldType.DefaultValue;
+
                 var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
                 if (!nameRegex.IsMatch(model.FieldType.Name))
                 {
@@ -3859,8 +3864,12 @@ namespace d360.web.Controllers
                 ft.Name = model.FieldType.Name;
                 ft.SortOrder = model.FieldType.SortOrder;
                 ft.Category = model.FieldType.Category;
-                ft.FriendlyName = model.FieldType.FriendlyName;
+                ft.FriendlyName = model.FieldType.FriendlyName;                
                 ft.DefaultValue = (string.IsNullOrEmpty(model.FieldType.DefaultValue)) ? null : model.FieldType.DefaultValue.Trim();
+                //set the default formatted value to the same as the default value, for lists the trigger will update this to the display value for the list
+                // however for strings, bools etc it will stay as there is no lookupfield column.
+                if (!string.IsNullOrEmpty(ft.DefaultValue))
+                    ft.DefaultFormattedValue = ft.DefaultValue;
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
