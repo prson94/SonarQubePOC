@@ -202,7 +202,6 @@ namespace d360.web.Controllers.V2
                 }
 
                 Company.MetricAssets.Add(metricAsset);
-                //Company.Add(metricAsset);
             }
 
             var cleanDate = model.EffectiveDate.Date;
