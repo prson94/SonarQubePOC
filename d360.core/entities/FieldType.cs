@@ -93,8 +93,7 @@ namespace d360.core.entities
 
         [DataMember]
         public string DefaultValue { get; set; }
-
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+                
         public string DefaultFormattedValue { get; set; }
 
         [DataMember]

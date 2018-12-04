@@ -8,6 +8,7 @@
 
     <include file="scripts/FulltextCatalog.xml"/>
     <include file="scripts/EnvironmentSchema.xml"/>
-	<include file="scripts/GOV-6102.xml"/>
+	  <include file="scripts/GOV-6102.xml"/>
+    <include file="scripts/GOV-6105.xml"/>
 
 </databaseChangeLog>
