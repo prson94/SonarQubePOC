@@ -11,6 +11,7 @@ import { ArrayToSelectItemPipe } from './array-to-selectitem.pipe';
 import { ResponsibilityTypeRelationAllocationOptionFilterPipe } from './responsibilitytypeallocation-filter.pipe';
 import { SafeHtmlPipe } from './safe-html.pipe';
 import { UtcDatePipe } from './utc-date.pipe';
+import { MetricConditionDisabledFilterPipe } from './metric-condition-disabled-filter.pipe';
 
 @NgModule({
     imports: [CommonModule],
@@ -18,6 +19,7 @@ import { UtcDatePipe } from './utc-date.pipe';
         ArrayToSelectItemPipe,
         TreeSearchPipe,
         DropdownItemToSelectItemPipe,
+        MetricConditionDisabledFilterPipe,
         ModelTypePipe,
         PermissionFilterPipe,
         ResponsibilityTypeRelationAllocationOptionFilterPipe,
@@ -30,6 +32,7 @@ import { UtcDatePipe } from './utc-date.pipe';
         ArrayToSelectItemPipe,
         TreeSearchPipe,
         DropdownItemToSelectItemPipe,
+        MetricConditionDisabledFilterPipe,
         ModelTypePipe,
         PermissionFilterPipe,
         ResponsibilityTypeRelationAllocationOptionFilterPipe,
