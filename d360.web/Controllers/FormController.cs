@@ -2267,12 +2267,12 @@ namespace d360.web.Controllers
 
                     if (stylesSetting == null)
                     {
-                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"https://data3sixty.blob.core.windows.net/{constants.COMPANY_STYLES_FOLDER}/{Company.CurrentCompanyID}.css" };
-                        Community.Add<CompanySetting>(stylesSetting);
+                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css" };
+                        Community.Add(stylesSetting);
                     }
                     else
                     {
-                        stylesSetting.Value = $"https://data3sixty.blob.core.windows.net/{constants.COMPANY_STYLES_FOLDER}/{Company.CurrentCompanyID}.css";
+                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css";
                         Community.SaveChanges();
                     }
 
