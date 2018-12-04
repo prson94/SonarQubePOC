@@ -14,6 +14,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     @Input() condition: MetricAssetVersionConditionViewModel = null;
     @Input() uid: string;
     @Input() metricConditionEditorFieldTypes: MetricFieldTypeViewModel[] = [];
+    @Input() usedFieldTypes: number[] = [];
     @Input() assetTypeUid: string;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
@@ -25,6 +26,26 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     ngOnInit() {
+
+        //Set defaults;
+        this.metricConditionEditorFieldTypes.forEach(ft => {
+            ft.Disabled = false;
+        });
+
+        this.usedFieldTypes.forEach(i => {
+            let ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID == i);
+            if (ft) {
+                if (this.condition) {
+                    if (this.condition.FieldTypeID != i) {
+                        ft.Disabled = true;
+                    }
+                }
+                else {
+                    ft.Disabled = true;
+                }
+            }
+        });
+
         this.load();
     }
 

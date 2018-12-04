@@ -10,7 +10,7 @@ namespace d360.core.entities.Metric
     [DataContract(Namespace = NAMESPACE), Table("Asset", Schema = "metrics")]
     public class MetricAsset : BaseCreatedAndUpdatedObject
     {
-        [DataMember, Key, Column(Order = 1), DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DataMember, Key, Column(Order = 1)] //, DatabaseGenerated(DatabaseGeneratedOption.Identity)
         public Guid Uid { get; set; }
 
         [DataMember]

@@ -44,6 +44,7 @@ import { MessagesService } from '../../../services/messages.service';
                             <d3s-admin-metric-condition-editor 
                                 [uid]="metricUid" 
                                 [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
+                                [usedFieldTypes]="usedFieldTypeIDs"
                                 [assetTypeUid]="assetTypeUid"
                                 [(condition)]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
@@ -54,6 +55,7 @@ import { MessagesService } from '../../../services/messages.service';
                             <d3s-admin-metric-condition-editor 
                                 [uid]="metricUid" 
                                 [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
+                                [usedFieldTypes]="usedFieldTypeIDs"
                                 [assetTypeUid]="assetTypeUid"
                                 [(condition)]="selection"
                                 (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
@@ -91,7 +93,8 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     @Output() conditionsChange = new EventEmitter();
 
     @Output() formModeChange = new EventEmitter();
-    
+
+    private usedFieldTypeIDs: number[] = [];
     private selection: MetricAssetVersionConditionViewModel = null;
     private selectedIndex = -1;
     private formMode = FormMode.Default;
@@ -120,6 +123,8 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
 
     load(): Promise<any> {
         this.isLoading = true;
+
+        this.refreshSelectedFieldTypeIds();
 
         this.conditions.forEach(c => {
             c.OperatorText = this.operators.find(o => o.value == c.Operator).label;
@@ -171,6 +176,9 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     confirmDelete() {
         this.conditions.splice(this.selectedIndex, 1).slice();
         this.conditionsChange.emit(this.conditions);
+
+        this.refreshSelectedFieldTypeIds();
+
         this.formMode = FormMode.Default;
         this.formModeChange.emit(this.formMode);
     }
@@ -182,9 +190,19 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
             this.conditions.push(e);
         }
 
+        this.refreshSelectedFieldTypeIds();
+
         this.conditions.slice();
         this.conditionsChange.emit(this.conditions);
         this.formMode = FormMode.Default;
         this.formModeChange.emit(this.formMode);
+    }
+
+    refreshSelectedFieldTypeIds() {
+        // Clear out the selected field type IDs, and reload.
+        this.usedFieldTypeIDs = [];
+        this.conditions.forEach(c => {
+            this.usedFieldTypeIDs.push(c.FieldTypeID);
+        });
     }
 };

@@ -156,7 +156,8 @@ namespace d360.web.Controllers.V2
             else
             {
                 metricAsset = new MetricAsset
-                {                    
+                {               
+                    Uid = Guid.NewGuid(),
                     AssetTypeUid = model.AssetTypeUid,
                     Description = model.Description,
                     IsGroup = model.IsGroup,
@@ -200,7 +201,8 @@ namespace d360.web.Controllers.V2
                         "You may not add a metric with the same name at the root of the hierarchy.");
                 }
 
-                Company.Add(metricAsset);
+                Company.MetricAssets.Add(metricAsset);
+                //Company.Add(metricAsset);
             }
 
             var cleanDate = model.EffectiveDate.Date;
@@ -240,8 +242,16 @@ namespace d360.web.Controllers.V2
                 {
                     if (metricAssetVersion.Conditions == null)
                         metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
+
+                    var usedFieldTypeIDs = new List<int>();
+
                     model.Conditions.ForEach(c => {
-                        metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID, Operator = c.Operator, ValueJson = c.Values });
+                        // You can only add one of a specific field type ID.
+                        if (!usedFieldTypeIDs.Contains(c.FieldTypeID))
+                        {
+                            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID, Operator = c.Operator, ValueJson = c.Values });
+                            usedFieldTypeIDs.Add(c.FieldTypeID);
+                        }
                     });
                 }
 
@@ -336,7 +346,6 @@ namespace d360.web.Controllers.V2
 
             if (string.IsNullOrEmpty(operatorErrorMessage))
             {
-
                 Company.SaveChanges();
 
                 return successMessageResponse(
