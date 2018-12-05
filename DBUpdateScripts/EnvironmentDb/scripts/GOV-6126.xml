@@ -23,7 +23,7 @@
         end
 
         --add technology asset fusionattribute type
-        if not exists (select 1 from fusionattributetype where id = 116)
+        if not exists (select 1 from fusionattributetype where id = 1820)
         begin
           set identity_insert [dbo].fusionattributetype on
 
