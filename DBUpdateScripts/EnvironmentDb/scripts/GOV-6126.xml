@@ -1,0 +1,65 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="KMcNamee" id="gov-6126">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      begin
+        -- add technology asset fusion type
+        if not exists (select 1 from fusiontype where id = 116)
+        begin
+          set identity_insert [dbo].fusiontype on
+
+          insert into fusiontype (id,[name],[description],updatedon,updatedby) values(116,'Technology Asset','Technology Asset',getutcdate(),0);
+
+          set identity_insert [dbo].fusiontype off
+        end
+
+        --add technology asset fusionattribute type
+        if not exists (select 1 from fusionattributetype where id = 1820)
+        begin
+          set identity_insert [dbo].fusionattributetype on
+
+          insert into fusionattributetype (id,fusiontypeid,[name],assignable,updatedon,updatedby,scanenabled) values(1820,116,'Asset',1,getutcdate(),0,1);
+
+          set identity_insert [dbo].fusionattributetype off
+          --add technology asset fusionattribute field types
+          insert into fieldtype (name,friendlyname,type,[object],objectid,sortorder,isrequired,islistable,isdisplayable,iseditable,allowallvalue,isprimaryfilter,ispartofkey,columnorder,allowmultiplevalues,parentfieldtypeid,updatedby) values('BusinessAssetOwner','Business Asset Owner','Text','FusionAttributeType',1820,1,1,1,1,0,0,0,0,1,0,0,0)
+          insert into fieldtype (name,friendlyname,type,[object],objectid,sortorder,isrequired,islistable,isdisplayable,iseditable,allowallvalue,isprimaryfilter,ispartofkey,columnorder,allowmultiplevalues,parentfieldtypeid,updatedby) values('NormalizedAsset','Normalized Asset','Text','FusionAttributeType',1820,1,1,1,1,0,0,0,0,1,0,0,0)
+          insert into fieldtype (name,friendlyname,type,[object],objectid,sortorder,isrequired,islistable,isdisplayable,iseditable,allowallvalue,isprimaryfilter,ispartofkey,columnorder,allowmultiplevalues,parentfieldtypeid,updatedby) values('NormalizedAssetProperties','Normalized Asset Properties','Text','FusionAttributeType',1820,1,1,0,1,0,0,0,0,1,0,0,0)
+          insert into fieldtype (name,friendlyname,type,[object],objectid,sortorder,isrequired,islistable,isdisplayable,iseditable,allowallvalue,isprimaryfilter,ispartofkey,columnorder,allowmultiplevalues,parentfieldtypeid,updatedby) values('TechnologyAsset','Technology Asset','Text','FusionAttributeType',1820,1,1,1,1,0,0,0,0,1,0,0,0)
+          insert into fieldtype (name,friendlyname,type,[object],objectid,sortorder,isrequired,islistable,isdisplayable,iseditable,allowallvalue,isprimaryfilter,ispartofkey,columnorder,allowmultiplevalues,parentfieldtypeid,updatedby) values('TechnologyAssetProperties','Technology Asset Properties','Text','FusionAttributeType',1820,1,1,0,1,0,0,0,0,1,0,0,0)
+          insert into fieldtype (name,friendlyname,type,[object],objectid,sortorder,isrequired,islistable,isdisplayable,iseditable,allowallvalue,isprimaryfilter,ispartofkey,columnorder,allowmultiplevalues,parentfieldtypeid,updatedby) values('Definition','Definition','Text','FusionAttributeType',1820,1,1,1,1,0,0,0,0,1,0,0,0)
+          insert into fieldtype (name,friendlyname,type,[object],objectid,sortorder,isrequired,islistable,isdisplayable,iseditable,allowallvalue,isprimaryfilter,ispartofkey,columnorder,allowmultiplevalues,parentfieldtypeid,updatedby) values('AssetPath','Asset Path','Text','FusionAttributeType',1820,1,1,1,1,0,0,0,0,1,0,0,0)
+        end
+
+        -- insert the predefined fusion config for tech asset stuff
+        if not exists (select 1 from [dbo].fusion where id = 0)
+        and
+        exists (select 1 from [dbo].fusiontype where id = 116)
+        begin
+          set identity_insert [dbo].fusion on
+
+          insert into fusion (id,fusiontypeid,name,[description],[enabled],[manual],lockpromoteditems,intervaltype,interval,forcerefresh,updatedon,updatedby) values(0,116,'Technology Asset Configuration','',1,0,0,3,15,0,getutcdate(),0)
+
+          set identity_insert [dbo].fusion off
+        end
+      end
+    </sql>
+    <rollback>
+      begin
+        delete from fusion where id = 0;
+        delete from fieldtype where [object] = 'FusionAttributeType' and objectid = 1820;
+        delete from fusionattributetype where id = 1820
+        delete from fusiontype where id = 116;
+      end
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
