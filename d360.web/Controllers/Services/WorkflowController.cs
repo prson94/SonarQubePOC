@@ -2534,10 +2534,8 @@ order by wi.StartedOn desc";
 
         private List<EmailedResourceResponsibility> GetEmailResources(int assetId,List<int> responsiblities,List<string> emails)
         {
-
-            var dbArgs = new Dapper.DynamicParameters();
+  
             string sql = string.Empty;
-            List<EmailedResourceResponsibility> results;
             var asset = Company.GetAssetDetail(assetId);
 
             if (responsiblities.Count != 0 && asset != null)
@@ -2559,20 +2557,15 @@ order by wi.StartedOn desc";
                         from cte
                         group by cte.FullName,cte.ResourceID,cte.Email";
 
-                 results = Company.Query<EmailedResourceResponsibility>(sql).ToList();
-
             }
             else
             {
-                sql = @"Select R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,R.Email
+                sql = $@"Select R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,R.Email
 						From reporting.Global_Resource R  
-						where state=1 and email =@email";
-                dbArgs.Add("email", emails);
-                 results = Company.Query<EmailedResourceResponsibility>(sql, dbArgs).ToList();
-
+						where state=1 and email in ('{string.Join("','", emails)}')";
 
             }
-            return results;
+            return Company.Query<EmailedResourceResponsibility>(sql).ToList();
         }
         private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(WorkflowStepDetail detail)
         {
