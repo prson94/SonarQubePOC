@@ -8,10 +8,7 @@ namespace d360.core
 
         public static string COMMUNITY_DATABASE_CONNECTION = ConfigurationManager.AppSettings["CommunityContext"];
 
-        public static string AZURE_STORAGE_NAME = ConfigurationManager.AppSettings["AzureStorageName"];
-        public static string AZURE_STORAGE_KEY = ConfigurationManager.AppSettings["AzureStorageKey"];
-
-        public static string MANDRILL_API_KEY = ConfigurationManager.AppSettings["MandrillApiKey"];
+        private static string AZURE_STORAGE_NAME = ConfigurationManager.AppSettings["AzureStorageName"];
 
         public static string COMPANY_ICON_FOLDER = "company-icons";
         public static string COMPANY_ICON_URL = $"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{COMPANY_ICON_FOLDER}/";
@@ -24,8 +21,6 @@ namespace d360.core
 
         public static string COMPANY_STYLES_FOLDER = "company-styles";
         public static string COMPANY_STYLES_URL = $"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{COMPANY_STYLES_FOLDER}/";
-
-        public static string EVENTS_SERVICE_BUS = ConfigurationManager.AppSettings["EventServiceBus"];
 
         //azure container names
         public static string AZURE_CLOUD_FUSION_CONTAINER = "cloud-fusion-data";

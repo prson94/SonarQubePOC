@@ -920,10 +920,8 @@ where A.FusionTypeID = @id", columns, joins);
             var fileName = "";
             try
             {
-                var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
-                Storage.CreateFolder(folder);
-                fileName = string.Format("{0}.{1}.{2}.json", typeID, fusionID, date.ToString("yyyy-MM-dd_hh.mm.ss"));
-                Storage.CreateFile(folder, fileName, json);
+                fileName = $"{Company.CurrentCompanyID}/{typeID}.{fusionID}.{date.ToString("yyyy-MM-dd_hh.mm.ss")}.json";
+                Storage.CreateFile("bulk-fusion", fileName, json);
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 
                 Trace.TraceInformation("Enqueueing new fusion job on the queue.  Fusion ID: {0}, Company ID: {1}, Log:{2}",fusionID,Company.CurrentCompanyID, fileName);
@@ -1181,12 +1179,8 @@ where A.FusionTypeID = @id", columns, joins);
 
                         var json = JsonConvert.SerializeObject(import);
 
-                        var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss");
-
-                        var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
-                        Storage.CreateFolder(folder);
-                        var fileName = $"{typeID}.{id}.{dateString}.json";
-                        Storage.CreateFile(folder, fileName, json);
+                        var fileName = $"{Company.CurrentCompanyID}/{typeID}.{id}.{DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss")}.json";
+                        Storage.CreateFile("bulk-fusion", fileName, json);
 
                         await Queue.CreateMessageAsync(Config.GetValue<string>("FusionLoadQueue"), new FusionProcessingData
                         {
@@ -1287,9 +1281,7 @@ where A.FusionTypeID = @id", columns, joins);
 
                 var date = DateTime.UtcNow;
 
-                var folder = string.Format("agent-log-{0}", Company.CurrentCompanyID);
-                Storage.CreateFolder(folder);
-                Storage.CreateFile(folder, string.Format("{0}.json", date.ToString("yyyy-MM-dd_hh.mm.ss")), json);
+                Storage.CreateFile("agent-log", $"{Company.CurrentCompanyID}/{date.ToString("yyyy-MM-dd_hh.mm.ss")}.json", json);
                 
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure;
+using Microsoft.Azure.WebJobs;
 using System.Configuration;
 
 namespace igx.jobs
@@ -7,7 +8,7 @@ namespace igx.jobs
     {
         public string Resolve(string name)
         {
-            return ConfigurationManager.AppSettings[name].ToString();
+            return CloudConfigurationManager.GetSetting(name);
         }
     }
 }
