@@ -3912,9 +3912,11 @@ select  case
             when count(1) > 0 then cast(1 as bit)
 			else cast(0 as bit)
         end 
-from    ResponsibilityDetail
-where   Object = @type 
-		and ObjectID = @id";
+from    ResponsibilityDetail R
+inner join Asset A on A.[Object] = @type and A.ObjectID = @id
+inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
+where R.IsVisible = 1 and ((R.Object = @type 
+		and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
 
             return Company.Query<bool>(sql, new { type, id }).First();
         }
@@ -3947,8 +3949,10 @@ SELECT  R.ResponsibilityTypeName,
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
 from    ResponsibilityDetail R
+        inner join Asset A on A.Object = @type and A.ObjectID = @id
+        inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
-where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id";
+where   R.IsVisible = 1 and ((R.Object = @type and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
