@@ -1619,7 +1619,13 @@ namespace d360.web.Controllers.Services
 
 
         #region Version Endpoints
-
+        /// <summary>
+        /// Returns the version information of the current custom api.
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="endpoint"></param>
+        /// <param name="version"></param>
+        /// <returns></returns>
         [HttpGet, Route("{service}/{endpoint}/{version}/version")]        
         public HttpResponseMessage GetEndpointVersion(string service, string endpoint, string version)
         {
@@ -1690,7 +1696,13 @@ namespace d360.web.Controllers.Services
         #endregion
 
         #region Health Endpoints
-
+        /// <summary>
+        /// Returns the Health, is used to check if the backend of the system is up / down
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="endpoint"></param>
+        /// <param name="version"></param>
+        /// <returns></returns>
         [AllowAnonymous, HttpGet, Route("{service}/{endpoint}/{version}/health")]
         public HttpResponseMessage GetEndpointHealth(string service, string endpoint, string version)
         {
