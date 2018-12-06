@@ -17,6 +17,8 @@ export class FormHelpers {
     }
 
     static integerValidator(f: AbstractControl) {
+        if (f.value == null || f.value == '')
+            return null;
         let valid = !isNaN(+f.value) && String(f.value) == Number(+f.value).toString() && +f.value % 1 == 0;
         if (valid) {
             return null;
