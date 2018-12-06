@@ -37,7 +37,7 @@ namespace igx.jobs.responsibilityruleprocessor
             try
             {
 #if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 65).ToList();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 2).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
