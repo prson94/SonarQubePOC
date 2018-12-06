@@ -2306,6 +2306,15 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+        private bool IsWriteActionDescriptionEnabled()
+        {
+            var setting = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID && i.SettingID == 61).SingleOrDefault();
+            if (setting == null)
+                return true;
+            else
+                return bool.Parse(setting.Value);
+             
+        }
 
         [Route("CompanySettings")]
         public JsonNetResult CompanySettings()
@@ -2325,6 +2334,7 @@ namespace d360.web.Controllers
             model.WorkflowCatchAllGroup = (settings.Any(i => i.SettingID == 58) ? Int32.Parse(settings.Single(i => i.SettingID == 58).Value) : 0);
             model.WorkflowDigestEmailEnabled = (settings.Any(i => i.SettingID == 59) ? bool.Parse(settings.Single(i => i.SettingID == 59).Value) : false);
             model.MaxDropdownItems = (settings.Any(i => i.SettingID == 60) ? Int32.Parse(settings.Single(i => i.SettingID == 60).Value) : 10000);
+            model.WriteActionDescription = (settings.Any(i => i.SettingID == 61) ? bool.Parse(settings.Single(i => i.SettingID == 61).Value) : true);
 
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2483,6 +2493,7 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 58, formModel.WorkflowCatchAllGroup.ToString());
                 updateCompanySetting(settings, 59, formModel.WorkflowDigestEmailEnabled.ToString().ToLower());
                 updateCompanySetting(settings, 60, Math.Abs(formModel.MaxDropdownItems).ToString());
+                updateCompanySetting(settings, 61, formModel.WriteActionDescription.ToString().ToLower());
 
                 #endregion
 
@@ -7257,6 +7268,7 @@ namespace d360.web.Controllers
                 var objectId = parseIntField(form, "ObjectID");
                 var objectType = parseTextField(form, "ObjectType");
                 var desc = parseTextField(form, "ProblemDesc");
+                int commentDetailID=0;
                 IssueCriticality criticality =  (IssueCriticality)Enum.Parse(typeof(IssueCriticality), parseTextField(form, "Criticality"));
 
                 var issueType = Company.GetById<IssueType>(issueTypeId);
@@ -7268,21 +7280,25 @@ namespace d360.web.Controllers
 
                 if (obj == null) throw new NoFormDataException("GetObject");
 
-                var relations = new List<CommentRelation>();                
-                var comment = new Comment();
+                if (this.IsWriteActionDescriptionEnabled()) {
+                    var relations = new List<CommentRelation>();                
+                    var comment = new Comment();
 
-                relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
+                    relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
 
-                comment.OwnerObjectType = SystemObjects.Resource.ToString();
-                comment.OwnerObjectID = Company.CurrentResourceID;
-                comment.CommentTypeID = CommentType.Issue;
-                comment.Body = desc ?? $"New {issueType.Name} Raised, criticality is {criticality.ToString()}.";
+                    comment.OwnerObjectType = SystemObjects.Resource.ToString();
+                    comment.OwnerObjectID = Company.CurrentResourceID;
+                    comment.CommentTypeID = CommentType.Issue;
+                    comment.Body = desc ?? $"New {issueType.Name} Raised, criticality is {criticality.ToString()}.";
                 
 
-                //add relation to current artifact
-                relations.Add(new CommentRelation { ObjectType = objectType, ObjectID = objectId, Date = DateTime.UtcNow });
+                    //add relation to current artifact
+                    relations.Add(new CommentRelation { ObjectType = objectType, ObjectID = objectId, Date = DateTime.UtcNow });
 
-                var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
+                    var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
+                        commentDetailID = dtl.ID;
+                }
+               
 
                 //insert issue into issue table
                 var model = new Issue
@@ -7297,7 +7313,7 @@ namespace d360.web.Controllers
                     ObjectID = objectId,
                     ObjectType = obj.Type,
                     ObjectTypeID = obj.TypeID,
-                    CommentID = dtl.ID
+                    CommentID = commentDetailID
                 };
 
 

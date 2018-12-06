@@ -8,5 +8,6 @@
 
 
     <include file="scripts/d3s-schema.xml"/>
-
+    <include file="scripts/GOV-5759.xml"/>
+	
 </databaseChangeLog>
