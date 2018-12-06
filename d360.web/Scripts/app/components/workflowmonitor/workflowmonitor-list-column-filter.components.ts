@@ -62,6 +62,7 @@ import { setTimeout } from 'timers';
 export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChanges {
     @Input() fields: GridFilterColumn[];
     @Input() filters: GridFilterExpression[] = [];
+    @Input() usePredefinedFilters: boolean = false;
     @Output() filtersChange = new EventEmitter();
     connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
     filterFieldType = FilterFieldType;
@@ -73,7 +74,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
 
     ngOnInit() {
-        if (!this.filters || this.filters.length == 0)
+        if (!this.filters || this.filters.length == 0 || this.usePredefinedFilters)
             this.addFilter();
     }
 
@@ -87,16 +88,16 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
                 });
             }
 
-            if (this.filters.length > 0) {
+            if (this.filters.length > 0 && !this.usePredefinedFilters) {
                 this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Field);
 
-                for (let filter of this.filters) {
-                    this.internalFilters.push({
-                        Type: FilterFieldType.Field,
-                        Data: filter,
-                        Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Field && x.Data.datafield == filter.field)[0],
-                    });
-                }
+                    for (let filter of this.filters) {
+                        this.internalFilters.push({
+                            Type: FilterFieldType.Field,
+                            Data: filter,
+                            Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Field && x.Data.datafield == filter.field)[0],
+                        });
+                    }
             }
         }
     }
