@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mandrill;
 using Mandrill.Model;
-using Mandrill;
-using d360.core;
+using Microsoft.Azure;
+using System.Collections.Generic;
 
 namespace d360.extensions.mail
 {
@@ -34,7 +30,7 @@ namespace d360.extensions.mail
                 }
             }
             
-            var api = new MandrillApi(constants.MANDRILL_API_KEY);
+            var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
             var result = api.Messages.SendTemplateAsync(message, templateID).Result;            
         }
 

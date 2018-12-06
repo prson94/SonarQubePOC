@@ -208,7 +208,7 @@ where		T.CompletedOn is null
             CoreFunction.AIFlush();
         }
 
-        public static void RunViaQueue([QueueTrigger("%IntegrationQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
+        public static void RunViaQueue([QueueTrigger("%IntegrationQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);

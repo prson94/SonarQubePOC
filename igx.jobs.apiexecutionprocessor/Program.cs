@@ -38,7 +38,7 @@ namespace igx.jobs.apiexecutionprocessor
     {
         const string functionName = "ApiExecution_Process";
 
-        public async static Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
+        public async static Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
             var info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 

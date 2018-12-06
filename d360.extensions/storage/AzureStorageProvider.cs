@@ -9,27 +9,23 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using System.Configuration;
 using System.IO;
 using d360.core;
+using Microsoft.Azure;
 
 namespace d360.extensions.storage
 {
     public class AzureStorageProvider : IStorageProvider
     {
+        public string StorageName { get { return CloudConfigurationManager.GetSetting("AzureStorageName"); } }
+        public string StorageKey { get { return CloudConfigurationManager.GetSetting("AzureStorageKey"); } }
+
         private StorageCredentials getCredentials()
         {
-            var acctName = constants.AZURE_STORAGE_NAME;
-            var keyValue = constants.AZURE_STORAGE_KEY;
-            return new StorageCredentials(acctName, keyValue);
+            return new StorageCredentials(StorageName, StorageKey);
         }
         
         CloudBlobContainer getContainer(string name)
         {
-            var acct = new CloudStorageAccount(
-                getCredentials(), 
-                new Uri(string.Format(@"https://{0}.blob.core.windows.net/", constants.AZURE_STORAGE_NAME)),
-                new Uri(string.Format(@"https://{0}.queue.core.windows.net/", constants.AZURE_STORAGE_NAME)),
-                new Uri(string.Format(@"https://{0}.table.core.windows.net/", constants.AZURE_STORAGE_NAME)),
-                new Uri(string.Format(@"https://{0}.blob.core.windows.net/", constants.AZURE_STORAGE_NAME))
-            );
+            var acct = new CloudStorageAccount(getCredentials(), StorageName, "core.windows.net", true);
             return acct.CreateCloudBlobClient().GetContainerReference(name);
         }
 

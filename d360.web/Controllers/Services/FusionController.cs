@@ -916,14 +916,14 @@ where A.FusionTypeID = @id", columns, joins);
 
             var import = JsonConvert.DeserializeObject<BulkFusionImport>(json);
 
-            var date = DateTime.UtcNow;
             var fileName = "";
             try
             {
-                var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
+                var folder = $"bulk-fusion-{Company.CurrentCompanyID}";
                 Storage.CreateFolder(folder);
-                fileName = string.Format("{0}.{1}.{2}.json", typeID, fusionID, date.ToString("yyyy-MM-dd_hh.mm.ss"));
+                fileName = $"{typeID}.{fusionID}.{DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss")}.json";
                 Storage.CreateFile(folder, fileName, json);
+
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 
                 Trace.TraceInformation("Enqueueing new fusion job on the queue.  Fusion ID: {0}, Company ID: {1}, Log:{2}",fusionID,Company.CurrentCompanyID, fileName);
@@ -953,7 +953,7 @@ where A.FusionTypeID = @id", columns, joins);
                         MachineName = host
                     };
 
-                    Company.Add<FusionAgentError>(error);
+                    Company.Add(error);
 
 
                     error.FusionAgentErrorItems = new List<FusionAgentErrorItem>();
@@ -970,7 +970,7 @@ where A.FusionTypeID = @id", columns, joins);
 
                     if(error.FusionAgentErrorItems.Count > 0)
                     {                         
-                        Company.Update<FusionAgentError>(error);
+                        Company.Update(error);
                     }
                 }
 
@@ -985,8 +985,6 @@ where A.FusionTypeID = @id", columns, joins);
 
             return Request.CreateResponse<string>(HttpStatusCode.OK, "Now parsing items");
         }
-
-
 
         [Route("{typeID:int}/configurations/{id:int}/template/{attributeTypeID:int}"), HttpPost]
         public async Task<IHttpActionResult> UploadFusionManualLoad(int typeID, int id, int attributeTypeID)
@@ -1181,11 +1179,9 @@ where A.FusionTypeID = @id", columns, joins);
 
                         var json = JsonConvert.SerializeObject(import);
 
-                        var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss");
-
-                        var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
+                        var folder = $"bulk-fusion-{Company.CurrentCompanyID}";
                         Storage.CreateFolder(folder);
-                        var fileName = $"{typeID}.{id}.{dateString}.json";
+                        var fileName = $"{typeID}.{id}.{DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss")}.json";
                         Storage.CreateFile(folder, fileName, json);
 
                         await Queue.CreateMessageAsync(Config.GetValue<string>("FusionLoadQueue"), new FusionProcessingData
@@ -1200,33 +1196,17 @@ where A.FusionTypeID = @id", columns, joins);
                 }
 
                 return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, "File Saved", "File uploaded and queued for processing."));
-                //return Request.CreateResponse(HttpStatusCode.OK, "file uploaded and queued for processing.");
             }
             catch (InvalidFieldException ex)
             {
-                //SendException(ex, new Dictionary<string, string>() {
-                //            { "FusionID", id.ToString() },
-                //            { "FusionAttributeTypeID", attributeTypeID.ToString() }
-                //});
                 return await Task.FromResult(errorMessageResponse(ex.StatusCode, "Invalid Field", ex.StatusDescription));
-                //return Request.CreateErrorResponse(ex.StatusCode, ex.StatusDescription);
             }
             catch (BaseException ex)
             {
-                //SendException(ex, new Dictionary<string, string>() {
-                //            { "FusionID", id.ToString() },
-                //            { "FusionAttributeTypeID", attributeTypeID.ToString() }
-                //});
-                //return Request.CreateResponse(ex.StatusCode, ex.StatusDescription);
                 return await Task.FromResult(errorMessageResponse(ex.StatusCode, "Govern Exception", ex.StatusDescription));
             }
             catch (Exception ex)
             {
-                // SendException(ex, new Dictionary<string, string>() {
-                //             { "FusionID", id.ToString() },
-                //             { "FusionAttributeTypeID", attributeTypeID.ToString() }
-                // });
-                //return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown Error", ex.Message));
             }
         }
@@ -1287,9 +1267,7 @@ where A.FusionTypeID = @id", columns, joins);
 
                 var date = DateTime.UtcNow;
 
-                var folder = string.Format("agent-log-{0}", Company.CurrentCompanyID);
-                Storage.CreateFolder(folder);
-                Storage.CreateFile(folder, string.Format("{0}.json", date.ToString("yyyy-MM-dd_hh.mm.ss")), json);
+                Storage.CreateFile("agent-log", $"{Company.CurrentCompanyID}/{date.ToString("yyyy-MM-dd_hh.mm.ss")}.json", json);
                 
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 

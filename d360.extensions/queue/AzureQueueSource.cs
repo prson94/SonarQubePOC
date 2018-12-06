@@ -17,11 +17,13 @@ namespace d360.extensions.queue
 {
     public class AzureQueueSource : IQueueSource
     {
+        public string QueueStorageName { get { return CloudConfigurationManager.GetSetting("QueueStorageName"); } }
+        public string QueueStorageKey { get { return CloudConfigurationManager.GetSetting("QueueStorageKey"); } }
+        public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
+
         private StorageCredentials getCredentials()
         {
-            var acctName = constants.AZURE_STORAGE_NAME;
-            var keyValue = constants.AZURE_STORAGE_KEY;
-            return new StorageCredentials(acctName, keyValue);
+            return new StorageCredentials(QueueStorageName, QueueStorageKey);
         }
 
         public void CreateMessage<T>(string queueName, T item)
@@ -41,7 +43,7 @@ namespace d360.extensions.queue
             try
             {
                 var queueClient = new CloudQueueClient(
-                    new Uri($"https://{constants.AZURE_STORAGE_NAME}.queue.core.windows.net/"),
+                    new Uri($"https://{QueueStorageName}.queue.core.windows.net/"),
                     getCredentials()
                 );
 
@@ -68,7 +70,7 @@ namespace d360.extensions.queue
             try
             {
                 var queueClient = new CloudQueueClient(
-                    new Uri($"https://{constants.AZURE_STORAGE_NAME}.queue.core.windows.net/"),
+                    new Uri($"https://{QueueStorageName}.queue.core.windows.net/"),
                     getCredentials()
                 );
 
@@ -101,7 +103,7 @@ namespace d360.extensions.queue
         {
             var bm = new BrokeredMessage(e);
             bm.Properties["topic"] = topicName;
-            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             client.Send(bm);
             client = null;
         }
@@ -116,7 +118,7 @@ namespace d360.extensions.queue
         {
             var bm = new BrokeredMessage(e);
             bm.Properties["topic"] = topicName;
-            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             return client.SendAsync(bm);
         }
 
@@ -143,7 +145,7 @@ namespace d360.extensions.queue
                 list.Add(bm);
             }
 
-            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             client.SendBatch(list);
             client = null;
         }
@@ -169,7 +171,7 @@ namespace d360.extensions.queue
                 list.Add(bm);
             }
 
-            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             await client.SendBatchAsync(list);
         }
     }

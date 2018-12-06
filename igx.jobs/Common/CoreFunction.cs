@@ -5,6 +5,7 @@ using d360.utils.company;
 using Dapper;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Azure;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
@@ -166,7 +167,7 @@ namespace igx.jobs
 
         public static string GetConfigValueByKey(string name)
         {
-            return ConfigurationManager.AppSettings[name].ToString();
+            return CloudConfigurationManager.GetSetting(name);
         }
 
         public static List<CompanyWithDatabaseServerSettings> GetCompaniesByCurrentSlot()

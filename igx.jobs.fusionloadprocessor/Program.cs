@@ -25,7 +25,7 @@ namespace igx.jobs.fusionloadprocessor
     {
         const string functionName = "Fusion_ProcessLoad";
 
-        public static async Task Run([QueueTrigger("%FusionLoadQueue%"), StorageAccount("MainStorageAccount")]string myQueueItem, TextWriter log)
+        public static async Task Run([QueueTrigger("%FusionLoadQueue%"), StorageAccount("QueueStorageAccount")]string myQueueItem, TextWriter log)
         {
             CoreFunction.AITrackJobStart(functionName);
 
