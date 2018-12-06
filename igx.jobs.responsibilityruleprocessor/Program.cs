@@ -30,14 +30,14 @@ namespace igx.jobs.responsibilityruleprocessor
 #if DEBUG
         const string timerSettings = "*/2 * * * * *";
 #else
-        const string timerSettings = "0 */10 * * * *";
+        const string timerSettings = "0 */3 * * * *";
 #endif
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
         {
             try
             {
 #if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 65).ToList();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 2).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
