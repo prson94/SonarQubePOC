@@ -2096,7 +2096,8 @@ where	R.SourceObject = 'FusionAttribute'
 
         public override int SaveChanges()
         {
-            int returnValue = 0;            
+            int returnValue = 0;
+            var fieldsToCheckForChanges = new List<Field>();
             var changedFields = new List<Field>();
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added))
@@ -2111,9 +2112,8 @@ where	R.SourceObject = 'FusionAttribute'
                 #endregion
             }
 
-            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added /*| EntityState.Unchanged*/ | EntityState.Modified | EntityState.Deleted))
-            {
-                
+            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added | EntityState.Modified | EntityState.Deleted))
+            {                
                 #region Business logic : IUpdatedMetadata
                 if (entry.Entity is IUpdatedMetadata)
                 {
@@ -2214,11 +2214,12 @@ where	R.SourceObject = 'FusionAttribute'
                         field.Value = sanitizer.Sanitize(field.Value);
                     }
 
-                    var existing = Fields.AsNoTracking().FirstOrDefault<Field>(f => f.FieldTypeID == field.FieldTypeID && f.ObjectID == field.ObjectID && f.ObjectType == field.ObjectType);
-                    if (existing != null)
+                    // Need to determine if this field value has changed if not we dont want to tell workflow
+                    // added items have not changed from the previous value so ignore.
+                    // please dont run a query for each modified field if there are 10 we are running 10 queries.  Do one query.
+                    if(entry.State != EntityState.Added)
                     {
-                        if (existing.Value != field.Value)
-                            changedFields.Add(field);
+                        fieldsToCheckForChanges.Add(field);                        
                     }
 
                 }
@@ -2698,6 +2699,39 @@ select @err";
                 .Select(p => p.Entity).ToList();
 
             #endregion
+
+            //check for changed field values before the new values are written tothe db
+            if (fieldsToCheckForChanges.Any())
+            {                
+                var fieldSql = "";
+
+                foreach (var item in fieldsToCheckForChanges)
+                {
+
+                    if (item.ObjectID > 0 && item.FieldTypeID > 0 && !string.IsNullOrEmpty(item.ObjectType))
+                    {
+                        if (!string.IsNullOrEmpty(fieldSql)) fieldSql += " or ";
+                        fieldSql += $"(f.ObjectID = {item.ObjectID} and f.[ObjectType] = '{item.ObjectType}' and f.FieldTypeID = {item.FieldTypeID})";
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(fieldSql))
+                {
+                    var sql = $"select f.ObjectID, f.ObjectType, f.Value, f.FieldTypeID from field f where {fieldSql}";
+
+                    var vals = Query<dynamic>(sql);
+
+                    foreach (var item in fieldsToCheckForChanges)
+                    {
+                        var value = vals.FirstOrDefault(x => x.ObjectID == item.ObjectID && x.ObjectType == item.ObjectType && x.FieldTypeID == item.FieldTypeID);
+
+                        if ((value != null) && (item.Value != (string)value.Value))
+                        {
+                            changedFields.Add(item);
+                        }
+                    }
+                }
+            }
 
             try
             {                
