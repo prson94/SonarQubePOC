@@ -121,7 +121,7 @@ namespace igx.jobs.fusionloadprocessor
 
             var storageProvider = new AzureStorageProvider();
 
-            var folderName = "bulk-fusion";
+            var folderName = string.Format("bulk-fusion-{0}", fusionData.CompanyID);
             //load json from azure
 
             var sw = Stopwatch.StartNew();
