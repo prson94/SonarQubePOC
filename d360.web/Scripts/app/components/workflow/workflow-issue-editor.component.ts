@@ -17,9 +17,7 @@ import { Resource } from '../../models/resource.model';
                 <div class="row">                    
                     <div class="col s12 l6">                        
                         <div class="FieldName">Action Type</div>
-                        <div>{{issue?.IssueTypeName}}</div>                        
-                        <div class="FieldName">Criticality</div>
-                        <div>{{issue?.CriticalityName}}</div>                        
+                        <div>{{issue?.IssueTypeName}}</div>                                             
                         <div class="FieldName">Item Name</div>
                         <div><d3s-preview-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID">{{issue.ObjectName}}</d3s-preview-tooltip></div>
                         <div class="FieldName">Requestor</div>

@@ -18,22 +18,22 @@ import { StringHelpers } from '../../static/string-helpers';
                            <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
                             <div *ngIf="!isLoading">
                                 <table style="width: 100%">
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
-                                                </td>
-                                                <td *ngIf="showExport" style="width:32px">
-                                                    <a style="font-size:1.1em" (click)="exportClick.emit()"><i class="fa fa-download"></i></a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+                                            </td>
+                                            <td *ngIf="showExport" style="width:32px">
+                                                <a style="font-size:1.1em" (click)="exportClick.emit()"><i class="fa fa-download"></i></a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>        
                         </div>
                     </div>   
                     <div class="row">
-                        <d3s-workflowmonitor-list-column-filter (exportToExcel)="exportToExcel.emit()" [fields]="filtercolumns" [(filters)]="columnFilters" (filtersChange)="columFilterChanged($event)" ></d3s-workflowmonitor-list-column-filter>
+                        <d3s-workflowmonitor-list-column-filter (exportToExcel)="exportToExcel.emit()" [fields]="filtercolumns" [usePredefinedFilters]="usePredefinedFilters" [(filters)]="columnFilters" (filtersChange)="columFilterChanged($event)" ></d3s-workflowmonitor-list-column-filter>
                     </div>
                 `,
     providers: [WorkflowService, WorkflowMonitorService],

@@ -303,8 +303,7 @@ namespace d360.model
                 UpdatedBy = CurrentResourceID,
                 UpdatedOn = DateTime.UtcNow,
                 IssueTypeID = orgIssue.IssueTypeID,
-                CommentID = orgIssue.CommentID,
-                Criticality = orgIssue.Criticality
+                CommentID = orgIssue.CommentID
             };
 
             Issues.Add(issue);
@@ -1865,7 +1864,7 @@ namespace d360.model
 
                     if (item != null)
                     {
-                        issueInfo = $"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{item.Name}</b>.  <br>Criticality Level: {issue.Criticality}";
+                        issueInfo = $"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{item.Name}</b>.";
                     }
 
                     var creator = GlobalReportingResources.Where(x => x.ResourceID == issue.CreatedBy).FirstOrDefault();
