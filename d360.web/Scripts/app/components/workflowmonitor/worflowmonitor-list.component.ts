@@ -126,7 +126,8 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
      }
 
     ngOnDestroy(): void {
-        this.subItems.unsubscribe();
+        if (this.subItems)
+            this.subItems.unsubscribe();
     }
 
     export() {
