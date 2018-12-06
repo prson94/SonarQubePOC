@@ -7,5 +7,5 @@
 
     <include file="scripts/d3s-schema.xml"/>
 	<include file="scripts/GOV-5832.xml"/>
-
+  <include file="scripts/GOV-6152-FusionTypeDefinitions.xml"/>
 </databaseChangeLog>
