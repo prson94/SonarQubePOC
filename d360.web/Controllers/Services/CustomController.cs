@@ -1622,9 +1622,9 @@ namespace d360.web.Controllers.Services
         /// <summary>
         /// Returns the version information of the current custom api.
         /// </summary>
-        /// <param name="service"></param>
-        /// <param name="endpoint"></param>
-        /// <param name="version"></param>
+        /// <param name="service">The URI segment that defines the service you are connecting to.</param>
+        /// <param name="endpoint">The URI segment that defines the service endpoint you are connecting to.</param>
+        /// <param name="version">The URI segment that defines the service endpoint version you are connecting to.</param>
         /// <returns></returns>
         [HttpGet, Route("{service}/{endpoint}/{version}/version")]        
         public HttpResponseMessage GetEndpointVersion(string service, string endpoint, string version)
@@ -1699,9 +1699,9 @@ namespace d360.web.Controllers.Services
         /// <summary>
         /// Returns the Health, is used to check if the backend of the system is up / down
         /// </summary>
-        /// <param name="service"></param>
-        /// <param name="endpoint"></param>
-        /// <param name="version"></param>
+        /// <param name="service">The URI segment that defines the service you are connecting to.</param>
+        /// <param name="endpoint">The URI segment that defines the service endpoint you are connecting to.</param>
+        /// <param name="version">The URI segment that defines the service endpoint version you are connecting to.</param>
         /// <returns></returns>
         [AllowAnonymous, HttpGet, Route("{service}/{endpoint}/{version}/health")]
         public HttpResponseMessage GetEndpointHealth(string service, string endpoint, string version)
