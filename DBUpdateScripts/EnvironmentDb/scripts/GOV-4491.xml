@@ -1,0 +1,129 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="gov-4491">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+--if there are no Issue records we don't need to run the conversion
+if exists (select 1 from Issue)
+begin
+	declare @refId int;
+
+	--create criticality reference list if it doesn't exist
+	if not exists (select 1 from ReferenceItemType where Name = 'Criticality' and CreatedBy = 0)
+	begin
+	
+		insert into ReferenceItemType (Name, DisplayFormat, Description, CreatedBy, UpdatedBy) 
+		values ('Criticality','{Code}','',0,0);
+	
+		select @refId = SCOPE_IDENTITY();
+
+		insert into ReferenceItem (ReferenceItemTypeID, Code, CreatedBy, UpdatedBy) values (@refId, 'Negligible', 0, 0);
+		insert into ReferenceItem (ReferenceItemTypeID, Code, CreatedBy, UpdatedBy) values (@refId, 'Low', 0, 0);
+		insert into ReferenceItem (ReferenceItemTypeID, Code, CreatedBy, UpdatedBy) values (@refId, 'Medium', 0, 0);
+		insert into ReferenceItem (ReferenceItemTypeID, Code, CreatedBy, UpdatedBy) values (@refId, 'High', 0, 0);
+		insert into ReferenceItem (ReferenceItemTypeID, Code, CreatedBy, UpdatedBy) values (@refId, 'Critical', 0, 0);
+
+	end
+	else 
+	begin
+		select @refId=ID from ReferenceItemType where Name = 'Criticality' and CreatedBy = 0; 
+	end
+	
+	--create field types
+	insert into FieldType (Name, FriendlyName, Type, Object, ObjectID, LookupObjectType, LookupObjectID, LookupDisplayFormat, IsRequired, UpdatedBy)
+	select 
+		'Criticality',
+		'Criticality',
+		'Lookup',
+		'IssueType',
+		I.ID as ObjectID,
+		'ReferenceItem',
+		@refId as LookupObjectID,
+		'{Code}',
+		1,
+		0
+	from IssueType I
+	where not exists (select 1 from FieldType where ObjectID = I.ID and Object = 'IssueType' and Name = 'Criticality')
+
+	--populate fields 
+	insert into Field (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue, UpdatedBy)
+	select 
+		'Issue',
+		I.ID,
+		FT.ID,
+		R.ID,
+		R.Code,
+		0
+	from Issue I
+	inner join FieldType FT on FT.Name = 'Criticality' and FT.Type = 'Lookup' and FT.Object = 'IssueType' and FT.ObjectID = I.IssueTypeID 
+		and FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = @refId
+	inner join ReferenceItem R on R.ReferenceItemTypeID = @refId 
+		and Code = case when I.Criticality = 0 then
+			'Negligible'
+		when I.Criticality = 1 then
+			'Low'
+		when I.Criticality = 2 then
+			'Medium'
+		when I.Criticality = 3 then
+			'High'
+		when I.Criticality = 4 then
+			'Critical'
+		end
+	where not exists (select 1 from Field where FieldTypeID = FT.ID and ObjectType = 'Issue' and ObjectID = I.ID)
+end
+
+--drop the column
+alter table issue drop constraint DF_Issue_Criticality;
+alter table Issue drop column Criticality;
+    </sql>
+    <rollback>
+--add the column back
+alter table Issue add Criticality int not null constraint DF_Issue_Criticality default 0;
+
+--update the value
+update I
+	set I.Criticality = case when F.FormattedValue = 'Negligible' then
+		0
+	when F.FormattedValue = 'Low' then
+		1
+	when F.FormattedValue = 'Medium' then
+		2
+	when F.FormattedValue = 'High' then
+		3
+	when F.FormattedValue = 'Criticality' then
+		4
+	end
+from Issue I
+	inner join ReferenceItemType R on R.Name = 'Criticality' and R.CreatedBy = 0
+	inner join FieldType FT on FT.Name = 'Criticality' and FT.Type = 'Lookup' and FT.Object = 'IssueType' 
+		and FT.ObjectID = I.IssueTypeID and FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = R.ID
+	inner join Field F on F.FieldTypeID = FT.ID and F.ObjectID = I.ID and F.ObjectType = 'Issue' and F.ObjectID = I.ID;
+
+--delete field values
+delete F
+from Field F
+inner join Issue I on I.ID = F.ObjectID  and F.ObjectType = 'Issue'
+inner join ReferenceItemType R on R.Name = 'Criticality' and R.CreatedBy = 0
+inner join FieldType FT on F.FieldTypeID = FT.ID and FT.Name = 'Criticality' and FT.Type = 'Lookup' and FT.Object = 'IssueType' 
+		and FT.ObjectID = I.IssueTypeID and FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = R.ID;
+
+--delete field types
+delete FT
+from FieldType FT
+inner join ReferenceItemType R on R.Name = 'Criticality' and R.CreatedBy = 0 and R.ID = FT.LookupObjectID
+where  FT.Name = 'Criticality' and FT.Type = 'Lookup' and FT.Object = 'IssueType' 
+	 and FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = R.ID;
+
+--delete ref list
+delete from ReferenceItemType where  Name = 'Criticality' and CreatedBy = 0;
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
