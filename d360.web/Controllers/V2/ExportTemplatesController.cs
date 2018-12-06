@@ -108,7 +108,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Get the all styles for a template
+        /// Get all styles for the specified template
         /// </summary>
         /// <param name="templateId">template Id</param>
         /// <returns></returns>
@@ -164,7 +164,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Update  style of a template
+        /// Update  style for a template
         /// </summary>
         /// <param name="id">style id</param>
         /// <param name="model">ArtifactTypeExportTemplateStyle</param>
@@ -207,7 +207,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Delete  style of a template
+        /// Deletes a Style based on the specified ID
         /// </summary>
         /// <param name="id">style id</param>
         /// <returns></returns>
