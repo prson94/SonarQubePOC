@@ -68,8 +68,6 @@ select		distinct
 			,IT.ID as IssueType
             ,IT.Name as IssueTypeName
 			,I.ID as IssueID
-			,I.Criticality as Criticality
-			,case when I.Criticality = 0 then 'Negligible' when I.Criticality = 1 then 'Low' when I.Criticality = 2 then 'Medium' when I.Criticality = 3 then 'High'  when I.Criticality = 4 then 'Critical' else 'N/A' end as Criticality
 			,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
 	        ,case 
                 when wi.CompletedOn is not null then 'Closed'
@@ -136,7 +134,6 @@ order by wi.StartedOn desc",
             document.SetCellValue(1, ++colIndex, "Status");
             document.SetCellValue(1, ++colIndex, "Closing Notes");
             document.SetCellValue(1, ++colIndex, "Action Type");
-            document.SetCellValue(1, ++colIndex, "Criticality");
             document.SetCellValue(1, ++colIndex, "Ellapsed Days");
 
             #endregion
@@ -156,7 +153,6 @@ order by wi.StartedOn desc",
                 document.SetCellValue(rowIndex, ++dataColIndex, row.ActivityName ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Notes ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.IssueTypeName ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Criticality ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, (row.EllapsedDays ?? "").ToString());
             }
 
@@ -222,8 +218,6 @@ select		distinct
 			,IT.ID as IssueType
             ,IT.Name as IssueTypeName
 			,I.ID as IssueID
-			--,I.Criticality as Criticality
-			,case when I.Criticality = 0 then 'Negligible' when I.Criticality = 1 then 'Low' when I.Criticality = 2 then 'Medium' when I.Criticality = 3 then 'High'  when I.Criticality = 4 then 'Critical' else 'N/A' end as Criticality
 			,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
 	        ,case 
                 when wi.CompletedOn is not null then 'Closed'
@@ -2764,7 +2758,6 @@ order by wi.StartedOn desc";
 				        I.ID,
 				        S.ID as IssueID,
 				        T.ID as IssueTypeID,
-				        S.Criticality,
 				        T.[Name] as IssueName,
 				        D.DisplayValue as ObjectName,
 			            TA.[Name] as ObjectTypeName,

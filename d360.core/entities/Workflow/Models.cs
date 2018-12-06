@@ -234,7 +234,6 @@ namespace d360.core.entities.Workflow
         public int ID { get; set; }
         public int IssueID { get; set; }
         public int IssueTypeID { get; set; }
-        public IssueCriticality Criticality { get; set; }
         public string IssueName { get; set; }
         public string ObjectName { get; set; }
         public string ObjectTypeName { get; set; }

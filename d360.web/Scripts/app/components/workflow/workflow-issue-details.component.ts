@@ -11,10 +11,9 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <header>Open Actions<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="issues" [scrollable]="true" scrollWidth="100%" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ActivityName','Criticality','IssueTypeName','Body','Name','RaisedBy','DateStarted','EllapsedDays']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                    <p-table #dt [value]="issues" [scrollable]="true" scrollWidth="100%" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ActivityName','IssueTypeName','Body','Name','RaisedBy','DateStarted','EllapsedDays']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
                         <ng-template pTemplate="colgroup" let-columns>
                             <colgroup>
-                                <col style="width:100px">
                                 <col style="width:100px">
                                 <col style="width:200px">
                                 <col style="width:300px">
@@ -31,10 +30,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <th [pSortableColumn]="'ActivityName'" style="width: 100px">
                                     Status
                                     <d3s-sortIcon [field]="'ActivityName'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'Criticality'" style="width: 100px">
-                                    Criticality
-                                    <d3s-sortIcon [field]="'Criticality'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'IssueTypeName'" style="width: 200px">
                                     Type
@@ -59,7 +54,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </tr>
                             <tr [hidden]="showSimpleFilter">
                                 <th><d3s-column-filter [field]="'ActivityName'" [datatype]="'text'"></d3s-column-filter></th>
-                                <th><d3s-column-filter [field]="'Criticality'" [datatype]="'text'"></d3s-column-filter></th>
                                 <th><d3s-column-filter [field]="'IssueTypeName'" [datatype]="'text'"></d3s-column-filter></th>
                                 <th><d3s-column-filter [field]="'Body'" [datatype]="'text'"></d3s-column-filter></th>
                                 <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
@@ -76,7 +70,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     <a (click)="openIssue(item)" *ngIf="item.WorkflowItemID > 0">{{item.ActivityName}}</a>
                                     <span *ngIf="!item.WorkflowItemID || item.WorkflowItemID <= 0">{{item.ActivityName}}</span>
                                 </td>
-                                <td>{{item.Criticality}}</td>
                                 <td>{{item.IssueTypeName}}</td>
                                 <td>
                                     <span [innerHtml]="item?.Body"></span>

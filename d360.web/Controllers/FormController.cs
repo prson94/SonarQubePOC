@@ -7239,10 +7239,7 @@ namespace d360.web.Controllers
             if (type == null) throw new NotFoundException("issue type");
 
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
-
-            var names = Enum.GetNames(typeof(IssueCriticality)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
-
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Criticality", Name = "Criticality", Required = true, FieldType = DataType.Lookup.ToString(), Items = names });            
+         
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -7257,7 +7254,6 @@ namespace d360.web.Controllers
                 var objectId = parseIntField(form, "ObjectID");
                 var objectType = parseTextField(form, "ObjectType");
                 var desc = parseTextField(form, "ProblemDesc");
-                IssueCriticality criticality =  (IssueCriticality)Enum.Parse(typeof(IssueCriticality), parseTextField(form, "Criticality"));
 
                 var issueType = Company.GetById<IssueType>(issueTypeId);
 
@@ -7276,7 +7272,7 @@ namespace d360.web.Controllers
                 comment.OwnerObjectType = SystemObjects.Resource.ToString();
                 comment.OwnerObjectID = Company.CurrentResourceID;
                 comment.CommentTypeID = CommentType.Issue;
-                comment.Body = desc ?? $"New {issueType.Name} Raised, criticality is {criticality.ToString()}.";
+                comment.Body = desc ?? $"New {issueType.Name} Raised.";
                 
 
                 //add relation to current artifact
@@ -7292,7 +7288,6 @@ namespace d360.web.Controllers
                     UpdatedBy = Company.CurrentResourceID,
                     UpdatedOn = DateTime.UtcNow,
                     IssueTypeID = issueTypeId,
-                    Criticality = criticality,
                     Object = objectType,
                     ObjectID = objectId,
                     ObjectType = obj.Type,

@@ -401,7 +401,6 @@ where	A.AssetTypeClass = 1";
                                     ,i.[CreatedBy]
                                     ,i.[UpdatedOn]
                                     ,i.[UpdatedBy]
-                                    ,i.[Criticality]
                                     ,ATT.ObjectID as AssetTypeID
 		                            ,ATT.Name as AssetTypeName
                                     ,i.ObjectType as [Type]

@@ -40,9 +40,6 @@ namespace d360.core.entities
         [DataMember]
         public int? CommentID { get; set; }
 
-        [DataMember]
-        public IssueCriticality Criticality { get; set; }
-
         public EventObjectInfo GetEventObjectInfo()
         {
             return new EventObjectInfo
