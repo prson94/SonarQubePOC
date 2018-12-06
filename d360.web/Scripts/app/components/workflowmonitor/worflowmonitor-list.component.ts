@@ -174,6 +174,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
             this.items = [];
             this.totalRecords = 0;
             this.selectionChange.emit(null);
+            this.isLoading = false;
             return;
         }
 
