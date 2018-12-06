@@ -1916,18 +1916,18 @@
             <summary>
             Returns the version information of the current custom api.
             </summary>
-            <param name="service"></param>
-            <param name="endpoint"></param>
-            <param name="version"></param>
+            <param name="service">The URI segment that defines the service you are connecting to.</param>
+            <param name="endpoint">The URI segment that defines the service endpoint you are connecting to.</param>
+            <param name="version">The URI segment that defines the service endpoint version you are connecting to.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.Services.CustomController.GetEndpointHealth(System.String,System.String,System.String)">
             <summary>
             Returns the Health, is used to check if the backend of the system is up / down
             </summary>
-            <param name="service"></param>
-            <param name="endpoint"></param>
-            <param name="version"></param>
+            <param name="service">The URI segment that defines the service you are connecting to.</param>
+            <param name="endpoint">The URI segment that defines the service endpoint you are connecting to.</param>
+            <param name="version">The URI segment that defines the service endpoint version you are connecting to.</param>
             <returns></returns>
         </member>
         <member name="T:d360.web.Controllers.Services.ReferenceController">
@@ -2646,7 +2646,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.ExportTemplatesController.GetStyles(System.Int32)">
             <summary>
-            Get the all styles for a template
+            Get all styles for the specified template
             </summary>
             <param name="templateId">template Id</param>
             <returns></returns>
@@ -2660,7 +2660,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.ExportTemplatesController.UpdateTemplateStyle(System.Int32,d360.core.entities.ArtifactTypeExportTemplateStyle)">
             <summary>
-            Update  style of a template
+            Update  style for a template
             </summary>
             <param name="id">style id</param>
             <param name="model">ArtifactTypeExportTemplateStyle</param>
@@ -2668,7 +2668,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.ExportTemplatesController.DeleteStyle(System.Int32)">
             <summary>
-            Delete  style of a template
+            Deletes a Style based on the specified ID
             </summary>
             <param name="id">style id</param>
             <returns></returns>
