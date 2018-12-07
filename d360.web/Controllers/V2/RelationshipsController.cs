@@ -85,7 +85,9 @@ namespace d360.web.Controllers.V2
             try
             {
                 var types = await Company.QueryAsync<IntersectTypeApiViewModel>(@"
-select	I.Uid,
+select	I.ID,
+        I.Uid,
+        coalesce(I.IsSystem, 0) as IsSystem,
 		P.Name as PredicateName,
 		P.Inverse as PredicateInverse,
 		P.[Type] as PredicateTypeID,
@@ -107,10 +109,11 @@ select	I.Uid,
 		end as ObjectTypeName
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
-		left join AssetType S on S.uid = I.SubjectUid
-		left join AssetType O on O.uid = I.ObjectUid
+		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
+		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
 where	coalesce(S.uid, I.SubjectUid) is not null
-		and coalesce(O.uid, I.ObjectUid) is not null");
+		and coalesce(O.uid, I.ObjectUid) is not null
+        and I.State = 1");
 
                 return Request.CreateResponse(HttpStatusCode.OK, types);
             }

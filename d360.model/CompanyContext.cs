@@ -1522,72 +1522,38 @@ where	R.SourceObject = 'FusionAttribute'
 				I.Name,
 				I.Type
 	FROM		(
-				SELECT	ID,
-						'Artifacts :: ' + Name AS Name,
-						'ArtifactType' AS Type
-				FROM	ArtifactType
-				UNION
-				SELECT	A.ID,
-						'Fusion Attributes :: ' + A.TextPath AS Name,
-						'FusionAttributeType' AS Type
-				FROM	FusionAttributeType A
-						INNER JOIN FusionType T ON A.FusionTypeID = T.ID
-				UNION
-                SELECT	A.ID,
-						'Fusion Query Attributes :: ' +T.Name + '::' + A.Name,
-						'FusionQueryAttributeType' AS Type
-				FROM	FusionQueryAttributeType A
-						INNER JOIN Fusion T ON A.FusionID = T.ID
+                select	T.ObjectID as ID,
+		                case T.Object
+			                when 'ArtifactType' then 'Glossary'
+			                when 'FusionAttributeType' then 'Fusion Attribute'
+			                when 'FusionQueryAttributeType' then 'Fusion Query'
+			                when 'GroupType' then 'Security'
+			                when 'PolicyType' then 'Policy'
+			                when 'ReferenceItemType' then 'Reference'
+			                when 'ResourceType' then 'Security'
+			                when 'RuleType' then 'Rule'
+			                when 'TaxonomyType' then 'Model'
+		                end + ' :: ' + coalesce(P.[Path], T.Name) as Name,
+		                T.Object as Type
+                from	AssetType T
+		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
+                where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType')
                 UNION
-				SELECT	1 as ID,
-						'Group' as Name,
-						'GroupType' as Type
-				UNION
-				SELECT	ID,
-						'Map :: ' + Name AS Name,
-						'MapType' AS Type
-				FROM	MapType
-				UNION
-                SELECT	ID,
-						'Models :: ' + Name AS Name,
-						'TaxonomyType' AS Type
-				FROM	TaxonomyType
-				UNION
-				SELECT	ID,
-						'Policies :: ' + Name AS Name,
-						'PolicyType' AS Type
-				FROM	PolicyType
-				UNION
                 SELECT	CAST(IT.ID as int) ID,
-						'Relationships :: ' + ITypeName.Name AS Name,
-						'IntersectType' AS Type
-				FROM	IntersectType IT    
-				        cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
-				UNION
-				SELECT	1 as ID,
-						'Resource' as Name,
-						'ResourceType' as Type
-				UNION
-				SELECT	ID,
-						'Rules :: ' + Name AS Name,
-						'RuleType' AS Type
-				FROM	RuleType
+		                'Relationship :: ' + ITypeName.Name AS Name,
+		                'IntersectType' AS Type
+                FROM	IntersectType IT    
+		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
                 UNION
-				SELECT	ID,
-						'Rule Implementation :: ' + DisplayValue as Name,
-						'RuleImplementationType' as Type
+                SELECT	ID,
+		                'Rule Implementation :: ' + DisplayValue as Name,
+		                'RuleImplementationType' as Type
                 FROM    [Rule]
-				UNION
-				SELECT	ID,
-						'Reference :: Item :: ' + Name AS Name,
-						'ReferenceItemType' AS Type
-				FROM	ReferenceItemType
                 UNION
-				SELECT	0 as ID,
-						'Reference :: List' as Name,
-						'ReferenceItemType' as Type
-				 				
-) I";
+                SELECT	0 as ID,
+		                'Reference :: List' as Name,
+		                'ReferenceItemType' as Type				 				
+                ) I";
 
             if (subject.HasValue && subjectID.HasValue)
             {

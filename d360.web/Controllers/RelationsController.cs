@@ -68,41 +68,41 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = list, Formatting = Formatting.None };
         }
 
-        [Route("_IntersectTypes")]
-        public JsonNetResult _IntersectTypes()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                return null;
-            }
+//        [Route("_IntersectTypes")]
+//        public JsonNetResult _IntersectTypes()
+//        {
+//            if (!Company.CurrentResourceIsAdmin)
+//            {
+//                Response.StatusCode = (int)HttpStatusCode.Forbidden;
+//                return null;
+//            }
 
-            var systemTypes =  PredicateType.DataLineage.GetAsList()
-                .Where(i => !i.AllowIntersectTypeAssignment || !i.AllowEditFromRelationshipEditor)
-                .Select(i => (int)i.ID)
-                .ToList();
+//            var systemTypes =  PredicateType.DataLineage.GetAsList()
+//                .Where(i => !i.AllowIntersectTypeAssignment || !i.AllowEditFromRelationshipEditor)
+//                .Select(i => (int)i.ID)
+//                .ToList();
 
-            var models = Company.Query<dynamic>(
-$@"select    ID,
-			Subject,
-			SubjectID,
-			SubjectName,
-            PredicateID,
-            PredicateName,
-			Object,
-			ObjectID,
-			ObjectName,
-            PredicateType,
-            cast(0 as bit) as IsSystem
-from		IntersectTypeDetail D
-where       IsSystem = 0
-order by	SubjectName,
-			ObjectName").ToList();
+//            var models = Company.Query<dynamic>(
+//$@"select    ID,
+//			Subject,
+//			SubjectID,
+//			SubjectName,
+//            PredicateID,
+//            PredicateName,
+//			Object,
+//			ObjectID,
+//			ObjectName,
+//            PredicateType,
+//            cast(0 as bit) as IsSystem
+//from		IntersectTypeDetail D
+//where       IsSystem = 0
+//order by	SubjectName,
+//			ObjectName").ToList();
 
-            models.ForEach(m => m.IsSystem = m.PredicateType == null || systemTypes.Contains(m.PredicateType));
+//            models.ForEach(m => m.IsSystem = m.PredicateType == null || systemTypes.Contains(m.PredicateType));
 
-            return new JsonNetResult { Data = models, Formatting = Formatting.None };
-        }
+//            return new JsonNetResult { Data = models, Formatting = Formatting.None };
+//        }
 
         private FileResult IntersectTypeItemsExcelWithCustomColumns(int id,IEnumerable<string> customColumns )
         {

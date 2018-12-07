@@ -85,7 +85,13 @@ namespace d360.core.entities
     public class IntersectTypeApiViewModel : BaseObject
     {
         [DataMember]
-        public Guid uid { get; set; }
+        public int ID { get; set; }
+
+        [DataMember]
+        public bool IsSystem { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
 
         [DataMember]
         public string PredicateName { get; set; }
