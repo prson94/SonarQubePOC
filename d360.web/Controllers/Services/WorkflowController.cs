@@ -2081,6 +2081,8 @@ order by wi.StartedOn desc";
 	                            inner join workflow.[version] v on t.id = v.typeid
 	                            inner join workflow.item i on i.versionid = v.id
                                 inner join issue s on s.id = i.objectid and i.object = 'Issue'
+                                inner join asset a on a.object = s.object and a.objectid = s.objectid
+                                inner join assettype tt on tt.id = a.assettypeid
 	                            where t.state <> 3 and s.object = @filteredObject and s.objectid = @filteredObjectId))";
             }
             var sql = string.Format(QueryConstants.WorkflowTypeList, typeSql, issueSql);
