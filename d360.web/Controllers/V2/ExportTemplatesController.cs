@@ -16,9 +16,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Drawing;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/exporttemplates"), Authorize
@@ -42,7 +44,9 @@ namespace d360.web.Controllers.V2
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<ArtifactTypeExportTemplate>))
+            SwaggerResponse(HttpStatusCode.OK, "", 
+            
+            typeof(List<ArtifactTypeExportTemplate>))
         ]
         public async Task<IEnumerable<dynamic>> Get()
         {
