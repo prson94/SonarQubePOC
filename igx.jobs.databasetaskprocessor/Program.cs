@@ -27,6 +27,9 @@ namespace igx.jobs.databasetaskprocessor
         {
             var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
             var host = new JobHost(config);
             host.RunAndBlock();
         }
@@ -74,9 +77,6 @@ namespace igx.jobs.databasetaskprocessor
             {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-#if DEBUG
-                companies = companies.Where(x => x.CompanyID == 4).ToList();
-#endif
 
                 companies.Shuffle(); //Randomize
 

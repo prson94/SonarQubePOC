@@ -12,6 +12,9 @@ namespace igx.jobs.fusionruleprocessor
         {
             var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
             var host = new JobHost(config);
             host.RunAndBlock();
         }
