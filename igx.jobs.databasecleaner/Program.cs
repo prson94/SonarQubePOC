@@ -16,6 +16,9 @@ namespace igx.jobs.databasecleaner
         static void Main()
         {
             var config = CoreFunction.GetJobHostConfiguration();
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
             config.UseTimers();
             var host = new JobHost(config);
             host.RunAndBlock();

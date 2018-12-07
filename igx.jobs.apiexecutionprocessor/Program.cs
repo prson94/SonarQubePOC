@@ -29,6 +29,9 @@ namespace igx.jobs.apiexecutionprocessor
         static void Main()
         {
             var config = CoreFunction.GetJobHostConfiguration();
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
             var host = new JobHost(config);
             host.RunAndBlock();
         }

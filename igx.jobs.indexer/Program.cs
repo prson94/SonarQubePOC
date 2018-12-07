@@ -22,6 +22,10 @@ namespace igx.jobs.indexer
             var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
 
+#if DEBUG
+            config.UseDevelopmentSettings();
+ #endif
+
             var host = new JobHost(config);
             host.RunAndBlock();
         }
@@ -52,11 +56,6 @@ namespace igx.jobs.indexer
             {
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
-                
-#if DEBUG
-                companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
-                companies = companies.Where(x => x.CompanyID == 4).ToList();
-#endif
 
                 companies.ForEach(c =>
                 {

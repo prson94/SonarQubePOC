@@ -36,6 +36,9 @@ namespace igx.jobs
             config.UseTimers();
             config.Queues.BatchSize = 4;
             config.Queues.VisibilityTimeout = TimeSpan.FromDays(4);
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
             var host = new JobHost(config);
             host.RunAndBlock();
         }
