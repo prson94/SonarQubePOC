@@ -751,7 +751,7 @@ order by wi.StartedOn desc";
 
                     if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
-                    var itemSql = "select i.Name as Text, i.Object + '|' + cast(i.ObjectID as varchar) as Value from AssetType i where i.object = @objectType and i.objectid = @objectTypeId order by 1";
+                    var itemSql = "select A.DisplayValue as [Text], A.Object + '|' + cast(A.ObjectID as varchar) as [Value] from AssetDetail A where A.Type = @objectType and A.TypeID = @objectTypeId order by 1";
                                         
                     item.Values = new List<System.Web.Mvc.SelectListItem>();
 
