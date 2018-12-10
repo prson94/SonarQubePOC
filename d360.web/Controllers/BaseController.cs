@@ -1511,7 +1511,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             columnName = "Name";
                         }
                     }
-                    sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");                    
+
+                        sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");
                 }
                 else if (field.Type == DataType.FieldFromRelationship.ToString())
                 {
@@ -1526,7 +1527,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     }
                     else
                     {
-                        sb.Append($"(Field{field.ID}_T.FormattedValue like @simpleFilter + '%')");
+                        if (!string.IsNullOrEmpty(field.DefaultFormattedValue))
+                            sb.Append($"(coalesce(Field{field.ID}_T.FormattedValue, '{field.DefaultFormattedValue}') like @simpleFilter + '%')");
+                        else
+                            sb.Append($"(Field{field.ID}_T.FormattedValue like @simpleFilter + '%')");
                     }
                     
                 }
