@@ -116,6 +116,12 @@ namespace d360.core.entities
         [DataMember]
         public Guid SubjectUid { get; set; }
 
+        [DataMember]
+        public string Subject { get; set; }
+
+        [DataMember]
+        public int SubjectID { get; set; }
+
         AssetTypeClass _SubjectClassID;
         public AssetTypeClass SubjectClassID
         {
@@ -135,6 +141,12 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid ObjectUid { get; set; }
+
+        [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
+        public int ObjectID { get; set; }
 
         AssetTypeClass _ObjectClassID;
         public AssetTypeClass ObjectClassID

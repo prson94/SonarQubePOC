@@ -54,7 +54,9 @@ import { BaseComponent } from '../../shared/base.component';
                                     <td>
                                         <span>{{item?.SubjectTypeName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.SubjectClass.Name)}})</span></span>
                                     </td>
-                                    <td>{{item.PredicateName}} / {{item.PredicateInverse}}</td>
+                                    <td>
+                                        <span *ngIf="item.PredicateName && item.PredicateInverse">{{item.PredicateName}} / {{item.PredicateInverse}}</span>
+                                    </td>
                                     <td>
                                         <span>{{item?.ObjectTypeName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.ObjectClass.Name)}})</span></span>
                                     </td>

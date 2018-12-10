@@ -428,6 +428,44 @@ select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name ").ToList
             return list;
         }
 
+        public Task<IEnumerable<IntersectTypeApiViewModel>> GetActiveIntersectTypes()
+        {
+            return QueryAsync<IntersectTypeApiViewModel>(@"
+select	I.ID,
+        I.Uid,
+        coalesce(I.IsSystem, 0) as IsSystem,
+		P.Name as PredicateName,
+		P.Inverse as PredicateInverse,
+		P.[Type] as PredicateTypeID,
+		I.Subject,
+		I.SubjectID,
+		I.SubjectUid as SubjectUid,
+		coalesce(S.Class, 0) as SubjectClassID,
+		case 
+			when I.SubjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
+			when I.SubjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
+			when I.SubjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
+			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
+			else S.Name 
+		end as SubjectTypeName,
+		I.Object,
+		I.ObjectID,
+		I.ObjectUid,
+		coalesce(O.Class, 0) as ObjectClassID,
+		case 
+			when I.ObjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
+			when I.ObjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
+			when I.ObjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
+			else O.Name 
+		end as ObjectTypeName
+from	IntersectType I
+		left join [Predicate] P on P.ID = I.PredicateID
+		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
+		left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
+		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
+where	I.State = 1");
+        }
+
         public List<AllocationPossibility> GetAllocationOptions()
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
