@@ -25,15 +25,15 @@ import { BaseComponent } from '../../shared/base.component';
                                     {{column.text}}
                                     <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
                                 </th>
-                                <th *ngIf="showEditButton" style="width: 40px"></th>
-                                <th *ngIf="showDeleteButton" style="width: 40px"></th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
                                 <th *ngFor="let column of columns">
                                     <d3s-column-filter [field]="column.datafield" [datatype]="'text'"></d3s-column-filter>
                                 </th>
-                                <th *ngIf="showEditButton"></th>
-                                <th *ngIf="showDeleteButton"></th>
+                                <th></th>
+                                <th></th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
@@ -41,13 +41,13 @@ import { BaseComponent } from '../../shared/base.component';
                                 <td *ngFor="let column of columns">
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
                                 </td>
-                                <td *ngIf="showEditButton">
-                                    <div class="RowTools">
+                                <td>
+                                    <div class="RowTools" *ngIf="showEditButton || item.P_CanEdit">
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
                                     </div>
                                 </td>
-                                <td *ngIf="showDeleteButton">
-                                    <div class="RowTools">
+                                <td>
+                                    <div class="RowTools" *ngIf="showDeleteButton || item.P_CanDelete">
                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
                                     </div>
                                 </td>
