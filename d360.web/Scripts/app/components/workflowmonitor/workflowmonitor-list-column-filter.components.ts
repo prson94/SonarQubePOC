@@ -22,7 +22,7 @@ import { setTimeout } from 'timers';
                         <div class="col s2 FieldName" style="padding-left: 0px">Filter:</div>
                         <div class="col s4" style="padding-right: 0px">
                             <select [name]="'FilterField_' + index" required [ngModel]="filter.Field" (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">
-                               <option  [value]=""></option>
+                               <option [value]=""></option>
                                 <option *ngFor="let p of availableFilters" [ngValue]="p">{{p.Name}}</option>
                             </select>
                         </div>
@@ -62,7 +62,6 @@ import { setTimeout } from 'timers';
 export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChanges {
     @Input() fields: GridFilterColumn[];
     @Input() filters: GridFilterExpression[] = [];
-    @Input() usePredefinedFilters: boolean = false;
     @Output() filtersChange = new EventEmitter();
     connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
     filterFieldType = FilterFieldType;
@@ -74,7 +73,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
 
     ngOnInit() {
-        if (!this.filters || this.filters.length == 0 || this.usePredefinedFilters)
+        if (!this.filters || this.filters.length == 0)
             this.addFilter();
     }
 
@@ -88,7 +87,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
                 });
             }
 
-            if (this.filters.length > 0 && !this.usePredefinedFilters) {
+            if (this.filters.length > 0) {
                 this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Field);
 
                     for (let filter of this.filters) {
