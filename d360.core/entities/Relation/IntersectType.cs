@@ -85,7 +85,13 @@ namespace d360.core.entities
     public class IntersectTypeApiViewModel : BaseObject
     {
         [DataMember]
-        public Guid uid { get; set; }
+        public int ID { get; set; }
+
+        [DataMember]
+        public bool IsSystem { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
 
         [DataMember]
         public string PredicateName { get; set; }
@@ -110,6 +116,12 @@ namespace d360.core.entities
         [DataMember]
         public Guid SubjectUid { get; set; }
 
+        [DataMember]
+        public string Subject { get; set; }
+
+        [DataMember]
+        public int SubjectID { get; set; }
+
         AssetTypeClass _SubjectClassID;
         public AssetTypeClass SubjectClassID
         {
@@ -129,6 +141,12 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid ObjectUid { get; set; }
+
+        [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
+        public int ObjectID { get; set; }
 
         AssetTypeClass _ObjectClassID;
         public AssetTypeClass ObjectClassID

@@ -22,17 +22,17 @@ import { BaseComponent } from '../../shared/base.component';
                                         ID
                                         <d3s-sortIcon [field]="'ID'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'SubjectName'">
+                                    <th [pSortableColumn]="'SubjectTypeName'">
                                         Subject
-                                        <d3s-sortIcon [field]="'SubjectName'"></d3s-sortIcon>
+                                        <d3s-sortIcon [field]="'SubjectTypeName'"></d3s-sortIcon>
                                     </th>
                                     <th [pSortableColumn]="'PredicateName'">
                                         Predicate
                                         <d3s-sortIcon [field]="'PredicateName'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'ObjectName'">
+                                    <th [pSortableColumn]="'ObjectTypeName'">
                                         Object
-                                        <d3s-sortIcon [field]="'ObjectName'"></d3s-sortIcon>
+                                        <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
                                     </th>
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
@@ -40,9 +40,9 @@ import { BaseComponent } from '../../shared/base.component';
                                 </tr>
                                 <tr [hidden]="showSimpleFilter">
                                     <th><d3s-column-filter [field]="'ID'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'SubjectName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'SubjectTypeName'" [datatype]="'text'"></d3s-column-filter></th>
                                     <th><d3s-column-filter [field]="'PredicateName'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'ObjectTypeName'" [datatype]="'text'"></d3s-column-filter></th>
                                     <th></th>
                                     <th></th>
                                     <th></th>
@@ -52,11 +52,13 @@ import { BaseComponent } from '../../shared/base.component';
                                 <tr (dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;" [pSelectableRow]="item">
                                     <td>{{item.ID}}</td>
                                     <td>
-                                        <span>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></span>
+                                        <span>{{item?.SubjectTypeName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.SubjectClass.Name)}})</span></span>
                                     </td>
-                                    <td>{{item.PredicateName}}</td>
                                     <td>
-                                        <span>{{item?.ObjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Object)}})</span></span>
+                                        <span *ngIf="item.PredicateName && item.PredicateInverse">{{item.PredicateName}} / {{item.PredicateInverse}}</span>
+                                    </td>
+                                    <td>
+                                        <span>{{item?.ObjectTypeName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.ObjectClass.Name)}})</span></span>
                                     </td>
                                     <td>
                                         <div class="RowTools">
@@ -85,10 +87,10 @@ import { BaseComponent } from '../../shared/base.component';
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
                     [method]="'callback'"
-                    [prompt]="'Are you sure you want to delete the relationship [' + [selected?.SubjectName] + ' / ' + [selected?.ObjectName]  + ']?'"                                         
+                    [prompt]="'Are you sure you want to delete the relationship [' + [selected?.SubjectTypeName] + ' / ' + [selected?.ObjectTypeName]  + ']?'"
                     (onCancel)="showDelete=false;"
                 ></d3s-delete-form>  
-                <d3s-admin-relationships-editor *ngIf="showEditor" [relationshipID]="selected?.ID" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>       
+                <d3s-admin-relationships-editor *ngIf="showEditor" [relationshipID]="selected?.ID" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>
             `    
 })
 
@@ -125,8 +127,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     private filterResults() {
         if (this.filterToName && this.filterToName.length > 0) {
-            var search = this.filterToName.toLowerCase();            
-            this.relationships = this.relationships.filter(item => item.Object && item.Object.toLowerCase().includes(search) || item.Subject && item.Subject.toLowerCase().includes(search) || item.ObjectName && item.ObjectName.toLowerCase().includes(search) || item.SubjectName && item.SubjectName.toLowerCase().includes(search));
+            var search = this.filterToName.toLowerCase();
+            this.relationships = this.relationships.filter(item => item.Object && item.Object.toLowerCase().includes(search) || item.Subject && item.Subject.toLowerCase().includes(search) || item.ObjectTypeName && item.ObjectTypeName.toLowerCase().includes(search) || item.SubjectTypeName && item.SubjectTypeName.toLowerCase().includes(search));
         }
     }
 

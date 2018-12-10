@@ -10,6 +10,7 @@ using SpreadsheetLight;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace d360.web.Controllers
@@ -66,42 +67,6 @@ namespace d360.web.Controllers
         {
             var list = Company.Query<dynamic>(@"select ID as [value], Name as [text] from Predicate order by Name");
             return new JsonNetResult { Data = list, Formatting = Formatting.None };
-        }
-
-        [Route("_IntersectTypes")]
-        public JsonNetResult _IntersectTypes()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                return null;
-            }
-
-            var systemTypes =  PredicateType.DataLineage.GetAsList()
-                .Where(i => !i.AllowIntersectTypeAssignment || !i.AllowEditFromRelationshipEditor)
-                .Select(i => (int)i.ID)
-                .ToList();
-
-            var models = Company.Query<dynamic>(
-$@"select    ID,
-			Subject,
-			SubjectID,
-			SubjectName,
-            PredicateID,
-            PredicateName,
-			Object,
-			ObjectID,
-			ObjectName,
-            PredicateType,
-            cast(0 as bit) as IsSystem
-from		IntersectTypeDetail D
-where       IsSystem = 0
-order by	SubjectName,
-			ObjectName").ToList();
-
-            models.ForEach(m => m.IsSystem = m.PredicateType == null || systemTypes.Contains(m.PredicateType));
-
-            return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
         private FileResult IntersectTypeItemsExcelWithCustomColumns(int id,IEnumerable<string> customColumns )
@@ -249,23 +214,9 @@ order by	SubjectName,
         }
 
         [Route("_IntersectTypes/excel.xls"), FileDownload, HttpGet]        
-        public FileResult _IntersectTypesExcel()
+        public async Task<FileResult> _IntersectTypesExcel()
         {
-            var models = Company.Query<dynamic>(
-@"select    ID,
-			Subject,
-			SubjectID,
-			SubjectName,
-            PredicateID,
-            PredicateName,
-			Object,
-			ObjectID,
-			ObjectName
-from		IntersectTypeDetail
-where       IsSystem = 0
-order by	SubjectName,
-			ObjectName");
-
+            var models = await Company.GetActiveIntersectTypes();
             var document = new SLDocument();
             document.AddWorksheet("Items");
 
@@ -288,12 +239,12 @@ order by	SubjectName,
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, (int)row.ID);
-                document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
-                document.SetCellValue(rowNumber, index++, (string)row.Subject);
-                document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
-                document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
-                document.SetCellValue(rowNumber, index++, (string)row.Object);                
+                document.SetCellValue(rowNumber, index++, row.ID);
+                document.SetCellValue(rowNumber, index++, row.SubjectTypeName);
+                document.SetCellValue(rowNumber, index++, row.Subject);
+                document.SetCellValue(rowNumber, index++, row.PredicateName);
+                document.SetCellValue(rowNumber, index++, row.ObjectTypeName);
+                document.SetCellValue(rowNumber, index++, row.Object);                
             }
 
             #endregion

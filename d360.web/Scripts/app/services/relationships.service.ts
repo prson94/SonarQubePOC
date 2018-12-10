@@ -13,7 +13,7 @@ export class RelationshipsService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getRelationshipTypes(): Promise<RelationshipType[]> {
-        return this.http.get('relations/_intersectTypes')
+        return this.http.get('api/v2/relationships/types')
             .toPromise()
             .then(response => <RelationshipType[]>response.json())
             .catch(err => this.handleError(err));

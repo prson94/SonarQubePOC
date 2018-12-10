@@ -1,13 +1,18 @@
 ﻿export class RelationshipType {
     ID: number;
+    Uid: string;
+    IsSystem: boolean;
     Object: string;
     ObjectID: number;
-    ObjectName: string;
+    ObjectUid: string;
+    ObjectTypeName: string;
     PredicateID: number;
     PredicateName: string;
+    PredicateInverse: string;
     Subject: string;
     SubjectID: number;
-    SubjectName: string;
+    SubjectUid: string;
+    SubjectTypeName: string;
 }
 
 export class RelationshipDetail {

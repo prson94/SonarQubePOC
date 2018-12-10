@@ -6951,7 +6951,7 @@ namespace d360.web.Controllers
                     .ToList()
                     .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && i.Type.AsInfoModel().AllowEditFromRelationshipEditor && !usedPredicateIDs.Contains(i.ID))
                     .Select(i => new {
-                        title = $"{i.Name} ({i.Type.AsInfoModel().Name})",
+                        title = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})",
                         value = i.ID
                     })
                     .OrderBy(i => i.title);
