@@ -151,8 +151,7 @@ export class UserListComponent extends BaseComponent{
     }
 
     public export() {
-        if (this.datatable)
-            this.datatable.exportCSV();
+        this.resourcesService.exportResources(this.objectID);
     }
 
     load() {

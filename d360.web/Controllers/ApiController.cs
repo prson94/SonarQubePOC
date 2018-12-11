@@ -4682,11 +4682,78 @@ from    (
                 querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com')";
             }
 
-            var sql = string.Format(@"select * from ({0}) A order by FullName", querySql);
+            var sql = string.Format(@"select * from ({0}) A order by FirstName", querySql);
 
             return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, new { id = typeID, excludeStatus = CompanyResourceState.Deleted }));
         }
-        
+
+        [Route("resources/{typeID:int}/excel/excel.xls")]
+        public async Task<HttpResponseMessage> GetResourcesExcel(int typeID)
+        {
+            string headerString = await this.GetGridDefinitionByType(SystemObjects.ResourceType, typeID).Content.ReadAsStringAsync();
+            dynamic header = JsonConvert.DeserializeObject<dynamic>(headerString);
+
+            string resultString = await this.GetResourcesByType(typeID).Content.ReadAsStringAsync();
+            dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Users");
+
+            int colIndex = 1;
+            int rowIndex = 1;
+            for (int i = 0; i < header.Columns.Count; i++)
+            {
+                document.SetCellValue(rowIndex, colIndex, header.Columns[i].text.Value);
+                colIndex++;
+            }
+
+            for(int k = 0; k < result.Count; k++)
+            {
+                rowIndex++;
+                colIndex = 1;
+                for (int l = 0; l < header.Columns.Count; l++)
+                {
+                    var colField = header.Columns[l].datafield.Value;
+                   
+                    var value = result[k][colField].Value;
+
+                    var dataType = "string";
+
+                    for (int m = 0; m < header.Fields.Count; m++)
+                    {
+                        var field = header.Fields[m];
+                        if (field["name"].Value == colField)
+                        {
+                            dataType = field["type"].Value;
+                            break;
+                        }
+
+                    }
+
+                    SetCellValue(document, rowIndex, colIndex, dataType, value);
+                    colIndex++;
+                }
+
+            }
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage response = null;
+            // serve the file to the client      
+            response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StreamContent(stream);
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            response.Content.Headers.ContentLength = stream.Length;
+            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Users {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return response;
+
+        }
+
         [Route("resources/{typeID:int}/{id:int}")]
         public Resource GetResource(int typeID, int id)
         {
