@@ -957,8 +957,8 @@ where   h.ID <> @t order by h.[Level] desc;
                     remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName" });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName" });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName" });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email" });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F" });
@@ -4641,8 +4641,8 @@ order by    title
             return Community.ResourceTypes.OrderBy(i => i.Name).AsQueryable();
         }
 
-        [Route("resources/{typeID:int}")]
-        public HttpResponseMessage GetResourcesByType(int typeID)
+         [HttpGet,Route("resources/{typeID:int}")]
+        public HttpResponseMessage GetResourcesByType(int typeID,string filter)
         {
             var settings = Community.GetCompanySettings();
             //check that current user is an admin or the company settings allow users to be listed
@@ -4651,9 +4651,10 @@ order by    title
 
             var joins = "";
             var columns = "";
+            var filterSql = "";
             getDynamicFieldJoinStatements(typeID, "Resource", out joins, out columns, false, false);
 
-            var querySql = $@"
+             var querySql = $@"
 select  A.FirstName,
 		A.LastName,
         A.Email,
@@ -4677,23 +4678,54 @@ from    (
         ) A 
         {joins}";
 
-            if (HideData3SixtyUsers())
+           if (HideData3SixtyUsers())
             {
                 querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com')";
             }
 
-            var sql = string.Format(@"select * from ({0}) A order by FirstName", querySql);
+            if (!string.IsNullOrEmpty(filter))
+            {
+                 filterSql = " where " + this.GetColumnsWithGlobalFilter(filter, SystemObjects.ResourceType, typeID, "B").Result;
+            }
+
+            var sql = string.Format(@"select * from ({0}) B {1} order by FirstName", querySql, filterSql);
+
 
             return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, new { id = typeID, excludeStatus = CompanyResourceState.Deleted }));
         }
 
-        [Route("resources/{typeID:int}/excel/excel.xls")]
-        public async Task<HttpResponseMessage> GetResourcesExcel(int typeID)
+        private async Task<string> GetColumnsWithGlobalFilter(string filter, SystemObjects type, int id,string alias)
+        {
+            string gridDefinitionString = await this.GetGridDefinitionByType(SystemObjects.ResourceType, id).Content.ReadAsStringAsync();
+            dynamic gridDefinition = JsonConvert.DeserializeObject<dynamic>(gridDefinitionString);
+            string wherecondition = string.Empty;
+            for (int i = 0; i < gridDefinition.Fields.Count; i++)
+            {
+                var field = gridDefinition.Fields[i];
+                var fieldName = field["name"].Value;
+                switch (field["type"].Value)
+                {
+                    case "bool":
+                        break;
+                    case "number":
+                        break;
+                    case "string":
+                        wherecondition += $"or {alias}.{fieldName} Like '%{filter}%' ";
+                        break;
+
+                }
+            }
+
+            return wherecondition.Remove(0,2);
+        }
+
+        [HttpGet,Route("resources/{typeID:int}/excel/excel.xls")]
+        public async Task<HttpResponseMessage> GetResourcesExcel(int typeID,string filter)
         {
             string headerString = await this.GetGridDefinitionByType(SystemObjects.ResourceType, typeID).Content.ReadAsStringAsync();
             dynamic header = JsonConvert.DeserializeObject<dynamic>(headerString);
 
-            string resultString = await this.GetResourcesByType(typeID).Content.ReadAsStringAsync();
+            string resultString = await this.GetResourcesByType(typeID,filter).Content.ReadAsStringAsync();
             dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
 
             var document = new SLDocument();

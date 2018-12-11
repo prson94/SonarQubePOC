@@ -4,7 +4,7 @@ import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData } from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { Observable } from "rxjs/Observable";
+
 
 @Injectable()
 export class ResourcesService extends BaseService {
@@ -116,14 +116,13 @@ export class ResourcesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    exportResources(id: number) {
-        let uri = `api/resources/${id}/excel/excel.xls`;
+    exportResources(id: number,filter:string) {
+        let uri = `api/resources/${id}/excel/excel.xls?filter=${filter}`;
         this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));  
     }
 
     downloadFile(data: Response, filename: string) {
-        debugger;
-        if (window.navigator.msSaveOrOpenBlob) {
+         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data.blob(), filename);
         }
         else {
