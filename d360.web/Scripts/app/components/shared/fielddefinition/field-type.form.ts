@@ -57,6 +57,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private lookups: Lookups = new Lookups();
     private lookupDefaultValueOptions: SelectItem[];
+    private booleanDefaultValueOptions: SelectItem[];
     private model: FieldTypeEditorModel;    
     private initialItem: FieldTypeEditorModel;
 
@@ -92,6 +93,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType = new FieldType();
         this.model.FieldType.Object = this.objectType;
         this.model.FieldType.ObjectID = this.objectID;
+        this.booleanDefaultValueOptions = [
+            { label: '-No Default-', value: null },
+            { label: 'True', value: 'true' },
+            { label: 'False', value: 'false' },
+        ]
     }
 
     ngOnInit() {
