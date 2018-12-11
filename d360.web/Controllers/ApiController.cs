@@ -4678,27 +4678,33 @@ from    (
         ) A 
         {joins}";
 
-           if (HideData3SixtyUsers())
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("excludeStatus", CompanyResourceState.Deleted);
+
+            if (HideData3SixtyUsers())
             {
                 querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com')";
             }
 
             if (!string.IsNullOrEmpty(filter))
             {
-                 filterSql = " where " + this.GetColumnsWithGlobalFilter(filter, SystemObjects.ResourceType, typeID, "B").Result;
+                 filterSql = " where " + this.GetColumnsWithGlobalFilter(filter, SystemObjects.ResourceType, typeID, "B", dbArgs).Result;
             }
 
             var sql = string.Format(@"select * from ({0}) B {1} order by FirstName", querySql, filterSql);
 
 
-            return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, new { id = typeID, excludeStatus = CompanyResourceState.Deleted }));
+            return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, dbArgs));
         }
 
-        private async Task<string> GetColumnsWithGlobalFilter(string filter, SystemObjects type, int id,string alias)
+
+        private async Task<string> GetColumnsWithGlobalFilter(string filter, SystemObjects type, int id,string alias,  DynamicParameters dbArgs )
         {
             string gridDefinitionString = await this.GetGridDefinitionByType(SystemObjects.ResourceType, id).Content.ReadAsStringAsync();
             dynamic gridDefinition = JsonConvert.DeserializeObject<dynamic>(gridDefinitionString);
             string wherecondition = string.Empty;
+            
+
             for (int i = 0; i < gridDefinition.Fields.Count; i++)
             {
                 var field = gridDefinition.Fields[i];
@@ -4710,8 +4716,9 @@ from    (
                     case "number":
                         break;
                     case "string":
-                        wherecondition += $"or {alias}.{fieldName} Like '%{filter}%' ";
-                        break;
+                        dbArgs.Add($"{fieldName}", $"%{filter}%");
+                        wherecondition += $"or {alias}.{fieldName} Like @{fieldName} ";
+                       break;
 
                 }
             }
