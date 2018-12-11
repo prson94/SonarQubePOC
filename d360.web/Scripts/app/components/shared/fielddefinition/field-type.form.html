@@ -177,7 +177,7 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Value Selection" active="true" *ngIf="model.FieldType.Type == 'Lookup' || model.FieldType.Type == 'Text'">
+        <simple-accordion header="Value Selection" active="true" *ngIf="model.FieldType.Type == 'Lookup' || model.FieldType.Type == 'Text' || model.FieldType.Type == 'Boolean'">
             <div class="row">
                 <div class="col l6 m6 s12">
                     <div class="FieldName">Default Value (if any)</div>
@@ -188,6 +188,7 @@
             </div>
             <div class="row">
                 <div class="col l6 m6 s12">
+                    <p-dropdown *ngIf="model.FieldType.Type == 'Boolean'" [options]="booleanDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <input *ngIf="model.FieldType.Type == 'Text'" pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                 </div>
