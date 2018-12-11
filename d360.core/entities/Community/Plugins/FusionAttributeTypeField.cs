@@ -26,6 +26,9 @@ namespace d360.core.entities.Plugins
         [DataMember]
         public bool IsListable { get; set; }
 
+        [DataMember]
+        public bool IsRequired { get; set; }
+
         [ForeignKey("FusionAttributeTypeID")]
         public virtual FusionAttributeType FusionAttributeType { get; set; }
     }
