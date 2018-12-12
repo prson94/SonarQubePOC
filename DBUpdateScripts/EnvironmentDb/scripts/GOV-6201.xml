@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-6169">
+  <changeSet author="KMcNamee" id="GOV-6201">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -19,18 +19,13 @@
         IF NOT EXISTS (SELECT 1 FROM [dbo].[Predicate] where [UID] = '70add814-7a31-411c-ae63-ded52b8d128c')
         BEGIN
           INSERT [dbo].[Predicate] ([Name], [Inverse], [Type], [IsSystem], [Code], [Uid]) VALUES (N'Child Of', N'Parent Of', 3, 0, N'27', N'70add814-7a31-411c-ae63-ded52b8d128c')
-        END
-        IF NOT EXISTS (SELECT 1 FROM [dbo].[Predicate] where [UID] = '6708603a-712f-4e07-b487-b87e94301983')
-        BEGIN
-          INSERT [dbo].[Predicate] ([Name], [Inverse], [Type], [IsSystem], [Code], [Uid]) VALUES (N'Ctest', N'Btest', 4, 0, N'30', N'6708603a-712f-4e07-b487-b87e94301983')
-        END
+        END        
       END
     </sql>
     <rollback>
       begin
       delete from [dbo].[Predicate] where [UID] = '9ece0a25-a8c2-4899-9b25-61bf469f9848'
-      delete from [dbo].[Predicate] where [UID] = '70add814-7a31-411c-ae63-ded52b8d128c'
-      delete from [dbo].[Predicate] where [UID] = '6708603a-712f-4e07-b487-b87e94301983'      
+      delete from [dbo].[Predicate] where [UID] = '70add814-7a31-411c-ae63-ded52b8d128c'      
       end
     </rollback>
   </changeSet>
