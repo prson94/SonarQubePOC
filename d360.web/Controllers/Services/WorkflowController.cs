@@ -68,8 +68,6 @@ select		distinct
 			,IT.ID as IssueType
             ,IT.Name as IssueTypeName
 			,I.ID as IssueID
-			,I.Criticality as Criticality
-			,case when I.Criticality = 0 then 'Negligible' when I.Criticality = 1 then 'Low' when I.Criticality = 2 then 'Medium' when I.Criticality = 3 then 'High'  when I.Criticality = 4 then 'Critical' else 'N/A' end as Criticality
 			,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
 	        ,case 
                 when wi.CompletedOn is not null then 'Closed'
@@ -136,7 +134,6 @@ order by wi.StartedOn desc",
             document.SetCellValue(1, ++colIndex, "Status");
             document.SetCellValue(1, ++colIndex, "Closing Notes");
             document.SetCellValue(1, ++colIndex, "Action Type");
-            document.SetCellValue(1, ++colIndex, "Criticality");
             document.SetCellValue(1, ++colIndex, "Ellapsed Days");
 
             #endregion
@@ -156,7 +153,6 @@ order by wi.StartedOn desc",
                 document.SetCellValue(rowIndex, ++dataColIndex, row.ActivityName ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Notes ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.IssueTypeName ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Criticality ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, (row.EllapsedDays ?? "").ToString());
             }
 
@@ -222,8 +218,6 @@ select		distinct
 			,IT.ID as IssueType
             ,IT.Name as IssueTypeName
 			,I.ID as IssueID
-			--,I.Criticality as Criticality
-			,case when I.Criticality = 0 then 'Negligible' when I.Criticality = 1 then 'Low' when I.Criticality = 2 then 'Medium' when I.Criticality = 3 then 'High'  when I.Criticality = 4 then 'Critical' else 'N/A' end as Criticality
 			,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
 	        ,case 
                 when wi.CompletedOn is not null then 'Closed'
@@ -757,7 +751,7 @@ order by wi.StartedOn desc";
 
                     if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
-                    var itemSql = "select i.Name as Text, i.Object + '|' + cast(i.ObjectID as varchar) as Value from AssetType i where i.object = @objectType and i.objectid = @objectTypeId order by 1";
+                    var itemSql = "select A.DisplayValue as [Text], A.Object + '|' + cast(A.ObjectID as varchar) as [Value] from AssetDetail A where A.Type = @objectType and A.TypeID = @objectTypeId order by 1";
                                         
                     item.Values = new List<System.Web.Mvc.SelectListItem>();
 
@@ -2087,6 +2081,8 @@ order by wi.StartedOn desc";
 	                            inner join workflow.[version] v on t.id = v.typeid
 	                            inner join workflow.item i on i.versionid = v.id
                                 inner join issue s on s.id = i.objectid and i.object = 'Issue'
+                                inner join asset a on a.object = s.object and a.objectid = s.objectid
+                                inner join assettype tt on tt.id = a.assettypeid
 	                            where t.state <> 3 and s.object = @filteredObject and s.objectid = @filteredObjectId))";
             }
             var sql = string.Format(QueryConstants.WorkflowTypeList, typeSql, issueSql);
@@ -2534,10 +2530,8 @@ order by wi.StartedOn desc";
 
         private List<EmailedResourceResponsibility> GetEmailResources(int assetId,List<int> responsiblities,List<string> emails)
         {
-
-            var dbArgs = new Dapper.DynamicParameters();
+  
             string sql = string.Empty;
-            List<EmailedResourceResponsibility> results;
             var asset = Company.GetAssetDetail(assetId);
 
             if (responsiblities.Count != 0 && asset != null)
@@ -2559,20 +2553,15 @@ order by wi.StartedOn desc";
                         from cte
                         group by cte.FullName,cte.ResourceID,cte.Email";
 
-                 results = Company.Query<EmailedResourceResponsibility>(sql).ToList();
-
             }
             else
             {
-                sql = @"Select R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,R.Email
+                sql = $@"Select R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,R.Email
 						From reporting.Global_Resource R  
-						where state=1 and email =@email";
-                dbArgs.Add("email", emails);
-                 results = Company.Query<EmailedResourceResponsibility>(sql, dbArgs).ToList();
-
+						where state=1 and email in ('{string.Join("','", emails)}')";
 
             }
-            return results;
+            return Company.Query<EmailedResourceResponsibility>(sql).ToList();
         }
         private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(WorkflowStepDetail detail)
         {
@@ -2771,7 +2760,6 @@ order by wi.StartedOn desc";
 				        I.ID,
 				        S.ID as IssueID,
 				        T.ID as IssueTypeID,
-				        S.Criticality,
 				        T.[Name] as IssueName,
 				        D.DisplayValue as ObjectName,
 			            TA.[Name] as ObjectTypeName,

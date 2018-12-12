@@ -24,7 +24,10 @@ namespace igx.jobs.displayvalueupdateprocessor
         static void Main()
         {
             var config = CoreFunction.GetJobHostConfiguration();
-            
+
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
             var host = new JobHost(config);
             host.RunAndBlock();
         }
@@ -34,7 +37,7 @@ namespace igx.jobs.displayvalueupdateprocessor
     {
         const string functionName = "DisplayValueUpdateProcessor";
         
-        public static async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
+        public static async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
             var updateInfo = JsonConvert.DeserializeObject<DisplayUpdateInfo>(myQueueItem);
 

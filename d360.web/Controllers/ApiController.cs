@@ -957,8 +957,8 @@ where   h.ID <> @t order by h.[Level] desc;
                     remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName" });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName" });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName" });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email" });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F" });
@@ -3912,9 +3912,11 @@ select  case
             when count(1) > 0 then cast(1 as bit)
 			else cast(0 as bit)
         end 
-from    ResponsibilityDetail
-where   Object = @type 
-		and ObjectID = @id";
+from    ResponsibilityDetail R
+inner join Asset A on A.[Object] = @type and A.ObjectID = @id
+inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
+where R.IsVisible = 1 and ((R.Object = @type 
+		and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
 
             return Company.Query<bool>(sql, new { type, id }).First();
         }
@@ -3947,8 +3949,10 @@ SELECT  R.ResponsibilityTypeName,
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
 from    ResponsibilityDetail R
+        inner join Asset A on A.Object = @type and A.ObjectID = @id
+        inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
-where   R.IsVisible = 1 and R.Object = @type and R.ObjectID = @id";
+where   R.IsVisible = 1 and ((R.Object = @type and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
@@ -4637,8 +4641,8 @@ order by    title
             return Community.ResourceTypes.OrderBy(i => i.Name).AsQueryable();
         }
 
-        [Route("resources/{typeID:int}")]
-        public HttpResponseMessage GetResourcesByType(int typeID)
+         [HttpGet,Route("resources/{typeID:int}")]
+        public HttpResponseMessage GetResourcesByType(int typeID,string filter="")
         {
             var settings = Community.GetCompanySettings();
             //check that current user is an admin or the company settings allow users to be listed
@@ -4647,9 +4651,10 @@ order by    title
 
             var joins = "";
             var columns = "";
+            var filterSql = "";
             getDynamicFieldJoinStatements(typeID, "Resource", out joins, out columns, false, false);
 
-            var querySql = $@"
+             var querySql = $@"
 select  A.FirstName,
 		A.LastName,
         A.Email,
@@ -4673,16 +4678,121 @@ from    (
         ) A 
         {joins}";
 
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("excludeStatus", CompanyResourceState.Deleted);
+
             if (HideData3SixtyUsers())
             {
                 querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com')";
             }
 
-            var sql = string.Format(@"select * from ({0}) A order by FullName", querySql);
+            if (!string.IsNullOrEmpty(filter))
+            {
+                 filterSql = " where " + this.GetColumnsWithGlobalFilter(filter, SystemObjects.ResourceType, typeID, "B", dbArgs).Result;
+            }
 
-            return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, new { id = typeID, excludeStatus = CompanyResourceState.Deleted }));
+            var sql = string.Format(@"select * from ({0}) B {1} order by FirstName", querySql, filterSql);
+
+
+            return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, dbArgs));
         }
-        
+
+
+        private async Task<string> GetColumnsWithGlobalFilter(string filter, SystemObjects type, int id,string alias,  DynamicParameters dbArgs )
+        {
+            string gridDefinitionString = await this.GetGridDefinitionByType(SystemObjects.ResourceType, id).Content.ReadAsStringAsync();
+            dynamic gridDefinition = JsonConvert.DeserializeObject<dynamic>(gridDefinitionString);
+            string wherecondition = string.Empty;
+            
+
+            for (int i = 0; i < gridDefinition.Fields.Count; i++)
+            {
+                var field = gridDefinition.Fields[i];
+                var fieldName = field["name"].Value;
+                switch (field["type"].Value)
+                {
+                    case "bool":
+                        break;
+                    case "number":
+                        break;
+                    case "string":
+                        dbArgs.Add($"{fieldName}", $"%{filter}%");
+                        wherecondition += $"or {alias}.{fieldName} Like @{fieldName} ";
+                       break;
+
+                }
+            }
+
+            return wherecondition.Remove(0,2);
+        }
+
+        [HttpGet,Route("resources/{typeID:int}/excel/excel.xls")]
+        public async Task<HttpResponseMessage> GetResourcesExcel(int typeID,string filter)
+        {
+            string headerString = await this.GetGridDefinitionByType(SystemObjects.ResourceType, typeID).Content.ReadAsStringAsync();
+            dynamic header = JsonConvert.DeserializeObject<dynamic>(headerString);
+
+            string resultString = await this.GetResourcesByType(typeID,filter).Content.ReadAsStringAsync();
+            dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Users");
+
+            int colIndex = 1;
+            int rowIndex = 1;
+            for (int i = 0; i < header.Columns.Count; i++)
+            {
+                document.SetCellValue(rowIndex, colIndex, header.Columns[i].text.Value);
+                colIndex++;
+            }
+
+            for(int k = 0; k < result.Count; k++)
+            {
+                rowIndex++;
+                colIndex = 1;
+                for (int l = 0; l < header.Columns.Count; l++)
+                {
+                    var colField = header.Columns[l].datafield.Value;
+                   
+                    var value = result[k][colField].Value;
+
+                    var dataType = "string";
+
+                    for (int m = 0; m < header.Fields.Count; m++)
+                    {
+                        var field = header.Fields[m];
+                        if (field["name"].Value == colField)
+                        {
+                            dataType = field["type"].Value;
+                            break;
+                        }
+
+                    }
+
+                    SetCellValue(document, rowIndex, colIndex, dataType, value);
+                    colIndex++;
+                }
+
+            }
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage response = null;
+            // serve the file to the client      
+            response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StreamContent(stream);
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            response.Content.Headers.ContentLength = stream.Length;
+            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Users {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return response;
+
+        }
+
         [Route("resources/{typeID:int}/{id:int}")]
         public Resource GetResource(int typeID, int id)
         {

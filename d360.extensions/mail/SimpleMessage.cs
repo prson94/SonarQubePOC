@@ -1,11 +1,7 @@
-﻿using Mandrill.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Mandrill;
+using Mandrill.Model;
+using Microsoft.Azure;
 using System.Threading.Tasks;
-using Mandrill;
-using d360.core;
 
 namespace d360.extensions.mail
 {
@@ -29,7 +25,7 @@ namespace d360.extensions.mail
             else
                 message.Html = content;
 
-            var api = new MandrillApi(constants.MANDRILL_API_KEY);
+            var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
 
             await api.Messages.SendAsync(message);
 
@@ -53,7 +49,7 @@ namespace d360.extensions.mail
             else
                 message.Html = content;
 
-            var api = new MandrillApi(constants.MANDRILL_API_KEY);
+            var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
 
             await api.Messages.SendAsync(message);
             

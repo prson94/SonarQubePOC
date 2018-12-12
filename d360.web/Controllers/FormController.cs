@@ -2267,12 +2267,12 @@ namespace d360.web.Controllers
 
                     if (stylesSetting == null)
                     {
-                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"https://data3sixty.blob.core.windows.net/{constants.COMPANY_STYLES_FOLDER}/{Company.CurrentCompanyID}.css" };
-                        Community.Add<CompanySetting>(stylesSetting);
+                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css" };
+                        Community.Add(stylesSetting);
                     }
                     else
                     {
-                        stylesSetting.Value = $"https://data3sixty.blob.core.windows.net/{constants.COMPANY_STYLES_FOLDER}/{Company.CurrentCompanyID}.css";
+                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css";
                         Community.SaveChanges();
                     }
 
@@ -6962,7 +6962,7 @@ namespace d360.web.Controllers
                     .ToList()
                     .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && i.Type.AsInfoModel().AllowEditFromRelationshipEditor && !usedPredicateIDs.Contains(i.ID))
                     .Select(i => new {
-                        title = $"{i.Name} ({i.Type.AsInfoModel().Name})",
+                        title = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})",
                         value = i.ID
                     })
                     .OrderBy(i => i.title);
@@ -7250,10 +7250,7 @@ namespace d360.web.Controllers
             if (type == null) throw new NotFoundException("issue type");
 
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
-
-            var names = Enum.GetNames(typeof(IssueCriticality)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
-
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Criticality", Name = "Criticality", Required = true, FieldType = DataType.Lookup.ToString(), Items = names });            
+         
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -7269,7 +7266,7 @@ namespace d360.web.Controllers
                 var objectType = parseTextField(form, "ObjectType");
                 var desc = parseTextField(form, "ProblemDesc");
                 int commentDetailID=0;
-                IssueCriticality criticality =  (IssueCriticality)Enum.Parse(typeof(IssueCriticality), parseTextField(form, "Criticality"));
+               
 
                 var issueType = Company.GetById<IssueType>(issueTypeId);
 
@@ -7286,10 +7283,10 @@ namespace d360.web.Controllers
 
                     relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
 
-                    comment.OwnerObjectType = SystemObjects.Resource.ToString();
-                    comment.OwnerObjectID = Company.CurrentResourceID;
-                    comment.CommentTypeID = CommentType.Issue;
-                    comment.Body = desc ?? $"New {issueType.Name} Raised, criticality is {criticality.ToString()}.";
+                comment.OwnerObjectType = SystemObjects.Resource.ToString();
+                comment.OwnerObjectID = Company.CurrentResourceID;
+                comment.CommentTypeID = CommentType.Issue;
+                comment.Body = desc ?? $"New {issueType.Name} Raised.";
                 
 
                     //add relation to current artifact
@@ -7308,7 +7305,6 @@ namespace d360.web.Controllers
                     UpdatedBy = Company.CurrentResourceID,
                     UpdatedOn = DateTime.UtcNow,
                     IssueTypeID = issueTypeId,
-                    Criticality = criticality,
                     Object = objectType,
                     ObjectID = objectId,
                     ObjectType = obj.Type,

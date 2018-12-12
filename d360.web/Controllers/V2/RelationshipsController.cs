@@ -84,33 +84,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var types = await Company.QueryAsync<IntersectTypeApiViewModel>(@"
-select	I.Uid,
-		P.Name as PredicateName,
-		P.Inverse as PredicateInverse,
-		P.[Type] as PredicateTypeID,
-		I.SubjectUid,
-		S.Class as SubjectClassID,
-		case 
-			when I.SubjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
-			when I.SubjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
-			when I.SubjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
-			else S.Name 
-		end as SubjectTypeName,
-		I.ObjectUid,
-		O.Class as ObjectClassID,
-		case 
-			when I.ObjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
-			when I.ObjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
-			when I.ObjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
-			else O.Name 
-		end as ObjectTypeName
-from	IntersectType I
-		left join [Predicate] P on P.ID = I.PredicateID
-		left join AssetType S on S.uid = I.SubjectUid
-		left join AssetType O on O.uid = I.ObjectUid
-where	coalesce(S.uid, I.SubjectUid) is not null
-		and coalesce(O.uid, I.ObjectUid) is not null");
+                var types = await Company.GetActiveIntersectTypes();
 
                 return Request.CreateResponse(HttpStatusCode.OK, types);
             }

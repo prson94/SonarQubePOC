@@ -29,6 +29,9 @@ namespace igx.jobs.apiexecutionprocessor
         static void Main()
         {
             var config = CoreFunction.GetJobHostConfiguration();
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
             var host = new JobHost(config);
             host.RunAndBlock();
         }
@@ -38,7 +41,7 @@ namespace igx.jobs.apiexecutionprocessor
     {
         const string functionName = "ApiExecution_Process";
 
-        public async static Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
+        public async static Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
             var info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 

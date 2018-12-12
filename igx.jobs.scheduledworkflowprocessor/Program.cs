@@ -18,6 +18,9 @@ namespace igx.jobs.scheduledworkflowprocessor
         {
             var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
 
             var host = new JobHost(config);
             host.RunAndBlock();

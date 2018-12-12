@@ -36,6 +36,9 @@ namespace igx.jobs
             config.UseTimers();
             config.Queues.BatchSize = 4;
             config.Queues.VisibilityTimeout = TimeSpan.FromDays(4);
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
             var host = new JobHost(config);
             host.RunAndBlock();
         }
@@ -208,7 +211,7 @@ where		T.CompletedOn is null
             CoreFunction.AIFlush();
         }
 
-        public static void RunViaQueue([QueueTrigger("%IntegrationQueue%"), StorageAccount("MainStorageAccount")] string myQueueItem, TextWriter log)
+        public static void RunViaQueue([QueueTrigger("%IntegrationQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);

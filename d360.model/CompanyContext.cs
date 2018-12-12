@@ -428,6 +428,44 @@ select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name ").ToList
             return list;
         }
 
+        public Task<IEnumerable<IntersectTypeApiViewModel>> GetActiveIntersectTypes()
+        {
+            return QueryAsync<IntersectTypeApiViewModel>(@"
+select	I.ID,
+        I.Uid,
+        coalesce(I.IsSystem, 0) as IsSystem,
+		P.Name as PredicateName,
+		P.Inverse as PredicateInverse,
+		P.[Type] as PredicateTypeID,
+		I.Subject,
+		I.SubjectID,
+		I.SubjectUid as SubjectUid,
+		coalesce(S.Class, 0) as SubjectClassID,
+		case 
+			when I.SubjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
+			when I.SubjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
+			when I.SubjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
+			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
+			else S.Name 
+		end as SubjectTypeName,
+		I.Object,
+		I.ObjectID,
+		I.ObjectUid,
+		coalesce(O.Class, 0) as ObjectClassID,
+		case 
+			when I.ObjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
+			when I.ObjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
+			when I.ObjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
+			else O.Name 
+		end as ObjectTypeName
+from	IntersectType I
+		left join [Predicate] P on P.ID = I.PredicateID
+		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
+		left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
+		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
+where	I.State = 1");
+        }
+
         public List<AllocationPossibility> GetAllocationOptions()
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
@@ -1522,72 +1560,38 @@ where	R.SourceObject = 'FusionAttribute'
 				I.Name,
 				I.Type
 	FROM		(
-				SELECT	ID,
-						'Artifacts :: ' + Name AS Name,
-						'ArtifactType' AS Type
-				FROM	ArtifactType
-				UNION
-				SELECT	A.ID,
-						'Fusion Attributes :: ' + A.TextPath AS Name,
-						'FusionAttributeType' AS Type
-				FROM	FusionAttributeType A
-						INNER JOIN FusionType T ON A.FusionTypeID = T.ID
-				UNION
-                SELECT	A.ID,
-						'Fusion Query Attributes :: ' +T.Name + '::' + A.Name,
-						'FusionQueryAttributeType' AS Type
-				FROM	FusionQueryAttributeType A
-						INNER JOIN Fusion T ON A.FusionID = T.ID
+                select	T.ObjectID as ID,
+		                case T.Object
+			                when 'ArtifactType' then 'Glossary'
+			                when 'FusionAttributeType' then 'Fusion Attribute'
+			                when 'FusionQueryAttributeType' then 'Fusion Query'
+			                when 'GroupType' then 'Security'
+			                when 'PolicyType' then 'Policy'
+			                when 'ReferenceItemType' then 'Reference'
+			                when 'ResourceType' then 'Security'
+			                when 'RuleType' then 'Rule'
+			                when 'TaxonomyType' then 'Model'
+		                end + ' :: ' + coalesce(P.[Path], T.Name) as Name,
+		                T.Object as Type
+                from	AssetType T
+		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
+                where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType')
                 UNION
-				SELECT	1 as ID,
-						'Group' as Name,
-						'GroupType' as Type
-				UNION
-				SELECT	ID,
-						'Map :: ' + Name AS Name,
-						'MapType' AS Type
-				FROM	MapType
-				UNION
-                SELECT	ID,
-						'Models :: ' + Name AS Name,
-						'TaxonomyType' AS Type
-				FROM	TaxonomyType
-				UNION
-				SELECT	ID,
-						'Policies :: ' + Name AS Name,
-						'PolicyType' AS Type
-				FROM	PolicyType
-				UNION
                 SELECT	CAST(IT.ID as int) ID,
-						'Relationships :: ' + ITypeName.Name AS Name,
-						'IntersectType' AS Type
-				FROM	IntersectType IT    
-				        cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
-				UNION
-				SELECT	1 as ID,
-						'Resource' as Name,
-						'ResourceType' as Type
-				UNION
-				SELECT	ID,
-						'Rules :: ' + Name AS Name,
-						'RuleType' AS Type
-				FROM	RuleType
+		                'Relationship :: ' + ITypeName.Name AS Name,
+		                'IntersectType' AS Type
+                FROM	IntersectType IT    
+		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
                 UNION
-				SELECT	ID,
-						'Rule Implementation :: ' + DisplayValue as Name,
-						'RuleImplementationType' as Type
+                SELECT	ID,
+		                'Rule Implementation :: ' + DisplayValue as Name,
+		                'RuleImplementationType' as Type
                 FROM    [Rule]
-				UNION
-				SELECT	ID,
-						'Reference :: Item :: ' + Name AS Name,
-						'ReferenceItemType' AS Type
-				FROM	ReferenceItemType
                 UNION
-				SELECT	0 as ID,
-						'Reference :: List' as Name,
-						'ReferenceItemType' as Type
-				 				
-) I";
+                SELECT	0 as ID,
+		                'Reference :: List' as Name,
+		                'ReferenceItemType' as Type				 				
+                ) I";
 
             if (subject.HasValue && subjectID.HasValue)
             {
@@ -2096,7 +2100,8 @@ where	R.SourceObject = 'FusionAttribute'
 
         public override int SaveChanges()
         {
-            int returnValue = 0;            
+            int returnValue = 0;
+            var fieldsToCheckForChanges = new List<Field>();
             var changedFields = new List<Field>();
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added))
@@ -2111,9 +2116,8 @@ where	R.SourceObject = 'FusionAttribute'
                 #endregion
             }
 
-            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added /*| EntityState.Unchanged*/ | EntityState.Modified | EntityState.Deleted))
-            {
-                
+            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added | EntityState.Modified | EntityState.Deleted))
+            {                
                 #region Business logic : IUpdatedMetadata
                 if (entry.Entity is IUpdatedMetadata)
                 {
@@ -2214,11 +2218,12 @@ where	R.SourceObject = 'FusionAttribute'
                         field.Value = sanitizer.Sanitize(field.Value);
                     }
 
-                    var existing = Fields.AsNoTracking().FirstOrDefault<Field>(f => f.FieldTypeID == field.FieldTypeID && f.ObjectID == field.ObjectID && f.ObjectType == field.ObjectType);
-                    if (existing != null)
+                    // Need to determine if this field value has changed if not we dont want to tell workflow
+                    // added items have not changed from the previous value so ignore.
+                    // please dont run a query for each modified field if there are 10 we are running 10 queries.  Do one query.
+                    if(entry.State != EntityState.Added)
                     {
-                        if (existing.Value != field.Value)
-                            changedFields.Add(field);
+                        fieldsToCheckForChanges.Add(field);                        
                     }
 
                 }
@@ -2698,6 +2703,39 @@ select @err";
                 .Select(p => p.Entity).ToList();
 
             #endregion
+
+            //check for changed field values before the new values are written tothe db
+            if (fieldsToCheckForChanges.Any())
+            {                
+                var fieldSql = "";
+
+                foreach (var item in fieldsToCheckForChanges)
+                {
+
+                    if (item.ObjectID > 0 && item.FieldTypeID > 0 && !string.IsNullOrEmpty(item.ObjectType))
+                    {
+                        if (!string.IsNullOrEmpty(fieldSql)) fieldSql += " or ";
+                        fieldSql += $"(f.ObjectID = {item.ObjectID} and f.[ObjectType] = '{item.ObjectType}' and f.FieldTypeID = {item.FieldTypeID})";
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(fieldSql))
+                {
+                    var sql = $"select f.ObjectID, f.ObjectType, f.Value, f.FieldTypeID from field f where {fieldSql}";
+
+                    var vals = Query<dynamic>(sql);
+
+                    foreach (var item in fieldsToCheckForChanges)
+                    {
+                        var value = vals.FirstOrDefault(x => x.ObjectID == item.ObjectID && x.ObjectType == item.ObjectType && x.FieldTypeID == item.FieldTypeID);
+
+                        if ((value != null) && (item.Value != (string)value.Value))
+                        {
+                            changedFields.Add(item);
+                        }
+                    }
+                }
+            }
 
             try
             {                

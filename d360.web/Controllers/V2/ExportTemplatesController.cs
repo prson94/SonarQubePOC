@@ -16,9 +16,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Drawing;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/exporttemplates"), Authorize
@@ -42,7 +44,9 @@ namespace d360.web.Controllers.V2
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<ArtifactTypeExportTemplate>))
+            SwaggerResponse(HttpStatusCode.OK, "", 
+            
+            typeof(List<ArtifactTypeExportTemplate>))
         ]
         public async Task<IEnumerable<dynamic>> Get()
         {
@@ -107,6 +111,11 @@ namespace d360.web.Controllers.V2
             return model;
         }
 
+        /// <summary>
+        /// Get all styles for the specified template
+        /// </summary>
+        /// <param name="templateId">template Id</param>
+        /// <returns></returns>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -127,7 +136,11 @@ namespace d360.web.Controllers.V2
 
         }
 
-
+        /// <summary>
+        /// Create new  syle for the template
+        /// </summary>
+        /// <param name="model">ArtifactTypeExportTemplateStyle</param>
+        /// <returns></returns>
         [
             HttpPost,
             MapToApiVersion("2.0"),
@@ -154,6 +167,12 @@ namespace d360.web.Controllers.V2
             return model;
         }
 
+        /// <summary>
+        /// Update  style for a template
+        /// </summary>
+        /// <param name="id">style id</param>
+        /// <param name="model">ArtifactTypeExportTemplateStyle</param>
+        /// <returns></returns>
         [
             HttpPut,
             MapToApiVersion("2.0"),
@@ -191,6 +210,11 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <summary>
+        /// Deletes a Style based on the specified ID
+        /// </summary>
+        /// <param name="id">style id</param>
+        /// <returns></returns>
         [
             HttpDelete,
             MapToApiVersion("2.0"),

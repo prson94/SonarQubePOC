@@ -1,0 +1,50 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="KMcNamee" id="gov-6140">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      begin
+      -- add technology asset fusion type
+      if not exists (select 1 from sitenav)
+      begin
+        SET IDENTITY_INSERT [dbo].[SiteNav] ON
+
+        INSERT [dbo].[SiteNav] ([ID], [ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (1, NULL, N'#Data Quality', NULL, 4, NULL, NULL, N'fa-pie-chart', N'Data Quality')
+        INSERT [dbo].[SiteNav] ([ID], [ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (2, NULL, N'#Monitor', NULL, 9, NULL, NULL, N'fa-usb', N'Workflow')
+        INSERT [dbo].[SiteNav] ([ID], [ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (4, NULL, N'#Glossary', NULL, 2, NULL, NULL, N'fa-book', N'Business Assets')
+        INSERT [dbo].[SiteNav] ([ID], [ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (5, NULL, N'#Models', NULL, 3, NULL, NULL, N'fa-sitemap', N'Models')
+        INSERT [dbo].[SiteNav] ([ID], [ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (6, NULL, N'#Policy', NULL, 5, NULL, NULL, N'fa-university', N'Policies')
+        INSERT [dbo].[SiteNav] ([ID], [ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (7, NULL, N'#Reference', NULL, 6, NULL, NULL, N'fa-cubes', N'Reference')
+        INSERT [dbo].[SiteNav] ([ID], [ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (8, NULL, N'#Fusion', NULL, 7, NULL, NULL, N'fa-database', N'Fusion')
+        INSERT [dbo].[SiteNav] ([ID], [ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (9, NULL, N'#Community', NULL, 8, NULL, NULL, N'fa-group', N'Community')
+        
+        SET IDENTITY_INSERT [dbo].[SiteNav] OFF
+
+      end
+      
+      END
+    </sql>
+    <rollback>
+      begin
+
+      delete [dbo].[SiteNav] where name = N'#Data Quality'
+      delete [dbo].[SiteNav] where name = N'#Monitor'
+      delete [dbo].[SiteNav] where name = N'#Glossary'
+      delete [dbo].[SiteNav] where name = N'#Models'
+      delete [dbo].[SiteNav] where name = N'#Policy'
+      delete [dbo].[SiteNav] where name = N'#Reference'
+      delete [dbo].[SiteNav] where name = N'#Fusion'
+      delete [dbo].[SiteNav] where name = N'#Community'
+
+      end
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

@@ -21,7 +21,7 @@ import * as _ from "lodash";
                 </header>                    
                 <div class="row" >                    
                 <div class="col s12">                                                
-                    <d3s-workflowmonitor-list-filter  [showExport]="!showHeader" [usePredefinedFilters]="predefinedFilters && predefinedFilters.length > 0" (exportClick)="export()" [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
+                    <d3s-workflowmonitor-list-filter  [showExport]="!showHeader" [usePredefinedFilters]="usePredefinedFilters" (exportClick)="export()" [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
                        (filterChange)= "OnFilterChange()"   (exportToExcel)="export()"     [selectAll]="true" >
                     </d3s-workflowmonitor-list-filter>
                 </div>
@@ -106,6 +106,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     private rowsPerPage: number = 10;
     private sortField: string = undefined;
     private sortOrder: SortOrder = SortOrder.Descending;
+    private usePredefinedFilters: boolean = false;
      selection: any;
     @Output() selectionChange = new EventEmitter();
 
@@ -120,13 +121,15 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['predefinedFilters']) {
+            this.usePredefinedFilters = (this.predefinedFilters && this.predefinedFilters.length > 0);
             this.isLoading = true;
             this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0});
         }
      }
 
     ngOnDestroy(): void {
-        this.subItems.unsubscribe();
+        if (this.subItems)
+            this.subItems.unsubscribe();
     }
 
     export() {
@@ -174,6 +177,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
             this.items = [];
             this.totalRecords = 0;
             this.selectionChange.emit(null);
+            this.isLoading = false;
             return;
         }
 

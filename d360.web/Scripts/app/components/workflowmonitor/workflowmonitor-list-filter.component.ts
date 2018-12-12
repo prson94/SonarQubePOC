@@ -12,29 +12,42 @@ import { StringHelpers } from '../../static/string-helpers';
 @Component({
     selector: 'd3s-workflowmonitor-list-filter',
     template: ` 
+
+                <ng-container *ngIf="!usePredefinedFilters; else exportOnly">
                     <div class="row">
                         <div class="col s2 FieldName" style="padding-left: 0px">Workflow Types</div>
                         <div class="col s10" style="padding-right: 0px">
                            <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
                             <div *ngIf="!isLoading">
                                 <table style="width: 100%">
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
-                                                </td>
-                                                <td *ngIf="showExport" style="width:32px">
-                                                    <a style="font-size:1.1em" (click)="exportClick.emit()"><i class="fa fa-download"></i></a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+                                            </td>
+                                            <td *ngIf="showExport" style="width:32px">
+                                                <a style="font-size:1.1em" (click)="exportClick.emit()"><i class="fa fa-download"></i></a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>        
                         </div>
-                    </div>   
+                    </div>
                     <div class="row">
                         <d3s-workflowmonitor-list-column-filter (exportToExcel)="exportToExcel.emit()" [fields]="filtercolumns" [(filters)]="columnFilters" (filtersChange)="columFilterChanged($event)" ></d3s-workflowmonitor-list-column-filter>
                     </div>
+                </ng-container>                  
+                <ng-template #exportOnly>
+                    <div class="row">
+                        <div class="col s12" style="padding-right: 0px">
+                            <div *ngIf="showExport" style="width: 32px; float: right">
+                                <a style="font-size:1.1em" (click)="exportClick.emit()"><i class="fa fa-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+
                 `,
     providers: [WorkflowService, WorkflowMonitorService],
     changeDetection:ChangeDetectionStrategy.OnPush

@@ -1579,8 +1579,8 @@ order by IST.StartedOn desc, IST.CompletedOn desc
 	            v.UpdatedOn,
 	            r.FirstName + ' ' + r.LastName as UpdatedBy,  
 	            ta.Name as ObjectTypeName, 
-	            ta.Object, 
-	            ta.ObjectID, 
+	            coalesce(isst.Object, ta.Object) as Object, 
+	            coalesce(isst.ObjectID, ta.ObjectID) as ObjectID, 
 	            dbo.GenerateAssetTypeUrl(ta.ID) as NgUrl, 
 	            v.id as VersionID,
 	            dbo.GetWorkflowObjectsSummary(v.id, @filteredObject, @filteredObjectId) as ObjectNames, 
@@ -1602,13 +1602,16 @@ order by IST.StartedOn desc, IST.CompletedOn desc
 			left join AssetType ta on ta.object = e.object and ta.objectId = e.objectid
             left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
             left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
+			left join Issue iss on i.Object ='Issue' and iss.ID = i.ObjectID
+			left join Asset issa on issa.Object = iss.Object and issa.ObjectID = iss.ObjectID
+			left join AssetType isst on isst.ID = issa.AssetTypeID
             left join workflow.versionstep vs on vs.versionid = v.id
             left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
             left join workflow.itemassignment ia on ia.itemid = s.id
             where {0} t.State <> 3
             {1}
-            group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,ta.Name, ta.Object, 
-            ta.ObjectID, ta.ID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
+            group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,ta.Name, coalesce(isst.Object, ta.Object), 
+            coalesce(isst.ObjectID,ta.ObjectID), ta.ID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
 			)
             select 
 	            a.*,

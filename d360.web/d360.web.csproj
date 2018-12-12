@@ -398,6 +398,7 @@
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
+    <Compile Include="Handlers\MethodOverrideHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
     <Compile Include="Models\ApiResponses.cs" />
     <Compile Include="Models\Attributes\NoCacheAttribute.cs" />
@@ -1424,6 +1425,7 @@
     <TypeScriptCompile Include="Scripts\app\models\tooltip-info.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflowmonitor.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\array-to-selectitem.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\metric-condition-disabled-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\permission-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
@@ -1776,7 +1778,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://gov.data3sixty.local/</IISUrl>
+          <IISUrl>http://integration.eng.data3sixty.local/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

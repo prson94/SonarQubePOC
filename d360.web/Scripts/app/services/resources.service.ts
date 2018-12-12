@@ -1,9 +1,10 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, ResponseContentType } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData } from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
+
 
 @Injectable()
 export class ResourcesService extends BaseService {
@@ -113,5 +114,25 @@ export class ResourcesService extends BaseService {
             .toPromise()
             .then(response => <MulitSelectResourceData>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    exportResources(id: number,filter:string) {
+        let uri = `api/resources/${id}/excel/excel.xls?filter=${filter}`;
+        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));  
+    }
+
+    downloadFile(data: Response, filename: string) {
+         if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data.blob());
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
 }

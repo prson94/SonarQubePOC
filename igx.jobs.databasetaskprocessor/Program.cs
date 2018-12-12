@@ -27,6 +27,9 @@ namespace igx.jobs.databasetaskprocessor
         {
             var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
             var host = new JobHost(config);
             host.RunAndBlock();
         }
@@ -57,7 +60,7 @@ namespace igx.jobs.databasetaskprocessor
             }
 
             //Add the HTML and Text bodies            
-            var api = new MandrillApi(constants.MANDRILL_API_KEY);
+            var api = new MandrillApi(CoreFunction.GetConfigValueByKey("MandrillApiKey"));
             var resp = api.Messages.SendTemplateAsync(message, templateID).Result;
 
             message = null;
@@ -74,9 +77,6 @@ namespace igx.jobs.databasetaskprocessor
             {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-#if DEBUG
-                companies = companies.Where(x => x.CompanyID == 4).ToList();
-#endif
 
                 companies.Shuffle(); //Randomize
 

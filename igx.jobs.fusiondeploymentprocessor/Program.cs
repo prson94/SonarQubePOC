@@ -20,6 +20,9 @@ namespace igx.jobs.fusiondeploymentprocessor
         {
             var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
 
             var host = new JobHost(config);
             host.RunAndBlock();
@@ -283,6 +286,7 @@ from	plugin.FusionAttributeType A
                         tbl_FusionAttributeTypeFields.Columns.Add("Type", typeof(string));
                         tbl_FusionAttributeTypeFields.Columns.Add("SortOrder", typeof(int));
                         tbl_FusionAttributeTypeFields.Columns.Add("IsListable", typeof(bool));
+                        tbl_FusionAttributeTypeFields.Columns.Add("IsRequired", typeof(bool));
 
                         c_FusionAttributeTypeFields.ForEach(o => {
                             var row = tbl_FusionAttributeTypeFields.NewRow();
@@ -293,6 +297,7 @@ from	plugin.FusionAttributeType A
                             row["Type"] = o.Type;
                             row["SortOrder"] = o.SortOrder;
                             row["IsListable"] = o.IsListable;
+                            row["IsRequired"] = o.IsRequired;
 
                             tbl_FusionAttributeTypeFields.Rows.Add(row);
                         });
@@ -350,7 +355,8 @@ from	plugin.FusionAttributeType A
 	    [FriendlyName] [nvarchar](250) NOT NULL,
 	    [Type] [varchar](25) NULL,
 	    [SortOrder] [int] NOT NULL,
-	    [IsListable] [bit] NOT NULL
+	    [IsListable] [bit] NOT NULL,
+	    [IsRequired] [bit] NOT NULL
     );
     ", transaction: trans);
                                 #endregion
@@ -501,6 +507,7 @@ from	plugin.FusionAttributeType A
                                 bulkCopy.ColumnMappings.Add("Type", "Type");
                                 bulkCopy.ColumnMappings.Add("SortOrder", "SortOrder");
                                 bulkCopy.ColumnMappings.Add("IsListable", "IsListable");
+                                bulkCopy.ColumnMappings.Add("IsRequired", "IsRequired");
 
                                 bulkCopy.WriteToServer(tbl_FusionAttributeTypeFields);
 
@@ -513,7 +520,7 @@ from	plugin.FusionAttributeType A
 	    ON      (T.Object = 'FusionAttributeType' and S.FusionAttributeTypeID = T.ObjectID and S.Name = T.Name) 
     WHEN NOT MATCHED THEN
 	    INSERT  (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable, IsDisplayable, IsEditable)
-	    VALUES  (S.Name, S.FriendlyName, S.[Type], 'FusionAttributeType', S.FusionAttributeTypeID, S.SortOrder, 1, S.IsListable, 1, 0);", transaction: trans);
+	    VALUES  (S.Name, S.FriendlyName, S.[Type], 'FusionAttributeType', S.FusionAttributeTypeID, S.SortOrder, S.IsRequired, S.IsListable, 1, 0);", transaction: trans);
 
                                 #endregion
 

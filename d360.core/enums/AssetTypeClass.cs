@@ -9,6 +9,11 @@ namespace d360.core.enums
     public enum AssetTypeClass
     {
         [
+            Name("Generic Type"),
+            Description("Generic Type.")
+        ]
+        Generic = 0,
+        [
             Name("Glossary"), 
             Description("Glossary assets.")
         ]

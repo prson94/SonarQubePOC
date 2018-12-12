@@ -41,9 +41,9 @@ namespace d360.web.Controllers
         [Route("_FusionExecutionRawLog"), NonNullableParameters]
         public ContentResult _FusionExecutionRawLog(int id)
         {
-            var execution = Company.Query<dynamic>(@"select * from fusion.Execution where ID = @id", new { id = id }).SingleOrDefault();
+            var execution = Company.Query<dynamic>(@"select * from fusion.Execution where ID = @id", new { id }).SingleOrDefault();
             
-            return Content(Storage.GetFileContentsAsString(string.Format("bulk-fusion-{0}", Company.CurrentCompanyID), execution.RawLogFileName), "application/json");
+            return Content(Storage.GetFileContentsAsString($"bulk-fusion-{Company.CurrentCompanyID}", execution.RawLogFileName), "application/json");
         }
 
         [Route("{typeID:int}/configurations/{id:int}/template/{attributeTypeID:int}"), FileDownload, HttpGet]
