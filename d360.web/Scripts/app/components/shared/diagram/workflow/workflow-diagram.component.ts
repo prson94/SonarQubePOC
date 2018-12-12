@@ -1,4 +1,7 @@
-﻿import {
+﻿import { MenuItem } from 'primeng/primeng';
+import * as go from 'gojs';
+import * as _ from 'lodash';
+import {
     Component,
     Input,
     OnInit,
@@ -11,6 +14,7 @@
     OnChanges,
     SimpleChanges
 } from '@angular/core';
+
 import { PermissionsService } from '../../../../services/permissions.service';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { WorkflowService } from '../../../../services/workflow.service';
@@ -35,18 +39,17 @@ import {
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 
-import { MenuItem } from 'primeng/primeng';
-
-import * as go from 'gojs';
-import * as _ from 'lodash';
-
-
 declare var window: any;
 
 @Component({
     selector: 'd3s-workflow-diagram',
     templateUrl: './workflow-diagram.component.html',
-    providers: [PermissionsService, WorkflowService, ObjectDetailService, UriBasedService]
+    providers: [
+        PermissionsService,
+        WorkflowService,
+        ObjectDetailService,
+        UriBasedService
+    ]
 })
 export class WorkflowDiagramComponent extends DiagramBaseComponent implements OnInit, OnChanges {
     @Input() id: number = 0;
@@ -130,13 +133,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
     public ngOnChanges(changes: SimpleChanges) {
-        //set read only value
-        if (changes['readonly'] != null && changes['readonly'].currentValue != changes['readonly'].previousValue) {
+        let isModelPassed = changes['model'] != null && changes['model'].currentValue != changes['model'].previousValue;
+        let isVelueReadOnly = changes['readonly'] != null && changes['readonly'].currentValue != changes['readonly'].previousValue;
+        // let isIdAndCurrentIdNotEqualToPrevious = changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue;
+        // let isVesionAndCurrentVersionNotEqualToPrevious = changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue
+
+        if (isVelueReadOnly) {
             this.isReadOnly = this.readonly.toString().toLowerCase() == 'true' ? true : false;
         }
 
-        //if a model was passed, just use that
-        if (changes['model'] != null && changes['model'].currentValue != changes['model'].previousValue) {
+        if (isModelPassed) {
             this.selectedData = null;
             this.initializeDiagram();
             this.initializeMenuItems();
@@ -146,12 +152,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
         //else we need at least an id and preferably a id/version combo
         //without a version we just load the most recent one
+        // isIdAndCurrentIdNotEqualToPrevious || isVesionAndCurrentVersionNotEqualToPrevious
         else if ((changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue) ||
             (changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue)) {
-            if (this.diagram != null && this.diagram.div != null)
+            if (this.diagram != null && this.diagram.div != null) {
                 this.diagram.div = null;
-            if(this.palette != null && this.palette.div != null)
+            }
+            if(this.palette != null && this.palette.div != null) {
                 this.palette.div = null;
+            }
+
             this.model = null;
             this.selectedData = null;
             this.initializeDiagram();
@@ -216,8 +226,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         this.diagram.commandHandler.deleteSelection = () => this.deleteSelection();
 
-        //console.log('init diagram', this.isReadOnly);
-
         this.diagram.validCycle = go.Diagram.CycleAll; //disallow cycles
         this.diagram.maxSelectionCount = 1; //only select 1 item at a time, this makes handling selections a lot easier
     }
@@ -236,7 +244,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.workflowFieldsService.clearUsedFields();
 
         this.formFields = [];
-        //console.log('initializeFormFields', this.myDiagram.model.linkDataArray);
         this.diagram.model.nodeDataArray.forEach(n => {
 
             if (+(<NodeModel>n).activityType == WorkflowActivityType.Form
@@ -356,7 +363,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             data.Links.forEach(l => {
                 linkList.push(<LinkModel>this.convertToDiagramModel(l, DiagramObjectType.Link))
             });
-        //console.log('parseData', nodeList, linkList);
 
         nodeList.forEach(n => {
             if (n.activityType == WorkflowActivityType.FieldChange) {
@@ -443,7 +449,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#region helper methods
 
     private canLink(fromNode: any, fromPort: any, toNode: any, toPort: any) {
-        //console.log('canLink', fromNode, fromPort, toNode, toPort);
 
         //can't link to self
         if (fromNode.data.key == toNode.data.key)
@@ -453,8 +458,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             return true;
         if (toNode.data.activityType == WorkflowActivityType.Form && fromNode.data.key != toNode.data.key)
             return true;
-
-        //console.log(`from node ${fromNode.data.key} to node ${toNode.data.key}`);
 
         //starting with the toNode, is there a way to traverse back to the fromNode?
         //if so we have a cycle and need to abort
@@ -471,7 +474,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     nodes = [];
                     return;
                 }
-                //console.log(`link from ${(<any>l).from} to ${(<any>l).to}`, node);
+
                 if (node.key == fromNode.data.key) { //we found a cycle
                     hasCycle = true;
                     return;
@@ -489,7 +492,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             nodes.forEach(n => {
                 let newLinks = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<any>l).from == n.key);
                 links = links.concat(newLinks);
-                //console.log(`new links for node ${n.key}`, newLinks, links);
             });
         }
 
@@ -539,18 +541,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
 
                 links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
-                //console.log('links all', (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key), (<go.GraphLinksModel>this.myDiagram.model).linkDataArray);
             });
-            //console.log('nodes: ', nodes);
             nodes = [];
             links.forEach(l => {
                 let newNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from && visited.findIndex(v => v == (<any>n).key) == -1);
                 nodes = nodes.concat(newNodes);
                 visited = visited.concat(newNodes.map(n => { return (<any>n).key; }));
             });
-            //console.log('links: ', links);
         }
-        //console.log('forms: ', forms);
         return forms;
     }
 
@@ -594,7 +592,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (type == DiagramObjectType.Link) {
             let m: WorkflowDiagramLink = <WorkflowDiagramLink>model;
             let n = new LinkModel();
-            //console.log(_.cloneDeep(m), this.fieldTypes);
 
             if (m.ConditionObject == null && m.Condition != null && m.Condition.toString() === m.Condition && m.Condition.startsWith('{')) {
                 let conditions = JSON.parse(m.Condition).Conditions.Condition;
@@ -705,7 +702,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.FieldUpdate == null) n.settings.FieldUpdate = {};
                 if (n.settings.FieldUpdate.Field == null) n.settings.FieldUpdate.Field = [];
                 //handle obj vs array due to XML parsing
-                //console.log('load', n.settings.FieldUpdate.Field != null, !_.isEmpty(n.settings.FieldUpdate.Field), n.settings.FieldUpdate.Field.constructor !== Array);
+
                 if (n.settings.FieldUpdate.Field != null && !_.isEmpty(n.settings.FieldUpdate.Field) && n.settings.FieldUpdate.Field.constructor !== Array) {
                     let f = _.cloneDeep(n.settings.FieldUpdate.Field);
                     n.settings.FieldUpdate.Field = [];
@@ -897,7 +894,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             return false;
                         break;
                     case 'Responsibility':
-                        //console.log('validateNode', n.settings);
                         if (this.model.Event.Object == 'IntersectType' && n.settings.ResponsibilitySide == null || n.settings.ResponsibilitySide == '')
                             return false;
                         if (n.settings.ResponsibilityTypeID == null)
@@ -981,7 +977,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private validateDiagram(): boolean {
         this.isValid = true;
         this.errors = [];
-        //console.log('validateDiagram');
 
         let model = <go.GraphLinksModel>this.diagram.model;
         let invalidNodeCount = 0;
@@ -1000,7 +995,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             let node = <NodeModel>n;
 
             if (node.valid == false) {
-                //console.log('invalid node: ', node);
                 invalidNodeCount++;
             }
             if (+node.stepType == StepType.Start) {
@@ -1078,7 +1072,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#region events
 
     private backClick() {
-        //console.log(this.model);
         this.model.Nodes = [];
         this.model.Links = [];
         this.model.Event.ConditionObject = null;
@@ -1127,7 +1120,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.Status = e.settings.Status;
                 break;
             case WorkflowActivityType.Form: //form
-                //console.log('changeNode', this.model.Event.Object);
                 n.fields = e.fields;
                 n.settings.FormResponseType = e.settings.FormResponseType
                 n.settings.SendFormEmail = e.settings.SendFormEmail;
@@ -1201,14 +1193,12 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.setTransitionIcon(l);
             (<go.GraphLinksModel>this.diagram.model).setDataProperty(l, 'valid', this.validateLink(l));
             this.validateDiagram();
-            //console.log('transition change: ', e, l);
         }
 
         this.diagram.commitTransaction('changeTransition');
     }
 
     private menuClick(e: any) {
-        //console.log(e);
         if (e.icon == 'fa fa-info-circle')
             this.isWindowVisible = !this.isWindowVisible;
         if (e.icon == 'fa fa-remove')
@@ -1261,23 +1251,21 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     this.selectedStepIdChange.emit(this.selectedData.key);
 
                     let i = this.diagram.model.nodeDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
-                    if (i > -1) {
+                    /*if (i > -1) {
                         // this.selectedData = this.myDiagram.model.nodeDataArray[i];
-                    }
+                    }*/
                 } else if (this.selectedData.diagramObjectType == DiagramObjectType.Link) {
                     this.showNodeTabs = false; this.showLinkTabs = true;
                     let i = (<go.GraphLinksModel>this.diagram.model).linkDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
-                    if (i > -1) {
+                    /*if (i > -1) {
                         //this.selectedData = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray[i];
-                    }
+                    }*/
                 }
             }
         }
         this.setOverlayHeaderName(this.selectedData);
         this.selection = this.selectedData;
         this.selectionChange.emit(this.selection);
-        //console.log('selection changed: ', e);
-        //console.log(this.selection);
     }
 
     private LinkDrawn(e: any) {
@@ -1289,7 +1277,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             let k = (<LinkModel>(<go.GraphLinksModel>this.diagram.model).linkDataArray[l]);
             k.formInputs = this.getAvailableFormInputs(k);
         }
-        //console.log(link, l);
     }
 
     private deleteSelection() {
@@ -1369,7 +1356,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             }
         });
 
-        //console.log(nodes, links, coll, this.workflowFieldsService.getFields(), this.workflowFieldsService.getUsedFields());
         this.diagram.removeParts(coll, false);
         this.diagram.clearSelection();
         this.selectedStepId = null;
@@ -1400,14 +1386,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#region templates
 
     private createPalette(): go.Palette {
-
-        //console.log('reached created palette');
-
-
         let paletteModel = [];
 
         //load the palette with the appropriate nodes
-
         let start = new NodeModel();
         start.category = 'start';
         start.name = 'Start';
