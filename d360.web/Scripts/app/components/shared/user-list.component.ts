@@ -22,7 +22,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 </header>                           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor && !showResetPwd">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="filter =$event.target.value;dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                     <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
@@ -112,6 +112,7 @@ export class UserListComponent extends BaseComponent{
     allowPasswordReset: boolean = false;
 
     selected: any = null;
+    filter: string="";
     
     get globalFilterFields(): string[] {
         let f = this.columns.map(c => c.datafield);
@@ -151,8 +152,7 @@ export class UserListComponent extends BaseComponent{
     }
 
     public export() {
-        if (this.datatable)
-            this.datatable.exportCSV();
+        this.resourcesService.exportResources(this.objectID,this.filter);
     }
 
     load() {
@@ -187,7 +187,7 @@ export class UserListComponent extends BaseComponent{
 
     getData() {
         this.isLoading = true;
-        this.uriBasedService.getItems(`/api/resources/${this.objectID}?$orderby=LastName,FirstName`)
+        this.uriBasedService.getItems(`/api/resources/${this.objectID}?filter=${this.filter}`)
             .then(result => {
                 this.items = result;
                 this.isLoading = false;
