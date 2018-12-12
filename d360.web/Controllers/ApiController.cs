@@ -4642,7 +4642,7 @@ order by    title
         }
 
          [HttpGet,Route("resources/{typeID:int}")]
-        public HttpResponseMessage GetResourcesByType(int typeID,string filter)
+        public HttpResponseMessage GetResourcesByType(int typeID,string filter="")
         {
             var settings = Community.GetCompanySettings();
             //check that current user is an admin or the company settings allow users to be listed
