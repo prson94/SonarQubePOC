@@ -147,6 +147,7 @@ namespace d360.web.Models
         public string BrowserTitlePrefix { get; set; }
         public bool WorkflowDigestEmailEnabled { get; set; }
         public int MaxDropdownItems { get; set; }
+        public bool WriteActionDescription { get; set; }
 
     }
 

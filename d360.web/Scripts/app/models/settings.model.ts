@@ -40,6 +40,7 @@ export class CompanySettings {
     BrowserTitlePrefix: string;
     WorkflowDigestEmailEnabled: boolean = false;
     MaxDropdownItems: number;
+    WriteActionDescription: boolean;
 }
 
 export class IpRestriction {

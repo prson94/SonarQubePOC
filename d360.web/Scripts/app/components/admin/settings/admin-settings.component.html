@@ -41,6 +41,10 @@
                     <div class="directions">
                         Displays the API Key for all users in their Profile Screen. Uncheck to display for administrators only.
                     </div>
+                    <input type="checkbox" [(ngModel)]="companySettings.WriteActionDescription" /> Write Action Description to Comments?<br />
+                    <div class="directions">
+                        When a user takes an action, create a comment based on the description.
+                    </div>
                     <div class="FieldName">Maximum Dropdown Items</div>
                     <div class="directions">
                         The maximum number of items to show in a dropdown list before enabling typeahead search.

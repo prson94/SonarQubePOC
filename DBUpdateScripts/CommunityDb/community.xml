@@ -12,5 +12,6 @@
 	<include file="scripts/GOV-6186-FusionTypeFieldDefinitions.xml"/>
 	<include file="scripts/GOV-6169.xml"/>
   <include file="scripts/GOV-6194.xml"/>      <!-- Missing intersect type between Markit view / Markit Table-->
-
+  <include file="scripts/GOV-5759.xml"/>
+	
 </databaseChangeLog>
