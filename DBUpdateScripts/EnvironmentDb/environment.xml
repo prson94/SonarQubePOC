@@ -18,4 +18,5 @@
 	  <include file="scripts/GOV-6165.xml"/>
 	  <include file="scripts/GOV-6169.xml"/>
     <include file="scripts/GOV-6201.xml"/>
+    <include file="scripts/GOV-6181.xml"/>
 </databaseChangeLog>
