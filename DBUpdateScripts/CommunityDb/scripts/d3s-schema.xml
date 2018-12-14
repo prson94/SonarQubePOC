@@ -8,10 +8,13 @@
 
 
       <changeSet author="Andy Kelly" id="Community Schema">
+        <preConditions onFail="MARK_RAN" onFailMessage="The initial schema has already been created. Skipping changeset and will mark as ran">
+            <tableExists schemaName="dbo" tableName="dbo.company" />
+        </preConditions>        
         <sqlFile dbms="mssql"
                 encoding="UTF-16LE"
                 endDelimiter="GO"
-                path="d3s-schema.sql  "
+                path="d3s-schema.sql"
                 relativeToChangelogFile="true"
                 splitStatements="true"
                 stripComments="true"/>

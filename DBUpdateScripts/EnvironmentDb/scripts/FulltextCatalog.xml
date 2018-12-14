@@ -8,10 +8,13 @@
 
 
       <changeSet author="Andy Kelly" id="Environment Full Text Catalog">
+        <preConditions onFail="MARK_RAN" onFailMessage="The Full Text Catalog has already been created. Skipping changeset and will mark as ran">
+          <sqlCheck expectedResult="0">select count(*) from sys.fulltext_catalogs where [name] = 'FieldCatalog'</sqlCheck>
+        </preConditions>
         <sqlFile dbms="mssql"
                 encoding="utf8"
                 endDelimiter="GO"
-                path="FullTextCatalog.sql  "
+                path="FullTextCatalog.sql"
                 relativeToChangelogFile="true"
                 splitStatements="true"
                 stripComments="true"/>
