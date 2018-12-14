@@ -804,10 +804,10 @@ order by wi.StartedOn desc";
             {
                 case "Issue":
                     var issue = Company.Issues.Where(x => x.ID == itemStep.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
-
-                    var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
+                    
                     if (issue != null)
                     {
+                        var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
                         details = new ObjectDetail
                         {
                             Type = "Action",
