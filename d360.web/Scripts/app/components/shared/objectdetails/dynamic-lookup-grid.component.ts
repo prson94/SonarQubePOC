@@ -16,7 +16,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                             &nbsp;<d3s-tile-actions [hasFilterMode]="!hideFilter && !hideHeader" [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export(null)"></d3s-tile-actions>
                         </header>   
                     </div>      
-                    <input type="text" [hidden]="!showSimpleFilter || hideFilter || hideHeader" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <input type="text" [hidden]="!showSimpleFilter || hideFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                     <p-table #dt [value]="data.Values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3" [paginator]="!hideFooter" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (sortFunction)="customSort($event)">
                         <ng-template pTemplate="header">
                             <tr [hidden]="hideHeader">
