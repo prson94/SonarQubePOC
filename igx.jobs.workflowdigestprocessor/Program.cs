@@ -1,6 +1,4 @@
-﻿using d360.core.enums;
-using d360.core.enums.Workflow;
-using d360.extensions.caching;
+﻿using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
 using d360.model;
@@ -47,10 +45,6 @@ namespace igx.jobs.workflowdigestprocessor
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-#if DEBUG
-                companies = d360.utils.company.CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
-                companies = companies.Where(x => x.CompanyID == 4).ToList();
-#endif
                 foreach (var c in companies)
                 {
                     try
@@ -70,9 +64,7 @@ namespace igx.jobs.workflowdigestprocessor
                         var company = new CompanyContext(community, cache, queue, sec, true);
 
                         #endregion
-
-               
-
+                        
                         await company.SendDigestEmails(c.EnvironmentLevel);
                     }
                     catch (Exception ex)
@@ -82,7 +74,6 @@ namespace igx.jobs.workflowdigestprocessor
                     }
                 }
                 
-
                 CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
             catch (Exception ex)
