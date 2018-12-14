@@ -54,7 +54,7 @@ namespace igx.jobs
         const string timerSettings = "0 */5 * * * *";
 #endif
 
-        //[Disable]
+        [Disable]
         public static void RunScheduleViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         {
             string functionName = "IGC_Integration_Schedule";
@@ -148,7 +148,7 @@ where	T.CompletedOn is null
                         }
 
                         var executionIDs = new List<ExecutionAssetType>(); //To loop through to synch deletions.
-                    
+
                         foreach (var setting in settings)
                         {
                             var now = DateTime.UtcNow;
@@ -179,7 +179,8 @@ where		T.CompletedOn is null
                                     {
                                         var atExecution = new IntegrationExecutionAssetType { StartedOn = now, SynchedAssetTypeID = item.ID, ExecutionID = execution.ID };
                                         company.Add(atExecution);
-                                        var queueModel = new IntegrationQueueModel {
+                                        var queueModel = new IntegrationQueueModel
+                                        {
                                             CompanyID = c.CompanyID,
                                             ExecutionID = execution.ID,
                                             IntegrationSettingID = setting.ID,
@@ -521,8 +522,8 @@ where		T.CompletedOn is null
 
                         // If last refresh+interval > current time, then perform a delta instead, as you have not surpassed the refresh interval.
                         var lastFullRefreshDate = Company.Query<DateTime?>("select max(CompletedOn) from integration.ExecutionAssetType where SynchedAssetTypeID = @at and CompletedOn is not null and IsFullRefresh = 1", new { at = ExecutionAssetType.SynchedAssetTypeID }).SingleOrDefault();
-                        checkForChangesOnly = lastFullRefreshDate.HasValue ? 
-                            (lastFullRefreshDate.Value.AddHours(refreshInterval) > now) : 
+                        checkForChangesOnly = lastFullRefreshDate.HasValue ?
+                            (lastFullRefreshDate.Value.AddHours(refreshInterval) > now) :
                             false;
                     }
                 }
@@ -666,8 +667,8 @@ where		T.CompletedOn is null
 
                                 // Section 0 : Asset
                                 cnn.Query<dynamic>(
-                                    procedureCommand, 
-                                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 0 }, 
+                                    procedureCommand,
+                                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 0 },
                                     commandTimeout: 3600);
 
                                 // Section 1 : Fields
@@ -807,23 +808,26 @@ where		T.CompletedOn is null
                     {
                         var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(Storage.GetFileContentsAsString(path, p.Name));
 
-                        if (page.items.Count > 0)
+                        if (page.items != null)
                         {
-                            var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 3, requestNumber, roles.Select(i => i.SourceIdField).ToList());
-
-                            if (hasChanges)
+                            if (page.items.Count > 0)
                             {
-                                if (cnn.State != System.Data.ConnectionState.Open)
-                                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 3, requestNumber, roles.Select(i => i.SourceIdField).ToList());
 
-                                // Section 3 : Fields
-                                cnn.Query<dynamic>(
-                                    procedureCommand,
-                                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 3 },
-                                    commandTimeout: 7200);
+                                if (hasChanges)
+                                {
+                                    if (cnn.State != System.Data.ConnectionState.Open)
+                                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                                    // Section 3 : Fields
+                                    cnn.Query<dynamic>(
+                                        procedureCommand,
+                                        new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 3 },
+                                        commandTimeout: 7200);
+                                }
                             }
                         }
-                        
+
                         requestNumber++;
                     }
 
@@ -1008,8 +1012,8 @@ where		T.CompletedOn is null
                         }
                         // serialize JSON directly to a file
                         Storage.CreateFile(
-                            $"igc", 
-                            $@"{folderName}/{postModel.begin}.json", 
+                            $"igc",
+                            $@"{folderName}/{postModel.begin}.json",
                             JsonConvert.SerializeObject(models, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore })
                         );
                         //Storage.CreateFile($"igc-{companyID}", $@"{postModel.begin}.json", JsonConvert.SerializeObject(models));
@@ -1070,7 +1074,7 @@ where		T.CompletedOn is null
                     Client.DefaultRequestHeaders.Remove("Authorization");
                     Client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -1181,7 +1185,7 @@ where		T.CompletedOn is null
 
             #region Load the fields for changed assets
 
-            cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section  }, commandTimeout: 3600);
+            cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section }, commandTimeout: 3600);
 
             var fieldTbl = new System.Data.DataTable();
 
@@ -1191,52 +1195,83 @@ where		T.CompletedOn is null
             fieldTbl.Columns.Add("FieldName", typeof(string));
             fieldTbl.Columns.Add("FieldValue", typeof(string));
 
+            var errorDictionary = new Dictionary<string, string>();
+
             hashModels.ForEach(h => {
-                var pageAsset = pageAssets[h.SourceID];
-                if (pageAsset != null)
+                if (pageAssets.ContainsKey(h.SourceID))
                 {
-                    foreach (var pr in pageAsset.Properties())
+                    var pageAsset = pageAssets[h.SourceID];
+                    if (pageAsset != null)
                     {
-                                    
-                        var fieldRow = fieldTbl.NewRow();
-
-                        fieldRow["SynchedAssetTypeID"] = ExecutionAssetType.SynchedAssetTypeID;
-                        fieldRow["Section"] = section;
-                        fieldRow["SourceID"] = h.SourceID;
-                        fieldRow["FieldName"] = pr.Name;
-
-                        switch (section)
+                        foreach (var pr in pageAsset.Properties())
                         {
-                            case 1:     // Fields
-                                fieldRow["FieldValue"] = pr.Value;//.ToString(Formatting.None);
-                                break;
-                            case 2:     // Relationships
-                                if (pr.Value is JObject)
+                            if (pr != null)
+                            {
+                                if (!string.IsNullOrEmpty(pr.Name))
                                 {
-                                    var items = (pr.Value as JObject).Property("items");
-                                    if (items != null)
+                                    try
                                     {
-                                        fieldRow["FieldValue"] = items.Value.ToString(Formatting.None);
-                                    }
-                                    else
-                                    {
-                                        fieldRow["FieldValue"] = pr.Value.ToString(Formatting.None);
-                                    }
-                                }
-                                else
-                                {
-                                    fieldRow["FieldValue"] = pr.Value;//.ToString(Formatting.None);
-                                }
-                                break;
-                            case 3:     // Responsibilities
-                                fieldRow["FieldValue"] = pr.Value;//.ToString(Formatting.None);
-                                break;
-                        }
+                                        var fieldRow = fieldTbl.NewRow();
 
-                        fieldTbl.Rows.Add(fieldRow);
+                                        fieldRow["SynchedAssetTypeID"] = ExecutionAssetType.SynchedAssetTypeID;
+                                        fieldRow["Section"] = section;
+                                        fieldRow["SourceID"] = h.SourceID;
+                                        fieldRow["FieldName"] = pr.Name;
+
+                                        switch (section)
+                                        {
+                                            case 1:     // Fields
+                                                fieldRow["FieldValue"] = pr.Value;
+                                                break;
+                                            case 2:     // Relationships
+                                                if (pr.Value is JObject)
+                                                {
+                                                    var items = (pr.Value as JObject).Property("items");
+                                                    if (items != null)
+                                                    {
+                                                        fieldRow["FieldValue"] = items.Value.ToString(Formatting.None);
+                                                    }
+                                                    else
+                                                    {
+                                                        fieldRow["FieldValue"] = pr.Value.ToString(Formatting.None);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    fieldRow["FieldValue"] = pr.Value;//.ToString(Formatting.None);
+                                                }
+                                                break;
+                                            case 3:     // Responsibilities
+                                                fieldRow["FieldValue"] = pr.Value;//.ToString(Formatting.None);
+                                                break;
+                                        }
+
+                                        fieldTbl.Rows.Add(fieldRow);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        if (ex.TargetSite != null)
+                                        {
+                                            if (!errorDictionary.ContainsKey(ex.TargetSite.Name))
+                                            {
+                                                errorDictionary.Add(ex.TargetSite.Name, ex.GetFullExceptionData());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             });
+
+            if (errorDictionary.Count > 0)
+            {
+                foreach (var key in errorDictionary.Keys)
+                {
+                    ExecutionAssetType.ErrorMessage += errorDictionary[key];
+                }
+            }
 
             // If data in fields datatable, push to the server.
             if (fieldTbl.Rows.Count > 0)
@@ -1293,7 +1328,7 @@ where		T.CompletedOn is null
                 var errorModel = JsonConvert.DeserializeObject<IgcPageErrorModel>(jsonToReturn, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
 
                 var model = default(T);
-                
+
                 if ((int)errorModel.code > 0)
                 {
                     // If error, then post event stating there was one.
